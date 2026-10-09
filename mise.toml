@@ -1,0 +1,8 @@
+[tools]
+rust = "latest"
+node = "lts"
+dart = "latest"
+
+[env]
+NPM_CONFIG_USERCONFIG = "{{config_root}}/.npmrc.local"
+_.file = ".env.local"

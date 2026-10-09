@@ -1,0 +1,129 @@
+# Files that must never be committed. Keep secrets in the ignored files below; commit only the
+# `*.example` templates next to them.
+
+# --- Secrets and credentials ---------------------------------------------------------------
+# Environment files (API tokens, e.g. CARGO_REGISTRY_TOKEN), at any depth.
+.env
+.env.*
+*.env
+!.env.example
+!*.env.example
+# Keys, certificates and other credential files.
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.gpg
+*.asc
+id_rsa*
+id_ed25519*
+id_ecdsa*
+credentials*.json
+service-account*.json
+*secret*.json
+*secrets*.toml
+*.token
+# Firebase service accounts and emulator auth exports.
+firebase-adminsdk*.json
+google-services.json
+GoogleService-Info.plist
+# Package manager settings, which can hold registry tokens (`.npmrc.local` is set via
+# NPM_CONFIG_USERCONFIG in mise.toml).
+.npmrc
+.npmrc.*
+!.npmrc.example
+.yarnrc
+.yarnrc.yml
+.pypirc
+.cargo/credentials
+.cargo/credentials.toml
+pub-credentials.json
+
+# --- Local configuration and notes ----------------------------------------------------------
+# Personal tool settings (mise, Claude Code's local permissions).
+mise.local.toml
+.mise.local.toml
+mise.*.local.toml
+.claude/settings.local.json
+# Work trees of coding agents (Claude Code).
+/.claude/worktrees/
+# Drafts and notes that stay on this machine (release notes, announcement posts and so on).
+/.private/
+# Local configuration.
+/local/
+
+# --- Research artifacts -------------------------------------------------------------------------
+# The official emulator jar and anything pulled apart from it (phase 0 research). Keep the
+# written findings in docs/research/, not the binaries.
+/research/
+*.jar
+# Firebase emulator runtime output.
+.firebase/
+firebase-debug.log
+firestore-debug.log
+database-debug.log
+ui-debug.log
+pubsub-debug.log
+/emulator-data/
+firebase-export-*/
+# Upstream SDK checkouts used for parity testing.
+/vendor/
+/third_party/
+
+# --- Build output -------------------------------------------------------------------------------
+# Rust.
+/target/
+**/target/
+**/*.rs.bk
+*.pdb
+# Coverage and profiling.
+*.profraw
+*.profdata
+lcov.info
+tarpaulin-report.*
+/coverage/
+# Benchmark scratch (committed results live in results/).
+/bench/out/
+# JavaScript.
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun-debug.log*
+# Dart / Flutter.
+.dart_tool/
+.packages
+build/
+pubspec.lock
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# --- Editors and operating systems --------------------------------------------------------------
+.DS_Store
+._*
+Thumbs.db
+ehthumbs.db
+desktop.ini
+$RECYCLE.BIN/
+.idea/
+.vscode/
+.fleet/
+.zed/
+*.code-workspace
+*.swp
+*.swo
+*~
+.#*
+\#*#
+
+# --- Logs and temporary files -------------------------------------------------------------------
+*.log
+*.tmp
+*.bak
+*.orig
+*.rej
+# Benchmark logs are evidence and are committed on purpose (zerobrew does the same).
+!/results/**/*.log

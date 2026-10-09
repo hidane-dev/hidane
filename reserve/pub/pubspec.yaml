@@ -1,0 +1,9 @@
+name: hidane
+description: hidane (火種) — a Firestore emulator without Java. Pre-release placeholder; see hidane.dev for status.
+version: 0.0.1
+repository: https://github.com/hidane-dev/hidane
+homepage: https://hidane.dev
+environment:
+  sdk: ^3.0.0
+executables:
+  hidane:
