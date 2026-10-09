@@ -1,0 +1,1 @@
+{"database":"projects/demo-hidane/databases/(default)","writes":[{"update":{"name":"projects/demo-hidane/databases/(default)/documents/bench/grpc1","fields":{"v":{"integerValue":"1"},"s":{"stringValue":"hello"}}}}]}

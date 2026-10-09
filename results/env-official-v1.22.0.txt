@@ -1,0 +1,48 @@
+# 計測環境 (recorded: 2026-10-09T09:49:14Z)
+## sw_vers
+ProductName:		macOS
+ProductVersion:		27.0
+BuildVersion:		26A428
+## cpu
+Apple M1 Max
+## hw.memsize (bytes)
+68719476736
+## hw.ncpu / perflevel
+10
+8
+2
+## uname -m
+arm64
+## java -version
+openjdk version "24.0.2" 2025-07-15
+OpenJDK Runtime Environment (build 24.0.2+12-54)
+OpenJDK 64-Bit Server VM (build 24.0.2+12-54, mixed mode, sharing)
+## which java
+/Users/h.nomura/.local/share/mise/shims/java
+/Users/h.nomura/.local/bin/mise
+## firebase --version
+mise ERROR "/usr/local/bin/firebase" couldn't exec process: Bad CPU type in executable
+mise ERROR Version: 2026.8.5 macos-arm64 (2026-08-12)
+mise ERROR Run with --verbose or MISE_VERBOSE=1 for more information
+## which firebase
+/Users/h.nomura/.local/share/mise/shims/firebase
+## node --version
+v24.21.0
+## hyperfine --version
+hyperfine 2.0.0
+## grpcurl --version
+grpcurl 1.9.4
+## jq --version
+jq-1.6
+## curl --version
+curl 8.7.1 (x86_64-apple-darwin26.0) libcurl/8.7.1 (SecureTransport) LibreSSL/3.3.6 zlib/1.2.12 nghttp2/1.69.0
+## nc
+/usr/bin/nc
+## jar sha256
+9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c  research/jar/cloud-firestore-emulator-v1.22.0.jar
+## jar size (bytes)
+136707194
+## uptime (計測開始前)
+18:49  up 17 days,  5:52, 3 users, load averages: 58.77 23.29 15.77
+## uptime (全計測終了後 2026-10-09T10:09:21Z)
+19:09  up 17 days,  6:12, 3 users, load averages: 9.70 14.13 16.12

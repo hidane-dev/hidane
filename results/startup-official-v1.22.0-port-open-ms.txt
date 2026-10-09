@@ -1,0 +1,15 @@
+# jar 直接起動: ポート 8090 が accept するまでの時間 (ms)。hyperfine --warmup 1 --runs 10 の --show-output から抽出。1 行目は warmup。
+# コマンド: hyperfine --warmup 1 --runs 10 --show-output '/private/tmp/claude-501/-Users-h-nomura-projects-git-hidane/3e3b0b4b-079e-4dde-83d9-811b19117084/scratchpad/t7/scripts/measure-startup.sh 8090'
+## load avg before: 18.31 20.71 16.04
+## load avg after: 18.24 20.59 16.08
+1167.2
+801.5
+757.9
+788.5
+743.5
+755.0
+688.3
+688.6
+776.1
+696.1
+709.0

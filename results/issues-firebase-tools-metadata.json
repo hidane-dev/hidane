@@ -1,0 +1,55 @@
+[
+  {
+    "number": 3477,
+    "title": " Firebase Firestore Emulator Degrades for Batch Writes",
+    "state": "closed",
+    "created_at": "2021-06-09T17:01:43Z",
+    "closed_at": "2023-03-28T17:51:48Z",
+    "comments": 6,
+    "labels": [
+      "emulators: firestore",
+      "emulator-suite",
+      "internal-bug-filed"
+    ],
+    "html_url": "https://github.com/firebase/firebase-tools/issues/3477"
+  },
+  {
+    "number": 2277,
+    "title": "Importing data via emulator UI causes massive memory usage",
+    "state": "closed",
+    "created_at": "2020-05-22T15:07:22Z",
+    "closed_at": "2020-06-05T12:12:42Z",
+    "comments": 13,
+    "labels": [
+      "emulator-suite",
+      "emulators: functions",
+      "emulators: database"
+    ],
+    "html_url": "https://github.com/firebase/firebase-tools/issues/2277"
+  },
+  {
+    "number": 1624,
+    "title": "[Firestore] emulator is falling over with transactions",
+    "state": "closed",
+    "created_at": "2019-08-26T08:36:20Z",
+    "closed_at": "2019-09-06T21:36:46Z",
+    "comments": 27,
+    "labels": [],
+    "html_url": "https://github.com/firebase/firebase-tools/issues/1624"
+  },
+  {
+    "number": 4578,
+    "title": "firestore emulator ui: some collections will not show data, error in console",
+    "state": "closed",
+    "created_at": "2022-05-20T08:22:11Z",
+    "closed_at": "2023-04-11T16:03:31Z",
+    "comments": 32,
+    "labels": [
+      "type: bug",
+      "emulators: firestore",
+      "emulator-suite",
+      "internal-bug-filed"
+    ],
+    "html_url": "https://github.com/firebase/firebase-tools/issues/4578"
+  }
+]

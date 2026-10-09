@@ -1,0 +1,10 @@
+[listener] attached unlimited
+(node:94537) MetadataLookupWarning: received unexpected error = All promises were rejected code = ETIMEDOUT, ENOTFOUND
+(Use `node --trace-warnings ...` to show where the warning was created)
+[listener] snapshots=20 size=30500 changes=500 t=10.1s
+[listener] snapshots=40 size=40500 changes=500 t=17.3s
+[listener] snapshots=60 size=50500 changes=500 t=27.0s
+[listener] snapshots=80 size=60500 changes=500 t=39.0s
+[listener] snapshots=100 size=70500 changes=500 t=54.3s
+[listener] snapshots=120 size=80500 changes=500 t=72.3s
+[listener] snapshots=140 size=90500 changes=500 t=94.9s

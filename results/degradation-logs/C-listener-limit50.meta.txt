@@ -1,0 +1,6 @@
+# run=C-listener-limit50 N=100000 port=8096 listener=limit50 timeout=150s date=2026-10-09T09:59:27Z load_before=39.09 25.51 19.26
+# writer_total_sec=65.5 batches=200 rss_kb_end=700992 load_after=20.06 22.67 18.69
+# [listener] attached limit=50
+# (node:38313) MetadataLookupWarning: received unexpected error = All promises were rejected code = ETIMEDOUT, ENOTFOUND
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# done. tail of demo-go.stderr: 

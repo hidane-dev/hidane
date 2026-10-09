@@ -1,0 +1,2 @@
+#!/bin/sh
+exec grpcurl -plaintext -import-path "/private/tmp/claude-501/-Users-h-nomura-projects-git-hidane/3e3b0b4b-079e-4dde-83d9-811b19117084/scratchpad/t7/proto/googleapis" -proto google/firestore/v1/firestore.proto -d '{"name":"projects/demo-hidane/databases/(default)/documents/bench/doc1"}' 127.0.0.1:8093 google.firestore.v1.Firestore/GetDocument > /dev/null

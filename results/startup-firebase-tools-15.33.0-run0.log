@@ -1,0 +1,27 @@
+i  emulators: Starting emulators: firestore
+i  emulators: Detected demo project ID "demo-hidane", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail.
+lsof: WARNING: can't stat() smbfs file system /Volumes/.timemachine/DXP2800-006A._smb._tcp.local./0D6B85F9-6F5F-43E4-AED5-D9BEE05B67EA/TimeMachine
+      Output information may be incomplete.
+      assuming "dev=360001d1" from mount table
+lsof: WARNING: can't stat() smbfs file system /Volumes/.timemachine/DXP2800-006A._smb._tcp.local./0D6B85F9-6F5F-43E4-AED5-D9BEE05B67EA/TimeMachine
+      Output information may be incomplete.
+      assuming "dev=360001d1" from mount table
+lsof: WARNING: can't stat() smbfs file system /Volumes/.timemachine/DXP2800-006A._smb._tcp.local./0D6B85F9-6F5F-43E4-AED5-D9BEE05B67EA/TimeMachine
+      Output information may be incomplete.
+      assuming "dev=360001d1" from mount table
+lsof: WARNING: can't stat() smbfs file system /Volumes/.timemachine/DXP2800-006A._smb._tcp.local./0D6B85F9-6F5F-43E4-AED5-D9BEE05B67EA/TimeMachine
+      Output information may be incomplete.
+      assuming "dev=360001d1" from mount table
+lsof: WARNING: can't stat() smbfs file system /Volumes/.timemachine/DXP2800-006A._smb._tcp.local./0D6B85F9-6F5F-43E4-AED5-D9BEE05B67EA/TimeMachine
+      Output information may be incomplete.
+      assuming "dev=360001d1" from mount table
+⚠  firestore: Cloud Firestore Emulator does not support multiple databases yet.
+⚠  firestore: Did not find a Cloud Firestore rules file specified in a firebase.json config file.
+⚠  firestore: The emulator will default to allowing all reads and writes. Learn more about this option: https://firebase.google.com/docs/emulator-suite/install_and_configure#security_rules_configuration.
+i  firestore: Firestore Emulator logging to firestore-debug.log
+ 
+i  emulators: Received SIGINT (Ctrl-C) for the first time. Starting a clean shutdown.
+i  emulators: Please wait for a clean shutdown or send the SIGINT (Ctrl-C) signal again to stop right now.
+i  emulators: Shutting down emulators.
+i  firestore: Stopping Firestore Emulator
+i  hub: Stopping emulator hub

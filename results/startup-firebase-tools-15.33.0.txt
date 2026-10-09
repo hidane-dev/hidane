@@ -1,0 +1,14 @@
+# firebase emulators:start --only firestore --project demo-hidane 経由の起動時間 (ms): コマンド起動から TCP 127.0.0.1:8091 が accept するまで
+# firebase-tools 15.33.0 (node 22.22.3) / java 24.0.2 / jar ~/.cache/firebase/emulators/cloud-firestore-emulator-v1.22.0.jar
+# firebase.json: firestore.port=8091, hub.port=4409, ui.enabled=false。スクリプト: results/measure-firebase-startup.sh
+# run0 (ログ取得用, 事前実行): 3150.6
+# load avg before: 13.90 18.64 15.81
+run1: 3140.2
+run2: 2249.1
+run3: 2370.9
+run4: 2689.1
+run5: 2236.0
+# load avg after: 17.29 19.10 16.01
+# firebase-tools が起動する java のコマンドライン (run0 で ps 取得):
+#     PID    RSS COMMAND
+#   93282 129248 java -Dgoogle.cloud_firestore.debug_log_level=FINE -Duser.language=en -jar /Users/h.nomura/.cache/firebase/emulators/cloud-firestore-emulator-v1.22.0.jar --host 127.0.0.1 --port 8091 --websocket_port 9150 --database-edition standard --project_id demo-hidane --single_project_mode true

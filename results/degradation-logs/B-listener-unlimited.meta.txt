@@ -1,0 +1,6 @@
+# run=B-listener-unlimited N=100000 port=8095 listener=unlimited timeout=240s date=2026-10-09T09:57:02Z load_before=18.65 17.89 16.02
+# writer_total_sec=121.0 batches=200 rss_kb_end=1224944 load_after=48.53 26.23 19.37
+# [listener] snapshots=100 size=70500 changes=500 t=54.3s
+# [listener] snapshots=120 size=80500 changes=500 t=72.3s
+# [listener] snapshots=140 size=90500 changes=500 t=94.9s
+# done. tail of demo-go.stderr: 
