@@ -19,7 +19,7 @@ use tokio_stream::wrappers::ReceiverStream;
 async fn start(http: Router) -> SocketAddr {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
-    tokio::spawn(hidane::serve(listener, http));
+    tokio::spawn(hidane::serve(vec![listener], http, std::future::pending()));
     addr
 }
 
