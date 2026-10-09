@@ -1,0 +1,13 @@
+{
+  "name": "hidane-website",
+  "private": true,
+  "description": "hidane.dev — static site served from Cloudflare Workers",
+  "scripts": {
+    "dev": "wrangler dev",
+    "check": "wrangler deploy --dry-run",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.149.0"
+  }
+}

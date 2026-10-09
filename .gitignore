@@ -127,3 +127,6 @@ $RECYCLE.BIN/
 *.rej
 # Benchmark logs are evidence and are committed on purpose (zerobrew does the same).
 !/results/**/*.log
+# Cloudflare Workers local state
+.wrangler/
+.playwright-mcp/

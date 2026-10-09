@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hidane — Java 不要の Firestore エミュレータ</title>
+<meta name="description" content="hidane（火種）は、公式の Cloud Firestore エミュレータを置き換える Rust 製の単一バイナリです。JVM は要りません。ミリ秒で起動します。Phase 0: 調査中。">
+<link rel="canonical" href="https://hidane.dev/ja/">
+<link rel="alternate" hreflang="en" href="https://hidane.dev/">
+<link rel="alternate" hreflang="ja" href="https://hidane.dev/ja/">
+<link rel="alternate" hreflang="x-default" href="https://hidane.dev/">
+<meta name="theme-color" content="#141210" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F4EFE6" media="(prefers-color-scheme: light)">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="hidane">
+<meta property="og:title" content="hidane — Java 不要の Firestore エミュレータ">
+<meta property="og:description" content="公式の Cloud Firestore エミュレータを置き換える、Rust 製の単一バイナリ。JVM は要りません。ミリ秒で起動し、公式エミュレータとの parity をテストで確かめます。">
+<meta property="og:url" content="https://hidane.dev/ja/">
+<meta property="og:image" content="https://hidane.dev/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="/style.css?v=20261009a">
+<script src="/theme.js?v=20261009a"></script>
+</head>
+<body>
+<div class="hd">
+
+<header class="hdr">
+<div class="wrap hdr-in">
+<a class="brand" href="#top">
+<svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true"><circle class="mark-disc" cx="16" cy="16" r="15" stroke-width="1"></circle><circle class="mark-ember" cx="16" cy="18" r="8.5" opacity="0.2"></circle><circle class="mark-ember" cx="16" cy="18" r="4.5"></circle></svg>
+<span lang="en">hidane</span>
+</a>
+<nav class="nav" aria-label="メイン">
+<a href="https://github.com/hidane-dev/hidane/tree/main/docs">ドキュメント</a>
+<a href="#roadmap">ロードマップ</a>
+<a href="https://github.com/hidane-dev/hidane">GitHub</a>
+<div class="lang">
+<a href="/" lang="en" hreflang="en">EN</a>
+<span class="sep" aria-hidden="true">/</span>
+<a href="/ja/" aria-current="page">日本語</a>
+</div>
+<button type="button" class="theme-btn" data-theme-toggle aria-label="ダークとライトを切り替える">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none"></path></svg>
+</button>
+</nav>
+</div>
+</header>
+
+<main id="top">
+
+<section class="hero">
+<div class="wrap hero-in">
+<div class="hero-copy">
+<h1 lang="en">hidane (<span lang="ja">火種</span>, <em>the seed of fire</em>) — a Firestore emulator without Java.</h1>
+<p class="lede">公式の Cloud Firestore エミュレータを置き換える、Rust 製の単一バイナリです。JVM は要りません。ミリ秒で起動し、公式エミュレータとの parity をテストで確かめます。</p>
+
+<div class="install">
+<div class="install-box" aria-disabled="true">
+<code class="cmd"><span class="prompt" aria-hidden="true">$ </span>curl -fsSL https://hidane.dev/install.sh | sh</code>
+<span class="badge">まだ利用できません — Phase 0</span>
+<button type="button" class="copy-btn" disabled aria-disabled="true" title="まだインストールできるものがないため、コピーは無効です">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V6a2 2 0 0 1 2-2h9"></path></svg>
+<span>コピー</span>
+</button>
+</div>
+<p class="note">まだインストールできるものがないため、コピーは無効にしています。最初のリリースからこの行が使えるようになります。</p>
+</div>
+
+<div class="ctas">
+<a class="btn-primary" href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md">なぜ作るのかを読む</a>
+<a class="btn-secondary" href="https://github.com/hidane-dev/hidane">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9-4.3-4.1 5.9-.8z"></path></svg>
+<span>GitHub でスターを付ける</span>
+</a>
+</div>
+
+<p class="status"><span class="dot" aria-hidden="true"></span><span>Phase 0 · 調査中 · リリースはまだありません</span></p>
+</div>
+
+<div class="motif" aria-hidden="true">
+<svg width="280" height="280" viewBox="0 0 280 280" fill="none"><circle class="motif-ring" cx="140" cy="140" r="139"></circle><circle class="motif-ring" cx="140" cy="140" r="92"></circle><circle class="motif-ring" cx="140" cy="140" r="46"></circle><circle class="mark-ember" cx="140" cy="140" r="18" opacity="0.18"></circle><circle class="mark-ember" cx="140" cy="140" r="7"></circle></svg>
+</div>
+</div>
+</section>
+
+<section class="sec" aria-labelledby="why">
+<div class="wrap sec-in">
+<h2 class="h2" id="why">なぜ hidane か</h2>
+<div class="cards">
+<article class="card">
+<div class="card-num">21</div>
+<h3>Java 21 が必須になった</h3>
+<p>firebase-tools 15 で、Java 21 未満のサポートが削除されました。ローカルでデータベースを動かすだけのために、JDK を入れる必要はないはずです。</p>
+<a class="src" href="https://github.com/firebase/firebase-tools/releases/tag/v15.0.0">出典: firebase-tools v15.0.0 リリースノート</a>
+</article>
+<article class="card">
+<div class="card-num">0.74 s · 95 MiB</div>
+<h3>起動に 0.74 秒、アイドルで 95 MiB</h3>
+<p>公式エミュレータは、ポートを開くまでに 0.74 秒（CLI 経由では 2.5 秒）かかり、アイドル時に 95 MiB を使います。hidane の目標は 100 ms 未満、50 MiB 未満です。</p>
+<a class="src" href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md#2-startup-and-memory">出典: 実測値と生ログ（英語）</a>
+</article>
+<article class="card">
+<div class="card-num">11 倍</div>
+<h3>データが増えると書き込みが遅くなる</h3>
+<p>リスナーを接続した状態では、公式エミュレータのバッチ書き込みがドキュメントの総数に比例して遅くなります。100k 件では 11 倍です。hidane は、commit のコストが変更した件数だけで決まるように設計しています。</p>
+<a class="src" href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md#3-writes-slow-down-while-a-listener-is-attached">出典: 実測値と生ログ（英語）</a>
+</article>
+</div>
+<p class="fine">公式エミュレータの数値は実測値です。hidane の数値は目標であり、結果ではありません。背景は <a href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md">Why hidane</a>（英語）にまとめています。</p>
+</div>
+</section>
+
+<section class="sec" aria-labelledby="works">
+<div class="wrap sec-in sec-in--tight">
+<h2 class="h2" id="works">対応クライアント</h2>
+<div class="legend">
+<span>現時点では、すべて planned です。</span>
+<span class="legend-chips">
+<span class="chip">planned</span>
+<span class="chip chip--progress">in progress</span>
+<span class="chip chip--supported">supported</span>
+</span>
+</div>
+<div class="rows" role="list">
+<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">firebase-admin (Node)</span><span class="chip">planned</span></div>
+<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">@google-cloud/firestore</span><span class="chip">planned</span></div>
+<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">Go</span><span class="chip">planned</span></div>
+<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">Python</span><span class="chip">planned</span></div>
+<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">Java</span><span class="chip">planned</span></div>
+<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">iOS</span><span class="chip">planned</span></div>
+<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">Android</span><span class="chip">planned</span></div>
+<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">Flutter（モバイル / デスクトップ）</span><span class="chip">planned</span></div>
+<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">firebase-js-sdk（Node 上）</span><span class="chip">planned</span></div>
+<div class="row" role="listitem"><span class="row-ver">v0.2</span><span class="row-label">Security Rules</span><span class="chip">planned</span></div>
+<div class="row" role="listitem"><span class="row-ver">v0.3</span><span class="row-label">firebase-js-sdk（ブラウザ）</span><span class="chip">planned</span></div>
+<div class="row" role="listitem"><span class="row-ver">v0.3</span><span class="row-label">Flutter Web</span><span class="chip">planned</span></div>
+</div>
+<p class="fine">各 SDK が必要とするトランスポートと、ブラウザが v0.3 になる理由は <a href="https://github.com/hidane-dev/hidane/blob/main/docs/compatibility.md">compatibility</a>（英語）を参照してください。</p>
+</div>
+</section>
+
+<section class="sec" aria-labelledby="parity">
+<div class="wrap sec-in sec-in--narrow">
+<h2 class="h2" id="parity">Parity</h2>
+<p class="lede-lg">hidane は公式エミュレータをオラクルとして扱います。同じテストスイートを両方に流し、結果を parity 表として公開します。テストの裏付けがない互換性は主張しません。</p>
+<p class="placeholder">parity の結果は、v0.1 のあとにここへ掲載します。</p>
+<p class="fine">意図的に公式と違える点は <a href="https://github.com/hidane-dev/hidane/blob/main/docs/parity-exceptions.md">parity exceptions</a>（英語）に一覧があります。</p>
+</div>
+</section>
+
+<section class="sec" aria-labelledby="roadmap">
+<div class="wrap sec-in">
+<h2 class="h2" id="roadmap">ロードマップ</h2>
+<ol class="rm">
+<li>
+<div class="rm-ver">v0.1</div>
+<p>サーバー SDK とネイティブクライアント。firebase-admin、Google Cloud の各ライブラリ、iOS、Android、Flutter が firebase-tools の配下で動きます。</p>
+<a class="src" href="https://github.com/hidane-dev/hidane/milestone/1">GitHub の v0.1 マイルストーン</a>
+</li>
+<li>
+<div class="rm-ver">v0.2</div>
+<p>Security Rules。</p>
+<a class="src" href="https://github.com/hidane-dev/hidane/milestone/2">GitHub の v0.2 マイルストーン</a>
+</li>
+<li>
+<div class="rm-ver">v0.3</div>
+<p>ブラウザのクライアント。ブラウザ上の firebase-js-sdk と Flutter Web に対応します。</p>
+<a class="src" href="https://github.com/hidane-dev/hidane/milestone/3">GitHub の v0.3 マイルストーン</a>
+</li>
+</ol>
+<p class="fine">範囲、目標値、リスクは <a href="https://github.com/hidane-dev/hidane/blob/main/docs/ROADMAP.md">ROADMAP</a>（英語）にあります。</p>
+</div>
+</section>
+
+<section class="sec" aria-labelledby="install">
+<div class="wrap sec-in sec-in--narrow">
+<h2 class="h2" id="install">インストール（予定）</h2>
+<p class="sec-intro">どの配布チャネルもまだ存在しません。下のコマンドは予定している形を示すもので、いまは動きません。</p>
+<div class="channels" role="list">
+<div class="ch" role="listitem"><span class="ch-name">GitHub Releases</span><span class="ch-desc">ビルド済みバイナリ</span><span class="chip">planned</span></div>
+<div class="ch" role="listitem"><span class="ch-name">cargo binstall</span><code class="ch-cmd">cargo binstall hidane</code><span class="chip">planned</span></div>
+<div class="ch" role="listitem"><span class="ch-name">Homebrew tap</span><code class="ch-cmd">brew install hidane-dev/tap/hidane</code><span class="chip">planned</span></div>
+<div class="ch" role="listitem"><span class="ch-name">npm</span><code class="ch-cmd">npm install --save-dev hidane</code><span class="chip">planned</span></div>
+<div class="ch" role="listitem"><span class="ch-name">pub.dev</span><code class="ch-cmd">dart pub global activate hidane</code><span class="chip">planned</span></div>
+<div class="ch" role="listitem"><span class="ch-name">Docker</span><code class="ch-cmd">docker run ghcr.io/hidane-dev/hidane</code><span class="chip">planned</span></div>
+<div class="ch" role="listitem"><span class="ch-name">curl | sh</span><code class="ch-cmd">curl -fsSL https://hidane.dev/install.sh | sh</code><span class="chip">planned</span></div>
+</div>
+</div>
+</section>
+
+</main>
+
+<footer class="ftr">
+<div class="wrap ftr-in">
+<nav aria-label="フッター">
+<a href="https://github.com/hidane-dev/hidane">GitHub</a>
+<a href="https://github.com/hidane-dev/hidane/discussions">Discussions</a>
+<a href="https://github.com/hidane-dev/hidane/blob/main/SECURITY.md">セキュリティポリシー</a>
+<a href="https://github.com/hidane-dev/hidane/blob/main/LICENSE">ライセンス（MIT）</a>
+<a href="/" lang="en" hreflang="en">English</a>
+<a href="/ja/">日本語</a>
+</nav>
+<p class="legal">hidane は独立したオープンソースプロジェクトであり、Google LLC との提携関係はなく、同社の承認も受けていません。Firebase および Cloud Firestore は Google LLC の商標です。</p>
+</div>
+</footer>
+
+</div>
+</body>
+</html>

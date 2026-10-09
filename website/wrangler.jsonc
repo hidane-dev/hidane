@@ -1,0 +1,18 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "hidane-dev",
+  "main": "src/index.js",
+  "compatibility_date": "2026-10-09",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page",
+    "run_worker_first": true
+  },
+  "routes": [
+    { "pattern": "hidane.dev", "custom_domain": true },
+    { "pattern": "www.hidane.dev", "custom_domain": true }
+  ],
+  "observability": { "enabled": true }
+}

@@ -2,6 +2,7 @@
 rust = "latest"
 node = "lts"
 dart = "latest"
+bun = "latest"
 
 [env]
 NPM_CONFIG_USERCONFIG = "{{config_root}}/.npmrc.local"
