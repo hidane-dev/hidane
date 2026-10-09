@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question / help
+    url: https://github.com/hidane-dev/hidane/discussions/categories/q-a
+    about: Ask questions and get help in GitHub Discussions instead of opening an issue.
+  - name: Idea / proposal
+    url: https://github.com/hidane-dev/hidane/discussions/categories/ideas
+    about: Discuss feature ideas before they become issues.
+  - name: Security vulnerability
+    url: https://github.com/hidane-dev/hidane/security/advisories/new
+    about: Report security issues privately. Never open a public issue for them.

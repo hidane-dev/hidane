@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: cargo
+    directory: /reserve/crate
+    schedule: { interval: weekly }
+    groups:
+      cargo-all: { patterns: ["*"] }
+  - package-ecosystem: npm
+    directory: /reserve/npm
+    schedule: { interval: weekly }
+  - package-ecosystem: pub
+    directory: /reserve/pub
+    schedule: { interval: weekly }
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }

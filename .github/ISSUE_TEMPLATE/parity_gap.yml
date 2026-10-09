@@ -1,0 +1,97 @@
+name: Parity gap
+description: hidane behaves differently from the official Firestore emulator.
+labels: ["kind:parity-gap", "area:parity"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template when hidane and the official Firestore emulator give **different results**
+        for the same input. Behavioural parity with the official emulator is hidane's primary goal,
+        so these reports are especially valuable.
+  - type: dropdown
+    id: sdk
+    attributes:
+      label: SDK
+      description: Which client did you use to observe the difference?
+      options:
+        - firebase-admin (Node.js)
+        - firebase (JavaScript / Web)
+        - firebase-admin (Python)
+        - firebase-admin (Go)
+        - firebase-admin (Java)
+        - cloud_firestore (Flutter / Dart)
+        - FirebaseFirestore (iOS / Swift)
+        - FirebaseFirestore (Android / Kotlin)
+        - google-cloud-firestore (Python / Go / Java / Ruby / PHP / C#)
+        - Raw gRPC
+        - Raw REST (curl, fetch, ...)
+        - Other (describe below)
+    validations:
+      required: true
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options:
+        - TypeScript / JavaScript
+        - Dart
+        - Python
+        - Go
+        - Java / Kotlin
+        - Swift
+        - Rust
+        - Other (describe below)
+    validations:
+      required: true
+  - type: dropdown
+    id: transport
+    attributes:
+      label: Transport
+      description: How does the client talk to the emulator?
+      options:
+        - gRPC
+        - REST
+        - WebChannel (web SDK)
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: hidane-version
+    attributes:
+      label: hidane version
+      description: Output of `hidane --version`.
+    validations:
+      required: true
+  - type: input
+    id: official-version
+    attributes:
+      label: Official emulator version
+      description: Output of `firebase --version`, or the emulator JAR version.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: The smallest code or sequence of requests that shows the difference.
+    validations:
+      required: true
+  - type: textarea
+    id: official-behavior
+    attributes:
+      label: Official emulator behaviour
+      description: Exact result, error code, or ordering returned by the official emulator.
+    validations:
+      required: true
+  - type: textarea
+    id: hidane-behavior
+    attributes:
+      label: hidane behaviour
+      description: Exact result, error code, or ordering returned by hidane.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional context
+      description: Links to Firestore docs, SDK source, or anything that helps explain the expected behaviour.

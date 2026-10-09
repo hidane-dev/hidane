@@ -1,0 +1,84 @@
+# Contributing to hidane
+
+Thanks for your interest in hidane (火種). This document explains where the
+project currently stands and how to get involved.
+
+## Project status: Phase 0 (research)
+
+hidane is in **Phase 0**. We are still investigating the official Firestore
+emulator's behaviour (wire protocol, Security Rules semantics, import/export
+format) and sketching the architecture. There is no runnable emulator yet, and
+the `reserve/` directory only holds name-reservation placeholders for
+crates.io, npm and pub.dev.
+
+What this means for contributions right now:
+
+- **Open an issue before sending a PR.** Unsolicited pull requests may be
+  closed, simply because the code they touch might be about to change shape.
+  Issues let us agree on the direction first.
+- Research findings are very welcome. Use the `research` label, or start a
+  thread in GitHub Discussions.
+- Observed differences between hidane and the official emulator should be
+  filed with the **Parity gap** issue template.
+
+## Development environment
+
+Tooling is managed with [mise](https://mise.jdx.dev/). The pinned versions
+live in `mise.toml`.
+
+```sh
+mise install   # installs Rust, Node.js and Dart as declared in mise.toml
+```
+
+Local-only overrides go in `.env.local` / `.npmrc.local`; both are gitignored
+and must never be committed.
+
+## Commit messages
+
+We use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/):
+
+```
+<type>(<optional scope>): <short summary>
+```
+
+Common types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `perf`,
+`ci`. Scopes usually match the `area:*` labels (for example `grpc`, `rules`,
+`webchannel`, `cli`).
+
+```
+feat(grpc): implement RunQuery for single-collection filters
+fix(rules): evaluate request.time against the server clock
+docs: describe import/export directory layout
+```
+
+## Pull requests
+
+- Reference the issue the PR resolves.
+- Keep PRs focused; one logical change per PR.
+- Fill in the PR template, including the **parity impact** section. If the
+  change makes hidane behave differently from the official emulator on
+  purpose, say so and explain why.
+- Do not modify `reserve/` unless the issue is explicitly about package
+  reservation.
+
+## DCO / CLA
+
+No Developer Certificate of Origin sign-off and no Contributor License
+Agreement are required. By contributing you agree that your contribution is
+licensed under the project license below.
+
+## License
+
+hidane is licensed under the [MIT License](./LICENSE). The license may change
+before the first stable release; any change will be announced in GitHub
+Discussions ahead of time.
+
+## Security issues
+
+Please do not open public issues for vulnerabilities. See
+[SECURITY.md](./SECURITY.md) for the private reporting process.
+
+## Code of conduct
+
+Participation in this project is governed by our
+[Code of Conduct](./CODE_OF_CONDUCT.md).
