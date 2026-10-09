@@ -5,7 +5,7 @@
 #![cfg(unix)]
 
 use std::{
-    io::{BufRead, BufReader, Read},
+    io::{BufRead, BufReader, Read, Write},
     net::{TcpListener, TcpStream},
     process::{Child, Command, Stdio},
     sync::mpsc,
@@ -178,4 +178,20 @@ fn help_and_version_exit_zero() {
     let version = Command::new(BIN).arg("--version").output().unwrap();
     assert!(version.status.success());
     assert!(String::from_utf8_lossy(&version.stdout).starts_with("hidane "));
+}
+
+#[test]
+fn post_shutdown_exits_zero_like_the_official_emulator() {
+    let mut child = spawn(&["--host", "127.0.0.1", "--port", "0"]);
+    let port = port_from(&wait_for_banner(&mut child));
+    let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+    stream
+        .write_all(b"POST /shutdown HTTP/1.1\r\nHost: localhost\r\nContent-Length: 0\r\n\r\n")
+        .unwrap();
+    let mut response = String::new();
+    stream.read_to_string(&mut response).unwrap();
+    assert!(response.starts_with("HTTP/1.1 200 OK"), "{response}");
+    assert!(response.ends_with("Shutting down...\n"), "{response}");
+    let status = wait_with_timeout(&mut child, Duration::from_secs(2));
+    assert_eq!(status.code(), Some(0));
 }
