@@ -1,6 +1,11 @@
 version: 2
 updates:
   - package-ecosystem: cargo
+    directory: /
+    schedule: { interval: weekly }
+    groups:
+      cargo-workspace: { patterns: ["*"] }
+  - package-ecosystem: cargo
     directory: /reserve/crate
     schedule: { interval: weekly }
     groups:

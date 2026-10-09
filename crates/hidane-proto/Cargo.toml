@@ -1,0 +1,27 @@
+[package]
+name = "hidane-proto"
+description = "Generated protobuf / gRPC types for hidane (google.firestore.v1 and dependencies)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+publish.workspace = true
+
+[lib]
+# Comments copied from the .proto files are not Rust; never run them as doctests.
+doctest = false
+
+[dependencies]
+prost.workspace = true
+prost-types.workspace = true
+tonic.workspace = true
+tonic-prost.workspace = true
+
+[build-dependencies]
+prost.workspace = true
+protox.workspace = true
+tonic-prost-build.workspace = true
+
+[features]
+# Generate gRPC clients too (used by hidane's integration tests).
+client = ["tonic/channel"]

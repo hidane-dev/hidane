@@ -1,0 +1,31 @@
+[package]
+name = "hidane"
+description = "hidane (火種, the seed of fire) — a Firestore emulator without Java."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+publish.workspace = true
+
+[dependencies]
+axum.workspace = true
+clap.workspace = true
+hidane-proto.workspace = true
+hyper.workspace = true
+hyper-util.workspace = true
+tokio.workspace = true
+tonic.workspace = true
+tonic-reflection.workspace = true
+tower.workspace = true
+
+[dev-dependencies]
+bytes.workspace = true
+hidane-proto = { workspace = true, features = ["client"] }
+http-body-util.workspace = true
+hyper-util = { workspace = true, features = ["client-legacy", "http1"] }
+tokio-stream.workspace = true
+tonic = { workspace = true, features = ["channel"] }
+
+[lints]
+workspace = true

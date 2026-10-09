@@ -1,0 +1,39 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+# reserve/ holds the published 0.0.1 name-reservation placeholders. They are separate packages
+# and are never built as part of this workspace.
+exclude = ["reserve"]
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/hidane-dev/hidane"
+homepage = "https://hidane.dev"
+publish = false
+
+[workspace.dependencies]
+hidane-proto = { path = "crates/hidane-proto" }
+axum = { version = "0.8.9", default-features = false, features = ["http1", "http2", "tokio"] }
+bytes = "1.12.1"
+clap = { version = "4.6.7", features = ["derive"] }
+http-body-util = "0.1.5"
+hyper = "1.12.0"
+hyper-util = { version = "0.1.21", features = ["server-auto", "server-graceful", "service", "tokio"] }
+prost = "0.14.4"
+prost-types = "0.14.4"
+protox = "0.10.0"
+tokio = { version = "1.53.2", features = ["macros", "net", "rt-multi-thread", "signal", "time"] }
+tokio-stream = "0.1.19"
+tonic = { version = "0.14.6", default-features = false, features = ["codegen", "router", "server"] }
+tonic-prost = "0.14.6"
+tonic-prost-build = "0.14.6"
+tonic-reflection = { version = "0.14.6", default-features = false, features = ["server"] }
+tower = { version = "0.5.3", features = ["util"] }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
