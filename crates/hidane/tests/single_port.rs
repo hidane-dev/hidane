@@ -29,7 +29,7 @@ fn http1_client() -> Client<hyper_util::client::legacy::connect::HttpConnector, 
 
 #[tokio::test]
 async fn grpc_over_h2c_reaches_the_firestore_service() {
-    let addr = start(hidane::http_routes()).await;
+    let addr = start(hidane::http_routes(hidane::Admin::default())).await;
     let channel = tonic::transport::Channel::from_shared(format!("http://{addr}"))
         .unwrap()
         .connect()
@@ -48,7 +48,7 @@ async fn grpc_over_h2c_reaches_the_firestore_service() {
 
 #[tokio::test]
 async fn http1_on_the_same_port_reaches_the_http_router() {
-    let addr = start(hidane::http_routes()).await;
+    let addr = start(hidane::http_routes(hidane::Admin::default())).await;
     let res = http1_client()
         .get(format!("http://{addr}/").parse().unwrap())
         .await
@@ -56,7 +56,7 @@ async fn http1_on_the_same_port_reaches_the_http_router() {
     assert_eq!(res.status(), StatusCode::OK);
     assert_eq!(res.version(), hyper::Version::HTTP_11);
     let body = res.into_body().collect().await.unwrap().to_bytes();
-    assert_eq!(&body[..], b"Ok");
+    assert_eq!(&body[..], b"Ok\n");
 }
 
 #[tokio::test]
@@ -64,7 +64,7 @@ async fn webchannel_paths_are_dispatched_by_content_type_not_path() {
     // `/google.firestore.v1.Firestore/Listen/channel` shares the gRPC service prefix. A
     // non-gRPC request there must reach the HTTP router (404 until WebChannel exists), never
     // the tonic service (which would answer with a `grpc-status` header).
-    let addr = start(hidane::http_routes()).await;
+    let addr = start(hidane::http_routes(hidane::Admin::default())).await;
     let req = Request::builder()
         .method(Method::POST)
         .uri(format!(
@@ -91,7 +91,9 @@ async fn chunked_responses_are_flushed_as_they_are_produced() {
         });
         Body::from_stream(ReceiverStream::new(rx))
     }
-    let addr = start(hidane::http_routes().route("/stream", get(slow_stream))).await;
+    let addr =
+        start(hidane::http_routes(hidane::Admin::default()).route("/stream", get(slow_stream)))
+            .await;
 
     let started = Instant::now();
     let res = http1_client()

@@ -21,10 +21,17 @@ use std::{
     future::Future,
     io,
     net::{Ipv4Addr, Ipv6Addr},
+    sync::Arc,
     time::Duration,
 };
 
-use axum::{Router, body::Body, routing::get};
+use axum::{
+    Router,
+    body::Body,
+    extract::State,
+    http::StatusCode,
+    routing::{get, post},
+};
 use hidane_proto::google::firestore::v1::firestore_server::FirestoreServer;
 use hyper::{Request, body::Incoming, header::CONTENT_TYPE};
 use hyper_util::{
@@ -34,7 +41,7 @@ use hyper_util::{
 };
 use tokio::{
     net::{TcpListener, TcpStream},
-    sync::mpsc,
+    sync::{mpsc, watch},
 };
 use tower::ServiceExt;
 
@@ -44,12 +51,69 @@ pub use firestore::FirestoreService;
 /// firebase-tools waits 4 s after SIGINT before giving up on the process.
 pub const SHUTDOWN_GRACE: Duration = Duration::from_secs(2);
 
+/// Process-level controls reachable over HTTP (`POST /shutdown`, `POST /reset`).
+///
+/// The shutdown request is a sticky flag rather than a one-shot notification, so every waiter
+/// sees it, including one that starts waiting after the request arrived.
+#[derive(Debug, Clone)]
+pub struct Admin {
+    shutdown: Arc<watch::Sender<bool>>,
+}
+
+impl Default for Admin {
+    fn default() -> Self {
+        Self {
+            shutdown: Arc::new(watch::Sender::new(false)),
+        }
+    }
+}
+
+impl Admin {
+    /// Resolves once `POST /shutdown` has been received.
+    pub async fn shutdown_requested(&self) {
+        let mut requested = self.shutdown.subscribe();
+        // The sender lives as long as `self`, so `wait_for` cannot fail while we wait.
+        let _ = requested.wait_for(|requested| *requested).await;
+    }
+
+    fn request_shutdown(&self) {
+        self.shutdown.send_replace(true);
+    }
+}
+
 /// Plain HTTP routes (REST, admin endpoints, later WebChannel). Callers may add routes before
 /// handing the router to [`serve`].
-pub fn http_routes() -> Router {
-    // The official emulator answers `GET /` with `200 Ok`; firebase-tools and humans use it as
-    // a liveness check.
-    Router::new().route("/", get(|| async { "Ok" }))
+///
+/// The admin endpoints match the official emulator exactly: `GET /` answers `Ok`, `POST /reset`
+/// and `POST /shutdown` act, the query string is ignored, and any other method, a trailing
+/// slash, another case or another prefix gets `404 Not Found`. Bodies end with a newline, as
+/// the official ones do.
+pub fn http_routes(admin: Admin) -> Router {
+    Router::new()
+        // axum answers HEAD from the GET handler by default; the official emulator does not.
+        .route(
+            "/",
+            get(|| async { "Ok\n" }).head(not_found).fallback(not_found),
+        )
+        .route("/reset", post(reset).fallback(not_found))
+        .route("/shutdown", post(shutdown).fallback(not_found))
+        .fallback(not_found)
+        .with_state(admin)
+}
+
+async fn not_found() -> (StatusCode, &'static str) {
+    (StatusCode::NOT_FOUND, "Not Found\n")
+}
+
+async fn reset(State(_admin): State<Admin>) -> &'static str {
+    // Clears every document of every project once storage exists (#33); there is no data yet.
+    "Resetting...\n"
+}
+
+async fn shutdown(State(admin): State<Admin>) -> &'static str {
+    // `serve` stops accepting and drains connections, so this response is still delivered.
+    admin.request_shutdown();
+    "Shutting down...\n"
 }
 
 /// gRPC services: `google.firestore.v1.Firestore` plus server reflection (v1 and v1alpha, so

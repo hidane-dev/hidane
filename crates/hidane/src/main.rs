@@ -69,18 +69,26 @@ async fn main() -> ExitCode {
     };
     print_banner(&cli, port);
 
-    let (signal_tx, signal_rx) = tokio::sync::oneshot::channel();
-    let shutdown = async move {
-        let code = signals.wait().await;
-        eprintln!("Shutting down...");
-        let _ = signal_tx.send(code);
+    let admin = hidane::Admin::default();
+    let (code_tx, code_rx) = tokio::sync::oneshot::channel();
+    let shutdown = {
+        let admin = admin.clone();
+        async move {
+            let code = tokio::select! {
+                code = signals.wait() => code,
+                // `POST /shutdown`: the official emulator exits 0.
+                () = admin.shutdown_requested() => 0,
+            };
+            eprintln!("Shutting down...");
+            let _ = code_tx.send(code);
+        }
     };
-    if let Err(err) = hidane::serve(listeners, hidane::http_routes(), shutdown).await {
+    if let Err(err) = hidane::serve(listeners, hidane::http_routes(admin), shutdown).await {
         eprintln!("ERROR: server failed: {err}");
         return ExitCode::FAILURE;
     }
     // 130 = 128 + SIGINT, the code the JVM (and firebase-tools' check) uses.
-    ExitCode::from(signal_rx.await.unwrap_or(0))
+    ExitCode::from(code_rx.await.unwrap_or(0))
 }
 
 /// The official emulator's startup banner. `Dev App Server is now running.` is kept verbatim:

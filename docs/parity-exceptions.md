@@ -17,6 +17,7 @@ Status: Phase 0 draft. Entries will be tagged in the conformance suite (issue #4
 | iOS clients receive `GOAWAY too_many_pings` after about 90 s (firebase-tools [#11238](https://github.com/firebase/firebase-tools/issues/11238)) | Keepalive settings that do not trip the client | Bug |
 | The `issues[].severity` returned by `:securityRules` is a string (`"ERROR"`) while firebase-tools compares it against a numeric enum, so invalid rules still print "Rules updated." | hidane returns the same string the official emulator does; the CLI-side comparison is an upstream bug | Keep wire parity; report upstream |
 | gRPC reflection lists services but `grpcurl describe` fails on a `google.api.api_visibility` extension | Full reflection that works with `grpcurl` | Developer convenience |
+| `GET //` never answers (the connection hangs) | `404 Not Found` | Bug |
 
 ## Official-emulator behaviour that differs from production (parity target to be decided)
 
