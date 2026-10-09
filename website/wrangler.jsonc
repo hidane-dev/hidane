@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "hidane-dev",
+  "account_id": "0b7a416aa77113cc15ae9b56daf98398",
   "main": "src/index.js",
   "compatibility_date": "2026-10-09",
   "assets": {
