@@ -41,8 +41,10 @@ hidane is a single Rust binary. No JVM, no `PATH` juggling.
 | RSS after writing 500,000 documents | 2.18 GiB | `results/official-v1.22.0-baseline.md` |
 | JVM default heap limit | 25 % of physical RAM (16 GiB on the test machine) | `results/official-v1.22.0-baseline.md` |
 
-hidane targets under 100 ms to first accept and under 50 MiB idle. These are targets, not
-measurements; they will be published in the same table once v0.1 exists.
+hidane on `main` (release build, M1 Max, measured later on a quiet machine, so not side by side):
+5.5 ms median until the port accepts (10 runs), 7.4 MiB idle and 21 MiB after the same 1,000
+documents (`results/startup-memory-hidane.txt`, from `tools/bench/startup_memory.py`). The
+targets were under 100 ms and under 50 MiB. A same-machine comparison is #50.
 
 ## 3. Writes slow down while a listener is attached
 
@@ -60,7 +62,9 @@ as the database grows. Phase 0 reproduced the condition:
 The slowdown is proportional to the number of documents already stored, not to the size of the
 write. The Emulator UI keeps listeners open, which matches the "only slow when the UI is open"
 comments in the issue. hidane is designed so that a commit costs only what it changes
-(see [ROADMAP](ROADMAP.md) and ADR 0002).
+(see [ROADMAP](ROADMAP.md) and ADR 0002): the same 100,000 documents with a listener on the whole
+collection take 4.9 s on `main`, about 10.5 ms per batch from start to end
+(`results/listen-batch-writes-hidane.csv`, #30).
 
 ## What hidane is not
 

@@ -1,0 +1,5 @@
+# tools/bench/startup_memory.py, release build, Darwin arm64
+time_to_accept_ms_median,5.5
+time_to_accept_ms_runs,10.0 5.4 5.7 6.6 5.0 5.1 5.1 5.0 6.8 5.6
+rss_idle_mib,7.4
+rss_after_1000_documents_mib,21.4

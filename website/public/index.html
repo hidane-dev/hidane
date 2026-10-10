@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>hidane — a Firestore emulator without Java</title>
-<meta name="description" content="hidane (火種, the seed of fire) is a single Rust binary that replaces the official Cloud Firestore emulator. No JVM. Starts in milliseconds. Phase 0: research in progress.">
+<meta name="description" content="hidane (火種, the seed of fire) is a single Rust binary that replaces the official Cloud Firestore emulator. No JVM. Starts in milliseconds. Pre-release: runs from source.">
 <link rel="canonical" href="https://hidane.dev/">
 <link rel="alternate" hreflang="en" href="https://hidane.dev/">
 <link rel="alternate" hreflang="ja" href="https://hidane.dev/ja/">
@@ -63,13 +63,13 @@
 <div class="install">
 <div class="install-box" aria-disabled="true">
 <code class="cmd"><span class="prompt" aria-hidden="true">$ </span>curl -fsSL https://hidane.dev/install.sh | sh</code>
-<span class="badge">Not yet available — Phase 0</span>
-<button type="button" class="copy-btn" disabled aria-disabled="true" title="Copy is disabled: there is nothing to install yet">
+<span class="badge">Not yet available — no release</span>
+<button type="button" class="copy-btn" disabled aria-disabled="true" title="Copy is disabled: there is no release yet">
 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V6a2 2 0 0 1 2-2h9"></path></svg>
 <span>Copy</span>
 </button>
 </div>
-<p class="note">Copy is disabled: there is nothing to install yet. This line becomes live with the first release.</p>
+<p class="note">Copy is disabled: there is no release yet. Until then, <a href="https://github.com/hidane-dev/hidane#readme">build from source</a>. This line becomes live with the first release.</p>
 </div>
 
 <div class="ctas">
@@ -80,7 +80,7 @@
 </a>
 </div>
 
-<p class="status"><span class="dot" aria-hidden="true"></span><span>Phase 0 · research in progress · no release yet</span></p>
+<p class="status"><span class="dot" aria-hidden="true"></span><span>Pre-release · runs from source · no release yet</span></p>
 </div>
 
 <div class="motif" aria-hidden="true">
@@ -102,17 +102,17 @@
 <article class="card">
 <div class="card-num">0.74 s · 95 MiB</div>
 <h3>0.74 s to start, 95 MiB idle</h3>
-<p>The official emulator takes 0.74 s to open its port (2.5 s through the CLI) and sits at 95 MiB idle. hidane targets under 100 ms and under 50 MiB.</p>
+<p>The official emulator takes 0.74 s to open its port (2.5 s through the CLI) and sits at 95 MiB idle. hidane on main: 5.5 ms and 7.4 MiB.</p>
 <a class="src" href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md#2-startup-and-memory">Source: measurements and raw logs</a>
 </article>
 <article class="card">
 <div class="card-num">11× slower</div>
 <h3>Writes slow down as data grows</h3>
-<p>With a listener attached, the official emulator's batch writes slow down in proportion to the number of documents: 11 times slower at 100k. hidane is designed so that a commit costs only what it changes.</p>
+<p>With a listener attached, the official emulator's batch writes slow down in proportion to the number of documents: 11 times slower at 100k. hidane is designed so that a commit costs only what it changes: the same 100k documents take 4.9 s, flat per batch.</p>
 <a class="src" href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md#3-writes-slow-down-while-a-listener-is-attached">Source: measurements and raw logs</a>
 </article>
 </div>
-<p class="fine">Figures for the official emulator are measurements. Figures for hidane are targets, not results. Context: <a href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md">why hidane</a>.</p>
+<p class="fine">All figures are measurements, but not side by side: hidane's were taken later on a quieter machine, and a same-machine comparison is coming. Context: <a href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md">why hidane</a>.</p>
 </div>
 </section>
 
@@ -120,36 +120,37 @@
 <div class="wrap sec-in sec-in--tight">
 <h2 class="h2" id="works">Works with</h2>
 <div class="legend">
-<span>Status today: every client is planned.</span>
+<span>Status on main, before the first release:</span>
 <span class="legend-chips">
 <span class="chip">planned</span>
-<span class="chip chip--progress">in progress</span>
-<span class="chip chip--supported">supported</span>
+<span class="chip chip--progress">not verified</span>
+<span class="chip chip--supported">verified</span>
 </span>
 </div>
 <div class="rows" role="list">
-<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">firebase-admin (Node)</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">@google-cloud/firestore</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">Go</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">Python</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">Java</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">iOS</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">Android</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">Flutter (mobile / desktop)</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">firebase-js-sdk on Node</span><span class="chip">planned</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">firebase-admin (Node)</span><span class="chip chip--supported">verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">@google-cloud/firestore</span><span class="chip chip--supported">verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">firebase-js-sdk on Node</span><span class="chip chip--supported">verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">REST</span><span class="row-label">firebase-js-sdk Lite</span><span class="chip chip--supported">verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">WebChannel</span><span class="row-label">Browser firebase-js-sdk</span><span class="chip chip--supported">verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Go</span><span class="chip chip--progress">not verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Python</span><span class="chip chip--progress">not verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Java</span><span class="chip chip--progress">not verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">iOS</span><span class="chip chip--progress">not verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Android</span><span class="chip chip--progress">not verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Flutter (mobile / desktop)</span><span class="chip chip--progress">not verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">WebChannel</span><span class="row-label">Flutter Web</span><span class="chip chip--progress">not verified</span></div>
 <div class="row" role="listitem"><span class="row-ver">v0.2</span><span class="row-label">Security Rules</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.3</span><span class="row-label">Browser firebase-js-sdk</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.3</span><span class="row-label">Flutter Web</span><span class="chip">planned</span></div>
 </div>
-<p class="fine">Which transport each SDK needs, and why the browser waits for v0.3: <a href="https://github.com/hidane-dev/hidane/blob/main/docs/compatibility.md">compatibility</a>.</p>
+<p class="fine">Verified means the client's results were compared with the official emulator's; not verified means hidane serves its transport but nobody has run that client yet. Which transport each SDK needs: <a href="https://github.com/hidane-dev/hidane/blob/main/docs/compatibility.md">compatibility</a>.</p>
 </div>
 </section>
 
 <section class="sec" aria-labelledby="parity">
 <div class="wrap sec-in sec-in--narrow">
 <h2 class="h2" id="parity">Parity</h2>
-<p class="lede-lg">hidane treats the official emulator as the oracle: the same test suites run against both, and the results are published as a parity table. No claim of compatibility without a test behind it.</p>
-<p class="placeholder">Parity results will appear here after v0.1.</p>
+<p class="lede-lg">hidane treats the official emulator as the oracle: its answers are recorded, and the test suite replays every recording against hidane. No claim of compatibility without a test behind it.</p>
+<p class="placeholder">So far: 16 recorded fixtures, from value ordering to the browser transport, and SDK results compared side by side (<a href="https://github.com/hidane-dev/hidane/tree/main/results">results</a>). A parity table will follow.</p>
 <p class="fine">Known, intentional differences are listed in <a href="https://github.com/hidane-dev/hidane/blob/main/docs/parity-exceptions.md">parity exceptions</a>.</p>
 </div>
 </section>
@@ -170,7 +171,7 @@
 </li>
 <li>
 <div class="rm-ver">v0.3</div>
-<p>Browser clients: firebase-js-sdk in the browser and Flutter Web.</p>
+<p>Browser clients: firebase-js-sdk in the browser (already working on main) and Flutter Web.</p>
 <a class="src" href="https://github.com/hidane-dev/hidane/milestone/3">v0.3 milestone on GitHub</a>
 </li>
 </ol>
