@@ -1,9 +1,6 @@
 [workspace]
 resolver = "3"
 members = ["crates/*"]
-# reserve/ holds the published 0.0.1 name-reservation placeholders. They are separate packages
-# and are never built as part of this workspace.
-exclude = ["reserve"]
 
 [workspace.package]
 version = "0.1.0-rc.2"

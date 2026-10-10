@@ -45,6 +45,18 @@ jobs:
       # rust-version in Cargo.toml says 1.88; keep it true.
       - run: cargo check --workspace --all-targets --locked
 
+  packaging:
+    name: packaging
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Cargo.toml, its pins and the pub launcher carry the same version.
+      - run: node packaging/check-versions.mjs
+      - run: node --check packaging/npm/hidane/bin/hidane.js
+      - run: node packaging/npm/assemble.mjs --placeholders 0.0.0 "$RUNNER_TEMP/npm"
+
   licenses:
     name: third-party licenses
     runs-on: ubuntu-24.04
