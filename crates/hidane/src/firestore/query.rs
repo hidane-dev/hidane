@@ -150,7 +150,7 @@ impl Query {
     pub fn parse(parent: ResourcePath, query: &StructuredQuery) -> Result<Self, Status> {
         if query.find_nearest.is_some() {
             return Err(Status::unimplemented(
-                "find_nearest is not implemented yet (https://github.com/hidane-dev/hidane/issues/26)",
+                "find_nearest is not implemented yet (https://github.com/hidane-dev/hidane/issues/118)",
             ));
         }
         let source = match query.from.as_slice() {

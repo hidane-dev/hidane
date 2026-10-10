@@ -96,7 +96,7 @@ Parity exception: #6252 (first evaluation of rules that use `resource.data` erro
 
 ## 5. Backlog
 
-- Enterprise edition / `ExecutePipeline` / `find_nearest` / `explain_options`
+- Enterprise edition pipelines (`ExecutePipeline`, #80) and `find_nearest` (#118)
 - Datastore mode (`--database-mode datastore-mode`), `--index_file` / `--require_indexes`
 - `google.firestore.admin.v1` (not in the official emulator either; stays UNIMPLEMENTED)
 - Distribution channels: Homebrew tap, cargo binstall, ghcr multi-arch, `curl | sh`, npm optionalDependencies, pub.dev launcher, mise

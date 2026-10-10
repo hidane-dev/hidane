@@ -1,0 +1,284 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/unsupported.py",
+ "grpc": [
+  {
+   "name": "RunQuery",
+   "rpc": "RunQuery",
+   "request": {
+    "parent": "projects/unsupported/databases/(default)/documents",
+    "structured_query": {
+     "from": [
+      {
+       "collection_id": "c"
+      }
+     ]
+    }
+   },
+   "authorization": "Bearer owner",
+   "outcome": {
+    "documents": [
+     "c/a",
+     "c/b"
+    ],
+    "aggregations": [],
+    "explain_metrics": false,
+    "done": true
+   }
+  },
+  {
+   "name": "RunQuery, explain",
+   "rpc": "RunQuery",
+   "request": {
+    "parent": "projects/unsupported/databases/(default)/documents",
+    "structured_query": {
+     "from": [
+      {
+       "collection_id": "c"
+      }
+     ]
+    },
+    "explain_options": {}
+   },
+   "authorization": "Bearer owner",
+   "outcome": {
+    "documents": [
+     "c/a",
+     "c/b"
+    ],
+    "aggregations": [],
+    "explain_metrics": false,
+    "done": true
+   }
+  },
+  {
+   "name": "RunQuery, explain and analyze",
+   "rpc": "RunQuery",
+   "request": {
+    "parent": "projects/unsupported/databases/(default)/documents",
+    "structured_query": {
+     "from": [
+      {
+       "collection_id": "c"
+      }
+     ]
+    },
+    "explain_options": {
+     "analyze": true
+    }
+   },
+   "authorization": "Bearer owner",
+   "outcome": {
+    "documents": [
+     "c/a",
+     "c/b"
+    ],
+    "aggregations": [],
+    "explain_metrics": false,
+    "done": true
+   }
+  },
+  {
+   "name": "RunQuery, explain, no results",
+   "rpc": "RunQuery",
+   "request": {
+    "parent": "projects/unsupported/databases/(default)/documents",
+    "structured_query": {
+     "from": [
+      {
+       "collection_id": "nothing"
+      }
+     ]
+    },
+    "explain_options": {
+     "analyze": true
+    }
+   },
+   "authorization": "Bearer owner",
+   "outcome": {
+    "documents": [],
+    "aggregations": [],
+    "explain_metrics": false,
+    "done": true
+   }
+  },
+  {
+   "name": "RunAggregationQuery, explain and analyze",
+   "rpc": "RunAggregationQuery",
+   "request": {
+    "parent": "projects/unsupported/databases/(default)/documents",
+    "structured_aggregation_query": {
+     "structured_query": {
+      "from": [
+       {
+        "collection_id": "c"
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "alias": "n",
+       "count": {}
+      }
+     ]
+    },
+    "explain_options": {
+     "analyze": true
+    }
+   },
+   "authorization": "Bearer owner",
+   "outcome": {
+    "documents": [],
+    "aggregations": [
+     {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    ],
+    "explain_metrics": false,
+    "done": false
+   }
+  },
+  {
+   "name": "ExecutePipeline, bad database",
+   "rpc": "ExecutePipeline",
+   "request": {
+    "database": "projects/unsupported"
+   },
+   "authorization": "Bearer owner",
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "Database name \"projects/unsupported\" lacks \"/\" at index 20."
+   }
+  },
+  {
+   "name": "ExecutePipeline",
+   "rpc": "ExecutePipeline",
+   "request": {
+    "database": "projects/unsupported/databases/(default)",
+    "structured_pipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "collection",
+        "args": [
+         {
+          "reference_value": "/c"
+         }
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "authorization": "Bearer owner",
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "ExecutePipeline requires the Database Edition to be `enterprise`."
+   }
+  },
+  {
+   "name": "ExecutePipeline, garbage token",
+   "rpc": "ExecutePipeline",
+   "request": {
+    "database": "projects/unsupported/databases/(default)"
+   },
+   "authorization": "Bearer garbage",
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "ExecutePipeline requires the Database Edition to be `enterprise`."
+   }
+  },
+  {
+   "name": "ExecutePipeline, anonymous",
+   "rpc": "ExecutePipeline",
+   "request": {
+    "database": "projects/unsupported/databases/(default)"
+   },
+   "authorization": null,
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "ExecutePipeline requires the Database Edition to be `enterprise`."
+   }
+  },
+  {
+   "name": "PartitionQuery",
+   "rpc": "PartitionQuery",
+   "request": {
+    "parent": "projects/unsupported/databases/(default)/documents"
+   },
+   "authorization": "Bearer owner",
+   "outcome": {
+    "code": "UNIMPLEMENTED",
+    "message": "Method google.firestore.v1.Firestore/PartitionQuery is unimplemented"
+   }
+  }
+ ],
+ "rest": [
+  {
+   "name": ":runQuery, explain and analyze",
+   "verb": "runQuery",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "c"
+      }
+     ]
+    },
+    "explainOptions": {
+     "analyze": true
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/unsupported/databases/(default)/documents/c/a\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/unsupported/databases/(default)/documents/c/b\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"2\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": ":runAggregationQuery, explain",
+   "verb": "runAggregationQuery",
+   "body": {
+    "structuredAggregationQuery": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "alias": "n",
+       "count": {}
+      }
+     ]
+    },
+    "explainOptions": {}
+   },
+   "outcome": {
+    "status": 200,
+    "body": "[\n{\n  \"result\": {\n    \"aggregateFields\": {\n      \"n\": {\n        \"integerValue\": \"2\"\n      }\n    }\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": ":executePipeline",
+   "verb": "executePipeline",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "body": "{\"error\":{\"code\":400,\"message\":\"ExecutePipeline requires the Database Edition to be `enterprise`.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": ":partitionQuery",
+   "verb": "partitionQuery",
+   "body": {},
+   "outcome": {
+    "status": 501,
+    "body": "{\"error\":{\"code\":501,\"message\":\"Method google.firestore.v1.Firestore\\/PartitionQuery is unimplemented\",\"status\":\"UNIMPLEMENTED\"}}"
+   }
+  }
+ ]
+}
