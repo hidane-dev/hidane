@@ -63,11 +63,20 @@ const MAP_END: [u8; 2] = [0x00, 0x00];
 const PATH_END: u8 = 0x00;
 const PATH_NUMERIC_SEGMENT: u8 = 0x01;
 const PATH_STRING_SEGMENT: u8 = 0x02;
+const PATH_AFTER_DESCENDANTS: u8 = 0x03;
 
 /// Encodes `value` so that byte order equals Firestore value order.
 pub fn encode_value(value: &Value) -> Vec<u8> {
     let mut out = Vec::new();
     write_value(value, &mut out);
+    out
+}
+
+/// Escaped bytes plus terminator, as used for strings and map keys. Prefix of a
+/// collection-group index key.
+pub fn encode_escaped(bytes: &[u8]) -> Vec<u8> {
+    let mut out = Vec::new();
+    write_escaped(bytes, &mut out);
     out
 }
 
@@ -146,6 +155,27 @@ pub fn encode_path<'a>(segments: impl IntoIterator<Item = &'a str>) -> Vec<u8> {
 }
 
 pub fn write_path<'a>(segments: impl IntoIterator<Item = &'a str>, out: &mut Vec<u8>) {
+    write_path_prefix(segments, out);
+    out.push(PATH_END);
+}
+
+/// The encoding of `segments` without the end marker: every path that starts with these
+/// segments (the path itself and all its descendants) has an encoding that starts with it.
+pub fn encode_path_prefix<'a>(segments: impl IntoIterator<Item = &'a str>) -> Vec<u8> {
+    let mut out = Vec::new();
+    write_path_prefix(segments, &mut out);
+    out
+}
+
+/// An exclusive upper bound for the encodings of `prefix` and all its descendants: their next
+/// byte after the prefix is the end marker or a segment marker, all below this one.
+pub fn path_subtree_end(prefix: &[u8]) -> Vec<u8> {
+    let mut end = prefix.to_vec();
+    end.push(PATH_AFTER_DESCENDANTS);
+    end
+}
+
+fn write_path_prefix<'a>(segments: impl IntoIterator<Item = &'a str>, out: &mut Vec<u8>) {
     for segment in segments {
         match numeric_id(segment) {
             Some(id) => {
@@ -158,7 +188,6 @@ pub fn write_path<'a>(segments: impl IntoIterator<Item = &'a str>, out: &mut Vec
             }
         }
     }
-    out.push(PATH_END);
 }
 
 fn write_integer(i: i64, out: &mut Vec<u8>) {

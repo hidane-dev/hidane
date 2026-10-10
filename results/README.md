@@ -68,3 +68,9 @@ Runs:
 - Java 21 or newer is required (the jar is compiled to class-file version 65). Through `mise` shims the resolved `java` or `firebase` may be a different version or architecture, so the scripts use absolute paths (`openjdk-24.0.2`, `node/22.22.3/bin/firebase`).
 - Ports 8090–8098 are used to avoid clashing with other emulator instances.
 - The write client for the degradation runs is `demo.go` from williamhaley/firestore-emulator-slow, built with `go build` and its pinned `cloud.google.com/go/firestore v1.5.0`.
+
+## hidane
+
+| File | Contents |
+|---|---|
+| `storage-memory-rss-hidane.csv` | RSS of hidane's in-memory store after writing 1k / 100k / 500k / 1M documents shaped like the baseline above (`users/{i}` = `{mykey, myid}`, 500 per commit), in-process, release build, macOS arm64. Produced by `cargo run --release -p hidane-core --example rss`. See ADR 0002 |

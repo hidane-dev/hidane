@@ -410,6 +410,7 @@ dependencies = [
  "chrono",
  "hidane-proto",
  "proptest",
+ "prost",
  "prost-types",
  "serde_json",
 ]
