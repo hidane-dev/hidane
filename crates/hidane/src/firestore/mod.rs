@@ -1,16 +1,17 @@
 //! `google.firestore.v1.Firestore`.
 //!
 //! Implemented: GetDocument, ListDocuments, CreateDocument, UpdateDocument, DeleteDocument,
-//! BatchGetDocuments, BeginTransaction, Commit, Rollback, RunQuery, BatchWrite,
-//! ListCollectionIds. The rest answer `UNIMPLEMENTED` through the generated default stubs
+//! BatchGetDocuments, BeginTransaction, Commit, Rollback, RunQuery, RunAggregationQuery,
+//! BatchWrite, ListCollectionIds. The rest answer `UNIMPLEMENTED` through the generated default stubs
 //! until their issues land.
 //!
 //! Behaviour follows the official emulator as recorded in `tests/fixtures/document_writes.json`
 //! (`tools/oracle/document_writes.py`) and `tests/fixtures/transactions.json`
-//! (`tools/oracle/transactions.py`) and `tests/fixtures/queries.json` (`tools/oracle/queries.py`),
-//! including its error messages, except where the official
+//! (`tools/oracle/transactions.py`), `tests/fixtures/queries.json` (`tools/oracle/queries.py`)
+//! and `tests/fixtures/aggregations.json` (`tools/oracle/aggregations.py`), including its error messages, except where the official
 //! message prints internal Datastore keys (docs/parity-exceptions.md).
 
+mod aggregation;
 mod names;
 mod query;
 pub(crate) mod transactions;
@@ -35,15 +36,17 @@ use hidane_core::{
 };
 use hidane_proto::google::{
     firestore::v1::{
-        BatchGetDocumentsRequest, BatchGetDocumentsResponse, BatchWriteRequest, BatchWriteResponse,
-        BeginTransactionRequest, BeginTransactionResponse, CommitRequest, CommitResponse,
-        CreateDocumentRequest, DeleteDocumentRequest, Document, DocumentMask, GetDocumentRequest,
-        ListCollectionIdsRequest, ListCollectionIdsResponse, ListDocumentsRequest,
-        ListDocumentsResponse, Precondition, RollbackRequest, RunQueryRequest, RunQueryResponse,
-        TransactionOptions, UpdateDocumentRequest, Write, WriteResult, batch_get_documents_request,
-        batch_get_documents_response, firestore_server::Firestore, get_document_request,
-        list_collection_ids_request, list_documents_request, precondition::ConditionType,
-        run_query_request, run_query_response, transaction_options, write::Operation,
+        AggregationResult, BatchGetDocumentsRequest, BatchGetDocumentsResponse, BatchWriteRequest,
+        BatchWriteResponse, BeginTransactionRequest, BeginTransactionResponse, CommitRequest,
+        CommitResponse, CreateDocumentRequest, DeleteDocumentRequest, Document, DocumentMask,
+        GetDocumentRequest, ListCollectionIdsRequest, ListCollectionIdsResponse,
+        ListDocumentsRequest, ListDocumentsResponse, Precondition, RollbackRequest,
+        RunAggregationQueryRequest, RunAggregationQueryResponse, RunQueryRequest, RunQueryResponse,
+        StructuredQuery, TransactionOptions, UpdateDocumentRequest, Write, WriteResult,
+        batch_get_documents_request, batch_get_documents_response, firestore_server::Firestore,
+        get_document_request, list_collection_ids_request, list_documents_request,
+        precondition::ConditionType, run_aggregation_query_request, run_query_request,
+        run_query_response, structured_aggregation_query, transaction_options, write::Operation,
     },
     rpc,
 };
@@ -51,6 +54,7 @@ use prost_types::Timestamp;
 use tonic::{Request, Response, Status, async_trait, codegen::BoxStream};
 
 use self::{
+    aggregation::Aggregations,
     names::Name,
     query::Query,
     transactions::{Mode, Transactions},
@@ -191,6 +195,29 @@ impl FirestoreService {
             Mode::ReadOnly(at) => Ok(at),
             Mode::ReadWrite => Ok(self.store.latest_read_time(database)),
         }
+    }
+
+    /// The read time of a query (locking `collection_id` in a read-write transaction), and
+    /// the ID of the transaction it started, if any.
+    fn query_read_time(
+        &self,
+        database: &str,
+        consistency: Consistency<'_>,
+        collection_id: Option<&str>,
+    ) -> Result<(ReadTime, Option<Vec<u8>>), Status> {
+        Ok(match consistency {
+            Consistency::Transaction(transaction) => (
+                self.read_in(database, transaction, &[], collection_id)?,
+                None,
+            ),
+            Consistency::NewTransaction(options) => {
+                let transaction = self.begin(database, Some(options))?;
+                let at = self.read_in(database, &transaction, &[], collection_id)?;
+                (at, Some(transaction))
+            }
+            Consistency::ReadTime(ts) => (self.read_time(database, Some(ts))?, None),
+            Consistency::Latest => (self.read_time(database, None)?, None),
+        })
     }
 
     fn read_back(
@@ -502,31 +529,33 @@ impl Firestore for FirestoreService {
                 "explain_options is not implemented yet (https://github.com/hidane-dev/hidane/issues/26)",
             ));
         }
-        let Some(run_query_request::QueryType::StructuredQuery(structured)) = &req.query_type
-        else {
-            return Err(Status::invalid_argument("A structured query is required."));
+        // An absent query is the empty one, as on the official emulator.
+        let default = StructuredQuery::default();
+        let structured = match &req.query_type {
+            Some(run_query_request::QueryType::StructuredQuery(structured)) => structured,
+            None => &default,
         };
         let query = Query::parse(parent.path, structured)?;
-        let mut responses = Vec::new();
-        let at = match &req.consistency_selector {
-            Some(run_query_request::ConsistencySelector::Transaction(transaction)) => {
-                self.read_in(&database, transaction, &[], query.collection_id())?
+        let consistency = match &req.consistency_selector {
+            Some(run_query_request::ConsistencySelector::Transaction(t)) => {
+                Consistency::Transaction(t)
             }
             Some(run_query_request::ConsistencySelector::NewTransaction(options)) => {
-                let transaction = self.begin(&database, Some(options))?;
-                let at = self.read_in(&database, &transaction, &[], query.collection_id())?;
-                // The new transaction's ID comes first, in a response of its own.
-                responses.push(Ok(RunQueryResponse {
-                    transaction,
-                    ..RunQueryResponse::default()
-                }));
-                at
+                Consistency::NewTransaction(options)
             }
-            Some(run_query_request::ConsistencySelector::ReadTime(ts)) => {
-                self.read_time(&database, Some(ts))?
-            }
-            None => self.read_time(&database, None)?,
+            Some(run_query_request::ConsistencySelector::ReadTime(ts)) => Consistency::ReadTime(ts),
+            None => Consistency::Latest,
         };
+        let (at, transaction) =
+            self.query_read_time(&database, consistency, query.collection_id())?;
+        let mut responses = Vec::new();
+        if let Some(transaction) = transaction {
+            // The new transaction's ID comes first, in a response of its own.
+            responses.push(Ok(RunQueryResponse {
+                transaction,
+                ..RunQueryResponse::default()
+            }));
+        }
         let results = query.run(self.store.as_ref(), &database, at);
         let read_time = Some(at.to_timestamp());
         let done = Some(run_query_response::ContinuationSelector::Done(true));
@@ -552,6 +581,66 @@ impl Firestore for FirestoreService {
                 ..RunQueryResponse::default()
             }));
         }
+        Ok(Response::new(Box::pin(tokio_stream::iter(responses))))
+    }
+
+    async fn run_aggregation_query(
+        &self,
+        request: Request<RunAggregationQueryRequest>,
+    ) -> Result<Response<BoxStream<RunAggregationQueryResponse>>, Status> {
+        let req = request.into_inner();
+        let parent = names::parent(&req.parent)?;
+        let database = parent.database;
+        if req.explain_options.is_some() {
+            return Err(Status::unimplemented(
+                "explain_options is not implemented yet (https://github.com/hidane-dev/hidane/issues/26)",
+            ));
+        }
+        let default = StructuredQuery::default();
+        let (structured, aggregations) = match &req.query_type {
+            Some(run_aggregation_query_request::QueryType::StructuredAggregationQuery(q)) => (
+                match &q.query_type {
+                    Some(structured_aggregation_query::QueryType::StructuredQuery(s)) => s,
+                    None => &default,
+                },
+                q.aggregations.as_slice(),
+            ),
+            None => (&default, &[][..]),
+        };
+        let mut query = Query::parse(parent.path, structured)?;
+        let aggregations = Aggregations::parse(aggregations)?;
+        query.require(aggregations.fields());
+        let consistency = match &req.consistency_selector {
+            Some(run_aggregation_query_request::ConsistencySelector::Transaction(t)) => {
+                Consistency::Transaction(t)
+            }
+            Some(run_aggregation_query_request::ConsistencySelector::NewTransaction(options)) => {
+                Consistency::NewTransaction(options)
+            }
+            Some(run_aggregation_query_request::ConsistencySelector::ReadTime(ts)) => {
+                Consistency::ReadTime(ts)
+            }
+            None => Consistency::Latest,
+        };
+        let (at, transaction) =
+            self.query_read_time(&database, consistency, query.collection_id())?;
+        let mut responses = Vec::new();
+        if let Some(transaction) = transaction {
+            // As for RunQuery: the new transaction's ID first, on its own.
+            responses.push(Ok(RunAggregationQueryResponse {
+                transaction,
+                ..RunAggregationQueryResponse::default()
+            }));
+        }
+        let results = query.run(self.store.as_ref(), &database, at);
+        // The official emulator also sets `done: true`, a field the published protos lack.
+        responses.push(Ok(RunAggregationQueryResponse {
+            result: Some(AggregationResult {
+                aggregate_fields: aggregations.compute(&results.documents),
+            }),
+            read_time: Some(at.to_timestamp()),
+            ..RunAggregationQueryResponse::default()
+        }));
         Ok(Response::new(Box::pin(tokio_stream::iter(responses))))
     }
 
@@ -666,6 +755,14 @@ impl Firestore for FirestoreService {
             next_page_token,
         }))
     }
+}
+
+/// How a query reads, whatever its request type.
+enum Consistency<'a> {
+    Transaction(&'a [u8]),
+    NewTransaction(&'a TransactionOptions),
+    ReadTime(&'a Timestamp),
+    Latest,
 }
 
 fn to_document(database: &str, doc: &StoredDocument, mask: Option<&[FieldPath]>) -> Document {

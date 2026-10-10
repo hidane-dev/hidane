@@ -14,6 +14,7 @@ Step ops (documents are relative to the project's database, e.g. "c/d"):
                                                   REST GET ?transaction= hangs)
     list        {txn?, collection, pageSize?}     ListDocuments (same)
     query       {txn?, new?, collection, group?}  RunQuery over a whole collection (or group)
+    aggregate   {txn?, new?, collection}          RunAggregationQuery counting a collection
     commit      {txn?, writes}                    Commit; writes are {update | delete | verify,
                                                   n?, exists?, reserved?, mask?, increment?}
     batchWrite  {writes}                          BatchWrite
@@ -233,6 +234,15 @@ SCENARIOS = [
         step("commit", "T writes c/a", txn="T", writes=[up("c/a", 3)]),
         step("query", "read-only R queries c and sees its snapshot", txn="R", collection="c"),
     ]),
+    scenario("RunAggregationQuery can start a transaction and locks the collection ID", [
+        SEED_AB,
+        step("aggregate", "new read-write transaction counts c", new={"readWrite": {}}, collection="c", **{"as": "T"}),
+        step("commit", "outside create of c/new", writes=[up("c/new", 2)]),
+        step("commit", "outside create of other/x", writes=[up("other/x", 2)]),
+        step("aggregate", "T counts c again", txn="T", collection="c"),
+        step("commit", "T creates c/mine", txn="T", writes=[up("c/mine", 2)]),
+        step("aggregate", "count c after T", collection="c"),
+    ]),
     scenario("BatchGetDocuments can start a transaction", [
         SEED_ONE,
         step("read", "new read-write transaction reads c/d", new={"readWrite": {}}, documents=["c/d"], **{"as": "T"}),
@@ -445,6 +455,24 @@ def run(sc, project):
                     out.append({"transaction": r["transaction"]})
                 if "document" in r:
                     out.append({"document": doc_result(base, r["document"])})
+            return status, message, out
+        if op == "aggregate":
+            body = {"structuredAggregationQuery": {"structuredQuery": {"from": [{"collectionId": st["collection"]}]},
+                                                   "aggregations": [{"count": {}, "alias": "n"}]}}
+            if txn:
+                body["transaction"] = txn
+            if "new" in st:
+                body["newTransaction"] = st["new"]
+            status, message, res = rest("POST", f"{base}:runAggregationQuery", body)
+            if res is None:
+                return status, message, None
+            out = []
+            for r in res:
+                if "transaction" in r:
+                    txns[st["as"]] = r["transaction"]
+                    out.append({"transaction": r["transaction"]})
+                if "result" in r:
+                    out.append({"count": int(r["result"]["aggregateFields"]["n"]["integerValue"])})
             return status, message, out
         if op == "commit":
             body = {"writes": [rest_write(base, w) for w in st["writes"]]}
