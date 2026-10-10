@@ -35,7 +35,7 @@ use std::{
 
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
 use hidane_core::{
-    field_path::{FieldPath, project},
+    field_path::{FieldPath, Fields, project},
     key,
     path::ResourcePath,
     store::{ListItem, ListOptions, ReadTime, Store, StoreError, StoredDocument},
@@ -50,11 +50,12 @@ use hidane_proto::google::{
         ListDocumentsResponse, ListenRequest, ListenResponse, PartitionQueryRequest,
         PartitionQueryResponse, Precondition, RollbackRequest, RunAggregationQueryRequest,
         RunAggregationQueryResponse, RunQueryRequest, RunQueryResponse, StructuredQuery,
-        TransactionOptions, UpdateDocumentRequest, Write, WriteRequest, WriteResponse, WriteResult,
-        batch_get_documents_request, batch_get_documents_response, firestore_server::Firestore,
-        get_document_request, list_collection_ids_request, list_documents_request,
-        precondition::ConditionType, run_aggregation_query_request, run_query_request,
-        run_query_response, structured_aggregation_query, transaction_options, write::Operation,
+        TransactionOptions, UpdateDocumentRequest, Value, Write, WriteRequest, WriteResponse,
+        WriteResult, batch_get_documents_request, batch_get_documents_response,
+        firestore_server::Firestore, get_document_request, list_collection_ids_request,
+        list_documents_request, precondition::ConditionType, run_aggregation_query_request,
+        run_query_request, run_query_response, structured_aggregation_query, transaction_options,
+        value::ValueType, write::Operation,
     },
     rpc,
 };
@@ -675,8 +676,22 @@ impl Firestore for FirestoreService {
         }
         for (i, doc) in results.documents.iter().enumerate() {
             let last = i + 1 == count;
+            let document = match (query.distance_field(), results.distances.get(i)) {
+                // The distance goes in before the projection, which can leave it out.
+                (Some(field), Some(&distance)) => {
+                    let mut fields = doc.fields();
+                    fields.insert(
+                        field.to_owned(),
+                        Value {
+                            value_type: Some(ValueType::DoubleValue(distance)),
+                        },
+                    );
+                    document_with(&database, doc, fields, query.projection())
+                }
+                _ => to_document(&database, doc, query.projection()),
+            };
             responses.push(Ok(RunQueryResponse {
-                document: Some(to_document(&database, doc, query.projection())),
+                document: Some(document),
                 read_time,
                 skipped_results: if last { 0 } else { skipped },
                 continuation_selector: if last { done } else { None },
@@ -937,7 +952,16 @@ enum Consistency<'a> {
 }
 
 fn to_document(database: &str, doc: &StoredDocument, mask: Option<&[FieldPath]>) -> Document {
-    let fields = doc.fields();
+    document_with(database, doc, doc.fields(), mask)
+}
+
+/// `doc` with `fields` in place of its own.
+fn document_with(
+    database: &str,
+    doc: &StoredDocument,
+    fields: Fields,
+    mask: Option<&[FieldPath]>,
+) -> Document {
     Document {
         name: Name::document_name(database, &doc.path),
         fields: match mask {

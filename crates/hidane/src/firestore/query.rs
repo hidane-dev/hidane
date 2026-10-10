@@ -19,21 +19,24 @@ use std::{cmp::Ordering, sync::Arc};
 use hidane_core::{
     field_path::{FieldPath, get},
     normalize::normalize_value,
-    order::{compare, type_rank},
+    order::{compare, is_vector, type_rank},
     path::ResourcePath,
     store::{ReadTime, Store, StoredDocument},
 };
 use hidane_proto::google::firestore::v1::{
     Cursor, StructuredQuery, Value,
     structured_query::{
-        self, Direction, FieldReference, composite_filter, field_filter, filter::FilterType,
-        unary_filter,
+        self, Direction, FieldReference, FindNearest, composite_filter, field_filter,
+        filter::FilterType, find_nearest::DistanceMeasure, unary_filter,
     },
     value::ValueType,
 };
 use tonic::Status;
 
-use super::names::{self, Name};
+use super::{
+    names::{self, Name},
+    validate,
+};
 
 /// The most comparison values an `in` or `array-contains-any` filter takes.
 const MAX_IN: usize = 30;
@@ -122,6 +125,163 @@ enum Source {
     Descendants,
 }
 
+/// `find_nearest`: the query's results nearest to a vector, measured on a vector field.
+#[derive(Debug, Clone)]
+struct Nearest {
+    field: FieldPath,
+    target: Vec<f64>,
+    measure: Measure,
+    limit: usize,
+    threshold: Option<f64>,
+    /// A field name, taken literally (not a path), as on the official emulator.
+    result_field: Option<String>,
+}
+
+#[derive(Debug, Clone, Copy)]
+enum Measure {
+    Euclidean,
+    Cosine,
+    DotProduct,
+}
+
+impl Measure {
+    fn distance(self, a: &[f64], b: &[f64]) -> f64 {
+        let dot = |a: &[f64], b: &[f64]| a.iter().zip(b).map(|(x, y)| x * y).sum::<f64>();
+        match self {
+            Self::Euclidean => a
+                .iter()
+                .zip(b)
+                .map(|(x, y)| (x - y) * (x - y))
+                .sum::<f64>()
+                .sqrt(),
+            // NaN for a zero vector, which then comes last.
+            Self::Cosine => 1.0 - dot(a, b) / (dot(a, a) * dot(b, b)).sqrt(),
+            Self::DotProduct => dot(a, b),
+        }
+    }
+
+    /// Nearest first: the smallest distance, or the largest dot product; NaN last.
+    fn compare(self, a: f64, b: f64) -> Ordering {
+        match (a.is_nan(), b.is_nan()) {
+            (true, true) => Ordering::Equal,
+            (true, false) => Ordering::Greater,
+            (false, true) => Ordering::Less,
+            (false, false) => match self {
+                Self::DotProduct => b.partial_cmp(&a).unwrap_or(Ordering::Equal),
+                Self::Euclidean | Self::Cosine => a.partial_cmp(&b).unwrap_or(Ordering::Equal),
+            },
+        }
+    }
+
+    fn within(self, distance: f64, threshold: f64) -> bool {
+        match self {
+            Self::DotProduct => distance >= threshold,
+            Self::Euclidean | Self::Cosine => distance <= threshold,
+        }
+    }
+}
+
+impl Nearest {
+    /// Validates `find` in the official emulator's order, after the rest of `query`.
+    fn parse(find: &FindNearest, query: &StructuredQuery) -> Result<Self, Status> {
+        let target = match find
+            .query_vector
+            .as_ref()
+            .and_then(|v| v.value_type.as_ref())
+        {
+            None => {
+                return Err(Status::invalid_argument(
+                    "Cannot convert firestore.v1.Value with type unset.",
+                ));
+            }
+            Some(ValueType::MapValue(map)) if is_vector(map) => validate::vector(map)?,
+            Some(_) => {
+                return Err(Status::invalid_argument(
+                    "Query Value must be of type vector.",
+                ));
+            }
+        };
+        let limit = match find.limit {
+            Some(n @ 1..=1000) => usize::try_from(n).unwrap_or(0),
+            _ => {
+                return Err(Status::invalid_argument(
+                    "FindNearest.limit must be a positive integer of no more than 1000",
+                ));
+            }
+        };
+        let measure = match DistanceMeasure::try_from(find.distance_measure) {
+            Ok(DistanceMeasure::Euclidean) => Measure::Euclidean,
+            Ok(DistanceMeasure::Cosine) => Measure::Cosine,
+            Ok(DistanceMeasure::DotProduct) => Measure::DotProduct,
+            _ => return Err(Status::invalid_argument("Unknown Distance Measure.")),
+        };
+        let path = find
+            .vector_field
+            .as_ref()
+            .map_or("", |f| f.field_path.as_str());
+        if path.is_empty() {
+            return Err(Status::invalid_argument(
+                "Invalid empty property path string.",
+            ));
+        }
+        // A path, as in production; the official emulator reads `a.b` as one field named
+        // `a.b` (docs/parity-exceptions.md).
+        let field = FieldPath::parse(path).map_err(Status::invalid_argument)?;
+        if query.limit.is_some() {
+            return Err(Status::invalid_argument(
+                "A query limit cannot be used with FindNearest",
+            ));
+        }
+        if query.offset != 0 {
+            return Err(Status::invalid_argument(
+                "A query offset cannot be used with FindNearest",
+            ));
+        }
+        if query.start_at.is_some() || query.end_at.is_some() {
+            return Err(Status::invalid_argument(
+                "A cursor cannot be used with FindNearest",
+            ));
+        }
+        let result_field =
+            (!find.distance_result_field.is_empty()).then(|| find.distance_result_field.clone());
+        if let Some(name) = &result_field
+            && validate::reserved(name)
+        {
+            return Err(Status::invalid_argument(format!(
+                "The distanceResultField.property.name \"{name}\" is reserved."
+            )));
+        }
+        Ok(Self {
+            field,
+            target,
+            measure,
+            limit,
+            threshold: find.distance_threshold,
+            result_field,
+        })
+    }
+
+    /// The distance of `doc`, if its field holds a vector of the query vector's dimension
+    /// within the threshold.
+    fn distance(&self, doc: &StoredDocument) -> Option<f64> {
+        let fields = doc.fields();
+        let Some(ValueType::MapValue(map)) = get(&fields, &self.field)?.value_type.as_ref() else {
+            return None;
+        };
+        if !is_vector(map) {
+            return None;
+        }
+        let vector = validate::vector(map).ok()?;
+        if vector.len() != self.target.len() {
+            return None;
+        }
+        let distance = self.measure.distance(&vector, &self.target);
+        self.threshold
+            .is_none_or(|t| self.measure.within(distance, t))
+            .then_some(distance)
+    }
+}
+
 /// A validated query, with its ordering completed.
 #[derive(Debug, Clone)]
 pub struct Query {
@@ -136,6 +296,7 @@ pub struct Query {
     projection: Option<Vec<FieldPath>>,
     /// Fields a document must have, besides the ordered ones (those of `sum` and `avg`).
     required: Vec<FieldPath>,
+    nearest: Option<Nearest>,
 }
 
 /// What a query returns.
@@ -143,16 +304,13 @@ pub struct Results {
     pub documents: Vec<Arc<StoredDocument>>,
     /// How many matching documents `offset` skipped.
     pub skipped: usize,
+    /// With `find_nearest`, each document's distance.
+    pub distances: Vec<f64>,
 }
 
 impl Query {
     /// Validates `query` under `parent`, with the official error messages.
     pub fn parse(parent: ResourcePath, query: &StructuredQuery) -> Result<Self, Status> {
-        if query.find_nearest.is_some() {
-            return Err(Status::unimplemented(
-                "find_nearest is not implemented yet (https://github.com/hidane-dev/hidane/issues/118)",
-            ));
-        }
         let source = match query.from.as_slice() {
             [] => Source::Children,
             [selector] if selector.collection_id.is_empty() => {
@@ -227,6 +385,11 @@ impl Query {
                 Ok::<_, Status>(paths)
             })
             .transpose()?;
+        let nearest = query
+            .find_nearest
+            .as_ref()
+            .map(|find| Nearest::parse(find, query))
+            .transpose()?;
 
         Ok(Self {
             parent,
@@ -239,6 +402,7 @@ impl Query {
             limit,
             projection,
             required: Vec::new(),
+            nearest,
         })
     }
 
@@ -257,15 +421,24 @@ impl Query {
         }
     }
 
+    /// The field `find_nearest` writes each document's distance into, if any.
+    pub fn distance_field(&self) -> Option<&str> {
+        self.nearest.as_ref()?.result_field.as_deref()
+    }
+
     /// The fields to return, when the query selects some.
     pub fn projection(&self) -> Option<&[FieldPath]> {
         self.projection.as_deref()
     }
 
-    /// Whether the result can follow changes one document at a time: no limit, offset or
-    /// cursor makes a document's membership depend on other documents.
+    /// Whether the result can follow changes one document at a time: no limit, offset,
+    /// cursor or `find_nearest` makes a document's membership depend on other documents.
     pub fn is_incremental(&self) -> bool {
-        self.limit.is_none() && self.offset == 0 && self.start.is_none() && self.end.is_none()
+        self.limit.is_none()
+            && self.offset == 0
+            && self.start.is_none()
+            && self.end.is_none()
+            && self.nearest.is_none()
     }
 
     /// Whether a document at `path` is in the collections this query reads.
@@ -341,6 +514,22 @@ impl Query {
         }
 
         matches.sort_by(|(_, a), (_, b)| self.compare_keys(a, b));
+        if let Some(nearest) = &self.nearest {
+            // No offset, limit or cursor comes with `find_nearest`. Ties keep the query's
+            // ordering, as on the official emulator.
+            let mut scored: Vec<(Arc<StoredDocument>, f64)> = matches
+                .into_iter()
+                .filter_map(|(doc, _)| nearest.distance(&doc).map(|d| (doc, d)))
+                .collect();
+            scored.sort_by(|(_, a), (_, b)| nearest.measure.compare(*a, *b));
+            scored.truncate(nearest.limit);
+            let (documents, distances) = scored.into_iter().unzip();
+            return Results {
+                documents,
+                skipped: 0,
+                distances,
+            };
+        }
         let in_range = |key: &[Value]| {
             let after_start =
                 self.start
@@ -371,7 +560,11 @@ impl Query {
             .skip(self.offset)
             .take(self.limit.unwrap_or(usize::MAX))
             .collect();
-        Results { documents, skipped }
+        Results {
+            documents,
+            skipped,
+            distances: Vec::new(),
+        }
     }
 
     fn compare_keys(&self, a: &[Value], b: &[Value]) -> Ordering {
