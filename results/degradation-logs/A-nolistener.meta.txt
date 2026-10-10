@@ -1,3 +1,0 @@
-# run=A-nolistener N=100000 port=8094 listener=none timeout=240s date=2026-10-09T09:56:32Z load_before=13.60 17.03 15.66
-# writer_total_sec=11.0 batches=200 rss_kb_end=577792 load_after=15.75 17.34 15.80
-# done. tail of demo-go.stderr: 

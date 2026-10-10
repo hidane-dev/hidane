@@ -92,7 +92,7 @@ Then `export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080`, or let `firebase emulators
 - [Parity exceptions](docs/parity-exceptions.md) — where hidane and the official emulator intentionally differ
 - [Roadmap](docs/ROADMAP.md) — scope of v0.1 / v0.2 / v0.3, targets, risks
 - [Decision records](docs/adr/) — storage engine, gRPC stack, WebChannel timing, Rules engine, license (all drafts)
-- [Benchmark logs](results/) — raw data and the scripts that produced it
+- [Benchmark results](results/) — the official emulator baseline, hidane's measurements and the SDK differentials
 
 ## Contributing
 

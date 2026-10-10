@@ -15,8 +15,8 @@ records). hidane's storage layer has these constraints:
 | `resume_token` | On reconnect the server sends only changes after the token. Without a deletion history it must fall back to `ExistenceFilter.count` | `firestore.proto` (`Target.resume_token`), `write.proto` (`ExistenceFilter`) |
 | Type ordering | Queries order values by the 11-step type order (Null < Bool < numbers < Date < String < Bytes < Reference < GeoPoint < Array < Vector < Map); NaN sorts below -Infinity. Encoding this into keys keeps indexes simple | [Data types: value type ordering](https://firebase.google.com/docs/firestore/manage-data/data-types) |
 | Transactions | Official emulator: "simple lock", released after at most 30 s. Production: optimistic concurrency. A parity target has to be chosen | [Emulator docs](https://docs.cloud.google.com/firestore/native/docs/emulator) |
-| Performance | Official emulator writes degrade with total document count while a listener is attached; hidane targets O(changed documents) per commit | `results/degradation-logs/` |
-| Memory | Official: 456 MiB after 1,000 documents, 2.18 GiB at 500k (JVM). hidane target: < 50 MiB idle | `results/memory-official-v1.22.0.txt` |
+| Performance | Official emulator writes degrade with total document count while a listener is attached; hidane targets O(changed documents) per commit | `results/official-v1.22.0-baseline.md` |
+| Memory | Official: 456 MiB after 1,000 documents, 2.18 GiB at 500k (JVM). hidane target: < 50 MiB idle | `results/official-v1.22.0-baseline.md` |
 | Export / import | Read and write the official format; import overwrites `createTime` / `updateTime` with the import time | Observed on v1.22.0 |
 
 ## Options
