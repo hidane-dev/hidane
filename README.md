@@ -13,8 +13,8 @@ official emulator as the oracle.
 > **Pre-release.** The emulator runs from source and serves the Firestore API over gRPC, REST and
 > WebChannel: documents, queries, aggregations, vector search, transactions, listeners and the
 > emulator's own endpoints, each checked against the official emulator, and `firebase-tools` can
-> launch it in place of the official one. Security Rules and export / import are not there yet,
-> and there is no binary release: the `hidane` packages on crates.io, npm and pub.dev are 0.0.1 name reservations and do
+> launch it in place of the official one, exports and imports included. Security Rules are not
+> there yet, and there is no binary release: the `hidane` packages on crates.io, npm and pub.dev are 0.0.1 name reservations and do
 > nothing. The plan is in [`docs/ROADMAP.md`](docs/ROADMAP.md), the work in
 > [issues](https://github.com/hidane-dev/hidane/issues).
 
@@ -62,13 +62,13 @@ compared with the official emulator's (`results/`):
 | Security Rules, the Emulator UI request monitor | — | not yet (v0.2): every request is allowed |
 | `firebase emulators:start` / `emulators:exec` | `hidane exec -- firebase …` | verified with firebase-tools 15.33.0, no Java installed |
 | Emulator UI | REST and the emulator's endpoints | verified: browse, create and delete documents, Clear all data; not the request monitor (#69) |
-| Export / import | — | not yet (#31, #32) |
+| Export / import (`--import`, `--export-on-exit`, `emulators:export`) | the official format | verified: hidane and the official emulator read each other's exports, byte for byte the same files ([`docs/export-format.md`](docs/export-format.md)) |
 
 ## Parity
 
 hidane treats the official emulator as the oracle. Scripts in [`tools/oracle/`](tools/oracle/)
-ask the official emulator how it answers — 16 recorded fixtures so far, from value ordering to
-WebChannel framing — and the test suite replays every recording against hidane; SDK transcripts
+ask the official emulator how it answers — 17 recorded fixtures so far, from value ordering to
+WebChannel framing and export files — and the test suite replays every recording against hidane; SDK transcripts
 from both emulators are compared in [`results/`](results/). A parity table with a badge will
 follow (#43). No claim of compatibility without a test behind it. Differences that are intentional (performance bugs and
 known defects of the official emulator that hidane will not reproduce) are listed in

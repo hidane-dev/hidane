@@ -1,0 +1,2275 @@
+{
+ "documents": [
+  {
+   "database": "(default)",
+   "path": "all/types",
+   "fields": {
+    "array": {
+     "arrayValue": {
+      "values": [
+       {
+        "integerValue": "1"
+       },
+       {
+        "stringValue": "two"
+       },
+       {
+        "nullValue": null
+       },
+       {
+        "mapValue": {
+         "fields": {
+          "k": {
+           "stringValue": "v"
+          }
+         }
+        }
+       },
+       {
+        "mapValue": {}
+       },
+       {
+        "mapValue": {
+         "fields": {
+          "__type__": {
+           "stringValue": "__vector__"
+          },
+          "value": {
+           "arrayValue": {
+            "values": [
+             {
+              "doubleValue": 3.0
+             }
+            ]
+           }
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    "bool_false": {
+     "booleanValue": false
+    },
+    "bool_true": {
+     "booleanValue": true
+    },
+    "bytes": {
+     "bytesValue": "AAEC/w=="
+    },
+    "dotted.name": {
+     "integerValue": "3"
+    },
+    "double": {
+     "doubleValue": 1.5
+    },
+    "double_inf": {
+     "doubleValue": "Infinity"
+    },
+    "double_nan": {
+     "doubleValue": "NaN"
+    },
+    "double_neg_inf": {
+     "doubleValue": "-Infinity"
+    },
+    "double_neg_zero": {
+     "doubleValue": -0.0
+    },
+    "empty_array": {
+     "arrayValue": {}
+    },
+    "empty_map": {
+     "mapValue": {}
+    },
+    "empty_string": {
+     "stringValue": ""
+    },
+    "geo": {
+     "geoPointValue": {
+      "latitude": 35.5,
+      "longitude": -139.25
+     }
+    },
+    "int": {
+     "integerValue": "42"
+    },
+    "int_max": {
+     "integerValue": "9223372036854775807"
+    },
+    "int_min": {
+     "integerValue": "-9223372036854775808"
+    },
+    "int_neg": {
+     "integerValue": "-7"
+    },
+    "map": {
+     "mapValue": {
+      "fields": {
+       "a": {
+        "integerValue": "1"
+       },
+       "inner": {
+        "mapValue": {
+         "fields": {
+          "z": {
+           "booleanValue": true
+          }
+         }
+        }
+       },
+       "nested_empty_array": {
+        "arrayValue": {}
+       },
+       "nested_empty_map": {
+        "mapValue": {}
+       },
+       "nested_vector": {
+        "mapValue": {
+         "fields": {
+          "__type__": {
+           "stringValue": "__vector__"
+          },
+          "value": {
+           "arrayValue": {
+            "values": [
+             {
+              "doubleValue": 1.0
+             },
+             {
+              "doubleValue": 2.0
+             }
+            ]
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "null": {
+     "nullValue": null
+    },
+    "ref": {
+     "referenceValue": "projects/demo-export/databases/(default)/documents/all/types"
+    },
+    "ref_db2": {
+     "referenceValue": "projects/demo-export/databases/db2/documents/c/x"
+    },
+    "ref_deep": {
+     "referenceValue": "projects/demo-export/databases/(default)/documents/c/a/sub/x"
+    },
+    "ref_numeric": {
+     "referenceValue": "projects/demo-export/databases/(default)/documents/c/__id7__"
+    },
+    "ref_other_project": {
+     "referenceValue": "projects/elsewhere/databases/(default)/documents/c/x"
+    },
+    "string": {
+     "stringValue": "héllo 😀"
+    },
+    "timestamp": {
+     "timestampValue": "2024-01-02T03:04:05.123456Z"
+    },
+    "timestamp_min": {
+     "timestampValue": "0001-01-01T00:00:00Z"
+    },
+    "timestamp_nanos": {
+     "timestampValue": "2024-01-01T00:00:00.123456789Z"
+    },
+    "timestamp_old": {
+     "timestampValue": "1960-01-01T00:00:00.500Z"
+    },
+    "vector": {
+     "mapValue": {
+      "fields": {
+       "__type__": {
+        "stringValue": "__vector__"
+       },
+       "value": {
+        "arrayValue": {
+         "values": [
+          {
+           "doubleValue": 1.0
+          },
+          {
+           "doubleValue": 2.5
+          }
+         ]
+        }
+       }
+      }
+     }
+    },
+    "with space": {
+     "stringValue": "x"
+    }
+   }
+  },
+  {
+   "database": "(default)",
+   "path": "c/__id-3__",
+   "fields": {
+    "n": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "database": "(default)",
+   "path": "c/__id7__",
+   "fields": {
+    "n": {
+     "integerValue": "2"
+    }
+   }
+  },
+  {
+   "database": "(default)",
+   "path": "c/a",
+   "fields": {
+    "n": {
+     "integerValue": "3"
+    }
+   }
+  },
+  {
+   "database": "(default)",
+   "path": "c/a/sub/x",
+   "fields": {
+    "n": {
+     "integerValue": "4"
+    }
+   }
+  },
+  {
+   "database": "(default)",
+   "path": "c/weird id ü",
+   "fields": {
+    "n": {
+     "integerValue": "5"
+    }
+   }
+  },
+  {
+   "database": "(default)",
+   "path": "empty/doc",
+   "fields": {}
+  },
+  {
+   "database": "(default)",
+   "path": "long/doc",
+   "fields": {
+    "s": {
+     "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+    }
+   }
+  },
+  {
+   "database": "(default)",
+   "path": "missing/m/sub/y",
+   "fields": {
+    "n": {
+     "integerValue": "6"
+    }
+   }
+  },
+  {
+   "database": "(default)",
+   "path": "refs/doc",
+   "fields": {
+    "array": {
+     "arrayValue": {
+      "values": [
+       {
+        "referenceValue": "projects/demo-export/databases/(default)/documents/c/a"
+       },
+       {
+        "referenceValue": "projects/elsewhere/databases/(default)/documents/c/b"
+       }
+      ]
+     }
+    },
+    "array_of_maps": {
+     "arrayValue": {
+      "values": [
+       {
+        "mapValue": {
+         "fields": {
+          "r": {
+           "referenceValue": "projects/elsewhere/databases/(default)/documents/c/q"
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    "map": {
+     "mapValue": {
+      "fields": {
+       "deeper": {
+        "mapValue": {
+         "fields": {
+          "r": {
+           "referenceValue": "projects/elsewhere/databases/db2/documents/c/x"
+          }
+         }
+        }
+       },
+       "inner": {
+        "referenceValue": "projects/elsewhere/databases/(default)/documents/c/a"
+       }
+      }
+     }
+    },
+    "single": {
+     "referenceValue": "projects/elsewhere/databases/(default)/documents/c/z"
+    }
+   }
+  },
+  {
+   "database": "db2",
+   "path": "c/__id5__",
+   "fields": {
+    "n": {
+     "integerValue": "7"
+    }
+   }
+  },
+  {
+   "database": "db2",
+   "path": "c/x",
+   "fields": {
+    "n": {
+     "integerValue": "8"
+    }
+   }
+  }
+ ],
+ "exports": {
+  "default": {
+   "all_namespaces/all_kinds/all_namespaces_all_kinds.export_metadata": "CiQKEGZpcmVzdG9yZV9leHBvcnQQhfiKprivlwMY4peLprivlwMSDAoAEghvdXRwdXQtMA==",
+   "all_namespaces/all_kinds/output-0": "uVgQPTMAAWobag9kZXZ+ZGVtby1leHBvcnRyCAsSAWMiAWEMegkaAW4gACoCCAOCAQgLEgFjIgFhDJscyclJAAFqK2oPZGV2fmRlbW8tZXhwb3J0chgLEgdtaXNzaW5nIgFtDAsSA3N1YiIBeQx6CRoBbiAAKgIIBoIBDgsSB21pc3NpbmciAW0MQtuP3GEFAWohag9kZXZ+ZGVtby1leHBvcnRyDgsSA2FsbCIFdHlwZXMMchMIGBoLZW1wdHlfYXJyYXkgACoAeg0aBWFycmF5IAEqAggBehAaBWFycmF5IAEqBRoDdHdvegsaBWFycmF5IAEqAHokCBMaBWFycmF5IAEqFxoVagRqAHIAegoaAWsgACoDGgF2ggEAehgIExoFYXJyYXkgASoLGglqBGoAcgCCAQB6MwgTGgVhcnJheSABKiYaJGoEagByAHoZGgpfX3ZlY3Rvcl9fIAEqCSEAAAAAAAAIQIIBAHoSGgpib29sX2ZhbHNlIAAqAhAAehEaCWJvb2xfdHJ1ZSAAKgIQAXoTCA4aBWJ5dGVzIAAqBhoEAAEC/3oTGgtkb3R0ZWQubmFtZSAAKgIIA3oVGgZkb3VibGUgACoJIQAAAAAAAPg/ehkaCmRvdWJsZV9pbmYgACoJIQAAAAAAAPB/ehkaCmRvdWJsZV9uYW4gACoJIQAAAAAAAPh/eh0aDmRvdWJsZV9uZWdfaW5mIAAqCSEAAAAAAADw/3oeGg9kb3VibGVfbmVnX3plcm8gACoJIQAAAAAAAAAAehwIExoJZW1wdHlfbWFwIAAqCxoJagRqAHIAggEAehQaDGVtcHR5X3N0cmluZyAAKgIaAHofCAkaA2dlbyAAKhQrMQAAAAAAwEFAOQAAAAAAaGHALHoLGgNpbnQgACoCCCp6FxoHaW50X21heCAAKgoI//////////9/ehgaB2ludF9taW4gACoLCICAgICAgICAgAF6GBoHaW50X25lZyAAKgsI+f//////////AXrhAQgTGgNtYXAgACrVARrSAWoEagByAHIaCBgaEm5lc3RlZF9lbXB0eV9hcnJheSAAKgB6CRoBYSAAKgIIAXojCBMaBWlubmVyIAAqFhoUagRqAHIAegkaAXogACoCEAGCAQB6IwgTGhBuZXN0ZWRfZW1wdHlfbWFwIAAqCxoJagRqAHIAggEAelYIExoNbmVzdGVkX3ZlY3RvciAAKkEaP2oEagByAHoZGgpfX3ZlY3Rvcl9fIAEqCSEAAAAAAADwP3oZGgpfX3ZlY3Rvcl9fIAEqCSEAAAAAAAAAQIIBAIIBAHoKGgRudWxsIAAqAHorGgNyZWYgACoiY2oPZGV2fmRlbW8tZXhwb3J0c3oDYWxsigEFdHlwZXN0ZHovGgdyZWZfZGIyIAAqImNqD2Rldn5kZW1vLWV4cG9ydHN6AWOKAQF4dLoBA2RiMmR6NRoIcmVmX2RlZXAgAConY2oPZGV2fmRlbW8tZXhwb3J0c3oBY4oBAWF0c3oDc3ViigEBeHRkeiwaC3JlZl9udW1lcmljIAAqG2NqD2Rldn5kZW1vLWV4cG9ydHN6AWOAAQd0ZHoxGhFyZWZfb3RoZXJfcHJvamVjdCAAKhpjag1kZXZ+ZWxzZXdoZXJlc3oBY4oBAXh0ZHoZGgZzdHJpbmcgACoNGgtow6lsbG8g8J+YgHoaCAcaCXRpbWVzdGFtcCAAKgkIgOu+gty9gwN6IAgHGg10aW1lc3RhbXBfbWluIAAqCwiAgNGGkIDQkf8BeiAIBxoPdGltZXN0YW1wX25hbm9zIAAqCQjAhIyB8bqDA3ogCAcaDXRpbWVzdGFtcF9vbGQgACoLCKCC6+2inrj//wF6TwgTGgZ2ZWN0b3IgACpBGj9qBGoAcgB6GRoKX192ZWN0b3JfXyABKgkhAAAAAAAA8D96GRoKX192ZWN0b3JfXyABKgkhAAAAAAAABECCAQB6ExoKd2l0aCBzcGFjZSAAKgMaAXiCAQ4LEgNhbGwiBXR5cGVzDMx7xeQ0AAFqIWoPZGV2fmRlbW8tZXhwb3J0cg4LEgVlbXB0eSIDZG9jDIIBDgsSBWVtcHR5IgNkb2MMpuhfNEcAAWolag9kZXZ+ZGVtby1leHBvcnRyEgsSAWMiC3dlaXJkIGlkIMO8DHoJGgFuIAAqAggFggESCxIBYyILd2VpcmQgaWQgw7wMwwf2DnMBAWogag9kZXZ+ZGVtby1leHBvcnRyDQsSBHJlZnMiA2RvYwx6JxoFYXJyYXkgASocY2oPZGV2fmRlbW8tZXhwb3J0c3oBY4oBAWF0ZHolGgVhcnJheSABKhpjag1kZXZ+ZWxzZXdoZXJlc3oBY4oBAWJ0ZHpDCBMaDWFycmF5X29mX21hcHMgASouGixqBGoAcgB6IRoBciAAKhpjag1kZXZ+ZWxzZXdoZXJlc3oBY4oBAXF0ZIIBAHqBAQgTGgNtYXAgACp2GnRqBGoAcgB6QggTGgZkZWVwZXIgACo0GjJqBGoAcgB6JxoBciAAKiBjag1kZXZ+ZWxzZXdoZXJlc3oBY4oBAXh0ugEDZGIyZIIBAHolGgVpbm5lciAAKhpjag1kZXZ+ZWxzZXdoZXJlc3oBY4oBAWF0ZIIBAHomGgZzaW5nbGUgACoaY2oNZGV2fmVsc2V3aGVyZXN6AWOKAQF6dGSCAQ0LEgRyZWZzIgNkb2MM1/aGgTEAAWoaag9kZXZ+ZGVtby1leHBvcnRyBwsSAWMYBwx6CRoBbiAAKgIIAoIBBwsSAWMYBwxGUO+PQwABaiNqD2Rldn5kZW1vLWV4cG9ydHIQCxIBYxj9//////////8BDHoJGgFuIAAqAggBggEQCxIBYxj9//////////8BDO+rALX4CwFqIGoPZGV2fmRlbW8tZXhwb3J0cg0LEgRsb25nIgNkb2MMesMXGgFzIAAquxcauBd4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHiCAQ0LEgRsb25nIgNkb2MM3kJgkD0AAWolag9kZXZ+ZGVtby1leHBvcnRyEgsSAWMiAWEMCxIDc3ViIgF4DHoJGgFuIAAqAggEggEICxIBYyIBYQw=",
+   "firestore_export.overall_export_metadata": "uG1ETgEAATOBUT7CUAABCk4KBAgCGAMSQWFsbF9uYW1lc3BhY2VzL2FsbF9raW5kcy9hbGxfbmFtZXNwYWNlc19hbGxfa2luZHMuZXhwb3J0X21ldGFkYXRhGAoguik="
+  },
+  "db2": {
+   "all_namespaces/all_kinds/all_namespaces_all_kinds.export_metadata": "CiQKEGZpcmVzdG9yZV9leHBvcnQQvuCLprivlwMYzuKLprivlwMSDAoAEghvdXRwdXQtMA==",
+   "all_namespaces/all_kinds/output-0": "VYNQ6zcAAWogag9kZXZ+ZGVtby1leHBvcnRyBwsSAWMYBQy6AQNkYjJ6CRoBbiAAKgIIB4IBBwsSAWMYBQwQFhKIOQABaiFqD2Rldn5kZW1vLWV4cG9ydHIICxIBYyIBeAy6AQNkYjJ6CRoBbiAAKgIICIIBCAsSAWMiAXgM",
+   "firestore_export.overall_export_metadata": "uG1ETgEAATMqxDj3TwABCk0KBAgCGAMSQWFsbF9uYW1lc3BhY2VzL2FsbF9raW5kcy9hbGxfbmFtZXNwYWNlc19hbGxfa2luZHMuZXhwb3J0X21ldGFkYXRhGAIgfg=="
+  },
+  "empty": {
+   "firestore_export.overall_export_metadata": "uG1ETgEAATMFKyhDAAAB"
+  }
+ },
+ "big": {
+  "path": "big/doc",
+  "length": 70000,
+  "output_len": 70083,
+  "output_crc32c": 2590991021
+ },
+ "imported": {
+  "demo-imported/(default)": [
+   {
+    "name": "projects/demo-imported/databases/(default)/documents/all/types",
+    "fields": {
+     "empty_array": {
+      "arrayValue": {}
+     },
+     "array": {
+      "arrayValue": {
+       "values": [
+        {
+         "integerValue": "1"
+        },
+        {
+         "stringValue": "two"
+        },
+        {
+         "nullValue": null
+        },
+        {
+         "mapValue": {
+          "fields": {
+           "k": {
+            "stringValue": "v"
+           }
+          }
+         }
+        },
+        {
+         "mapValue": {}
+        },
+        {
+         "mapValue": {
+          "fields": {
+           "__type__": {
+            "stringValue": "__vector__"
+           },
+           "value": {
+            "arrayValue": {
+             "values": [
+              {
+               "doubleValue": 3.0
+              }
+             ]
+            }
+           }
+          }
+         }
+        }
+       ]
+      }
+     },
+     "bool_false": {
+      "booleanValue": false
+     },
+     "bool_true": {
+      "booleanValue": true
+     },
+     "bytes": {
+      "bytesValue": "AAEC/w=="
+     },
+     "dotted.name": {
+      "integerValue": "3"
+     },
+     "double": {
+      "doubleValue": 1.5
+     },
+     "double_inf": {
+      "doubleValue": "Infinity"
+     },
+     "double_nan": {
+      "doubleValue": "NaN"
+     },
+     "double_neg_inf": {
+      "doubleValue": "-Infinity"
+     },
+     "double_neg_zero": {
+      "doubleValue": 0.0
+     },
+     "empty_map": {
+      "mapValue": {}
+     },
+     "empty_string": {
+      "stringValue": ""
+     },
+     "geo": {
+      "geoPointValue": {
+       "latitude": 35.5,
+       "longitude": -139.25
+      }
+     },
+     "int": {
+      "integerValue": "42"
+     },
+     "int_max": {
+      "integerValue": "9223372036854775807"
+     },
+     "int_min": {
+      "integerValue": "-9223372036854775808"
+     },
+     "int_neg": {
+      "integerValue": "-7"
+     },
+     "map": {
+      "mapValue": {
+       "fields": {
+        "nested_empty_array": {
+         "arrayValue": {}
+        },
+        "a": {
+         "integerValue": "1"
+        },
+        "inner": {
+         "mapValue": {
+          "fields": {
+           "z": {
+            "booleanValue": true
+           }
+          }
+         }
+        },
+        "nested_empty_map": {
+         "mapValue": {}
+        },
+        "nested_vector": {
+         "mapValue": {
+          "fields": {
+           "__type__": {
+            "stringValue": "__vector__"
+           },
+           "value": {
+            "arrayValue": {
+             "values": [
+              {
+               "doubleValue": 1.0
+              },
+              {
+               "doubleValue": 2.0
+              }
+             ]
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "null": {
+      "nullValue": null
+     },
+     "ref": {
+      "referenceValue": "projects/demo-export/databases/(default)/documents/all/types"
+     },
+     "ref_db2": {
+      "referenceValue": "projects/demo-export/databases/db2/documents/c/x"
+     },
+     "ref_deep": {
+      "referenceValue": "projects/demo-export/databases/(default)/documents/c/a/sub/x"
+     },
+     "ref_numeric": {
+      "referenceValue": "projects/demo-export/databases/(default)/documents/c/__id7__"
+     },
+     "ref_other_project": {
+      "referenceValue": "projects/elsewhere/databases/(default)/documents/c/x"
+     },
+     "string": {
+      "stringValue": "héllo 😀"
+     },
+     "timestamp": {
+      "timestampValue": "2024-01-02T03:04:05.123456Z"
+     },
+     "timestamp_min": {
+      "timestampValue": "0001-01-01T00:00:00Z"
+     },
+     "timestamp_nanos": {
+      "timestampValue": "2024-01-01T00:00:00.123456Z"
+     },
+     "timestamp_old": {
+      "timestampValue": "1960-01-01T00:00:00.500Z"
+     },
+     "vector": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1.0
+           },
+           {
+            "doubleValue": 2.5
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     "with space": {
+      "stringValue": "x"
+     }
+    },
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-imported/databases/(default)/documents/c/__id-3__",
+    "fields": {
+     "n": {
+      "integerValue": "1"
+     }
+    },
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-imported/databases/(default)/documents/c/__id7__",
+    "fields": {
+     "n": {
+      "integerValue": "2"
+     }
+    },
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-imported/databases/(default)/documents/c/a",
+    "fields": {
+     "n": {
+      "integerValue": "3"
+     }
+    },
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-imported/databases/(default)/documents/c/a/sub/x",
+    "fields": {
+     "n": {
+      "integerValue": "4"
+     }
+    },
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-imported/databases/(default)/documents/c/weird id ü",
+    "fields": {
+     "n": {
+      "integerValue": "5"
+     }
+    },
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-imported/databases/(default)/documents/empty/doc",
+    "fields": {},
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-imported/databases/(default)/documents/long/doc",
+    "fields": {
+     "s": {
+      "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+     }
+    },
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-imported/databases/(default)/documents/missing/m/sub/y",
+    "fields": {
+     "n": {
+      "integerValue": "6"
+     }
+    },
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-imported/databases/(default)/documents/refs/doc",
+    "fields": {
+     "array": {
+      "arrayValue": {
+       "values": [
+        {
+         "referenceValue": "projects/demo-export/databases/(default)/documents/c/a"
+        },
+        {
+         "referenceValue": "projects/elsewhere/databases/(default)/documents/c/b"
+        }
+       ]
+      }
+     },
+     "array_of_maps": {
+      "arrayValue": {
+       "values": [
+        {
+         "mapValue": {
+          "fields": {
+           "r": {
+            "referenceValue": "projects/elsewhere/databases/(default)/documents/c/q"
+           }
+          }
+         }
+        }
+       ]
+      }
+     },
+     "map": {
+      "mapValue": {
+       "fields": {
+        "deeper": {
+         "mapValue": {
+          "fields": {
+           "r": {
+            "referenceValue": "projects/elsewhere/databases/db2/documents/c/x"
+           }
+          }
+         }
+        },
+        "inner": {
+         "referenceValue": "projects/elsewhere/databases/(default)/documents/c/a"
+        }
+       }
+      }
+     },
+     "single": {
+      "referenceValue": "projects/elsewhere/databases/(default)/documents/c/z"
+     }
+    },
+    "createTimeIsUpdateTime": true
+   }
+  ],
+  "demo-imported/db2": [
+   {
+    "name": "projects/demo-imported/databases/db2/documents/c/__id5__",
+    "fields": {
+     "n": {
+      "integerValue": "7"
+     }
+    },
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-imported/databases/db2/documents/c/x",
+    "fields": {
+     "n": {
+      "integerValue": "8"
+     }
+    },
+    "createTimeIsUpdateTime": true
+   }
+  ],
+  "demo-mismatch/(default)": [],
+  "demo-mismatch/db2": []
+ },
+ "import_over": {
+  "fields_replaced": true,
+  "create_time_kept": true,
+  "update_time_changed": true,
+  "reimport_keeps_update_time": true,
+  "other_document_untouched": true
+ },
+ "production": {
+  "files": {
+   "all_namespaces/kind_all/all_namespaces_kind_all.export_metadata": "ChAKCnByb2R1Y3Rpb24QARgCEgwKABIIb3V0cHV0LTASDAoAEghvdXRwdXQtMQ==",
+   "all_namespaces/kind_all/output-0": "Xd8ADVUFAWofag1zfmRlbW8tZXhwb3J0cg4LEgNhbGwiBXR5cGVzDHITCBgaC2VtcHR5X2FycmF5IAAqAHINGgVhcnJheSABKgIIAXIQGgVhcnJheSABKgUaA3R3b3ILGgVhcnJheSABKgB6JAgTGgVhcnJheSABKhcaFWoEagByAHoKGgFrIAAqAxoBdoIBAHoYCBMaBWFycmF5IAEqCxoJagRqAHIAggEAejMIExoFYXJyYXkgASomGiRqBGoAcgB6GRoKX192ZWN0b3JfXyABKgkhAAAAAAAACECCAQByEhoKYm9vbF9mYWxzZSAAKgIQAHIRGglib29sX3RydWUgACoCEAF6EwgOGgVieXRlcyAAKgYaBAABAv9yExoLZG90dGVkLm5hbWUgACoCCANyFRoGZG91YmxlIAAqCSEAAAAAAAD4P3IZGgpkb3VibGVfaW5mIAAqCSEAAAAAAADwf3IZGgpkb3VibGVfbmFuIAAqCSEAAAAAAAD4f3IdGg5kb3VibGVfbmVnX2luZiAAKgkhAAAAAAAA8P9yHhoPZG91YmxlX25lZ196ZXJvIAAqCSEAAAAAAAAAAHocCBMaCWVtcHR5X21hcCAAKgsaCWoEagByAIIBAHIUGgxlbXB0eV9zdHJpbmcgACoCGgByHwgJGgNnZW8gACoUKzEAAAAAAMBBQDkAAAAAAGhhwCxyCxoDaW50IAAqAggqchcaB2ludF9tYXggACoKCP//////////f3IYGgdpbnRfbWluIAAqCwiAgICAgICAgIABchgaB2ludF9uZWcgACoLCPn//////////wF64QEIExoDbWFwIAAq1QEa0gFqBGoAcgByGggYGhJuZXN0ZWRfZW1wdHlfYXJyYXkgACoAegkaAWEgACoCCAF6IwgTGgVpbm5lciAAKhYaFGoEagByAHoJGgF6IAAqAhABggEAeiMIExoQbmVzdGVkX2VtcHR5X21hcCAAKgsaCWoEagByAIIBAHpWCBMaDW5lc3RlZF92ZWN0b3IgACpBGj9qBGoAcgB6GRoKX192ZWN0b3JfXyABKgkhAAAAAAAA8D96GRoKX192ZWN0b3JfXyABKgkhAAAAAAAAAECCAQCCAQByChoEbnVsbCAAKgByKRoDcmVmIAAqIGNqDXN+ZGVtby1leHBvcnRzegNhbGyKAQV0eXBlc3Rkci0aB3JlZl9kYjIgACogY2oNc35kZW1vLWV4cG9ydHN6AWOKAQF4dLoBA2RiMmRyMxoIcmVmX2RlZXAgAColY2oNc35kZW1vLWV4cG9ydHN6AWOKAQFhdHN6A3N1YooBAXh0ZHIqGgtyZWZfbnVtZXJpYyAAKhljag1zfmRlbW8tZXhwb3J0c3oBY4ABB3Rkci8aEXJlZl9vdGhlcl9wcm9qZWN0IAAqGGNqC3N+ZWxzZXdoZXJlc3oBY4oBAXh0ZHIZGgZzdHJpbmcgACoNGgtow6lsbG8g8J+YgHIaCAcaCXRpbWVzdGFtcCAAKgkIgOu+gty9gwNyIAgHGg10aW1lc3RhbXBfbWluIAAqCwiAgNGGkIDQkf8BciAIBxoPdGltZXN0YW1wX25hbm9zIAAqCQjAhIyB8bqDA3IgCAcaDXRpbWVzdGFtcF9vbGQgACoLCKCC6+2inrj//wF6TwgTGgZ2ZWN0b3IgACpBGj9qBGoAcgB6GRoKX192ZWN0b3JfXyABKgkhAAAAAAAA8D96GRoKX192ZWN0b3JfXyABKgkhAAAAAAAABECCAQByExoKd2l0aCBzcGFjZSAAKgMaAXiCAQ4LEgNhbGwiBXR5cGVzDA==",
+   "all_namespaces/kind_all/output-1": "",
+   "all_namespaces/kind_c/all_namespaces_kind_c.export_metadata": "ChAKCnByb2R1Y3Rpb24QARgCEgwKABIIb3V0cHV0LTASDAoAEghvdXRwdXQtMQ==",
+   "all_namespaces/kind_c/output-0": "4uJc9zEAAWoZag1zfmRlbW8tZXhwb3J0cggLEgFjIgFhDHIJGgFuIAAqAggDggEICxIBYyIBYQy6xbGhRQABaiNqDXN+ZGVtby1leHBvcnRyEgsSAWMiC3dlaXJkIGlkIMO8DHIJGgFuIAAqAggFggESCxIBYyILd2VpcmQgaWQgw7wMh5WLQi8AAWoYag1zfmRlbW8tZXhwb3J0cgcLEgFjGAcMcgkaAW4gACoCCAKCAQcLEgFjGAcM",
+   "all_namespaces/kind_c/output-1": "W5ObFUEAAWohag1zfmRlbW8tZXhwb3J0chALEgFjGP3//////////wEMcgkaAW4gACoCCAGCARALEgFjGP3//////////wEM/fO4VzsAAWojag1zfmRlbW8tZXhwb3J0chILEgFjIgFhDAsSA3N1YiIBeAxyCRoBbiAAKgIIBIIBCAsSAWMiAWEM",
+   "all_namespaces/kind_empty/all_namespaces_kind_empty.export_metadata": "ChAKCnByb2R1Y3Rpb24QARgCEgwKABIIb3V0cHV0LTASDAoAEghvdXRwdXQtMQ==",
+   "all_namespaces/kind_empty/output-0": "XzrrjTIAAWofag1zfmRlbW8tZXhwb3J0cg4LEgVlbXB0eSIDZG9jDIIBDgsSBWVtcHR5IgNkb2MM",
+   "all_namespaces/kind_empty/output-1": "",
+   "all_namespaces/kind_long/all_namespaces_kind_long.export_metadata": "ChAKCnByb2R1Y3Rpb24QARgCEgwKABIIb3V0cHV0LTASDAoAEghvdXRwdXQtMQ==",
+   "all_namespaces/kind_long/output-0": "ePFqSPYLAWoeag1zfmRlbW8tZXhwb3J0cg0LEgRsb25nIgNkb2MMesMXGgFzIAAquxcauBd4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHiCAQ0LEgRsb25nIgNkb2MM",
+   "all_namespaces/kind_long/output-1": "",
+   "all_namespaces/kind_missing/all_namespaces_kind_missing.export_metadata": "ChAKCnByb2R1Y3Rpb24QARgCEgwKABIIb3V0cHV0LTASDAoAEghvdXRwdXQtMQ==",
+   "all_namespaces/kind_missing/output-0": "SuvyLEcAAWopag1zfmRlbW8tZXhwb3J0chgLEgdtaXNzaW5nIgFtDAsSA3N1YiIBeQxyCRoBbiAAKgIIBoIBDgsSB21pc3NpbmciAW0M",
+   "all_namespaces/kind_missing/output-1": "",
+   "all_namespaces/kind_refs/all_namespaces_kind_refs.export_metadata": "ChAKCnByb2R1Y3Rpb24QARgCEgwKABIIb3V0cHV0LTASDAoAEghvdXRwdXQtMQ==",
+   "all_namespaces/kind_refs/output-0": "DL0V92QBAWoeag1zfmRlbW8tZXhwb3J0cg0LEgRyZWZzIgNkb2MMciUaBWFycmF5IAEqGmNqDXN+ZGVtby1leHBvcnRzegFjigEBYXRkciMaBWFycmF5IAEqGGNqC3N+ZWxzZXdoZXJlc3oBY4oBAWJ0ZHpBCBMaDWFycmF5X29mX21hcHMgASosGipqBGoAcgB6HxoBciAAKhhjagtzfmVsc2V3aGVyZXN6AWOKAQFxdGSCAQB6fQgTGgNtYXAgACpyGnBqBGoAcgB6QAgTGgZkZWVwZXIgACoyGjBqBGoAcgB6JRoBciAAKh5jagtzfmVsc2V3aGVyZXN6AWOKAQF4dLoBA2RiMmSCAQB6IxoFaW5uZXIgACoYY2oLc35lbHNld2hlcmVzegFjigEBYXRkggEAciQaBnNpbmdsZSAAKhhjagtzfmVsc2V3aGVyZXN6AWOKAQF6dGSCAQ0LEgRyZWZzIgNkb2MM",
+   "all_namespaces/kind_refs/output-1": "",
+   "production.overall_export_metadata": "uG1ETgEAATN07enl3gEBCkwKBAgCGAMSP2FsbF9uYW1lc3BhY2VzL2tpbmRfYWxsL2FsbF9uYW1lc3BhY2VzX2tpbmRfYWxsLmV4cG9ydF9tZXRhZGF0YRgBINwKCkgKBAgCGAMSO2FsbF9uYW1lc3BhY2VzL2tpbmRfYy9hbGxfbmFtZXNwYWNlc19raW5kX2MuZXhwb3J0X21ldGFkYXRhGAUgxAIKTwoECAIYAxJDYWxsX25hbWVzcGFjZXMva2luZF9lbXB0eS9hbGxfbmFtZXNwYWNlc19raW5kX2VtcHR5LmV4cG9ydF9tZXRhZGF0YRgBIDkKTgoECAIYAxJBYWxsX25hbWVzcGFjZXMva2luZF9sb25nL2FsbF9uYW1lc3BhY2VzX2tpbmRfbG9uZy5leHBvcnRfbWV0YWRhdGEYASD9FwpTCgQIAhgDEkdhbGxfbmFtZXNwYWNlcy9raW5kX21pc3NpbmcvYWxsX25hbWVzcGFjZXNfa2luZF9taXNzaW5nLmV4cG9ydF9tZXRhZGF0YRgBIE4KTgoECAIYAxJBYWxsX25hbWVzcGFjZXMva2luZF9yZWZzL2FsbF9uYW1lc3BhY2VzX2tpbmRfcmVmcy5leHBvcnRfbWV0YWRhdGEYASDrAg=="
+  },
+  "imported": [
+   {
+    "name": "projects/demo-production/databases/(default)/documents/all/types",
+    "fields": {
+     "empty_array": {
+      "arrayValue": {}
+     },
+     "array": {
+      "arrayValue": {
+       "values": [
+        {
+         "integerValue": "1"
+        },
+        {
+         "stringValue": "two"
+        },
+        {
+         "nullValue": null
+        },
+        {
+         "mapValue": {
+          "fields": {
+           "k": {
+            "stringValue": "v"
+           }
+          }
+         }
+        },
+        {
+         "mapValue": {}
+        },
+        {
+         "mapValue": {
+          "fields": {
+           "__type__": {
+            "stringValue": "__vector__"
+           },
+           "value": {
+            "arrayValue": {
+             "values": [
+              {
+               "doubleValue": 3.0
+              }
+             ]
+            }
+           }
+          }
+         }
+        }
+       ]
+      }
+     },
+     "bool_false": {
+      "booleanValue": false
+     },
+     "bool_true": {
+      "booleanValue": true
+     },
+     "dotted.name": {
+      "integerValue": "3"
+     },
+     "double": {
+      "doubleValue": 1.5
+     },
+     "double_inf": {
+      "doubleValue": "Infinity"
+     },
+     "double_nan": {
+      "doubleValue": "NaN"
+     },
+     "double_neg_inf": {
+      "doubleValue": "-Infinity"
+     },
+     "double_neg_zero": {
+      "doubleValue": 0.0
+     },
+     "empty_string": {
+      "stringValue": ""
+     },
+     "geo": {
+      "geoPointValue": {
+       "latitude": 35.5,
+       "longitude": -139.25
+      }
+     },
+     "int": {
+      "integerValue": "42"
+     },
+     "int_max": {
+      "integerValue": "9223372036854775807"
+     },
+     "int_min": {
+      "integerValue": "-9223372036854775808"
+     },
+     "int_neg": {
+      "integerValue": "-7"
+     },
+     "null": {
+      "nullValue": null
+     },
+     "ref": {
+      "referenceValue": "projects/demo-production/databases/(default)/documents/all/types"
+     },
+     "ref_db2": {
+      "referenceValue": "projects/demo-production/databases/db2/documents/c/x"
+     },
+     "ref_deep": {
+      "referenceValue": "projects/demo-production/databases/(default)/documents/c/a/sub/x"
+     },
+     "ref_numeric": {
+      "referenceValue": "projects/demo-production/databases/(default)/documents/c/__id7__"
+     },
+     "ref_other_project": {
+      "referenceValue": "projects/demo-production/databases/(default)/documents/c/x"
+     },
+     "string": {
+      "stringValue": "héllo 😀"
+     },
+     "timestamp": {
+      "timestampValue": "2024-01-02T03:04:05.123456Z"
+     },
+     "timestamp_min": {
+      "timestampValue": "0001-01-01T00:00:00Z"
+     },
+     "timestamp_nanos": {
+      "timestampValue": "2024-01-01T00:00:00.123456Z"
+     },
+     "timestamp_old": {
+      "timestampValue": "1960-01-01T00:00:00.500Z"
+     },
+     "with space": {
+      "stringValue": "x"
+     },
+     "bytes": {
+      "bytesValue": "AAEC/w=="
+     },
+     "empty_map": {
+      "mapValue": {}
+     },
+     "map": {
+      "mapValue": {
+       "fields": {
+        "nested_empty_array": {
+         "arrayValue": {}
+        },
+        "a": {
+         "integerValue": "1"
+        },
+        "inner": {
+         "mapValue": {
+          "fields": {
+           "z": {
+            "booleanValue": true
+           }
+          }
+         }
+        },
+        "nested_empty_map": {
+         "mapValue": {}
+        },
+        "nested_vector": {
+         "mapValue": {
+          "fields": {
+           "__type__": {
+            "stringValue": "__vector__"
+           },
+           "value": {
+            "arrayValue": {
+             "values": [
+              {
+               "doubleValue": 1.0
+              },
+              {
+               "doubleValue": 2.0
+              }
+             ]
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "vector": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1.0
+           },
+           {
+            "doubleValue": 2.5
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    },
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-production/databases/(default)/documents/c/__id-3__",
+    "fields": {
+     "n": {
+      "integerValue": "1"
+     }
+    },
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-production/databases/(default)/documents/c/__id7__",
+    "fields": {
+     "n": {
+      "integerValue": "2"
+     }
+    },
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-production/databases/(default)/documents/c/a",
+    "fields": {
+     "n": {
+      "integerValue": "3"
+     }
+    },
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-production/databases/(default)/documents/c/a/sub/x",
+    "fields": {
+     "n": {
+      "integerValue": "4"
+     }
+    },
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-production/databases/(default)/documents/c/weird id ü",
+    "fields": {
+     "n": {
+      "integerValue": "5"
+     }
+    },
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-production/databases/(default)/documents/empty/doc",
+    "fields": {},
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-production/databases/(default)/documents/long/doc",
+    "fields": {
+     "s": {
+      "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+     }
+    },
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-production/databases/(default)/documents/missing/m/sub/y",
+    "fields": {
+     "n": {
+      "integerValue": "6"
+     }
+    },
+    "createTimeIsUpdateTime": true
+   },
+   {
+    "name": "projects/demo-production/databases/(default)/documents/refs/doc",
+    "fields": {
+     "array": {
+      "arrayValue": {
+       "values": [
+        {
+         "referenceValue": "projects/demo-production/databases/(default)/documents/c/a"
+        },
+        {
+         "referenceValue": "projects/demo-production/databases/(default)/documents/c/b"
+        }
+       ]
+      }
+     },
+     "single": {
+      "referenceValue": "projects/demo-production/databases/(default)/documents/c/z"
+     },
+     "array_of_maps": {
+      "arrayValue": {
+       "values": [
+        {
+         "mapValue": {
+          "fields": {
+           "r": {
+            "referenceValue": "projects/elsewhere/databases/(default)/documents/c/q"
+           }
+          }
+         }
+        }
+       ]
+      }
+     },
+     "map": {
+      "mapValue": {
+       "fields": {
+        "deeper": {
+         "mapValue": {
+          "fields": {
+           "r": {
+            "referenceValue": "projects/elsewhere/databases/db2/documents/c/x"
+           }
+          }
+         }
+        },
+        "inner": {
+         "referenceValue": "projects/elsewhere/databases/(default)/documents/c/a"
+        }
+       }
+      }
+     }
+    },
+    "createTimeIsUpdateTime": true
+   }
+  ]
+ },
+ "requests": [
+  {
+   "name": "export",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "export_directory": "{dir}/out",
+    "export_name": "named"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 200,
+   "content_type": "application/json",
+   "response": "{\n}\n",
+   "export_directory_lists": [
+    "file.txt",
+    "named"
+   ]
+  },
+  {
+   "name": "export again over the same name",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "export_directory": "{dir}/out",
+    "export_name": "named"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 200,
+   "content_type": "application/json",
+   "response": "{\n}\n",
+   "export_directory_lists": [
+    "file.txt",
+    "named"
+   ]
+  },
+  {
+   "name": "export with camelCase keys",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "exportDirectory": "{dir}/out",
+    "exportName": "camel"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 200,
+   "content_type": "application/json",
+   "response": "{\n}\n",
+   "export_directory_lists": [
+    "camel",
+    "file.txt",
+    "named"
+   ]
+  },
+  {
+   "name": "export with null values",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "export_directory": "{dir}/out",
+    "export_name": null
+   },
+   "raw": null,
+   "headers": null,
+   "status": 200,
+   "content_type": "application/json",
+   "response": "{\n}\n",
+   "export_directory_lists": [
+    "camel",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named"
+   ]
+  },
+  {
+   "name": "export another project than the path's",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "database": "projects/demo-empty/databases/(default)",
+    "export_directory": "{dir}/out",
+    "export_name": "other"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 200,
+   "content_type": "application/json",
+   "response": "{\n}\n",
+   "export_directory_lists": [
+    "camel",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other"
+   ]
+  },
+  {
+   "name": "export a database path",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export/databases/(default):export",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "export_directory": "{dir}/out",
+    "export_name": "dbpath"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 200,
+   "content_type": "application/json",
+   "response": "{\n}\n",
+   "export_directory_lists": [
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other"
+   ]
+  },
+  {
+   "name": "export with an Authorization header",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "export_directory": "{dir}/out",
+    "export_name": "authorized"
+   },
+   "raw": null,
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "status": 200,
+   "content_type": "application/json",
+   "response": "{\n}\n",
+   "export_directory_lists": [
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other"
+   ]
+  },
+  {
+   "name": "export with a bad Authorization header",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "export_directory": "{dir}/out",
+    "export_name": "badauth"
+   },
+   "raw": null,
+   "headers": {
+    "Authorization": "Bearer x.y"
+   },
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other"
+   ]
+  },
+  {
+   "name": "export into a missing directory",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "export_directory": "{dir}/nosuch",
+    "export_name": "n"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"export_directory must be a directory\",\"status\":\"FAILED_PRECONDITION\"}}",
+   "export_directory_lists": [
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other"
+   ]
+  },
+  {
+   "name": "export into a file",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "export_directory": "{dir}/out/file.txt",
+    "export_name": "n"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"export_directory must be a directory\",\"status\":\"FAILED_PRECONDITION\"}}",
+   "export_directory_lists": [
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other"
+   ]
+  },
+  {
+   "name": "export into a relative directory",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "export_directory": "relative",
+    "export_name": "n"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"export_directory must be a directory\",\"status\":\"FAILED_PRECONDITION\"}}",
+   "export_directory_lists": [
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other"
+   ]
+  },
+  {
+   "name": "export without a directory",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "export_name": "n"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"export_directory must be a directory\",\"status\":\"FAILED_PRECONDITION\"}}",
+   "export_directory_lists": [
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other"
+   ]
+  },
+  {
+   "name": "export without a database",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "export_directory": "{dir}/out",
+    "export_name": "n"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other"
+   ]
+  },
+  {
+   "name": "export a malformed database name",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "database": "garbage",
+    "export_directory": "{dir}/out",
+    "export_name": "n"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"garbage\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other"
+   ]
+  },
+  {
+   "name": "export a database name without a database id",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "database": "projects/demo-export/databases/",
+    "export_directory": "{dir}/out",
+    "export_name": "n"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"projects\\/demo-export\\/databases\\/\\\" has invalid trailing \\\"\\/\\\".\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other"
+   ]
+  },
+  {
+   "name": "export with a name holding a slash",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "export_directory": "{dir}/out",
+    "export_name": "a/b"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 500,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":500,\"message\":\"failed to write export\",\"status\":\"INTERNAL\"}}",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other"
+   ]
+  },
+  {
+   "name": "export with an unknown key",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "export_directory": "{dir}/out",
+    "export_name": "n",
+    "bogus": 1
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other"
+   ]
+  },
+  {
+   "name": "export with a number for the database",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "database": 1,
+    "export_directory": "{dir}/out",
+    "export_name": "n"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"1\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other"
+   ]
+  },
+  {
+   "name": "export a JSON array",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": null,
+   "raw": "[]",
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other"
+   ]
+  },
+  {
+   "name": "export a body that is not JSON",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": null,
+   "raw": "not json",
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other"
+   ]
+  },
+  {
+   "name": "export without a body",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": null,
+   "raw": "",
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other"
+   ]
+  },
+  {
+   "name": "export as text/plain",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "export_directory": "{dir}/out",
+    "export_name": "plain"
+   },
+   "raw": null,
+   "headers": {
+    "Content-Type": "text/plain"
+   },
+   "status": 200,
+   "content_type": "application/json",
+   "response": "{\n}\n",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  },
+  {
+   "name": "GET export",
+   "method": "GET",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": null,
+   "raw": "",
+   "headers": null,
+   "status": 404,
+   "content_type": null,
+   "response": "Not Found\n",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  },
+  {
+   "name": "PUT export",
+   "method": "PUT",
+   "path": "/emulator/v1/projects/demo-export:export",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "export_directory": "{dir}/out",
+    "export_name": "n"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 404,
+   "content_type": null,
+   "response": "Not Found\n",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  },
+  {
+   "name": "export under projects without a project",
+   "method": "POST",
+   "path": "/emulator/v1/projects:export",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "export_directory": "{dir}/out",
+    "export_name": "n"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 404,
+   "content_type": null,
+   "response": "Not Found\n",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  },
+  {
+   "name": "export outside projects",
+   "method": "POST",
+   "path": "/emulator/v1/x:export",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "export_directory": "{dir}/out",
+    "export_name": "n"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 404,
+   "content_type": null,
+   "response": "Not Found\n",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  },
+  {
+   "name": "export with a trailing slash",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:export/",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "export_directory": "{dir}/out",
+    "export_name": "n"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 404,
+   "content_type": null,
+   "response": "Not Found\n",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  },
+  {
+   "name": "export with a longer verb",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:exportx",
+   "body": {
+    "database": "projects/demo-export/databases/(default)",
+    "export_directory": "{dir}/out",
+    "export_name": "n"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 404,
+   "content_type": null,
+   "response": "Not Found\n",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  },
+  {
+   "name": "import",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:import",
+   "body": {
+    "database": "projects/demo-imp/databases/(default)",
+    "export_directory": "{dir}/default/firestore_export/firestore_export.overall_export_metadata"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 200,
+   "content_type": "application/json",
+   "response": "{\n}\n",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ],
+   "imported": 10
+  },
+  {
+   "name": "import with camelCase keys",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:import",
+   "body": {
+    "database": "projects/demo-imp2/databases/(default)",
+    "exportDirectory": "{dir}/default/firestore_export/firestore_export.overall_export_metadata"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 200,
+   "content_type": "application/json",
+   "response": "{\n}\n",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ],
+   "imported": 10
+  },
+  {
+   "name": "import an export directory",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:import",
+   "body": {
+    "database": "projects/demo-imp/databases/(default)",
+    "export_directory": "{dir}/default/firestore_export"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"Failed to parse overall export metadata file\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  },
+  {
+   "name": "import a missing file",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:import",
+   "body": {
+    "database": "projects/demo-imp/databases/(default)",
+    "export_directory": "{dir}/nosuch"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"Failed to parse overall export metadata file\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  },
+  {
+   "name": "import without a file",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:import",
+   "body": {
+    "database": "projects/demo-imp/databases/(default)"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"Failed to parse overall export metadata file\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  },
+  {
+   "name": "import without a database",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:import",
+   "body": {
+    "export_directory": "{dir}/default/firestore_export/firestore_export.overall_export_metadata"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  },
+  {
+   "name": "import with an export name",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:import",
+   "body": {
+    "database": "projects/demo-imp/databases/(default)",
+    "export_directory": "{dir}/default/firestore_export/firestore_export.overall_export_metadata",
+    "export_name": "n"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  },
+  {
+   "name": "import a file of another version",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:import",
+   "body": {
+    "database": "projects/demo-bad/databases/(default)",
+    "export_directory": "{dir}/bad/version.overall_export_metadata"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"Overall export metadata file version not supported\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  },
+  {
+   "name": "import a file that is not a log",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:import",
+   "body": {
+    "database": "projects/demo-bad/databases/(default)",
+    "export_directory": "{dir}/bad/garbage.overall_export_metadata"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"Overall export metadata file version not supported\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  },
+  {
+   "name": "import without its export_metadata",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:import",
+   "body": {
+    "database": "projects/demo-bad/databases/(default)",
+    "export_directory": "{dir}/bad/nometa/firestore_export.overall_export_metadata"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"{dir}\\/bad\\/nometa\\/all_namespaces\\/all_kinds\\/all_namespaces_all_kinds.export_metadata (No such file or directory)\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  },
+  {
+   "name": "import without its output",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:import",
+   "body": {
+    "database": "projects/demo-bad/databases/(default)",
+    "export_directory": "{dir}/bad/nooutput/firestore_export.overall_export_metadata"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"Failed parse entity file:{dir}\\/bad\\/nooutput\\/all_namespaces\\/all_kinds\\/output-0\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  },
+  {
+   "name": "import an output with a bad checksum",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:import",
+   "body": {
+    "database": "projects/demo-bad/databases/(default)",
+    "export_directory": "{dir}/bad/crc/firestore_export.overall_export_metadata"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"Checksum doesn't validate.\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  },
+  {
+   "name": "import a truncated output",
+   "method": "POST",
+   "path": "/emulator/v1/projects/demo-export:import",
+   "body": {
+    "database": "projects/demo-bad/databases/(default)",
+    "export_directory": "{dir}/bad/trunc/firestore_export.overall_export_metadata"
+   },
+   "raw": null,
+   "headers": null,
+   "status": 400,
+   "content_type": "application/json",
+   "response": "{\"error\":{\"code\":400,\"message\":\"Invalid record\",\"status\":\"INVALID_ARGUMENT\"}}",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  },
+  {
+   "name": "GET import",
+   "method": "GET",
+   "path": "/emulator/v1/projects/demo-export:import",
+   "body": null,
+   "raw": "",
+   "headers": null,
+   "status": 404,
+   "content_type": null,
+   "response": "Not Found\n",
+   "export_directory_lists": [
+    "a",
+    "authorized",
+    "camel",
+    "dbpath",
+    "file.txt",
+    "firestore_export_1791634950",
+    "named",
+    "other",
+    "plain"
+   ]
+  }
+ ],
+ "seeding": [
+  {
+   "what": "a project's (default) database is seeded on first access",
+   "method": "GET",
+   "path": "/v1/projects/p1/databases/(default)/documents/c/a",
+   "status": 200,
+   "fields": [
+    "n"
+   ],
+   "createTimeIsUpdateTime": true
+  },
+  {
+   "what": "with every document of the export",
+   "method": "GET",
+   "path": "/v1/projects/p1/databases/(default)/documents/all/types",
+   "status": 200,
+   "fields": [
+    "array",
+    "bool_false",
+    "bool_true",
+    "bytes",
+    "dotted.name",
+    "double",
+    "double_inf",
+    "double_nan",
+    "double_neg_inf",
+    "double_neg_zero",
+    "empty_array",
+    "empty_map",
+    "empty_string",
+    "geo",
+    "int",
+    "int_max",
+    "int_min",
+    "int_neg",
+    "map",
+    "null",
+    "ref",
+    "ref_db2",
+    "ref_deep",
+    "ref_numeric",
+    "ref_other_project",
+    "string",
+    "timestamp",
+    "timestamp_min",
+    "timestamp_nanos",
+    "timestamp_old",
+    "vector",
+    "with space"
+   ],
+   "createTimeIsUpdateTime": true
+  },
+  {
+   "what": "a document only a missing parent held",
+   "method": "GET",
+   "path": "/v1/projects/p1/databases/(default)/documents/missing/m/sub/y",
+   "status": 200,
+   "fields": [
+    "n"
+   ],
+   "createTimeIsUpdateTime": true
+  },
+  {
+   "what": "another database of the project is not seeded from a (default) export",
+   "method": "GET",
+   "path": "/v1/projects/p1/databases/db2/documents/c/a",
+   "status": 404
+  },
+  {
+   "what": "every project is seeded",
+   "method": "GET",
+   "path": "/v1/projects/p2/databases/(default)/documents/c/a",
+   "status": 200,
+   "fields": [
+    "n"
+   ],
+   "createTimeIsUpdateTime": true
+  },
+  {
+   "what": "clear p1",
+   "method": "DELETE",
+   "path": "/emulator/v1/projects/p1/databases/(default)/documents",
+   "status": 200
+  },
+  {
+   "what": "a cleared database is not seeded again",
+   "method": "GET",
+   "path": "/v1/projects/p1/databases/(default)/documents/c/a",
+   "status": 404
+  },
+  {
+   "what": "write to p2",
+   "method": "PATCH",
+   "path": "/v1/projects/p2/databases/(default)/documents/new/doc",
+   "status": 200
+  },
+  {
+   "what": "reset",
+   "method": "POST",
+   "path": "/reset",
+   "status": 200
+  },
+  {
+   "what": "after a reset, a database is seeded again",
+   "method": "GET",
+   "path": "/v1/projects/p2/databases/(default)/documents/c/a",
+   "status": 200,
+   "fields": [
+    "n"
+   ],
+   "createTimeIsUpdateTime": true
+  },
+  {
+   "what": "and what was written is gone",
+   "method": "GET",
+   "path": "/v1/projects/p2/databases/(default)/documents/new/doc",
+   "status": 404
+  },
+  {
+   "what": "a cleared database is seeded again after a reset",
+   "method": "GET",
+   "path": "/v1/projects/p1/databases/(default)/documents/c/a",
+   "status": 200,
+   "fields": [
+    "n"
+   ],
+   "createTimeIsUpdateTime": true
+  }
+ ],
+ "startup": [
+  {
+   "name": "a missing seed file",
+   "args": [
+    "--seed_from_export",
+    "{dir}/nosuch.overall_export_metadata"
+   ],
+   "exit": 1,
+   "message": "Failed to parse overall export metadata file"
+  },
+  {
+   "name": "a seed file of another version",
+   "args": [
+    "--seed_from_export",
+    "{dir}/bad/version.overall_export_metadata"
+   ],
+   "exit": 1,
+   "message": "Overall export metadata file version not supported"
+  },
+  {
+   "name": "a seed export without its output",
+   "args": [
+    "--seed_from_export",
+    "{dir}/bad/nooutput/firestore_export.overall_export_metadata"
+   ],
+   "exit": 1,
+   "message": "Failed parse entity file:{dir}/bad/nooutput/all_namespaces/all_kinds/output-0"
+  },
+  {
+   "name": "a missing --import-data file",
+   "args": [
+    "--import-data",
+    "{dir}/nosuch.overall_export_metadata"
+   ],
+   "exit": 1,
+   "message": "Failed to parse overall export metadata file"
+  },
+  {
+   "name": "--import-data seeds like --seed_from_export",
+   "status": 200
+  },
+  {
+   "name": "--export-on-exit writes nothing",
+   "exit": 130,
+   "files": []
+  }
+ ]
+}

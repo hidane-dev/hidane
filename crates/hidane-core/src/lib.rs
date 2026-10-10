@@ -10,10 +10,12 @@
 //! - [`transform`]: field transforms (server timestamps, increments, array unions, …).
 //! - [`normalize`]: what Firestore does to a value when it is written (timestamps lose their
 //!   sub-microsecond digits).
+//! - [`export`]: the official emulator's export format (LevelDB logs of App Engine entities).
 //!
 //! Every rule here was checked against the official emulator v1.22.0; the observations live in
 //! `tests/fixtures/value_order.json` and are regenerated with `tools/oracle/value_order.py`.
 
+pub mod export;
 pub mod field_path;
 pub mod key;
 pub mod normalize;

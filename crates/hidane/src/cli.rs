@@ -269,6 +269,14 @@ pub fn licenses() -> String {
 }
 
 impl Cli {
+    /// The export to seed from: `--seed_from_export`, which firebase-tools passes, or the
+    /// official emulator's other spelling `--import-data`.
+    pub fn seed(&self) -> Option<&std::path::Path> {
+        self.seed_from_export
+            .as_deref()
+            .or(self.import_data.as_deref())
+    }
+
     /// Cross-flag checks. Returns warnings to print, or the error that must stop startup.
     ///
     /// The first four checks and their messages are the official emulator's. The rest reject
@@ -293,18 +301,17 @@ impl Cli {
         if self.require_indexes {
             return Err("Firestore Native mode does not support index enforcement".into());
         }
-        if self.seed_from_export.is_some() || self.import_data.is_some() {
-            return Err(format!(
-                "Importing data (--seed_from_export / --import-data) is not implemented yet ({ISSUES}/32)"
-            ));
-        }
-        if self.export_on_exit.is_some() {
-            return Err(format!(
-                "Exporting data (--export-on-exit) is not implemented yet ({ISSUES}/31)"
-            ));
-        }
 
         let mut warnings = Vec::new();
+        if self.export_on_exit.is_some() {
+            // Observed on v1.22.0 in Firestore Native mode (`tests/fixtures/export_import.json`).
+            warnings.push(
+                "--export-on-exit exports nothing, as on the official emulator; \
+                 `firebase emulators:start --export-on-exit` exports through \
+                 POST /emulator/v1/projects/{project}:export instead"
+                    .into(),
+            );
+        }
         if self.rules.is_some() {
             warnings.push(format!(
                 "Security Rules are not evaluated yet: every request is allowed ({ISSUES}/9)"
@@ -498,9 +505,26 @@ mod tests {
     #[test]
     fn unimplemented_data_features_refuse_to_start() {
         let err = |args: &[&str]| parse(args).unwrap().validate().unwrap_err();
-        assert!(err(&["--seed_from_export", "/x.overall_export_metadata"]).contains("/32"));
-        assert!(err(&["--export-on-exit", "/tmp/e"]).contains("/31"));
         assert!(err(&["--database-mode", "datastore-mode"]).contains("/81"));
+    }
+
+    #[test]
+    fn export_and_import_flags_start() {
+        let warnings = |args: &[&str]| parse(args).unwrap().validate().unwrap();
+        assert!(warnings(&["--seed_from_export", "/x.overall_export_metadata"]).is_empty());
+        assert!(warnings(&["--import-data", "/x.overall_export_metadata"]).is_empty());
+        assert!(warnings(&["--export-on-exit", "/e", "--export-name", "n"])[0].contains("nothing"));
+    }
+
+    #[test]
+    fn the_seed_is_either_flag() {
+        let seed = |args: &[&str]| parse(args).unwrap().seed().map(PathBuf::from);
+        assert_eq!(seed(&["--import-data", "/a"]), Some(PathBuf::from("/a")));
+        assert_eq!(
+            seed(&["--import-data", "/a", "--seed_from_export", "/b"]),
+            Some(PathBuf::from("/b"))
+        );
+        assert_eq!(seed(&[]), None);
     }
 
     #[test]

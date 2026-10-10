@@ -48,9 +48,9 @@ pub enum TypeRank {
     Expression,
 }
 
-const VECTOR_TYPE_KEY: &str = "__type__";
-const VECTOR_TYPE: &str = "__vector__";
-const VECTOR_VALUES_KEY: &str = "value";
+pub(crate) const VECTOR_TYPE_KEY: &str = "__type__";
+pub(crate) const VECTOR_TYPE: &str = "__vector__";
+pub(crate) const VECTOR_VALUES_KEY: &str = "value";
 
 /// Whether a map is the wire form of a vector embedding.
 pub fn is_vector(map: &MapValue) -> bool {

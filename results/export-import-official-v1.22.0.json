@@ -1,0 +1,103 @@
+[
+ {
+  "path": "users/alice",
+  "exists": true,
+  "data": {
+   "age": 30,
+   "embedding": {
+    "vector": [
+     0.5,
+     1.5
+    ]
+   },
+   "empty": [],
+   "home": {
+    "geo": [
+     35.6,
+     139.7
+    ]
+   },
+   "huge": 9007199254740991,
+   "joined": {
+    "timestamp": [
+     1700000000,
+     123000000
+    ]
+   },
+   "name": "Alice",
+   "nan": "NaN",
+   "nested": {
+    "deep": {
+     "x": true
+    },
+    "emptyArray": [],
+    "emptyMap": {}
+   },
+   "none": null,
+   "old": {
+    "timestamp": [
+     -100,
+     500000000
+    ]
+   },
+   "ratio": -0.25,
+   "raw": {
+    "bytes": [
+     0,
+     1,
+     255
+    ]
+   },
+   "tags": [
+    "a",
+    1,
+    null,
+    {
+     "k": "v"
+    }
+   ]
+  }
+ },
+ {
+  "path": "users/alice/posts/p1",
+  "exists": true,
+  "data": {
+   "author": {
+    "reference": "users/alice"
+   },
+   "others": [
+    {
+     "reference": "users/bob"
+    }
+   ],
+   "title": "hello"
+  }
+ },
+ {
+  "path": "users/bob",
+  "exists": true,
+  "data": {
+   "name": "Bob"
+  }
+ },
+ {
+  "path": "users/__id42__",
+  "exists": true,
+  "data": {
+   "numeric": true
+  }
+ },
+ {
+  "path": "orphan/x/children/y",
+  "exists": true,
+  "data": {
+   "parentMissing": true
+  }
+ },
+ {
+  "collections": [
+   "orphan",
+   "users"
+  ]
+ }
+]

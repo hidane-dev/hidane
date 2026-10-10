@@ -29,6 +29,7 @@ curl -X POST http://127.0.0.1:8086/shutdown
 | `unsupported.py` | What does the official emulator ignore or refuse: `explain_options`, ExecutePipeline on a standard database, PartitionQuery? Needs `grpcurl` on `PATH` | `crates/hidane/tests/fixtures/unsupported.json` | `crates/hidane/tests/unsupported.rs` |
 | `auth.py` | How is the `Authorization` header read: administrators, users and anonymous callers, which tokens fail and how, and where each RPC, stream and REST endpoint reads it among its other checks? Needs `grpcurl` on `PATH` | `crates/hidane/tests/fixtures/auth.json` | `crates/hidane/tests/auth.rs` |
 | `cors.py` | How does every HTTP path answer CORS: `Origin` reflection, credentials, methods, preflights on any path, requested headers, Private Network Access? | `crates/hidane/tests/fixtures/cors.json` | `crates/hidane/tests/cors.rs` |
+| `export_import.py` | What do exports hold, byte for byte (LevelDB logs of App Engine entities), what does an import write where, how do `:export` and `:import` answer bad requests and damaged files, when does `--seed_from_export` seed which database, and how does a managed export's layout import? Takes the jar and `java` as arguments to start emulators of its own | `crates/hidane/tests/fixtures/export_import.json` | `crates/hidane/tests/export_import.rs` |
 | `transactions.py` | What do transactions lock, how long do writes wait, when do transactions end, and how are `verify` writes checked? Scenarios with concurrent steps and timing; needs `grpcurl` on `PATH` and takes about two minutes | `crates/hidane/tests/fixtures/transactions.json` | `crates/hidane/tests/transactions.rs` |
 
 `sdk_documents.mjs` drives the same operations through `@google-cloud/firestore` (the engine of
@@ -68,6 +69,11 @@ with listeners attached; its transcripts are in `results/sdk-clear-*.json`.
 `sdk_auth.mjs` reads and writes as a rules-unit-testing user (unsigned mock token), a signed-out
 user, with rules disabled (`Bearer owner` from the web SDK) and through the Admin SDK; its
 transcripts are in `results/sdk-auth-*.json`.
+
+`sdk_export_import.mjs` writes documents of every kind through the Admin SDK under
+`firebase emulators:exec --export-on-exit` and reads them back under `--import`. Writing with one
+emulator and reading with the other shows that each reads the other's exports; its transcripts
+are in `results/export-import-*.json`.
 
 `sdk_find_nearest.mjs` writes vectors through the Admin SDK and the web SDK and runs the Admin
 SDK's `findNearest` with each distance measure; its transcripts are in
