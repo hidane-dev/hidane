@@ -49,7 +49,39 @@ await step('bulkWriter', async () => {
   return Promise.all(results);
 });
 await step('after bulkWriter', async () => (await users.listDocuments()).map(d => d.id).sort());
-await step('serverTimestamp (transforms, #23)', async () => { await users.doc('ts').set({ at: FieldValue.serverTimestamp() }); return 'ok'; });
+await step('serverTimestamp', async () => {
+  const w = await users.doc('ts').set({ n: 1, at: FieldValue.serverTimestamp(), nested: { at: FieldValue.serverTimestamp() } });
+  const s = await users.doc('ts').get();
+  const at = s.get('at');
+  return {
+    isTimestamp: at?.constructor?.name === 'Timestamp',
+    millisecondPrecision: at.nanoseconds % 1_000_000 === 0,
+    notAfterWrite: at.toMillis() <= w.writeTime.toMillis(),
+    sameInNested: at.isEqual(s.get('nested.at')),
+  };
+});
+await step('increment', async () => {
+  await users.doc('counter').set({ n: 1, f: 1.5 });
+  await users.doc('counter').update({ n: FieldValue.increment(2), f: FieldValue.increment(1), fresh: FieldValue.increment(5) });
+  return (await users.doc('counter').get()).data();
+});
+await step('arrayUnion and arrayRemove', async () => {
+  await users.doc('tags').set({ tags: ['a', 1] });
+  await users.doc('tags').update({ tags: FieldValue.arrayUnion('b', 'a', 1.0) });
+  const afterUnion = (await users.doc('tags').get()).get('tags');
+  await users.doc('tags').update({ tags: FieldValue.arrayRemove('a', 1) });
+  return { afterUnion, afterRemove: (await users.doc('tags').get()).get('tags') };
+});
+await step('FieldValue.delete', async () => {
+  await users.doc('del').set({ keep: 1, drop: 2, m: { x: 1, y: 2 } });
+  await users.doc('del').update({ drop: FieldValue.delete(), 'm.x': FieldValue.delete() });
+  return (await users.doc('del').get()).data();
+});
+await step('merge with transforms', async () => {
+  await users.doc('merge').set({ a: 1, list: ['x'] });
+  await users.doc('merge').set({ b: FieldValue.increment(3), list: FieldValue.arrayUnion('y') }, { merge: true });
+  return (await users.doc('merge').get()).data();
+});
 
 console.log(JSON.stringify(out, null, 1));
 await db.terminate();

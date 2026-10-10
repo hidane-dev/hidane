@@ -7,6 +7,7 @@
 //! - [`path`]: document and collection paths; [`field_path`]: field paths and mask operations.
 //! - [`store`]: the storage boundary and the in-memory engine (versioned documents, snapshot
 //!   reads, commits that report what changed).
+//! - [`transform`]: field transforms (server timestamps, increments, array unions, …).
 //! - [`normalize`]: what Firestore does to a value when it is written (timestamps lose their
 //!   sub-microsecond digits).
 //!
@@ -19,3 +20,4 @@ pub mod normalize;
 pub mod order;
 pub mod path;
 pub mod store;
+pub mod transform;

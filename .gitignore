@@ -130,3 +130,6 @@ $RECYCLE.BIN/
 # Cloudflare Workers local state
 .wrangler/
 .playwright-mcp/
+
+# Python bytecode (tools/oracle)
+__pycache__/

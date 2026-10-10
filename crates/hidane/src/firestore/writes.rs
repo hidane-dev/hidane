@@ -1,11 +1,13 @@
 //! Applying one `Write` inside a commit.
 
 use hidane_core::{
-    field_path::{FieldPath, apply_mask},
+    field_path::{FieldPath, Fields, apply_mask},
     store::{ReadTime, WriteBatch},
+    transform,
 };
 use hidane_proto::google::firestore::v1::{
-    Precondition, Write, WriteResult, precondition::ConditionType, write::Operation,
+    Precondition, Value, Write, WriteResult, document_transform::FieldTransform,
+    precondition::ConditionType, write::Operation,
 };
 use tonic::Status;
 
@@ -28,13 +30,6 @@ pub fn apply(
     database: &str,
     write: &Write,
 ) -> Result<WriteResult, Status> {
-    if !write.update_transforms.is_empty()
-        || matches!(write.operation, Some(Operation::Transform(_)))
-    {
-        return Err(Status::unimplemented(
-            "Field transforms are not implemented yet (https://github.com/hidane-dev/hidane/issues/23)",
-        ));
-    }
     let name = target(write).ok_or_else(|| Status::invalid_argument("Write has no operation."))?;
     let parsed = names::document(name)?;
     if parsed.database != database {
@@ -53,7 +48,7 @@ pub fn apply(
         }
         Some(Operation::Update(document)) => {
             validate::fields(&document.fields)?;
-            let fields = match &write.update_mask {
+            let mut fields = match &write.update_mask {
                 None => document.fields.clone(),
                 Some(mask) => {
                     let mask = mask
@@ -69,23 +64,78 @@ pub fn apply(
                     fields
                 }
             };
-            // Writing what is already stored leaves update_time alone (observed on the
-            // official emulator).
-            if let Some(existing) = &existing
-                && existing.fields() == fields
-            {
-                return Ok(WriteResult {
-                    update_time: Some(existing.update_time),
-                    transform_results: Vec::new(),
-                });
-            }
-            batch.set(&path, fields);
-            Ok(WriteResult {
-                update_time: Some(batch.commit_time().to_timestamp()),
-                transform_results: Vec::new(),
-            })
+            // Transforms run after the update, in order.
+            let transform_results =
+                apply_transforms(&mut fields, &write.update_transforms, batch.commit_time())?;
+            Ok(store(
+                batch,
+                &path,
+                existing.as_deref(),
+                fields,
+                transform_results,
+            ))
         }
-        Some(Operation::Transform(_)) | None => unreachable!("handled above"),
+        Some(Operation::Transform(document_transform)) => {
+            // A standalone transform starts from the stored document, or an empty one.
+            let mut fields = existing
+                .as_ref()
+                .map(|doc| doc.fields())
+                .unwrap_or_default();
+            let transform_results = apply_transforms(
+                &mut fields,
+                &document_transform.field_transforms,
+                batch.commit_time(),
+            )?;
+            Ok(store(
+                batch,
+                &path,
+                existing.as_deref(),
+                fields,
+                transform_results,
+            ))
+        }
+        None => unreachable!("target() returned a name"),
+    }
+}
+
+fn apply_transforms(
+    fields: &mut Fields,
+    transforms: &[FieldTransform],
+    commit_time: ReadTime,
+) -> Result<Vec<Value>, Status> {
+    let commit_time = commit_time.to_timestamp();
+    let results = transforms
+        .iter()
+        .map(|t| transform::apply(fields, t, &commit_time).map_err(Status::invalid_argument))
+        .collect::<Result<Vec<_>, _>>()?;
+    if !transforms.is_empty() {
+        // Operands can introduce nested arrays or reserved names.
+        validate::fields(fields)?;
+    }
+    Ok(results)
+}
+
+/// Stores `fields` unless they equal what is stored: then the document, and its update_time,
+/// stay as they are (observed on the official emulator, also for no-op transforms).
+fn store(
+    batch: &mut dyn WriteBatch,
+    path: &hidane_core::path::ResourcePath,
+    existing: Option<&hidane_core::store::StoredDocument>,
+    fields: Fields,
+    transform_results: Vec<Value>,
+) -> WriteResult {
+    if let Some(existing) = existing
+        && existing.fields() == fields
+    {
+        return WriteResult {
+            update_time: Some(existing.update_time),
+            transform_results,
+        };
+    }
+    batch.set(path, fields);
+    WriteResult {
+        update_time: Some(batch.commit_time().to_timestamp()),
+        transform_results,
     }
 }
 

@@ -4,7 +4,7 @@ Small scripts that ask the **official** Firestore emulator how it behaves, so hi
 reproduce the answer. Each one writes a fixture that a hidane test reads; the fixture is
 committed, the official jar is not (it may not be redistributed, see `docs/parity-exceptions.md`).
 
-Python 3 standard library only. Run them against a freshly started official emulator:
+Python 3 standard library only; `harness.py` holds the shared request and recording helpers. Run them against a freshly started official emulator:
 
 ```sh
 java -jar cloud-firestore-emulator-v1.22.0.jar --host 127.0.0.1 --port 8086 &
@@ -15,6 +15,7 @@ curl -X POST http://127.0.0.1:8086/shutdown
 | Script | Question | Fixture | Test |
 |---|---|---|---|
 | `value_order.py` + `value_order_cases.json` | How are values ordered, which values are equal, and how are document names ordered in a collection group? | `crates/hidane-core/tests/fixtures/value_order.json` | `crates/hidane-core/tests/official_order.rs` |
+| `transforms.py` | How are field transforms applied (server time, increment, maximum / minimum, array union / remove), in which order, with which results? | `crates/hidane/tests/fixtures/transforms.json` | `crates/hidane/tests/transforms.rs` |
 | `document_writes.py` | How do document reads and writes answer, including errors, preconditions, masks, paging and admin checks? | `crates/hidane/tests/fixtures/document_writes.json` | `crates/hidane/tests/documents.rs` |
 
 `sdk_documents.mjs` drives the same operations through `@google-cloud/firestore` (the engine of

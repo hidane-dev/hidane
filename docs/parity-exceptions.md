@@ -21,6 +21,7 @@ Status: Phase 0 draft. Entries will be tagged in the conformance suite (issue #4
 | Precondition failures print the emulator's internal Datastore key: `entity already exists: EntityRef[partitionRef=dev~p, path=/c/d]`, and a protobuf text dump of the key for `no entity to update` | Production Firestore's wording, `Document already exists: <name>` and `No document to update: <name>`; same status codes (`ALREADY_EXISTS`, `NOT_FOUND`) | Internal detail; applications see the production wording in production |
 | `read_time` older than at least two hours is still served (the exact limit is #86) | Up to one hour old, like production Firestore; older answers `FAILED_PRECONDITION` "The requested 'read_time' is too old." with the official message | Bounded memory for old versions (ADR 0002) |
 | The REST `readTime` parameter always fails with "Only timestamps past epoch are supported.", even for the latest commit time (gRPC works) | Will follow the gRPC behaviour when REST lands (#34) | Bug |
+| `serverTimestamp()` stores the time the request was received, truncated to milliseconds, a few milliseconds before the commit time | The commit time truncated to milliseconds | Same precision and the same value for every field of a commit; tests cannot depend on which instant inside the request is used |
 
 ## Official-emulator behaviour that differs from production (parity target to be decided)
 

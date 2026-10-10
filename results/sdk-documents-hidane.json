@@ -142,10 +142,53 @@
   ]
  },
  {
-  "name": "serverTimestamp (transforms, #23)",
-  "error": {
-   "code": 12,
-   "message": "Field transforms are not implemented yet (https://github.com/hidane-dev/hidane/issues/23)"
+  "name": "serverTimestamp",
+  "ok": {
+   "isTimestamp": true,
+   "millisecondPrecision": true,
+   "notAfterWrite": true,
+   "sameInNested": true
+  }
+ },
+ {
+  "name": "increment",
+  "ok": {
+   "f": 2.5,
+   "fresh": 5,
+   "n": 3
+  }
+ },
+ {
+  "name": "arrayUnion and arrayRemove",
+  "ok": {
+   "afterUnion": [
+    "a",
+    1,
+    "b"
+   ],
+   "afterRemove": [
+    "b"
+   ]
+  }
+ },
+ {
+  "name": "FieldValue.delete",
+  "ok": {
+   "keep": 1,
+   "m": {
+    "y": 2
+   }
+  }
+ },
+ {
+  "name": "merge with transforms",
+  "ok": {
+   "a": 1,
+   "b": 3,
+   "list": [
+    "x",
+    "y"
+   ]
   }
  }
 ]
