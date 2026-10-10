@@ -27,6 +27,8 @@ Status: Phase 0 draft. Entries will be tagged in the conformance suite (issue #4
 | The Write stream handshake accepts any database name | `INVALID_ARGUMENT` for a malformed name, as other RPCs answer | Bug |
 | A Write stream write to a document of another database is acknowledged, with a write result and a commit time, and stored nowhere | `INVALID_ARGUMENT` "Document "…" is not in database "…".", as Commit answers | Bug (silent data loss) |
 | Document fields come back in the order they were written, nested maps included | In name order | Open, #108 |
+| JWT segments in `Authorization` are read with a lenient JSON parser (an unquoted key such as `{a:1}` passes) | Strict JSON: such a token is `invalid jwt` | Clients only send JSON |
+| `DELETE /emulator/v1/…/documents/{path}` with an empty path segment names the parent in its error (`Document parent name "…/c/" has invalid trailing "/".`) | `Resource name "…" has an empty resource id at index …`, same status | Wording only |
 | RunAggregationQuery responses carry `done: true`, a field the published protos do not define (visible over REST) | Not sent over gRPC, where clients built from the published protos would drop it; the REST layer (#34) will add it | Not part of the published API |
 | REST `GET` of a document or collection with `?transaction=` never answers (gRPC works) | Follows the gRPC behaviour (#34) | Bug |
 | A REST query parameter that does not parse (`pageSize=abc`, `showMissing=maybe`) leaves the request unanswered | `400` "Payload isn't valid for request.", the answer to a body that does not parse | Bug |

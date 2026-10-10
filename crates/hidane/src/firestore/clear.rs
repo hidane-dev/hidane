@@ -11,7 +11,7 @@ use hidane_core::path::ResourcePath;
 use hidane_proto::google::firestore::v1::{Write, write::Operation};
 use tonic::Status;
 
-use super::{FirestoreService, names, names::Name};
+use super::{FirestoreService, auth, names, names::Name};
 
 impl FirestoreService {
     /// Drops every document of `database` and tells its listeners.
@@ -37,10 +37,16 @@ impl FirestoreService {
     }
 
     /// Deletes the document or collection at `path` in `database` and everything below it,
-    /// in one commit.
-    pub(crate) async fn delete_tree(&self, database: &str, path: &str) -> Result<(), Status> {
+    /// in one commit. The `Authorization` header is read after the path, as by the RPCs.
+    pub(crate) async fn delete_tree(
+        &self,
+        database: &str,
+        path: &str,
+        authorization: Option<&str>,
+    ) -> Result<(), Status> {
         let name = format!("{database}/documents/{path}");
         let root = names::any(&name)?.path;
+        auth::from_header(authorization)?;
         self.transactions
             .commit(database, None, &[], || {
                 let at = self.store.latest_read_time(database);

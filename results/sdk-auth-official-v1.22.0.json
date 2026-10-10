@@ -1,0 +1,64 @@
+[
+ {
+  "step": "user writes c/a",
+  "result": "ok"
+ },
+ {
+  "step": "user reads c/a",
+  "result": {
+   "by": "alice"
+  }
+ },
+ {
+  "step": "user listens to c",
+  "result": [
+   "a"
+  ]
+ },
+ {
+  "step": "signed-out user reads c/a",
+  "result": {
+   "by": "alice"
+  }
+ },
+ {
+  "step": "signed-out user queries c",
+  "result": [
+   "a"
+  ]
+ },
+ {
+  "step": "rules disabled writes c/b",
+  "result": "ok"
+ },
+ {
+  "step": "rules disabled lists c",
+  "result": [
+   "a",
+   "b"
+  ]
+ },
+ {
+  "step": "Admin SDK lists collections",
+  "result": [
+   "c"
+  ]
+ },
+ {
+  "step": "Admin SDK reads c",
+  "result": [
+   [
+    "a",
+    {
+     "by": "alice"
+    }
+   ],
+   [
+    "b",
+    {
+     "by": "owner"
+    }
+   ]
+  ]
+ }
+]

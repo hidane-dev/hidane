@@ -21,6 +21,7 @@ curl -X POST http://127.0.0.1:8086/shutdown
 | `aggregations.py` | What do `count`, `sum` and `avg` return at the edges (integer overflow, NaN, infinities, precision, non-numbers, empty sets), how do they interact with `offset` / `limit`, and which aggregation lists are rejected? | `crates/hidane/tests/fixtures/aggregations.json` | `crates/hidane/tests/aggregations.rs` |
 | `write_stream.mjs` | How does the Write stream answer: handshake, tokens, pipelined batches, empty requests, errors, resumption, locks? Node.js with `@grpc/grpc-js` and `@grpc/proto-loader`, run like the SDK scripts below with the repository's `proto/` directory as its second argument | `crates/hidane/tests/fixtures/write_stream.json` | `crates/hidane/tests/write_stream.rs` |
 | `rest.py` | What does every REST binding answer, byte for byte: JSON layout, ProtoJSON values, streams as arrays, errors, 404s, lenient input? | `crates/hidane/tests/fixtures/rest.json` | `crates/hidane/tests/rest.rs` |
+| `auth.py` | How is the `Authorization` header read: administrators, users and anonymous callers, which tokens fail and how, and where each RPC, stream and REST endpoint reads it among its other checks? Needs `grpcurl` on `PATH` | `crates/hidane/tests/fixtures/auth.json` | `crates/hidane/tests/auth.rs` |
 | `cors.py` | How does every HTTP path answer CORS: `Origin` reflection, credentials, methods, preflights on any path, requested headers, Private Network Access? | `crates/hidane/tests/fixtures/cors.json` | `crates/hidane/tests/cors.rs` |
 | `transactions.py` | What do transactions lock, how long do writes wait, when do transactions end, and how are `verify` writes checked? Scenarios with concurrent steps and timing; needs `grpcurl` on `PATH` and takes about two minutes | `crates/hidane/tests/fixtures/transactions.json` | `crates/hidane/tests/transactions.rs` |
 
@@ -57,6 +58,10 @@ with their tokens) while the Admin SDK writes; its transcripts are in
 `sdk_clear.mjs` clears data the ways test suites and the Emulator UI do (recursive delete,
 rules-unit-testing's `clearFirestore()`, `POST /reset`; needs `npm i @firebase/rules-unit-testing`)
 with listeners attached; its transcripts are in `results/sdk-clear-*.json`.
+
+`sdk_auth.mjs` reads and writes as a rules-unit-testing user (unsigned mock token), a signed-out
+user, with rules disabled (`Bearer owner` from the web SDK) and through the Admin SDK; its
+transcripts are in `results/sdk-auth-*.json`.
 
 `sdk_rest.mjs` drives the REST surface through the web SDK's Lite build (`firebase/firestore/lite`);
 its transcripts are in `results/sdk-rest-*.json`.

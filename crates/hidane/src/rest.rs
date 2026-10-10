@@ -299,7 +299,7 @@ async fn dispatch(service: &FirestoreService, call: Call) -> Option<Response> {
                     ),
                     Err(e) => error(&e),
                 },
-                "runQuery" if root || even => match build(
+                "runQuery" => match build(
                     &call,
                     "RunQueryRequest",
                     call.body.clone(),
@@ -308,7 +308,7 @@ async fn dispatch(service: &FirestoreService, call: Call) -> Option<Response> {
                     Ok(req) => stream(service.run_query(req).await, "RunQueryResponse").await,
                     Err(e) => error(&e),
                 },
-                "runAggregationQuery" if root || even => match build(
+                "runAggregationQuery" => match build(
                     &call,
                     "RunAggregationQueryRequest",
                     call.body.clone(),
@@ -323,7 +323,7 @@ async fn dispatch(service: &FirestoreService, call: Call) -> Option<Response> {
                     }
                     Err(e) => error(&e),
                 },
-                "partitionQuery" if root || even => match build(
+                "partitionQuery" => match build(
                     &call,
                     "PartitionQueryRequest",
                     call.body.clone(),
@@ -335,7 +335,7 @@ async fn dispatch(service: &FirestoreService, call: Call) -> Option<Response> {
                     ),
                     Err(e) => error(&e),
                 },
-                "listCollectionIds" if root || even => match build(
+                "listCollectionIds" => match build(
                     &call,
                     "ListCollectionIdsRequest",
                     call.body.clone(),
@@ -559,8 +559,14 @@ pub fn error(status: &Status) -> Response {
             c => message.push(c),
         }
     }
+    // An empty message is left out, as protobuf-java's JsonFormat leaves out empty strings.
+    let message = if message.is_empty() {
+        String::new()
+    } else {
+        format!("\"message\":\"{message}\",")
+    };
     let body = format!(
-        "{{\"error\":{{\"code\":{},\"message\":\"{message}\",\"status\":\"{name}\"}}}}",
+        "{{\"error\":{{\"code\":{},{message}\"status\":\"{name}\"}}}}",
         http.as_u16()
     );
     (http, [(header::CONTENT_TYPE, "application/json")], body).into_response()

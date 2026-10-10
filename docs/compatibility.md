@@ -47,12 +47,18 @@ WebChannel and the rest over REST.
 | Client | `Authorization` header |
 |---|---|
 | firebase-admin (Node), Go, Python, Java | `Bearer owner` (treated as administrator) |
-| firebase-js-sdk | Never sends `owner`. With `mockUserToken`: an unsigned `alg: none` JWT. Otherwise the Firebase Auth token, or no header |
+| firebase-js-sdk | With `mockUserToken`: an unsigned `alg: none` JWT, or a string token as given (rules-unit-testing's `withSecurityRulesDisabled` passes `owner`). Otherwise the Firebase Auth token, or no header |
 | iOS, Android | Only the signed-in user's token, otherwise no header |
 
-The official emulator treats `Bearer owner` (and `Bearer ya29.…`) as an administrator, accepts
-unsigned JWTs as `request.auth` without verifying them, and evaluates Security Rules with
-`request.auth == null` when there is no header. hidane follows the same contract.
+The official emulator treats `Bearer owner` and Google OAuth access tokens (`Bearer ya29.…`) as
+an administrator, ignoring case. Any other bearer token must be a JWT, which it reads without
+verification (any `alg` and signature, no expiry, audience or subject check) for
+`request.auth`; a token that is not three URL-safe base64 segments with JSON objects in the
+first two fails with `INVALID_ARGUMENT` "invalid jwt", and a header that is not a bearer token
+fails with `UNKNOWN` (HTTP 500). Without a header, Security Rules see `request.auth == null`.
+Each RPC reads the header after parsing the resource it names and before validating the rest
+of the request; Listen and Write read it when the stream opens. hidane follows the same
+contract (`tools/oracle/auth.py`).
 
 ## RPCs each client actually uses
 

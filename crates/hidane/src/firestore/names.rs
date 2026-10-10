@@ -57,7 +57,7 @@ pub fn any(name: &str) -> Result<Name, Status> {
 pub fn query_collection_id(id: &str) -> Result<(), Status> {
     let problem = if id.contains('/') {
         "contains \"/\""
-    } else if id.len() >= 4 && id.starts_with("__") && id.ends_with("__") {
+    } else if reserved_pattern(id) {
         "is reserved"
     } else {
         return Ok(());
@@ -67,14 +67,29 @@ pub fn query_collection_id(id: &str) -> Result<(), Status> {
     )))
 }
 
-/// Validates a single document or collection ID given separately (`CreateDocument`).
-pub fn validate_id(id: &str) -> Result<(), Status> {
-    if id == "." || id == ".." || id.contains('/') || id.is_empty() {
+/// Validates a collection ID given on its own (`ListDocuments`, `CreateDocument`). The empty
+/// ID is the caller's business.
+pub fn collection_id(id: &str) -> Result<(), Status> {
+    if id == "." || id == ".." {
         return Err(Status::invalid_argument(format!(
-            "Resource id \"{id}\" is invalid."
+            "Collection id \"{id}\" is invalid because it is reserved."
         )));
     }
-    reserved(id)
+    query_collection_id(id)
+}
+
+/// Validates a document ID given on its own (`CreateDocument`).
+pub fn document_id(id: &str) -> Result<(), Status> {
+    let problem = if id.contains('/') {
+        "contains \"/\""
+    } else if id == "." || id == ".." {
+        "is reserved"
+    } else {
+        return reserved(id);
+    };
+    Err(Status::invalid_argument(format!(
+        "Resource id \"{id}\" is invalid because it {problem}."
+    )))
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -125,7 +140,17 @@ fn parse(name: &str, shape: Shape) -> Result<Name, Status> {
                 "{what} \"{name}\" contains a resource id \"{segment}\" at index {start}."
             )));
         }
-        reserved(segment)?;
+        // Segments alternate between collection IDs and document IDs, which are reserved
+        // differently.
+        if segments.len() % 2 == 0 {
+            if reserved_pattern(segment) {
+                return Err(Status::invalid_argument(format!(
+                    "Collection id \"{segment}\" is invalid because it is reserved."
+                )));
+            }
+        } else {
+            reserved(segment)?;
+        }
         segments.push(segment.to_owned());
     }
     Ok(Name {
@@ -134,9 +159,14 @@ fn parse(name: &str, shape: Shape) -> Result<Name, Status> {
     })
 }
 
-/// IDs matching `__.*__` are reserved, except well-formed numeric IDs (`__id<i64>__`).
+fn reserved_pattern(id: &str) -> bool {
+    id.len() >= 4 && id.starts_with("__") && id.ends_with("__")
+}
+
+/// Document IDs matching `__.*__` are reserved, except well-formed numeric IDs
+/// (`__id<i64>__`); collection IDs have no such exception.
 fn reserved(id: &str) -> Result<(), Status> {
-    if id.len() >= 4 && id.starts_with("__") && id.ends_with("__") {
+    if reserved_pattern(id) {
         if id.starts_with("__id") {
             if numeric_id(id).is_none() {
                 return Err(Status::invalid_argument(format!(
