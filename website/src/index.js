@@ -1,6 +1,6 @@
 // hidane.dev — tiny Worker in front of the static assets.
 // 1. www.hidane.dev → hidane.dev (301)
-// 2. /install.sh is served as a shell script (placeholder until the first release)
+// 2. /install.sh is served as a shell script (it installs the latest GitHub Release)
 // Everything else is served from ./public by the assets binding.
 export default {
   async fetch(request, env) {
