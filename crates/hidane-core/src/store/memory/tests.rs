@@ -280,6 +280,31 @@ fn collection_groups_cover_every_depth_in_full_path_order() {
         under_c_a,
         ["c/a/items/x", "c/a/items/y", "c/a/sub/b/items/x"]
     );
+    // A parent in a collection of the group's name is not part of its own group.
+    set(&store, "items/top/items/child", 0);
+    let under_items_top = collect(|v| {
+        store.scan_collection_group(DB, &path("items/top"), "items", ReadTime::MAX, v);
+    });
+    assert_eq!(under_items_top, ["items/top/items/child"]);
+}
+
+#[test]
+fn descendants_cover_every_depth_but_not_the_parent() {
+    let store = MemoryStore::new();
+    for p in ["c/a", "c/a/s/x", "c/a/s/x/t/y", "c/ab/s/z", "c/b", "d/a"] {
+        set(&store, p, 0);
+    }
+    let under_c_a = collect(|v| {
+        store.scan_descendants(DB, &path("c/a"), ReadTime::MAX, v);
+    });
+    assert_eq!(under_c_a, ["c/a/s/x", "c/a/s/x/t/y"]);
+    let all = collect(|v| {
+        store.scan_descendants(DB, &ResourcePath::root(), ReadTime::MAX, v);
+    });
+    assert_eq!(
+        all,
+        ["c/a", "c/a/s/x", "c/a/s/x/t/y", "c/ab/s/z", "c/b", "d/a"]
+    );
 }
 
 #[test]

@@ -4,7 +4,7 @@
 //! segment matches `[a-zA-Z_][a-zA-Z_0-9]*`; any other segment is wrapped in backticks, where
 //! `` \` `` and `\\` are escapes.
 
-use std::collections::BTreeMap;
+use std::{collections::BTreeMap, fmt};
 
 use hidane_proto::google::firestore::v1::{MapValue, Value, value::ValueType};
 
@@ -79,6 +79,36 @@ impl FieldPath {
 
     pub fn segments(&self) -> &[String] {
         &self.0
+    }
+}
+
+/// The canonical form: simple segments as they are, others in backticks with `` ` `` and `\`
+/// escaped, joined by `.`.
+impl fmt::Display for FieldPath {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        for (i, segment) in self.0.iter().enumerate() {
+            if i > 0 {
+                f.write_str(".")?;
+            }
+            let mut chars = segment.chars();
+            let simple = chars
+                .next()
+                .is_some_and(|c| c.is_ascii_alphabetic() || c == '_')
+                && chars.all(|c| c.is_ascii_alphanumeric() || c == '_');
+            if simple {
+                f.write_str(segment)?;
+            } else {
+                f.write_str("`")?;
+                for c in segment.chars() {
+                    if c == '`' || c == '\\' {
+                        f.write_str("\\")?;
+                    }
+                    write!(f, "{c}")?;
+                }
+                f.write_str("`")?;
+            }
+        }
+        Ok(())
     }
 }
 
@@ -188,6 +218,16 @@ mod tests {
 
     fn fp(s: &str) -> FieldPath {
         FieldPath::parse(s).unwrap()
+    }
+
+    #[test]
+    fn display_is_the_canonical_form() {
+        for canonical in [
+            "a", "a.b", "_x9", "`a b`.c", "`1a`", "`x\\`y`", "`a\\\\b`", "`é`",
+        ] {
+            assert_eq!(fp(canonical).to_string(), canonical);
+        }
+        assert_eq!(fp("`a`.`b`").to_string(), "a.b");
     }
 
     #[test]

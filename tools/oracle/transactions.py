@@ -13,6 +13,7 @@ Step ops (documents are relative to the project's database, e.g. "c/d"):
     get         {txn?, document}                  GetDocument (with txn over gRPC through grpcurl:
                                                   REST GET ?transaction= hangs)
     list        {txn?, collection, pageSize?}     ListDocuments (same)
+    query       {txn?, new?, collection, group?}  RunQuery over a whole collection (or group)
     commit      {txn?, writes}                    Commit; writes are {update | delete | verify,
                                                   n?, exists?, reserved?, mask?, increment?}
     batchWrite  {writes}                          BatchWrite
@@ -32,6 +33,7 @@ ID on every non-transactional request, so the values differ (docs/parity-excepti
 """
 
 import json
+import math
 import re
 import subprocess
 import sys
@@ -202,6 +204,34 @@ SCENARIOS = [
         step("commit", "outside create of x/y/c/z", writes=[up("x/y/c/z", 2)]),
         step("commit", "outside create of c/a/sub/x", writes=[up("c/a/sub/x", 2)]),
         step("commit", "outside create of other/x", writes=[up("other/x", 2)]),
+    ]),
+    scenario("RunQuery in a transaction locks every collection with that ID", [
+        SEED_AB,
+        step("begin", "begin T", **{"as": "T"}),
+        step("query", "T queries c", txn="T", collection="c"),
+        step("commit", "outside write to c/a", writes=[up("c/a", 2)]),
+        step("commit", "outside create of c/new", writes=[up("c/new", 2)]),
+        step("commit", "outside create of x/y/c/z", writes=[up("x/y/c/z", 2)]),
+        step("commit", "outside create of c/a/sub/x", writes=[up("c/a/sub/x", 2)]),
+        step("commit", "T creates c/mine", txn="T", writes=[up("c/mine", 2)]),
+    ]),
+    scenario("a collection-group RunQuery in a transaction locks the collection ID", [
+        SEED_AB,
+        step("begin", "begin T", **{"as": "T"}),
+        step("query", "T queries group c", txn="T", collection="c", group=True),
+        step("commit", "outside create of x/y/c/z", writes=[up("x/y/c/z", 2)]),
+        step("commit", "outside create of d/q", writes=[up("d/q", 2)]),
+        step("rollback", "rollback T", txn="T"),
+        step("commit", "outside create of x/y/c/z after the rollback", writes=[up("x/y/c/z", 2)]),
+    ]),
+    scenario("RunQuery can start a transaction", [
+        SEED_AB,
+        step("query", "new read-write transaction queries c", new={"readWrite": {}}, collection="c", **{"as": "T"}),
+        step("commit", "outside write to c/a", writes=[up("c/a", 2)]),
+        step("query", "new transaction queries an empty collection", new={"readWrite": {}}, collection="zz", **{"as": "E"}),
+        step("begin", "begin R", **{"as": "R", "options": {"readOnly": {}}}),
+        step("commit", "T writes c/a", txn="T", writes=[up("c/a", 3)]),
+        step("query", "read-only R queries c and sees its snapshot", txn="R", collection="c"),
     ]),
     scenario("BatchGetDocuments can start a transaction", [
         SEED_ONE,
@@ -399,6 +429,23 @@ def run(sc, project):
                     body["pageSize"] = st["pageSize"]
                 status, message, res = grpc("ListDocuments", body)
             return status, message, [doc_result(base, d) for d in res.get("documents", [])] if res is not None else None
+        if op == "query":
+            body = {"structuredQuery": {"from": [{"collectionId": st["collection"], "allDescendants": st.get("group", False)}]}}
+            if txn:
+                body["transaction"] = txn
+            if "new" in st:
+                body["newTransaction"] = st["new"]
+            status, message, res = rest("POST", f"{base}:runQuery", body)
+            if res is None:
+                return status, message, None
+            out = []
+            for r in res:
+                if "transaction" in r:
+                    txns[st["as"]] = r["transaction"]
+                    out.append({"transaction": r["transaction"]})
+                if "document" in r:
+                    out.append({"document": doc_result(base, r["document"])})
+            return status, message, out
         if op == "commit":
             body = {"writes": [rest_write(base, w) for w in st["writes"]]}
             if "raw" in st:
@@ -429,9 +476,13 @@ def run(sc, project):
         status, message, result = execute(st)
         elapsed = time.monotonic() - start
         if st["op"] in ("get", "list") and "txn" in st:
-            elapsed = max(0.0, elapsed - GRPCURL_OVERHEAD)
+            # grpcurl's start-up time varies by a few hundred milliseconds; round down so the
+            # leftover never reaches the next half second (these reads never wait for locks).
+            rounded = math.floor(max(0.0, elapsed - GRPCURL_OVERHEAD) * 2) / 2
+        else:
+            rounded = round(elapsed * 2) / 2
         message = message.replace(project, "{project}")
-        outcome = {"status": status, "message": message, "elapsed": round(elapsed * 2) / 2}
+        outcome = {"status": status, "message": message, "elapsed": rounded}
         if result is not None:
             outcome["result"] = json.loads(json.dumps(result).replace(project, "{project}"))
         outcomes[st["label"]] = outcome

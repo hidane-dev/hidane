@@ -47,6 +47,21 @@ pub fn parent(name: &str) -> Result<Name, Status> {
     parse(name, Shape::Parent)
 }
 
+/// Validates the collection ID of a query's `from`. The empty ID (a query over every
+/// collection) is the caller's business.
+pub fn query_collection_id(id: &str) -> Result<(), Status> {
+    let problem = if id.contains('/') {
+        "contains \"/\""
+    } else if id.len() >= 4 && id.starts_with("__") && id.ends_with("__") {
+        "is reserved"
+    } else {
+        return Ok(());
+    };
+    Err(Status::invalid_argument(format!(
+        "Collection id \"{id}\" is invalid because it {problem}."
+    )))
+}
+
 /// Validates a single document or collection ID given separately (`CreateDocument`).
 pub fn validate_id(id: &str) -> Result<(), Status> {
     if id == "." || id == ".." || id.contains('/') || id.is_empty() {
@@ -64,7 +79,11 @@ enum Shape {
 }
 
 fn parse(name: &str, shape: Shape) -> Result<Name, Status> {
-    let mut cursor = Cursor::new(name, "Document name");
+    let what = match shape {
+        Shape::Document => "Document name",
+        Shape::Parent => "Document parent name",
+    };
+    let mut cursor = Cursor::new(name, what);
     cursor.literal("projects")?;
     cursor.literal("/")?;
     cursor.segment()?;
@@ -95,7 +114,7 @@ fn parse(name: &str, shape: Shape) -> Result<Name, Status> {
         let segment = cursor.segment()?;
         if segment == "." || segment == ".." {
             return Err(Status::invalid_argument(format!(
-                "Document name \"{name}\" contains a resource id \"{segment}\" at index {start}."
+                "{what} \"{name}\" contains a resource id \"{segment}\" at index {start}."
             )));
         }
         reserved(segment)?;
@@ -222,6 +241,18 @@ mod tests {
                 "projects/p-dot-id/databases/(default)/documents/c/."
             )),
             "Document name \"projects/p-dot-id/databases/(default)/documents/c/.\" contains a resource id \".\" at index 50."
+        );
+        assert_eq!(
+            err(parent("projects/pn/databases/(default)/documents/p")),
+            "Document parent name \"projects/pn/databases/(default)/documents/p\" lacks \"/\" at index 43."
+        );
+        assert_eq!(
+            query_collection_id("a/b").unwrap_err().message(),
+            "Collection id \"a/b\" is invalid because it contains \"/\"."
+        );
+        assert_eq!(
+            query_collection_id("__x__").unwrap_err().message(),
+            "Collection id \"__x__\" is invalid because it is reserved."
         );
         assert_eq!(
             err(document("projects/p/databases/(default)/documents/c/__x__")),
