@@ -27,9 +27,12 @@ jobs:
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - run: cargo test --workspace --locked
+      # What crates.io would receive builds on its own (sources, protos, licenses). Packaging
+      # crates that depend on each other before they are published needs cargo 1.90 or newer.
+      - run: cargo package --workspace --locked
 
   msrv:
-    name: MSRV (Rust 1.88) / package
+    name: MSRV (Rust 1.88)
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -41,8 +44,6 @@ jobs:
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
       # rust-version in Cargo.toml says 1.88; keep it true.
       - run: cargo check --workspace --all-targets --locked
-      # What crates.io would receive builds on its own (sources, protos, licenses).
-      - run: cargo package --workspace --locked
 
   licenses:
     name: third-party licenses
