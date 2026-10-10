@@ -70,7 +70,7 @@ def messages(text):
 
 
 def grpcurl(rpc, request, authorization):
-    args = ["grpcurl", "-plaintext", "-import-path", "proto", "-proto", "google/firestore/v1/firestore.proto"]
+    args = ["grpcurl", "-plaintext", "-import-path", "crates/hidane-proto/proto", "-proto", "google/firestore/v1/firestore.proto"]
     if authorization:
         args += ["-H", f"authorization: {authorization}"]
     out = subprocess.run(args + ["-d", json.dumps(request), HOST, f"google.firestore.v1.Firestore/{rpc}"],

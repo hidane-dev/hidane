@@ -1,4 +1,4 @@
-//! Compiles the vendored googleapis protos (../../proto) with protox (pure Rust, no protoc) and
+//! Compiles the vendored googleapis protos (`proto/`) with protox (pure Rust, no protoc) and
 //! generates prost messages plus tonic servers and clients. The encoded descriptor set is written
 //! next to the generated code so the server can expose it through gRPC reflection.
 
@@ -9,7 +9,7 @@ use prost::Message;
 const PROTOS: &[&str] = &["google/firestore/v1/firestore.proto"];
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let root = PathBuf::from(env::var("CARGO_MANIFEST_DIR")?).join("../../proto");
+    let root = PathBuf::from(env::var("CARGO_MANIFEST_DIR")?).join("proto");
     let out = PathBuf::from(env::var("OUT_DIR")?);
     println!("cargo:rerun-if-changed={}", root.display());
 

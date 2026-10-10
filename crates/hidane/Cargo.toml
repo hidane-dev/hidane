@@ -3,10 +3,24 @@ name = "hidane"
 description = "hidane (火種, the seed of fire) — a Firestore emulator without Java."
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 homepage.workspace = true
-publish.workspace = true
+readme = "../../README.md"
+keywords = ["firestore", "emulator", "firebase", "testing", "grpc"]
+categories = ["development-tools::testing", "command-line-utilities", "emulators"]
+# The tests and their fixtures stay in the repository.
+include = ["/src", "/build.rs", "/LICENSE-MIT", "/LICENSE-APACHE"]
+
+# `cargo binstall hidane` installs the release archive for the target (docs/releasing.md).
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/hidane-{ version }-{ target }{ archive-suffix }"
+bin-dir = "hidane-{ version }-{ target }/{ bin }{ binary-ext }"
+pkg-fmt = "tgz"
+
+[package.metadata.binstall.overrides.x86_64-pc-windows-msvc]
+pkg-fmt = "zip"
 
 [dependencies]
 axum.workspace = true

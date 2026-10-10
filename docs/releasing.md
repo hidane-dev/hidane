@@ -39,7 +39,8 @@ The macOS binaries are not signed or notarized yet. Archives fetched with `curl`
 
 ## Cutting a release
 
-1. Set `version` in the workspace `Cargo.toml` and merge it.
+1. Set `version` in the workspace `Cargo.toml`, and the same version in the `=` pins of
+   `hidane-core` and `hidane-proto` under `[workspace.dependencies]`, and merge it.
 2. Push the tag `v<version>` on that commit. The workflow checks the tag against the crate version,
    builds every target, writes `sha256sums.txt`, attests the archives and creates a **draft**
    release with all of them.
@@ -49,9 +50,9 @@ A pull request that changes the workflow runs the builds as a dry run; nothing i
 
 ## Not decided here
 
-- Further channels (Homebrew tap, `cargo binstall`, npm, pub.dev, a container image, `curl | sh`)
-  build on these assets: #77, #78, #79. `cargo binstall` also needs the crate published, which
-  `publish = false` prevents today.
+- Further channels (Homebrew tap, npm, pub.dev, a container image, `curl | sh`) build on these
+  assets: #77, #78, #79. `cargo binstall hidane` finds them through the crate's
+  `[package.metadata.binstall]` once the crates are on crates.io.
 
 [cargo-dist](https://github.com/axodotdev/cargo-dist) was considered (#56) and not adopted: the
 workflow above is about one hundred lines that the project controls, with no generator to keep in
