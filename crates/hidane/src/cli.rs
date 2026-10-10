@@ -262,7 +262,7 @@ fn wrap(text: &str, width: usize) -> Vec<String> {
 /// Output of `--licenses`.
 pub fn licenses() -> String {
     format!(
-        "hidane {}\nLicense: MIT\nSource: https://github.com/hidane-dev/hidane\n\
+        "hidane {}\nLicense: MIT OR Apache-2.0\nSource: https://github.com/hidane-dev/hidane\n\
          Third-party license notices will ship with release binaries ({ISSUES}/56).\n",
         env!("CARGO_PKG_VERSION")
     )

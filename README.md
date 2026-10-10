@@ -1,7 +1,7 @@
 # hidane (火種, *the seed of fire*) — a Firestore emulator without Java.
 
 [![status: pre-release](https://img.shields.io/badge/status-pre--release%20%C2%B7%20build%20from%20source-E2553D)](docs/ROADMAP.md)
-[![license: MIT](https://img.shields.io/badge/license-MIT-1E1B18)](LICENSE)
+[![license: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-1E1B18)](#license)
 [![website](https://img.shields.io/badge/web-hidane.dev-1E1B18)](https://hidane.dev)
 
 hidane (pronounced *hi-da-ne*) aims to be a drop-in replacement for the official Cloud Firestore
@@ -148,8 +148,16 @@ and [zerobrew](https://github.com/zerobrewhq/zerobrew).
 
 ## License
 
-[MIT](LICENSE). The license may change to `MIT OR Apache-2.0` before the first release
-([ADR 0001](docs/adr/0001-license.md)).
+Licensed under either of
+
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE))
+- MIT license ([LICENSE-MIT](LICENSE-MIT))
+
+at your option ([ADR 0001](docs/adr/0001-license.md)).
+
+Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in
+the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without
+any additional terms or conditions.
 
 ## Trademarks
 
