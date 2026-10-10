@@ -1,0 +1,415 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/cors.py",
+ "cases": [
+  {
+   "name": "preflight",
+   "method": "OPTIONS",
+   "path": "/v1/projects/cors/databases/(default)/documents/c/a",
+   "headers": {
+    "Origin": "http://localhost:3000",
+    "Access-Control-Request-Method": "PATCH",
+    "Access-Control-Request-Headers": "content-type,authorization,x-goog-api-client"
+   },
+   "body": null,
+   "outcome": {
+    "status": 200,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-headers": "content-type,authorization,x-goog-api-client",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "http://localhost:3000"
+    },
+    "body": ""
+   }
+  },
+  {
+   "name": "preflight without request headers",
+   "method": "OPTIONS",
+   "path": "/v1/projects/cors/databases/(default)/documents/c/a",
+   "headers": {
+    "Origin": "http://localhost:3000",
+    "Access-Control-Request-Method": "GET"
+   },
+   "body": null,
+   "outcome": {
+    "status": 200,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "http://localhost:3000"
+    },
+    "body": ""
+   }
+  },
+  {
+   "name": "preflight for a private network",
+   "method": "OPTIONS",
+   "path": "/v1/projects/cors/databases/(default)/documents/c/a",
+   "headers": {
+    "Origin": "http://localhost:3000",
+    "Access-Control-Request-Method": "GET",
+    "Access-Control-Request-Private-Network": "true"
+   },
+   "body": null,
+   "outcome": {
+    "status": 200,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "http://localhost:3000",
+     "access-control-allow-private-network": "true"
+    },
+    "body": ""
+   }
+  },
+  {
+   "name": "private network asked false",
+   "method": "OPTIONS",
+   "path": "/v1/projects/cors/databases/(default)/documents/c/a",
+   "headers": {
+    "Origin": "http://localhost:3000",
+    "Access-Control-Request-Method": "GET",
+    "Access-Control-Request-Private-Network": "false"
+   },
+   "body": null,
+   "outcome": {
+    "status": 200,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "http://localhost:3000",
+     "access-control-allow-private-network": "true"
+    },
+    "body": ""
+   }
+  },
+  {
+   "name": "private network and headers without an origin",
+   "method": "OPTIONS",
+   "path": "/v1/projects/cors/databases/(default)/documents/c/a",
+   "headers": {
+    "Access-Control-Request-Method": "GET",
+    "Access-Control-Request-Headers": "content-type",
+    "Access-Control-Request-Private-Network": "true"
+   },
+   "body": null,
+   "outcome": {
+    "status": 200,
+    "headers": {},
+    "body": ""
+   }
+  },
+  {
+   "name": "OPTIONS without a request method",
+   "method": "OPTIONS",
+   "path": "/v1/projects/cors/databases/(default)/documents/c/a",
+   "headers": {
+    "Origin": "http://localhost:3000"
+   },
+   "body": null,
+   "outcome": {
+    "status": 200,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "http://localhost:3000"
+    },
+    "body": ""
+   }
+  },
+  {
+   "name": "OPTIONS without an origin",
+   "method": "OPTIONS",
+   "path": "/v1/projects/cors/databases/(default)/documents/c/a",
+   "headers": {},
+   "body": null,
+   "outcome": {
+    "status": 200,
+    "headers": {},
+    "body": ""
+   }
+  },
+  {
+   "name": "preflight on an unknown path",
+   "method": "OPTIONS",
+   "path": "/nope",
+   "headers": {
+    "Origin": "http://localhost:3000",
+    "Access-Control-Request-Method": "GET"
+   },
+   "body": null,
+   "outcome": {
+    "status": 200,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "http://localhost:3000"
+    },
+    "body": ""
+   }
+  },
+  {
+   "name": "preflight on /reset",
+   "method": "OPTIONS",
+   "path": "/reset",
+   "headers": {
+    "Origin": "http://localhost:3000",
+    "Access-Control-Request-Method": "POST"
+   },
+   "body": null,
+   "outcome": {
+    "status": 200,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "http://localhost:3000"
+    },
+    "body": ""
+   }
+  },
+  {
+   "name": "preflight on /emulator/v1",
+   "method": "OPTIONS",
+   "path": "/emulator/v1/projects/cors/databases/(default)/documents",
+   "headers": {
+    "Origin": "http://localhost:3000",
+    "Access-Control-Request-Method": "DELETE"
+   },
+   "body": null,
+   "outcome": {
+    "status": 200,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "http://localhost:3000"
+    },
+    "body": ""
+   }
+  },
+  {
+   "name": "preflight on a verb",
+   "method": "OPTIONS",
+   "path": "/v1/projects/cors/databases/(default)/documents:commit",
+   "headers": {
+    "Origin": "http://localhost:3000",
+    "Access-Control-Request-Method": "POST",
+    "Access-Control-Request-Headers": "content-type"
+   },
+   "body": null,
+   "outcome": {
+    "status": 200,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-headers": "content-type",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "http://localhost:3000"
+    },
+    "body": ""
+   }
+  },
+  {
+   "name": "preflight on the WebChannel path",
+   "method": "OPTIONS",
+   "path": "/google.firestore.v1.Firestore/Listen/channel?VER=8",
+   "headers": {
+    "Origin": "http://localhost:3000",
+    "Access-Control-Request-Method": "POST",
+    "Access-Control-Request-Headers": "content-type,x-goog-api-client"
+   },
+   "body": null,
+   "outcome": {
+    "status": 200,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-headers": "content-type,x-goog-api-client",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "http://localhost:3000"
+    },
+    "body": ""
+   }
+  },
+  {
+   "name": "GET with an origin",
+   "method": "GET",
+   "path": "/v1/projects/cors/databases/(default)/documents/c/a",
+   "headers": {
+    "Origin": "http://localhost:3000"
+   },
+   "body": null,
+   "outcome": {
+    "status": 404,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "http://localhost:3000",
+     "content-type": "application/json"
+    },
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/cors\\/databases\\/(default)\\/documents\\/c\\/a) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "GET with another origin",
+   "method": "GET",
+   "path": "/v1/projects/cors/databases/(default)/documents/c/a",
+   "headers": {
+    "Origin": "https://example.com"
+   },
+   "body": null,
+   "outcome": {
+    "status": 404,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "https://example.com",
+     "content-type": "application/json"
+    },
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/cors\\/databases\\/(default)\\/documents\\/c\\/a) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "GET with origin null",
+   "method": "GET",
+   "path": "/v1/projects/cors/databases/(default)/documents/c/a",
+   "headers": {
+    "Origin": "null"
+   },
+   "body": null,
+   "outcome": {
+    "status": 404,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "null",
+     "content-type": "application/json"
+    },
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/cors\\/databases\\/(default)\\/documents\\/c\\/a) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "GET without an origin",
+   "method": "GET",
+   "path": "/v1/projects/cors/databases/(default)/documents/c/a",
+   "headers": {},
+   "body": null,
+   "outcome": {
+    "status": 404,
+    "headers": {
+     "content-type": "application/json"
+    },
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/cors\\/databases\\/(default)\\/documents\\/c\\/a) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "POST :commit with an origin",
+   "method": "POST",
+   "path": "/v1/projects/cors/databases/(default)/documents:commit",
+   "headers": {
+    "Origin": "http://localhost:3000",
+    "Content-Type": "text/plain"
+   },
+   "body": "{}",
+   "outcome": {
+    "status": 200,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "http://localhost:3000",
+     "content-type": "application/json"
+    },
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "GET / with an origin",
+   "method": "GET",
+   "path": "/",
+   "headers": {
+    "Origin": "http://localhost:3000"
+   },
+   "body": null,
+   "outcome": {
+    "status": 200,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "http://localhost:3000"
+    },
+    "body": "Ok\n"
+   }
+  },
+  {
+   "name": "DELETE /emulator/v1 with an origin",
+   "method": "DELETE",
+   "path": "/emulator/v1/projects/cors/databases/(default)/documents",
+   "headers": {
+    "Origin": "http://localhost:3000"
+   },
+   "body": null,
+   "outcome": {
+    "status": 200,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "http://localhost:3000",
+     "content-type": "application/json"
+    },
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "404 with an origin",
+   "method": "GET",
+   "path": "/nope",
+   "headers": {
+    "Origin": "http://localhost:3000"
+   },
+   "body": null,
+   "outcome": {
+    "status": 404,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "http://localhost:3000"
+    },
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "HEAD with an origin",
+   "method": "HEAD",
+   "path": "/v1/projects/cors/databases/(default)/documents/c/a",
+   "headers": {
+    "Origin": "http://localhost:3000"
+   },
+   "body": null,
+   "outcome": {
+    "status": 404,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "http://localhost:3000"
+    },
+    "body": ""
+   }
+  },
+  {
+   "name": "POST /reset with an origin",
+   "method": "POST",
+   "path": "/reset",
+   "headers": {
+    "Origin": "http://localhost:3000"
+   },
+   "body": null,
+   "outcome": {
+    "status": 200,
+    "headers": {
+     "access-control-allow-credentials": "true",
+     "access-control-allow-methods": "DELETE,GET,HEAD,PATCH,POST,PUT",
+     "access-control-allow-origin": "http://localhost:3000"
+    },
+    "body": "Resetting...\n"
+   }
+  }
+ ]
+}
