@@ -1,0 +1,48 @@
+[
+ {
+  "name": "create when missing",
+  "ok": {
+   "attempts": 1,
+   "result": false
+  }
+ },
+ {
+  "name": "read-modify-write",
+  "ok": {
+   "attempts": 1,
+   "result": 0,
+   "after": {
+    "n": 1
+   }
+  }
+ },
+ {
+  "name": "blind writes",
+  "ok": {
+   "attempts": 1,
+   "after": {
+    "n": 1
+   }
+  }
+ },
+ {
+  "name": "two transactions increment the same counter",
+  "ok": {
+   "totalAttempts": 3,
+   "after": {
+    "n": 2
+   }
+  }
+ },
+ {
+  "name": "two transactions create the same document",
+  "ok": {
+   "totalAttempts": 3,
+   "sawExisting": 1
+  }
+ },
+ {
+  "name": "a failing callback",
+  "ok": "boom"
+ }
+]

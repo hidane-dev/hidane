@@ -1,0 +1,114 @@
+[
+ {
+  "name": "create when missing",
+  "ok": {
+   "attempts": 1,
+   "result": false,
+   "data": {
+    "n": 0
+   }
+  }
+ },
+ {
+  "name": "read-modify-write",
+  "ok": {
+   "attempts": 1,
+   "result": 0,
+   "data": {
+    "n": 1
+   }
+  }
+ },
+ {
+  "name": "getAll",
+  "ok": {
+   "attempts": 1,
+   "result": [
+    {
+     "id": "a",
+     "exists": true
+    },
+    {
+     "id": "missing",
+     "exists": false
+    }
+   ]
+  }
+ },
+ {
+  "name": "write-only transaction",
+  "ok": {
+   "attempts": 1,
+   "data": {
+    "n": 1
+   }
+  }
+ },
+ {
+  "name": "read-only",
+  "ok": {
+   "attempts": 1,
+   "result": {
+    "n": 1
+   }
+  }
+ },
+ {
+  "name": "read-only at a past read time",
+  "ok": {
+   "attempts": 1,
+   "result": {
+    "n": 1
+   }
+  }
+ },
+ {
+  "name": "read-only cannot write",
+  "error": {
+   "message": "Firestore read-only transactions cannot execute writes."
+  }
+ },
+ {
+  "name": "a failing callback rolls back and releases its locks",
+  "ok": {
+   "failed": "boom",
+   "outsideWriteWaited": false
+  }
+ },
+ {
+  "name": "create of an existing document",
+  "ok": {
+   "code": 6
+  }
+ },
+ {
+  "name": "an outside write waits for the transaction that read the document",
+  "ok": {
+   "order": [
+    "transaction",
+    "outside"
+   ],
+   "final": {
+    "by": "outside"
+   }
+  }
+ },
+ {
+  "name": "an outside write gives up after the lock timeout",
+  "ok": {
+   "outside": "ok",
+   "final": {
+    "by": "outside"
+   }
+  }
+ },
+ {
+  "name": "two transactions increment the same counter",
+  "ok": {
+   "totalAttempts": 3,
+   "final": {
+    "n": 2
+   }
+  }
+ }
+]

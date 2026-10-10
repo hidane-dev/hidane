@@ -18,7 +18,7 @@ async fn start() -> FirestoreClient<Channel> {
     let admin = hidane::Admin::default();
     tokio::spawn(hidane::serve(
         vec![listener],
-        hidane::grpc_routes(admin.store()),
+        hidane::grpc_routes(&admin),
         hidane::http_routes(admin),
         std::future::pending(),
     ));

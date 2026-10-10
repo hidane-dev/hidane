@@ -112,5 +112,5 @@ Estimate: a few hundred lines plus the shared test suite. Not planned for v0.1.
 ## Consequences
 
 - The storage epic and the Listen `resume_token` issue (#19) build on this model
-- The transaction parity target is decided in its own issue (#17); the commit closure supports either model
+- The transaction parity target is decided in its own issue (#17); the commit closure supports either model. #17 chose the official emulator's lock model, implemented above the store (`crates/hidane/src/firestore/transactions.rs`); the store itself did not change
 - Type-ordered key encoding (#28) is the key format of the engine

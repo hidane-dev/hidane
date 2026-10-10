@@ -19,7 +19,7 @@ use tokio_stream::wrappers::ReceiverStream;
 async fn start(http: Router) -> SocketAddr {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
-    let grpc = hidane::grpc_routes(hidane::Admin::default().store());
+    let grpc = hidane::grpc_routes(&hidane::Admin::default());
     tokio::spawn(hidane::serve(
         vec![listener],
         grpc,
