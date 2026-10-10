@@ -61,6 +61,7 @@ compared with the official emulator's (`results/`):
 | Go, Python, Java, iOS, Android, Flutter (all platforms), C++ / Unity | gRPC or WebChannel | same transports, not verified yet |
 | Security Rules, the Emulator UI request monitor | — | not yet (v0.2): every request is allowed |
 | `firebase emulators:start` / `emulators:exec` | `hidane exec -- firebase …` | verified with firebase-tools 15.33.0, no Java installed |
+| Emulator UI | REST and the emulator's endpoints | verified: browse, create and delete documents, Clear all data; not the request monitor (#69) |
 | Export / import | — | not yet (#31, #32) |
 
 ## Parity

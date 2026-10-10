@@ -63,11 +63,17 @@ Invoked as `java`, hidane:
 - execs the next `java` on `PATH` for anything else, or exits 127 explaining that only the
   Firestore emulator is served.
 
+The `java` it runs is marked (`HIDANE_JAVA_SHIM_CALLED`): a version manager's shim (mise, asdf,
+jenv) with no Java behind it runs the first `java` on `PATH`, hidane's again, and without the
+mark the version probe went round in circles. Called back that way, hidane answers the probe
+itself and refuses other jars.
+
 `hidane exec` passes Ctrl-C to the command (they share the process group), waits for it, removes
 its directory and exits with the command's code. Verified with firebase-tools 15.33.0 and no Java
 on `PATH`: `emulators:start` was ready in 2.3 s and stopped cleanly on Ctrl-C, and
 `emulators:exec` ran an Admin SDK script against hidane (`crates/hidane/tests/launch.rs` covers the
-contract without firebase-tools).
+contract without firebase-tools). With the Emulator UI enabled, UI v1.15.0 browsed, created and
+deleted documents and cleared all data through hidane (#38).
 
 A1 is not offered: a permanent `java` on `PATH` surprises every other Java user on the machine.
 B would remove the wrapper; proposing it to firebase-tools is a separate, outward-facing step that

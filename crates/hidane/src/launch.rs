@@ -24,6 +24,9 @@ use std::{
 const PLACEHOLDER: &str = "hidane-firestore.jar";
 /// The directory `hidane exec` puts first on `PATH`, so the shim can skip itself.
 const SHIM_DIR_ENV: &str = "HIDANE_SHIM_DIR";
+/// Set on the `java` the shim runs. A version manager's `java` shim (mise, asdf, jenv) can run
+/// the first `java` on `PATH`, which is hidane's again; then the shim must not go round again.
+const CALLED_BACK_ENV: &str = "HIDANE_JAVA_SHIM_CALLED";
 const MIN_JAVA: u32 = 21;
 
 /// What a run of this binary is.
@@ -85,8 +88,11 @@ pub fn classify(args: &[OsString]) -> Java {
     Java::Forward
 }
 
-/// The first `java` on `PATH` that is not this shim.
+/// The first `java` on `PATH` that is not this shim, unless that `java` is what called it.
 fn real_java() -> Option<PathBuf> {
+    if std::env::var_os(CALLED_BACK_ENV).is_some() {
+        return None;
+    }
     let me = std::env::current_exe().ok()?.canonicalize().ok()?;
     let shim_dir = std::env::var_os(SHIM_DIR_ENV).map(PathBuf::from);
     let name = if cfg!(windows) { "java.exe" } else { "java" };
@@ -119,7 +125,10 @@ pub fn java(args: &[OsString]) -> Result<Vec<OsString>, ExitCode> {
         Java::Emulator(flags) => Ok(flags),
         Java::Version => {
             if let Some(java) = real_java()
-                && let Ok(output) = std::process::Command::new(&java).args(args).output()
+                && let Ok(output) = std::process::Command::new(&java)
+                    .args(args)
+                    .env(CALLED_BACK_ENV, "1")
+                    .output()
             {
                 let text = format!(
                     "{}{}",
@@ -145,22 +154,36 @@ pub fn java(args: &[OsString]) -> Result<Vec<OsString>, ExitCode> {
 
 fn forward(args: &[OsString]) -> ExitCode {
     let Some(java) = real_java() else {
-        eprintln!(
-            "hidane: this command needs Java, and no java other than hidane's is on PATH \
-             (hidane serves only the Firestore emulator)"
-        );
+        if std::env::var_os(CALLED_BACK_ENV).is_some() {
+            eprintln!(
+                "hidane: this command needs Java, and the java on PATH leads back to hidane's \
+                 (a version manager's java shim without a Java installed?)"
+            );
+        } else {
+            eprintln!(
+                "hidane: this command needs Java, and no java other than hidane's is on PATH \
+                 (hidane serves only the Firestore emulator)"
+            );
+        }
         return ExitCode::from(127);
     };
     #[cfg(unix)]
     {
         use std::os::unix::process::CommandExt as _;
-        let err = std::process::Command::new(&java).args(args).exec();
+        let err = std::process::Command::new(&java)
+            .args(args)
+            .env(CALLED_BACK_ENV, "1")
+            .exec();
         eprintln!("hidane: could not run {}: {err}", java.display());
         ExitCode::from(126)
     }
     #[cfg(not(unix))]
     {
-        match std::process::Command::new(&java).args(args).status() {
+        match std::process::Command::new(&java)
+            .args(args)
+            .env(CALLED_BACK_ENV, "1")
+            .status()
+        {
             Ok(status) => ExitCode::from(u8::try_from(status.code().unwrap_or(1)).unwrap_or(1)),
             Err(err) => {
                 eprintln!("hidane: could not run {}: {err}", java.display());
