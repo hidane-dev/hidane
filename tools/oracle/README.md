@@ -44,6 +44,10 @@ its transcripts are in `results/sdk-aggregations-*.json`.
 `sdk_web_writes.mjs` does the same for writes through the web SDK (`npm i firebase`), which
 sends them over the Write stream; its transcripts are in `results/sdk-web-writes-*.json`.
 
+`sdk_listen.mjs` listens through both the Admin SDK and the web SDK while writing through the
+Admin SDK, and prints every snapshot each listener received; its transcripts are in
+`results/sdk-listen-*.json`.
+
 `sdk_transactions.mjs` does the same for `runTransaction` (server transactions, retries on
 `ABORTED`, lock waits), and `sdk_web_transactions.mjs` for the web SDK (`npm i firebase`), whose
 transactions use preconditions and `verify` writes instead. Their transcripts are in

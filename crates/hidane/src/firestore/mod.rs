@@ -2,7 +2,7 @@
 //!
 //! Implemented: GetDocument, ListDocuments, CreateDocument, UpdateDocument, DeleteDocument,
 //! BatchGetDocuments, BeginTransaction, Commit, Rollback, RunQuery, RunAggregationQuery, Write,
-//! BatchWrite, ListCollectionIds. The rest answer `UNIMPLEMENTED` through the generated default stubs
+//! Listen, BatchWrite, ListCollectionIds. The rest answer `UNIMPLEMENTED` through the generated default stubs
 //! until their issues land.
 //!
 //! Behaviour follows the official emulator as recorded in `tests/fixtures/document_writes.json`
@@ -12,6 +12,8 @@
 //! message prints internal Datastore keys (docs/parity-exceptions.md).
 
 mod aggregation;
+pub(crate) mod changes;
+mod listen;
 mod names;
 mod query;
 pub(crate) mod transactions;
@@ -41,14 +43,14 @@ use hidane_proto::google::{
         BatchWriteResponse, BeginTransactionRequest, BeginTransactionResponse, CommitRequest,
         CommitResponse, CreateDocumentRequest, DeleteDocumentRequest, Document, DocumentMask,
         GetDocumentRequest, ListCollectionIdsRequest, ListCollectionIdsResponse,
-        ListDocumentsRequest, ListDocumentsResponse, Precondition, RollbackRequest,
-        RunAggregationQueryRequest, RunAggregationQueryResponse, RunQueryRequest, RunQueryResponse,
-        StructuredQuery, TransactionOptions, UpdateDocumentRequest, Write, WriteRequest,
-        WriteResponse, WriteResult, batch_get_documents_request, batch_get_documents_response,
-        firestore_server::Firestore, get_document_request, list_collection_ids_request,
-        list_documents_request, precondition::ConditionType, run_aggregation_query_request,
-        run_query_request, run_query_response, structured_aggregation_query, transaction_options,
-        write::Operation,
+        ListDocumentsRequest, ListDocumentsResponse, ListenRequest, ListenResponse, Precondition,
+        RollbackRequest, RunAggregationQueryRequest, RunAggregationQueryResponse, RunQueryRequest,
+        RunQueryResponse, StructuredQuery, TransactionOptions, UpdateDocumentRequest, Write,
+        WriteRequest, WriteResponse, WriteResult, batch_get_documents_request,
+        batch_get_documents_response, firestore_server::Firestore, get_document_request,
+        list_collection_ids_request, list_documents_request, precondition::ConditionType,
+        run_aggregation_query_request, run_query_request, run_query_response,
+        structured_aggregation_query, transaction_options, write::Operation,
     },
     rpc,
 };
@@ -59,6 +61,7 @@ use tonic::{Request, Response, Status, Streaming, async_trait, codegen::BoxStrea
 
 use self::{
     aggregation::Aggregations,
+    changes::ChangeFeed,
     names::Name,
     query::Query,
     transactions::{Mode, Transactions},
@@ -71,20 +74,23 @@ const BATCH_WRITE_ADMIN: &str = "Batch writes require admin authentication.";
 pub struct FirestoreService {
     store: Arc<dyn Store>,
     transactions: Arc<Transactions>,
+    changes: Arc<ChangeFeed>,
 }
 
 impl FirestoreService {
     pub fn new(store: Arc<dyn Store>) -> Self {
-        Self::with_transactions(store, Arc::default())
+        Self::with_state(store, Arc::default(), Arc::default())
     }
 
-    pub(crate) fn with_transactions(
+    pub(crate) fn with_state(
         store: Arc<dyn Store>,
         transactions: Arc<Transactions>,
+        changes: Arc<ChangeFeed>,
     ) -> Self {
         Self {
             store,
             transactions,
+            changes,
         }
     }
 
@@ -129,7 +135,13 @@ impl FirestoreService {
             Ok(())
         });
         match outcome {
-            Ok(commit) => Ok((commit.commit_time, results)),
+            Ok(commit) => {
+                let commit_time = commit.commit_time;
+                // Called with the database's commit lock held, so listeners see commits in
+                // order (see `changes`).
+                self.changes.publish(database, commit);
+                Ok((commit_time, results))
+            }
             Err(err) => Err(failure.unwrap_or_else(|| store_error(&err))),
         }
     }
@@ -658,6 +670,21 @@ impl Firestore for FirestoreService {
         let service = self.clone();
         tokio::spawn(async move {
             if let Err(status) = service.serve_write_stream(&mut requests, &responses).await {
+                let _ = responses.send(Err(status)).await;
+            }
+        });
+        Ok(Response::new(Box::pin(ReceiverStream::new(receiver))))
+    }
+
+    async fn listen(
+        &self,
+        request: Request<Streaming<ListenRequest>>,
+    ) -> Result<Response<BoxStream<ListenResponse>>, Status> {
+        let mut requests = request.into_inner();
+        let (responses, receiver) = mpsc::channel(256);
+        let service = self.clone();
+        tokio::spawn(async move {
+            if let Err(status) = service.serve_listen(&mut requests, &responses).await {
                 let _ = responses.send(Err(status)).await;
             }
         });
