@@ -5,7 +5,7 @@ speaks the official emulator's gRPC, REST and WebChannel protocols, starts in mi
 tested against the official emulator. Not affiliated with Google.
 
 This package installs the binary for your platform (macOS arm64 / x64, Linux arm64 / x64,
-Windows x64) through an optional dependency, `@hidane/<platform>`.
+Windows x64) through an optional dependency, `@hidane-dev/<platform>`.
 
 ```sh
 npm install --save-dev hidane

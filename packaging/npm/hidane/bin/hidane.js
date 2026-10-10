@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 // Runs hidane's binary for this platform. npm installs it with the one optional dependency
-// (`@hidane/<platform>`) whose `os` and `cpu` match; packaging/npm/assemble.mjs builds them.
+// (`@hidane-dev/<platform>`) whose `os` and `cpu` match; packaging/npm/assemble.mjs builds them.
 "use strict";
 
 const { spawn } = require("node:child_process");
 
 const PACKAGES = {
-  "darwin arm64": "@hidane/darwin-arm64",
-  "darwin x64": "@hidane/darwin-x64",
-  "linux arm64": "@hidane/linux-arm64",
-  "linux x64": "@hidane/linux-x64",
-  "win32 x64": "@hidane/win32-x64",
+  "darwin arm64": "@hidane-dev/darwin-arm64",
+  "darwin x64": "@hidane-dev/darwin-x64",
+  "linux arm64": "@hidane-dev/linux-arm64",
+  "linux x64": "@hidane-dev/linux-x64",
+  "win32 x64": "@hidane-dev/win32-x64",
 };
 
 function fail(message) {
