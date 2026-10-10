@@ -16,7 +16,11 @@ hidane-core.workspace = true
 hidane-proto.workspace = true
 hyper.workspace = true
 hyper-util.workspace = true
+percent-encoding.workspace = true
+prost.workspace = true
+prost-reflect.workspace = true
 prost-types.workspace = true
+serde_json.workspace = true
 tokio.workspace = true
 tokio-stream.workspace = true
 tonic.workspace = true
@@ -26,7 +30,6 @@ tower.workspace = true
 [dev-dependencies]
 bytes.workspace = true
 chrono.workspace = true
-serde_json.workspace = true
 hidane-proto = { workspace = true, features = ["client"] }
 http-body-util.workspace = true
 hyper-util = { workspace = true, features = ["client-legacy", "http1"] }

@@ -1,0 +1,82 @@
+[
+ {
+  "name": "lite: setDoc",
+  "ok": {
+   "m": {
+    "k": true
+   },
+   "n": 1,
+   "s": "x",
+   "tags": [
+    "a"
+   ]
+  }
+ },
+ {
+  "name": "lite: updateDoc with increment",
+  "ok": {
+   "m": {
+    "k": true
+   },
+   "n": 3,
+   "s": "x",
+   "tags": [
+    "a"
+   ]
+  }
+ },
+ {
+  "name": "lite: getDoc missing",
+  "ok": null
+ },
+ {
+  "name": "lite: writeBatch",
+  "ok": [
+   [
+    "a",
+    3
+   ],
+   [
+    "b",
+    5
+   ],
+   [
+    "c",
+    9
+   ]
+  ]
+ },
+ {
+  "name": "lite: query",
+  "ok": [
+   "c",
+   "b"
+  ]
+ },
+ {
+  "name": "lite: getCount",
+  "ok": {
+   "count": 3
+  }
+ },
+ {
+  "name": "lite: getAggregate",
+  "ok": {
+   "total": 17
+  }
+ },
+ {
+  "name": "lite: runTransaction",
+  "ok": 5
+ },
+ {
+  "name": "lite: deleteDoc",
+  "ok": null
+ },
+ {
+  "name": "lite: update a missing document",
+  "error": {
+   "code": "not-found"
+  }
+ }
+]

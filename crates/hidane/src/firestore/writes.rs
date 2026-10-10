@@ -4,6 +4,7 @@ use std::collections::HashMap;
 
 use hidane_core::{
     field_path::{FieldPath, Fields, apply_mask},
+    normalize::normalize_value,
     path::ResourcePath,
     store::{ReadTime, StoredDocument, WriteBatch},
     transform,
@@ -201,9 +202,13 @@ fn store(
     batch: &mut dyn WriteBatch,
     path: &ResourcePath,
     existing: Option<&StoredDocument>,
-    fields: Fields,
+    mut fields: Fields,
     transform_results: Vec<Value>,
 ) -> WriteResult {
+    // Timestamps are stored to the microsecond, as Firestore does.
+    for value in fields.values_mut() {
+        normalize_value(value);
+    }
     if let Some(existing) = existing
         && existing.fields() == fields
     {

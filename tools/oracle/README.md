@@ -20,6 +20,7 @@ curl -X POST http://127.0.0.1:8086/shutdown
 | `queries.py` | What does RunQuery return for every filter operator on every value type, composite filters, implicit ordering, cursors, offsets, projections, collection groups and queries over every collection, and with which errors? | `crates/hidane/tests/fixtures/queries.json` | `crates/hidane/tests/queries.rs` |
 | `aggregations.py` | What do `count`, `sum` and `avg` return at the edges (integer overflow, NaN, infinities, precision, non-numbers, empty sets), how do they interact with `offset` / `limit`, and which aggregation lists are rejected? | `crates/hidane/tests/fixtures/aggregations.json` | `crates/hidane/tests/aggregations.rs` |
 | `write_stream.mjs` | How does the Write stream answer: handshake, tokens, pipelined batches, empty requests, errors, resumption, locks? Node.js with `@grpc/grpc-js` and `@grpc/proto-loader`, run like the SDK scripts below with the repository's `proto/` directory as its second argument | `crates/hidane/tests/fixtures/write_stream.json` | `crates/hidane/tests/write_stream.rs` |
+| `rest.py` | What does every REST binding answer, byte for byte: JSON layout, ProtoJSON values, streams as arrays, errors, 404s, lenient input? | `crates/hidane/tests/fixtures/rest.json` | `crates/hidane/tests/rest.rs` |
 | `transactions.py` | What do transactions lock, how long do writes wait, when do transactions end, and how are `verify` writes checked? Scenarios with concurrent steps and timing; needs `grpcurl` on `PATH` and takes about two minutes | `crates/hidane/tests/fixtures/transactions.json` | `crates/hidane/tests/transactions.rs` |
 
 `sdk_documents.mjs` drives the same operations through `@google-cloud/firestore` (the engine of
@@ -55,6 +56,9 @@ with their tokens) while the Admin SDK writes; its transcripts are in
 `sdk_clear.mjs` clears data the ways test suites and the Emulator UI do (recursive delete,
 rules-unit-testing's `clearFirestore()`, `POST /reset`; needs `npm i @firebase/rules-unit-testing`)
 with listeners attached; its transcripts are in `results/sdk-clear-*.json`.
+
+`sdk_rest.mjs` drives the REST surface through the web SDK's Lite build (`firebase/firestore/lite`);
+its transcripts are in `results/sdk-rest-*.json`.
 
 `sdk_transactions.mjs` does the same for `runTransaction` (server transactions, retries on
 `ABORTED`, lock waits), and `sdk_web_transactions.mjs` for the web SDK (`npm i firebase`), whose
