@@ -1,0 +1,1563 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/transforms.py",
+ "cases": [
+  {
+   "name": "server time",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/t-server-time/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-server-time/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "b",
+          "setToServerValue": "REQUEST_TIME"
+         },
+         {
+          "fieldPath": "m.at",
+          "setToServerValue": "REQUEST_TIME"
+         }
+        ]
+       },
+       {
+        "update": {
+         "name": "projects/t-server-time/databases/(default)/documents/c/e",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "b",
+          "setToServerValue": "REQUEST_TIME"
+         }
+        ]
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.566755Z",
+        "transformResults": [
+         {
+          "timestampValue": "2026-10-10T03:18:04.392Z"
+         },
+         {
+          "timestampValue": "2026-10-10T03:18:04.392Z"
+         }
+        ]
+       },
+       {
+        "updateTime": "2026-10-10T03:18:04.566755Z",
+        "transformResults": [
+         {
+          "timestampValue": "2026-10-10T03:18:04.392Z"
+         }
+        ]
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.566755Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/t-server-time/databases/(default)/documents/c/d",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/t-server-time/databases/(default)/documents/c/d",
+      "fields": {
+       "a": {
+        "integerValue": "1"
+       },
+       "b": {
+        "timestampValue": "2026-10-10T03:18:04.392Z"
+       },
+       "m": {
+        "mapValue": {
+         "fields": {
+          "at": {
+           "timestampValue": "2026-10-10T03:18:04.392Z"
+          }
+         }
+        }
+       }
+      },
+      "createTime": "2026-10-10T03:18:04.566755Z",
+      "updateTime": "2026-10-10T03:18:04.566755Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "increment",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/t-increment/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-increment/databases/(default)/documents/c/d",
+         "fields": {
+          "i5": {
+           "integerValue": "5"
+          },
+          "dbl": {
+           "doubleValue": 1.5
+          },
+          "text": {
+           "stringValue": "x"
+          },
+          "big": {
+           "integerValue": "9223372036854775807"
+          },
+          "small": {
+           "integerValue": "-9223372036854775808"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.633754Z"
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.633754Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-increment/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-increment/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "updateMask": {
+         "fieldPaths": []
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "missing",
+          "increment": {
+           "integerValue": "5"
+          }
+         },
+         {
+          "fieldPath": "i5",
+          "increment": {
+           "integerValue": "3"
+          }
+         },
+         {
+          "fieldPath": "dbl",
+          "increment": {
+           "integerValue": "2"
+          }
+         },
+         {
+          "fieldPath": "text",
+          "increment": {
+           "integerValue": "7"
+          }
+         },
+         {
+          "fieldPath": "big",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "small",
+          "increment": {
+           "integerValue": "-1"
+          }
+         },
+         {
+          "fieldPath": "mixed",
+          "increment": {
+           "doubleValue": 0.5
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.646684Z",
+        "transformResults": [
+         {
+          "integerValue": "5"
+         },
+         {
+          "integerValue": "8"
+         },
+         {
+          "doubleValue": 3.5
+         },
+         {
+          "integerValue": "7"
+         },
+         {
+          "integerValue": "9223372036854775807"
+         },
+         {
+          "integerValue": "-9223372036854775808"
+         },
+         {
+          "doubleValue": 0.5
+         }
+        ]
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.646684Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/t-increment/databases/(default)/documents/c/d",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/t-increment/databases/(default)/documents/c/d",
+      "fields": {
+       "big": {
+        "integerValue": "9223372036854775807"
+       },
+       "small": {
+        "integerValue": "-9223372036854775808"
+       },
+       "missing": {
+        "integerValue": "5"
+       },
+       "mixed": {
+        "doubleValue": 0.5
+       },
+       "text": {
+        "integerValue": "7"
+       },
+       "i5": {
+        "integerValue": "8"
+       },
+       "dbl": {
+        "doubleValue": 3.5
+       }
+      },
+      "createTime": "2026-10-10T03:18:04.633754Z",
+      "updateTime": "2026-10-10T03:18:04.646684Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "increment int by double",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/t-increment-mixed/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-increment-mixed/databases/(default)/documents/c/d",
+         "fields": {
+          "n": {
+           "integerValue": "5"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.667058Z"
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.667058Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-increment-mixed/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-increment-mixed/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "updateMask": {
+         "fieldPaths": []
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "n",
+          "increment": {
+           "doubleValue": 2.5
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.676131Z",
+        "transformResults": [
+         {
+          "doubleValue": 7.5
+         }
+        ]
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.676131Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/t-increment-mixed/databases/(default)/documents/c/d",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/t-increment-mixed/databases/(default)/documents/c/d",
+      "fields": {
+       "n": {
+        "doubleValue": 7.5
+       }
+      },
+      "createTime": "2026-10-10T03:18:04.667058Z",
+      "updateTime": "2026-10-10T03:18:04.676131Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "maximum and minimum",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/t-minmax/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-minmax/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "3"
+          },
+          "b": {
+           "integerValue": "3"
+          },
+          "c": {
+           "integerValue": "3"
+          },
+          "e": {
+           "stringValue": "x"
+          },
+          "z": {
+           "doubleValue": -0.0
+          },
+          "n": {
+           "integerValue": "1"
+          },
+          "lo": {
+           "integerValue": "3"
+          },
+          "lo2": {
+           "integerValue": "3"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.698119Z"
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.698119Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-minmax/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-minmax/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "updateMask": {
+         "fieldPaths": []
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "a",
+          "maximum": {
+           "integerValue": "5"
+          }
+         },
+         {
+          "fieldPath": "b",
+          "maximum": {
+           "doubleValue": 3.0
+          }
+         },
+         {
+          "fieldPath": "c",
+          "maximum": {
+           "doubleValue": 2.5
+          }
+         },
+         {
+          "fieldPath": "missing",
+          "maximum": {
+           "integerValue": "7"
+          }
+         },
+         {
+          "fieldPath": "e",
+          "maximum": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "z",
+          "maximum": {
+           "doubleValue": 0.0
+          }
+         },
+         {
+          "fieldPath": "n",
+          "maximum": {
+           "doubleValue": "NaN"
+          }
+         },
+         {
+          "fieldPath": "lo",
+          "minimum": {
+           "doubleValue": 2.5
+          }
+         },
+         {
+          "fieldPath": "lo2",
+          "minimum": {
+           "doubleValue": 3.0
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.711381Z",
+        "transformResults": [
+         {
+          "integerValue": "5"
+         },
+         {
+          "integerValue": "3"
+         },
+         {
+          "integerValue": "3"
+         },
+         {
+          "integerValue": "7"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "doubleValue": 0.0
+         },
+         {
+          "doubleValue": "NaN"
+         },
+         {
+          "doubleValue": 2.5
+         },
+         {
+          "integerValue": "3"
+         }
+        ]
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.711381Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/t-minmax/databases/(default)/documents/c/d",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/t-minmax/databases/(default)/documents/c/d",
+      "fields": {
+       "b": {
+        "integerValue": "3"
+       },
+       "c": {
+        "integerValue": "3"
+       },
+       "z": {
+        "doubleValue": 0.0
+       },
+       "lo2": {
+        "integerValue": "3"
+       },
+       "a": {
+        "integerValue": "5"
+       },
+       "lo": {
+        "doubleValue": 2.5
+       },
+       "e": {
+        "integerValue": "1"
+       },
+       "missing": {
+        "integerValue": "7"
+       },
+       "n": {
+        "doubleValue": "NaN"
+       }
+      },
+      "createTime": "2026-10-10T03:18:04.698119Z",
+      "updateTime": "2026-10-10T03:18:04.711381Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "array union",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/t-union/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-union/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "arrayValue": {
+            "values": [
+             {
+              "integerValue": "1"
+             },
+             {
+              "stringValue": "a"
+             }
+            ]
+           }
+          },
+          "notarray": {
+           "integerValue": "5"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.732255Z"
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.732255Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-union/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-union/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "updateMask": {
+         "fieldPaths": []
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "a",
+          "appendMissingElements": {
+           "values": [
+            {
+             "doubleValue": 1.0
+            },
+            {
+             "stringValue": "b"
+            },
+            {
+             "stringValue": "b"
+            },
+            {
+             "nullValue": null
+            }
+           ]
+          }
+         },
+         {
+          "fieldPath": "missing",
+          "appendMissingElements": {
+           "values": [
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "doubleValue": "NaN"
+            },
+            {
+             "doubleValue": "NaN"
+            }
+           ]
+          }
+         },
+         {
+          "fieldPath": "notarray",
+          "appendMissingElements": {
+           "values": [
+            {
+             "stringValue": "x"
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.740822Z",
+        "transformResults": [
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         }
+        ]
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.740822Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/t-union/databases/(default)/documents/c/d",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/t-union/databases/(default)/documents/c/d",
+      "fields": {
+       "a": {
+        "arrayValue": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "stringValue": "a"
+          },
+          {
+           "stringValue": "b"
+          },
+          {
+           "nullValue": null
+          }
+         ]
+        }
+       },
+       "notarray": {
+        "arrayValue": {
+         "values": [
+          {
+           "stringValue": "x"
+          }
+         ]
+        }
+       },
+       "missing": {
+        "arrayValue": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "doubleValue": "NaN"
+          }
+         ]
+        }
+       }
+      },
+      "createTime": "2026-10-10T03:18:04.732255Z",
+      "updateTime": "2026-10-10T03:18:04.740822Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "array remove",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/t-remove/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-remove/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "arrayValue": {
+            "values": [
+             {
+              "integerValue": "1"
+             },
+             {
+              "doubleValue": 1.0
+             },
+             {
+              "integerValue": "2"
+             },
+             {
+              "doubleValue": "NaN"
+             },
+             {
+              "nullValue": null
+             },
+             {
+              "stringValue": "x"
+             },
+             {
+              "mapValue": {
+               "fields": {
+                "k": {
+                 "integerValue": "1"
+                }
+               }
+              }
+             }
+            ]
+           }
+          },
+          "notarray": {
+           "integerValue": "5"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.759786Z"
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.759786Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-remove/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-remove/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "updateMask": {
+         "fieldPaths": []
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "a",
+          "removeAllFromArray": {
+           "values": [
+            {
+             "integerValue": "1"
+            },
+            {
+             "doubleValue": "NaN"
+            },
+            {
+             "nullValue": null
+            },
+            {
+             "mapValue": {
+              "fields": {
+               "k": {
+                "doubleValue": 1.0
+               }
+              }
+             }
+            }
+           ]
+          }
+         },
+         {
+          "fieldPath": "missing",
+          "removeAllFromArray": {
+           "values": [
+            {
+             "integerValue": "1"
+            }
+           ]
+          }
+         },
+         {
+          "fieldPath": "notarray",
+          "removeAllFromArray": {
+           "values": [
+            {
+             "integerValue": "5"
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.768234Z",
+        "transformResults": [
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         }
+        ]
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.768234Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/t-remove/databases/(default)/documents/c/d",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/t-remove/databases/(default)/documents/c/d",
+      "fields": {
+       "a": {
+        "arrayValue": {
+         "values": [
+          {
+           "integerValue": "2"
+          },
+          {
+           "stringValue": "x"
+          }
+         ]
+        }
+       },
+       "notarray": {
+        "arrayValue": {}
+       },
+       "missing": {
+        "arrayValue": {}
+       }
+      },
+      "createTime": "2026-10-10T03:18:04.759786Z",
+      "updateTime": "2026-10-10T03:18:04.768234Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update then transform on the same field",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/t-order/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-order/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "a",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.787058Z",
+        "transformResults": [
+         {
+          "integerValue": "2"
+         }
+        ]
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.787058Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/t-order/databases/(default)/documents/c/d",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/t-order/databases/(default)/documents/c/d",
+      "fields": {
+       "a": {
+        "integerValue": "2"
+       }
+      },
+      "createTime": "2026-10-10T03:18:04.787058Z",
+      "updateTime": "2026-10-10T03:18:04.787058Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "transform on a masked field",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/t-mask-overlap/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-mask-overlap/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.802303Z"
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.802303Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-mask-overlap/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-mask-overlap/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "10"
+          }
+         }
+        },
+        "updateMask": {
+         "fieldPaths": [
+          "a"
+         ]
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "a",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.810178Z",
+        "transformResults": [
+         {
+          "integerValue": "11"
+         }
+        ]
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.810178Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/t-mask-overlap/databases/(default)/documents/c/d",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/t-mask-overlap/databases/(default)/documents/c/d",
+      "fields": {
+       "a": {
+        "integerValue": "11"
+       }
+      },
+      "createTime": "2026-10-10T03:18:04.802303Z",
+      "updateTime": "2026-10-10T03:18:04.810178Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "two transforms on one field",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/t-two/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-two/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "a",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "a",
+          "increment": {
+           "integerValue": "2"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.825910Z",
+        "transformResults": [
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "3"
+         }
+        ]
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.825910Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "transform through a non-map parent",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/t-parent/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-parent/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.835688Z"
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.835688Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-parent/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-parent/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "updateMask": {
+         "fieldPaths": []
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "a.b",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.842013Z",
+        "transformResults": [
+         {
+          "integerValue": "1"
+         }
+        ]
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.842013Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/t-parent/databases/(default)/documents/c/d",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/t-parent/databases/(default)/documents/c/d",
+      "fields": {
+       "a": {
+        "mapValue": {
+         "fields": {
+          "b": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      },
+      "createTime": "2026-10-10T03:18:04.835688Z",
+      "updateTime": "2026-10-10T03:18:04.842013Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "standalone transform write",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/t-standalone/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-standalone/databases/(default)/documents/c/d",
+         "fields": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.857247Z"
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.857247Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-standalone/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "transform": {
+         "document": "projects/t-standalone/databases/(default)/documents/c/d",
+         "fieldTransforms": [
+          {
+           "fieldPath": "n",
+           "increment": {
+            "integerValue": "1"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.865232Z",
+        "transformResults": [
+         {
+          "integerValue": "2"
+         }
+        ]
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.865232Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-standalone/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "transform": {
+         "document": "projects/t-standalone/databases/(default)/documents/c/missing",
+         "fieldTransforms": [
+          {
+           "fieldPath": "n",
+           "increment": {
+            "integerValue": "1"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.876025Z",
+        "transformResults": [
+         {
+          "integerValue": "1"
+         }
+        ]
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.876025Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/t-standalone/databases/(default)/documents/c/d",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/t-standalone/databases/(default)/documents/c/d",
+      "fields": {
+       "n": {
+        "integerValue": "2"
+       }
+      },
+      "createTime": "2026-10-10T03:18:04.857247Z",
+      "updateTime": "2026-10-10T03:18:04.865232Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/t-standalone/databases/(default)/documents/c/missing",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/t-standalone/databases/(default)/documents/c/missing",
+      "fields": {
+       "n": {
+        "integerValue": "1"
+       }
+      },
+      "createTime": "2026-10-10T03:18:04.876025Z",
+      "updateTime": "2026-10-10T03:18:04.876025Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "transform that changes nothing",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/t-noop/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-noop/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "arrayValue": {
+            "values": [
+             {
+              "integerValue": "1"
+             }
+            ]
+           }
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.893393Z"
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.893393Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-noop/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-noop/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "updateMask": {
+         "fieldPaths": []
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "a",
+          "appendMissingElements": {
+           "values": [
+            {
+             "integerValue": "1"
+            }
+           ]
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.893393Z",
+        "transformResults": [
+         {
+          "nullValue": null
+         }
+        ]
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.898539Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/t-noop/databases/(default)/documents/c/d",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/t-noop/databases/(default)/documents/c/d",
+      "fields": {
+       "a": {
+        "arrayValue": {
+         "values": [
+          {
+           "integerValue": "1"
+          }
+         ]
+        }
+       }
+      },
+      "createTime": "2026-10-10T03:18:04.893393Z",
+      "updateTime": "2026-10-10T03:18:04.893393Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "increment by a string",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/t-bad-operand/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-bad-operand/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "a",
+          "increment": {
+           "stringValue": "x"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Input must be int64 or double.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "server time with a precondition on a missing document",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/t-precondition/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-precondition/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        },
+        "currentDocument": {
+         "exists": false
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "t",
+          "setToServerValue": "REQUEST_TIME"
+         }
+        ]
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T03:18:04.923267Z",
+        "transformResults": [
+         {
+          "timestampValue": "2026-10-10T03:18:04.922Z"
+         }
+        ]
+       }
+      ],
+      "commitTime": "2026-10-10T03:18:04.923267Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/t-precondition/databases/(default)/documents/c/d",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/t-precondition/databases/(default)/documents/c/d",
+      "fields": {
+       "a": {
+        "integerValue": "1"
+       },
+       "t": {
+        "timestampValue": "2026-10-10T03:18:04.922Z"
+       }
+      },
+      "createTime": "2026-10-10T03:18:04.923267Z",
+      "updateTime": "2026-10-10T03:18:04.923267Z"
+     }
+    }
+   ]
+  }
+ ]
+}
