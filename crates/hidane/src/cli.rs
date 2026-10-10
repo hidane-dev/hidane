@@ -259,12 +259,13 @@ fn wrap(text: &str, width: usize) -> Vec<String> {
     lines
 }
 
-/// Output of `--licenses`.
+/// Output of `--licenses`: hidane's license, then the notices of the software built into it
+/// (embedded by `build.rs` in release builds).
 pub fn licenses() -> String {
     format!(
-        "hidane {}\nLicense: MIT OR Apache-2.0\nSource: https://github.com/hidane-dev/hidane\n\
-         Third-party license notices will ship with release binaries ({ISSUES}/56).\n",
-        env!("CARGO_PKG_VERSION")
+        "hidane {}\nLicense: MIT OR Apache-2.0\nSource: https://github.com/hidane-dev/hidane\n\n{}",
+        env!("CARGO_PKG_VERSION"),
+        include_str!(concat!(env!("OUT_DIR"), "/third-party-licenses.txt"))
     )
 }
 

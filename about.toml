@@ -1,0 +1,15 @@
+# cargo-about: the third-party notices shipped with release binaries
+# (`cargo about generate --locked --fail about.hbs`, see docs/releasing.md).
+accepted = ["MIT", "Apache-2.0", "BSD-3-Clause", "Unicode-3.0"]
+# Every target a release is built for.
+targets = [
+    "x86_64-unknown-linux-musl",
+    "aarch64-unknown-linux-musl",
+    "aarch64-apple-darwin",
+    "x86_64-apple-darwin",
+    "x86_64-pc-windows-msvc",
+]
+ignore-build-dependencies = true
+ignore-dev-dependencies = true
+# hidane's own crates.
+private = { ignore = true }
