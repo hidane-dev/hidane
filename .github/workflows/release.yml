@@ -78,7 +78,7 @@ jobs:
           mkdir "$name"
           ext=""
           [[ "$TARGET" == *windows* ]] && ext=".exe"
-          cp "target/$TARGET/release/hidane$ext" LICENSE README.md "$name/"
+          cp "target/$TARGET/release/hidane$ext" LICENSE-MIT LICENSE-APACHE README.md "$name/"
           if [[ "$TARGET" == *windows* ]]; then
             7z a -tzip "$name.zip" "$name" > /dev/null
             echo "archive=$name.zip" >> "$GITHUB_OUTPUT"

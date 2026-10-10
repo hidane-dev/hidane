@@ -1,7 +1,7 @@
 # ADR 0001: License
 
-- **Status**: Draft (undecided)
-- **Date**: 2026-10-09
+- **Status**: Accepted
+- **Date**: 2026-10-09 (accepted 2026-10-10)
 
 ## Context
 
@@ -31,10 +31,18 @@ licensed and the Go one (maestro-runner) is Apache-2.0 only; none documents why.
 
 ## Decision
 
-Undecided. Placeholder: MIT (current). Revisit B before Phase 1 starts. If changed, update
-`LICENSE` and the three `reserve/` package manifests in the same commit.
+**B. `MIT OR Apache-2.0`**, before the first release (#76). Every commit so far is the
+maintainer's, so the change needs no one else's consent; after outside contributions it would.
+
+- `LICENSE-MIT` and `LICENSE-APACHE` at the root; `license = "MIT OR Apache-2.0"` in the
+  workspace `Cargo.toml`, so every crate inherits it.
+- The `reserve/` packages changed in the same commit: `license = "MIT OR Apache-2.0"` for the
+  crate, `"(MIT OR Apache-2.0)"` for npm (its SPDX expression syntax), and for pub.dev, which
+  reads a single `LICENSE` file, both texts in that file. Whether pub.dev's analysis lists both
+  is checked when the first real version is published.
+- Contributions are dual licensed as above unless stated otherwise (README, `CONTRIBUTING.md`).
 
 ## Consequences
 
 - Tracked as a backlog issue (`area:distribution`, `area:docs`)
-- `CONTRIBUTING.md` already states that the license may change
+- Release archives ship `LICENSE-MIT` and `LICENSE-APACHE`

@@ -15,7 +15,7 @@ Each release has one archive per target, its checksum and its build provenance:
 | Windows x64 | `hidane-<version>-x86_64-pc-windows-msvc.zip` |
 
 An archive holds one directory, `hidane-<version>-<target>/`, with the `hidane` binary
-(`hidane.exe` on Windows), `LICENSE` and `README.md`. `sha256sums.txt` lists the SHA-256 of every
+(`hidane.exe` on Windows), `LICENSE-MIT`, `LICENSE-APACHE` and `README.md`. `sha256sums.txt` lists the SHA-256 of every
 archive, as `sha256sum` prints it. Linux binaries are statically linked, so they run on any
 distribution, Alpine included.
 
