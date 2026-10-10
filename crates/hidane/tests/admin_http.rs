@@ -17,7 +17,7 @@ async fn start(admin: hidane::Admin) -> SocketAddr {
         let admin = admin.clone();
         async move { admin.shutdown_requested().await }
     };
-    let grpc = hidane::grpc_routes(admin.store());
+    let grpc = hidane::grpc_routes(&admin);
     tokio::spawn(hidane::serve(
         vec![listener],
         grpc,

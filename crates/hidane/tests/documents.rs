@@ -43,7 +43,7 @@ async fn start() -> (Client, hidane::Admin, SocketAddr) {
     let admin = hidane::Admin::default();
     tokio::spawn(hidane::serve(
         vec![listener],
-        hidane::grpc_routes(admin.store()),
+        hidane::grpc_routes(&admin),
         hidane::http_routes(admin.clone()),
         std::future::pending(),
     ));

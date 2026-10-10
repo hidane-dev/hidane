@@ -17,6 +17,7 @@ curl -X POST http://127.0.0.1:8086/shutdown
 | `value_order.py` + `value_order_cases.json` | How are values ordered, which values are equal, and how are document names ordered in a collection group? | `crates/hidane-core/tests/fixtures/value_order.json` | `crates/hidane-core/tests/official_order.rs` |
 | `transforms.py` | How are field transforms applied (server time, increment, maximum / minimum, array union / remove), in which order, with which results? | `crates/hidane/tests/fixtures/transforms.json` | `crates/hidane/tests/transforms.rs` |
 | `document_writes.py` | How do document reads and writes answer, including errors, preconditions, masks, paging and admin checks? | `crates/hidane/tests/fixtures/document_writes.json` | `crates/hidane/tests/documents.rs` |
+| `transactions.py` | What do transactions lock, how long do writes wait, when do transactions end, and how are `verify` writes checked? Scenarios with concurrent steps and timing; needs `grpcurl` on `PATH` and takes about two minutes | `crates/hidane/tests/fixtures/transactions.json` | `crates/hidane/tests/transactions.rs` |
 
 `sdk_documents.mjs` drives the same operations through `@google-cloud/firestore` (the engine of
 firebase-admin) and prints a transcript without absolute timestamps. Run it from a directory
@@ -29,3 +30,8 @@ FIRESTORE_EMULATOR_HOST=127.0.0.1:8189 node sdk_documents.mjs > hidane.json     
 ```
 
 The transcripts of the last run are in `results/sdk-documents-*.json`.
+
+`sdk_transactions.mjs` does the same for `runTransaction` (server transactions, retries on
+`ABORTED`, lock waits), and `sdk_web_transactions.mjs` for the web SDK (`npm i firebase`), whose
+transactions use preconditions and `verify` writes instead. Their transcripts are in
+`results/sdk-transactions-*.json` and `results/sdk-web-transactions-*.json`.

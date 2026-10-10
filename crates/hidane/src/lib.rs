@@ -47,18 +47,21 @@ use tokio::{
 use tower::ServiceExt;
 
 pub use firestore::FirestoreService;
+use firestore::transactions::Transactions;
 
 /// How long open connections (e.g. Listen streams) get to finish after a shutdown signal.
 /// firebase-tools waits 4 s after SIGINT before giving up on the process.
 pub const SHUTDOWN_GRACE: Duration = Duration::from_secs(2);
 
-/// The emulator's state shared by every protocol: the store and the shutdown flag.
+/// The emulator's state shared by every protocol: the store, the open transactions and the
+/// shutdown flag.
 ///
 /// The shutdown request is a sticky flag rather than a one-shot notification, so every waiter
 /// sees it, including one that starts waiting after the request arrived.
 #[derive(Clone)]
 pub struct Admin {
     store: Arc<dyn Store>,
+    transactions: Arc<Transactions>,
     shutdown: Arc<watch::Sender<bool>>,
 }
 
@@ -73,6 +76,7 @@ impl Admin {
     pub fn new(store: Arc<dyn Store>) -> Self {
         Self {
             store,
+            transactions: Arc::default(),
             shutdown: Arc::new(watch::Sender::new(false)),
         }
     }
@@ -118,8 +122,10 @@ async fn not_found() -> (StatusCode, &'static str) {
 }
 
 async fn reset(State(admin): State<Admin>) -> &'static str {
-    // Every document of every project. Notifying open Listen streams is #33.
+    // Every document of every project, and every open transaction with its locks, as on the
+    // official emulator. Notifying open Listen streams is #33.
     admin.store.clear();
+    admin.transactions.clear();
     "Resetting...\n"
 }
 
@@ -131,7 +137,7 @@ async fn shutdown(State(admin): State<Admin>) -> &'static str {
 
 /// gRPC services: `google.firestore.v1.Firestore` plus server reflection (v1 and v1alpha, so
 /// both current and older `grpcurl` versions can list and describe the API).
-pub fn grpc_routes(store: Arc<dyn Store>) -> Router {
+pub fn grpc_routes(admin: &Admin) -> Router {
     let reflection = || {
         tonic_reflection::server::Builder::configure()
             .register_encoded_file_descriptor_set(hidane_proto::FILE_DESCRIPTOR_SET)
@@ -142,7 +148,9 @@ pub fn grpc_routes(store: Arc<dyn Store>) -> Router {
     let reflection_v1alpha = reflection()
         .build_v1alpha()
         .expect("embedded descriptor set is valid");
-    tonic::service::Routes::new(FirestoreServer::new(FirestoreService::new(store)))
+    let firestore =
+        FirestoreService::with_transactions(admin.store(), Arc::clone(&admin.transactions));
+    tonic::service::Routes::new(FirestoreServer::new(firestore))
         .add_service(reflection_v1)
         .add_service(reflection_v1alpha)
         .into_axum_router()

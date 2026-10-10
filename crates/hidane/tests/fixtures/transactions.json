@@ -1,0 +1,2664 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/transactions.py",
+ "scenarios": [
+  {
+   "name": "an outside write waits for a read lock and proceeds when the transaction commits",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "read",
+     "label": "T reads c/d",
+     "txn": "T",
+     "documents": [
+      "c/d"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/d",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside write to c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 2
+      }
+     ],
+     "background": true,
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.5
+     }
+    },
+    {
+     "op": "sleep",
+     "label": "sleep",
+     "seconds": 0.5
+    },
+    {
+     "op": "commit",
+     "label": "T writes c/d",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 3
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "wait",
+     "label": "wait",
+     "for": [
+      "outside write to c/d"
+     ]
+    },
+    {
+     "op": "get",
+     "label": "final c/d",
+     "document": "c/d",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "name": "c/d",
+       "n": 2
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "an outside write gives up after the lock timeout",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "read",
+     "label": "T reads c/d",
+     "txn": "T",
+     "documents": [
+      "c/d"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/d",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside write to c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "get",
+     "label": "plain get of c/d does not wait",
+     "document": "c/d",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "name": "c/d",
+       "n": 1
+      }
+     }
+    },
+    {
+     "op": "commit",
+     "label": "T writes c/d",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 3
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "get",
+     "label": "final c/d",
+     "document": "c/d",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "name": "c/d",
+       "n": 3
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "updates, deletes and creates all wait for read locks",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "read",
+     "label": "T reads c/d and missing c/m",
+     "txn": "T",
+     "documents": [
+      "c/d",
+      "c/m"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/d",
+         "n": 1
+        }
+       },
+       {
+        "missing": "c/m"
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside delete of c/d",
+     "writes": [
+      {
+       "delete": "c/d"
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside create of c/m",
+     "writes": [
+      {
+       "update": "c/m",
+       "n": 1,
+       "exists": false
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside write to unread c/x",
+     "writes": [
+      {
+       "update": "c/x",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "T writes c/m",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/m",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    }
+   ]
+  },
+  {
+   "name": "rollback releases the locks and ends the transaction",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "read",
+     "label": "T reads c/d",
+     "txn": "T",
+     "documents": [
+      "c/d"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/d",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside write to c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 2
+      }
+     ],
+     "background": true,
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.5
+     }
+    },
+    {
+     "op": "sleep",
+     "label": "sleep",
+     "seconds": 0.5
+    },
+    {
+     "op": "rollback",
+     "label": "rollback T",
+     "txn": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "wait",
+     "label": "wait",
+     "for": [
+      "outside write to c/d"
+     ]
+    },
+    {
+     "op": "rollback",
+     "label": "rollback T again",
+     "txn": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "read",
+     "label": "T reads after rollback",
+     "txn": "T",
+     "documents": [
+      "c/d"
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "T commits after rollback",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 3
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "get",
+     "label": "final c/d",
+     "document": "c/d",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "name": "c/d",
+       "n": 2
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "two transactions that read and then write the same document",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T1",
+     "as": "T1",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T2",
+     "as": "T2",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQMAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "read",
+     "label": "T1 reads c/d",
+     "txn": "T1",
+     "documents": [
+      "c/d"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/d",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "read",
+     "label": "T2 reads c/d",
+     "txn": "T2",
+     "documents": [
+      "c/d"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/d",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "T1 writes c/d",
+     "txn": "T1",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 10
+      }
+     ],
+     "background": true,
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "sleep",
+     "label": "sleep",
+     "seconds": 0.5
+    },
+    {
+     "op": "commit",
+     "label": "T2 writes c/d",
+     "txn": "T2",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 20
+      }
+     ],
+     "background": true,
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 1.5
+     }
+    },
+    {
+     "op": "wait",
+     "label": "wait",
+     "for": [
+      "T1 writes c/d",
+      "T2 writes c/d"
+     ]
+    },
+    {
+     "op": "read",
+     "label": "T1 reads after its lock timeout",
+     "txn": "T1",
+     "documents": [
+      "c/d"
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "rollback",
+     "label": "rollback T1 after its lock timeout",
+     "txn": "T1",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "get",
+     "label": "final c/d",
+     "document": "c/d",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "name": "c/d",
+       "n": 20
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "a transaction does not wait for its own locks",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/a and c/b",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 1
+      },
+      {
+       "update": "c/b",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "read",
+     "label": "T reads c/a",
+     "txn": "T",
+     "documents": [
+      "c/a"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/a",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "list",
+     "label": "T lists c",
+     "txn": "T",
+     "collection": "c",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "name": "c/a",
+        "n": 1
+       },
+       {
+        "name": "c/b",
+        "n": 1
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "T writes c/a, c/b and c/new",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 2
+      },
+      {
+       "update": "c/b",
+       "n": 2
+      },
+      {
+       "update": "c/new",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    }
+   ]
+  },
+  {
+   "name": "a read-only transaction takes no locks and reads one snapshot",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin R",
+     "as": "R",
+     "options": {
+      "readOnly": {}
+     },
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "read",
+     "label": "R reads c/d",
+     "txn": "R",
+     "documents": [
+      "c/d"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/d",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside write to c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "read",
+     "label": "R reads c/d again",
+     "txn": "R",
+     "documents": [
+      "c/d"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/d",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "get",
+     "label": "R gets c/d",
+     "txn": "R",
+     "document": "c/d",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "name": "c/d",
+       "n": 1
+      }
+     }
+    },
+    {
+     "op": "commit",
+     "label": "R tries to write",
+     "txn": "R",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 3
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Cannot modify entities in a read-only transaction.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "read",
+     "label": "R is still open",
+     "txn": "R",
+     "documents": [
+      "c/d"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/d",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "R commits nothing",
+     "txn": "R",
+     "writes": [],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "read",
+     "label": "R reads after its commit",
+     "txn": "R",
+     "documents": [
+      "c/d"
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    }
+   ]
+  },
+  {
+   "name": "a read-write transaction reads the latest version of each document",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/a and c/b",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 1
+      },
+      {
+       "update": "c/b",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "read",
+     "label": "T reads c/a",
+     "txn": "T",
+     "documents": [
+      "c/a"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/a",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside write to c/b",
+     "writes": [
+      {
+       "update": "c/b",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "read",
+     "label": "T reads c/b",
+     "txn": "T",
+     "documents": [
+      "c/b"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/b",
+         "n": 2
+        }
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "a transaction is single-use",
+   "steps": [
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQEAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "commit",
+     "label": "T commits",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "T commits again",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "read",
+     "label": "T reads after its commit",
+     "txn": "T",
+     "documents": [
+      "c/d"
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "rollback",
+     "label": "rollback after commit",
+     "txn": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin E",
+     "as": "E",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "commit",
+     "label": "E commits nothing",
+     "txn": "E",
+     "writes": [],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "read",
+     "label": "E reads after its empty commit",
+     "txn": "E",
+     "documents": [
+      "c/d"
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    }
+   ]
+  },
+  {
+   "name": "a failed precondition ends the transaction, an invalid write does not",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/a and c/b",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 1
+      },
+      {
+       "update": "c/b",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "commit",
+     "label": "T writes a reserved field name",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 2,
+       "reserved": true
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "field name __x__ is reserved",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "read",
+     "label": "T is still open",
+     "txn": "T",
+     "documents": [
+      "c/a"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/a",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "T creates existing c/a",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 2,
+       "exists": false
+      }
+     ],
+     "compare": "status",
+     "outcome": {
+      "status": "ALREADY_EXISTS",
+      "message": "entity already exists: EntityRef[partitionRef=dev~{project}, path=/c/a]",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "read",
+     "label": "T reads after the failed precondition",
+     "txn": "T",
+     "documents": [
+      "c/a"
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin L",
+     "as": "L",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQMAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "read",
+     "label": "L reads c/b",
+     "txn": "L",
+     "documents": [
+      "c/b"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/b",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "invalid outside write to locked c/b does not wait",
+     "writes": [
+      {
+       "update": "c/b",
+       "n": 2,
+       "reserved": true
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "field name __x__ is reserved",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside create of locked existing c/b waits",
+     "writes": [
+      {
+       "update": "c/b",
+       "n": 2,
+       "exists": false
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    }
+   ]
+  },
+  {
+   "name": "a commit waits for every target and stays atomic",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "read",
+     "label": "T reads c/d",
+     "txn": "T",
+     "documents": [
+      "c/d"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/d",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside write to c/d and c/free",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 2
+      },
+      {
+       "update": "c/free",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "get",
+     "label": "c/free was not written",
+     "document": "c/free",
+     "outcome": {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/{project}/databases/(default)/documents/c/free) not found.",
+      "elapsed": 0.0
+     }
+    }
+   ]
+  },
+  {
+   "name": "BatchWrite waits for each locked write in turn",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/a and c/b",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 1
+      },
+      {
+       "update": "c/b",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "read",
+     "label": "T reads c/a and c/b",
+     "txn": "T",
+     "documents": [
+      "c/a",
+      "c/b"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/a",
+         "n": 1
+        }
+       },
+       {
+        "found": {
+         "name": "c/b",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "batchWrite",
+     "label": "batch write c/a, c/b and c/c",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 2
+      },
+      {
+       "update": "c/b",
+       "n": 2
+      },
+      {
+       "update": "c/c",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 4.0,
+      "result": [
+       {
+        "status": "ABORTED",
+        "message": "Transaction lock timeout."
+       },
+       {
+        "status": "ABORTED",
+        "message": "Transaction lock timeout."
+       },
+       {
+        "status": "OK",
+        "message": ""
+       }
+      ]
+     }
+    },
+    {
+     "op": "get",
+     "label": "c/c was written",
+     "document": "c/c",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "name": "c/c",
+       "n": 2
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "GetDocument in a transaction locks the document",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "get",
+     "label": "T gets c/d",
+     "txn": "T",
+     "document": "c/d",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "name": "c/d",
+       "n": 1
+      }
+     }
+    },
+    {
+     "op": "get",
+     "label": "T gets missing c/m",
+     "txn": "T",
+     "document": "c/m",
+     "outcome": {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/{project}/databases/(default)/documents/c/m) not found.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside write to c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside create of c/m",
+     "writes": [
+      {
+       "update": "c/m",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    }
+   ]
+  },
+  {
+   "name": "ListDocuments in a transaction locks every collection with that ID",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/a and c/b",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 1
+      },
+      {
+       "update": "c/b",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "list",
+     "label": "T lists one document of c",
+     "txn": "T",
+     "collection": "c",
+     "pageSize": 1,
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "name": "c/a",
+        "n": 1
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside write to listed c/a",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside write to c/b on the next page",
+     "writes": [
+      {
+       "update": "c/b",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside create of c/new",
+     "writes": [
+      {
+       "update": "c/new",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside create of x/y/c/z",
+     "writes": [
+      {
+       "update": "x/y/c/z",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside create of c/a/sub/x",
+     "writes": [
+      {
+       "update": "c/a/sub/x",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside create of other/x",
+     "writes": [
+      {
+       "update": "other/x",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    }
+   ]
+  },
+  {
+   "name": "BatchGetDocuments can start a transaction",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "read",
+     "label": "new read-write transaction reads c/d",
+     "new": {
+      "readWrite": {}
+     },
+     "documents": [
+      "c/d"
+     ],
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "transaction": "EQIAAAAAAAAA"
+       },
+       {
+        "found": {
+         "name": "c/d",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside write to c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "read",
+     "label": "new read-only transaction reads c/d",
+     "new": {
+      "readOnly": {}
+     },
+     "documents": [
+      "c/d"
+     ],
+     "as": "R",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "transaction": "EQQAAAAAAAAA"
+       },
+       {
+        "found": {
+         "name": "c/d",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "read",
+     "label": "new transaction reads nothing",
+     "new": {
+      "readWrite": {}
+     },
+     "documents": [],
+     "as": "E",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "transaction": "EQUAAAAAAAAA"
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "T writes c/d",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 3
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    }
+   ]
+  },
+  {
+   "name": "a verify checks a precondition without writing",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/a and c/b",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 1
+      },
+      {
+       "update": "c/b",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "verify existing c/a",
+     "writes": [
+      {
+       "verify": "c/a",
+       "exists": true
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "verify missing c/m exists",
+     "writes": [
+      {
+       "verify": "c/m",
+       "exists": true
+      }
+     ],
+     "compare": "status",
+     "outcome": {
+      "status": "NOT_FOUND",
+      "message": "no entity to update: app: \"dev~{project}\"\npath <\n  Element {\n    type: \"c\"\n    name: \"m\"\n  }\n>\n",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "verify missing c/m does not exist",
+     "writes": [
+      {
+       "verify": "c/m",
+       "exists": false
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "get",
+     "label": "c/m was not created",
+     "document": "c/m",
+     "outcome": {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/{project}/databases/(default)/documents/c/m) not found.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "verify without a precondition",
+     "writes": [
+      {
+       "verify": "c/a"
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "a verify must contain a precondition",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "verify with a mask",
+     "writes": [
+      {
+       "verify": "c/a",
+       "exists": true,
+       "mask": [
+        "x"
+       ]
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "a verify must not specify a document mask.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "verify with a transform",
+     "writes": [
+      {
+       "verify": "c/a",
+       "exists": true,
+       "increment": "n"
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "a verify must not specify a update transform.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "verify then write c/a",
+     "writes": [
+      {
+       "verify": "c/a",
+       "exists": true
+      },
+      {
+       "update": "c/a",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "the same document cannot be verified and then written in a single request",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "write then verify c/a",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 2
+      },
+      {
+       "verify": "c/a",
+       "exists": true
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "the same document cannot be written and then verified in a single request",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "verify c/a twice",
+     "writes": [
+      {
+       "verify": "c/a",
+       "exists": true
+      },
+      {
+       "verify": "c/a",
+       "exists": true
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "the same document cannot be verified more than once in a single request",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "failing verify and a write",
+     "writes": [
+      {
+       "verify": "c/m",
+       "exists": true
+      },
+      {
+       "update": "c/x",
+       "n": 1
+      }
+     ],
+     "compare": "status",
+     "outcome": {
+      "status": "NOT_FOUND",
+      "message": "no entity to update: app: \"dev~{project}\"\npath <\n  Element {\n    type: \"c\"\n    name: \"m\"\n  }\n>\n",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "get",
+     "label": "c/x was not written",
+     "document": "c/x",
+     "outcome": {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/{project}/databases/(default)/documents/c/x) not found.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQsAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "read",
+     "label": "T reads c/b",
+     "txn": "T",
+     "documents": [
+      "c/b"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/b",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside verify of locked c/b",
+     "writes": [
+      {
+       "verify": "c/b",
+       "exists": true
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "T verifies c/b",
+     "txn": "T",
+     "writes": [
+      {
+       "verify": "c/b",
+       "exists": true
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "batchWrite",
+     "label": "batch write of two verifies",
+     "writes": [
+      {
+       "verify": "c/a",
+       "exists": true
+      },
+      {
+       "verify": "c/m",
+       "exists": true
+      }
+     ],
+     "compare": "codes",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "status": "OK",
+        "message": ""
+       },
+       {
+        "status": "NOT_FOUND",
+        "message": "no entity to update: app: \"dev~{project}\"\npath <\n  Element {\n    type: \"c\"\n    name: \"m\"\n  }\n>\n"
+       }
+      ]
+     }
+    },
+    {
+     "op": "batchWrite",
+     "label": "batch write with an invalid write",
+     "writes": [
+      {
+       "update": "c/r",
+       "n": 1,
+       "reserved": true
+      },
+      {
+       "update": "c/ok",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "field name __x__ is reserved",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "get",
+     "label": "c/ok was not written",
+     "document": "c/ok",
+     "outcome": {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/{project}/databases/(default)/documents/c/ok) not found.",
+      "elapsed": 0.0
+     }
+    }
+   ]
+  },
+  {
+   "name": "the optimistic concurrency mode still locks",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T optimistic",
+     "as": "T",
+     "options": {
+      "readWrite": {
+       "concurrencyMode": "OPTIMISTIC"
+      }
+     },
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "read",
+     "label": "T reads c/d",
+     "txn": "T",
+     "documents": [
+      "c/d"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/d",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside write to c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "T writes c/d",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 3
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    }
+   ]
+  },
+  {
+   "name": "BeginTransaction and Rollback reject bad input",
+   "steps": [
+    {
+     "op": "begin",
+     "label": "begin with no options",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQEAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "begin",
+     "label": "read-only at a time before retention",
+     "as": "X",
+     "options": {
+      "readOnly": {
+       "readTime": "2020-01-01T00:00:00Z"
+      }
+     },
+     "outcome": {
+      "status": "FAILED_PRECONDITION",
+      "message": "The requested 'read_time' is too old.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "read-only at a future time",
+     "as": "Y",
+     "options": {
+      "readOnly": {
+       "readTime": "2999-01-01T00:00:00Z"
+      }
+     },
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "The requested 'read_time' cannot be in the future.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "retry of T",
+     "as": "T2",
+     "options": {
+      "readWrite": {
+       "retryTransaction": "{T}"
+      }
+     },
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "begin",
+     "label": "retry of malformed bytes",
+     "as": "Z",
+     "options": {
+      "readWrite": {
+       "retryTransaction": "AAAA"
+      }
+     },
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid transaction.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "rollback",
+     "label": "rollback of malformed bytes",
+     "raw": "AAAA",
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid transaction.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "rollback",
+     "label": "rollback without a transaction",
+     "raw": "",
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid transaction.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "commit with malformed bytes",
+     "raw": "AAAA",
+     "writes": [],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid transaction.",
+      "elapsed": 0.0
+     }
+    }
+   ]
+  },
+  {
+   "name": "reset forgets open transactions and their locks",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "read",
+     "label": "T reads c/d",
+     "txn": "T",
+     "documents": [
+      "c/d"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/d",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "reset",
+     "label": "reset",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside write to c/d after reset",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "T commits after reset",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 3
+      }
+     ],
+     "compare": "none",
+     "outcome": {
+      "status": "UNKNOWN",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin after reset",
+     "as": "U",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "an idle transaction expires after 60 seconds",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "read",
+     "label": "T reads c/d",
+     "txn": "T",
+     "documents": [
+      "c/d"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "found": {
+         "name": "c/d",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "sleep",
+     "label": "sleep 45 s",
+     "seconds": 45
+    },
+    {
+     "op": "begin",
+     "label": "begin K",
+     "as": "K",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQMAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "read",
+     "label": "K reads c/k",
+     "txn": "K",
+     "documents": [
+      "c/k"
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "missing": "c/k"
+       }
+      ]
+     }
+    },
+    {
+     "op": "sleep",
+     "label": "sleep 17 s",
+     "seconds": 17
+    },
+    {
+     "op": "commit",
+     "label": "outside write to c/d after 62 s",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside write to c/k 17 s after K's read",
+     "writes": [
+      {
+       "update": "c/k",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "T commits after expiring",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 3
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    }
+   ],
+   "slow": true
+  }
+ ]
+}

@@ -1,14 +1,16 @@
 //! `google.firestore.v1.Firestore`.
 //!
 //! Implemented: GetDocument, ListDocuments, CreateDocument, UpdateDocument, DeleteDocument,
-//! BatchGetDocuments, Commit, BatchWrite, ListCollectionIds. The rest answer `UNIMPLEMENTED`
-//! through the generated default stubs until their issues land.
+//! BatchGetDocuments, BeginTransaction, Commit, Rollback, BatchWrite, ListCollectionIds. The
+//! rest answer `UNIMPLEMENTED` through the generated default stubs until their issues land.
 //!
 //! Behaviour follows the official emulator as recorded in `tests/fixtures/document_writes.json`
-//! (`tools/oracle/document_writes.py`), including its error messages, except where the official
+//! (`tools/oracle/document_writes.py`) and `tests/fixtures/transactions.json`
+//! (`tools/oracle/transactions.py`), including its error messages, except where the official
 //! message prints internal Datastore keys (docs/parity-exceptions.md).
 
 mod names;
+pub(crate) mod transactions;
 mod validate;
 mod writes;
 
@@ -31,30 +33,46 @@ use hidane_core::{
 use hidane_proto::google::{
     firestore::v1::{
         BatchGetDocumentsRequest, BatchGetDocumentsResponse, BatchWriteRequest, BatchWriteResponse,
-        CommitRequest, CommitResponse, CreateDocumentRequest, DeleteDocumentRequest, Document,
-        DocumentMask, GetDocumentRequest, ListCollectionIdsRequest, ListCollectionIdsResponse,
-        ListDocumentsRequest, ListDocumentsResponse, Precondition, UpdateDocumentRequest, Write,
-        WriteResult, batch_get_documents_request, batch_get_documents_response,
-        firestore_server::Firestore, get_document_request, list_collection_ids_request,
-        list_documents_request, precondition::ConditionType, write::Operation,
+        BeginTransactionRequest, BeginTransactionResponse, CommitRequest, CommitResponse,
+        CreateDocumentRequest, DeleteDocumentRequest, Document, DocumentMask, GetDocumentRequest,
+        ListCollectionIdsRequest, ListCollectionIdsResponse, ListDocumentsRequest,
+        ListDocumentsResponse, Precondition, RollbackRequest, TransactionOptions,
+        UpdateDocumentRequest, Write, WriteResult, batch_get_documents_request,
+        batch_get_documents_response, firestore_server::Firestore, get_document_request,
+        list_collection_ids_request, list_documents_request, precondition::ConditionType,
+        transaction_options, write::Operation,
     },
     rpc,
 };
 use prost_types::Timestamp;
 use tonic::{Request, Response, Status, async_trait, codegen::BoxStream};
 
-use self::names::Name;
+use self::{
+    names::Name,
+    transactions::{Mode, Transactions},
+};
 
 const METADATA_ADMIN: &str = "Metadata operations require admin authentication.";
 const BATCH_WRITE_ADMIN: &str = "Batch writes require admin authentication.";
 
 pub struct FirestoreService {
     store: Arc<dyn Store>,
+    transactions: Arc<Transactions>,
 }
 
 impl FirestoreService {
     pub fn new(store: Arc<dyn Store>) -> Self {
-        Self { store }
+        Self::with_transactions(store, Arc::default())
+    }
+
+    pub(crate) fn with_transactions(
+        store: Arc<dyn Store>,
+        transactions: Arc<Transactions>,
+    ) -> Self {
+        Self {
+            store,
+            transactions,
+        }
     }
 
     fn read_time(&self, database: &str, requested: Option<&Timestamp>) -> Result<ReadTime, Status> {
@@ -103,6 +121,74 @@ impl FirestoreService {
         }
     }
 
+    /// Validates `writes`, waits for the locks on their documents and commits them atomically,
+    /// in `transaction` if given. `None` for an empty commit, which has no commit time.
+    async fn write(
+        &self,
+        database: &str,
+        transaction: Option<&[u8]>,
+        writes: &[Write],
+    ) -> Result<Option<(ReadTime, Vec<WriteResult>)>, Status> {
+        // Invalid writes fail before waiting for any lock, as on the official emulator.
+        writes::check_verifies(writes)?;
+        let targets = writes
+            .iter()
+            .map(|write| writes::validate(database, write))
+            .collect::<Result<Vec<_>, _>>()?;
+        self.transactions
+            .commit(database, transaction, &targets, || {
+                if writes.is_empty() {
+                    return Ok(None);
+                }
+                self.commit_writes(database, writes).map(Some)
+            })
+            .await
+    }
+
+    /// Opens a transaction with `options` (read-write when absent) and returns its ID.
+    fn begin(
+        &self,
+        database: &str,
+        options: Option<&TransactionOptions>,
+    ) -> Result<Vec<u8>, Status> {
+        let mode = match options.and_then(|o| o.mode.as_ref()) {
+            None => Mode::ReadWrite,
+            Some(transaction_options::Mode::ReadWrite(read_write)) => {
+                if !read_write.retry_transaction.is_empty() {
+                    self.transactions
+                        .check_retry(database, &read_write.retry_transaction)?;
+                }
+                Mode::ReadWrite
+            }
+            Some(transaction_options::Mode::ReadOnly(read_only)) => {
+                use transaction_options::read_only::ConsistencySelector;
+                let requested = read_only
+                    .consistency_selector
+                    .as_ref()
+                    .map(|ConsistencySelector::ReadTime(ts)| ts);
+                Mode::ReadOnly(self.read_time(database, requested)?)
+            }
+        };
+        Ok(self.transactions.begin(database, mode))
+    }
+
+    /// The read time of a read in `transaction`, after locking what it reads.
+    fn read_in(
+        &self,
+        database: &str,
+        transaction: &[u8],
+        documents: &[ResourcePath],
+        collection_id: Option<&str>,
+    ) -> Result<ReadTime, Status> {
+        match self
+            .transactions
+            .read(database, transaction, documents, collection_id)?
+        {
+            Mode::ReadOnly(at) => Ok(at),
+            Mode::ReadWrite => Ok(self.store.latest_read_time(database)),
+        }
+    }
+
     fn read_back(
         &self,
         database: &str,
@@ -126,9 +212,13 @@ impl Firestore for FirestoreService {
         let req = request.into_inner();
         let name = names::document(&req.name)?;
         let at = match &req.consistency_selector {
-            Some(get_document_request::ConsistencySelector::Transaction(_)) => {
-                return Err(invalid_transaction());
-            }
+            Some(get_document_request::ConsistencySelector::Transaction(transaction)) => self
+                .read_in(
+                    &name.database,
+                    transaction,
+                    std::slice::from_ref(&name.path),
+                    None,
+                )?,
             Some(get_document_request::ConsistencySelector::ReadTime(ts)) => {
                 self.read_time(&name.database, Some(ts))?
             }
@@ -165,8 +255,8 @@ impl Firestore for FirestoreService {
             ));
         }
         let at = match &req.consistency_selector {
-            Some(list_documents_request::ConsistencySelector::Transaction(_)) => {
-                return Err(invalid_transaction());
+            Some(list_documents_request::ConsistencySelector::Transaction(transaction)) => {
+                self.read_in(&parent.database, transaction, &[], Some(&req.collection_id))?
             }
             Some(list_documents_request::ConsistencySelector::ReadTime(ts)) => {
                 self.read_time(&parent.database, Some(ts))?
@@ -260,7 +350,10 @@ impl Firestore for FirestoreService {
             }),
             ..Write::default()
         };
-        let (commit_time, _) = self.commit_writes(&parent.database, &[write])?;
+        let (commit_time, _) = self
+            .write(&parent.database, None, &[write])
+            .await?
+            .expect("one write");
         let mask = parse_mask(req.mask.as_ref())?;
         Ok(Response::new(self.read_back(
             &parent.database,
@@ -285,7 +378,10 @@ impl Firestore for FirestoreService {
             current_document: req.current_document,
             ..Write::default()
         };
-        let (commit_time, _) = self.commit_writes(&name.database, &[write])?;
+        let (commit_time, _) = self
+            .write(&name.database, None, &[write])
+            .await?
+            .expect("one write");
         let mask = parse_mask(req.mask.as_ref())?;
         Ok(Response::new(self.read_back(
             &name.database,
@@ -306,7 +402,7 @@ impl Firestore for FirestoreService {
             current_document: req.current_document,
             ..Write::default()
         };
-        self.commit_writes(&name.database, &[write])?;
+        self.write(&name.database, None, &[write]).await?;
         Ok(Response::new(()))
     }
 
@@ -316,29 +412,45 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<BoxStream<BatchGetDocumentsResponse>>, Status> {
         let req = request.into_inner();
         let database = names::database(&req.database)?;
+        let paths = req
+            .documents
+            .iter()
+            .map(|name| {
+                let parsed = names::document(name)?;
+                if parsed.database == database {
+                    Ok(parsed.path)
+                } else {
+                    Err(Status::invalid_argument(format!(
+                        "Document \"{name}\" is not in database \"{database}\"."
+                    )))
+                }
+            })
+            .collect::<Result<Vec<_>, Status>>()?;
+        let mask = parse_mask(req.mask.as_ref())?;
+        let mut responses = Vec::with_capacity(req.documents.len() + 1);
         let at = match &req.consistency_selector {
-            Some(batch_get_documents_request::ConsistencySelector::Transaction(_)) => {
-                return Err(invalid_transaction());
+            Some(batch_get_documents_request::ConsistencySelector::Transaction(transaction)) => {
+                self.read_in(&database, transaction, &paths, None)?
             }
-            Some(batch_get_documents_request::ConsistencySelector::NewTransaction(_)) => {
-                return Err(transactions_unimplemented());
+            Some(batch_get_documents_request::ConsistencySelector::NewTransaction(options)) => {
+                let transaction = self.begin(&database, Some(options))?;
+                let at = self.read_in(&database, &transaction, &paths, None)?;
+                // The new transaction's ID comes first, in a response of its own.
+                responses.push(Ok(BatchGetDocumentsResponse {
+                    transaction,
+                    read_time: None,
+                    result: None,
+                }));
+                at
             }
             Some(batch_get_documents_request::ConsistencySelector::ReadTime(ts)) => {
                 self.read_time(&database, Some(ts))?
             }
             None => self.read_time(&database, None)?,
         };
-        let mask = parse_mask(req.mask.as_ref())?;
-        let mut responses = Vec::with_capacity(req.documents.len());
         // Answers come back in request order, all with the same read time.
-        for name in &req.documents {
-            let parsed = names::document(name)?;
-            if parsed.database != database {
-                return Err(Status::invalid_argument(format!(
-                    "Document \"{name}\" is not in database \"{database}\"."
-                )));
-            }
-            let result = match self.store.get(&database, &parsed.path, at) {
+        for (name, path) in req.documents.iter().zip(&paths) {
+            let result = match self.store.get(&database, path, at) {
                 Some(doc) => batch_get_documents_response::Result::Found(to_document(
                     &database,
                     &doc,
@@ -361,18 +473,35 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<CommitResponse>, Status> {
         let req = request.into_inner();
         let database = names::database(&req.database)?;
-        if !req.transaction.is_empty() {
-            return Err(invalid_transaction());
-        }
+        let transaction = (!req.transaction.is_empty()).then_some(req.transaction.as_slice());
         // The official emulator answers an empty commit with an empty response (no commit time).
-        if req.writes.is_empty() {
-            return Ok(Response::new(CommitResponse::default()));
-        }
-        let (commit_time, write_results) = self.commit_writes(&database, &req.writes)?;
-        Ok(Response::new(CommitResponse {
-            write_results,
-            commit_time: Some(commit_time.to_timestamp()),
+        Ok(Response::new(
+            match self.write(&database, transaction, &req.writes).await? {
+                Some((commit_time, write_results)) => CommitResponse {
+                    write_results,
+                    commit_time: Some(commit_time.to_timestamp()),
+                },
+                None => CommitResponse::default(),
+            },
+        ))
+    }
+
+    async fn begin_transaction(
+        &self,
+        request: Request<BeginTransactionRequest>,
+    ) -> Result<Response<BeginTransactionResponse>, Status> {
+        let req = request.into_inner();
+        let database = names::database(&req.database)?;
+        Ok(Response::new(BeginTransactionResponse {
+            transaction: self.begin(&database, req.options.as_ref())?,
         }))
+    }
+
+    async fn rollback(&self, request: Request<RollbackRequest>) -> Result<Response<()>, Status> {
+        let req = request.into_inner();
+        let database = names::database(&req.database)?;
+        self.transactions.rollback(&database, &req.transaction)?;
+        Ok(Response::new(()))
     }
 
     async fn batch_write(
@@ -395,33 +524,34 @@ impl Firestore for FirestoreService {
                 "the same document cannot be written more than once in a single request",
             ));
         }
-        // Writes are independent: a failing one is reported and the others still apply.
+        // An invalid write fails the whole request, as on the official emulator.
+        for write in &req.writes {
+            writes::validate(&database, write)?;
+        }
+        // Otherwise writes are independent: each one waits for its own locks and commits on its
+        // own (the official emulator gives each a separate commit time), and one that fails its
+        // precondition or its lock wait is reported while the others still apply.
         let mut write_results = Vec::with_capacity(req.writes.len());
         let mut status = Vec::with_capacity(req.writes.len());
-        if !req.writes.is_empty() {
-            self.store
-                .commit(&database, &mut |batch| {
-                    write_results.clear();
-                    status.clear();
-                    for write in &req.writes {
-                        match writes::apply(batch, &database, write) {
-                            Ok(result) => {
-                                write_results.push(result);
-                                status.push(rpc::Status::default());
-                            }
-                            Err(err) => {
-                                write_results.push(WriteResult::default());
-                                status.push(rpc::Status {
-                                    code: err.code() as i32,
-                                    message: err.message().to_owned(),
-                                    details: Vec::new(),
-                                });
-                            }
-                        }
-                    }
-                    Ok(())
-                })
-                .map_err(|err| store_error(&err))?;
+        for write in &req.writes {
+            match self
+                .write(&database, None, std::slice::from_ref(write))
+                .await
+            {
+                Ok(outcome) => {
+                    let (_, mut results) = outcome.expect("one write");
+                    write_results.push(results.pop().unwrap_or_default());
+                    status.push(rpc::Status::default());
+                }
+                Err(err) => {
+                    write_results.push(WriteResult::default());
+                    status.push(rpc::Status {
+                        code: err.code() as i32,
+                        message: err.message().to_owned(),
+                        details: Vec::new(),
+                    });
+                }
+            }
         }
         Ok(Response::new(BatchWriteResponse {
             write_results,
@@ -500,18 +630,6 @@ fn is_admin<T>(request: &Request<T>) -> bool {
         .get("authorization")
         .and_then(|v| v.to_str().ok())
         .is_some_and(|v| v == "Bearer owner" || v.starts_with("Bearer ya29."))
-}
-
-/// What the official emulator answers for a transaction it does not know. Until
-/// transactions exist (#17), every transaction is unknown.
-fn invalid_transaction() -> Status {
-    Status::invalid_argument("Invalid transaction.")
-}
-
-fn transactions_unimplemented() -> Status {
-    Status::unimplemented(
-        "Transactions are not implemented yet (https://github.com/hidane-dev/hidane/issues/17)",
-    )
 }
 
 fn store_error(err: &StoreError) -> Status {
