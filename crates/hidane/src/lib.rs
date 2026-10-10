@@ -109,19 +109,21 @@ impl Admin {
     }
 }
 
-/// Plain HTTP routes (REST, admin endpoints, later WebChannel). Callers may add routes before
-/// handing the router to [`serve`].
+/// Plain HTTP routes (REST, admin endpoints, later WebChannel), all answering CORS as the
+/// official emulator does (routes a caller adds to the returned router do not).
 ///
 /// The admin endpoints match the official emulator exactly: `GET /` answers `Ok`, `POST /reset`
 /// and `POST /shutdown` act, the query string is ignored, and any other method, a trailing
 /// slash, another case or another prefix gets `404 Not Found`. Bodies end with a newline, as
 /// the official ones do.
 pub fn http_routes(admin: Admin) -> Router {
-    Router::new()
+    let routes = Router::new()
         // axum answers HEAD from the GET handler by default; the official emulator does not.
         .route(
             "/",
-            get(|| async { "Ok\n" }).head(not_found).fallback(not_found),
+            get(|| async { text("Ok\n") })
+                .head(not_found)
+                .fallback(not_found),
         )
         .route("/reset", post(reset).fallback(not_found))
         .route("/shutdown", post(shutdown).fallback(not_found))
@@ -138,11 +140,61 @@ pub fn http_routes(admin: Admin) -> Router {
             delete(delete_tree).fallback(not_found),
         )
         .fallback(fallback)
-        .with_state(admin)
+        .with_state(admin);
+    // Around the whole router rather than each route, so a method router's `Allow` header
+    // never reaches a preflight.
+    Router::new()
+        .fallback_service(routes)
+        .layer(axum::middleware::from_fn(cors))
 }
 
 async fn not_found() -> Response {
     not_found_response()
+}
+
+/// CORS as the official emulator answers it, on every HTTP path: with an `Origin`, any
+/// response reflects it and allows credentials and every method; an `OPTIONS` request is a
+/// preflight whatever the path, answered `200` with an empty body, allowing the requested
+/// headers and, when asked, the private network. Without an `Origin`, no CORS headers.
+async fn cors(request: axum::extract::Request, next: axum::middleware::Next) -> Response {
+    use axum::http::{HeaderValue, header};
+    const METHODS: HeaderValue = HeaderValue::from_static("DELETE,GET,HEAD,PATCH,POST,PUT");
+    let origin = request.headers().get(header::ORIGIN).cloned();
+    let mut response = if request.method() == axum::http::Method::OPTIONS {
+        let mut response = Response::new(Body::empty());
+        if origin.is_some() {
+            let headers = response.headers_mut();
+            if let Some(requested) = request
+                .headers()
+                .get(header::ACCESS_CONTROL_REQUEST_HEADERS)
+            {
+                headers.insert(header::ACCESS_CONTROL_ALLOW_HEADERS, requested.clone());
+            }
+            // Whatever its value, as on the official emulator.
+            if request
+                .headers()
+                .contains_key("access-control-request-private-network")
+            {
+                headers.insert(
+                    "access-control-allow-private-network",
+                    HeaderValue::from_static("true"),
+                );
+            }
+        }
+        response
+    } else {
+        next.run(request).await
+    };
+    if let Some(origin) = origin {
+        let headers = response.headers_mut();
+        headers.insert(header::ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+        headers.insert(
+            header::ACCESS_CONTROL_ALLOW_CREDENTIALS,
+            HeaderValue::from_static("true"),
+        );
+        headers.insert(header::ACCESS_CONTROL_ALLOW_METHODS, METHODS);
+    }
+    response
 }
 
 /// REST (`/v1/…`, `/v1beta1/…`), or 404.
@@ -162,17 +214,22 @@ async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -
 
 /// The official emulator's 404: plain text without a content type.
 fn not_found_response() -> Response {
-    let mut response = Response::new(Body::from("Not Found\n"));
+    let mut response = text("Not Found\n");
     *response.status_mut() = StatusCode::NOT_FOUND;
     response
 }
 
-async fn reset(State(admin): State<Admin>) -> &'static str {
+/// The official emulator's admin bodies are plain text without a content type.
+fn text(body: &'static str) -> Response {
+    Response::new(Body::from(body))
+}
+
+async fn reset(State(admin): State<Admin>) -> Response {
     // Every document of every project, and every open transaction with its locks, as on the
     // official emulator; attached listeners see the documents go, which the official emulator
     // does not tell them.
     admin.firestore().reset().await;
-    "Resetting...\n"
+    text("Resetting...\n")
 }
 
 /// `DELETE /emulator/v1/projects/{p}/databases/{d}/documents`, what `clearFirestore()` of
@@ -207,10 +264,10 @@ fn empty_json() -> Response {
     ([(header::CONTENT_TYPE, "application/json")], "{\n}\n").into_response()
 }
 
-async fn shutdown(State(admin): State<Admin>) -> &'static str {
+async fn shutdown(State(admin): State<Admin>) -> Response {
     // `serve` stops accepting and drains connections, so this response is still delivered.
     admin.request_shutdown();
-    "Shutting down...\n"
+    text("Shutting down...\n")
 }
 
 /// gRPC services: `google.firestore.v1.Firestore` plus server reflection (v1 and v1alpha, so
