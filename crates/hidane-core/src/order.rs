@@ -232,14 +232,18 @@ fn compare_maps(a: &MapValue, b: &MapValue) -> Ordering {
         .unwrap_or_else(|| a.fields.len().cmp(&b.fields.len()))
 }
 
-/// A segment of the form `__id<i64>__` (legacy numeric IDs). The official emulator rejects
-/// other strings that start with `__id` and end with `__`.
+/// A segment of the form `__id<i64>__` (legacy numeric IDs), the number written the one way
+/// Java prints it: no `+`, no leading zero, no `-0`. The official emulator rejects other
+/// strings that start with `__id` and end with `__` (and `__id0__`, see `names`).
 pub fn numeric_id(segment: &str) -> Option<i64> {
-    segment
-        .strip_prefix("__id")?
-        .strip_suffix("__")?
-        .parse()
-        .ok()
+    let digits = segment.strip_prefix("__id")?.strip_suffix("__")?;
+    let magnitude = digits.strip_prefix('-').unwrap_or(digits);
+    let canonical = match magnitude.as_bytes() {
+        [b'0'] => magnitude.len() == digits.len(),
+        [] | [b'0', ..] => false,
+        bytes => bytes.iter().all(u8::is_ascii_digit),
+    };
+    if canonical { digits.parse().ok() } else { None }
 }
 
 /// Numeric IDs first (numerically), then other segments by UTF-8 bytes.
@@ -267,6 +271,32 @@ pub fn compare_paths<'a>(
             (None, None) => return Ordering::Equal,
             (None, Some(_)) => return Ordering::Less,
             (Some(_), None) => return Ordering::Greater,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::numeric_id;
+
+    #[test]
+    fn numeric_ids_are_written_one_way() {
+        for (segment, expected) in [
+            ("__id5__", Some(5)),
+            ("__id-3__", Some(-3)),
+            ("__id0__", Some(0)),
+            ("__id9223372036854775807__", Some(i64::MAX)),
+            ("__id-9223372036854775808__", Some(i64::MIN)),
+            ("__id-0__", None),
+            ("__id007__", None),
+            ("__id+5__", None),
+            ("__id__", None),
+            ("__id-__", None),
+            ("__id 5__", None),
+            ("__id9223372036854775808__", None),
+            ("id5", None),
+        ] {
+            assert_eq!(numeric_id(segment), expected, "{segment}");
         }
     }
 }

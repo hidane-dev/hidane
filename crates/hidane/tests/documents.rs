@@ -551,6 +551,37 @@ async fn invalid_writes_use_the_official_messages() {
     )
     .await
     .unwrap();
+    // Zero, and numbers not written the way Java prints them.
+    for (step, id) in [
+        (3, "__id0__"),
+        (4, "__id-0__"),
+        (5, "__id007__"),
+        (6, "__id+5__"),
+    ] {
+        let path = format!("c/{id}");
+        let err = commit(
+            &mut c,
+            "p-numeric",
+            vec![update(&doc("p-numeric", &path), &[("a", int(1))])],
+        )
+        .await
+        .unwrap_err();
+        assert_eq!(
+            err.message(),
+            official_message("numeric id document", step),
+            "{id}"
+        );
+    }
+    commit(
+        &mut c,
+        "p-numeric",
+        vec![update(
+            &doc("p-numeric", "c/__id-9223372036854775808__"),
+            &[("a", int(1))],
+        )],
+    )
+    .await
+    .unwrap();
 
     let err = c
         .commit(CommitRequest {
