@@ -250,9 +250,16 @@ async fn read_time_and_explain_options() {
             assert_eq!(read_time, at);
         }
     }
-    let err = client
-        .run_query(query(None, Some(ExplainOptions { analyze: false })))
+    // Explain options are ignored, as on the official emulator: the same result, no metrics.
+    let mut stream = client
+        .run_query(query(None, Some(ExplainOptions { analyze: true })))
         .await
-        .unwrap_err();
-    assert_eq!(err.code(), Code::Unimplemented);
+        .unwrap()
+        .into_inner();
+    let response = stream.message().await.unwrap().unwrap();
+    assert!(same_fields(
+        &response.document.unwrap().fields,
+        &fields(&json!({"n": {"integerValue": "2"}}))
+    ));
+    assert!(response.explain_metrics.is_none());
 }

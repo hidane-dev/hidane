@@ -56,7 +56,9 @@ Status: Phase 0 draft. Entries will be tagged in the conformance suite (issue #4
 | Descending document order | `order_by __name__ desc` as the only ordering, without a filter on another field, fails with `FAILED_PRECONDITION` "Firestore does not support descending key scans" | Served | Follow the emulator, measured in #21 |
 | Limits (document size, batch size, …) | Not enforced; a 12 MB batch is accepted (firebase-tools [#8649](https://github.com/firebase/firebase-tools/issues/8649)) | Enforced | Open; likely follow the emulator, maybe opt-in enforcement |
 | `PartitionQuery` | 501 `UNIMPLEMENTED` | Supported | Follow the emulator (issue #26) |
-| `ExecutePipeline` | Only with `--database-edition enterprise` | Enterprise edition only | Follow the emulator (`UNIMPLEMENTED` on standard) |
+| `ExecutePipeline` | Only with `--database-edition enterprise`; on a standard database `INVALID_ARGUMENT` "ExecutePipeline requires the Database Edition to be \`enterprise\`." | Enterprise edition only | Follow the emulator on standard databases (#26); enterprise pipelines are not implemented in hidane yet (`UNIMPLEMENTED`, #80) |
+| `explain_options` (RunQuery, RunAggregationQuery) | Ignored: the same results, no explain metrics | Explain metrics (plan summary, and execution stats with `analyze`) | Follow the emulator (#26) |
+| `find_nearest` | Runs vector search | Runs vector search | Follow the emulator; not implemented in hidane yet (`UNIMPLEMENTED`, #118) |
 | Persistence | In-memory; export / import only | Durable | Follow the emulator (ADR 0002) |
 | Import | `createTime` / `updateTime` are overwritten with the import time | n/a | Follow the emulator |
 

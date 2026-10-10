@@ -45,16 +45,16 @@ use hidane_proto::google::{
         AggregationResult, BatchGetDocumentsRequest, BatchGetDocumentsResponse, BatchWriteRequest,
         BatchWriteResponse, BeginTransactionRequest, BeginTransactionResponse, CommitRequest,
         CommitResponse, CreateDocumentRequest, DeleteDocumentRequest, Document, DocumentMask,
-        GetDocumentRequest, ListCollectionIdsRequest, ListCollectionIdsResponse,
-        ListDocumentsRequest, ListDocumentsResponse, ListenRequest, ListenResponse,
-        PartitionQueryRequest, PartitionQueryResponse, Precondition, RollbackRequest,
-        RunAggregationQueryRequest, RunAggregationQueryResponse, RunQueryRequest, RunQueryResponse,
-        StructuredQuery, TransactionOptions, UpdateDocumentRequest, Write, WriteRequest,
-        WriteResponse, WriteResult, batch_get_documents_request, batch_get_documents_response,
-        firestore_server::Firestore, get_document_request, list_collection_ids_request,
-        list_documents_request, precondition::ConditionType, run_aggregation_query_request,
-        run_query_request, run_query_response, structured_aggregation_query, transaction_options,
-        write::Operation,
+        ExecutePipelineRequest, ExecutePipelineResponse, GetDocumentRequest,
+        ListCollectionIdsRequest, ListCollectionIdsResponse, ListDocumentsRequest,
+        ListDocumentsResponse, ListenRequest, ListenResponse, PartitionQueryRequest,
+        PartitionQueryResponse, Precondition, RollbackRequest, RunAggregationQueryRequest,
+        RunAggregationQueryResponse, RunQueryRequest, RunQueryResponse, StructuredQuery,
+        TransactionOptions, UpdateDocumentRequest, Write, WriteRequest, WriteResponse, WriteResult,
+        batch_get_documents_request, batch_get_documents_response, firestore_server::Firestore,
+        get_document_request, list_collection_ids_request, list_documents_request,
+        precondition::ConditionType, run_aggregation_query_request, run_query_request,
+        run_query_response, structured_aggregation_query, transaction_options, write::Operation,
     },
     rpc,
 };
@@ -79,11 +79,18 @@ pub struct FirestoreService {
     store: Arc<dyn Store>,
     transactions: Arc<Transactions>,
     changes: Arc<ChangeFeed>,
+    /// `--database-edition enterprise`: pipelines are allowed (but not implemented yet).
+    enterprise: bool,
 }
 
 impl FirestoreService {
     pub fn new(store: Arc<dyn Store>) -> Self {
         Self::with_state(store, Arc::default(), Arc::default())
+    }
+
+    pub(crate) fn with_enterprise_edition(mut self, enterprise: bool) -> Self {
+        self.enterprise = enterprise;
+        self
     }
 
     pub(crate) fn with_state(
@@ -95,6 +102,7 @@ impl FirestoreService {
             store,
             transactions,
             changes,
+            enterprise: false,
         }
     }
 
@@ -621,11 +629,8 @@ impl Firestore for FirestoreService {
         let parent = names::parent(&req.parent)?;
         auth::caller(&metadata)?;
         let database = parent.database;
-        if req.explain_options.is_some() {
-            return Err(Status::unimplemented(
-                "explain_options is not implemented yet (https://github.com/hidane-dev/hidane/issues/26)",
-            ));
-        }
+        // `explain_options` is ignored, as on the official emulator: the same results, no
+        // explain metrics.
         // An absent query is the empty one, as on the official emulator.
         let default = StructuredQuery::default();
         let structured = match &req.query_type {
@@ -689,11 +694,8 @@ impl Firestore for FirestoreService {
         let parent = names::parent(&req.parent)?;
         auth::caller(&metadata)?;
         let database = parent.database;
-        if req.explain_options.is_some() {
-            return Err(Status::unimplemented(
-                "explain_options is not implemented yet (https://github.com/hidane-dev/hidane/issues/26)",
-            ));
-        }
+        // `explain_options` is ignored, as on the official emulator: the same results, no
+        // explain metrics.
         let default = StructuredQuery::default();
         let (structured, aggregations) = match &req.query_type {
             Some(run_aggregation_query_request::QueryType::StructuredAggregationQuery(q)) => (
@@ -781,6 +783,25 @@ impl Firestore for FirestoreService {
         // The official emulator's answer (#26).
         Err(Status::unimplemented(
             "Method google.firestore.v1.Firestore/PartitionQuery is unimplemented",
+        ))
+    }
+
+    async fn execute_pipeline(
+        &self,
+        request: Request<ExecutePipelineRequest>,
+    ) -> Result<Response<BoxStream<ExecutePipelineResponse>>, Status> {
+        let (metadata, _, req) = request.into_parts();
+        names::database(&req.database)?;
+        // A standard-edition database refuses pipelines before reading the header, as on the
+        // official emulator.
+        if !self.enterprise {
+            return Err(Status::invalid_argument(
+                "ExecutePipeline requires the Database Edition to be `enterprise`.",
+            ));
+        }
+        auth::caller(&metadata)?;
+        Err(Status::unimplemented(
+            "ExecutePipeline is not implemented yet (https://github.com/hidane-dev/hidane/issues/80)",
         ))
     }
 

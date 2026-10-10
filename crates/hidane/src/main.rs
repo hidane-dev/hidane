@@ -69,7 +69,8 @@ async fn main() -> ExitCode {
     };
     print_banner(&cli, port);
 
-    let admin = hidane::Admin::default();
+    let admin = hidane::Admin::default()
+        .with_enterprise_edition(cli.database_edition == cli::DatabaseEdition::Enterprise);
     let (code_tx, code_rx) = tokio::sync::oneshot::channel();
     let shutdown = {
         let admin = admin.clone();

@@ -66,6 +66,7 @@ pub struct Admin {
     transactions: Arc<Transactions>,
     changes: Arc<ChangeFeed>,
     shutdown: Arc<watch::Sender<bool>>,
+    enterprise: bool,
 }
 
 impl Default for Admin {
@@ -82,6 +83,7 @@ impl Admin {
             Arc::clone(&self.transactions),
             Arc::clone(&self.changes),
         )
+        .with_enterprise_edition(self.enterprise)
     }
 
     pub fn new(store: Arc<dyn Store>) -> Self {
@@ -90,7 +92,15 @@ impl Admin {
             transactions: Arc::default(),
             changes: Arc::default(),
             shutdown: Arc::new(watch::Sender::new(false)),
+            enterprise: false,
         }
+    }
+
+    /// `--database-edition enterprise`.
+    #[must_use]
+    pub fn with_enterprise_edition(mut self, enterprise: bool) -> Self {
+        self.enterprise = enterprise;
+        self
     }
 
     pub fn store(&self) -> Arc<dyn Store> {
@@ -298,12 +308,7 @@ pub fn grpc_routes(admin: &Admin) -> Router {
     let reflection_v1alpha = reflection()
         .build_v1alpha()
         .expect("embedded descriptor set is valid");
-    let firestore = FirestoreService::with_state(
-        admin.store(),
-        Arc::clone(&admin.transactions),
-        Arc::clone(&admin.changes),
-    );
-    tonic::service::Routes::new(FirestoreServer::new(firestore))
+    tonic::service::Routes::new(FirestoreServer::new(admin.firestore()))
         .add_service(reflection_v1)
         .add_service(reflection_v1alpha)
         .into_axum_router()
