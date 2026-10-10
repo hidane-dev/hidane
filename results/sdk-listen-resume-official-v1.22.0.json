@@ -1,0 +1,247 @@
+[
+ {
+  "step": "seed",
+  "listeners": {}
+ },
+ {
+  "step": "listen",
+  "listeners": {
+   "n < 10": [
+    {
+     "docs": [
+      [
+       "a",
+       {
+        "n": 1
+       }
+      ],
+      [
+       "b",
+       {
+        "n": 2
+       }
+      ],
+      [
+       "e",
+       {
+        "n": 3
+       }
+      ],
+      [
+       "same",
+       {
+        "n": 4
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "added",
+       "a"
+      ],
+      [
+       "added",
+       "b"
+      ],
+      [
+       "added",
+       "e"
+      ],
+      [
+       "added",
+       "same"
+      ]
+     ]
+    }
+   ],
+   "doc b": [
+    {
+     "exists": true,
+     "data": {
+      "n": 2
+     }
+    }
+   ]
+  }
+ },
+ {
+  "step": "go offline",
+  "listeners": {}
+ },
+ {
+  "step": "write while offline",
+  "listeners": {}
+ },
+ {
+  "step": "back online",
+  "listeners": {
+   "n < 10": [
+    {
+     "docs": [
+      [
+       "b",
+       {
+        "n": 2
+       }
+      ],
+      [
+       "e",
+       {
+        "n": 3
+       }
+      ],
+      [
+       "same",
+       {
+        "n": 4
+       }
+      ],
+      [
+       "a",
+       {
+        "n": 5
+       }
+      ],
+      [
+       "d",
+       {
+        "n": 6
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "added",
+       "d"
+      ],
+      [
+       "modified",
+       "a"
+      ]
+     ]
+    },
+    {
+     "docs": [
+      [
+       "e",
+       {
+        "n": 3
+       }
+      ],
+      [
+       "same",
+       {
+        "n": 4
+       }
+      ],
+      [
+       "a",
+       {
+        "n": 5
+       }
+      ],
+      [
+       "d",
+       {
+        "n": 6
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "removed",
+       "b"
+      ]
+     ]
+    },
+    {
+     "docs": [
+      [
+       "same",
+       {
+        "n": 4
+       }
+      ],
+      [
+       "a",
+       {
+        "n": 5
+       }
+      ],
+      [
+       "d",
+       {
+        "n": 6
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "removed",
+       "e"
+      ]
+     ]
+    }
+   ],
+   "doc b": [
+    {
+     "exists": false,
+     "data": null
+    }
+   ]
+  }
+ },
+ {
+  "step": "write while online",
+  "listeners": {
+   "n < 10": [
+    {
+     "docs": [
+      [
+       "same",
+       {
+        "n": 4
+       }
+      ],
+      [
+       "a",
+       {
+        "n": 5
+       }
+      ],
+      [
+       "d",
+       {
+        "n": 6
+       }
+      ],
+      [
+       "b",
+       {
+        "n": 7
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "added",
+       "b"
+      ]
+     ]
+    }
+   ],
+   "doc b": [
+    {
+     "exists": true,
+     "data": {
+      "n": 7
+     }
+    }
+   ]
+  }
+ },
+ {
+  "step": "offline again, nothing changes, online again",
+  "listeners": {}
+ }
+]

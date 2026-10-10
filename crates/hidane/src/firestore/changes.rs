@@ -19,9 +19,28 @@ use tokio::sync::broadcast;
 /// How many commits a listener may fall behind before it has to start over.
 const CAPACITY: usize = 4096;
 
-#[derive(Default)]
 pub struct ChangeFeed {
     databases: Mutex<HashMap<String, Arc<Feed>>>,
+    /// Data before this time may differ from what this process (or the store since its last
+    /// reset) holds: resume tokens from before it cannot be trusted.
+    history_start: Mutex<ReadTime>,
+}
+
+impl Default for ChangeFeed {
+    fn default() -> Self {
+        Self {
+            databases: Mutex::default(),
+            history_start: Mutex::new(now()),
+        }
+    }
+}
+
+fn now() -> ReadTime {
+    ReadTime(
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map_or(0, |d| i64::try_from(d.as_micros()).unwrap_or(i64::MAX)),
+    )
 }
 
 struct Feed {
@@ -42,12 +61,9 @@ impl ChangeFeed {
         // Every commit publishes, so a feed made by a subscriber belongs to a database nothing
         // was committed to yet: everything up to now is "published". Not time 0, which the
         // web SDK treats as "no snapshot" and never shows. The first commit will be later.
-        let now = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .map_or(0, |d| i64::try_from(d.as_micros()).unwrap_or(i64::MAX));
         let feed = Arc::new(Feed {
             sender: broadcast::channel(CAPACITY).0,
-            published: Mutex::new(ReadTime(now - 1)),
+            published: Mutex::new(ReadTime(now().0 - 1)),
         });
         databases.insert(database.to_owned(), Arc::clone(&feed));
         feed
@@ -70,6 +86,22 @@ impl ChangeFeed {
 
     pub fn subscribe(&self, database: &str) -> broadcast::Receiver<Arc<Commit>> {
         self.feed(database).sender.subscribe()
+    }
+
+    /// The store was cleared (`POST /reset`): history starts again now.
+    pub fn reset(&self) {
+        *self
+            .history_start
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner) = now();
+    }
+
+    /// Resume points before this time are not trusted.
+    pub fn history_start(&self) -> ReadTime {
+        *self
+            .history_start
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
     }
 
     /// The time up to which every commit has been sent to subscribers.
