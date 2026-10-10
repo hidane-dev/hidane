@@ -1,6 +1,6 @@
 # hidane (火種, *the seed of fire*) — a Firestore emulator without Java.
 
-[![status: pre-release](https://img.shields.io/badge/status-pre--release%20%C2%B7%20build%20from%20source-E2553D)](docs/ROADMAP.md)
+[![release](https://img.shields.io/github/v/release/hidane-dev/hidane?color=E2553D)](https://github.com/hidane-dev/hidane/releases)
 [![license: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-1E1B18)](#license)
 [![website](https://img.shields.io/badge/web-hidane.dev-1E1B18)](https://hidane.dev)
 
@@ -10,18 +10,17 @@ evaluates the same Security Rules, reads and writes the same import / export dir
 under `firebase-tools`. No JDK to install. Starts in milliseconds. Tested for parity against the
 official emulator as the oracle.
 
-> **Pre-release.** The emulator runs from source and serves the Firestore API over gRPC, REST and
-> WebChannel: documents, queries, aggregations, vector search, transactions, listeners and the
-> emulator's own endpoints, each checked against the official emulator, and `firebase-tools` can
-> launch it in place of the official one, exports and imports included. Security Rules are not
-> there yet, and there is no binary release: the `hidane` packages on crates.io, npm and pub.dev are 0.0.1 name reservations and do
-> nothing. The plan is in [`docs/ROADMAP.md`](docs/ROADMAP.md), the work in
+> **v0.1.0, the first release.** hidane serves the Firestore API over gRPC, REST and WebChannel:
+> documents, queries, aggregations, vector search, transactions, listeners, exports and imports,
+> and the emulator's own endpoints, each checked against the official emulator; `firebase-tools`
+> launches it in place of the official one. **Security Rules are not there yet** (v0.2): every
+> request is allowed. The plan is in [`docs/ROADMAP.md`](docs/ROADMAP.md), the work in
 > [issues](https://github.com/hidane-dev/hidane/issues).
 
 ```sh
-cargo build --release -p hidane
-target/release/hidane exec -- firebase emulators:start --only firestore   # under firebase-tools, no Java needed
-target/release/hidane --host 127.0.0.1 --port 8080                         # or on its own:
+curl -fsSL https://hidane.dev/install.sh | sh             # or Homebrew, npm, cargo: see Install
+hidane exec -- firebase emulators:start --only firestore  # under firebase-tools, no Java needed
+hidane --host 127.0.0.1 --port 8080                       # or on its own:
 export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
 ```
 
@@ -51,7 +50,7 @@ Which clients can use hidane depends on the transport their SDK speaks to an emu
 ([`docs/compatibility.md`](docs/compatibility.md)). "Verified" means the client's results were
 compared with the official emulator's (`results/`):
 
-| Client | Transport | On `main` |
+| Client | Transport | In v0.1.0 |
 |---|---|---|
 | firebase-admin (Node) / `@google-cloud/firestore` | gRPC | verified: documents, queries, aggregations, vector search, transactions, listeners |
 | firebase-js-sdk in Node | gRPC | verified: writes, transactions, listeners, offline and resume |
@@ -90,22 +89,26 @@ server SDKs; neither documents REST, WebChannel, Security Rules or running under
 
 As read from their READMEs in October 2026; corrections welcome.
 
-## Install (planned)
+## Install
 
-Until the first release, build from source as shown at the top (Rust stable). None of these
-exist yet. They show the intended shape:
+Every channel installs the same release binaries: macOS (arm64, x86_64), Linux (arm64, x86_64;
+static, any distribution) and Windows (x64).
 
 ```sh
-curl -fsSL https://hidane.dev/install.sh | sh      # prebuilt binary
-brew install hidane-dev/tap/hidane                  # Homebrew tap
-cargo binstall hidane                               # prebuilt via cargo-binstall
-npm install --save-dev hidane                       # npm (binary as an optional dependency)
-dart pub global activate hidane                     # pub.dev launcher
+curl -fsSL https://hidane.dev/install.sh | sh   # macOS, Linux: into ~/.local/bin, SHA-256 checked
+brew install hidane-dev/tap/hidane               # Homebrew (macOS, Linux)
+npm install --save-dev hidane                    # npm, every platform: the binary is an optional dependency
+cargo binstall hidane                            # the release archive, through cargo-binstall
+cargo install hidane                             # from source, Rust 1.88 or newer
+dart pub global activate hidane                  # pub.dev: a launcher that downloads the binary on first run
 docker run --rm -p 8080:8080 ghcr.io/hidane-dev/hidane
 ```
 
 Then `export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080`, or let `firebase emulators:start` launch it
-through `hidane exec`.
+through `hidane exec`. The archives, their checksums and build provenance are on
+[GitHub Releases](https://github.com/hidane-dev/hidane/releases)
+([how to verify them](docs/releasing.md#assets)). The macOS binaries are not signed yet: one
+downloaded with a browser needs `xattr -d com.apple.quarantine hidane`.
 
 ## Documentation
 

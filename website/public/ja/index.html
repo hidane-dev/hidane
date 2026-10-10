@@ -5,7 +5,7 @@
 <script src="/gtm.js?v=20261010a"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>hidane — Java 不要の Firestore エミュレータ</title>
-<meta name="description" content="hidane（火種）は、公式の Cloud Firestore エミュレータを置き換える Rust 製の単一バイナリです。JVM は要りません。ミリ秒で起動します。リリース前（ソースから動かせます）。">
+<meta name="description" content="hidane（火種）は、公式の Cloud Firestore エミュレータを置き換える Rust 製の単一バイナリです。JVM は要りません。ミリ秒で起動します。公式エミュレータとの一致をテストで確かめています。">
 <link rel="canonical" href="https://hidane.dev/ja/">
 <link rel="alternate" hreflang="en" href="https://hidane.dev/">
 <link rel="alternate" hreflang="ja" href="https://hidane.dev/ja/">
@@ -28,6 +28,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@400;500;600&display=swap">
 <link rel="stylesheet" href="/style.css?v=20261009a">
 <script src="/theme.js?v=20261009a"></script>
+<script src="/copy.js?v=20261011a" defer></script>
 </head>
 <body>
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-P3D6QPJG" height="0" width="0" style="display:none;visibility:hidden" title="Google Tag Manager"></iframe></noscript>
@@ -64,15 +65,15 @@
 <p class="lede">公式の Cloud Firestore エミュレータを置き換える、Rust 製の単一バイナリです。JVM は要りません。ミリ秒で起動し、公式エミュレータとの parity をテストで確かめます。</p>
 
 <div class="install">
-<div class="install-box" aria-disabled="true">
+<div class="install-box">
 <code class="cmd"><span class="prompt" aria-hidden="true">$ </span>curl -fsSL https://hidane.dev/install.sh | sh</code>
-<span class="badge">まだ利用できません — リリース前</span>
-<button type="button" class="copy-btn" disabled aria-disabled="true" title="まだリリースがないため、コピーは無効です">
+<span class="badge">v0.1.0 · macOS · Linux</span>
+<button type="button" class="copy-btn" title="コマンドをコピー" data-copied="コピーしました">
 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V6a2 2 0 0 1 2-2h9"></path></svg>
 <span>コピー</span>
 </button>
 </div>
-<p class="note">まだリリースがないため、コピーは無効にしています。それまでは<a href="https://github.com/hidane-dev/hidane#readme">ソースからビルド</a>してください。最初のリリースからこの行が使えるようになります。</p>
+<p class="note">最新のリリースを ~/.local/bin に入れます。SHA-256 で検証済みです。Homebrew、npm（Windows も）、cargo、Docker は<a href="#install">インストール</a>を参照してください。</p>
 </div>
 
 <div class="ctas">
@@ -83,7 +84,7 @@
 </a>
 </div>
 
-<p class="status"><span class="dot" aria-hidden="true"></span><span>リリース前 · ソースから動かせます · リリースはまだありません</span></p>
+<p class="status"><span class="dot" aria-hidden="true"></span><span>v0.1.0 · 最初のリリース · Security Rules は v0.2 で対応</span></p>
 </div>
 
 <div class="motif" aria-hidden="true">
@@ -123,7 +124,7 @@
 <div class="wrap sec-in sec-in--tight">
 <h2 class="h2" id="works">対応クライアント</h2>
 <div class="legend">
-<span>最初のリリース前、main での状態です。</span>
+<span>v0.1.0 での状態です。</span>
 <span class="legend-chips">
 <span class="chip">planned</span>
 <span class="chip chip--progress">not verified</span>
@@ -185,16 +186,16 @@
 
 <section class="sec" aria-labelledby="install">
 <div class="wrap sec-in sec-in--narrow">
-<h2 class="h2" id="install">インストール（予定）</h2>
-<p class="sec-intro">どの配布チャネルもまだ存在しません。下のコマンドは予定している形を示すもので、いまは動きません。</p>
+<h2 class="h2" id="install">インストール</h2>
+<p class="sec-intro">どのチャネルでも、同じリリースのバイナリが入ります。macOS（arm64、x86_64）、Linux（arm64、x86_64、静的リンク）、Windows（x64）に対応しています。</p>
 <div class="channels" role="list">
-<div class="ch" role="listitem"><span class="ch-name">GitHub Releases</span><span class="ch-desc">ビルド済みバイナリ</span><span class="chip">planned</span></div>
-<div class="ch" role="listitem"><span class="ch-name">cargo binstall</span><code class="ch-cmd">cargo binstall hidane</code><span class="chip">planned</span></div>
-<div class="ch" role="listitem"><span class="ch-name">Homebrew tap</span><code class="ch-cmd">brew install hidane-dev/tap/hidane</code><span class="chip">planned</span></div>
-<div class="ch" role="listitem"><span class="ch-name">npm</span><code class="ch-cmd">npm install --save-dev hidane</code><span class="chip">planned</span></div>
-<div class="ch" role="listitem"><span class="ch-name">pub.dev</span><code class="ch-cmd">dart pub global activate hidane</code><span class="chip">planned</span></div>
-<div class="ch" role="listitem"><span class="ch-name">Docker</span><code class="ch-cmd">docker run ghcr.io/hidane-dev/hidane</code><span class="chip">planned</span></div>
-<div class="ch" role="listitem"><span class="ch-name">curl | sh</span><code class="ch-cmd">curl -fsSL https://hidane.dev/install.sh | sh</code><span class="chip">planned</span></div>
+<div class="ch" role="listitem"><span class="ch-name"><a href="https://github.com/hidane-dev/hidane/releases">GitHub Releases</a></span><span class="ch-desc">アーカイブ、チェックサム、ビルドの来歴</span><span class="chip chip--supported">available</span></div>
+<div class="ch" role="listitem"><span class="ch-name">cargo binstall</span><code class="ch-cmd">cargo binstall hidane</code><span class="chip chip--supported">available</span></div>
+<div class="ch" role="listitem"><span class="ch-name">Homebrew tap</span><code class="ch-cmd">brew install hidane-dev/tap/hidane</code><span class="chip chip--supported">available</span></div>
+<div class="ch" role="listitem"><span class="ch-name">npm</span><code class="ch-cmd">npm install --save-dev hidane</code><span class="chip chip--supported">available</span></div>
+<div class="ch" role="listitem"><span class="ch-name">pub.dev</span><code class="ch-cmd">dart pub global activate hidane</code><span class="chip chip--supported">available</span></div>
+<div class="ch" role="listitem"><span class="ch-name">Docker</span><code class="ch-cmd">docker run -p 8080:8080 ghcr.io/hidane-dev/hidane</code><span class="chip chip--supported">available</span></div>
+<div class="ch" role="listitem"><span class="ch-name">curl | sh</span><code class="ch-cmd">curl -fsSL https://hidane.dev/install.sh | sh</code><span class="chip chip--supported">available</span></div>
 </div>
 </div>
 </section>

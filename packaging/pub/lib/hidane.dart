@@ -15,7 +15,7 @@ import 'dart:typed_data' show BytesBuilder;
 import 'package:crypto/crypto.dart';
 
 /// The hidane release this launcher runs.
-const String hidaneVersion = '0.1.0-rc.2';
+const String hidaneVersion = '0.1.0';
 
 const String _releases =
     'https://github.com/hidane-dev/hidane/releases/download';
