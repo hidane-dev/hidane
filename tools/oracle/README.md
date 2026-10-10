@@ -48,6 +48,10 @@ sends them over the Write stream; its transcripts are in `results/sdk-web-writes
 Admin SDK, and prints every snapshot each listener received; its transcripts are in
 `results/sdk-listen-*.json`.
 
+`sdk_listen_resume.mjs` takes the web SDK offline and back online (it then resumes its targets
+with their tokens) while the Admin SDK writes; its transcripts are in
+`results/sdk-listen-resume-*.json`.
+
 `sdk_transactions.mjs` does the same for `runTransaction` (server transactions, retries on
 `ABORTED`, lock waits), and `sdk_web_transactions.mjs` for the web SDK (`npm i firebase`), whose
 transactions use preconditions and `verify` writes instead. Their transcripts are in

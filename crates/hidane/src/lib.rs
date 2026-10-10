@@ -128,6 +128,7 @@ async fn reset(State(admin): State<Admin>) -> &'static str {
     // official emulator. Notifying open Listen streams is #33.
     admin.store.clear();
     admin.transactions.clear();
+    admin.changes.reset();
     "Resetting...\n"
 }
 

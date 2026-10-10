@@ -14,19 +14,28 @@
 //! Queries without a limit, offset or cursor follow changes one document at a time, so a
 //! commit costs O(changed documents); the others run again when a commit touches their
 //! collections.
+//!
+//! A target resumed from a token (or read time) T gets, as in production, only what changed
+//! since T: the target's documents at T and now are read from the store's versions and
+//! compared. When T is older than the versions kept (one hour, ADR 0002), the documents
+//! updated after T come with an `ExistenceFilter` holding the count, and the SDKs resynchronise
+//! if theirs differs. Tokens from before this process started or the store was reset, and
+//! tokens that do not parse, start the target over with `RESET`, as the official emulator
+//! always does.
 
 use std::{
-    collections::{BTreeMap, HashMap, HashSet, VecDeque},
+    collections::{BTreeMap, HashMap, VecDeque},
     sync::Arc,
 };
 
 use hidane_core::{
+    order::compare_paths,
     path::ResourcePath,
     store::{Change, Commit, ReadTime, StoredDocument},
 };
 use hidane_proto::google::{
     firestore::v1::{
-        DocumentChange, DocumentDelete, DocumentRemove, ListenRequest, ListenResponse,
+        DocumentChange, DocumentDelete, ExistenceFilter, ListenRequest, ListenResponse,
         StructuredQuery, Target, TargetChange, listen_request, listen_response, target,
         target::query_target, target_change::TargetChangeType,
     },
@@ -217,16 +226,37 @@ impl Listener<'_> {
 
         self.target_change(TargetChangeType::Add, vec![id], None, None)
             .await?;
-        if target.resume_type.is_some() {
-            // Like the official emulator, a resumed target starts over (#19).
-            self.target_change(TargetChangeType::Reset, vec![id], Some(at), None)
-                .await?;
-        }
         let mut watched = WatchedTarget {
             watch,
             members: HashMap::new(),
         };
-        self.send_initial(id, &mut watched, &database, at).await?;
+        let since = match &target.resume_type {
+            None => None,
+            Some(target::ResumeType::ResumeToken(token)) => Some(read_token(token)),
+            Some(target::ResumeType::ReadTime(ts)) => Some(Some(ReadTime::from_timestamp(ts))),
+        };
+        let store = self.service.store.as_ref();
+        match since {
+            None => self.send_initial(id, &mut watched, &database, at).await?,
+            Some(Some(since))
+                if since <= at
+                    && since >= self.service.changes.history_start()
+                    && since >= store.earliest_read_time(&database) =>
+            {
+                self.send_since(id, &mut watched, &database, since, at)
+                    .await?;
+            }
+            Some(Some(since)) if since <= at && since >= self.service.changes.history_start() => {
+                self.send_with_count(id, &mut watched, &database, since, at)
+                    .await?;
+            }
+            // A token that does not parse, is from the future, or predates this history.
+            Some(_) => {
+                self.target_change(TargetChangeType::Reset, vec![id], Some(at), None)
+                    .await?;
+                self.send_initial(id, &mut watched, &database, at).await?;
+            }
+        }
         self.targets.insert(id, watched);
         self.target_change(TargetChangeType::Current, vec![id], Some(at), None)
             .await?;
@@ -332,7 +362,7 @@ impl Listener<'_> {
                             watched.members.insert(path.clone(), doc.update_time);
                             self.document_change(id, database, &doc, None).await?;
                         }
-                        None => self.document_gone(id, database, path, at, true).await?,
+                        None => self.document_gone(id, database, path, at, None).await?,
                     }
                 }
             }
@@ -345,6 +375,95 @@ impl Listener<'_> {
             }
         }
         Ok(())
+    }
+
+    /// The documents of a target at `at`, in query (or request) order.
+    fn documents_at(
+        &self,
+        watch: &Watch,
+        database: &str,
+        at: ReadTime,
+    ) -> Vec<Arc<StoredDocument>> {
+        let store = self.service.store.as_ref();
+        match watch {
+            Watch::Documents(paths) => paths
+                .iter()
+                .filter_map(|path| store.get(database, path, at))
+                .collect(),
+            Watch::Query(query) => query.run(store, database, at).documents,
+        }
+    }
+
+    /// Resumes a target from `since`: what entered, changed in or left it between `since` and
+    /// `at`.
+    async fn send_since(
+        &self,
+        id: i32,
+        watched: &mut WatchedTarget,
+        database: &str,
+        since: ReadTime,
+        at: ReadTime,
+    ) -> Outcome<()> {
+        let before: HashMap<ResourcePath, Timestamp> = self
+            .documents_at(&watched.watch, database, since)
+            .iter()
+            .map(|doc| ((*doc.path).clone(), doc.update_time))
+            .collect();
+        let projection = match &watched.watch {
+            Watch::Query(query) => query.projection(),
+            Watch::Documents(_) => None,
+        };
+        let now = self.documents_at(&watched.watch, database, at);
+        for doc in &now {
+            watched.members.insert((*doc.path).clone(), doc.update_time);
+            if before.get(&*doc.path) != Some(&doc.update_time) {
+                self.document_change(id, database, doc, projection).await?;
+            }
+        }
+        let store = self.service.store.as_ref();
+        let mut gone: Vec<&ResourcePath> = before
+            .keys()
+            .filter(|path| !watched.members.contains_key(*path))
+            .collect();
+        gone.sort_by(|a, b| compare_paths(a.segments(), b.segments()));
+        for path in gone {
+            let still_there = store.get(database, path, at);
+            self.document_gone(id, database, path, at, still_there.as_deref())
+                .await?;
+        }
+        Ok(())
+    }
+
+    /// Resumes a target from `since`, older than the versions kept: the documents updated
+    /// after it, and the count, so a client holding others can tell and start over.
+    async fn send_with_count(
+        &self,
+        id: i32,
+        watched: &mut WatchedTarget,
+        database: &str,
+        since: ReadTime,
+        at: ReadTime,
+    ) -> Outcome<()> {
+        let projection = match &watched.watch {
+            Watch::Query(query) => query.projection(),
+            Watch::Documents(_) => None,
+        };
+        let now = self.documents_at(&watched.watch, database, at);
+        let since = since.to_timestamp();
+        for doc in &now {
+            watched.members.insert((*doc.path).clone(), doc.update_time);
+            let updated_after =
+                (doc.update_time.seconds, doc.update_time.nanos) > (since.seconds, since.nanos);
+            if updated_after {
+                self.document_change(id, database, doc, projection).await?;
+            }
+        }
+        self.send(listen_response::ResponseType::Filter(ExistenceFilter {
+            target_id: id,
+            count: i32::try_from(now.len()).unwrap_or(i32::MAX),
+            unchanged_names: None,
+        }))
+        .await
     }
 
     async fn document_change(
@@ -364,30 +483,30 @@ impl Listener<'_> {
         .await
     }
 
-    /// A document left target `id`: deleted (`DocumentDelete`) or still there but no longer
-    /// matching (`DocumentRemove`).
+    /// A document left target `id`. Deleted: `DocumentDelete`. Still there: a `DocumentChange`
+    /// with its new state and the target in `removed_target_ids`, as production sends; with
+    /// `DocumentRemove` instead, the web SDK keeps the document until it has looked it up
+    /// again, which shows as an extra snapshot.
     async fn document_gone(
         &self,
         id: i32,
         database: &str,
         path: &ResourcePath,
         at: ReadTime,
-        deleted: bool,
+        still_there: Option<&StoredDocument>,
     ) -> Outcome<()> {
         let document = super::Name::document_name(database, path);
-        let read_time = Some(at.to_timestamp());
-        self.send(if deleted {
-            listen_response::ResponseType::DocumentDelete(DocumentDelete {
+        self.send(match still_there {
+            None => listen_response::ResponseType::DocumentDelete(DocumentDelete {
                 document,
                 removed_target_ids: vec![id],
-                read_time,
-            })
-        } else {
-            listen_response::ResponseType::DocumentRemove(DocumentRemove {
-                document,
+                read_time: Some(at.to_timestamp()),
+            }),
+            Some(doc) => listen_response::ResponseType::DocumentChange(DocumentChange {
+                document: Some(to_document(database, doc, None)),
+                target_ids: Vec::new(),
                 removed_target_ids: vec![id],
-                read_time,
-            })
+            }),
         })
         .await
     }
@@ -450,7 +569,7 @@ impl Listener<'_> {
                         }
                         None => {
                             watched.members.remove(&*change.path);
-                            self.document_gone(id, database, &change.path, at, true)
+                            self.document_gone(id, database, &change.path, at, None)
                                 .await?;
                         }
                     }
@@ -483,7 +602,7 @@ impl Listener<'_> {
                                 database,
                                 &change.path,
                                 at,
-                                change.after.is_none(),
+                                change.after.as_deref(),
                             )
                             .await?;
                         }
@@ -495,11 +614,6 @@ impl Listener<'_> {
                 if !changes.iter().any(|c| query.covers(&c.path)) {
                     return Ok(false);
                 }
-                let deleted: HashSet<&ResourcePath> = changes
-                    .iter()
-                    .filter(|c| c.after.is_none())
-                    .map(|c| &*c.path)
-                    .collect();
                 let results = query
                     .run(self.service.store.as_ref(), database, at)
                     .documents;
@@ -514,7 +628,8 @@ impl Listener<'_> {
                 for path in left {
                     sent = true;
                     watched.members.remove(&path);
-                    self.document_gone(id, database, &path, at, deleted.contains(&path))
+                    let still_there = self.service.store.get(database, &path, at);
+                    self.document_gone(id, database, &path, at, still_there.as_deref())
                         .await?;
                 }
                 for doc in &results {
@@ -573,6 +688,28 @@ async fn recv(
         Some(feed) => feed.recv().await,
         None => std::future::pending().await,
     }
+}
+
+/// The read time in a resume token, if it is one of ours (or the official emulator's).
+fn read_token(token: &[u8]) -> Option<ReadTime> {
+    let [0x0a, len, inner @ ..] = token else {
+        return None;
+    };
+    let [0x08, varint @ ..] = inner else {
+        return None;
+    };
+    if usize::from(*len) != inner.len() || varint.is_empty() || varint.len() > 9 {
+        return None;
+    }
+    let mut micros = 0u64;
+    for (i, byte) in varint.iter().enumerate() {
+        let last = i + 1 == varint.len();
+        if (byte & 0x80 == 0) != last {
+            return None;
+        }
+        micros |= u64::from(byte & 0x7f) << (7 * i);
+    }
+    i64::try_from(micros).ok().map(ReadTime)
 }
 
 /// The official emulator's resume token: a message whose field 1 is a message whose field 1

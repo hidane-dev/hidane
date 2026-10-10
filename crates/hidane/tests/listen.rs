@@ -10,7 +10,10 @@ use hidane_proto::google::firestore::v1::{
     CommitRequest, Document, ListenRequest, ListenResponse, StructuredQuery, Target, Value, Write,
     firestore_client::FirestoreClient,
     listen_request, listen_response,
-    structured_query::{CollectionSelector, Direction, FieldReference, Order},
+    structured_query::{
+        CollectionSelector, Direction, FieldFilter, FieldReference, Filter, Order, field_filter,
+        filter,
+    },
     target::{self, DocumentsTarget, QueryTarget, query_target},
     target_change::TargetChangeType,
     value::ValueType,
@@ -29,9 +32,12 @@ fn doc_name(path: &str) -> String {
 }
 
 async fn start() -> Client {
+    start_with(hidane::Admin::default()).await.0
+}
+
+async fn start_with(admin: hidane::Admin) -> (Client, std::net::SocketAddr) {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
-    let admin = hidane::Admin::default();
     tokio::spawn(hidane::serve(
         vec![listener],
         hidane::grpc_routes(&admin),
@@ -43,7 +49,21 @@ async fn start() -> Client {
         .connect()
         .await
         .unwrap();
-    FirestoreClient::new(channel)
+    (FirestoreClient::new(channel), addr)
+}
+
+async fn reset(addr: std::net::SocketAddr) {
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    let mut stream = tokio::net::TcpStream::connect(addr).await.unwrap();
+    stream
+        .write_all(
+            b"POST /reset HTTP/1.1\r\nHost: x\r\nContent-Length: 0\r\nConnection: close\r\n\r\n",
+        )
+        .await
+        .unwrap();
+    let mut response = String::new();
+    stream.read_to_string(&mut response).await.unwrap();
+    assert!(response.starts_with("HTTP/1.1 200"), "{response}");
 }
 
 fn set(path: &str, n: i64) -> Write {
@@ -79,6 +99,29 @@ async fn commit(client: &mut Client, writes: Vec<Write>) {
         })
         .await
         .unwrap();
+}
+
+/// `collection` where `n < 10`, so documents can leave it.
+fn small_target(id: i32) -> Target {
+    let mut target = query_target(id, "c", None);
+    if let Some(target::TargetType::Query(QueryTarget {
+        query_type: Some(query_target::QueryType::StructuredQuery(query)),
+        ..
+    })) = &mut target.target_type
+    {
+        query.r#where = Some(Filter {
+            filter_type: Some(filter::FilterType::FieldFilter(FieldFilter {
+                field: Some(FieldReference {
+                    field_path: "n".to_owned(),
+                }),
+                op: field_filter::Operator::LessThan as i32,
+                value: Some(Value {
+                    value_type: Some(ValueType::IntegerValue(10)),
+                }),
+            })),
+        });
+    }
+    target
 }
 
 fn query_target(id: i32, collection: &str, order_desc_limit: Option<i32>) -> Target {
@@ -212,7 +255,15 @@ fn describe(response: &ListenResponse) -> String {
                 _ => -1,
             };
             assert!(doc.update_time.is_some(), "the SDKs need update_time");
-            format!("change {}={n} {:?}", relative(&doc.name), change.target_ids)
+            if change.target_ids.is_empty() {
+                format!(
+                    "left {}={n} {:?}",
+                    relative(&doc.name),
+                    change.removed_target_ids
+                )
+            } else {
+                format!("change {}={n} {:?}", relative(&doc.name), change.target_ids)
+            }
         }
         listen_response::ResponseType::DocumentDelete(delete) => {
             assert!(delete.read_time.is_some());
@@ -342,7 +393,7 @@ async fn documents_leaving_a_query_are_removed() {
     assert_eq!(
         stream.drain().await,
         [
-            "remove c/b [1]",
+            "left c/b=2 [1]",
             "change c/d=9 [1]",
             "NO_CHANGE [] token read_time"
         ]
@@ -438,7 +489,7 @@ async fn resume_tokens_carry_the_read_time() {
     wrapped.extend(expected);
     assert_eq!(token, wrapped);
 
-    // A resumed target starts over, as on the official emulator (#19).
+    // Resuming with the token of the current state sends nothing but the closing messages.
     let mut resumed = query_target(2, "c", None);
     resumed.resume_type = Some(target::ResumeType::ResumeToken(token));
     stream.add(resumed).await;
@@ -446,10 +497,139 @@ async fn resume_tokens_carry_the_read_time() {
         stream.drain().await,
         [
             "ADD [2]",
-            "RESET [2] token",
-            "change c/a=1 [2]",
             "CURRENT [2] token read_time",
-            "NO_CHANGE [] token read_time",
+            "NO_CHANGE [] token read_time"
         ]
     );
+}
+
+/// The token and read time of the snapshot a new target gets.
+async fn current_token(stream: &mut Stream) -> (Vec<u8>, prost_types::Timestamp) {
+    loop {
+        let response = stream.responses.message().await.unwrap().unwrap();
+        if let Some(listen_response::ResponseType::TargetChange(change)) = response.response_type
+            && change.target_change_type == TargetChangeType::NoChange as i32
+        {
+            return (change.resume_token, change.read_time.unwrap());
+        }
+    }
+}
+
+#[tokio::test]
+async fn a_resumed_target_gets_only_what_changed() {
+    let mut client = start().await;
+    commit(
+        &mut client,
+        vec![
+            set("c/a", 1),
+            set("c/b", 2),
+            set("c/e", 3),
+            set("c/same", 4),
+        ],
+    )
+    .await;
+    let mut stream = Stream::open(&mut client).await;
+    stream.add(small_target(1)).await;
+    let (token, read_time) = current_token(&mut stream).await;
+    drop(stream);
+
+    // While disconnected: a change, a deletion, a new document, one that leaves the query.
+    commit(&mut client, vec![set("c/a", 5)]).await;
+    commit(
+        &mut client,
+        vec![delete("c/b"), set("c/d", 6), set("c/e", 50)],
+    )
+    .await;
+
+    for resume in [
+        target::ResumeType::ResumeToken(token),
+        target::ResumeType::ReadTime(read_time),
+    ] {
+        let mut stream = Stream::open(&mut client).await;
+        let mut target = small_target(1);
+        target.resume_type = Some(resume);
+        stream.add(target).await;
+        assert_eq!(
+            stream.drain().await,
+            [
+                "ADD [1]",
+                "change c/a=5 [1]",
+                "change c/d=6 [1]",
+                "delete c/b [1]",
+                "left c/e=50 [1]",
+                "CURRENT [1] token read_time",
+                "NO_CHANGE [] token read_time",
+            ]
+        );
+    }
+}
+
+#[tokio::test]
+async fn a_target_resumed_from_beyond_the_kept_versions_gets_a_count() {
+    let store = hidane_core::store::MemoryStore::new().with_retention(Duration::from_millis(200));
+    let (mut client, _) = start_with(hidane::Admin::new(std::sync::Arc::new(store))).await;
+    commit(
+        &mut client,
+        vec![set("c/a", 1), set("c/b", 2), set("c/c", 3)],
+    )
+    .await;
+    let mut stream = Stream::open(&mut client).await;
+    stream.add(small_target(1)).await;
+    let (token, _) = current_token(&mut stream).await;
+    drop(stream);
+
+    tokio::time::sleep(Duration::from_millis(300)).await;
+    commit(&mut client, vec![set("c/a", 7), delete("c/b")]).await;
+    let mut stream = Stream::open(&mut client).await;
+    let mut target = small_target(1);
+    target.resume_type = Some(target::ResumeType::ResumeToken(token));
+    stream.add(target).await;
+    let responses = stream.drain().await;
+    assert_eq!(responses[..2], ["ADD [1]", "change c/a=7 [1]"]);
+    assert!(
+        responses[2].starts_with("filter ExistenceFilter { target_id: 1, count: 2"),
+        "{responses:?}"
+    );
+    assert_eq!(
+        responses[3..],
+        [
+            "CURRENT [1] token read_time",
+            "NO_CHANGE [] token read_time"
+        ]
+    );
+}
+
+#[tokio::test]
+async fn untrusted_tokens_start_over() {
+    let (mut client, addr) = start_with(hidane::Admin::default()).await;
+    commit(&mut client, vec![set("c/a", 1)]).await;
+    let mut stream = Stream::open(&mut client).await;
+    stream.add(small_target(1)).await;
+    let (token, _) = current_token(&mut stream).await;
+    drop(stream);
+
+    let started_over = [
+        "ADD [1]",
+        "RESET [1] token",
+        "change c/a=1 [1]",
+        "CURRENT [1] token read_time",
+        "NO_CHANGE [] token read_time",
+    ];
+    // Not a token of ours, or from before this process started.
+    for bad in [b"bogus".to_vec(), vec![0x0a, 0x02, 0x08, 0x01]] {
+        let mut stream = Stream::open(&mut client).await;
+        let mut target = small_target(1);
+        target.resume_type = Some(target::ResumeType::ResumeToken(bad));
+        stream.add(target).await;
+        assert_eq!(stream.drain().await, started_over);
+    }
+
+    // From before a reset: the documents the client has may be gone without a trace.
+    reset(addr).await;
+    commit(&mut client, vec![set("c/a", 1)]).await;
+    let mut stream = Stream::open(&mut client).await;
+    let mut target = small_target(1);
+    target.resume_type = Some(target::ResumeType::ResumeToken(token));
+    stream.add(target).await;
+    assert_eq!(stream.drain().await, started_over);
 }
