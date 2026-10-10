@@ -47,7 +47,7 @@ use tokio::{
 use tower::ServiceExt;
 
 pub use firestore::FirestoreService;
-use firestore::transactions::Transactions;
+use firestore::{changes::ChangeFeed, transactions::Transactions};
 
 /// How long open connections (e.g. Listen streams) get to finish after a shutdown signal.
 /// firebase-tools waits 4 s after SIGINT before giving up on the process.
@@ -62,6 +62,7 @@ pub const SHUTDOWN_GRACE: Duration = Duration::from_secs(2);
 pub struct Admin {
     store: Arc<dyn Store>,
     transactions: Arc<Transactions>,
+    changes: Arc<ChangeFeed>,
     shutdown: Arc<watch::Sender<bool>>,
 }
 
@@ -77,6 +78,7 @@ impl Admin {
         Self {
             store,
             transactions: Arc::default(),
+            changes: Arc::default(),
             shutdown: Arc::new(watch::Sender::new(false)),
         }
     }
@@ -148,8 +150,11 @@ pub fn grpc_routes(admin: &Admin) -> Router {
     let reflection_v1alpha = reflection()
         .build_v1alpha()
         .expect("embedded descriptor set is valid");
-    let firestore =
-        FirestoreService::with_transactions(admin.store(), Arc::clone(&admin.transactions));
+    let firestore = FirestoreService::with_state(
+        admin.store(),
+        Arc::clone(&admin.transactions),
+        Arc::clone(&admin.changes),
+    );
     tonic::service::Routes::new(FirestoreServer::new(firestore))
         .add_service(reflection_v1)
         .add_service(reflection_v1alpha)

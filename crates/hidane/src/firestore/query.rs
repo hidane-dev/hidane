@@ -262,38 +262,65 @@ impl Query {
         self.projection.as_deref()
     }
 
+    /// Whether the result can follow changes one document at a time: no limit, offset or
+    /// cursor makes a document's membership depend on other documents.
+    pub fn is_incremental(&self) -> bool {
+        self.limit.is_none() && self.offset == 0 && self.start.is_none() && self.end.is_none()
+    }
+
+    /// Whether a document at `path` is in the collections this query reads.
+    pub fn covers(&self, path: &ResourcePath) -> bool {
+        if !path.is_document() || path.len() <= self.parent.len() || !path.starts_with(&self.parent)
+        {
+            return false;
+        }
+        match &self.source {
+            Source::Collection(id) => {
+                path.len() == self.parent.len() + 2 && path.collection_id() == Some(id.as_str())
+            }
+            Source::Group(id) => path.collection_id() == Some(id.as_str()),
+            Source::Children => path.len() == self.parent.len() + 2,
+            Source::Descendants => true,
+        }
+    }
+
+    /// Whether `doc`, which must be in a collection the query reads, matches the filter and has
+    /// every ordered and required field. For an incremental query, that is membership.
+    pub fn matches(&self, database: &str, doc: &StoredDocument) -> bool {
+        self.sort_key(database, doc).is_some()
+    }
+
+    /// The values `doc` sorts by, or `None` when the query leaves it out.
+    fn sort_key(&self, database: &str, doc: &StoredDocument) -> Option<Vec<Value>> {
+        let fields = doc.fields();
+        let name = reference(database, &doc.path);
+        let field_value = |field: &Field| match field {
+            Field::Name => Some(&name),
+            Field::Path(path) => get(&fields, path),
+        };
+        if self
+            .filter
+            .as_ref()
+            .is_some_and(|f| !matches_filter(f, &field_value))
+            || self
+                .required
+                .iter()
+                .any(|path| get(&fields, path).is_none())
+        {
+            return None;
+        }
+        self.orders
+            .iter()
+            .map(|order| field_value(&order.field).cloned())
+            .collect()
+    }
+
     pub fn run(&self, store: &dyn Store, database: &str, at: ReadTime) -> Results {
         let mut matches: Vec<(Arc<StoredDocument>, Vec<Value>)> = Vec::new();
-        let mut consider = |doc: &Arc<StoredDocument>| {
-            let fields = doc.fields();
-            let name = reference(database, &doc.path);
-            let field_value = |field: &Field| match field {
-                Field::Name => Some(&name),
-                Field::Path(path) => get(&fields, path),
-            };
-            if self
-                .filter
-                .as_ref()
-                .is_some_and(|f| !matches_filter(f, &field_value))
-                || self
-                    .required
-                    .iter()
-                    .any(|path| get(&fields, path).is_none())
-            {
-                return;
-            }
-            let Some(key) = self
-                .orders
-                .iter()
-                .map(|order| field_value(&order.field).cloned())
-                .collect::<Option<Vec<_>>>()
-            else {
-                return;
-            };
-            matches.push((Arc::clone(doc), key));
-        };
         let mut visit = |doc: &Arc<StoredDocument>| {
-            consider(doc);
+            if let Some(key) = self.sort_key(database, doc) {
+                matches.push((Arc::clone(doc), key));
+            }
             std::ops::ControlFlow::Continue(())
         };
         match &self.source {

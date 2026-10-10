@@ -1,0 +1,1288 @@
+[
+ {
+  "step": "seed",
+  "listeners": {}
+ },
+ {
+  "step": "attach listeners",
+  "listeners": {
+   "admin: all": [
+    {
+     "docs": [
+      [
+       "LA",
+       {
+        "pop": 3900,
+        "state": "CA"
+       }
+      ],
+      [
+       "SF",
+       {
+        "pop": 860,
+        "state": "CA"
+       }
+      ],
+      [
+       "TOK",
+       {
+        "pop": 9000,
+        "state": null
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "added",
+       "LA",
+       -1,
+       0
+      ],
+      [
+       "added",
+       "SF",
+       -1,
+       1
+      ],
+      [
+       "added",
+       "TOK",
+       -1,
+       2
+      ]
+     ]
+    }
+   ],
+   "admin: doc NY": [
+    {
+     "exists": false,
+     "data": null
+    }
+   ],
+   "admin: doc SF": [
+    {
+     "exists": true,
+     "data": {
+      "pop": 860,
+      "state": "CA"
+     }
+    }
+   ],
+   "admin: group landmarks": [
+    {
+     "docs": [],
+     "changes": []
+    }
+   ],
+   "admin: pop > 1000": [
+    {
+     "docs": [
+      [
+       "LA",
+       {
+        "pop": 3900,
+        "state": "CA"
+       }
+      ],
+      [
+       "TOK",
+       {
+        "pop": 9000,
+        "state": null
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "added",
+       "LA",
+       -1,
+       0
+      ],
+      [
+       "added",
+       "TOK",
+       -1,
+       1
+      ]
+     ]
+    }
+   ],
+   "admin: top 2 by pop": [
+    {
+     "docs": [
+      [
+       "TOK",
+       {
+        "pop": 9000,
+        "state": null
+       }
+      ],
+      [
+       "LA",
+       {
+        "pop": 3900,
+        "state": "CA"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "added",
+       "TOK",
+       -1,
+       0
+      ],
+      [
+       "added",
+       "LA",
+       -1,
+       1
+      ]
+     ]
+    }
+   ],
+   "web: CA by pop": [
+    {
+     "docs": [
+      [
+       "SF",
+       {
+        "pop": 860,
+        "state": "CA"
+       }
+      ],
+      [
+       "LA",
+       {
+        "pop": 3900,
+        "state": "CA"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "added",
+       "SF",
+       -1,
+       0
+      ],
+      [
+       "added",
+       "LA",
+       -1,
+       1
+      ]
+     ]
+    }
+   ],
+   "web: doc NY": [
+    {
+     "exists": false,
+     "data": null
+    }
+   ],
+   "web: top 2 by pop": [
+    {
+     "docs": [
+      [
+       "LA",
+       {
+        "pop": 3900,
+        "state": "CA"
+       }
+      ],
+      [
+       "SF",
+       {
+        "pop": 860,
+        "state": "CA"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "added",
+       "LA",
+       -1,
+       0
+      ],
+      [
+       "added",
+       "SF",
+       -1,
+       1
+      ]
+     ]
+    },
+    {
+     "docs": [
+      [
+       "TOK",
+       {
+        "pop": 9000,
+        "state": null
+       }
+      ],
+      [
+       "LA",
+       {
+        "pop": 3900,
+        "state": "CA"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "removed",
+       "SF",
+       1,
+       -1
+      ],
+      [
+       "added",
+       "TOK",
+       -1,
+       0
+      ]
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "step": "add NY (enters several queries)",
+  "listeners": {
+   "admin: all": [
+    {
+     "docs": [
+      [
+       "LA",
+       {
+        "pop": 3900,
+        "state": "CA"
+       }
+      ],
+      [
+       "NY",
+       {
+        "pop": 8300,
+        "state": "NY"
+       }
+      ],
+      [
+       "SF",
+       {
+        "pop": 860,
+        "state": "CA"
+       }
+      ],
+      [
+       "TOK",
+       {
+        "pop": 9000,
+        "state": null
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "added",
+       "NY",
+       -1,
+       1
+      ]
+     ]
+    }
+   ],
+   "admin: doc NY": [
+    {
+     "exists": true,
+     "data": {
+      "pop": 8300,
+      "state": "NY"
+     }
+    }
+   ],
+   "admin: pop > 1000": [
+    {
+     "docs": [
+      [
+       "LA",
+       {
+        "pop": 3900,
+        "state": "CA"
+       }
+      ],
+      [
+       "NY",
+       {
+        "pop": 8300,
+        "state": "NY"
+       }
+      ],
+      [
+       "TOK",
+       {
+        "pop": 9000,
+        "state": null
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "added",
+       "NY",
+       -1,
+       1
+      ]
+     ]
+    }
+   ],
+   "admin: top 2 by pop": [
+    {
+     "docs": [
+      [
+       "TOK",
+       {
+        "pop": 9000,
+        "state": null
+       }
+      ],
+      [
+       "NY",
+       {
+        "pop": 8300,
+        "state": "NY"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "removed",
+       "LA",
+       1,
+       -1
+      ],
+      [
+       "added",
+       "NY",
+       -1,
+       1
+      ]
+     ]
+    }
+   ],
+   "web: doc NY": [
+    {
+     "exists": true,
+     "data": {
+      "pop": 8300,
+      "state": "NY"
+     }
+    }
+   ],
+   "web: top 2 by pop": [
+    {
+     "docs": [
+      [
+       "TOK",
+       {
+        "pop": 9000,
+        "state": null
+       }
+      ],
+      [
+       "NY",
+       {
+        "pop": 8300,
+        "state": "NY"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "removed",
+       "LA",
+       1,
+       -1
+      ],
+      [
+       "added",
+       "NY",
+       -1,
+       1
+      ]
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "step": "update SF (stays in all)",
+  "listeners": {
+   "admin: all": [
+    {
+     "docs": [
+      [
+       "LA",
+       {
+        "pop": 3900,
+        "state": "CA"
+       }
+      ],
+      [
+       "NY",
+       {
+        "pop": 8300,
+        "state": "NY"
+       }
+      ],
+      [
+       "SF",
+       {
+        "pop": 870,
+        "state": "CA"
+       }
+      ],
+      [
+       "TOK",
+       {
+        "pop": 9000,
+        "state": null
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "modified",
+       "SF",
+       2,
+       2
+      ]
+     ]
+    }
+   ],
+   "admin: doc SF": [
+    {
+     "exists": true,
+     "data": {
+      "pop": 870,
+      "state": "CA"
+     }
+    }
+   ],
+   "web: CA by pop": [
+    {
+     "docs": [
+      [
+       "SF",
+       {
+        "pop": 870,
+        "state": "CA"
+       }
+      ],
+      [
+       "LA",
+       {
+        "pop": 3900,
+        "state": "CA"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "modified",
+       "SF",
+       0,
+       0
+      ]
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "step": "update LA below 1000 (leaves pop > 1000, moves in order)",
+  "listeners": {
+   "admin: all": [
+    {
+     "docs": [
+      [
+       "LA",
+       {
+        "pop": 999,
+        "state": "CA"
+       }
+      ],
+      [
+       "NY",
+       {
+        "pop": 8300,
+        "state": "NY"
+       }
+      ],
+      [
+       "SF",
+       {
+        "pop": 870,
+        "state": "CA"
+       }
+      ],
+      [
+       "TOK",
+       {
+        "pop": 9000,
+        "state": null
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "modified",
+       "LA",
+       0,
+       0
+      ]
+     ]
+    }
+   ],
+   "admin: pop > 1000": [
+    {
+     "docs": [
+      [
+       "NY",
+       {
+        "pop": 8300,
+        "state": "NY"
+       }
+      ],
+      [
+       "TOK",
+       {
+        "pop": 9000,
+        "state": null
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "removed",
+       "LA",
+       0,
+       -1
+      ]
+     ]
+    }
+   ],
+   "web: CA by pop": [
+    {
+     "docs": [
+      [
+       "SF",
+       {
+        "pop": 870,
+        "state": "CA"
+       }
+      ],
+      [
+       "LA",
+       {
+        "pop": 999,
+        "state": "CA"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "modified",
+       "LA",
+       1,
+       1
+      ]
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "step": "update TOK above all (changes the top 2)",
+  "listeners": {
+   "admin: all": [
+    {
+     "docs": [
+      [
+       "LA",
+       {
+        "pop": 999,
+        "state": "CA"
+       }
+      ],
+      [
+       "NY",
+       {
+        "pop": 8300,
+        "state": "NY"
+       }
+      ],
+      [
+       "SF",
+       {
+        "pop": 870,
+        "state": "CA"
+       }
+      ],
+      [
+       "TOK",
+       {
+        "pop": 9500,
+        "state": null
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "modified",
+       "TOK",
+       3,
+       3
+      ]
+     ]
+    }
+   ],
+   "admin: pop > 1000": [
+    {
+     "docs": [
+      [
+       "NY",
+       {
+        "pop": 8300,
+        "state": "NY"
+       }
+      ],
+      [
+       "TOK",
+       {
+        "pop": 9500,
+        "state": null
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "modified",
+       "TOK",
+       1,
+       1
+      ]
+     ]
+    }
+   ],
+   "admin: top 2 by pop": [
+    {
+     "docs": [
+      [
+       "TOK",
+       {
+        "pop": 9500,
+        "state": null
+       }
+      ],
+      [
+       "NY",
+       {
+        "pop": 8300,
+        "state": "NY"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "modified",
+       "TOK",
+       0,
+       0
+      ]
+     ]
+    }
+   ],
+   "web: top 2 by pop": [
+    {
+     "docs": [
+      [
+       "TOK",
+       {
+        "pop": 9500,
+        "state": null
+       }
+      ],
+      [
+       "NY",
+       {
+        "pop": 8300,
+        "state": "NY"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "modified",
+       "TOK",
+       0,
+       0
+      ]
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "step": "no-op write",
+  "listeners": {}
+ },
+ {
+  "step": "write to another collection",
+  "listeners": {}
+ },
+ {
+  "step": "batch: delete TOK, add BJ, change NY state",
+  "listeners": {
+   "admin: all": [
+    {
+     "docs": [
+      [
+       "BJ",
+       {
+        "pop": 21500,
+        "state": null
+       }
+      ],
+      [
+       "LA",
+       {
+        "pop": 999,
+        "state": "CA"
+       }
+      ],
+      [
+       "NY",
+       {
+        "pop": 8300,
+        "state": "CA"
+       }
+      ],
+      [
+       "SF",
+       {
+        "pop": 870,
+        "state": "CA"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "removed",
+       "TOK",
+       3,
+       -1
+      ],
+      [
+       "added",
+       "BJ",
+       -1,
+       0
+      ],
+      [
+       "modified",
+       "NY",
+       2,
+       2
+      ]
+     ]
+    }
+   ],
+   "admin: doc NY": [
+    {
+     "exists": true,
+     "data": {
+      "pop": 8300,
+      "state": "CA"
+     }
+    }
+   ],
+   "admin: pop > 1000": [
+    {
+     "docs": [
+      [
+       "BJ",
+       {
+        "pop": 21500,
+        "state": null
+       }
+      ],
+      [
+       "NY",
+       {
+        "pop": 8300,
+        "state": "CA"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "removed",
+       "TOK",
+       1,
+       -1
+      ],
+      [
+       "added",
+       "BJ",
+       -1,
+       0
+      ],
+      [
+       "modified",
+       "NY",
+       1,
+       1
+      ]
+     ]
+    }
+   ],
+   "admin: top 2 by pop": [
+    {
+     "docs": [
+      [
+       "BJ",
+       {
+        "pop": 21500,
+        "state": null
+       }
+      ],
+      [
+       "NY",
+       {
+        "pop": 8300,
+        "state": "CA"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "removed",
+       "TOK",
+       0,
+       -1
+      ],
+      [
+       "added",
+       "BJ",
+       -1,
+       0
+      ],
+      [
+       "modified",
+       "NY",
+       1,
+       1
+      ]
+     ]
+    }
+   ],
+   "web: CA by pop": [
+    {
+     "docs": [
+      [
+       "SF",
+       {
+        "pop": 870,
+        "state": "CA"
+       }
+      ],
+      [
+       "LA",
+       {
+        "pop": 999,
+        "state": "CA"
+       }
+      ],
+      [
+       "NY",
+       {
+        "pop": 8300,
+        "state": "CA"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "added",
+       "NY",
+       -1,
+       2
+      ]
+     ]
+    }
+   ],
+   "web: doc NY": [
+    {
+     "exists": true,
+     "data": {
+      "pop": 8300,
+      "state": "CA"
+     }
+    }
+   ],
+   "web: top 2 by pop": [
+    {
+     "docs": [
+      [
+       "BJ",
+       {
+        "pop": 21500,
+        "state": null
+       }
+      ],
+      [
+       "NY",
+       {
+        "pop": 8300,
+        "state": "CA"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "removed",
+       "TOK",
+       0,
+       -1
+      ],
+      [
+       "added",
+       "BJ",
+       -1,
+       0
+      ],
+      [
+       "modified",
+       "NY",
+       1,
+       1
+      ]
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "step": "add a landmark",
+  "listeners": {
+   "admin: group landmarks": [
+    {
+     "docs": [
+      [
+       "gg",
+       {
+        "name": "Golden Gate"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "added",
+       "gg",
+       -1,
+       0
+      ]
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "step": "server timestamp",
+  "listeners": {
+   "admin: all": [
+    {
+     "docs": [
+      [
+       "BJ",
+       {
+        "pop": 21500,
+        "state": null
+       }
+      ],
+      [
+       "LA",
+       {
+        "pop": 999,
+        "state": "CA"
+       }
+      ],
+      [
+       "NY",
+       {
+        "pop": 8300,
+        "state": "CA"
+       }
+      ],
+      [
+       "SF",
+       {
+        "at": "timestamp",
+        "pop": 870,
+        "state": "CA"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "modified",
+       "SF",
+       3,
+       3
+      ]
+     ]
+    }
+   ],
+   "admin: doc SF": [
+    {
+     "exists": true,
+     "data": {
+      "at": "timestamp",
+      "pop": 870,
+      "state": "CA"
+     }
+    }
+   ],
+   "web: CA by pop": [
+    {
+     "docs": [
+      [
+       "SF",
+       {
+        "at": "timestamp",
+        "pop": 870,
+        "state": "CA"
+       }
+      ],
+      [
+       "LA",
+       {
+        "pop": 999,
+        "state": "CA"
+       }
+      ],
+      [
+       "NY",
+       {
+        "pop": 8300,
+        "state": "CA"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "modified",
+       "SF",
+       0,
+       0
+      ]
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "step": "delete NY",
+  "listeners": {
+   "admin: all": [
+    {
+     "docs": [
+      [
+       "BJ",
+       {
+        "pop": 21500,
+        "state": null
+       }
+      ],
+      [
+       "LA",
+       {
+        "pop": 999,
+        "state": "CA"
+       }
+      ],
+      [
+       "SF",
+       {
+        "at": "timestamp",
+        "pop": 870,
+        "state": "CA"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "removed",
+       "NY",
+       2,
+       -1
+      ]
+     ]
+    }
+   ],
+   "admin: doc NY": [
+    {
+     "exists": false,
+     "data": null
+    }
+   ],
+   "admin: pop > 1000": [
+    {
+     "docs": [
+      [
+       "BJ",
+       {
+        "pop": 21500,
+        "state": null
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "removed",
+       "NY",
+       1,
+       -1
+      ]
+     ]
+    }
+   ],
+   "admin: top 2 by pop": [
+    {
+     "docs": [
+      [
+       "BJ",
+       {
+        "pop": 21500,
+        "state": null
+       }
+      ],
+      [
+       "LA",
+       {
+        "pop": 999,
+        "state": "CA"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "removed",
+       "NY",
+       1,
+       -1
+      ],
+      [
+       "added",
+       "LA",
+       -1,
+       1
+      ]
+     ]
+    }
+   ],
+   "web: CA by pop": [
+    {
+     "docs": [
+      [
+       "SF",
+       {
+        "at": "timestamp",
+        "pop": 870,
+        "state": "CA"
+       }
+      ],
+      [
+       "LA",
+       {
+        "pop": 999,
+        "state": "CA"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "removed",
+       "NY",
+       2,
+       -1
+      ]
+     ]
+    }
+   ],
+   "web: doc NY": [
+    {
+     "exists": false,
+     "data": null
+    }
+   ],
+   "web: top 2 by pop": [
+    {
+     "docs": [
+      [
+       "BJ",
+       {
+        "pop": 21500,
+        "state": null
+       }
+      ],
+      [
+       "LA",
+       {
+        "pop": 999,
+        "state": "CA"
+       }
+      ]
+     ],
+     "changes": [
+      [
+       "removed",
+       "NY",
+       1,
+       -1
+      ],
+      [
+       "added",
+       "LA",
+       -1,
+       1
+      ]
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "step": "web getDoc and getDocs",
+  "listeners": {
+   "web: get": [
+    {
+     "one": true,
+     "all": [
+      "SF",
+      "LA",
+      "BJ"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "step": "detach",
+  "listeners": {}
+ }
+]

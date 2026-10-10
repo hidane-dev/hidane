@@ -15,7 +15,8 @@ use std::sync::atomic::{AtomicU64, Ordering};
 
 use hidane_proto::google::firestore::v1::{WriteRequest, WriteResponse};
 use tokio::sync::mpsc;
-use tonic::{Status, Streaming};
+use tokio_stream::{Stream, StreamExt};
+use tonic::Status;
 
 use super::{FirestoreService, names};
 
@@ -25,13 +26,14 @@ static NEXT_STREAM_ID: AtomicU64 = AtomicU64::new(0);
 type Responses = mpsc::Sender<Result<WriteResponse, Status>>;
 
 impl FirestoreService {
-    /// Serves one Write stream until it ends; an `Err` ends it with that status.
-    pub(super) async fn serve_write_stream(
+    /// Serves one Write stream until it ends; an `Err` ends it with that status. Requests and
+    /// responses are plain messages, so any transport can carry them (ADR 0004).
+    pub(crate) async fn serve_write_stream(
         &self,
-        requests: &mut Streaming<WriteRequest>,
+        requests: &mut (impl Stream<Item = Result<WriteRequest, Status>> + Unpin + Send),
         responses: &Responses,
     ) -> Result<(), Status> {
-        let Some(first) = requests.message().await? else {
+        let Some(first) = requests.next().await.transpose()? else {
             return Ok(());
         };
         if !first.stream_id.is_empty() {
@@ -72,7 +74,7 @@ impl FirestoreService {
             return Ok(());
         }
 
-        while let Some(request) = requests.message().await? {
+        while let Some(request) = requests.next().await.transpose()? {
             if !request.database.is_empty() && request.database != database {
                 return Err(Status::invalid_argument(format!(
                     "Request specified a database ({}) that did not match the expected database \

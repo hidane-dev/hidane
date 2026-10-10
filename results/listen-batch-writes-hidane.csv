@@ -1,0 +1,3 @@
+listener,documents,batch_size,total_sec,mean_batch_ms_batches_96_to_105,mean_batch_ms_last_10
+none,100000,500,3.9,3.0,3.0
+whole collection,100000,500,4.9,10.5,10.9
