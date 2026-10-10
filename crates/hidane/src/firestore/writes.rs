@@ -67,6 +67,7 @@ pub fn validate(database: &str, write: &Write) -> Result<ResourcePath, Status> {
     match &write.operation {
         Some(Operation::Update(document)) => {
             validate::fields(&document.fields)?;
+            validate::limits(&parsed.path, &document.fields)?;
             if let Some(mask) = &write.update_mask {
                 parse_mask(&mask.field_paths)?;
             }
@@ -148,6 +149,7 @@ pub fn apply(
             // Transforms run after the update, in order.
             let transform_results =
                 apply_transforms(&mut fields, &write.update_transforms, batch.commit_time())?;
+            validate::size(&path, &fields)?;
             Ok(store(
                 batch,
                 &path,
@@ -167,6 +169,7 @@ pub fn apply(
                 &document_transform.field_transforms,
                 batch.commit_time(),
             )?;
+            validate::size(&path, &fields)?;
             Ok(store(
                 batch,
                 &path,

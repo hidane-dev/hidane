@@ -1,6 +1,6 @@
 //! Checks on document contents, with the official emulator's messages.
 
-use hidane_core::field_path::Fields;
+use hidane_core::{field_path::Fields, order::is_vector, path::ResourcePath};
 use hidane_proto::google::firestore::v1::{MapValue, Value, value::ValueType};
 use tonic::Status;
 
@@ -8,6 +8,11 @@ const TYPE_KEY: &str = "__type__";
 const VECTOR_TYPE: &str = "__vector__";
 const VECTOR_VALUES_KEY: &str = "value";
 const MAX_DIMENSIONS: usize = 2048;
+/// Firestore's limits, which the official emulator enforces with Datastore's messages.
+const MAX_VALUE_BYTES: usize = 1_048_487;
+const MAX_NAME_BYTES: usize = 1500;
+const MAX_DEPTH: usize = 20;
+const MAX_DOCUMENT_BYTES: usize = 1_048_576;
 
 pub fn fields(fields: &Fields) -> Result<(), Status> {
     for (name, value) in fields {
@@ -30,6 +35,140 @@ fn field_name(name: &str, top_level: bool) -> Result<(), Status> {
 
 pub fn reserved(name: &str) -> bool {
     name.len() >= 4 && name.starts_with("__") && name.ends_with("__")
+}
+
+/// The limits on a document's ID and fields, checked after their contents, as the official
+/// emulator stores a document as a Datastore entity: IDs and names of at most 1500 bytes
+/// (nested names count from the top-level field, an array as `array`), strings and bytes of at
+/// most 1,048,487 bytes, and 20 levels of maps and arrays. A problem inside a map is only
+/// "an invalid nested entity".
+pub fn limits(path: &ResourcePath, fields: &Fields) -> Result<(), Status> {
+    for (i, id) in path.segments().enumerate() {
+        if id.len() > MAX_NAME_BYTES {
+            let element = if i % 2 == 0 { "kind" } else { "name" };
+            return Err(Status::invalid_argument(format!(
+                "The key path element {element} is longer than {MAX_NAME_BYTES} bytes."
+            )));
+        }
+    }
+    for (name, value) in fields {
+        if name.len() > MAX_NAME_BYTES {
+            return Err(Status::invalid_argument(format!(
+                "The property.name is longer than {MAX_NAME_BYTES} bytes."
+            )));
+        }
+        let (property, ok) = match &value.value_type {
+            Some(ValueType::ArrayValue(array)) => {
+                for element in &array.values {
+                    if too_long(element) {
+                        return Err(Status::invalid_argument(format!(
+                            "The value of property \"array\" is longer than {MAX_VALUE_BYTES} bytes."
+                        )));
+                    }
+                }
+                (
+                    "array",
+                    array.values.iter().all(|e| nested_ok(e, "array", 2)),
+                )
+            }
+            Some(ValueType::MapValue(map)) if !is_vector(map) => {
+                (name.as_str(), nested_ok(value, name, 1))
+            }
+            _ if too_long(value) => {
+                return Err(Status::invalid_argument(format!(
+                    "The value of property \"{name}\" is longer than {MAX_VALUE_BYTES} bytes."
+                )));
+            }
+            _ => continue,
+        };
+        if !ok {
+            return Err(Status::invalid_argument(format!(
+                "Property {property} contains an invalid nested entity."
+            )));
+        }
+    }
+    Ok(())
+}
+
+fn too_long(value: &Value) -> bool {
+    match &value.value_type {
+        Some(ValueType::StringValue(s)) => s.len() > MAX_VALUE_BYTES,
+        Some(ValueType::BytesValue(b)) => b.len() > MAX_VALUE_BYTES,
+        _ => false,
+    }
+}
+
+/// Whether `value`, at `depth` levels of maps and arrays under the property path `path`,
+/// fits a nested entity.
+fn nested_ok(value: &Value, path: &str, depth: usize) -> bool {
+    match &value.value_type {
+        Some(ValueType::MapValue(map)) if !is_vector(map) => {
+            depth <= MAX_DEPTH
+                && map.fields.iter().all(|(key, nested)| {
+                    let path = format!("{path}.{key}");
+                    path.len() <= MAX_NAME_BYTES
+                        && match &nested.value_type {
+                            // An array is named `array` in the path, whatever its key.
+                            Some(ValueType::ArrayValue(array)) => {
+                                let path = format!("{}.array", &path[..path.len() - key.len() - 1]);
+                                depth < MAX_DEPTH
+                                    && array
+                                        .values
+                                        .iter()
+                                        .all(|e| !too_long(e) && nested_ok(e, &path, depth + 2))
+                            }
+                            _ => !too_long(nested) && nested_ok(nested, &path, depth + 1),
+                        }
+                })
+        }
+        _ => !too_long(value),
+    }
+}
+
+/// A document's size by Firestore's storage size rules: its name, each field's name and value,
+/// and 32 bytes. The official emulator counts its Datastore entity's encoding instead, which
+/// comes to a few tens of bytes more (docs/parity-exceptions.md).
+pub fn size(path: &ResourcePath, fields: &Fields) -> Result<(), Status> {
+    let total = name_size(path.segments())
+        + fields
+            .iter()
+            .map(|(name, value)| name.len() + 1 + value_size(value))
+            .sum::<usize>()
+        + 32;
+    if total > MAX_DOCUMENT_BYTES {
+        return Err(Status::invalid_argument(format!(
+            "maximum entity size is {MAX_DOCUMENT_BYTES} bytes"
+        )));
+    }
+    Ok(())
+}
+
+fn name_size<'a>(segments: impl Iterator<Item = &'a str>) -> usize {
+    segments.map(|s| s.len() + 1).sum::<usize>() + 16
+}
+
+fn value_size(value: &Value) -> usize {
+    match &value.value_type {
+        None | Some(ValueType::NullValue(_) | ValueType::BooleanValue(_)) => 1,
+        Some(
+            ValueType::IntegerValue(_) | ValueType::DoubleValue(_) | ValueType::TimestampValue(_),
+        ) => 8,
+        Some(ValueType::GeoPointValue(_)) => 16,
+        Some(ValueType::StringValue(s)) => s.len() + 1,
+        Some(ValueType::BytesValue(b)) => b.len(),
+        Some(ValueType::ReferenceValue(name)) => name_size(
+            name.split_once("/documents/")
+                .map_or("", |(_, path)| path)
+                .split('/'),
+        ),
+        Some(ValueType::ArrayValue(array)) => array.values.iter().map(value_size).sum(),
+        Some(ValueType::MapValue(map)) => map
+            .fields
+            .iter()
+            .map(|(key, value)| key.len() + 1 + value_size(value))
+            .sum(),
+        Some(_) => 0,
+    }
 }
 
 /// `property` names where the value sits in the official emulator's messages: the document
