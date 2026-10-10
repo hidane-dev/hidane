@@ -1,7 +1,7 @@
 // How does the official emulator run the Write stream? (#20, #84)
 //
 // Usage (needs @grpc/grpc-js and @grpc/proto-loader; run outside the repository, see README):
-//   node write_stream.mjs 127.0.0.1:8086 <repo>/proto > <repo>/crates/hidane/tests/fixtures/write_stream.json
+//   node write_stream.mjs 127.0.0.1:8086 <repo>/crates/hidane-proto/proto > <repo>/crates/hidane/tests/fixtures/write_stream.json
 //
 // The scenarios are data: the fixture keeps each scenario's steps next to the official outcome,
 // and crates/hidane/tests/write_stream.rs runs the same steps against hidane over gRPC. Each

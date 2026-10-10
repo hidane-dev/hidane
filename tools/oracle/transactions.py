@@ -349,7 +349,7 @@ def grpc_overhead():
 
 def grpc(method, body):
     out = subprocess.run(
-        ["grpcurl", "-plaintext", "-import-path", "proto", "-proto", "google/firestore/v1/firestore.proto",
+        ["grpcurl", "-plaintext", "-import-path", "crates/hidane-proto/proto", "-proto", "google/firestore/v1/firestore.proto",
          "-H", "authorization: Bearer owner", "-d", json.dumps(body), HOST, f"google.firestore.v1.Firestore/{method}"],
         capture_output=True, text=True, timeout=120)
     text = out.stdout + out.stderr

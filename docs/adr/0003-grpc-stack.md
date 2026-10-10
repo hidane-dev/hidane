@@ -50,7 +50,7 @@ Prior art in Rust: skunkteam/rust-firestore-emulator uses tonic 0.14 + axum 0.8.
 ## Decision
 
 **Option A**: tonic and axum behind one hyper-util server on one port. Protos are vendored under
-`proto/` and compiled with protox (pure Rust, no `protoc`) plus `tonic-prost-build`; the encoded
+`crates/hidane-proto/proto/` and compiled with protox (pure Rust, no `protoc`) plus `tonic-prost-build`; the encoded
 `FileDescriptorSet` is embedded and served through reflection. REST routing will be driven by the
 `google.api.http` annotations rather than hand-written handlers.
 

@@ -3,9 +3,14 @@ name = "hidane-proto"
 description = "Generated protobuf / gRPC types for hidane (google.firestore.v1 and dependencies)"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-publish.workspace = true
+homepage.workspace = true
+readme = "README.md"
+keywords = ["firestore", "emulator", "grpc", "protobuf"]
+categories = ["development-tools::testing"]
+include = ["/src", "/build.rs", "/proto", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
 
 [lib]
 # Comments copied from the .proto files are not Rust; never run them as doctests.

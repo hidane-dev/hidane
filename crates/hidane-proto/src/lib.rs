@@ -2,7 +2,7 @@
 //! packages it depends on (`google.api`, `google.rpc`, `google.type`). Well-known types
 //! (`google.protobuf.*`) come from `prost-types`.
 //!
-//! The protos are vendored under `proto/` at the repository root; see `proto/README.md`.
+//! The protos are vendored in this crate's `proto/` directory; see `proto/README.md` there.
 
 #[allow(clippy::all, clippy::pedantic, missing_docs, rustdoc::all)]
 mod generated {

@@ -220,7 +220,7 @@ def rest(method, path, authorization, body):
 
 
 def grpcurl(rpc, authorization, request, stream=False):
-    args = ["grpcurl", "-plaintext", "-max-time", "3", "-import-path", "proto",
+    args = ["grpcurl", "-plaintext", "-max-time", "3", "-import-path", "crates/hidane-proto/proto",
             "-proto", "google/firestore/v1/firestore.proto"]
     if stream:
         # Without it the official streams fail before reading the header (docs/parity-exceptions.md).

@@ -3,9 +3,14 @@ name = "hidane-core"
 description = "Firestore data model for hidane: value ordering and order-preserving key encoding"
 version.workspace = true
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
-publish.workspace = true
+homepage.workspace = true
+readme = "README.md"
+keywords = ["firestore", "emulator"]
+categories = ["development-tools::testing"]
+include = ["/src", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
 
 [dependencies]
 hidane-proto.workspace = true
