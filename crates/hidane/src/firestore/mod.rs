@@ -12,6 +12,7 @@
 //! message prints internal Datastore keys (docs/parity-exceptions.md).
 
 mod aggregation;
+pub(crate) mod auth;
 pub(crate) mod changes;
 mod clear;
 mod listen;
@@ -259,8 +260,9 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<GetDocumentRequest>,
     ) -> Result<Response<Document>, Status> {
-        let req = request.into_inner();
+        let (metadata, _, req) = request.into_parts();
         let name = names::document(&req.name)?;
+        auth::caller(&metadata)?;
         let at = match &req.consistency_selector {
             Some(get_document_request::ConsistencySelector::Transaction(transaction)) => self
                 .read_in(
@@ -292,11 +294,25 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<ListDocumentsRequest>,
     ) -> Result<Response<ListDocumentsResponse>, Status> {
-        let admin = is_admin(&request);
-        let req = request.into_inner();
+        let (metadata, _, req) = request.into_parts();
         let parent = names::parent(&req.parent)?;
-        names::validate_id(&req.collection_id)?;
-        if req.show_missing && !admin {
+        let caller = auth::caller(&metadata)?;
+        if req.collection_id.is_empty() {
+            // The official emulator lists the documents of every collection under the parent.
+            return Err(Status::unimplemented(
+                "ListDocuments without a collection_id is not implemented yet",
+            ));
+        }
+        names::collection_id(&req.collection_id)?;
+        if req.show_missing && !req.order_by.is_empty() {
+            return Err(Status::invalid_argument(
+                "cannot specify an order when show_missing is true",
+            ));
+        }
+        if req.page_size < 0 {
+            return Err(Status::invalid_argument("Page size must be nonnegative."));
+        }
+        if req.show_missing && !caller.is_admin() {
             return Err(Status::permission_denied(METADATA_ADMIN));
         }
         if !matches!(req.order_by.as_str(), "" | "__name__" | "__name__ asc") {
@@ -381,15 +397,21 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<CreateDocumentRequest>,
     ) -> Result<Response<Document>, Status> {
-        let req = request.into_inner();
+        let (metadata, _, req) = request.into_parts();
         let parent = names::parent(&req.parent)?;
-        names::validate_id(&req.collection_id)?;
+        names::collection_id(&req.collection_id)?;
         let id = if req.document_id.is_empty() {
             auto_id()
         } else {
-            names::validate_id(&req.document_id)?;
+            names::document_id(&req.document_id)?;
             req.document_id.clone()
         };
+        auth::caller(&metadata)?;
+        if req.collection_id.is_empty() {
+            return Err(Status::invalid_argument(
+                "collectionId is the empty string.",
+            ));
+        }
         let path = parent.path.child(req.collection_id.clone()).child(id);
         let name = Name::document_name(&parent.database, &path);
         let write = Write {
@@ -420,11 +442,11 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<UpdateDocumentRequest>,
     ) -> Result<Response<Document>, Status> {
-        let req = request.into_inner();
-        let document = req
-            .document
-            .ok_or_else(|| Status::invalid_argument("A document is required."))?;
+        let (metadata, _, req) = request.into_parts();
+        // No document is a document without a name, as on the official emulator.
+        let document = req.document.unwrap_or_default();
         let name = names::document(&document.name)?;
+        auth::caller(&metadata)?;
         let write = Write {
             operation: Some(Operation::Update(document)),
             update_mask: req.update_mask,
@@ -448,8 +470,9 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<DeleteDocumentRequest>,
     ) -> Result<Response<()>, Status> {
-        let req = request.into_inner();
+        let (metadata, _, req) = request.into_parts();
         let name = names::document(&req.name)?;
+        auth::caller(&metadata)?;
         let write = Write {
             operation: Some(Operation::Delete(req.name)),
             current_document: req.current_document,
@@ -463,8 +486,9 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<BatchGetDocumentsRequest>,
     ) -> Result<Response<BoxStream<BatchGetDocumentsResponse>>, Status> {
-        let req = request.into_inner();
+        let (metadata, _, req) = request.into_parts();
         let database = names::database(&req.database)?;
+        auth::caller(&metadata)?;
         let paths = req
             .documents
             .iter()
@@ -524,8 +548,9 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<CommitRequest>,
     ) -> Result<Response<CommitResponse>, Status> {
-        let req = request.into_inner();
+        let (metadata, _, req) = request.into_parts();
         let database = names::database(&req.database)?;
+        auth::caller(&metadata)?;
         let transaction = (!req.transaction.is_empty()).then_some(req.transaction.as_slice());
         // The official emulator answers an empty commit with an empty response (no commit time).
         Ok(Response::new(
@@ -543,8 +568,9 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<RunQueryRequest>,
     ) -> Result<Response<BoxStream<RunQueryResponse>>, Status> {
-        let req = request.into_inner();
+        let (metadata, _, req) = request.into_parts();
         let parent = names::parent(&req.parent)?;
+        auth::caller(&metadata)?;
         let database = parent.database;
         if req.explain_options.is_some() {
             return Err(Status::unimplemented(
@@ -610,8 +636,9 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<RunAggregationQueryRequest>,
     ) -> Result<Response<BoxStream<RunAggregationQueryResponse>>, Status> {
-        let req = request.into_inner();
+        let (metadata, _, req) = request.into_parts();
         let parent = names::parent(&req.parent)?;
+        auth::caller(&metadata)?;
         let database = parent.database;
         if req.explain_options.is_some() {
             return Err(Status::unimplemented(
@@ -670,6 +697,7 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<Streaming<WriteRequest>>,
     ) -> Result<Response<BoxStream<WriteResponse>>, Status> {
+        auth::caller(request.metadata())?;
         let mut requests = request.into_inner();
         let (responses, receiver) = mpsc::channel(16);
         let service = self.clone();
@@ -685,6 +713,7 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<Streaming<ListenRequest>>,
     ) -> Result<Response<BoxStream<ListenResponse>>, Status> {
+        auth::caller(request.metadata())?;
         let mut requests = request.into_inner();
         let (responses, receiver) = mpsc::channel(256);
         let service = self.clone();
@@ -710,16 +739,18 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<BeginTransactionRequest>,
     ) -> Result<Response<BeginTransactionResponse>, Status> {
-        let req = request.into_inner();
+        let (metadata, _, req) = request.into_parts();
         let database = names::database(&req.database)?;
+        auth::caller(&metadata)?;
         Ok(Response::new(BeginTransactionResponse {
             transaction: self.begin(&database, req.options.as_ref())?,
         }))
     }
 
     async fn rollback(&self, request: Request<RollbackRequest>) -> Result<Response<()>, Status> {
-        let req = request.into_inner();
+        let (metadata, _, req) = request.into_parts();
         let database = names::database(&req.database)?;
+        auth::caller(&metadata)?;
         self.transactions.rollback(&database, &req.transaction)?;
         Ok(Response::new(()))
     }
@@ -728,11 +759,9 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<BatchWriteRequest>,
     ) -> Result<Response<BatchWriteResponse>, Status> {
-        if !is_admin(&request) {
-            return Err(Status::permission_denied(BATCH_WRITE_ADMIN));
-        }
-        let req = request.into_inner();
+        let (metadata, _, req) = request.into_parts();
         let database = names::database(&req.database)?;
+        let caller = auth::caller(&metadata)?;
         let mut seen = HashSet::new();
         if !req
             .writes
@@ -747,6 +776,9 @@ impl Firestore for FirestoreService {
         // An invalid write fails the whole request, as on the official emulator.
         for write in &req.writes {
             writes::validate(&database, write)?;
+        }
+        if !caller.is_admin() {
+            return Err(Status::permission_denied(BATCH_WRITE_ADMIN));
         }
         // Otherwise writes are independent: each one waits for its own locks and commits on its
         // own (the official emulator gives each a separate commit time), and one that fails its
@@ -783,11 +815,17 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<ListCollectionIdsRequest>,
     ) -> Result<Response<ListCollectionIdsResponse>, Status> {
-        if !is_admin(&request) {
+        let (metadata, _, req) = request.into_parts();
+        let parent = names::parent(&req.parent)?;
+        let caller = auth::caller(&metadata)?;
+        if req.page_size < 0 {
+            return Err(Status::invalid_argument(
+                "page_size must be greater than or equal to zero.",
+            ));
+        }
+        if !caller.is_admin() {
             return Err(Status::permission_denied(METADATA_ADMIN));
         }
-        let req = request.into_inner();
-        let parent = names::parent(&req.parent)?;
         let at = match &req.consistency_selector {
             Some(list_collection_ids_request::ConsistencySelector::ReadTime(ts)) => {
                 self.read_time(&parent.database, Some(ts))?
@@ -848,16 +886,6 @@ fn parse_mask(mask: Option<&DocumentMask>) -> Result<Option<Vec<FieldPath>>, Sta
             .collect()
     })
     .transpose()
-}
-
-/// `Authorization: Bearer owner` (what the server SDKs send to an emulator) and Google OAuth
-/// access tokens are administrators, as on the official emulator (#24 handles the rest).
-fn is_admin<T>(request: &Request<T>) -> bool {
-    request
-        .metadata()
-        .get("authorization")
-        .and_then(|v| v.to_str().ok())
-        .is_some_and(|v| v == "Bearer owner" || v.starts_with("Bearer ya29."))
 }
 
 fn store_error(err: &StoreError) -> Status {

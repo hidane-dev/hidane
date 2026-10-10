@@ -30,7 +30,7 @@ use axum::{
     Router,
     body::Body,
     extract::{Path, State},
-    http::{StatusCode, header},
+    http::{HeaderMap, StatusCode, header},
     response::{IntoResponse, Response},
     routing::{delete, get, post},
 };
@@ -233,12 +233,16 @@ async fn reset(State(admin): State<Admin>) -> Response {
 }
 
 /// `DELETE /emulator/v1/projects/{p}/databases/{d}/documents`, what `clearFirestore()` of
-/// rules-unit-testing and the Emulator UI's "Clear all data" call. No authentication needed,
-/// as on the official emulator.
+/// rules-unit-testing and the Emulator UI's "Clear all data" call. Any caller may clear, as on
+/// the official emulator, but an `Authorization` header must still read.
 async fn clear_database(
     State(admin): State<Admin>,
     Path((project, database)): Path<(String, String)>,
+    headers: HeaderMap,
 ) -> Response {
+    if let Err(status) = firestore::auth::from_header(authorization(&headers)) {
+        return rest::error(&status);
+    }
     admin
         .firestore()
         .clear_database(&format!("projects/{project}/databases/{database}"))
@@ -251,12 +255,23 @@ async fn clear_database(
 async fn delete_tree(
     State(admin): State<Admin>,
     Path((project, database, path)): Path<(String, String, String)>,
+    headers: HeaderMap,
 ) -> Response {
     let database = format!("projects/{project}/databases/{database}");
-    match admin.firestore().delete_tree(&database, &path).await {
+    match admin
+        .firestore()
+        .delete_tree(&database, &path, authorization(&headers))
+        .await
+    {
         Ok(()) => empty_json(),
         Err(status) => rest::error(&status),
     }
+}
+
+fn authorization(headers: &HeaderMap) -> Option<&str> {
+    headers
+        .get(header::AUTHORIZATION)
+        .and_then(|value| value.to_str().ok())
 }
 
 /// The official emulator's empty success body.
