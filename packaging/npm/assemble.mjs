@@ -4,7 +4,7 @@
 //   node packaging/npm/assemble.mjs <version> <dist> <out>
 //
 // <dist> holds the release archives (hidane-<version>-<target>.tar.gz, .zip for Windows).
-// <out> receives one directory per package: the five @hidane/<platform> packages, each with its
+// <out> receives one directory per package: the five @hidane-dev/<platform> packages, each with its
 // binary and the license files, and `hidane`, which lists them as optional dependencies. Publish
 // the platform packages first.
 //
@@ -39,7 +39,7 @@ function writeJson(file, value) {
 
 function platformPackage(out, platform, version, archive) {
   const [target, os, cpu, label] = PLATFORMS[platform];
-  const name = `@hidane/${platform}`;
+  const name = `@hidane-dev/${platform}`;
   const dir = join(out, platform);
   mkdirSync(join(dir, "bin"), { recursive: true });
   const files = ["LICENSE-MIT", "LICENSE-APACHE"];

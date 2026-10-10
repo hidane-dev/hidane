@@ -12,13 +12,13 @@ _.file = ".env.local"
 # cargo use the credentials kept in the ignored local files.
 
 [tasks."npm:placeholders"]
-description = "Create the @hidane/<platform> packages on npm once, as empty placeholders, so trusted publishing can be configured for them"
+description = "Create the @hidane-dev/<platform> packages on npm once, as empty placeholders, so trusted publishing can be configured for them"
 run = '''
 out=$(mktemp -d)
 node packaging/npm/assemble.mjs --placeholders 0.0.1 "$out"
 for p in darwin-arm64 darwin-x64 linux-arm64 linux-x64 win32-x64; do
-  if [ "$(npm view "@hidane/$p@0.0.1" version 2>/dev/null)" = 0.0.1 ]; then
-    echo "@hidane/$p@0.0.1 is already on npm"
+  if [ "$(npm view "@hidane-dev/$p@0.0.1" version 2>/dev/null)" = 0.0.1 ]; then
+    echo "@hidane-dev/$p@0.0.1 is already on npm"
   else
     (cd "$out/$p" && npm publish --access public)
   fi

@@ -55,7 +55,7 @@ The macOS binaries are not signed or notarized yet. Archives fetched with `curl`
    | Job | Publishes |
    |---|---|
    | `crates.io` | `hidane-proto`, `hidane-core`, then `hidane`; `cargo install` and `cargo binstall` then work |
-   | `npm` | the five `@hidane/<platform>` packages, then `hidane` (`packaging/npm/assemble.mjs`), with provenance |
+   | `npm` | the five `@hidane-dev/<platform>` packages, then `hidane` (`packaging/npm/assemble.mjs`), with provenance |
    | `pub.dev` | `packaging/pub` |
    | `ghcr.io/hidane-dev/hidane` | the image for linux/amd64 and linux/arm64, tagged `<version>`, `<major>.<minor>` and `latest` |
    | `Homebrew tap` | `Formula/hidane.rb` in hidane-dev/homebrew-tap, or the formula in the job summary when `HOMEBREW_TAP_TOKEN` is not set |
@@ -77,14 +77,14 @@ it can be configured. The registries and the GitHub settings below are set up on
 1. **GitHub**: the `release` environment requires a maintainer's approval and accepts tags `v*`
    only. Optionally, a fine-grained token with `contents: write` on hidane-dev/homebrew-tap as the
    repository secret `HOMEBREW_TAP_TOKEN`.
-2. **npm**: an organization named `hidane` for the `@hidane/` packages. Create the five platform
+2. **npm**: the organization `hidane-dev` for the `@hidane-dev/` packages. Create the five platform
    packages once, from empty placeholders, while logged in to npm:
 
    ```sh
    mise run npm:placeholders   # node packaging/npm/assemble.mjs --placeholders 0.0.1 <dir>, then npm publish each
    ```
 
-   Then, for `hidane` and each `@hidane/<platform>` package: *Settings → Trusted publishing →
+   Then, for `hidane` and each `@hidane-dev/<platform>` package: *Settings → Trusted publishing →
    GitHub Actions*, repository `hidane-dev/hidane`, workflow `release.yml`.
 3. **crates.io**: publish `hidane-proto` and `hidane-core` once with an API token, at any version
    before the first release (a release candidate): `mise run crates:bootstrap` (`cargo publish -p
