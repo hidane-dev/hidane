@@ -52,6 +52,10 @@ Admin SDK, and prints every snapshot each listener received; its transcripts are
 with their tokens) while the Admin SDK writes; its transcripts are in
 `results/sdk-listen-resume-*.json`.
 
+`sdk_clear.mjs` clears data the ways test suites and the Emulator UI do (recursive delete,
+rules-unit-testing's `clearFirestore()`, `POST /reset`; needs `npm i @firebase/rules-unit-testing`)
+with listeners attached; its transcripts are in `results/sdk-clear-*.json`.
+
 `sdk_transactions.mjs` does the same for `runTransaction` (server transactions, retries on
 `ABORTED`, lock waits), and `sdk_web_transactions.mjs` for the web SDK (`npm i firebase`), whose
 transactions use preconditions and `verify` writes instead. Their transcripts are in

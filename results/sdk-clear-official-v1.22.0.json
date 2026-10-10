@@ -1,0 +1,199 @@
+[
+ {
+  "step": "seed",
+  "listeners": {}
+ },
+ {
+  "step": "listen",
+  "listeners": {
+   "admin: d": [
+    {
+     "ids": [
+      "z"
+     ]
+    }
+   ],
+   "admin: group sub": [
+    {
+     "ids": [
+      "c/a/sub/x"
+     ]
+    }
+   ],
+   "web: c": [
+    {
+     "ids": [
+      "a",
+      "b"
+     ],
+     "changes": [
+      [
+       "added",
+       "a"
+      ],
+      [
+       "added",
+       "b"
+      ]
+     ]
+    }
+   ],
+   "web: c/a": [
+    {
+     "exists": true
+    }
+   ]
+  }
+ },
+ {
+  "step": "Emulator UI: delete c/a recursively",
+  "listeners": {
+   "admin: group sub": [
+    {
+     "ids": []
+    }
+   ],
+   "web: c": [
+    {
+     "ids": [
+      "b"
+     ],
+     "changes": [
+      [
+       "removed",
+       "a"
+      ]
+     ]
+    }
+   ],
+   "web: c/a": [
+    {
+     "exists": false
+    }
+   ]
+  }
+ },
+ {
+  "step": "seed again",
+  "listeners": {
+   "admin: group sub": [
+    {
+     "ids": [
+      "c/a/sub/x"
+     ]
+    }
+   ],
+   "web: c": [
+    {
+     "ids": [
+      "a",
+      "b"
+     ],
+     "changes": [
+      [
+       "added",
+       "a"
+      ]
+     ]
+    }
+   ],
+   "web: c/a": [
+    {
+     "exists": true
+    }
+   ]
+  }
+ },
+ {
+  "step": "rules-unit-testing: clearFirestore()",
+  "listeners": {
+   "admin: d": [
+    {
+     "ids": []
+    }
+   ],
+   "admin: group sub": [
+    {
+     "ids": []
+    }
+   ],
+   "web: c": [
+    {
+     "ids": [
+      "b"
+     ],
+     "changes": [
+      [
+       "removed",
+       "a"
+      ]
+     ]
+    },
+    {
+     "ids": [],
+     "changes": [
+      [
+       "removed",
+       "b"
+      ]
+     ]
+    }
+   ],
+   "web: c/a": [
+    {
+     "exists": false
+    }
+   ]
+  }
+ },
+ {
+  "step": "seed again",
+  "listeners": {
+   "admin: d": [
+    {
+     "ids": [
+      "z"
+     ]
+    }
+   ],
+   "admin: group sub": [
+    {
+     "ids": [
+      "c/a/sub/x"
+     ]
+    }
+   ],
+   "web: c": [
+    {
+     "ids": [
+      "a",
+      "b"
+     ],
+     "changes": [
+      [
+       "added",
+       "a"
+      ],
+      [
+       "added",
+       "b"
+      ]
+     ]
+    }
+   ],
+   "web: c/a": [
+    {
+     "exists": true
+    }
+   ]
+  }
+ },
+ {
+  "step": "POST /reset",
+  "listeners": {}
+ },
+ {
+  "step": "write after the reset",
+  "listeners": {}
+ }
+]

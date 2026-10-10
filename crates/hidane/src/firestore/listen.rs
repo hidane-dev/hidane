@@ -46,7 +46,7 @@ use tokio::sync::{broadcast, mpsc};
 use tokio_stream::{Stream, StreamExt};
 use tonic::Status;
 
-use super::{FirestoreService, names, query::Query, to_document};
+use super::{FirestoreService, changes::Event, names, query::Query, to_document};
 
 type Responses = mpsc::Sender<Result<ListenResponse, Status>>;
 
@@ -70,9 +70,9 @@ struct Listener<'a> {
     service: &'a FirestoreService,
     responses: &'a Responses,
     database: Option<String>,
-    feed: Option<broadcast::Receiver<Arc<Commit>>>,
-    /// Commits received while adding a target that are newer than its snapshot.
-    pending: VecDeque<Arc<Commit>>,
+    feed: Option<broadcast::Receiver<Event>>,
+    /// Events received while adding a target that are newer than its snapshot.
+    pending: VecDeque<Event>,
     targets: BTreeMap<i32, WatchedTarget>,
     /// Every target reflects every commit up to this time.
     as_of: ReadTime,
@@ -114,8 +114,8 @@ impl Listener<'_> {
         requests: &mut (impl Stream<Item = Result<ListenRequest, Status>> + Unpin + Send),
     ) -> Outcome<()> {
         loop {
-            if let Some(commit) = self.pending.pop_front() {
-                self.apply(&commit, true).await?;
+            if let Some(event) = self.pending.pop_front() {
+                self.apply_event(&event, true).await?;
                 continue;
             }
             tokio::select! {
@@ -124,7 +124,7 @@ impl Listener<'_> {
                     Some(request) => self.handle(request).await?,
                 },
                 event = recv(self.feed.as_mut()) => match event {
-                    Ok(commit) => self.apply(&commit, true).await?,
+                    Ok(event) => self.apply_event(&event, true).await?,
                     Err(broadcast::error::RecvError::Lagged(_)) => self.resync().await?,
                     Err(broadcast::error::RecvError::Closed) => self.feed = None,
                 },
@@ -240,13 +240,15 @@ impl Listener<'_> {
             None => self.send_initial(id, &mut watched, &database, at).await?,
             Some(Some(since))
                 if since <= at
-                    && since >= self.service.changes.history_start()
+                    && since >= self.service.changes.history_start(&database)
                     && since >= store.earliest_read_time(&database) =>
             {
                 self.send_since(id, &mut watched, &database, since, at)
                     .await?;
             }
-            Some(Some(since)) if since <= at && since >= self.service.changes.history_start() => {
+            Some(Some(since))
+                if since <= at && since >= self.service.changes.history_start(&database) =>
+            {
                 self.send_with_count(id, &mut watched, &database, since, at)
                     .await?;
             }
@@ -282,16 +284,16 @@ impl Listener<'_> {
             }
         }
         if lagged {
-            // Some commits are lost: start every target over at `at`.
+            // Some events are lost: start every target over at `at`.
             self.pending
-                .extend(caught_up.into_iter().filter(|c| c.commit_time > at));
+                .extend(caught_up.into_iter().filter(|e| e.time() > at));
             return self.resync_at(at).await;
         }
-        for commit in caught_up {
-            if commit.commit_time <= at {
-                self.apply(&commit, false).await?;
+        for event in caught_up {
+            if event.time() <= at {
+                self.apply_event(&event, false).await?;
             } else {
-                self.pending.push_back(commit);
+                self.pending.push_back(event);
             }
         }
         Ok(())
@@ -511,6 +513,38 @@ impl Listener<'_> {
         .await
     }
 
+    async fn apply_event(&mut self, event: &Event, close: bool) -> Outcome<()> {
+        match event {
+            Event::Commit(commit) => self.apply(commit, close).await,
+            Event::Cleared(at) => self.apply_cleared(*at, close).await,
+        }
+    }
+
+    /// The database was cleared: every document of every target is gone.
+    async fn apply_cleared(&mut self, at: ReadTime, close: bool) -> Outcome<()> {
+        if at <= self.as_of {
+            return Ok(());
+        }
+        let Some(database) = self.database.clone() else {
+            return Ok(());
+        };
+        let mut gone = Vec::new();
+        for (id, watched) in &mut self.targets {
+            let mut paths: Vec<ResourcePath> =
+                watched.members.drain().map(|(path, _)| path).collect();
+            paths.sort_by(|a, b| compare_paths(a.segments(), b.segments()));
+            gone.extend(paths.into_iter().map(|path| (*id, path)));
+        }
+        for (id, path) in &gone {
+            self.document_gone(*id, &database, path, at, None).await?;
+        }
+        self.as_of = at;
+        if !gone.is_empty() && close {
+            self.snapshot(at).await?;
+        }
+        Ok(())
+    }
+
     /// Sends what `commit` changed in each target, then, when anything did and `close` is set,
     /// the `NO_CHANGE` that makes it a snapshot.
     async fn apply(&mut self, commit: &Commit, close: bool) -> Outcome<()> {
@@ -660,7 +694,7 @@ impl Listener<'_> {
         let Some(database) = self.database.clone() else {
             return Ok(());
         };
-        self.pending.retain(|commit| commit.commit_time > at);
+        self.pending.retain(|event| event.time() > at);
         let ids: Vec<i32> = self.targets.keys().copied().collect();
         for id in ids {
             let mut watched = self.targets.remove(&id).expect("listed above");
@@ -682,8 +716,8 @@ impl Listener<'_> {
 }
 
 async fn recv(
-    feed: Option<&mut broadcast::Receiver<Arc<Commit>>>,
-) -> Result<Arc<Commit>, broadcast::error::RecvError> {
+    feed: Option<&mut broadcast::Receiver<Event>>,
+) -> Result<Event, broadcast::error::RecvError> {
     match feed {
         Some(feed) => feed.recv().await,
         None => std::future::pending().await,

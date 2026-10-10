@@ -347,6 +347,25 @@ impl Store for MemoryStore {
         })
     }
 
+    fn clear_database(&self, database: &str) -> ReadTime {
+        let db = self.get_or_create(database);
+        let mut db = db.write().unwrap_or_else(PoisonError::into_inner);
+        let at = (self.clock)().max(db.last_commit + 1);
+        db.documents.clear();
+        db.groups.clear();
+        db.last_commit = at;
+        ReadTime(at)
+    }
+
+    fn database_names(&self) -> Vec<String> {
+        self.databases
+            .read()
+            .unwrap_or_else(PoisonError::into_inner)
+            .keys()
+            .cloned()
+            .collect()
+    }
+
     fn clear(&self) {
         self.databases
             .write()

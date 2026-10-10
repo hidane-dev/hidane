@@ -13,6 +13,7 @@
 
 mod aggregation;
 pub(crate) mod changes;
+mod clear;
 mod listen;
 mod names;
 mod query;

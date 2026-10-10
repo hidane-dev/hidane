@@ -429,3 +429,36 @@ fn listings_page_and_report_missing_documents() {
         ["missing:c/ghost", "missing:c/z"]
     );
 }
+
+#[test]
+fn clearing_a_database_keeps_time_moving_and_other_databases() {
+    let (store, clock) = store_with_clock(1_000);
+    set(&store, "c/a", 1);
+    store
+        .commit("projects/p/databases/other", &mut |batch| {
+            batch.set(&path("c/b"), fields(2));
+            Ok(())
+        })
+        .unwrap();
+    let before = store.latest_read_time(DB);
+    clock.store(0, std::sync::atomic::Ordering::SeqCst); // a clock that went backwards
+    let cleared = store.clear_database(DB);
+    assert!(cleared > before);
+    assert!(store.get(DB, &path("c/a"), ReadTime::MAX).is_none());
+    assert!(
+        store.get(DB, &path("c/a"), before).is_none(),
+        "old versions are gone too"
+    );
+    assert!(
+        store
+            .get("projects/p/databases/other", &path("c/b"), ReadTime::MAX)
+            .is_some()
+    );
+    assert!(set(&store, "c/a", 3) > cleared);
+    let mut names = store.database_names();
+    names.sort();
+    assert_eq!(
+        names,
+        [DB.to_owned(), "projects/p/databases/other".to_owned()]
+    );
+}
