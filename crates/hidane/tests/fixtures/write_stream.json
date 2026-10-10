@@ -1,0 +1,935 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/write_stream.mjs",
+ "scenarios": [
+  {
+   "name": "handshake, then batches, then an empty request that ends the stream",
+   "steps": [
+    {
+     "op": "send",
+     "database": true
+    },
+    {
+     "op": "recv",
+     "label": "handshake",
+     "outcome": {
+      "response": {
+       "streamId": true,
+       "streamToken": "0",
+       "writeResults": [],
+       "commitTime": false
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "send",
+     "token": "last",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 1
+      }
+     ]
+    },
+    {
+     "op": "recv",
+     "label": "one write",
+     "outcome": {
+      "response": {
+       "streamId": false,
+       "streamToken": "1",
+       "writeResults": [
+        {
+         "updateTime": true,
+         "transformResults": 0
+        }
+       ],
+       "commitTime": true
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "send",
+     "token": "last",
+     "writes": [
+      {
+       "update": "c/b",
+       "n": 1
+      },
+      {
+       "update": "c/c",
+       "n": 1
+      }
+     ]
+    },
+    {
+     "op": "recv",
+     "label": "two writes",
+     "outcome": {
+      "response": {
+       "streamId": false,
+       "streamToken": "2",
+       "writeResults": [
+        {
+         "updateTime": true,
+         "transformResults": 0
+        },
+        {
+         "updateTime": true,
+         "transformResults": 0
+        }
+       ],
+       "commitTime": true
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "send",
+     "token": "last",
+     "writes": []
+    },
+    {
+     "op": "recv",
+     "label": "empty request",
+     "outcome": {
+      "response": {
+       "streamId": false,
+       "streamToken": "3",
+       "writeResults": [],
+       "commitTime": false
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "recv",
+     "label": "after the empty request",
+     "outcome": {
+      "end": true,
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "get",
+     "label": "c/b was written",
+     "document": "c/b",
+     "outcome": {
+      "document": {
+       "n": 1
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "pipelined batches are answered in order",
+   "steps": [
+    {
+     "op": "send",
+     "database": true
+    },
+    {
+     "op": "recv",
+     "label": "handshake",
+     "outcome": {
+      "response": {
+       "streamId": true,
+       "streamToken": "0",
+       "writeResults": [],
+       "commitTime": false
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "send",
+     "token": "last",
+     "writes": [
+      {
+       "update": "c/p1",
+       "n": 1
+      }
+     ]
+    },
+    {
+     "op": "send",
+     "token": "last",
+     "writes": [
+      {
+       "update": "c/p2",
+       "n": 1
+      }
+     ]
+    },
+    {
+     "op": "send",
+     "token": "last",
+     "writes": [
+      {
+       "update": "c/p3",
+       "n": 1
+      }
+     ]
+    },
+    {
+     "op": "recv",
+     "label": "first",
+     "outcome": {
+      "response": {
+       "streamId": false,
+       "streamToken": "1",
+       "writeResults": [
+        {
+         "updateTime": true,
+         "transformResults": 0
+        }
+       ],
+       "commitTime": true
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "recv",
+     "label": "second",
+     "outcome": {
+      "response": {
+       "streamId": false,
+       "streamToken": "2",
+       "writeResults": [
+        {
+         "updateTime": true,
+         "transformResults": 0
+        }
+       ],
+       "commitTime": true
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "recv",
+     "label": "third",
+     "outcome": {
+      "response": {
+       "streamId": false,
+       "streamToken": "3",
+       "writeResults": [
+        {
+         "updateTime": true,
+         "transformResults": 0
+        }
+       ],
+       "commitTime": true
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "close"
+    },
+    {
+     "op": "recv",
+     "label": "after half-close",
+     "outcome": {
+      "end": true,
+      "elapsed": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "half-close right after the handshake",
+   "steps": [
+    {
+     "op": "send",
+     "database": true
+    },
+    {
+     "op": "recv",
+     "label": "handshake",
+     "outcome": {
+      "response": {
+       "streamId": true,
+       "streamToken": "0",
+       "writeResults": [],
+       "commitTime": false
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "close"
+    },
+    {
+     "op": "recv",
+     "label": "after half-close",
+     "outcome": {
+      "end": true,
+      "elapsed": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "an empty request in the middle ends the stream",
+   "steps": [
+    {
+     "op": "send",
+     "database": true
+    },
+    {
+     "op": "recv",
+     "label": "handshake",
+     "outcome": {
+      "response": {
+       "streamId": true,
+       "streamToken": "0",
+       "writeResults": [],
+       "commitTime": false
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "send",
+     "token": "last",
+     "writes": []
+    },
+    {
+     "op": "recv",
+     "label": "empty request",
+     "outcome": {
+      "response": {
+       "streamId": false,
+       "streamToken": "1",
+       "writeResults": [],
+       "commitTime": false
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "recv",
+     "label": "after the empty request",
+     "outcome": {
+      "end": true,
+      "elapsed": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "stream tokens are not checked",
+   "steps": [
+    {
+     "op": "send",
+     "database": true
+    },
+    {
+     "op": "recv",
+     "label": "handshake",
+     "outcome": {
+      "response": {
+       "streamId": true,
+       "streamToken": "0",
+       "writeResults": [],
+       "commitTime": false
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "send",
+     "writes": [
+      {
+       "update": "c/t1",
+       "n": 1
+      }
+     ]
+    },
+    {
+     "op": "recv",
+     "label": "no token",
+     "outcome": {
+      "response": {
+       "streamId": false,
+       "streamToken": "1",
+       "writeResults": [
+        {
+         "updateTime": true,
+         "transformResults": 0
+        }
+       ],
+       "commitTime": true
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "send",
+     "token": "bogus",
+     "writes": [
+      {
+       "update": "c/t2",
+       "n": 1
+      }
+     ]
+    },
+    {
+     "op": "recv",
+     "label": "bogus token",
+     "outcome": {
+      "response": {
+       "streamId": false,
+       "streamToken": "2",
+       "writeResults": [
+        {
+         "updateTime": true,
+         "transformResults": 0
+        }
+       ],
+       "commitTime": true
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "close"
+    },
+    {
+     "op": "recv",
+     "label": "after half-close",
+     "outcome": {
+      "end": true,
+      "elapsed": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "the first request must not carry writes",
+   "steps": [
+    {
+     "op": "send",
+     "database": true,
+     "writes": [
+      {
+       "update": "c/x",
+       "n": 1
+      }
+     ]
+    },
+    {
+     "op": "recv",
+     "label": "first request",
+     "outcome": {
+      "error": {
+       "status": "INVALID_ARGUMENT",
+       "message": "'writes' must not be set on an initial write request."
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "recv",
+     "label": "then",
+     "outcome": {
+      "end": true,
+      "elapsed": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "the first request must name the database",
+   "steps": [
+    {
+     "op": "send",
+     "writes": []
+    },
+    {
+     "op": "recv",
+     "label": "first request",
+     "outcome": {
+      "error": {
+       "status": "INVALID_ARGUMENT",
+       "message": "'database' must be set on an initial write request."
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "recv",
+     "label": "then",
+     "outcome": {
+      "end": true,
+      "elapsed": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "streams cannot be resumed with an ID",
+   "steps": [
+    {
+     "op": "send",
+     "database": true,
+     "streamId": "1",
+     "token": "1"
+    },
+    {
+     "op": "recv",
+     "label": "first request",
+     "outcome": {
+      "error": {
+       "status": "INVALID_ARGUMENT",
+       "message": "Resuming streams is not supported, do not set stream ID."
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "recv",
+     "label": "then",
+     "outcome": {
+      "end": true,
+      "elapsed": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "streams cannot be resumed with a token",
+   "steps": [
+    {
+     "op": "send",
+     "database": true,
+     "token": "5"
+    },
+    {
+     "op": "recv",
+     "label": "first request",
+     "outcome": {
+      "error": {
+       "status": "INVALID_ARGUMENT",
+       "message": "Resuming streams is not supported, 'stream_token' must not be set on an initial write request."
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "recv",
+     "label": "then",
+     "outcome": {
+      "end": true,
+      "elapsed": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "later requests may repeat the database",
+   "steps": [
+    {
+     "op": "send",
+     "database": true
+    },
+    {
+     "op": "recv",
+     "label": "handshake",
+     "outcome": {
+      "response": {
+       "streamId": true,
+       "streamToken": "0",
+       "writeResults": [],
+       "commitTime": false
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "send",
+     "database": true,
+     "token": "last",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1
+      }
+     ]
+    },
+    {
+     "op": "recv",
+     "label": "write",
+     "outcome": {
+      "response": {
+       "streamId": false,
+       "streamToken": "1",
+       "writeResults": [
+        {
+         "updateTime": true,
+         "transformResults": 0
+        }
+       ],
+       "commitTime": true
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "close"
+    },
+    {
+     "op": "recv",
+     "label": "after half-close",
+     "outcome": {
+      "end": true,
+      "elapsed": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "later requests must not name another database",
+   "steps": [
+    {
+     "op": "send",
+     "database": true
+    },
+    {
+     "op": "recv",
+     "label": "handshake",
+     "outcome": {
+      "response": {
+       "streamId": true,
+       "streamToken": "0",
+       "writeResults": [],
+       "commitTime": false
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "send",
+     "database": "projects/other/databases/(default)",
+     "token": "last",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1
+      }
+     ]
+    },
+    {
+     "op": "recv",
+     "label": "write",
+     "outcome": {
+      "error": {
+       "status": "INVALID_ARGUMENT",
+       "message": "Request specified a database (projects/other/databases/(default)) that did not match the expected database (projects/{project}/databases/(default))"
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "recv",
+     "label": "then",
+     "outcome": {
+      "end": true,
+      "elapsed": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "a failed precondition ends the stream",
+   "steps": [
+    {
+     "op": "send",
+     "database": true
+    },
+    {
+     "op": "recv",
+     "label": "handshake",
+     "outcome": {
+      "response": {
+       "streamId": true,
+       "streamToken": "0",
+       "writeResults": [],
+       "commitTime": false
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "send",
+     "token": "last",
+     "writes": [
+      {
+       "update": "c/missing",
+       "n": 1,
+       "exists": true
+      }
+     ]
+    },
+    {
+     "op": "recv",
+     "label": "write",
+     "compare": "status",
+     "outcome": {
+      "error": {
+       "status": "NOT_FOUND",
+       "message": "no entity to update: app: \"dev~{project}\"\npath <\n  Element {\n    type: \"c\"\n    name: \"missing\"\n  }\n>\n"
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "recv",
+     "label": "then",
+     "outcome": {
+      "end": true,
+      "elapsed": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "an invalid write ends the stream",
+   "steps": [
+    {
+     "op": "send",
+     "database": true
+    },
+    {
+     "op": "recv",
+     "label": "handshake",
+     "outcome": {
+      "response": {
+       "streamId": true,
+       "streamToken": "0",
+       "writeResults": [],
+       "commitTime": false
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "send",
+     "token": "last",
+     "writes": [
+      {
+       "update": "c/r",
+       "n": 1,
+       "reserved": true
+      }
+     ]
+    },
+    {
+     "op": "recv",
+     "label": "write",
+     "outcome": {
+      "error": {
+       "status": "INVALID_ARGUMENT",
+       "message": "field name __x__ is reserved"
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "recv",
+     "label": "then",
+     "outcome": {
+      "end": true,
+      "elapsed": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "transforms report their results",
+   "steps": [
+    {
+     "op": "send",
+     "database": true
+    },
+    {
+     "op": "recv",
+     "label": "handshake",
+     "outcome": {
+      "response": {
+       "streamId": true,
+       "streamToken": "0",
+       "writeResults": [],
+       "commitTime": false
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "send",
+     "token": "last",
+     "writes": [
+      {
+       "update": "c/t",
+       "increment": "n",
+       "serverTime": "at"
+      }
+     ]
+    },
+    {
+     "op": "recv",
+     "label": "write",
+     "outcome": {
+      "response": {
+       "streamId": false,
+       "streamToken": "1",
+       "writeResults": [
+        {
+         "updateTime": true,
+         "transformResults": 2
+        }
+       ],
+       "commitTime": true
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "close"
+    },
+    {
+     "op": "recv",
+     "label": "after half-close",
+     "outcome": {
+      "end": true,
+      "elapsed": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "labels are accepted",
+   "steps": [
+    {
+     "op": "send",
+     "database": true
+    },
+    {
+     "op": "recv",
+     "label": "handshake",
+     "outcome": {
+      "response": {
+       "streamId": true,
+       "streamToken": "0",
+       "writeResults": [],
+       "commitTime": false
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "send",
+     "token": "last",
+     "writes": [
+      {
+       "update": "c/l",
+       "n": 1
+      }
+     ],
+     "labels": {
+      "a": "b"
+     }
+    },
+    {
+     "op": "recv",
+     "label": "write",
+     "outcome": {
+      "response": {
+       "streamId": false,
+       "streamToken": "1",
+       "writeResults": [
+        {
+         "updateTime": true,
+         "transformResults": 0
+        }
+       ],
+       "commitTime": true
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "close"
+    },
+    {
+     "op": "recv",
+     "label": "after half-close",
+     "outcome": {
+      "end": true,
+      "elapsed": 0
+     }
+    }
+   ]
+  },
+  {
+   "name": "a write waits for transaction locks",
+   "steps": [
+    {
+     "op": "lock",
+     "document": "c/lock"
+    },
+    {
+     "op": "send",
+     "database": true
+    },
+    {
+     "op": "recv",
+     "label": "handshake",
+     "outcome": {
+      "response": {
+       "streamId": true,
+       "streamToken": "0",
+       "writeResults": [],
+       "commitTime": false
+      },
+      "elapsed": 0
+     }
+    },
+    {
+     "op": "send",
+     "token": "last",
+     "writes": [
+      {
+       "update": "c/lock",
+       "n": 1
+      }
+     ]
+    },
+    {
+     "op": "recv",
+     "label": "write",
+     "outcome": {
+      "error": {
+       "status": "ABORTED",
+       "message": "Transaction lock timeout."
+      },
+      "elapsed": 2
+     }
+    },
+    {
+     "op": "recv",
+     "label": "then",
+     "outcome": {
+      "end": true,
+      "elapsed": 0
+     }
+    }
+   ]
+  }
+ ]
+}

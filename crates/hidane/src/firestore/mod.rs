@@ -1,7 +1,7 @@
 //! `google.firestore.v1.Firestore`.
 //!
 //! Implemented: GetDocument, ListDocuments, CreateDocument, UpdateDocument, DeleteDocument,
-//! BatchGetDocuments, BeginTransaction, Commit, Rollback, RunQuery, RunAggregationQuery,
+//! BatchGetDocuments, BeginTransaction, Commit, Rollback, RunQuery, RunAggregationQuery, Write,
 //! BatchWrite, ListCollectionIds. The rest answer `UNIMPLEMENTED` through the generated default stubs
 //! until their issues land.
 //!
@@ -16,6 +16,7 @@ mod names;
 mod query;
 pub(crate) mod transactions;
 mod validate;
+mod write_stream;
 mod writes;
 
 use std::{
@@ -42,16 +43,19 @@ use hidane_proto::google::{
         GetDocumentRequest, ListCollectionIdsRequest, ListCollectionIdsResponse,
         ListDocumentsRequest, ListDocumentsResponse, Precondition, RollbackRequest,
         RunAggregationQueryRequest, RunAggregationQueryResponse, RunQueryRequest, RunQueryResponse,
-        StructuredQuery, TransactionOptions, UpdateDocumentRequest, Write, WriteResult,
-        batch_get_documents_request, batch_get_documents_response, firestore_server::Firestore,
-        get_document_request, list_collection_ids_request, list_documents_request,
-        precondition::ConditionType, run_aggregation_query_request, run_query_request,
-        run_query_response, structured_aggregation_query, transaction_options, write::Operation,
+        StructuredQuery, TransactionOptions, UpdateDocumentRequest, Write, WriteRequest,
+        WriteResponse, WriteResult, batch_get_documents_request, batch_get_documents_response,
+        firestore_server::Firestore, get_document_request, list_collection_ids_request,
+        list_documents_request, precondition::ConditionType, run_aggregation_query_request,
+        run_query_request, run_query_response, structured_aggregation_query, transaction_options,
+        write::Operation,
     },
     rpc,
 };
 use prost_types::Timestamp;
-use tonic::{Request, Response, Status, async_trait, codegen::BoxStream};
+use tokio::sync::mpsc;
+use tokio_stream::wrappers::ReceiverStream;
+use tonic::{Request, Response, Status, Streaming, async_trait, codegen::BoxStream};
 
 use self::{
     aggregation::Aggregations,
@@ -63,6 +67,7 @@ use self::{
 const METADATA_ADMIN: &str = "Metadata operations require admin authentication.";
 const BATCH_WRITE_ADMIN: &str = "Batch writes require admin authentication.";
 
+#[derive(Clone)]
 pub struct FirestoreService {
     store: Arc<dyn Store>,
     transactions: Arc<Transactions>,
@@ -642,6 +647,21 @@ impl Firestore for FirestoreService {
             ..RunAggregationQueryResponse::default()
         }));
         Ok(Response::new(Box::pin(tokio_stream::iter(responses))))
+    }
+
+    async fn write(
+        &self,
+        request: Request<Streaming<WriteRequest>>,
+    ) -> Result<Response<BoxStream<WriteResponse>>, Status> {
+        let mut requests = request.into_inner();
+        let (responses, receiver) = mpsc::channel(16);
+        let service = self.clone();
+        tokio::spawn(async move {
+            if let Err(status) = service.serve_write_stream(&mut requests, &responses).await {
+                let _ = responses.send(Err(status)).await;
+            }
+        });
+        Ok(Response::new(Box::pin(ReceiverStream::new(receiver))))
     }
 
     async fn begin_transaction(
