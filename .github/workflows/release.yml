@@ -92,7 +92,8 @@ jobs:
         run: |
           bin="target/$TARGET/release/hidane"
           "$bin" --version
-          "$bin" --licenses | grep -q "Third-party software in hidane"
+          "$bin" --licenses > licenses.txt
+          grep -q "Third-party software in hidane" licenses.txt
           if [[ "$TARGET" == *linux-musl ]]; then
             file "$bin" | tee /dev/stderr | grep -Eq "statically linked|static-pie linked"
           fi

@@ -43,15 +43,15 @@ async fn run(args: Vec<OsString>) -> ExitCode {
         }
     };
     if cli.help {
-        print!("{}", cli::usage());
+        emit(&cli::usage());
         return ExitCode::SUCCESS;
     }
     if cli.version {
-        println!("hidane {}", env!("CARGO_PKG_VERSION"));
+        emit(&format!("hidane {}\n", env!("CARGO_PKG_VERSION")));
         return ExitCode::SUCCESS;
     }
     if cli.licenses {
-        print!("{}", cli::licenses());
+        emit(&cli::licenses());
         return ExitCode::SUCCESS;
     }
     match cli.validate() {
@@ -132,6 +132,14 @@ async fn run(args: Vec<OsString>) -> ExitCode {
     }
     // 130 = 128 + SIGINT, the code the JVM (and firebase-tools' check) uses.
     ExitCode::from(code_rx.await.unwrap_or(0))
+}
+
+/// Writes `text` to stdout and ends quietly when the reader has gone, as with
+/// `hidane --licenses | head` (`print!` panics on a closed pipe).
+fn emit(text: &str) {
+    use std::io::Write as _;
+    let mut out = std::io::stdout().lock();
+    let _ = out.write_all(text.as_bytes()).and_then(|()| out.flush());
 }
 
 /// The official emulator's startup banner. `Dev App Server is now running.` is kept verbatim:
