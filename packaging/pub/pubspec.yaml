@@ -3,7 +3,7 @@ description: >-
   A Firestore emulator without Java. Downloads hidane's release binary for your platform on first
   run, checks its SHA-256 and runs it, for example under firebase emulators:start.
 # The release version: CI checks it against Cargo.toml (packaging/check-versions.mjs).
-version: 0.1.0-rc.2
+version: 0.1.0
 repository: https://github.com/hidane-dev/hidane
 homepage: https://hidane.dev
 issue_tracker: https://github.com/hidane-dev/hidane/issues

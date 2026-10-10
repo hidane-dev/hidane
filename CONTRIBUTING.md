@@ -3,15 +3,15 @@
 Thanks for your interest in hidane (火種). This document explains where the
 project currently stands and how to get involved.
 
-## Project status: pre-release
+## Project status
 
-The emulator runs from source (`cargo run --release -p hidane`) and serves the
-Firestore API over gRPC, REST and WebChannel. Each feature is built issue by
+v0.1.0 is the first release. hidane serves the Firestore API over gRPC, REST
+and WebChannel, and runs under firebase-tools (`hidane exec -- firebase
+emulators:start`), with imports and exports. Each feature is built issue by
 issue: the official emulator's behaviour is recorded first (`tools/oracle/`),
-then implemented and replayed by the test suite; `hidane exec -- firebase
-emulators:start` runs it under firebase-tools, with imports and exports.
-Security Rules are still ahead. `packaging/` holds what the release workflow turns
-into the npm and pub.dev packages, the Homebrew formula and the container image.
+then implemented and replayed by the test suite. Security Rules are next (v0.2).
+`packaging/` holds what the release workflow turns into the npm and pub.dev
+packages, the Homebrew formula and the container image.
 
 What this means for contributions right now:
 

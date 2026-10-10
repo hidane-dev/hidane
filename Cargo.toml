@@ -3,7 +3,7 @@ resolver = "3"
 members = ["crates/*"]
 
 [workspace.package]
-version = "0.1.0-rc.2"
+version = "0.1.0"
 edition = "2024"
 # tonic 0.14 and let chains need 1.88; CI builds with it (ci.yml, msrv).
 rust-version = "1.88"
@@ -13,8 +13,8 @@ homepage = "https://hidane.dev"
 
 [workspace.dependencies]
 # The version pins move with the workspace version (docs/releasing.md).
-hidane-core = { path = "crates/hidane-core", version = "=0.1.0-rc.2" }
-hidane-proto = { path = "crates/hidane-proto", version = "=0.1.0-rc.2" }
+hidane-core = { path = "crates/hidane-core", version = "=0.1.0" }
+hidane-proto = { path = "crates/hidane-proto", version = "=0.1.0" }
 axum = { version = "0.8.9", default-features = false, features = ["http1", "http2", "tokio"] }
 base64 = "0.23.1"
 bytes = "1.12.1"
