@@ -1,8 +1,0 @@
-lat-rest-patch.sh n=20 mean=25.8 median=25.5 min=21.1 max=33
-lat-rest-get.sh n=20 mean=21.5 median=20.9 min=19.2 max=25.9
-lat-grpc-commit.sh n=20 mean=37.5 median=36.9 min=35.3 max=43.3
-lat-grpc-get.sh n=20 mean=35.9 median=35.2 min=33.2 max=43.4
-lat-rest-baseline.sh n=20 mean=19.4 median=18.7 min=16.1 max=38.3
-lat-grpc-baseline.sh n=20 mean=20.8 median=20.9 min=18.9 max=25.9
-lat-curl-spawn.sh n=20 mean=15.1 median=14.9 min=13.5 max=16.8
-lat-grpcurl-spawn.sh n=20 mean=15.9 median=16.1 min=14.2 max=16.9

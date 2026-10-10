@@ -16,7 +16,7 @@ hidane must satisfy:
 |---|---|
 | h2c prior-knowledge gRPC (grpc-js, grpc-go, grpc-okhttp and grpc++ all use plaintext HTTP/2 against the emulator) | SDK sources, see [compatibility.md](../compatibility.md) |
 | HTTP/1.1 REST and WebChannel (POST / GET, chunked responses) on the same port | Observed on v1.22.0 |
-| gRPC reflection (`grpc.reflection.v1alpha`); the official one lists services but `grpcurl describe` fails on `google.api.api_visibility` | `results/latency-grpc-reflection-vs-proto-official-v1.22.0.txt` |
+| gRPC reflection (`grpc.reflection.v1alpha`); the official one lists services but `grpcurl describe` fails on `google.api.api_visibility` | `results/official-v1.22.0-baseline.md` |
 | Both `google.firestore.v1.Firestore` (17 RPCs) and the identical `v1beta1` service | Observed reflection output |
 | 17 MB max message (SDK limits), keepalive that avoids the iOS 90 s GOAWAY (firebase-tools #11238) | SDK sources; issue |
 | REST derived by gRPC transcoding (`google.api.http`); accept `Content-Type: text/plain` JSON from js-sdk | `firestore.proto` HTTP annotations; js-sdk `rest_connection.ts` |
