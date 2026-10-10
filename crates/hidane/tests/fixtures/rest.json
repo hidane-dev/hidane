@@ -1,0 +1,1228 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/rest.py",
+ "cases": [
+  {
+   "name": "create every value type with PATCH",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/a",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "arr": {
+      "arrayValue": {
+       "values": [
+        {
+         "integerValue": "1"
+        },
+        {
+         "stringValue": "s"
+        },
+        {
+         "mapValue": {
+          "fields": {
+           "k": {
+            "integerValue": "1"
+           }
+          }
+         }
+        }
+       ]
+      }
+     },
+     "arr0": {
+      "arrayValue": {}
+     },
+     "big": {
+      "integerValue": "9223372036854775807"
+     },
+     "bool": {
+      "booleanValue": true
+     },
+     "bytes": {
+      "bytesValue": "AQI="
+     },
+     "dbl": {
+      "doubleValue": 1.0
+     },
+     "dbl2": {
+      "doubleValue": 1.5
+     },
+     "geo": {
+      "geoPointValue": {
+       "latitude": 1.5,
+       "longitude": -2
+      }
+     },
+     "geo0": {
+      "geoPointValue": {}
+     },
+     "int": {
+      "integerValue": "42"
+     },
+     "map": {
+      "mapValue": {
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        },
+        "b": {
+         "mapValue": {
+          "fields": {
+           "c": {
+            "stringValue": "x"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "map0": {
+      "mapValue": {}
+     },
+     "nan": {
+      "doubleValue": "NaN"
+     },
+     "neg0": {
+      "doubleValue": -0.0
+     },
+     "neginf": {
+      "doubleValue": "-Infinity"
+     },
+     "null": {
+      "nullValue": null
+     },
+     "posinf": {
+      "doubleValue": "Infinity"
+     },
+     "ref": {
+      "referenceValue": "projects/{project}/databases/(default)/documents/c/b"
+     },
+     "str": {
+      "stringValue": "<>&='\"\\\n\t\u0001éあ😀 x/y"
+     },
+     "ts": {
+      "timestampValue": "2020-01-01T00:00:00.123456789Z"
+     },
+     "ts0": {
+      "timestampValue": "2020-01-01T00:00:00Z"
+     },
+     "tsms": {
+      "timestampValue": "2020-01-01T00:00:00.120Z"
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/c/a\",\n  \"fields\": {\n    \"arr\": {\n      \"arrayValue\": {\n        \"values\": [{\n          \"integerValue\": \"1\"\n        }, {\n          \"stringValue\": \"s\"\n        }, {\n          \"mapValue\": {\n            \"fields\": {\n              \"k\": {\n                \"integerValue\": \"1\"\n              }\n            }\n          }\n        }]\n      }\n    },\n    \"arr0\": {\n      \"arrayValue\": {\n      }\n    },\n    \"big\": {\n      \"integerValue\": \"9223372036854775807\"\n    },\n    \"bool\": {\n      \"booleanValue\": true\n    },\n    \"bytes\": {\n      \"bytesValue\": \"AQI=\"\n    },\n    \"dbl\": {\n      \"doubleValue\": 1.0\n    },\n    \"dbl2\": {\n      \"doubleValue\": 1.5\n    },\n    \"geo\": {\n      \"geoPointValue\": {\n        \"latitude\": 1.5,\n        \"longitude\": -2.0\n      }\n    },\n    \"geo0\": {\n      \"geoPointValue\": {\n      }\n    },\n    \"int\": {\n      \"integerValue\": \"42\"\n    },\n    \"map\": {\n      \"mapValue\": {\n        \"fields\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"mapValue\": {\n              \"fields\": {\n                \"c\": {\n                  \"stringValue\": \"x\"\n                }\n              }\n            }\n          }\n        }\n      }\n    },\n    \"map0\": {\n      \"mapValue\": {\n      }\n    },\n    \"nan\": {\n      \"doubleValue\": \"NaN\"\n    },\n    \"neg0\": {\n      \"doubleValue\": 0.0\n    },\n    \"neginf\": {\n      \"doubleValue\": \"-Infinity\"\n    },\n    \"null\": {\n      \"nullValue\": null\n    },\n    \"posinf\": {\n      \"doubleValue\": \"Infinity\"\n    },\n    \"ref\": {\n      \"referenceValue\": \"projects/{project}/databases/(default)/documents/c/b\"\n    },\n    \"str\": {\n      \"stringValue\": \"<>&='\\\"\\\\\\n\\t\\u0001éあ😀 x/y\"\n    },\n    \"ts\": {\n      \"timestampValue\": \"2020-01-01T00:00:00.123456Z\"\n    },\n    \"ts0\": {\n      \"timestampValue\": \"2020-01-01T00:00:00Z\"\n    },\n    \"tsms\": {\n      \"timestampValue\": \"2020-01-01T00:00:00.120Z\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "doubles as Java prints them",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/doubles",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "d00": {
+      "doubleValue": 10000000.0
+     },
+     "d01": {
+      "doubleValue": 9999999.0
+     },
+     "d02": {
+      "doubleValue": 1e+21
+     },
+     "d03": {
+      "doubleValue": 1e-07
+     },
+     "d04": {
+      "doubleValue": 0.001
+     },
+     "d05": {
+      "doubleValue": 0.0001
+     },
+     "d06": {
+      "doubleValue": 123456789.0
+     },
+     "d07": {
+      "doubleValue": 1.7976931348623157e+308
+     },
+     "d08": {
+      "doubleValue": 0.1
+     },
+     "d09": {
+      "doubleValue": -1.5e-10
+     },
+     "d10": {
+      "doubleValue": 100.0
+     },
+     "d11": {
+      "doubleValue": 1e+16
+     },
+     "d12": {
+      "doubleValue": 1e+22
+     },
+     "d13": {
+      "doubleValue": 12345.6789
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/c/doubles\",\n  \"fields\": {\n    \"d00\": {\n      \"doubleValue\": 1.0E7\n    },\n    \"d01\": {\n      \"doubleValue\": 9999999.0\n    },\n    \"d02\": {\n      \"doubleValue\": 1.0E21\n    },\n    \"d03\": {\n      \"doubleValue\": 1.0E-7\n    },\n    \"d04\": {\n      \"doubleValue\": 0.001\n    },\n    \"d05\": {\n      \"doubleValue\": 1.0E-4\n    },\n    \"d06\": {\n      \"doubleValue\": 1.23456789E8\n    },\n    \"d07\": {\n      \"doubleValue\": 1.7976931348623157E308\n    },\n    \"d08\": {\n      \"doubleValue\": 0.1\n    },\n    \"d09\": {\n      \"doubleValue\": -1.5E-10\n    },\n    \"d10\": {\n      \"doubleValue\": 100.0\n    },\n    \"d11\": {\n      \"doubleValue\": 1.0E16\n    },\n    \"d12\": {\n      \"doubleValue\": 1.0E22\n    },\n    \"d13\": {\n      \"doubleValue\": 12345.6789\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "get a document",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/a",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/c/a\",\n  \"fields\": {\n    \"arr\": {\n      \"arrayValue\": {\n        \"values\": [{\n          \"integerValue\": \"1\"\n        }, {\n          \"stringValue\": \"s\"\n        }, {\n          \"mapValue\": {\n            \"fields\": {\n              \"k\": {\n                \"integerValue\": \"1\"\n              }\n            }\n          }\n        }]\n      }\n    },\n    \"arr0\": {\n      \"arrayValue\": {\n      }\n    },\n    \"big\": {\n      \"integerValue\": \"9223372036854775807\"\n    },\n    \"bool\": {\n      \"booleanValue\": true\n    },\n    \"bytes\": {\n      \"bytesValue\": \"AQI=\"\n    },\n    \"dbl\": {\n      \"doubleValue\": 1.0\n    },\n    \"dbl2\": {\n      \"doubleValue\": 1.5\n    },\n    \"geo\": {\n      \"geoPointValue\": {\n        \"latitude\": 1.5,\n        \"longitude\": -2.0\n      }\n    },\n    \"geo0\": {\n      \"geoPointValue\": {\n      }\n    },\n    \"int\": {\n      \"integerValue\": \"42\"\n    },\n    \"map\": {\n      \"mapValue\": {\n        \"fields\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"mapValue\": {\n              \"fields\": {\n                \"c\": {\n                  \"stringValue\": \"x\"\n                }\n              }\n            }\n          }\n        }\n      }\n    },\n    \"map0\": {\n      \"mapValue\": {\n      }\n    },\n    \"nan\": {\n      \"doubleValue\": \"NaN\"\n    },\n    \"neg0\": {\n      \"doubleValue\": 0.0\n    },\n    \"neginf\": {\n      \"doubleValue\": \"-Infinity\"\n    },\n    \"null\": {\n      \"nullValue\": null\n    },\n    \"posinf\": {\n      \"doubleValue\": \"Infinity\"\n    },\n    \"ref\": {\n      \"referenceValue\": \"projects/{project}/databases/(default)/documents/c/b\"\n    },\n    \"str\": {\n      \"stringValue\": \"<>&='\\\"\\\\\\n\\t\\u0001éあ😀 x/y\"\n    },\n    \"ts\": {\n      \"timestampValue\": \"2020-01-01T00:00:00.123456Z\"\n    },\n    \"ts0\": {\n      \"timestampValue\": \"2020-01-01T00:00:00Z\"\n    },\n    \"tsms\": {\n      \"timestampValue\": \"2020-01-01T00:00:00.120Z\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "get with a mask (repeated query parameter)",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/a?mask.fieldPaths=int&mask.fieldPaths=bool",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/c/a\",\n  \"fields\": {\n    \"bool\": {\n      \"booleanValue\": true\n    },\n    \"int\": {\n      \"integerValue\": \"42\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create an empty document",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/e",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/c/e\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "list a collection",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c?pageSize=2",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/c/a\",\n    \"fields\": {\n      \"arr\": {\n        \"arrayValue\": {\n          \"values\": [{\n            \"integerValue\": \"1\"\n          }, {\n            \"stringValue\": \"s\"\n          }, {\n            \"mapValue\": {\n              \"fields\": {\n                \"k\": {\n                  \"integerValue\": \"1\"\n                }\n              }\n            }\n          }]\n        }\n      },\n      \"arr0\": {\n        \"arrayValue\": {\n        }\n      },\n      \"big\": {\n        \"integerValue\": \"9223372036854775807\"\n      },\n      \"bool\": {\n        \"booleanValue\": true\n      },\n      \"bytes\": {\n        \"bytesValue\": \"AQI=\"\n      },\n      \"dbl\": {\n        \"doubleValue\": 1.0\n      },\n      \"dbl2\": {\n        \"doubleValue\": 1.5\n      },\n      \"geo\": {\n        \"geoPointValue\": {\n          \"latitude\": 1.5,\n          \"longitude\": -2.0\n        }\n      },\n      \"geo0\": {\n        \"geoPointValue\": {\n        }\n      },\n      \"int\": {\n        \"integerValue\": \"42\"\n      },\n      \"map\": {\n        \"mapValue\": {\n          \"fields\": {\n            \"a\": {\n              \"integerValue\": \"1\"\n            },\n            \"b\": {\n              \"mapValue\": {\n                \"fields\": {\n                  \"c\": {\n                    \"stringValue\": \"x\"\n                  }\n                }\n              }\n            }\n          }\n        }\n      },\n      \"map0\": {\n        \"mapValue\": {\n        }\n      },\n      \"nan\": {\n        \"doubleValue\": \"NaN\"\n      },\n      \"neg0\": {\n        \"doubleValue\": 0.0\n      },\n      \"neginf\": {\n        \"doubleValue\": \"-Infinity\"\n      },\n      \"null\": {\n        \"nullValue\": null\n      },\n      \"posinf\": {\n        \"doubleValue\": \"Infinity\"\n      },\n      \"ref\": {\n        \"referenceValue\": \"projects/{project}/databases/(default)/documents/c/b\"\n      },\n      \"str\": {\n        \"stringValue\": \"<>&='\\\"\\\\\\n\\t\\u0001éあ😀 x/y\"\n      },\n      \"ts\": {\n        \"timestampValue\": \"2020-01-01T00:00:00.123456Z\"\n      },\n      \"ts0\": {\n        \"timestampValue\": \"2020-01-01T00:00:00Z\"\n      },\n      \"tsms\": {\n        \"timestampValue\": \"2020-01-01T00:00:00.120Z\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/c/doubles\",\n    \"fields\": {\n      \"d00\": {\n        \"doubleValue\": 1.0E7\n      },\n      \"d01\": {\n        \"doubleValue\": 9999999.0\n      },\n      \"d02\": {\n        \"doubleValue\": 1.0E21\n      },\n      \"d03\": {\n        \"doubleValue\": 1.0E-7\n      },\n      \"d04\": {\n        \"doubleValue\": 0.001\n      },\n      \"d05\": {\n        \"doubleValue\": 1.0E-4\n      },\n      \"d06\": {\n        \"doubleValue\": 1.23456789E8\n      },\n      \"d07\": {\n        \"doubleValue\": 1.7976931348623157E308\n      },\n      \"d08\": {\n        \"doubleValue\": 0.1\n      },\n      \"d09\": {\n        \"doubleValue\": -1.5E-10\n      },\n      \"d10\": {\n        \"doubleValue\": 100.0\n      },\n      \"d11\": {\n        \"doubleValue\": 1.0E16\n      },\n      \"d12\": {\n        \"doubleValue\": 1.0E22\n      },\n      \"d13\": {\n        \"doubleValue\": 12345.6789\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }],\n  \"nextPageToken\": \"<token>\"\n}\n"
+   }
+  },
+  {
+   "name": "list with mask _none_ and showMissing (Emulator UI)",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c?showMissing=true&mask.fieldPaths=_none_&pageSize=300",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/c/a\",\n    \"fields\": {\n      \"arr\": {\n        \"arrayValue\": {\n          \"values\": [{\n            \"integerValue\": \"1\"\n          }, {\n            \"stringValue\": \"s\"\n          }, {\n            \"mapValue\": {\n              \"fields\": {\n                \"k\": {\n                  \"integerValue\": \"1\"\n                }\n              }\n            }\n          }]\n        }\n      },\n      \"arr0\": {\n        \"arrayValue\": {\n        }\n      },\n      \"big\": {\n        \"integerValue\": \"9223372036854775807\"\n      },\n      \"bool\": {\n        \"booleanValue\": true\n      },\n      \"bytes\": {\n        \"bytesValue\": \"AQI=\"\n      },\n      \"dbl\": {\n        \"doubleValue\": 1.0\n      },\n      \"dbl2\": {\n        \"doubleValue\": 1.5\n      },\n      \"geo\": {\n        \"geoPointValue\": {\n          \"latitude\": 1.5,\n          \"longitude\": -2.0\n        }\n      },\n      \"geo0\": {\n        \"geoPointValue\": {\n        }\n      },\n      \"int\": {\n        \"integerValue\": \"42\"\n      },\n      \"map\": {\n        \"mapValue\": {\n          \"fields\": {\n            \"a\": {\n              \"integerValue\": \"1\"\n            },\n            \"b\": {\n              \"mapValue\": {\n                \"fields\": {\n                  \"c\": {\n                    \"stringValue\": \"x\"\n                  }\n                }\n              }\n            }\n          }\n        }\n      },\n      \"map0\": {\n        \"mapValue\": {\n        }\n      },\n      \"nan\": {\n        \"doubleValue\": \"NaN\"\n      },\n      \"neg0\": {\n        \"doubleValue\": 0.0\n      },\n      \"neginf\": {\n        \"doubleValue\": \"-Infinity\"\n      },\n      \"null\": {\n        \"nullValue\": null\n      },\n      \"posinf\": {\n        \"doubleValue\": \"Infinity\"\n      },\n      \"ref\": {\n        \"referenceValue\": \"projects/{project}/databases/(default)/documents/c/b\"\n      },\n      \"str\": {\n        \"stringValue\": \"<>&='\\\"\\\\\\n\\t\\u0001éあ😀 x/y\"\n      },\n      \"ts\": {\n        \"timestampValue\": \"2020-01-01T00:00:00.123456Z\"\n      },\n      \"ts0\": {\n        \"timestampValue\": \"2020-01-01T00:00:00Z\"\n      },\n      \"tsms\": {\n        \"timestampValue\": \"2020-01-01T00:00:00.120Z\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/c/doubles\",\n    \"fields\": {\n      \"d00\": {\n        \"doubleValue\": 1.0E7\n      },\n      \"d01\": {\n        \"doubleValue\": 9999999.0\n      },\n      \"d02\": {\n        \"doubleValue\": 1.0E21\n      },\n      \"d03\": {\n        \"doubleValue\": 1.0E-7\n      },\n      \"d04\": {\n        \"doubleValue\": 0.001\n      },\n      \"d05\": {\n        \"doubleValue\": 1.0E-4\n      },\n      \"d06\": {\n        \"doubleValue\": 1.23456789E8\n      },\n      \"d07\": {\n        \"doubleValue\": 1.7976931348623157E308\n      },\n      \"d08\": {\n        \"doubleValue\": 0.1\n      },\n      \"d09\": {\n        \"doubleValue\": -1.5E-10\n      },\n      \"d10\": {\n        \"doubleValue\": 100.0\n      },\n      \"d11\": {\n        \"doubleValue\": 1.0E16\n      },\n      \"d12\": {\n        \"doubleValue\": 1.0E22\n      },\n      \"d13\": {\n        \"doubleValue\": 12345.6789\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/c/e\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "list with showMissing, no auth",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c?showMissing=true",
+   "headers": {},
+   "compare": "exact",
+   "outcome": {
+    "status": 403,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":403,\"message\":\"Metadata operations require admin authentication.\",\"status\":\"PERMISSION_DENIED\"}}"
+   }
+  },
+  {
+   "name": "list an empty subcollection",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/e/sub",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "get a missing document",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/missing",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/c\\/missing) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "get the database root",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "v1beta1 and ?key=",
+   "method": "GET",
+   "path": "/v1beta1/projects/{project}/databases/(default)/documents/c/e?key=abc&alt=json",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/c/e\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "percent-encoded path",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/%28default%29/documents/c/e",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/c/e\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "unknown query parameter",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/e?unknownParam=1",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/c/e\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "missing document with a space in its ID",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/a%20b",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/c\\/a b) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "create with documentId",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c?documentId=new",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "x": {
+      "integerValue": "1"
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/c/new\",\n  \"fields\": {\n    \"x\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create with a generated ID",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/gen",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {}
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/gen/<auto>\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create an existing document",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c?documentId=new",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "status",
+   "body": {
+    "fields": {}
+   },
+   "outcome": {
+    "status": 409,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":409,\"message\":\"entity already exists: EntityRef[partitionRef=dev~{project}, path=\\/c\\/new]\",\"status\":\"ALREADY_EXISTS\"}}"
+   }
+  },
+  {
+   "name": "create a document with a non-ASCII ID",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c?documentId=%E3%81%82",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "x": {
+      "integerValue": "2"
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/c/あ\",\n  \"fields\": {\n    \"x\": {\n      \"integerValue\": \"2\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "get it",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/%E3%81%82",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/c/あ\",\n  \"fields\": {\n    \"x\": {\n      \"integerValue\": \"2\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update with updateMask and mask",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/new?updateMask.fieldPaths=x&updateMask.fieldPaths=zz&mask.fieldPaths=x",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "x": {
+      "integerValue": "7"
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/c/new\",\n  \"fields\": {\n    \"x\": {\n      \"integerValue\": \"7\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update with currentDocument.exists=false on an existing document",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/new?currentDocument.exists=false",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "status",
+   "body": {},
+   "outcome": {
+    "status": 409,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":409,\"message\":\"entity already exists: EntityRef[partitionRef=dev~{project}, path=\\/c\\/new]\",\"status\":\"ALREADY_EXISTS\"}}"
+   }
+  },
+  {
+   "name": "delete",
+   "method": "DELETE",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/new",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "delete with currentDocument.exists=true on a missing document",
+   "method": "DELETE",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/new?currentDocument.exists=true",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "status",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"no entity to update: app: \\\"dev~{project}\\\"\\npath <\\n  Element {\\n    type: \\\"c\\\"\\n    name: \\\"new\\\"\\n  }\\n>\\n\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "commit",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/c/b",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/c/b2",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "n",
+        "increment": {
+         "integerValue": "2"
+        }
+       }
+      ]
+     },
+     {
+      "delete": "projects/{project}/databases/(default)/documents/c/gone"
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"integerValue\": \"2\"\n    }]\n  }, {\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "empty commit",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "commit without a body",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "commit with a text/plain body (web SDK)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Content-Type": "text/plain",
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"writes\": []}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "commit with lenient ProtoJSON (number as integer, string as double, snake_case)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/c/lenient",
+       "fields": {
+        "i": {
+         "integerValue": 5
+        },
+        "d": {
+         "doubleValue": "1.5"
+        }
+       }
+      },
+      "current_document": {
+       "exists": false
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "commit with invalid JSON",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{not json",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit with a wrong type",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": "x"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit with an unknown field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "unknownField": 1
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a reserved field name",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/c/r",
+       "fields": {
+        "__x__": {
+         "integerValue": "1"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"field name __x__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "batchGet",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/{project}/databases/(default)/documents/c/e",
+     "projects/{project}/databases/(default)/documents/c/zz"
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"found\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/c/e\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"missing\": \"projects/{project}/databases/(default)/documents/c/zz\",\n  \"readTime\": \"<time>\"\n}\n]\n"
+   }
+  },
+  {
+   "name": "batchGet with no documents",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": []
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n\n]\n"
+   }
+  },
+  {
+   "name": "batchGet in a new transaction",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/{project}/databases/(default)/documents/c/e"
+    ],
+    "newTransaction": {
+     "readOnly": {}
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"transaction\": \"<id>\"\n},\n{\n  \"found\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/c/e\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n}\n]\n"
+   }
+  },
+  {
+   "name": "runQuery with a projection",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "c"
+      }
+     ],
+     "select": {
+      "fields": [
+       {
+        "fieldPath": "int"
+       }
+      ]
+     },
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "int"
+       },
+       "op": "EQUAL",
+       "value": {
+        "integerValue": "42"
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/c/a\",\n    \"fields\": {\n      \"int\": {\n        \"integerValue\": \"42\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "runQuery with offset (skippedResults)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "c"
+      }
+     ],
+     "offset": 1,
+     "limit": 3,
+     "select": {
+      "fields": []
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/c/b\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"skippedResults\": 1\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/c/b2\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"skippedResults\": 1\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/c/doubles\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "runQuery with no result",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "nothing"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "runQuery under a document",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/e:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "sub"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "runQuery in a new transaction",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "nothing"
+      }
+     ]
+    },
+    "newTransaction": {
+     "readWrite": {}
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"transaction\": \"<id>\"\n},\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "invalid query",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "c"
+      }
+     ],
+     "limit": -1
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"limit is negative\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "runAggregationQuery",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runAggregationQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredAggregationQuery": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "avg": {
+        "field": {
+         "fieldPath": "int"
+        }
+       },
+       "alias": "a"
+      },
+      {
+       "count": {},
+       "alias": "n"
+      },
+      {
+       "sum": {
+        "field": {
+         "fieldPath": "int"
+        }
+       },
+       "alias": "s"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"result\": {\n    \"aggregateFields\": {\n      \"a\": {\n        \"doubleValue\": 42.0\n      },\n      \"n\": {\n        \"integerValue\": \"1\"\n      },\n      \"s\": {\n        \"integerValue\": \"42\"\n      }\n    }\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "beginTransaction",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:beginTransaction",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+   }
+  },
+  {
+   "name": "rollback a malformed transaction",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:rollback",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "transaction": "AAAA"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid transaction.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "rollback an unknown transaction",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:rollback",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "transaction": "EWQAAAAAAAAA"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Transaction is invalid or expired.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "listCollectionIds",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:listCollectionIds",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"collectionIds\": [\"c\", \"gen\"]\n}\n"
+   }
+  },
+  {
+   "name": "listCollectionIds under a document",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/a:listCollectionIds",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "listCollectionIds without auth",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:listCollectionIds",
+   "headers": {},
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 403,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":403,\"message\":\"Metadata operations require admin authentication.\",\"status\":\"PERMISSION_DENIED\"}}"
+   }
+  },
+  {
+   "name": "batchWrite",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchWrite",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/c/bw",
+       "fields": {}
+      }
+     },
+     {
+      "delete": "projects/{project}/databases/(default)/documents/c/zz"
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n  }],\n  \"status\": [{\n  }, {\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "batchWrite with a failing precondition",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchWrite",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "status",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/c/x",
+       "fields": {}
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n  }],\n  \"status\": [{\n    \"code\": 5,\n    \"message\": \"no entity to update: app: \\\"dev~{project}\\\"\\npath <\\n  Element {\\n    type: \\\"c\\\"\\n    name: \\\"x\\\"\\n  }\\n>\\n\"\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "partitionQuery",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:partitionQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 501,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":501,\"message\":\"Method google.firestore.v1.Firestore\\/PartitionQuery is unimplemented\",\"status\":\"UNIMPLEMENTED\"}}"
+   }
+  },
+  {
+   "name": "unknown verb",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:nosuchverb",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "write is not REST",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:write",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "listen is not REST",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:listen",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "PUT is not a method",
+   "method": "PUT",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/a",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "GET with a verb",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  }
+ ]
+}

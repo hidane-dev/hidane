@@ -16,6 +16,7 @@
 
 pub mod cli;
 mod firestore;
+mod rest;
 
 use std::{
     future::Future,
@@ -136,12 +137,34 @@ pub fn http_routes(admin: Admin) -> Router {
             "/emulator/v1/projects/{project}/databases/{database}/documents/{*path}",
             delete(delete_tree).fallback(not_found),
         )
-        .fallback(not_found)
+        .fallback(fallback)
         .with_state(admin)
 }
 
-async fn not_found() -> (StatusCode, &'static str) {
-    (StatusCode::NOT_FOUND, "Not Found\n")
+async fn not_found() -> Response {
+    not_found_response()
+}
+
+/// REST (`/v1/…`, `/v1beta1/…`), or 404.
+async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -> Response {
+    let (parts, body) = request.into_parts();
+    rest::handle(
+        admin.firestore(),
+        parts.method,
+        parts.uri.path(),
+        parts.uri.query(),
+        &parts.headers,
+        body,
+    )
+    .await
+    .unwrap_or_else(not_found_response)
+}
+
+/// The official emulator's 404: plain text without a content type.
+fn not_found_response() -> Response {
+    let mut response = Response::new(Body::from("Not Found\n"));
+    *response.status_mut() = StatusCode::NOT_FOUND;
+    response
 }
 
 async fn reset(State(admin): State<Admin>) -> &'static str {
@@ -175,40 +198,13 @@ async fn delete_tree(
     let database = format!("projects/{project}/databases/{database}");
     match admin.firestore().delete_tree(&database, &path).await {
         Ok(()) => empty_json(),
-        Err(status) => error_json(&status),
+        Err(status) => rest::error(&status),
     }
 }
 
 /// The official emulator's empty success body.
 fn empty_json() -> Response {
     ([(header::CONTENT_TYPE, "application/json")], "{\n}\n").into_response()
-}
-
-/// The official emulator's error body (one line; it escapes `/` as Java does).
-fn error_json(status: &tonic::Status) -> Response {
-    let (http, name) = match status.code() {
-        tonic::Code::InvalidArgument => (StatusCode::BAD_REQUEST, "INVALID_ARGUMENT"),
-        tonic::Code::NotFound => (StatusCode::NOT_FOUND, "NOT_FOUND"),
-        tonic::Code::Aborted => (StatusCode::CONFLICT, "ABORTED"),
-        tonic::Code::FailedPrecondition => (StatusCode::BAD_REQUEST, "FAILED_PRECONDITION"),
-        _ => (StatusCode::INTERNAL_SERVER_ERROR, "INTERNAL"),
-    };
-    let mut message = String::new();
-    for c in status.message().chars() {
-        match c {
-            '"' => message.push_str("\\\""),
-            '\\' => message.push_str("\\\\"),
-            '/' => message.push_str("\\/"),
-            '\n' => message.push_str("\\n"),
-            c if u32::from(c) < 0x20 => message.push_str(&format!("\\u{:04x}", u32::from(c))),
-            c => message.push(c),
-        }
-    }
-    let body = format!(
-        "{{\"error\":{{\"code\":{},\"message\":\"{message}\",\"status\":\"{name}\"}}}}",
-        http.as_u16()
-    );
-    (http, [(header::CONTENT_TYPE, "application/json")], body).into_response()
 }
 
 async fn shutdown(State(admin): State<Admin>) -> &'static str {

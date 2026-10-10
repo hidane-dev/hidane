@@ -44,14 +44,15 @@ use hidane_proto::google::{
         BatchWriteResponse, BeginTransactionRequest, BeginTransactionResponse, CommitRequest,
         CommitResponse, CreateDocumentRequest, DeleteDocumentRequest, Document, DocumentMask,
         GetDocumentRequest, ListCollectionIdsRequest, ListCollectionIdsResponse,
-        ListDocumentsRequest, ListDocumentsResponse, ListenRequest, ListenResponse, Precondition,
-        RollbackRequest, RunAggregationQueryRequest, RunAggregationQueryResponse, RunQueryRequest,
-        RunQueryResponse, StructuredQuery, TransactionOptions, UpdateDocumentRequest, Write,
-        WriteRequest, WriteResponse, WriteResult, batch_get_documents_request,
-        batch_get_documents_response, firestore_server::Firestore, get_document_request,
-        list_collection_ids_request, list_documents_request, precondition::ConditionType,
-        run_aggregation_query_request, run_query_request, run_query_response,
-        structured_aggregation_query, transaction_options, write::Operation,
+        ListDocumentsRequest, ListDocumentsResponse, ListenRequest, ListenResponse,
+        PartitionQueryRequest, PartitionQueryResponse, Precondition, RollbackRequest,
+        RunAggregationQueryRequest, RunAggregationQueryResponse, RunQueryRequest, RunQueryResponse,
+        StructuredQuery, TransactionOptions, UpdateDocumentRequest, Write, WriteRequest,
+        WriteResponse, WriteResult, batch_get_documents_request, batch_get_documents_response,
+        firestore_server::Firestore, get_document_request, list_collection_ids_request,
+        list_documents_request, precondition::ConditionType, run_aggregation_query_request,
+        run_query_request, run_query_response, structured_aggregation_query, transaction_options,
+        write::Operation,
     },
     rpc,
 };
@@ -313,6 +314,9 @@ impl Firestore for FirestoreService {
             None => self.read_time(&parent.database, None)?,
         };
         let mask = parse_mask(req.mask.as_ref())?;
+        // The official emulator ignores the mask when listing missing documents too (the
+        // Emulator UI asks for `_none_` and gets every field).
+        let mask = if req.show_missing { None } else { mask };
         let collection = parent.path.child(req.collection_id.clone());
         let after = decode_token(&req.page_token)?
             .map(|p| ResourcePath::parse(&p).ok_or_else(invalid_token))
@@ -690,6 +694,16 @@ impl Firestore for FirestoreService {
             }
         });
         Ok(Response::new(Box::pin(ReceiverStream::new(receiver))))
+    }
+
+    async fn partition_query(
+        &self,
+        _request: Request<PartitionQueryRequest>,
+    ) -> Result<Response<PartitionQueryResponse>, Status> {
+        // The official emulator's answer (#26).
+        Err(Status::unimplemented(
+            "Method google.firestore.v1.Firestore/PartitionQuery is unimplemented",
+        ))
     }
 
     async fn begin_transaction(

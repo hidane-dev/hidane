@@ -28,14 +28,18 @@ Status: Phase 0 draft. Entries will be tagged in the conformance suite (issue #4
 | A Write stream write to a document of another database is acknowledged, with a write result and a commit time, and stored nowhere | `INVALID_ARGUMENT` "Document "…" is not in database "…".", as Commit answers | Bug (silent data loss) |
 | Document fields come back in the order they were written, nested maps included | In name order | Open, #108 |
 | RunAggregationQuery responses carry `done: true`, a field the published protos do not define (visible over REST) | Not sent over gRPC, where clients built from the published protos would drop it; the REST layer (#34) will add it | Not part of the published API |
-| REST `GET` of a document or collection with `?transaction=` never answers (gRPC works) | Will follow the gRPC behaviour when REST lands (#34) | Bug |
+| REST `GET` of a document or collection with `?transaction=` never answers (gRPC works) | Follows the gRPC behaviour (#34) | Bug |
+| A REST query parameter that does not parse (`pageSize=abc`, `showMissing=maybe`) leaves the request unanswered | `400` "Payload isn't valid for request.", the answer to a body that does not parse | Bug |
+| A `:listCollectionIds` body that names a `parent` as the path does leaves the request unanswered | The path wins | Bug |
+| REST page tokens (`nextPageToken`) are an encoded internal message | The last name returned, encoded; both are opaque to clients | Internal format |
+| Masked fields come back in an internal hash order, and aggregation results in request order | In name order | Open, #108 |
 | iOS clients receive `GOAWAY too_many_pings` after about 90 s (firebase-tools [#11238](https://github.com/firebase/firebase-tools/issues/11238)) | Keepalive settings that do not trip the client | Bug |
 | The `issues[].severity` returned by `:securityRules` is a string (`"ERROR"`) while firebase-tools compares it against a numeric enum, so invalid rules still print "Rules updated." | hidane returns the same string the official emulator does; the CLI-side comparison is an upstream bug | Keep wire parity; report upstream |
 | gRPC reflection lists services but `grpcurl describe` fails on a `google.api.api_visibility` extension | Full reflection that works with `grpcurl` | Developer convenience |
 | `GET //` never answers (the connection hangs) | `404 Not Found` | Bug |
 | Precondition failures print the emulator's internal Datastore key: `entity already exists: EntityRef[partitionRef=dev~p, path=/c/d]`, and a protobuf text dump of the key for `no entity to update` | Production Firestore's wording, `Document already exists: <name>` and `No document to update: <name>`; same status codes (`ALREADY_EXISTS`, `NOT_FOUND`) | Internal detail; applications see the production wording in production |
 | `read_time` older than at least two hours is still served (the exact limit is #86) | Up to one hour old, like production Firestore; older answers `FAILED_PRECONDITION` "The requested 'read_time' is too old." with the official message | Bounded memory for old versions (ADR 0002) |
-| The REST `readTime` parameter always fails with "Only timestamps past epoch are supported.", even for the latest commit time (gRPC works) | Will follow the gRPC behaviour when REST lands (#34) | Bug |
+| The REST `readTime` parameter always fails with "Only timestamps past epoch are supported.", even for the latest commit time (gRPC works) | Follows the gRPC behaviour (#34) | Bug |
 | `serverTimestamp()` stores the time the request was received, truncated to milliseconds, a few milliseconds before the commit time | The commit time truncated to milliseconds | Same precision and the same value for every field of a commit; tests cannot depend on which instant inside the request is used |
 
 ## Official-emulator behaviour that differs from production (parity target to be decided)
