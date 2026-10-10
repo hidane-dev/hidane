@@ -28,11 +28,11 @@ pub fn database(name: &str) -> Result<String, Status> {
     let mut cursor = Cursor::new(name, "Database name");
     cursor.literal("projects")?;
     cursor.literal("/")?;
-    cursor.segment()?;
+    cursor.segment("project")?;
     cursor.literal("/")?;
     cursor.literal("databases")?;
     cursor.literal("/")?;
-    cursor.segment()?;
+    cursor.segment("database")?;
     cursor.end()?;
     Ok(name.to_owned())
 }
@@ -108,11 +108,11 @@ fn parse(name: &str, shape: Shape) -> Result<Name, Status> {
     let mut cursor = Cursor::new(name, what);
     cursor.literal("projects")?;
     cursor.literal("/")?;
-    cursor.segment()?;
+    cursor.segment("project")?;
     cursor.literal("/")?;
     cursor.literal("databases")?;
     cursor.literal("/")?;
-    cursor.segment()?;
+    cursor.segment("database")?;
     let database_end = cursor.pos;
     cursor.literal("/")?;
     cursor.literal("documents")?;
@@ -133,8 +133,18 @@ fn parse(name: &str, shape: Shape) -> Result<Name, Status> {
             break;
         }
         cursor.literal("/")?;
+        if segments.is_empty() && cursor.at_end() {
+            return Err(Status::invalid_argument(format!(
+                "{what} \"{name}\" is invalid: Omit trailing \"/\"."
+            )));
+        }
         let start = cursor.pos;
-        let segment = cursor.segment()?;
+        let kind = if segments.len() % 2 == 0 {
+            "collection"
+        } else {
+            "resource"
+        };
+        let segment = cursor.segment(kind)?;
         if segment == "." || segment == ".." {
             return Err(Status::invalid_argument(format!(
                 "{what} \"{name}\" contains a resource id \"{segment}\" at index {start}."
@@ -214,22 +224,36 @@ impl<'a> Cursor<'a> {
         }
     }
 
-    fn segment(&mut self) -> Result<&'a str, Status> {
+    /// The next segment, a `kind` ID (`project`, `database`, `collection`, `resource`).
+    fn segment(&mut self, kind: &str) -> Result<&'a str, Status> {
         let rest = &self.name[self.pos..];
         let len = rest.find('/').unwrap_or(rest.len());
         if len == 0 {
-            return Err(Status::invalid_argument(format!(
-                "{} \"{}\" has an empty resource id at index {}.",
-                self.what, self.name, self.pos
-            )));
+            return Err(if rest.is_empty() {
+                self.trailing_slash()
+            } else {
+                Status::invalid_argument(format!(
+                    "{} \"{}\" lacks a {kind} id at index {}.",
+                    self.what, self.name, self.pos
+                ))
+            });
         }
         self.pos += len;
         Ok(&rest[..len])
     }
 
+    fn trailing_slash(&self) -> Status {
+        Status::invalid_argument(format!(
+            "{} \"{}\" has invalid trailing \"/\".",
+            self.what, self.name
+        ))
+    }
+
     fn end(&self) -> Result<(), Status> {
         if self.at_end() {
             Ok(())
+        } else if &self.name[self.pos..] == "/" {
+            Err(self.trailing_slash())
         } else {
             Err(Status::invalid_argument(format!(
                 "{} \"{}\" has unexpected trailing characters at index {}.",
@@ -279,6 +303,30 @@ mod tests {
                 "projects/p-dot-id/databases/(default)/documents/c/."
             )),
             "Document name \"projects/p-dot-id/databases/(default)/documents/c/.\" contains a resource id \".\" at index 50."
+        );
+        assert_eq!(
+            err(document("projects/p/databases/d/documents//a")),
+            "Document name \"projects/p/databases/d/documents//a\" lacks a collection id at index 33."
+        );
+        assert_eq!(
+            err(document("projects/p/databases/d/documents/c//")),
+            "Document name \"projects/p/databases/d/documents/c//\" lacks a resource id at index 35."
+        );
+        assert_eq!(
+            err(document("projects/p/databases/d/documents/c/a/")),
+            "Document name \"projects/p/databases/d/documents/c/a/\" has invalid trailing \"/\"."
+        );
+        assert_eq!(
+            err(parent("projects/p/databases/d/documents/")),
+            "Document parent name \"projects/p/databases/d/documents/\" is invalid: Omit trailing \"/\"."
+        );
+        assert_eq!(
+            database("projects//databases/d").unwrap_err().message(),
+            "Database name \"projects//databases/d\" lacks a project id at index 9."
+        );
+        assert_eq!(
+            database("projects/p/databases/d/").unwrap_err().message(),
+            "Database name \"projects/p/databases/d/\" has invalid trailing \"/\"."
         );
         assert_eq!(
             err(parent("projects/pn/databases/(default)/documents/p")),

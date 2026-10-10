@@ -729,12 +729,19 @@ async fn listing_documents_and_collections() {
         .into_inner();
     assert_eq!(first.collection_ids, ["ghost"]);
     let next = c
-        .list_collection_ids(as_admin(ids(root, 1, first.next_page_token)))
+        .list_collection_ids(as_admin(ids(root.clone(), 1, first.next_page_token)))
         .await
         .unwrap()
         .into_inner();
     assert_eq!(next.collection_ids, ["users"]);
-    assert!(next.next_page_token.is_empty());
+    // A full page has a next page, empty here, as on the official emulator.
+    let last = c
+        .list_collection_ids(as_admin(ids(root, 1, next.next_page_token)))
+        .await
+        .unwrap()
+        .into_inner();
+    assert!(last.collection_ids.is_empty());
+    assert!(last.next_page_token.is_empty());
 }
 
 #[tokio::test]
