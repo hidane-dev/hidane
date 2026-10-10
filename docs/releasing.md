@@ -27,6 +27,10 @@ sha256sum --check --ignore-missing sha256sums.txt
 gh attestation verify hidane-<version>-<target>.tar.gz --repo hidane-dev/hidane
 ```
 
+The macOS binaries are not signed or notarized yet. Archives fetched with `curl`, Homebrew or
+`gh` run as they are; one downloaded through a browser carries the quarantine attribute, which
+`xattr -d com.apple.quarantine hidane` removes.
+
 ## Cutting a release
 
 1. Set `version` in the workspace `Cargo.toml` and merge it.
