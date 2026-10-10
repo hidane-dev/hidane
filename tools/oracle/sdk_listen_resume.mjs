@@ -61,6 +61,8 @@ await step('offline again, nothing changes, online again', async () => {
   await enableNetwork(web);
 });
 
+// Listeners fire in no particular order: list them by name.
+for (const s of steps) s.listeners = Object.fromEntries(Object.keys(s.listeners).sort().map((k) => [k, s.listeners[k]]));
 console.log(JSON.stringify(steps, null, 1));
 await terminate(web);
 await admin.terminate();

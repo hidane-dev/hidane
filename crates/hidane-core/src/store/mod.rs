@@ -244,6 +244,14 @@ pub trait Store: Send + Sync {
         write: &mut dyn FnMut(&mut dyn WriteBatch) -> Result<(), StoreError>,
     ) -> Result<Commit, StoreError>;
 
-    /// Drops every database (`POST /reset`).
+    /// Drops every document of `database` and every older version, at a time after its last
+    /// commit, which it returns: later commits are later still, so listeners can order the
+    /// clear among them.
+    fn clear_database(&self, database: &str) -> ReadTime;
+
+    /// The databases that hold or held documents.
+    fn database_names(&self) -> Vec<String>;
+
+    /// Drops every database.
     fn clear(&self);
 }

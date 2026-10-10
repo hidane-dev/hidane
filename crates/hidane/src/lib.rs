@@ -28,9 +28,10 @@ use std::{
 use axum::{
     Router,
     body::Body,
-    extract::State,
-    http::StatusCode,
-    routing::{get, post},
+    extract::{Path, State},
+    http::{StatusCode, header},
+    response::{IntoResponse, Response},
+    routing::{delete, get, post},
 };
 use hidane_core::store::{MemoryStore, Store};
 use hidane_proto::google::firestore::v1::firestore_server::FirestoreServer;
@@ -74,6 +75,14 @@ impl Default for Admin {
 }
 
 impl Admin {
+    fn firestore(&self) -> FirestoreService {
+        FirestoreService::with_state(
+            Arc::clone(&self.store),
+            Arc::clone(&self.transactions),
+            Arc::clone(&self.changes),
+        )
+    }
+
     pub fn new(store: Arc<dyn Store>) -> Self {
         Self {
             store,
@@ -115,6 +124,18 @@ pub fn http_routes(admin: Admin) -> Router {
         )
         .route("/reset", post(reset).fallback(not_found))
         .route("/shutdown", post(shutdown).fallback(not_found))
+        .route(
+            "/emulator/v1/projects/{project}/databases/{database}/documents",
+            delete(clear_database).fallback(not_found),
+        )
+        .route(
+            "/emulator/v1/projects/{project}/databases/{database}/documents/",
+            delete(clear_database).fallback(not_found),
+        )
+        .route(
+            "/emulator/v1/projects/{project}/databases/{database}/documents/{*path}",
+            delete(delete_tree).fallback(not_found),
+        )
         .fallback(not_found)
         .with_state(admin)
 }
@@ -125,11 +146,69 @@ async fn not_found() -> (StatusCode, &'static str) {
 
 async fn reset(State(admin): State<Admin>) -> &'static str {
     // Every document of every project, and every open transaction with its locks, as on the
-    // official emulator. Notifying open Listen streams is #33.
-    admin.store.clear();
-    admin.transactions.clear();
-    admin.changes.reset();
+    // official emulator; attached listeners see the documents go, which the official emulator
+    // does not tell them.
+    admin.firestore().reset().await;
     "Resetting...\n"
+}
+
+/// `DELETE /emulator/v1/projects/{p}/databases/{d}/documents`, what `clearFirestore()` of
+/// rules-unit-testing and the Emulator UI's "Clear all data" call. No authentication needed,
+/// as on the official emulator.
+async fn clear_database(
+    State(admin): State<Admin>,
+    Path((project, database)): Path<(String, String)>,
+) -> Response {
+    admin
+        .firestore()
+        .clear_database(&format!("projects/{project}/databases/{database}"))
+        .await;
+    empty_json()
+}
+
+/// `DELETE /emulator/v1/projects/{p}/databases/{d}/documents/{path}`: the Emulator UI's
+/// recursive delete of a document or collection.
+async fn delete_tree(
+    State(admin): State<Admin>,
+    Path((project, database, path)): Path<(String, String, String)>,
+) -> Response {
+    let database = format!("projects/{project}/databases/{database}");
+    match admin.firestore().delete_tree(&database, &path).await {
+        Ok(()) => empty_json(),
+        Err(status) => error_json(&status),
+    }
+}
+
+/// The official emulator's empty success body.
+fn empty_json() -> Response {
+    ([(header::CONTENT_TYPE, "application/json")], "{\n}\n").into_response()
+}
+
+/// The official emulator's error body (one line; it escapes `/` as Java does).
+fn error_json(status: &tonic::Status) -> Response {
+    let (http, name) = match status.code() {
+        tonic::Code::InvalidArgument => (StatusCode::BAD_REQUEST, "INVALID_ARGUMENT"),
+        tonic::Code::NotFound => (StatusCode::NOT_FOUND, "NOT_FOUND"),
+        tonic::Code::Aborted => (StatusCode::CONFLICT, "ABORTED"),
+        tonic::Code::FailedPrecondition => (StatusCode::BAD_REQUEST, "FAILED_PRECONDITION"),
+        _ => (StatusCode::INTERNAL_SERVER_ERROR, "INTERNAL"),
+    };
+    let mut message = String::new();
+    for c in status.message().chars() {
+        match c {
+            '"' => message.push_str("\\\""),
+            '\\' => message.push_str("\\\\"),
+            '/' => message.push_str("\\/"),
+            '\n' => message.push_str("\\n"),
+            c if u32::from(c) < 0x20 => message.push_str(&format!("\\u{:04x}", u32::from(c))),
+            c => message.push(c),
+        }
+    }
+    let body = format!(
+        "{{\"error\":{{\"code\":{},\"message\":\"{message}\",\"status\":\"{name}\"}}}}",
+        http.as_u16()
+    );
+    (http, [(header::CONTENT_TYPE, "application/json")], body).into_response()
 }
 
 async fn shutdown(State(admin): State<Admin>) -> &'static str {

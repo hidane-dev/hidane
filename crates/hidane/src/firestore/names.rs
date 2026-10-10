@@ -47,6 +47,11 @@ pub fn parent(name: &str) -> Result<Name, Status> {
     parse(name, Shape::Parent)
 }
 
+/// Parses the name of a document or a collection (any number of path segments).
+pub fn any(name: &str) -> Result<Name, Status> {
+    parse(name, Shape::Any)
+}
+
 /// Validates the collection ID of a query's `from`. The empty ID (a query over every
 /// collection) is the caller's business.
 pub fn query_collection_id(id: &str) -> Result<(), Status> {
@@ -76,12 +81,14 @@ pub fn validate_id(id: &str) -> Result<(), Status> {
 enum Shape {
     Document,
     Parent,
+    Any,
 }
 
 fn parse(name: &str, shape: Shape) -> Result<Name, Status> {
     let what = match shape {
         Shape::Document => "Document name",
         Shape::Parent => "Document parent name",
+        Shape::Any => "Resource name",
     };
     let mut cursor = Cursor::new(name, what);
     cursor.literal("projects")?;
@@ -103,6 +110,7 @@ fn parse(name: &str, shape: Shape) -> Result<Name, Status> {
             let allowed = match shape {
                 Shape::Document => complete && !segments.is_empty(),
                 Shape::Parent => complete,
+                Shape::Any => true,
             };
             if !allowed {
                 return Err(cursor.lacks("/"));
