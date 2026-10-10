@@ -3,21 +3,23 @@
 Thanks for your interest in hidane (火種). This document explains where the
 project currently stands and how to get involved.
 
-## Project status: Phase 0 (research)
+## Project status: pre-release
 
-hidane is in **Phase 0**. We are still investigating the official Firestore
-emulator's behaviour (wire protocol, Security Rules semantics, import/export
-format) and sketching the architecture. There is no runnable emulator yet, and
-the `reserve/` directory only holds name-reservation placeholders for
-crates.io, npm and pub.dev.
+The emulator runs from source (`cargo run --release -p hidane`) and serves the
+Firestore API over gRPC, REST and WebChannel. Each feature is built issue by
+issue: the official emulator's behaviour is recorded first (`tools/oracle/`),
+then implemented and replayed by the test suite. Security Rules, import /
+export and launching under `firebase-tools` are still ahead, and there is no
+release yet; the `reserve/` directory only holds name-reservation placeholders
+for crates.io, npm and pub.dev.
 
 What this means for contributions right now:
 
 - **Open an issue before sending a PR.** Unsolicited pull requests may be
   closed, simply because the code they touch might be about to change shape.
   Issues let us agree on the direction first.
-- Research findings are very welcome. Use the `research` label, or start a
-  thread in GitHub Discussions.
+- Findings about the official emulator are very welcome. Use the `research`
+  label, or start a thread in GitHub Discussions.
 - Observed differences between hidane and the official emulator should be
   filed with the **Parity gap** issue template.
 

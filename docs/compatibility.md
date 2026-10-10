@@ -1,29 +1,29 @@
 # Client compatibility
 
 Which clients can talk to hidane depends on the transport each SDK uses when it is pointed at an
-emulator. Phase 0 read the SDK sources to settle this; the conclusions are below. Status reflects
-the [ROADMAP](ROADMAP.md): nothing is implemented yet.
-
-Status legend: **planned (v0.1)** gRPC only · **planned (v0.2)** Security Rules · **planned (v0.3)** WebChannel
+emulator. Phase 0 read the SDK sources to settle this; the conclusions are below. The status
+column says what `main` does today: **verified** means the client's results were compared with the
+official emulator's (`results/`); **not verified** means hidane serves its transport but nobody has
+run that client against it yet. Nothing is released yet.
 
 ## Transport required by each client
 
 | Client | Transport used against an emulator | hidane status |
 |---|---|---|
-| firebase-admin (Node) / `@google-cloud/firestore` (default settings) | gRPC (plaintext). `listen` is always gRPC even with `preferRest` | planned (v0.1) |
-| `@google-cloud/firestore` with `preferRest: true` or `FIRESTORE_PREFER_REST=true` | REST for unary calls, gRPC for `listen` | planned (v0.1, REST is a v0.1 stretch item) |
-| google-cloud-go `firestore` | gRPC. `NewRESTClient` does not support the emulator | planned (v0.1) |
-| google-cloud-firestore (Python) | gRPC | planned (v0.1) |
-| java-firestore | gRPC | planned (v0.1) |
-| firebase-ios-sdk (iOS, macOS, tvOS, watchOS) | gRPC. Uses the Listen and Write streams | planned (v0.1) |
-| firebase-android-sdk | gRPC (grpc-okhttp). Uses the Listen and Write streams | planned (v0.1) |
-| FlutterFire `cloud_firestore` on Android / iOS / macOS / Windows | Native SDK (gRPC) | planned (v0.1) |
-| Firebase C++ SDK / Unity | iOS C++ core or Android SDK (gRPC) | planned (v0.1) |
-| firebase-js-sdk imported **in Node** | gRPC (`@grpc/grpc-js`) | planned (v0.1) |
-| firebase-js-sdk **Lite** (`firebase/firestore/lite`, any platform) | REST (`fetch`) only | planned (v0.1 stretch: REST) |
-| firebase-js-sdk **in the browser** | **WebChannel** for Listen and Write (this includes `getDoc`, `getDocs`, `setDoc`, `updateDoc`, `deleteDoc`, `writeBatch`), REST for `runTransaction`, aggregate queries and pipelines | on `main` since #71, ahead of v0.3 ([webchannel.md](webchannel.md)) |
-| FlutterFire `cloud_firestore_web` | Same as firebase-js-sdk in the browser | on `main` through WebChannel; not verified yet (#75) |
-| Emulator UI, `curl`, `firebase-tools` itself | REST and emulator-specific HTTP endpoints | planned (v0.1) |
+| firebase-admin (Node) / `@google-cloud/firestore` (default settings) | gRPC (plaintext). `listen` is always gRPC even with `preferRest` | verified |
+| `@google-cloud/firestore` with `preferRest: true` or `FIRESTORE_PREFER_REST=true` | REST for unary calls, gRPC for `listen` | not verified (both transports served) |
+| google-cloud-go `firestore` | gRPC. `NewRESTClient` does not support the emulator | not verified |
+| google-cloud-firestore (Python) | gRPC | not verified |
+| java-firestore | gRPC | not verified |
+| firebase-ios-sdk (iOS, macOS, tvOS, watchOS) | gRPC. Uses the Listen and Write streams | not verified |
+| firebase-android-sdk | gRPC (grpc-okhttp). Uses the Listen and Write streams | not verified |
+| FlutterFire `cloud_firestore` on Android / iOS / macOS / Windows | Native SDK (gRPC) | not verified |
+| Firebase C++ SDK / Unity | iOS C++ core or Android SDK (gRPC) | not verified |
+| firebase-js-sdk imported **in Node** | gRPC (`@grpc/grpc-js`) | verified |
+| firebase-js-sdk **Lite** (`firebase/firestore/lite`, any platform) | REST (`fetch`) only | verified |
+| firebase-js-sdk **in the browser** | **WebChannel** for Listen and Write (this includes `getDoc`, `getDocs`, `setDoc`, `updateDoc`, `deleteDoc`, `writeBatch`), REST for `runTransaction`, aggregate queries and pipelines | verified in Chromium ([webchannel.md](webchannel.md)) |
+| FlutterFire `cloud_firestore_web` | Same as firebase-js-sdk in the browser | not verified (#75) |
+| Emulator UI, `curl`, `firebase-tools` itself | REST and emulator-specific HTTP endpoints | REST and the emulator's endpoints served; the UI not verified end to end (#38); launching under `firebase-tools` not yet (#13) |
 
 So with v0.1 (gRPC only) the server-side SDKs, the mobile SDKs and Node-based test suites work.
 Browser apps need WebChannel as well as REST, because the Web SDK does almost everything over

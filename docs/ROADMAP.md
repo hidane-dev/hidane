@@ -23,13 +23,16 @@
 
 ## 1. Targets (proposed)
 
-| Metric | Official (measured) | hidane target |
-|---|---|---|
-| Time until the port accepts | 0.74 s (2.5 s via firebase-tools) | < 100 ms |
-| RSS idle | 95 MiB | < 50 MiB |
-| RSS after 1,000 documents | 456 MiB | < 100 MiB |
-| Write cost with a listener attached | grows with total document count | O(changed documents), independent of total |
-| Java | 21+ required | not required (single binary) |
+| Metric | Official (measured) | hidane target | hidane on `main` (measured) |
+|---|---|---|---|
+| Time until the port accepts | 0.74 s (2.5 s via firebase-tools) | < 100 ms | 5.5 ms (direct) |
+| RSS idle | 95 MiB | < 50 MiB | 7.4 MiB |
+| RSS after 1,000 documents | 456 MiB | < 100 MiB | 21 MiB |
+| Write cost with a listener attached | grows with total document count | O(changed documents), independent of total | flat per batch: 100k documents in 4.9 s |
+| Java | 21+ required | not required (single binary) | not required |
+
+The measurements were not taken side by side (see `docs/why.md`); #50 re-measures both on one
+quiet machine.
 
 ## 2. v0.1 — gRPC core, no rules
 

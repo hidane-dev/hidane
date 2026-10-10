@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>hidane — Java 不要の Firestore エミュレータ</title>
-<meta name="description" content="hidane（火種）は、公式の Cloud Firestore エミュレータを置き換える Rust 製の単一バイナリです。JVM は要りません。ミリ秒で起動します。Phase 0: 調査中。">
+<meta name="description" content="hidane（火種）は、公式の Cloud Firestore エミュレータを置き換える Rust 製の単一バイナリです。JVM は要りません。ミリ秒で起動します。リリース前（ソースから動かせます）。">
 <link rel="canonical" href="https://hidane.dev/ja/">
 <link rel="alternate" hreflang="en" href="https://hidane.dev/">
 <link rel="alternate" hreflang="ja" href="https://hidane.dev/ja/">
@@ -64,13 +64,13 @@
 <div class="install">
 <div class="install-box" aria-disabled="true">
 <code class="cmd"><span class="prompt" aria-hidden="true">$ </span>curl -fsSL https://hidane.dev/install.sh | sh</code>
-<span class="badge">まだ利用できません — Phase 0</span>
-<button type="button" class="copy-btn" disabled aria-disabled="true" title="まだインストールできるものがないため、コピーは無効です">
+<span class="badge">まだ利用できません — リリース前</span>
+<button type="button" class="copy-btn" disabled aria-disabled="true" title="まだリリースがないため、コピーは無効です">
 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V6a2 2 0 0 1 2-2h9"></path></svg>
 <span>コピー</span>
 </button>
 </div>
-<p class="note">まだインストールできるものがないため、コピーは無効にしています。最初のリリースからこの行が使えるようになります。</p>
+<p class="note">まだリリースがないため、コピーは無効にしています。それまでは<a href="https://github.com/hidane-dev/hidane#readme">ソースからビルド</a>してください。最初のリリースからこの行が使えるようになります。</p>
 </div>
 
 <div class="ctas">
@@ -81,7 +81,7 @@
 </a>
 </div>
 
-<p class="status"><span class="dot" aria-hidden="true"></span><span>Phase 0 · 調査中 · リリースはまだありません</span></p>
+<p class="status"><span class="dot" aria-hidden="true"></span><span>リリース前 · ソースから動かせます · リリースはまだありません</span></p>
 </div>
 
 <div class="motif" aria-hidden="true">
@@ -103,17 +103,17 @@
 <article class="card">
 <div class="card-num">0.74 s · 95 MiB</div>
 <h3>起動に 0.74 秒、アイドルで 95 MiB</h3>
-<p>公式エミュレータは、ポートを開くまでに 0.74 秒（CLI 経由では 2.5 秒）かかり、アイドル時に 95 MiB を使います。hidane の目標は 100 ms 未満、50 MiB 未満です。</p>
+<p>公式エミュレータは、ポートを開くまでに 0.74 秒（CLI 経由では 2.5 秒）かかり、アイドル時に 95 MiB を使います。main の hidane は 5.5 ms、7.4 MiB です。</p>
 <a class="src" href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md#2-startup-and-memory">出典: 実測値と生ログ（英語）</a>
 </article>
 <article class="card">
 <div class="card-num">11 倍</div>
 <h3>データが増えると書き込みが遅くなる</h3>
-<p>リスナーを接続した状態では、公式エミュレータのバッチ書き込みがドキュメントの総数に比例して遅くなります。100k 件では 11 倍です。hidane は、commit のコストが変更した件数だけで決まるように設計しています。</p>
+<p>リスナーを接続した状態では、公式エミュレータのバッチ書き込みがドキュメントの総数に比例して遅くなります。100k 件では 11 倍です。hidane は、commit のコストが変更した件数だけで決まるように設計しています。同じ 10 万件は 4.9 秒で、バッチごとの時間は一定です。</p>
 <a class="src" href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md#3-writes-slow-down-while-a-listener-is-attached">出典: 実測値と生ログ（英語）</a>
 </article>
 </div>
-<p class="fine">公式エミュレータの数値は実測値です。hidane の数値は目標であり、結果ではありません。背景は <a href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md">Why hidane</a>（英語）にまとめています。</p>
+<p class="fine">数値はすべて実測値ですが、同じ条件での比較ではありません。hidane はのちに負荷の少ないマシンで測りました。同一マシンでの比較は今後行います。背景は <a href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md">Why hidane</a>（英語）にまとめています。</p>
 </div>
 </section>
 
@@ -121,36 +121,37 @@
 <div class="wrap sec-in sec-in--tight">
 <h2 class="h2" id="works">対応クライアント</h2>
 <div class="legend">
-<span>現時点では、すべて planned です。</span>
+<span>最初のリリース前、main での状態です。</span>
 <span class="legend-chips">
 <span class="chip">planned</span>
-<span class="chip chip--progress">in progress</span>
-<span class="chip chip--supported">supported</span>
+<span class="chip chip--progress">not verified</span>
+<span class="chip chip--supported">verified</span>
 </span>
 </div>
 <div class="rows" role="list">
-<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">firebase-admin (Node)</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">@google-cloud/firestore</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">Go</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">Python</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">Java</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">iOS</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">Android</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">Flutter（モバイル / デスクトップ）</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.1</span><span class="row-label">firebase-js-sdk（Node 上）</span><span class="chip">planned</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">firebase-admin (Node)</span><span class="chip chip--supported">verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">@google-cloud/firestore</span><span class="chip chip--supported">verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">firebase-js-sdk（Node 上）</span><span class="chip chip--supported">verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">REST</span><span class="row-label">firebase-js-sdk Lite</span><span class="chip chip--supported">verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">WebChannel</span><span class="row-label">firebase-js-sdk（ブラウザ）</span><span class="chip chip--supported">verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Go</span><span class="chip chip--progress">not verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Python</span><span class="chip chip--progress">not verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Java</span><span class="chip chip--progress">not verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">iOS</span><span class="chip chip--progress">not verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Android</span><span class="chip chip--progress">not verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Flutter（モバイル / デスクトップ）</span><span class="chip chip--progress">not verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">WebChannel</span><span class="row-label">Flutter Web</span><span class="chip chip--progress">not verified</span></div>
 <div class="row" role="listitem"><span class="row-ver">v0.2</span><span class="row-label">Security Rules</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.3</span><span class="row-label">firebase-js-sdk（ブラウザ）</span><span class="chip">planned</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.3</span><span class="row-label">Flutter Web</span><span class="chip">planned</span></div>
 </div>
-<p class="fine">各 SDK が必要とするトランスポートと、ブラウザが v0.3 になる理由は <a href="https://github.com/hidane-dev/hidane/blob/main/docs/compatibility.md">compatibility</a>（英語）を参照してください。</p>
+<p class="fine">verified は、そのクライアントの結果を公式エミュレータと突き合わせて確認したものです。not verified は、hidane がそのトランスポートを提供しているものの、まだ誰もそのクライアントで動かしていないものです。各 SDK が必要とするトランスポートは <a href="https://github.com/hidane-dev/hidane/blob/main/docs/compatibility.md">compatibility</a>（英語）を参照してください。</p>
 </div>
 </section>
 
 <section class="sec" aria-labelledby="parity">
 <div class="wrap sec-in sec-in--narrow">
 <h2 class="h2" id="parity">Parity</h2>
-<p class="lede-lg">hidane は公式エミュレータをオラクルとして扱います。同じテストスイートを両方に流し、結果を parity 表として公開します。テストの裏付けがない互換性は主張しません。</p>
-<p class="placeholder">parity の結果は、v0.1 のあとにここへ掲載します。</p>
+<p class="lede-lg">hidane は公式エミュレータをオラクルとして扱います。公式の応答を記録し、テストスイートがその記録をすべて hidane に対して再生します。テストの裏付けがない互換性は主張しません。</p>
+<p class="placeholder">現時点で、値の順序からブラウザ用のトランスポートまで 16 件の記録を再生しており、SDK の結果も両方で突き合わせています（<a href="https://github.com/hidane-dev/hidane/tree/main/results">results</a>）。parity 表は今後掲載します。</p>
 <p class="fine">意図的に公式と違える点は <a href="https://github.com/hidane-dev/hidane/blob/main/docs/parity-exceptions.md">parity exceptions</a>（英語）に一覧があります。</p>
 </div>
 </section>
@@ -171,7 +172,7 @@
 </li>
 <li>
 <div class="rm-ver">v0.3</div>
-<p>ブラウザのクライアント。ブラウザ上の firebase-js-sdk と Flutter Web に対応します。</p>
+<p>ブラウザのクライアント。ブラウザ上の firebase-js-sdk（main ではすでに動作）と Flutter Web に対応します。</p>
 <a class="src" href="https://github.com/hidane-dev/hidane/milestone/3">GitHub の v0.3 マイルストーン</a>
 </li>
 </ol>
