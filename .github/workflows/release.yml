@@ -67,7 +67,7 @@ jobs:
           bin="target/$TARGET/release/hidane"
           "$bin" --version
           if [[ "$TARGET" == *linux-musl ]]; then
-            file "$bin" | tee /dev/stderr | grep -q "statically linked"
+            file "$bin" | tee /dev/stderr | grep -Eq "statically linked|static-pie linked"
           fi
       - name: Package
         id: package
