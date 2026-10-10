@@ -2,14 +2,17 @@
 
 use std::{
     collections::{BTreeMap, BTreeSet, HashMap},
-    ops::Bound,
+    ops::{Bound, ControlFlow},
     sync::{Arc, PoisonError, RwLock},
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
 use hidane_proto::google::firestore::v1::Value;
 
-use super::{Change, Commit, ReadTime, Store, StoreError, StoredDocument, Visit, WriteBatch};
+use super::{
+    Change, Commit, ListItem, ListOptions, ReadTime, Store, StoreError, StoredDocument, Visit,
+    WriteBatch,
+};
 use crate::{
     key::{encode_escaped, encode_path, encode_path_prefix, path_subtree_end},
     path::ResourcePath,
@@ -35,6 +38,15 @@ struct Database {
     /// `encode_escaped(collection id) ++ encode_path(document path)` for every key in
     /// `documents`, so a collection group is one key range in full-path order.
     groups: BTreeSet<Vec<u8>>,
+}
+
+impl Database {
+    /// Whether any document at or below `prefix` exists at `time`.
+    fn subtree_has_live(&self, prefix: &[u8], time: i64) -> bool {
+        self.documents
+            .range(prefix.to_vec()..path_subtree_end(prefix))
+            .any(|(_, record)| record.at(time).is_some())
+    }
 }
 
 struct Record {
@@ -137,6 +149,14 @@ impl Store for MemoryStore {
         ReadTime((self.clock)().max(last))
     }
 
+    fn earliest_read_time(&self, database: &str) -> ReadTime {
+        ReadTime(
+            self.latest_read_time(database)
+                .0
+                .saturating_sub(self.retention_micros),
+        )
+    }
+
     fn get(
         &self,
         database: &str,
@@ -151,34 +171,47 @@ impl Store for MemoryStore {
         })
     }
 
-    fn scan_collection(
+    fn list_collection(
         &self,
         database: &str,
         collection: &ResourcePath,
         at: ReadTime,
-        visit: &mut Visit<'_>,
+        options: ListOptions<'_>,
+        visit: &mut dyn FnMut(ListItem<'_>) -> ControlFlow<()>,
     ) {
         self.read(database, (), |db| {
             let prefix = encode_path_prefix(collection.segments());
             let end = Bound::Excluded(path_subtree_end(&prefix));
             let depth = collection.len() + 1;
-            let mut start = Bound::Included(prefix);
-            'scan: loop {
-                for (_, record) in db.documents.range((start.clone(), end.clone())) {
-                    if record.path.len() == depth {
-                        if let Some(doc) = record.at(at.0)
-                            && visit(doc).is_break()
-                        {
-                            return;
-                        }
-                    } else {
-                        // A subcollection document: jump past that child's whole subtree.
-                        let child = encode_path_prefix(record.path.segments().take(depth));
-                        start = Bound::Included(path_subtree_end(&child));
-                        continue 'scan;
-                    }
+            let mut start = match options.after {
+                Some(after) => {
+                    Bound::Included(path_subtree_end(&encode_path_prefix(after.segments())))
                 }
-                return;
+                None => Bound::Included(prefix),
+            };
+            'scan: loop {
+                // Each pass handles one child of the collection, then seeks past its subtree.
+                let Some((_, record)) = db.documents.range((start.clone(), end.clone())).next()
+                else {
+                    return;
+                };
+                let child = encode_path_prefix(record.path.segments().take(depth));
+                let live = (record.path.len() == depth)
+                    .then(|| record.at(at.0))
+                    .flatten();
+                let flow = match live {
+                    Some(doc) => visit(ListItem::Document(doc)),
+                    None if options.include_missing && db.subtree_has_live(&child, at.0) => {
+                        let path = ResourcePath::from_segments(record.path.segments().take(depth));
+                        visit(ListItem::Missing(&path))
+                    }
+                    None => ControlFlow::Continue(()),
+                };
+                if flow.is_break() {
+                    return;
+                }
+                start = Bound::Included(path_subtree_end(&child));
+                continue 'scan;
             }
         });
     }

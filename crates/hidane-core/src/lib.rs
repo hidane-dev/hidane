@@ -4,7 +4,7 @@
 //!   names (`__name__`).
 //! - [`key`]: an order-preserving byte encoding of the same order, for storage keys and indexes:
 //!   `compare(a, b) == encode(a).cmp(&encode(b))` for every pair of values.
-//! - [`path`]: document and collection paths.
+//! - [`path`]: document and collection paths; [`field_path`]: field paths and mask operations.
 //! - [`store`]: the storage boundary and the in-memory engine (versioned documents, snapshot
 //!   reads, commits that report what changed).
 //! - [`normalize`]: what Firestore does to a value when it is written (timestamps lose their
@@ -13,6 +13,7 @@
 //! Every rule here was checked against the official emulator v1.22.0; the observations live in
 //! `tests/fixtures/value_order.json` and are regenerated with `tools/oracle/value_order.py`.
 
+pub mod field_path;
 pub mod key;
 pub mod normalize;
 pub mod order;

@@ -389,12 +389,16 @@ name = "hidane"
 version = "0.0.0"
 dependencies = [
  "axum",
+ "base64 0.23.1",
  "bytes",
  "clap",
+ "hidane-core",
  "hidane-proto",
  "http-body-util",
  "hyper",
  "hyper-util",
+ "prost-types",
+ "serde_json",
  "tokio",
  "tokio-stream",
  "tonic",

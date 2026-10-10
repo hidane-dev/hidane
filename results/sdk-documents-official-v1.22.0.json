@@ -1,0 +1,148 @@
+[
+ {
+  "name": "set alice",
+  "ok": "ok"
+ },
+ {
+  "name": "get alice",
+  "ok": {
+   "exists": true,
+   "data": {
+    "name": "Alice",
+    "age": 30,
+    "tags": [
+     "a",
+     "b"
+    ],
+    "nested": {
+     "x": 1
+    }
+   },
+   "createEqualsUpdate": true,
+   "updateEqualsWrite": true
+  }
+ },
+ {
+  "name": "update dotted",
+  "ok": {
+   "name": "Alice",
+   "tags": [
+    "a",
+    "b"
+   ],
+   "nested": {
+    "x": 1,
+    "y": 2
+   },
+   "age": 31
+  }
+ },
+ {
+  "name": "set merge",
+  "ok": {
+   "name": "Alice",
+   "tags": [
+    "a",
+    "b"
+   ],
+   "age": 31,
+   "city": "Tokyo",
+   "nested": {
+    "x": 1,
+    "y": 2,
+    "z": 3
+   }
+  }
+ },
+ {
+  "name": "create existing",
+  "error": {
+   "code": 6,
+   "message": "entity already exists: EntityRef[partitionRef=dev~demo-sdk-diff, path=/users/alice]"
+  }
+ },
+ {
+  "name": "update missing",
+  "error": {
+   "code": 5,
+   "message": "no entity to update: app: \"dev~demo-sdk-diff\"\npath <\n  Element {\n    type: \"users\"\n    name: \"nobody\"\n  }\n>\n"
+  }
+ },
+ {
+  "name": "delete with stale lastUpdateTime",
+  "error": {
+   "code": 9,
+   "message": "the stored version (<n>) does not match the required base version (<n>)"
+  }
+ },
+ {
+  "name": "identical set keeps updateTime",
+  "ok": {
+   "writeTimeIsOldUpdateTime": true,
+   "updateTimeUnchanged": true
+  }
+ },
+ {
+  "name": "getAll",
+  "ok": [
+   {
+    "id": "nobody",
+    "exists": false
+   },
+   {
+    "id": "alice",
+    "exists": true
+   }
+  ]
+ },
+ {
+  "name": "batch",
+  "ok": 5
+ },
+ {
+  "name": "listDocuments users",
+  "ok": [
+   "bob",
+   "carol"
+  ]
+ },
+ {
+  "name": "listDocuments ghosts (missing parent)",
+  "ok": [
+   "g"
+  ]
+ },
+ {
+  "name": "listCollections root",
+  "ok": [
+   "ghosts",
+   "users"
+  ]
+ },
+ {
+  "name": "listCollections bob",
+  "ok": [
+   "posts"
+  ]
+ },
+ {
+  "name": "bulkWriter",
+  "ok": [
+   "ok",
+   "error 6",
+   "error 5",
+   "ok"
+  ]
+ },
+ {
+  "name": "after bulkWriter",
+  "ok": [
+   "bob",
+   "dave"
+  ]
+ },
+ {
+  "name": "serverTimestamp (transforms, #23)",
+  "ok": "ok"
+ }
+]

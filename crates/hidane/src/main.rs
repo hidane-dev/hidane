@@ -83,7 +83,8 @@ async fn main() -> ExitCode {
             let _ = code_tx.send(code);
         }
     };
-    if let Err(err) = hidane::serve(listeners, hidane::http_routes(admin), shutdown).await {
+    let grpc = hidane::grpc_routes(admin.store());
+    if let Err(err) = hidane::serve(listeners, grpc, hidane::http_routes(admin), shutdown).await {
         eprintln!("ERROR: server failed: {err}");
         return ExitCode::FAILURE;
     }

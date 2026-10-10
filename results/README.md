@@ -74,3 +74,4 @@ Runs:
 | File | Contents |
 |---|---|
 | `storage-memory-rss-hidane.csv` | RSS of hidane's in-memory store after writing 1k / 100k / 500k / 1M documents shaped like the baseline above (`users/{i}` = `{mykey, myid}`, 500 per commit), in-process, release build, macOS arm64. Produced by `cargo run --release -p hidane-core --example rss`. See ADR 0002 |
+| `sdk-documents-official-v1.22.0.json`, `sdk-documents-hidane.json` | Transcripts of `tools/oracle/sdk_documents.mjs` (`@google-cloud/firestore` 9.3.1) against the official emulator and hidane, for #16 |

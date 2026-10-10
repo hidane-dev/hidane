@@ -32,6 +32,7 @@ use axum::{
     http::StatusCode,
     routing::{get, post},
 };
+use hidane_core::store::{MemoryStore, Store};
 use hidane_proto::google::firestore::v1::firestore_server::FirestoreServer;
 use hyper::{Request, body::Incoming, header::CONTENT_TYPE};
 use hyper_util::{
@@ -51,24 +52,35 @@ pub use firestore::FirestoreService;
 /// firebase-tools waits 4 s after SIGINT before giving up on the process.
 pub const SHUTDOWN_GRACE: Duration = Duration::from_secs(2);
 
-/// Process-level controls reachable over HTTP (`POST /shutdown`, `POST /reset`).
+/// The emulator's state shared by every protocol: the store and the shutdown flag.
 ///
 /// The shutdown request is a sticky flag rather than a one-shot notification, so every waiter
 /// sees it, including one that starts waiting after the request arrived.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Admin {
+    store: Arc<dyn Store>,
     shutdown: Arc<watch::Sender<bool>>,
 }
 
 impl Default for Admin {
+    /// A fresh in-memory store.
     fn default() -> Self {
-        Self {
-            shutdown: Arc::new(watch::Sender::new(false)),
-        }
+        Self::new(Arc::new(MemoryStore::new()))
     }
 }
 
 impl Admin {
+    pub fn new(store: Arc<dyn Store>) -> Self {
+        Self {
+            store,
+            shutdown: Arc::new(watch::Sender::new(false)),
+        }
+    }
+
+    pub fn store(&self) -> Arc<dyn Store> {
+        Arc::clone(&self.store)
+    }
+
     /// Resolves once `POST /shutdown` has been received.
     pub async fn shutdown_requested(&self) {
         let mut requested = self.shutdown.subscribe();
@@ -105,8 +117,9 @@ async fn not_found() -> (StatusCode, &'static str) {
     (StatusCode::NOT_FOUND, "Not Found\n")
 }
 
-async fn reset(State(_admin): State<Admin>) -> &'static str {
-    // Clears every document of every project once storage exists (#33); there is no data yet.
+async fn reset(State(admin): State<Admin>) -> &'static str {
+    // Every document of every project. Notifying open Listen streams is #33.
+    admin.store.clear();
     "Resetting...\n"
 }
 
@@ -118,7 +131,7 @@ async fn shutdown(State(admin): State<Admin>) -> &'static str {
 
 /// gRPC services: `google.firestore.v1.Firestore` plus server reflection (v1 and v1alpha, so
 /// both current and older `grpcurl` versions can list and describe the API).
-pub fn grpc_routes() -> Router {
+pub fn grpc_routes(store: Arc<dyn Store>) -> Router {
     let reflection = || {
         tonic_reflection::server::Builder::configure()
             .register_encoded_file_descriptor_set(hidane_proto::FILE_DESCRIPTOR_SET)
@@ -129,7 +142,7 @@ pub fn grpc_routes() -> Router {
     let reflection_v1alpha = reflection()
         .build_v1alpha()
         .expect("embedded descriptor set is valid");
-    tonic::service::Routes::new(FirestoreServer::new(FirestoreService))
+    tonic::service::Routes::new(FirestoreServer::new(FirestoreService::new(store)))
         .add_service(reflection_v1)
         .add_service(reflection_v1alpha)
         .into_axum_router()
@@ -161,14 +174,14 @@ pub async fn bind(host: &str, port: u16) -> io::Result<Vec<TcpListener>> {
     Ok(vec![TcpListener::bind((host, port)).await?])
 }
 
-/// Serves gRPC and `http` on every listener until `shutdown` resolves, then stops accepting and
-/// gives open connections [`SHUTDOWN_GRACE`] to finish.
+/// Serves `grpc` and `http` on every listener until `shutdown` resolves, then stops accepting
+/// and gives open connections [`SHUTDOWN_GRACE`] to finish.
 pub async fn serve(
     listeners: Vec<TcpListener>,
+    grpc: Router,
     http: Router,
     shutdown: impl Future<Output = ()>,
 ) -> io::Result<()> {
-    let grpc = grpc_routes();
     // HTTP/2 tuning (keepalive, max message size) is tracked in #25; defaults for now.
     let builder = auto::Builder::new(TokioExecutor::new());
     let graceful = GracefulShutdown::new();
