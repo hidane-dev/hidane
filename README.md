@@ -115,6 +115,7 @@ through `hidane exec`.
 - [Roadmap](docs/ROADMAP.md) — scope of v0.1 / v0.2 / v0.3, targets, risks
 - [Decision records](docs/adr/) — storage engine, gRPC stack, WebChannel timing, Rules engine, license (all drafts)
 - [Benchmark results](results/) — the official emulator baseline, hidane's measurements and the SDK differentials
+- [Releasing](docs/releasing.md) — release assets, checksums, provenance and how a release is cut
 
 ## Contributing
 
