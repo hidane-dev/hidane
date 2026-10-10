@@ -27,6 +27,7 @@ Status: Phase 0 draft. Entries will be tagged in the conformance suite (issue #4
 | The Write stream handshake accepts any database name | `INVALID_ARGUMENT` for a malformed name, as other RPCs answer | Bug |
 | A Write stream write to a document of another database is acknowledged, with a write result and a commit time, and stored nowhere | `INVALID_ARGUMENT` "Document "…" is not in database "…".", as Commit answers | Bug (silent data loss) |
 | Document fields come back in the order they were written, nested maps included | In name order | Open, #108 |
+| `find_nearest` reads a vector field path such as `m.v` as one field named `m.v` | Resolves the path (the field `v` of the map `m`), as production and the SDKs do; `` `m.v` `` names the field `m.v` | Bug (nested vector fields could not be searched) |
 | JWT segments in `Authorization` are read with a lenient JSON parser (an unquoted key such as `{a:1}` passes) | Strict JSON: such a token is `invalid jwt` | Clients only send JSON |
 | `DELETE /emulator/v1/…/documents/{path}` with an empty path segment names the parent in its error (`Document parent name "…/c/" has invalid trailing "/".`) | Names the whole path (`Resource name "…" lacks a resource id at index ….`), same status | Wording only |
 | RunAggregationQuery responses carry `done: true`, a field the published protos do not define (visible over REST) | Not sent over gRPC, where clients built from the published protos would drop it; the REST layer (#34) will add it | Not part of the published API |
@@ -58,7 +59,7 @@ Status: Phase 0 draft. Entries will be tagged in the conformance suite (issue #4
 | `PartitionQuery` | 501 `UNIMPLEMENTED` | Supported | Follow the emulator (issue #26) |
 | `ExecutePipeline` | Only with `--database-edition enterprise`; on a standard database `INVALID_ARGUMENT` "ExecutePipeline requires the Database Edition to be \`enterprise\`." | Enterprise edition only | Follow the emulator on standard databases (#26); enterprise pipelines are not implemented in hidane yet (`UNIMPLEMENTED`, #80) |
 | `explain_options` (RunQuery, RunAggregationQuery) | Ignored: the same results, no explain metrics | Explain metrics (plan summary, and execution stats with `analyze`) | Follow the emulator (#26) |
-| `find_nearest` | Runs vector search | Runs vector search | Follow the emulator; not implemented in hidane yet (`UNIMPLEMENTED`, #118) |
+| `find_nearest` | Runs vector search: the query's results nearest first (largest dot product first), ties in the query's order, NaN distances last; the distance field is a literal name (`a.b` is one field); a NaN in the query vector is accepted | Runs vector search | Follow the emulator (#118, `tests/fixtures/find_nearest.json`) |
 | Persistence | In-memory; export / import only | Durable | Follow the emulator (ADR 0002) |
 | Import | `createTime` / `updateTime` are overwritten with the import time | n/a | Follow the emulator |
 

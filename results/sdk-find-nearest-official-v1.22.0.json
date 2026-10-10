@@ -1,0 +1,171 @@
+[
+ {
+  "step": "Admin SDK writes vectors",
+  "result": "ok"
+ },
+ {
+  "step": "findNearest EUCLIDEAN",
+  "result": [
+   [
+    "a",
+    1
+   ],
+   [
+    "b",
+    1
+   ],
+   [
+    "c",
+    1.4142135623730951
+   ],
+   [
+    "e",
+    1.4142135623730951
+   ],
+   [
+    "d",
+    2.8284271247461903
+   ]
+  ]
+ },
+ {
+  "step": "findNearest COSINE",
+  "result": [
+   [
+    "c",
+    0
+   ],
+   [
+    "a",
+    0.29289321881345254
+   ],
+   [
+    "b",
+    0.29289321881345254
+   ],
+   [
+    "d",
+    2
+   ],
+   [
+    "e",
+    null
+   ]
+  ]
+ },
+ {
+  "step": "findNearest DOT_PRODUCT",
+  "result": [
+   [
+    "c",
+    4
+   ],
+   [
+    "a",
+    1
+   ],
+   [
+    "b",
+    1
+   ],
+   [
+    "e",
+    0
+   ],
+   [
+    "d",
+    -2
+   ]
+  ]
+ },
+ {
+  "step": "findNearest with a threshold",
+  "result": [
+   [
+    "a",
+    null
+   ],
+   [
+    "b",
+    null
+   ],
+   [
+    "c",
+    null
+   ],
+   [
+    "e",
+    null
+   ]
+  ]
+ },
+ {
+  "step": "findNearest after a filter",
+  "result": [
+   [
+    "c",
+    null
+   ],
+   [
+    "d",
+    null
+   ],
+   [
+    "e",
+    null
+   ]
+  ]
+ },
+ {
+  "step": "findNearest, limit 2",
+  "result": [
+   [
+    "a",
+    null
+   ],
+   [
+    "b",
+    null
+   ]
+  ]
+ },
+ {
+  "step": "findNearest, limit 0",
+  "error": "undefined undefined"
+ },
+ {
+  "step": "findNearest with a query limit",
+  "error": "3 A query limit cannot be used with FindNearest"
+ },
+ {
+  "step": "Admin SDK writes an empty vector",
+  "error": "3 Cannot have a zero length vector."
+ },
+ {
+  "step": "Admin SDK reads a vector",
+  "result": [
+   2,
+   2
+  ]
+ },
+ {
+  "step": "web SDK writes a vector",
+  "result": "ok"
+ },
+ {
+  "step": "web SDK reads it back",
+  "result": [
+   3,
+   4
+  ]
+ },
+ {
+  "step": "findNearest sees the web write",
+  "result": [
+   [
+    "w",
+    null
+   ]
+  ]
+ }
+]
