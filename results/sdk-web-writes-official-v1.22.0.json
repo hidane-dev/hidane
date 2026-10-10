@@ -1,0 +1,81 @@
+[
+ {
+  "name": "setDoc",
+  "ok": {
+   "n": 1,
+   "s": "x",
+   "tags": [
+    "a"
+   ]
+  }
+ },
+ {
+  "name": "setDoc merge",
+  "ok": {
+   "m": {
+    "x": 1
+   },
+   "n": 1,
+   "s": "x",
+   "tags": [
+    "a"
+   ]
+  }
+ },
+ {
+  "name": "updateDoc with transforms",
+  "ok": {
+   "at": "timestamp",
+   "m": {
+    "x": 1
+   },
+   "n": 3,
+   "tags": [
+    "a",
+    "b"
+   ]
+  }
+ },
+ {
+  "name": "updateDoc of a missing document",
+  "error": {
+   "code": "not-found"
+  }
+ },
+ {
+  "name": "deleteDoc",
+  "ok": null
+ },
+ {
+  "name": "writeBatch",
+  "ok": {
+   "b1": null,
+   "b2": {
+    "n": 2
+   }
+  }
+ },
+ {
+  "name": "fifty writes at once",
+  "ok": {
+   "d0": {
+    "i": 0
+   },
+   "d49": {
+    "i": 49
+   }
+  }
+ },
+ {
+  "name": "fifty increments of one document",
+  "ok": {
+   "n": 50
+  }
+ },
+ {
+  "name": "a write after a failed one",
+  "ok": {
+   "ok": true
+  }
+ }
+]

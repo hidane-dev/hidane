@@ -19,6 +19,7 @@ curl -X POST http://127.0.0.1:8086/shutdown
 | `document_writes.py` | How do document reads and writes answer, including errors, preconditions, masks, paging and admin checks? | `crates/hidane/tests/fixtures/document_writes.json` | `crates/hidane/tests/documents.rs` |
 | `queries.py` | What does RunQuery return for every filter operator on every value type, composite filters, implicit ordering, cursors, offsets, projections, collection groups and queries over every collection, and with which errors? | `crates/hidane/tests/fixtures/queries.json` | `crates/hidane/tests/queries.rs` |
 | `aggregations.py` | What do `count`, `sum` and `avg` return at the edges (integer overflow, NaN, infinities, precision, non-numbers, empty sets), how do they interact with `offset` / `limit`, and which aggregation lists are rejected? | `crates/hidane/tests/fixtures/aggregations.json` | `crates/hidane/tests/aggregations.rs` |
+| `write_stream.mjs` | How does the Write stream answer: handshake, tokens, pipelined batches, empty requests, errors, resumption, locks? Node.js with `@grpc/grpc-js` and `@grpc/proto-loader`, run like the SDK scripts below with the repository's `proto/` directory as its second argument | `crates/hidane/tests/fixtures/write_stream.json` | `crates/hidane/tests/write_stream.rs` |
 | `transactions.py` | What do transactions lock, how long do writes wait, when do transactions end, and how are `verify` writes checked? Scenarios with concurrent steps and timing; needs `grpcurl` on `PATH` and takes about two minutes | `crates/hidane/tests/fixtures/transactions.json` | `crates/hidane/tests/transactions.rs` |
 
 `sdk_documents.mjs` drives the same operations through `@google-cloud/firestore` (the engine of
@@ -39,6 +40,9 @@ cursors, `documentId`, collection groups, `stream`, queries in transactions and
 
 `sdk_aggregations.mjs` does the same for `count()` and `AggregateField.sum` / `average`;
 its transcripts are in `results/sdk-aggregations-*.json`.
+
+`sdk_web_writes.mjs` does the same for writes through the web SDK (`npm i firebase`), which
+sends them over the Write stream; its transcripts are in `results/sdk-web-writes-*.json`.
 
 `sdk_transactions.mjs` does the same for `runTransaction` (server transactions, retries on
 `ABORTED`, lock waits), and `sdk_web_transactions.mjs` for the web SDK (`npm i firebase`), whose

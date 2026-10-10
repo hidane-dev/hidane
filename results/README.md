@@ -26,4 +26,5 @@ tracked in #50.
 | `sdk-aggregations-official-v1.22.0.json`, `sdk-aggregations-hidane.json` | Transcripts of `tools/oracle/sdk_aggregations.mjs` (`@google-cloud/firestore` 9.3.1) against both, for #22. Identical |
 | `sdk-queries-official-v1.22.0.json`, `sdk-queries-hidane.json` | Transcripts of `tools/oracle/sdk_queries.mjs` (`@google-cloud/firestore` 9.3.1) against both, for #21. Identical |
 | `sdk-transactions-official-v1.22.0.json`, `sdk-transactions-hidane.json` | Transcripts of `tools/oracle/sdk_transactions.mjs` (`@google-cloud/firestore` 9.3.1, `runTransaction`) against both, for #17. Identical |
+| `sdk-web-writes-official-v1.22.0.json`, `sdk-web-writes-hidane.json` | Transcripts of `tools/oracle/sdk_web_writes.mjs` (`firebase` 13.0.0: `setDoc`, `updateDoc` with transforms, `deleteDoc`, `writeBatch`, 50 concurrent writes) against both, for #20. Identical (keys sorted, see #108) |
 | `sdk-web-transactions-official-v1.22.0.json`, `sdk-web-transactions-hidane.json` | Transcripts of `tools/oracle/sdk_web_transactions.mjs` (`firebase` 13.0.0, `runTransaction` in Node) against both, for #17. Identical |
