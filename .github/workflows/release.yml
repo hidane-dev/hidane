@@ -1,0 +1,123 @@
+name: Release
+
+# A tag `v<version>` builds every target, checks the tag against the crate version, writes
+# sha256sums.txt, attests each archive's build provenance and creates a **draft** GitHub Release
+# for a maintainer to publish (docs/releasing.md). A pull request that changes this file runs
+# the builds only, as a dry run.
+
+on:
+  push:
+    tags: ["v*"]
+  pull_request:
+    paths: [".github/workflows/release.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: x86_64-unknown-linux-musl, os: ubuntu-24.04, native: true }
+          - { target: aarch64-unknown-linux-musl, os: ubuntu-24.04-arm, native: true }
+          - { target: aarch64-apple-darwin, os: macos-14, native: true }
+          - { target: x86_64-apple-darwin, os: macos-14, native: false }
+          - { target: x86_64-pc-windows-msvc, os: windows-2022, native: true }
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      TARGET: ${{ matrix.target }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Install musl
+        if: contains(matrix.target, 'musl')
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+      - name: Version
+        id: version
+        run: |
+          # `cargo pkgid` ends with `#<version>` or `#hidane@<version>`.
+          crate=$(cargo pkgid -p hidane)
+          crate="${crate##*[#@]}"
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            version="${GITHUB_REF_NAME#v}"
+            if [[ "$version" != "$crate" ]]; then
+              echo "::error::tag v$version does not match the crate version $crate"
+              exit 1
+            fi
+          else
+            version="$crate-dev.${GITHUB_SHA::7}"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - name: Build
+        run: cargo build --release --locked -p hidane --target "$TARGET"
+      - name: Smoke test
+        if: matrix.native
+        run: |
+          bin="target/$TARGET/release/hidane"
+          "$bin" --version
+          if [[ "$TARGET" == *linux-musl ]]; then
+            file "$bin" | tee /dev/stderr | grep -q "statically linked"
+          fi
+      - name: Package
+        id: package
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          name="hidane-$VERSION-$TARGET"
+          mkdir "$name"
+          ext=""
+          [[ "$TARGET" == *windows* ]] && ext=".exe"
+          cp "target/$TARGET/release/hidane$ext" LICENSE README.md "$name/"
+          if [[ "$TARGET" == *windows* ]]; then
+            7z a -tzip "$name.zip" "$name" > /dev/null
+            echo "archive=$name.zip" >> "$GITHUB_OUTPUT"
+          else
+            tar -czf "$name.tar.gz" "$name"
+            echo "archive=$name.tar.gz" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ matrix.target }}
+          path: ${{ steps.package.outputs.archive }}
+          if-no-files-found: error
+
+  release:
+    name: draft release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Checksums
+        working-directory: dist
+        run: sha256sum hidane-* | tee sha256sums.txt
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: dist/hidane-*
+      - name: Draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --draft \
+            --title "hidane ${GITHUB_REF_NAME#v}" \
+            --notes "Draft created by the release workflow. Write the notes before publishing (docs/releasing.md)."
