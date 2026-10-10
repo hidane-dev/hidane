@@ -33,7 +33,8 @@ use crate::FirestoreService;
 
 const INVALID_PAYLOAD: &str = "Payload isn't valid for request.";
 /// Larger than any request the SDKs send.
-const MAX_BODY: usize = 64 * 1024 * 1024;
+/// The largest body the official emulator's REST layer reads; one byte more is `413`.
+const MAX_BODY: usize = 16 * 1024 * 1024;
 
 fn pool() -> &'static DescriptorPool {
     static POOL: OnceLock<DescriptorPool> = OnceLock::new();
@@ -105,7 +106,12 @@ pub async fn handle(
     else {
         return None;
     };
-    let bytes = to_bytes(body, MAX_BODY).await.ok()?;
+    let Ok(bytes) = to_bytes(body, MAX_BODY).await else {
+        // The official emulator's answer to a larger body: no content.
+        let mut response = Response::new(Body::empty());
+        *response.status_mut() = StatusCode::PAYLOAD_TOO_LARGE;
+        return Some(response);
+    };
     let body = if bytes.iter().all(u8::is_ascii_whitespace) {
         Json::Object(Map::new())
     } else {

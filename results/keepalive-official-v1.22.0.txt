@@ -1,0 +1,8 @@
+# tools/oracle/keepalive.mjs: a client pinging every 10 s for 70 s
+# official emulator v1.22.0
+0.0s state CONNECTING
+0.0s state READY
+(1) 127.0.0.1:8093 connection closed by GOAWAY with code 11 and data too_many_pings
+30.0s state IDLE
+E Connection to dns:127.0.0.1:8093 at 127.0.0.1:8093 rejected by server because of excess pings. Increasing ping interval to 20000 ms
+70.0s done

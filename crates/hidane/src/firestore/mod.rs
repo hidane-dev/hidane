@@ -75,6 +75,10 @@ use self::{
 const METADATA_ADMIN: &str = "Metadata operations require admin authentication.";
 const BATCH_WRITE_ADMIN: &str = "Batch writes require admin authentication.";
 
+/// Marks a request that came in as `google.firestore.v1beta1.Firestore`.
+#[derive(Clone, Copy)]
+pub(crate) struct V1beta1;
+
 #[derive(Clone)]
 pub struct FirestoreService {
     store: Arc<dyn Store>,
@@ -793,12 +797,17 @@ impl Firestore for FirestoreService {
 
     async fn partition_query(
         &self,
-        _request: Request<PartitionQueryRequest>,
+        request: Request<PartitionQueryRequest>,
     ) -> Result<Response<PartitionQueryResponse>, Status> {
-        // The official emulator's answer (#26).
-        Err(Status::unimplemented(
-            "Method google.firestore.v1.Firestore/PartitionQuery is unimplemented",
-        ))
+        // The official emulator's answer (#26), naming the service called.
+        let version = if request.extensions().get::<V1beta1>().is_some() {
+            "v1beta1"
+        } else {
+            "v1"
+        };
+        Err(Status::unimplemented(format!(
+            "Method google.firestore.{version}.Firestore/PartitionQuery is unimplemented"
+        )))
     }
 
     async fn execute_pipeline(

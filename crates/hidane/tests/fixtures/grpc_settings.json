@@ -1,0 +1,189 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/grpc_settings.py",
+ "services": [
+  "google.datastore.v1.Datastore",
+  "google.firestore.emulator.v1.FirestoreEmulator",
+  "google.firestore.v1.Firestore",
+  "google.firestore.v1beta1.Firestore",
+  "grpc.reflection.v1alpha.ServerReflection"
+ ],
+ "v1beta1": [
+  {
+   "name": "commit through v1beta1",
+   "service": "google.firestore.v1beta1.Firestore",
+   "method": "Commit",
+   "request": {
+    "database": "projects/grpc-settings/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/grpc-settings/databases/(default)/documents/c/a",
+       "fields": {
+        "n": {
+         "integer_value": "1"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "owner": true,
+   "outcome": {
+    "code": "OK",
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "<time>"
+      }
+     ],
+     "commitTime": "<time>"
+    }
+   }
+  },
+  {
+   "name": "read through v1",
+   "service": "google.firestore.v1.Firestore",
+   "method": "GetDocument",
+   "request": {
+    "name": "projects/grpc-settings/databases/(default)/documents/c/a"
+   },
+   "owner": true,
+   "outcome": {
+    "code": "OK",
+    "response": {
+     "name": "projects/grpc-settings/databases/(default)/documents/c/a",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "<time>",
+     "updateTime": "<time>"
+    }
+   }
+  },
+  {
+   "name": "read through v1beta1",
+   "service": "google.firestore.v1beta1.Firestore",
+   "method": "GetDocument",
+   "request": {
+    "name": "projects/grpc-settings/databases/(default)/documents/c/a"
+   },
+   "owner": true,
+   "outcome": {
+    "code": "OK",
+    "response": {
+     "name": "projects/grpc-settings/databases/(default)/documents/c/a",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "<time>",
+     "updateTime": "<time>"
+    }
+   }
+  },
+  {
+   "name": "a missing document through v1beta1",
+   "service": "google.firestore.v1beta1.Firestore",
+   "method": "GetDocument",
+   "request": {
+    "name": "projects/grpc-settings/databases/(default)/documents/c/zz"
+   },
+   "owner": true,
+   "outcome": {
+    "code": "NOT_FOUND",
+    "message": "Document (projects/grpc-settings/databases/(default)/documents/c/zz) not found."
+   }
+  },
+  {
+   "name": "collection IDs through v1beta1 without a token",
+   "service": "google.firestore.v1beta1.Firestore",
+   "method": "ListCollectionIds",
+   "request": {
+    "parent": "projects/grpc-settings/databases/(default)/documents"
+   },
+   "owner": false,
+   "outcome": {
+    "code": "PERMISSION_DENIED",
+    "message": "Metadata operations require admin authentication."
+   }
+  },
+  {
+   "name": "PartitionQuery through v1beta1",
+   "service": "google.firestore.v1beta1.Firestore",
+   "method": "PartitionQuery",
+   "request": {
+    "parent": "projects/grpc-settings/databases/(default)/documents"
+   },
+   "owner": true,
+   "outcome": {
+    "code": "UNIMPLEMENTED",
+    "message": "Method google.firestore.v1beta1.Firestore/PartitionQuery is unimplemented"
+   }
+  },
+  {
+   "name": "PartitionQuery through v1",
+   "service": "google.firestore.v1.Firestore",
+   "method": "PartitionQuery",
+   "request": {
+    "parent": "projects/grpc-settings/databases/(default)/documents"
+   },
+   "owner": true,
+   "outcome": {
+    "code": "UNIMPLEMENTED",
+    "message": "Method google.firestore.v1.Firestore/PartitionQuery is unimplemented"
+   }
+  }
+ ],
+ "grpc_sizes": [
+  {
+   "megabytes": 5,
+   "outcome": {
+    "code": "OK",
+    "message": ""
+   }
+  },
+  {
+   "megabytes": 20,
+   "outcome": {
+    "code": "OK",
+    "message": ""
+   }
+  },
+  {
+   "megabytes": 64,
+   "outcome": {
+    "code": "OK",
+    "message": ""
+   }
+  },
+  {
+   "megabytes": 105,
+   "outcome": {
+    "code": "RESOURCE_EXHAUSTED",
+    "message": "gRPC message exceeds maximum size 104857600: 105009174"
+   }
+  }
+ ],
+ "rest_sizes": [
+  {
+   "bytes": 16777216,
+   "outcome": {
+    "status": 200,
+    "content_type": "application/json",
+    "body": ""
+   }
+  },
+  {
+   "bytes": 16777217,
+   "outcome": {
+    "status": 413,
+    "content_type": null,
+    "body": ""
+   }
+  }
+ ]
+}

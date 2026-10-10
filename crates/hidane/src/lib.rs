@@ -297,6 +297,10 @@ async fn shutdown(State(admin): State<Admin>) -> Response {
 
 /// gRPC services: `google.firestore.v1.Firestore` plus server reflection (v1 and v1alpha, so
 /// both current and older `grpcurl` versions can list and describe the API).
+/// The largest gRPC message the official emulator accepts (tonic's default is 4 MiB, less than
+/// a large batch).
+const MAX_GRPC_MESSAGE: usize = 100 * 1024 * 1024;
+
 pub fn grpc_routes(admin: &Admin) -> Router {
     let reflection = || {
         tonic_reflection::server::Builder::configure()
@@ -308,10 +312,31 @@ pub fn grpc_routes(admin: &Admin) -> Router {
     let reflection_v1alpha = reflection()
         .build_v1alpha()
         .expect("embedded descriptor set is valid");
-    tonic::service::Routes::new(FirestoreServer::new(admin.firestore()))
+    let firestore =
+        FirestoreServer::new(admin.firestore()).max_decoding_message_size(MAX_GRPC_MESSAGE);
+    let v1beta1 = firestore.clone();
+    tonic::service::Routes::new(firestore)
         .add_service(reflection_v1)
         .add_service(reflection_v1alpha)
         .into_axum_router()
+        // `google.firestore.v1beta1.Firestore` is the same service under its earlier name, as
+        // on the official emulator; its messages are wire-compatible with v1's.
+        .route_service(
+            "/google.firestore.v1beta1.Firestore/{method}",
+            tower::service_fn(move |mut request: axum::extract::Request| {
+                let v1beta1 = v1beta1.clone();
+                async move {
+                    let path = request.uri().path().replacen(
+                        "/google.firestore.v1beta1.",
+                        "/google.firestore.v1.",
+                        1,
+                    );
+                    *request.uri_mut() = path.parse().expect("a path with a known prefix");
+                    request.extensions_mut().insert(firestore::V1beta1);
+                    v1beta1.oneshot(request).await
+                }
+            }),
+        )
 }
 
 fn is_grpc<B>(req: &Request<B>) -> bool {
