@@ -28,6 +28,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // Firestore orders map keys by UTF-8 bytes, which is exactly `String`'s `Ord`, so a
         // BTreeMap keeps document fields and map values in canonical order for free.
         .btree_map(".google.firestore.v1")
+        // Pipeline expressions are never stored. Boxing them keeps `Value` at 32 bytes instead
+        // of 72, which matters for every value hidane holds (#27).
+        .boxed(".google.firestore.v1.Value.value_type.function_value")
+        .boxed(".google.firestore.v1.Value.value_type.pipeline_value")
         .include_file("mod.rs")
         .compile_fds(fds)?;
     Ok(())

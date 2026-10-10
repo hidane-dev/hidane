@@ -4,6 +4,9 @@
 //!   names (`__name__`).
 //! - [`key`]: an order-preserving byte encoding of the same order, for storage keys and indexes:
 //!   `compare(a, b) == encode(a).cmp(&encode(b))` for every pair of values.
+//! - [`path`]: document and collection paths.
+//! - [`store`]: the storage boundary and the in-memory engine (versioned documents, snapshot
+//!   reads, commits that report what changed).
 //! - [`normalize`]: what Firestore does to a value when it is written (timestamps lose their
 //!   sub-microsecond digits).
 //!
@@ -13,3 +16,5 @@
 pub mod key;
 pub mod normalize;
 pub mod order;
+pub mod path;
+pub mod store;
