@@ -1,0 +1,704 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/list_documents.py",
+ "seed": [
+  [
+   "c/a",
+   "d/b"
+  ],
+  [
+   "c/b",
+   "a/z",
+   "B/x",
+   "c/m/sub/x",
+   "e/q/sub/y",
+   "c/a/s/1",
+   "c/a/t/2"
+  ]
+ ],
+ "grpc": [
+  {
+   "name": "root",
+   "request": {},
+   "parent": "",
+   "owner": true,
+   "outcome": {
+    "documents": [
+     {
+      "name": "B/x",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "a/z",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "c/a",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "c/b",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "d/b",
+      "fields": [
+       "m",
+       "n"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "root, anonymous",
+   "request": {},
+   "parent": "",
+   "owner": false,
+   "outcome": {
+    "documents": [
+     {
+      "name": "B/x",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "a/z",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "c/a",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "c/b",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "d/b",
+      "fields": [
+       "m",
+       "n"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "a document",
+   "request": {},
+   "parent": "c/a",
+   "owner": true,
+   "outcome": {
+    "documents": [
+     {
+      "name": "c/a/s/1",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "c/a/t/2",
+      "fields": [
+       "m",
+       "n"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "a missing document with subcollections",
+   "request": {},
+   "parent": "c/m",
+   "owner": true,
+   "outcome": {
+    "documents": [
+     {
+      "name": "c/m/sub/x",
+      "fields": [
+       "m",
+       "n"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "a document with nothing below",
+   "request": {},
+   "parent": "c/zz",
+   "owner": true,
+   "outcome": {
+    "documents": []
+   }
+  },
+  {
+   "name": "a mask",
+   "request": {
+    "mask": {
+     "field_paths": [
+      "n"
+     ]
+    }
+   },
+   "parent": "",
+   "owner": true,
+   "outcome": {
+    "documents": [
+     {
+      "name": "B/x",
+      "fields": [
+       "n"
+      ]
+     },
+     {
+      "name": "a/z",
+      "fields": [
+       "n"
+      ]
+     },
+     {
+      "name": "c/a",
+      "fields": [
+       "n"
+      ]
+     },
+     {
+      "name": "c/b",
+      "fields": [
+       "n"
+      ]
+     },
+     {
+      "name": "d/b",
+      "fields": [
+       "n"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "order by name",
+   "request": {
+    "order_by": "__name__"
+   },
+   "parent": "",
+   "owner": true,
+   "outcome": {
+    "documents": [
+     {
+      "name": "B/x",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "a/z",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "c/a",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "c/b",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "d/b",
+      "fields": [
+       "m",
+       "n"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "order by name ascending",
+   "request": {
+    "order_by": "__name__ asc"
+   },
+   "parent": "",
+   "owner": true,
+   "outcome": {
+    "documents": [
+     {
+      "name": "B/x",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "a/z",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "c/a",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "c/b",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "d/b",
+      "fields": [
+       "m",
+       "n"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "order by name descending",
+   "request": {
+    "order_by": "__name__ desc"
+   },
+   "parent": "",
+   "owner": true,
+   "outcome": {
+    "code": "FAILED_PRECONDITION",
+    "message": "Firestore does not support descending key scans"
+   }
+  },
+  {
+   "name": "order by a field",
+   "request": {
+    "order_by": "n"
+   },
+   "parent": "",
+   "owner": true,
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "kind is required for all orders except __key__ ascending"
+   }
+  },
+  {
+   "name": "order by a field descending",
+   "request": {
+    "order_by": "n desc"
+   },
+   "parent": "",
+   "owner": true,
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "kind is required for all orders except __key__ ascending"
+   }
+  },
+  {
+   "name": "show missing",
+   "request": {
+    "show_missing": true
+   },
+   "parent": "",
+   "owner": true,
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "collection id must be set when show_missing is true"
+   }
+  },
+  {
+   "name": "show missing, anonymous",
+   "request": {
+    "show_missing": true
+   },
+   "parent": "",
+   "owner": false,
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "collection id must be set when show_missing is true"
+   }
+  },
+  {
+   "name": "show missing and an order",
+   "request": {
+    "show_missing": true,
+    "order_by": "n"
+   },
+   "parent": "",
+   "owner": true,
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "collection id must be set when show_missing is true"
+   }
+  },
+  {
+   "name": "show missing, negative page size",
+   "request": {
+    "show_missing": true,
+    "page_size": -1
+   },
+   "parent": "",
+   "owner": true,
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "Page size must be nonnegative."
+   }
+  },
+  {
+   "name": "negative page size, an order",
+   "request": {
+    "page_size": -1,
+    "order_by": "n"
+   },
+   "parent": "",
+   "owner": true,
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "Page size must be nonnegative."
+   }
+  },
+  {
+   "name": "descending, negative page size",
+   "request": {
+    "page_size": -1,
+    "order_by": "__name__ desc"
+   },
+   "parent": "",
+   "owner": true,
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "Page size must be nonnegative."
+   }
+  },
+  {
+   "name": "collection, descending",
+   "request": {
+    "collection_id": "c",
+    "order_by": "__name__ desc"
+   },
+   "parent": "",
+   "owner": true,
+   "outcome": {
+    "code": "FAILED_PRECONDITION",
+    "message": "Firestore does not support descending key scans"
+   }
+  },
+  {
+   "name": "collection, show missing, an order, negative page size",
+   "request": {
+    "collection_id": "c",
+    "show_missing": true,
+    "order_by": "n",
+    "page_size": -1
+   },
+   "parent": "",
+   "owner": true,
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "Page size must be nonnegative."
+   }
+  },
+  {
+   "name": "collection, show missing",
+   "request": {
+    "collection_id": "c",
+    "show_missing": true
+   },
+   "parent": "",
+   "owner": true,
+   "outcome": {
+    "documents": [
+     {
+      "name": "c/a",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "c/b",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "c/m",
+      "fields": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "pages of 1",
+   "request": {
+    "page_size": 1,
+    "pages": true
+   },
+   "parent": "",
+   "owner": true,
+   "outcome": {
+    "pages": [
+     [
+      "B/x"
+     ],
+     [
+      "a/z"
+     ],
+     [
+      "c/a"
+     ],
+     [
+      "c/b"
+     ],
+     [
+      "d/b"
+     ],
+     []
+    ]
+   }
+  },
+  {
+   "name": "pages of 2",
+   "request": {
+    "page_size": 2,
+    "pages": true
+   },
+   "parent": "",
+   "owner": true,
+   "outcome": {
+    "pages": [
+     [
+      "B/x",
+      "a/z"
+     ],
+     [
+      "c/a",
+      "c/b"
+     ],
+     [
+      "d/b"
+     ]
+    ]
+   }
+  },
+  {
+   "name": "pages of 2 under a document",
+   "request": {
+    "page_size": 2,
+    "pages": true
+   },
+   "parent": "c/a",
+   "owner": true,
+   "outcome": {
+    "pages": [
+     [
+      "c/a/s/1",
+      "c/a/t/2"
+     ],
+     []
+    ]
+   }
+  },
+  {
+   "name": "at the first commit",
+   "request": {
+    "at_first_commit": true
+   },
+   "parent": "",
+   "owner": true,
+   "outcome": {
+    "documents": [
+     {
+      "name": "c/a",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "d/b",
+      "fields": [
+       "m",
+       "n"
+      ]
+     }
+    ]
+   }
+  }
+ ],
+ "rest": [
+  {
+   "name": "root with a slash",
+   "path": "/",
+   "outcome": {
+    "status": 200,
+    "documents": [
+     "B/x",
+     "a/z",
+     "c/a",
+     "c/b",
+     "d/b"
+    ],
+    "next_page": false
+   }
+  },
+  {
+   "name": "a document with a slash",
+   "path": "/c/a/",
+   "outcome": {
+    "status": 200,
+    "documents": [
+     "c/a/s/1",
+     "c/a/t/2"
+    ],
+    "next_page": false
+   }
+  },
+  {
+   "name": "a collection with a slash",
+   "path": "/c/",
+   "outcome": {
+    "status": 400,
+    "error": {
+     "code": 400,
+     "message": "Document name \"projects/list/databases/(default)/documents/c/\" has invalid trailing \"/\".",
+     "status": "INVALID_ARGUMENT"
+    }
+   }
+  },
+  {
+   "name": "a subcollection with a slash",
+   "path": "/c/a/s/",
+   "outcome": {
+    "status": 400,
+    "error": {
+     "code": 400,
+     "message": "Document name \"projects/list/databases/(default)/documents/c/a/s/\" has invalid trailing \"/\".",
+     "status": "INVALID_ARGUMENT"
+    }
+   }
+  },
+  {
+   "name": "two slashes",
+   "path": "//",
+   "outcome": {
+    "status": 400,
+    "error": {
+     "code": 400,
+     "message": "Document name \"projects/list/databases/(default)/documents//\" lacks a collection id at index 44.",
+     "status": "INVALID_ARGUMENT"
+    }
+   }
+  },
+  {
+   "name": "a collection and two slashes",
+   "path": "/c//",
+   "outcome": {
+    "status": 400,
+    "error": {
+     "code": 400,
+     "message": "Document name \"projects/list/databases/(default)/documents/c//\" lacks a resource id at index 46.",
+     "status": "INVALID_ARGUMENT"
+    }
+   }
+  },
+  {
+   "name": "an empty segment inside",
+   "path": "/c/a//s",
+   "outcome": {
+    "status": 400,
+    "error": {
+     "code": 400,
+     "message": "Document name \"projects/list/databases/(default)/documents/c/a//s\" lacks a collection id at index 48.",
+     "status": "INVALID_ARGUMENT"
+    }
+   }
+  },
+  {
+   "name": "root with a slash, show missing",
+   "path": "/?showMissing=true",
+   "outcome": {
+    "status": 400,
+    "error": {
+     "code": 400,
+     "message": "collection id must be set when show_missing is true",
+     "status": "INVALID_ARGUMENT"
+    }
+   }
+  },
+  {
+   "name": "root with a slash, a page of 1",
+   "path": "/?pageSize=1",
+   "outcome": {
+    "status": 200,
+    "documents": [
+     "B/x"
+    ],
+    "next_page": true
+   }
+  },
+  {
+   "name": "root with a slash, a mask",
+   "path": "/?mask.fieldPaths=n",
+   "outcome": {
+    "status": 200,
+    "documents": [
+     "B/x",
+     "a/z",
+     "c/a",
+     "c/b",
+     "d/b"
+    ],
+    "next_page": false
+   }
+  },
+  {
+   "name": "root without a slash",
+   "path": "",
+   "outcome": {
+    "status": 404,
+    "body": "Not Found\n"
+   }
+  }
+ ]
+}

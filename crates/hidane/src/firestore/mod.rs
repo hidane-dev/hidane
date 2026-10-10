@@ -36,6 +36,7 @@ use std::{
 use base64::{Engine as _, engine::general_purpose::URL_SAFE_NO_PAD};
 use hidane_core::{
     field_path::{FieldPath, project},
+    key,
     path::ResourcePath,
     store::{ListItem, ListOptions, ReadTime, Store, StoreError, StoredDocument},
 };
@@ -297,33 +298,51 @@ impl Firestore for FirestoreService {
         let (metadata, _, req) = request.into_parts();
         let parent = names::parent(&req.parent)?;
         let caller = auth::caller(&metadata)?;
-        if req.collection_id.is_empty() {
-            // The official emulator lists the documents of every collection under the parent.
-            return Err(Status::unimplemented(
-                "ListDocuments without a collection_id is not implemented yet",
+        names::collection_id(&req.collection_id)?;
+        // An empty collection ID lists every collection directly under the parent.
+        let every_collection = req.collection_id.is_empty();
+        if req.page_size < 0 {
+            return Err(Status::invalid_argument("Page size must be nonnegative."));
+        }
+        if req.show_missing && every_collection {
+            return Err(Status::invalid_argument(
+                "collection id must be set when show_missing is true",
             ));
         }
-        names::collection_id(&req.collection_id)?;
         if req.show_missing && !req.order_by.is_empty() {
             return Err(Status::invalid_argument(
                 "cannot specify an order when show_missing is true",
             ));
         }
-        if req.page_size < 0 {
-            return Err(Status::invalid_argument("Page size must be nonnegative."));
+        match req.order_by.as_str() {
+            "" | "__name__" | "__name__ asc" => {}
+            "__name__ desc" => {
+                return Err(Status::failed_precondition(
+                    "Firestore does not support descending key scans",
+                ));
+            }
+            _ if every_collection => {
+                return Err(Status::invalid_argument(
+                    "kind is required for all orders except __key__ ascending",
+                ));
+            }
+            _ => {
+                return Err(Status::unimplemented(
+                    "ListDocuments order_by other than __name__ is not implemented yet",
+                ));
+            }
         }
         if req.show_missing && !caller.is_admin() {
             return Err(Status::permission_denied(METADATA_ADMIN));
         }
-        if !matches!(req.order_by.as_str(), "" | "__name__" | "__name__ asc") {
-            return Err(Status::unimplemented(
-                "ListDocuments order_by other than __name__ is not implemented yet",
-            ));
-        }
         let at = match &req.consistency_selector {
-            Some(list_documents_request::ConsistencySelector::Transaction(transaction)) => {
-                self.read_in(&parent.database, transaction, &[], Some(&req.collection_id))?
-            }
+            Some(list_documents_request::ConsistencySelector::Transaction(transaction)) => self
+                .read_in(
+                    &parent.database,
+                    transaction,
+                    &[],
+                    (!every_collection).then_some(req.collection_id.as_str()),
+                )?,
             Some(list_documents_request::ConsistencySelector::ReadTime(ts)) => {
                 self.read_time(&parent.database, Some(ts))?
             }
@@ -333,13 +352,26 @@ impl Firestore for FirestoreService {
         // The official emulator ignores the mask when listing missing documents too (the
         // Emulator UI asks for `_none_` and gets every field).
         let mask = if req.show_missing { None } else { mask };
-        let collection = parent.path.child(req.collection_id.clone());
+        let collections: Vec<ResourcePath> = if every_collection {
+            self.store
+                .list_collection_ids(&parent.database, &parent.path, at)
+                .into_iter()
+                .map(|id| parent.path.child(id))
+                .collect()
+        } else {
+            vec![parent.path.child(req.collection_id.clone())]
+        };
+        // A page token is the last document listed, in one of the listed collections.
         let after = decode_token(&req.page_token)?
             .map(|p| ResourcePath::parse(&p).ok_or_else(invalid_token))
             .transpose()?;
-        if after
-            .as_ref()
-            .is_some_and(|a| a.parent().as_ref() != Some(&collection))
+        let after_collection = after.as_ref().and_then(ResourcePath::parent);
+        if let Some(collection) = &after_collection
+            && !(if every_collection {
+                collection.len() == parent.path.len() + 1 && collection.starts_with(&parent.path)
+            } else {
+                *collection == collections[0]
+            })
         {
             return Err(invalid_token());
         }
@@ -351,37 +383,54 @@ impl Firestore for FirestoreService {
         let mut documents = Vec::new();
         let mut last = None;
         let mut more = false;
-        self.store.list_collection(
-            &parent.database,
-            &collection,
-            at,
-            ListOptions {
-                after: after.as_ref(),
-                include_missing: req.show_missing,
-            },
-            &mut |item| {
-                if documents.len() == limit {
-                    more = true;
-                    return ControlFlow::Break(());
+        for collection in &collections {
+            if more {
+                break;
+            }
+            let after = match &after_collection {
+                Some(c) if c == collection => after.as_ref(),
+                // Collections before the token's were listed on earlier pages.
+                Some(c)
+                    if key::encode_path(collection.segments()) < key::encode_path(c.segments()) =>
+                {
+                    continue;
                 }
-                let (document, path) = match item {
-                    ListItem::Document(doc) => (
-                        to_document(&parent.database, doc, mask.as_deref()),
-                        (*doc.path).clone(),
-                    ),
-                    ListItem::Missing(path) => (
-                        Document {
-                            name: Name::document_name(&parent.database, path),
-                            ..Document::default()
-                        },
-                        path.clone(),
-                    ),
-                };
-                documents.push(document);
-                last = Some(path);
-                ControlFlow::Continue(())
-            },
-        );
+                _ => None,
+            };
+            self.store.list_collection(
+                &parent.database,
+                collection,
+                at,
+                ListOptions {
+                    after,
+                    include_missing: req.show_missing,
+                },
+                &mut |item| {
+                    let (document, path) = match item {
+                        ListItem::Document(doc) => (
+                            to_document(&parent.database, doc, mask.as_deref()),
+                            (*doc.path).clone(),
+                        ),
+                        ListItem::Missing(path) => (
+                            Document {
+                                name: Name::document_name(&parent.database, path),
+                                ..Document::default()
+                            },
+                            path.clone(),
+                        ),
+                    };
+                    documents.push(document);
+                    last = Some(path);
+                    // A full page has a next page, even an empty one, as on the official
+                    // emulator.
+                    if documents.len() == limit {
+                        more = true;
+                        return ControlFlow::Break(());
+                    }
+                    ControlFlow::Continue(())
+                },
+            );
+        }
         Ok(Response::new(ListDocumentsResponse {
             documents,
             next_page_token: if more {
@@ -843,7 +892,8 @@ impl Firestore for FirestoreService {
             .into_iter()
             .filter(|id| after.as_ref().is_none_or(|after| id > after))
             .collect();
-        let more = ids.len() > limit;
+        // A full page has a next page, even an empty one, as on the official emulator.
+        let more = ids.len() >= limit;
         ids.truncate(limit);
         let next_page_token = if more {
             ids.last().map(|id| encode_token(id)).unwrap_or_default()

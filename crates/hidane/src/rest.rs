@@ -151,6 +151,13 @@ async fn dispatch(service: &FirestoreService, call: Call) -> Option<Response> {
     } else {
         format!("{}/documents/{}", call.database, call.path.join("/"))
     };
+    // `GET …/documents/` and `GET …/documents/{document}/` list every collection under the
+    // parent (an empty collection ID); any other empty segment makes a document name that
+    // GetDocument refuses, as on the official emulator.
+    let every_collection = call.path.split_last().is_some_and(|(last, parent)| {
+        last.is_empty() && parent.len().is_multiple_of(2) && parent.iter().all(|s| !s.is_empty())
+    });
+    let gap = !every_collection && call.path.iter().any(String::is_empty);
     let even = !call.path.is_empty() && call.path.len().is_multiple_of(2);
     let odd = call.path.len() % 2 == 1;
     let parent_and_collection = || {
@@ -168,7 +175,28 @@ async fn dispatch(service: &FirestoreService, call: Call) -> Option<Response> {
         Err(status) => error(&status),
     };
     Some(match (&call.method, call.verb.as_deref()) {
-        (&Method::GET, None) if even => {
+        (&Method::GET, None) if every_collection => {
+            let (_, parent) = call.path.split_last().expect("a trailing segment");
+            let parent = if parent.is_empty() {
+                format!("{}/documents", call.database)
+            } else {
+                format!("{}/documents/{}", call.database, parent.join("/"))
+            };
+            let request = build(
+                &call,
+                "ListDocumentsRequest",
+                Json::Null,
+                &[("parent", parent), ("collectionId", String::new())],
+            );
+            match request {
+                Ok(req) => unary(
+                    service.list_documents(req).await.map(encode),
+                    "ListDocumentsResponse",
+                ),
+                Err(e) => error(&e),
+            }
+        }
+        (&Method::GET, None) if even || gap => {
             let request = build(
                 &call,
                 "GetDocumentRequest",
@@ -180,7 +208,7 @@ async fn dispatch(service: &FirestoreService, call: Call) -> Option<Response> {
                 Err(e) => error(&e),
             }
         }
-        (&Method::GET, None) if odd => {
+        (&Method::GET, None) if odd && !gap => {
             let (parent, collection) = parent_and_collection();
             let request = build(
                 &call,
