@@ -12,11 +12,26 @@ use std::{
 
 const BIN: &str = env!("CARGO_BIN_EXE_hidane");
 
-/// `hidane exec -- /bin/sh -c <script>` with `PATH` set to `path`; its exit code and output.
-fn exec(path: &str, script: &str) -> (i32, String) {
+/// A directory for `PATH`, empty or holding a stand-in `java` that prints `java_says` and its
+/// arguments, like a real Java would print its version on stderr.
+fn path_dir(name: &str, java_says: Option<&str>) -> std::path::PathBuf {
+    let dir = std::env::temp_dir().join(format!("hidane-launch-{}-{name}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    if let Some(says) = java_says {
+        use std::os::unix::fs::PermissionsExt as _;
+        let java = dir.join("java");
+        std::fs::write(&java, format!("#!/bin/sh\necho '{says}' \"$@\" >&2\n")).unwrap();
+        std::fs::set_permissions(&java, std::fs::Permissions::from_mode(0o755)).unwrap();
+    }
+    dir
+}
+
+/// `hidane exec -- /bin/sh -c <script>` with `PATH` set to `dir`; its exit code and output.
+fn exec(dir: &std::path::Path, script: &str) -> (i32, String) {
     let output = Command::new(BIN)
         .args(["exec", "--", "/bin/sh", "-c", script])
-        .env("PATH", path)
+        .env("PATH", dir)
         .output()
         .unwrap();
     let text = format!(
@@ -30,7 +45,7 @@ fn exec(path: &str, script: &str) -> (i32, String) {
 #[test]
 fn java_is_hidane_and_the_jar_is_a_placeholder() {
     let (code, out) = exec(
-        "/bin",
+        &path_dir("layout", None),
         r#"command -v java; echo "${FIRESTORE_EMULATOR_BINARY_PATH##*/}"; test -f "$FIRESTORE_EMULATOR_BINARY_PATH" && echo exists"#,
     );
     assert_eq!(code, 0, "{out}");
@@ -39,20 +54,59 @@ fn java_is_hidane_and_the_jar_is_a_placeholder() {
     assert_eq!(lines[1..], ["hidane-firestore.jar", "exists"]);
 }
 
+/// The probe firebase-tools runs before starting a JVM emulator.
+const PROBE: &str = "java -Duser.language=en -Dfile.encoding=UTF-8 -version";
+
 #[test]
 fn the_version_probe_passes_without_a_jdk() {
-    // The probe firebase-tools runs before starting a JVM emulator; /bin has no java.
-    let (code, out) = exec(
-        "/bin",
-        "java -Duser.language=en -Dfile.encoding=UTF-8 -version",
-    );
+    let (code, out) = exec(&path_dir("no-java", None), PROBE);
     assert_eq!(code, 0, "{out}");
     assert!(out.contains(r#"version "21"#), "{out}");
 }
 
 #[test]
+fn a_recent_java_answers_the_probe_itself_and_an_old_one_does_not() {
+    let (code, out) = exec(
+        &path_dir("java25", Some(r#"openjdk version "25.0.1""#)),
+        PROBE,
+    );
+    assert_eq!(
+        (code, out.trim()),
+        (
+            0,
+            r#"openjdk version "25.0.1" -Duser.language=en -Dfile.encoding=UTF-8 -version"#
+        )
+    );
+    let (code, out) = exec(
+        &path_dir("java17", Some(r#"openjdk version "17.0.9""#)),
+        PROBE,
+    );
+    assert_eq!(code, 0, "{out}");
+    assert!(
+        out.contains(r#"version "21""#) && !out.contains("17.0.9"),
+        "{out}"
+    );
+}
+
+#[test]
+fn other_jars_go_to_the_real_java() {
+    let (code, out) = exec(
+        &path_dir("forward", Some("real java")),
+        "java -Duser.language=en -jar /x/firebase-database-emulator.jar --port 9000",
+    );
+    assert_eq!(code, 0, "{out}");
+    assert_eq!(
+        out.trim(),
+        "real java -Duser.language=en -jar /x/firebase-database-emulator.jar --port 9000"
+    );
+}
+
+#[test]
 fn other_jars_need_a_real_java() {
-    let (code, out) = exec("/bin", "java -jar /x/firebase-database-emulator.jar");
+    let (code, out) = exec(
+        &path_dir("missing", None),
+        "java -jar /x/firebase-database-emulator.jar",
+    );
     assert_eq!(code, 127, "{out}");
     assert!(out.contains("no java other than hidane's"), "{out}");
 }
@@ -77,7 +131,7 @@ fn the_jar_runs_the_emulator_and_exec_ends_with_it() {
     );
     let mut child = Command::new(BIN)
         .args(["exec", "--", "/bin/sh", "-c", &script])
-        .env("PATH", "/bin")
+        .env("PATH", path_dir("serve", None))
         .stdout(Stdio::null())
         .stderr(Stdio::null())
         .spawn()
