@@ -15,6 +15,7 @@
 //! `/google.firestore.v1.Firestore/Listen/channel` sit under the gRPC service prefix.
 
 pub mod cli;
+pub mod export;
 mod firestore;
 mod rest;
 mod webchannel;
@@ -35,7 +36,10 @@ use axum::{
     response::{IntoResponse, Response},
     routing::{delete, get, post},
 };
-use hidane_core::store::{MemoryStore, Store};
+use hidane_core::{
+    export::ExportedDocument,
+    store::{MemoryStore, Store},
+};
 use hidane_proto::google::firestore::v1::firestore_server::FirestoreServer;
 use hyper::{Request, body::Incoming, header::CONTENT_TYPE};
 use hyper_util::{
@@ -50,7 +54,11 @@ use tokio::{
 use tower::ServiceExt;
 
 pub use firestore::FirestoreService;
-use firestore::{changes::ChangeFeed, transactions::Transactions};
+use firestore::{
+    changes::ChangeFeed,
+    seed::{SeededStore, Seeder},
+    transactions::Transactions,
+};
 
 /// How long open connections (e.g. Listen streams) get to finish after a shutdown signal.
 /// firebase-tools waits 4 s after SIGINT before giving up on the process.
@@ -69,6 +77,7 @@ pub struct Admin {
     shutdown: Arc<watch::Sender<bool>>,
     enterprise: bool,
     channels: Arc<webchannel::Channels>,
+    seeder: Option<Arc<Seeder>>,
 }
 
 impl Default for Admin {
@@ -86,6 +95,7 @@ impl Admin {
             Arc::clone(&self.changes),
         )
         .with_enterprise_edition(self.enterprise)
+        .with_seeder(self.seeder.clone())
     }
 
     pub fn new(store: Arc<dyn Store>) -> Self {
@@ -96,7 +106,21 @@ impl Admin {
             shutdown: Arc::new(watch::Sender::new(false)),
             enterprise: false,
             channels: Arc::default(),
+            seeder: None,
         }
+    }
+
+    /// `--seed_from_export`: every database starts with the documents of `documents` whose
+    /// key names it, handed over on its first access and again after `POST /reset`.
+    #[must_use]
+    pub fn with_seed(mut self, documents: Vec<ExportedDocument>) -> Self {
+        let seeder = Arc::new(Seeder::new(documents, Arc::clone(&self.changes)));
+        self.store = Arc::new(SeededStore {
+            inner: self.store,
+            seeder: Arc::clone(&seeder),
+        });
+        self.seeder = Some(seeder);
+        self
     }
 
     /// `--database-edition enterprise`.
@@ -254,9 +278,13 @@ async fn channel_post(
 /// The largest WebChannel POST read (as REST bodies).
 const MAX_CHANNEL_BODY: usize = 16 * 1024 * 1024;
 
-/// REST (`/v1/…`, `/v1beta1/…`), or 404.
+/// Export and import (`/emulator/v1/projects/{p}:export`, `:import`), REST (`/v1/…`,
+/// `/v1beta1/…`), or 404.
 async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -> Response {
     let (parts, body) = request.into_parts();
+    if let Some(verb) = export::route(parts.uri.path()) {
+        return export::handle(admin.firestore(), verb, &parts.method, &parts.headers, body).await;
+    }
     rest::handle(
         admin.firestore(),
         parts.method,

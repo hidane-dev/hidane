@@ -59,7 +59,7 @@ works once R1 lands).
 | P1 | bench | Startup, RSS and degradation regression benchmarks in CI |
 | P1 | distribution | hidane.dev DNS / HTTPS (currently a dead link), GitHub Releases naming |
 | P2 | rest | REST transcoding of the documents API (enables js-sdk Lite, `curl`, Emulator UI, `preferRest`) |
-| P2 | storage | Export / import (LevelDB log + EntityProto, `--seed_from_export`, `POST :export`). May slip to v0.2 |
+| P2 | storage | Export / import (LevelDB log + EntityProto, `--seed_from_export`, `POST :export`) — done, [export-format.md](export-format.md) |
 | P2 | rest | Emulator UI compatibility (`:listCollectionIds` admin check, `showMissing=true`) |
 | P2 | grpc | gRPC reflection, `v1beta1` alias, 17 MB message limit, keepalive |
 

@@ -68,6 +68,14 @@ async fn run(args: Vec<OsString>) -> ExitCode {
     if std::env::var("EXPERIMENTAL_MODE").is_ok_and(|v| v.eq_ignore_ascii_case("true")) {
         eprintln!("Emulator has been started in experimental mode!");
     }
+    // Read before the port opens, as the official emulator does: a bad export stops the start.
+    let seed = match cli.seed().map(hidane::export::read).transpose() {
+        Ok(seed) => seed,
+        Err(message) => {
+            eprintln!("ERROR: {message}");
+            return ExitCode::FAILURE;
+        }
+    };
 
     let listeners = match hidane::bind(&cli.host, cli.port).await {
         Ok(listeners) => listeners,
@@ -99,8 +107,11 @@ async fn run(args: Vec<OsString>) -> ExitCode {
     };
     print_banner(&cli, port);
 
-    let admin = hidane::Admin::default()
+    let mut admin = hidane::Admin::default()
         .with_enterprise_edition(cli.database_edition == cli::DatabaseEdition::Enterprise);
+    if let Some(documents) = seed {
+        admin = admin.with_seed(documents);
+    }
     let (code_tx, code_rx) = tokio::sync::oneshot::channel();
     let shutdown = {
         let admin = admin.clone();

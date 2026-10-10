@@ -88,6 +88,16 @@ impl StoredDocument {
     pub fn encoded_len(&self) -> usize {
         self.encoded_fields.len()
     }
+
+    /// Whether the document holds exactly `fields`, bit for bit: unlike `==` on the decoded
+    /// fields, a NaN equals itself and `-0.0` differs from `0.0`.
+    pub fn has_fields(&self, fields: &BTreeMap<String, Value>) -> bool {
+        let fields = MapValue {
+            fields: fields.clone(),
+        };
+        fields.encoded_len() == self.encoded_fields.len()
+            && *fields.encode_to_vec() == *self.encoded_fields
+    }
 }
 
 /// One document touched by a commit.

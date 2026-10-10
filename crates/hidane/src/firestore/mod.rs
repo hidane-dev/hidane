@@ -15,9 +15,11 @@ mod aggregation;
 pub(crate) mod auth;
 pub(crate) mod changes;
 mod clear;
+mod export;
 mod listen;
 mod names;
 mod query;
+pub(crate) mod seed;
 pub(crate) mod transactions;
 mod validate;
 mod write_stream;
@@ -86,6 +88,8 @@ pub struct FirestoreService {
     changes: Arc<ChangeFeed>,
     /// `--database-edition enterprise`: pipelines are allowed (but not implemented yet).
     enterprise: bool,
+    /// `--seed_from_export`, forgotten on `POST /reset`.
+    seeder: Option<Arc<seed::Seeder>>,
 }
 
 impl FirestoreService {
@@ -95,6 +99,11 @@ impl FirestoreService {
 
     pub(crate) fn with_enterprise_edition(mut self, enterprise: bool) -> Self {
         self.enterprise = enterprise;
+        self
+    }
+
+    pub(crate) fn with_seeder(mut self, seeder: Option<Arc<seed::Seeder>>) -> Self {
+        self.seeder = seeder;
         self
     }
 
@@ -108,6 +117,7 @@ impl FirestoreService {
             transactions,
             changes,
             enterprise: false,
+            seeder: None,
         }
     }
 

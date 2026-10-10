@@ -23,7 +23,7 @@ run that client against it yet. Nothing is released yet.
 | firebase-js-sdk **Lite** (`firebase/firestore/lite`, any platform) | REST (`fetch`) only | verified |
 | firebase-js-sdk **in the browser** | **WebChannel** for Listen and Write (this includes `getDoc`, `getDocs`, `setDoc`, `updateDoc`, `deleteDoc`, `writeBatch`), REST for `runTransaction`, aggregate queries and pipelines | verified in Chromium ([webchannel.md](webchannel.md)) |
 | FlutterFire `cloud_firestore_web` | Same as firebase-js-sdk in the browser | not verified (#75) |
-| Emulator UI, `curl`, `firebase-tools` itself | REST and emulator-specific HTTP endpoints | REST and the emulator's endpoints served; Emulator UI v1.15.0 verified (browse, create and delete documents, Clear all data), its request monitor needs the WebSocket feed (#69); `firebase emulators:start` / `emulators:exec` launch hidane through `hidane exec` ([ADR 0006](adr/0006-launch-under-firebase-tools.md)) |
+| Emulator UI, `curl`, `firebase-tools` itself | REST and emulator-specific HTTP endpoints | REST and the emulator's endpoints served; Emulator UI v1.15.0 verified (browse, create and delete documents, Clear all data), its request monitor needs the WebSocket feed (#69); `firebase emulators:start` / `emulators:exec` launch hidane through `hidane exec` ([ADR 0006](adr/0006-launch-under-firebase-tools.md)); `--import`, `--export-on-exit` and `emulators:export` read and write the official emulator's format, and each emulator reads the other's exports ([export-format.md](export-format.md)) |
 
 So with v0.1 (gRPC only) the server-side SDKs, the mobile SDKs and Node-based test suites work.
 Browser apps need WebChannel as well as REST, because the Web SDK does almost everything over

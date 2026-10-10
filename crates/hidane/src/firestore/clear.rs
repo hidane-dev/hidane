@@ -28,10 +28,14 @@ impl FirestoreService {
             .await;
     }
 
-    /// `POST /reset`: every database, and every open transaction.
+    /// `POST /reset`: every database, and every open transaction. With `--seed_from_export`,
+    /// every database is seeded again on its next access.
     pub(crate) async fn reset(&self) {
         for database in self.store.database_names() {
             self.clear_database(&database).await;
+        }
+        if let Some(seeder) = &self.seeder {
+            seeder.forget();
         }
         self.transactions.clear();
     }
