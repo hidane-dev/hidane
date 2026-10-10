@@ -13,7 +13,7 @@ use hidane_proto::google::firestore::v1::{Value, value::ValueType};
 use super::MemoryStore;
 use crate::{
     path::ResourcePath,
-    store::{ReadTime, Store, StoreError, StoredDocument},
+    store::{ListItem, ListOptions, ReadTime, Store, StoreError, StoredDocument},
 };
 
 const DB: &str = "projects/demo/databases/(default)";
@@ -363,4 +363,44 @@ fn read_time_round_trips_through_timestamps() {
             ReadTime(micros)
         );
     }
+}
+
+#[test]
+fn listings_page_and_report_missing_documents() {
+    let (store, now) = store_with_clock(1_000);
+    for p in ["c/a", "c/b", "c/ghost/sub/x", "c/gone", "c/z/sub/y"] {
+        set(&store, p, 1);
+    }
+    set(&store, "c/z", 1);
+    now.store(2_000, Ordering::SeqCst);
+    delete(&store, "c/gone");
+    delete(&store, "c/z");
+
+    let list = |options: ListOptions<'_>| {
+        let mut out = Vec::new();
+        store.list_collection(DB, &path("c"), ReadTime::MAX, options, &mut |item| {
+            out.push(match item {
+                ListItem::Document(doc) => doc.path.to_string(),
+                ListItem::Missing(p) => format!("missing:{p}"),
+            });
+            ControlFlow::Continue(())
+        });
+        out
+    };
+    assert_eq!(list(ListOptions::default()), ["c/a", "c/b"]);
+    assert_eq!(
+        list(ListOptions {
+            include_missing: true,
+            ..ListOptions::default()
+        }),
+        ["c/a", "c/b", "missing:c/ghost", "missing:c/z"]
+    );
+    let b = path("c/b");
+    assert_eq!(
+        list(ListOptions {
+            after: Some(&b),
+            include_missing: true,
+        }),
+        ["missing:c/ghost", "missing:c/z"]
+    );
 }

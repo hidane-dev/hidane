@@ -19,7 +19,13 @@ use tokio_stream::wrappers::ReceiverStream;
 async fn start(http: Router) -> SocketAddr {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
-    tokio::spawn(hidane::serve(vec![listener], http, std::future::pending()));
+    let grpc = hidane::grpc_routes(hidane::Admin::default().store());
+    tokio::spawn(hidane::serve(
+        vec![listener],
+        grpc,
+        http,
+        std::future::pending(),
+    ));
     addr
 }
 
@@ -43,7 +49,9 @@ async fn grpc_over_h2c_reaches_the_firestore_service() {
         })
         .await
         .unwrap_err();
-    assert_eq!(status.code(), tonic::Code::Unimplemented);
+    // A real answer from the Firestore service, not a transport-level error.
+    assert_eq!(status.code(), tonic::Code::NotFound);
+    assert!(status.message().starts_with("Document (projects/demo/"));
 }
 
 #[tokio::test]

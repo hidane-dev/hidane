@@ -1,0 +1,1992 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/document_writes.py",
+ "cases": [
+  {
+   "name": "get missing document",
+   "steps": [
+    {
+     "method": "GET",
+     "path": "projects/p-get-missing/databases/(default)/documents/c/d",
+     "body": null,
+     "status": 404,
+     "response": {
+      "error": {
+       "code": 404,
+       "message": "Document (projects/p-get-missing/databases/(default)/documents/c/d) not found.",
+       "status": "NOT_FOUND"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "create twice",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-create-twice/databases/(default)/documents/c?documentId=d",
+     "body": {
+      "fields": {
+       "a": {
+        "integerValue": "1"
+       }
+      }
+     },
+     "status": 200,
+     "response": {
+      "name": "projects/p-create-twice/databases/(default)/documents/c/d",
+      "fields": {
+       "a": {
+        "integerValue": "1"
+       }
+      },
+      "createTime": "2026-10-10T02:41:03.635905Z",
+      "updateTime": "2026-10-10T02:41:03.635905Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-create-twice/databases/(default)/documents/c?documentId=d",
+     "body": {
+      "fields": {
+       "a": {
+        "integerValue": "2"
+       }
+      }
+     },
+     "status": 409,
+     "response": {
+      "error": {
+       "code": 409,
+       "message": "entity already exists: EntityRef[partitionRef=dev~p-create-twice, path=/c/d]",
+       "status": "ALREADY_EXISTS"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "create without id",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-create-auto/databases/(default)/documents/c",
+     "body": {
+      "fields": {
+       "a": {
+        "integerValue": "1"
+       }
+      }
+     },
+     "status": 200,
+     "response": {
+      "name": "projects/p-create-auto/databases/(default)/documents/c/TCvDCsQgNWUpqCrYXQTB",
+      "fields": {
+       "a": {
+        "integerValue": "1"
+       }
+      },
+      "createTime": "2026-10-10T02:41:03.681775Z",
+      "updateTime": "2026-10-10T02:41:03.681775Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update exists=true on missing",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-upd-missing/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-upd-missing/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        },
+        "currentDocument": {
+         "exists": true
+        }
+       }
+      ]
+     },
+     "status": 404,
+     "response": {
+      "error": {
+       "code": 404,
+       "message": "no entity to update: app: \"dev~p-upd-missing\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\n",
+       "status": "NOT_FOUND"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "update exists=false on existing",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-upd-existing/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-upd-existing/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:03.724416Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:03.724416Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-upd-existing/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-upd-existing/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "2"
+          }
+         }
+        },
+        "currentDocument": {
+         "exists": false
+        }
+       }
+      ]
+     },
+     "status": 409,
+     "response": {
+      "error": {
+       "code": 409,
+       "message": "entity already exists: EntityRef[partitionRef=dev~p-upd-existing, path=/c/d]",
+       "status": "ALREADY_EXISTS"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "update_time precondition",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-upd-time/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-upd-time/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:03.752288Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:03.752288Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-upd-time/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-upd-time/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "2"
+          }
+         }
+        },
+        "currentDocument": {
+         "updateTime": "2001-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "the stored version (1791600063752288) does not match the required base version (978307200000000)",
+       "status": "FAILED_PRECONDITION"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete exists=true on missing",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-del-missing/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/p-del-missing/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "exists": true
+        }
+       }
+      ]
+     },
+     "status": 404,
+     "response": {
+      "error": {
+       "code": 404,
+       "message": "no entity to update: app: \"dev~p-del-missing\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\n",
+       "status": "NOT_FOUND"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete missing without precondition",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-del-plain/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/p-del-plain/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {}
+      ],
+      "commitTime": "2026-10-10T02:41:03.784709Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "identical set twice",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-identical/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-identical/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:03.798513Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:03.798513Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-identical/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-identical/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:03.798513Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:03.810994Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/p-identical/databases/(default)/documents/c/d",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/p-identical/databases/(default)/documents/c/d",
+      "fields": {
+       "a": {
+        "integerValue": "1"
+       }
+      },
+      "createTime": "2026-10-10T02:41:03.798513Z",
+      "updateTime": "2026-10-10T02:41:03.798513Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update mask",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-mask/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-mask/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          },
+          "b": {
+           "integerValue": "2"
+          },
+          "c": {
+           "mapValue": {
+            "fields": {
+             "x": {
+              "integerValue": "1"
+             },
+             "y": {
+              "integerValue": "2"
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:03.837302Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:03.837302Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-mask/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-mask/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "10"
+          },
+          "c": {
+           "mapValue": {
+            "fields": {
+             "x": {
+              "integerValue": "5"
+             }
+            }
+           }
+          },
+          "e": {
+           "integerValue": "9"
+          }
+         }
+        },
+        "updateMask": {
+         "fieldPaths": [
+          "a",
+          "c.x",
+          "d"
+         ]
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:03.849677Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:03.849677Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/p-mask/databases/(default)/documents/c/d",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/p-mask/databases/(default)/documents/c/d",
+      "fields": {
+       "b": {
+        "integerValue": "2"
+       },
+       "a": {
+        "integerValue": "10"
+       },
+       "c": {
+        "mapValue": {
+         "fields": {
+          "y": {
+           "integerValue": "2"
+          },
+          "x": {
+           "integerValue": "5"
+          }
+         }
+        }
+       }
+      },
+      "createTime": "2026-10-10T02:41:03.837302Z",
+      "updateTime": "2026-10-10T02:41:03.849677Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update mask on missing document",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-mask-missing/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-mask-missing/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          },
+          "b": {
+           "mapValue": {
+            "fields": {
+             "x": {
+              "integerValue": "1"
+             }
+            }
+           }
+          }
+         }
+        },
+        "updateMask": {
+         "fieldPaths": [
+          "b.x"
+         ]
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:03.866588Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:03.866588Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/p-mask-missing/databases/(default)/documents/c/d",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/p-mask-missing/databases/(default)/documents/c/d",
+      "fields": {
+       "b": {
+        "mapValue": {
+         "fields": {
+          "x": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      },
+      "createTime": "2026-10-10T02:41:03.866588Z",
+      "updateTime": "2026-10-10T02:41:03.866588Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "two writes to one document in a commit",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-twice/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-twice/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       },
+       {
+        "update": {
+         "name": "projects/p-twice/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "2"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:03.885773Z"
+       },
+       {
+        "updateTime": "2026-10-10T02:41:03.885773Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:03.885773Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "empty commit",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-empty/databases/(default)/documents:commit",
+     "body": {},
+     "status": 200,
+     "response": {}
+    }
+   ]
+  },
+  {
+   "name": "odd document name",
+   "steps": [
+    {
+     "method": "GET",
+     "path": "projects/p-odd/databases/(default)/documents/c",
+     "body": null,
+     "status": 200,
+     "response": {}
+    }
+   ]
+  },
+  {
+   "name": "reserved document id",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-reserved-id/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-reserved-id/databases/(default)/documents/c/__x__",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Resource id \"__x__\" is invalid because it is reserved.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "dot document id",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-dot-id/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-dot-id/databases/(default)/documents/c/.",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Document name \"projects/p-dot-id/databases/(default)/documents/c/.\" contains a resource id \".\" at index 50.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "reserved field name",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-reserved-field/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-reserved-field/databases/(default)/documents/c/d",
+         "fields": {
+          "__x__": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "field name __x__ is reserved",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "nested array",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-nested/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-nested/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "arrayValue": {
+            "values": [
+             {
+              "arrayValue": {}
+             }
+            ]
+           }
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Nested arrays are not allowed",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "invalid mask path",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-bad-mask/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-bad-mask/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        },
+        "updateMask": {
+         "fieldPaths": [
+          "a..b"
+         ]
+        }
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Invalid property path \"a..b\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\]|(?:\\\\.))+`)",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "batch get order",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-batchget/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-batchget/databases/(default)/documents/c/a",
+         "fields": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       },
+       {
+        "update": {
+         "name": "projects/p-batchget/databases/(default)/documents/c/b",
+         "fields": {
+          "n": {
+           "integerValue": "2"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:03.981022Z"
+       },
+       {
+        "updateTime": "2026-10-10T02:41:03.981022Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:03.981022Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-batchget/databases/(default)/documents:batchGet",
+     "body": {
+      "documents": [
+       "projects/p-batchget/databases/(default)/documents/c/b",
+       "projects/p-batchget/databases/(default)/documents/c/missing",
+       "projects/p-batchget/databases/(default)/documents/c/a"
+      ]
+     },
+     "status": 200,
+     "response": [
+      {
+       "found": {
+        "name": "projects/p-batchget/databases/(default)/documents/c/b",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        },
+        "createTime": "2026-10-10T02:41:03.981022Z",
+        "updateTime": "2026-10-10T02:41:03.981022Z"
+       },
+       "readTime": "2026-10-10T02:41:03.988527Z"
+      },
+      {
+       "missing": "projects/p-batchget/databases/(default)/documents/c/missing",
+       "readTime": "2026-10-10T02:41:03.988527Z"
+      },
+      {
+       "found": {
+        "name": "projects/p-batchget/databases/(default)/documents/c/a",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        },
+        "createTime": "2026-10-10T02:41:03.981022Z",
+        "updateTime": "2026-10-10T02:41:03.981022Z"
+       },
+       "readTime": "2026-10-10T02:41:03.988527Z"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "name": "get with mask",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-get-mask/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-get-mask/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          },
+          "b": {
+           "mapValue": {
+            "fields": {
+             "x": {
+              "integerValue": "1"
+             },
+             "y": {
+              "integerValue": "2"
+             }
+            }
+           }
+          },
+          "c": {
+           "integerValue": "3"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:04.002763Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:04.002763Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/p-get-mask/databases/(default)/documents/c/d?mask.fieldPaths=b.x&mask.fieldPaths=c",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/p-get-mask/databases/(default)/documents/c/d",
+      "fields": {
+       "b": {
+        "mapValue": {
+         "fields": {
+          "x": {
+           "integerValue": "1"
+          }
+         }
+        }
+       },
+       "c": {
+        "integerValue": "3"
+       }
+      },
+      "createTime": "2026-10-10T02:41:04.002763Z",
+      "updateTime": "2026-10-10T02:41:04.002763Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "get with read_time before creation",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-readtime/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-readtime/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:04.015426Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:04.015426Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/p-readtime/databases/(default)/documents/c/d?readTime=2001-01-01T00:00:00Z",
+     "body": null,
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Only timestamps past epoch are supported.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/p-readtime/databases/(default)/documents/c/d?readTime=2999-01-01T00:00:00Z",
+     "body": null,
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Only timestamps past epoch are supported.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "list documents",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-list/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-list/databases/(default)/documents/c/a",
+         "fields": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       },
+       {
+        "update": {
+         "name": "projects/p-list/databases/(default)/documents/c/b",
+         "fields": {
+          "n": {
+           "integerValue": "2"
+          }
+         }
+        }
+       },
+       {
+        "update": {
+         "name": "projects/p-list/databases/(default)/documents/c/c",
+         "fields": {
+          "n": {
+           "integerValue": "3"
+          }
+         }
+        }
+       },
+       {
+        "update": {
+         "name": "projects/p-list/databases/(default)/documents/c/ghost/sub/x",
+         "fields": {
+          "n": {
+           "integerValue": "4"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:04.035900Z"
+       },
+       {
+        "updateTime": "2026-10-10T02:41:04.035900Z"
+       },
+       {
+        "updateTime": "2026-10-10T02:41:04.035900Z"
+       },
+       {
+        "updateTime": "2026-10-10T02:41:04.035900Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:04.035900Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/p-list/databases/(default)/documents/c",
+     "body": null,
+     "status": 200,
+     "response": {
+      "documents": [
+       {
+        "name": "projects/p-list/databases/(default)/documents/c/a",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        },
+        "createTime": "2026-10-10T02:41:04.035900Z",
+        "updateTime": "2026-10-10T02:41:04.035900Z"
+       },
+       {
+        "name": "projects/p-list/databases/(default)/documents/c/b",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        },
+        "createTime": "2026-10-10T02:41:04.035900Z",
+        "updateTime": "2026-10-10T02:41:04.035900Z"
+       },
+       {
+        "name": "projects/p-list/databases/(default)/documents/c/c",
+        "fields": {
+         "n": {
+          "integerValue": "3"
+         }
+        },
+        "createTime": "2026-10-10T02:41:04.035900Z",
+        "updateTime": "2026-10-10T02:41:04.035900Z"
+       }
+      ]
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/p-list/databases/(default)/documents/c?pageSize=2",
+     "body": null,
+     "status": 200,
+     "response": {
+      "documents": [
+       {
+        "name": "projects/p-list/databases/(default)/documents/c/a",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        },
+        "createTime": "2026-10-10T02:41:04.035900Z",
+        "updateTime": "2026-10-10T02:41:04.035900Z"
+       },
+       {
+        "name": "projects/p-list/databases/(default)/documents/c/b",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        },
+        "createTime": "2026-10-10T02:41:04.035900Z",
+        "updateTime": "2026-10-10T02:41:04.035900Z"
+       }
+      ],
+      "nextPageToken": "CjFwcm9qZWN0cy9wLWxpc3QvZGF0YWJhc2VzLyhkZWZhdWx0KS9kb2N1bWVudHMvYy9iEghQut3VUnzH4w=="
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/p-list/databases/(default)/documents/c?showMissing=true",
+     "body": null,
+     "status": 403,
+     "response": {
+      "error": {
+       "code": 403,
+       "message": "Metadata operations require admin authentication.",
+       "status": "PERMISSION_DENIED"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "list documents page 2",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-list2/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-list2/databases/(default)/documents/c/a",
+         "fields": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       },
+       {
+        "update": {
+         "name": "projects/p-list2/databases/(default)/documents/c/b",
+         "fields": {
+          "n": {
+           "integerValue": "2"
+          }
+         }
+        }
+       },
+       {
+        "update": {
+         "name": "projects/p-list2/databases/(default)/documents/c/c",
+         "fields": {
+          "n": {
+           "integerValue": "3"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:04.067278Z"
+       },
+       {
+        "updateTime": "2026-10-10T02:41:04.067278Z"
+       },
+       {
+        "updateTime": "2026-10-10T02:41:04.067278Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:04.067278Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/p-list2/databases/(default)/documents/c?pageSize=2",
+     "body": null,
+     "status": 200,
+     "response": {
+      "documents": [
+       {
+        "name": "projects/p-list2/databases/(default)/documents/c/a",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        },
+        "createTime": "2026-10-10T02:41:04.067278Z",
+        "updateTime": "2026-10-10T02:41:04.067278Z"
+       },
+       {
+        "name": "projects/p-list2/databases/(default)/documents/c/b",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        },
+        "createTime": "2026-10-10T02:41:04.067278Z",
+        "updateTime": "2026-10-10T02:41:04.067278Z"
+       }
+      ],
+      "nextPageToken": "CjJwcm9qZWN0cy9wLWxpc3QyL2RhdGFiYXNlcy8oZGVmYXVsdCkvZG9jdW1lbnRzL2MvYhIIOZufR2JMk1k="
+     }
+    }
+   ]
+  },
+  {
+   "name": "list collection ids",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-ids/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-ids/databases/(default)/documents/users/a",
+         "fields": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       },
+       {
+        "update": {
+         "name": "projects/p-ids/databases/(default)/documents/users/a/posts/p",
+         "fields": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       },
+       {
+        "update": {
+         "name": "projects/p-ids/databases/(default)/documents/ghost/g/x/y",
+         "fields": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:04.081691Z"
+       },
+       {
+        "updateTime": "2026-10-10T02:41:04.081691Z"
+       },
+       {
+        "updateTime": "2026-10-10T02:41:04.081691Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:04.081691Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-ids/databases/(default)/documents:listCollectionIds",
+     "body": {},
+     "status": 403,
+     "response": {
+      "error": {
+       "code": 403,
+       "message": "Metadata operations require admin authentication.",
+       "status": "PERMISSION_DENIED"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-ids/databases/(default)/documents:listCollectionIds",
+     "body": {},
+     "status": 200,
+     "response": {
+      "collectionIds": [
+       "ghost",
+       "users"
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-ids/databases/(default)/documents/users/a:listCollectionIds",
+     "body": {},
+     "status": 200,
+     "response": {
+      "collectionIds": [
+       "posts"
+      ]
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-ids/databases/(default)/documents:listCollectionIds",
+     "body": {
+      "pageSize": 1
+     },
+     "status": 200,
+     "response": {
+      "collectionIds": [
+       "ghost"
+      ],
+      "nextPageToken": "CgVnaG9zdBIIx8O2//YLQAs="
+     }
+    }
+   ]
+  },
+  {
+   "name": "batch write",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-batchwrite/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-batchwrite/databases/(default)/documents/c/exists",
+         "fields": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:04.107680Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:04.107680Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-batchwrite/databases/(default)/documents:batchWrite",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-batchwrite/databases/(default)/documents/c/new",
+         "fields": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       },
+       {
+        "update": {
+         "name": "projects/p-batchwrite/databases/(default)/documents/c/missing",
+         "fields": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        },
+        "currentDocument": {
+         "exists": true
+        }
+       },
+       {
+        "update": {
+         "name": "projects/p-batchwrite/databases/(default)/documents/c/exists",
+         "fields": {
+          "n": {
+           "integerValue": "2"
+          }
+         }
+        },
+        "currentDocument": {
+         "exists": false
+        }
+       },
+       {
+        "delete": "projects/p-batchwrite/databases/(default)/documents/c/exists"
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "the same document cannot be written more than once in a single request",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "named database",
+   "steps": [
+    {
+     "method": "GET",
+     "path": "projects/p-named/databases/second/documents/c/d",
+     "body": null,
+     "status": 404,
+     "response": {
+      "error": {
+       "code": 404,
+       "message": "Document (projects/p-named/databases/second/documents/c/d) not found.",
+       "status": "NOT_FOUND"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-named/databases/second/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-named/databases/second/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:04.124376Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:04.124376Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "read_time around a commit",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-readtime2/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-readtime2/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:04.131568Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:04.131568Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/p-readtime2/databases/(default)/documents/c/d?readTime=2026-10-10T02%3A41%3A04.131568Z",
+     "body": null,
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Only timestamps past epoch are supported.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/p-readtime2/databases/(default)/documents/c/d?readTime=2026-10-10T02%3A41%3A04.131567Z",
+     "body": null,
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Only timestamps past epoch are supported.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/p-readtime2/databases/(default)/documents/c/d?readTime=2026-10-10T03%3A41%3A04.131568Z",
+     "body": null,
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Only timestamps past epoch are supported.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "numeric id document",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-numeric/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-numeric/databases/(default)/documents/c/__id5__",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:04.150481Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:04.150481Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/p-numeric/databases/(default)/documents/c/__id5__",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/p-numeric/databases/(default)/documents/c/__id5__",
+      "fields": {
+       "a": {
+        "integerValue": "1"
+       }
+      },
+      "createTime": "2026-10-10T02:41:04.150481Z",
+      "updateTime": "2026-10-10T02:41:04.150481Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-numeric/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-numeric/databases/(default)/documents/c/__id5x__",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "A long document ID string must be formatted like '__id{LONG}__', where LONG is a 64-bit integer. Found: '__id5x__'.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "batch write statuses",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-batchwrite2/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-batchwrite2/databases/(default)/documents/c/exists",
+         "fields": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:04.165018Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:04.165018Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-batchwrite2/databases/(default)/documents:batchWrite",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-batchwrite2/databases/(default)/documents/c/new",
+         "fields": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       },
+       {
+        "update": {
+         "name": "projects/p-batchwrite2/databases/(default)/documents/c/missing",
+         "fields": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        },
+        "currentDocument": {
+         "exists": true
+        }
+       },
+       {
+        "update": {
+         "name": "projects/p-batchwrite2/databases/(default)/documents/c/exists",
+         "fields": {
+          "n": {
+           "integerValue": "2"
+          }
+         }
+        },
+        "currentDocument": {
+         "exists": false
+        }
+       },
+       {
+        "delete": "projects/p-batchwrite2/databases/(default)/documents/c/other"
+       }
+      ]
+     },
+     "status": 403,
+     "response": {
+      "error": {
+       "code": 403,
+       "message": "Batch writes require admin authentication.",
+       "status": "PERMISSION_DENIED"
+      }
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/p-batchwrite2/databases/(default)/documents/c/new",
+     "body": null,
+     "status": 404,
+     "response": {
+      "error": {
+       "code": 404,
+       "message": "Document (projects/p-batchwrite2/databases/(default)/documents/c/new) not found.",
+       "status": "NOT_FOUND"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "list documents with missing, as admin",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-list-admin/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-list-admin/databases/(default)/documents/c/a",
+         "fields": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       },
+       {
+        "update": {
+         "name": "projects/p-list-admin/databases/(default)/documents/c/ghost/sub/x",
+         "fields": {
+          "n": {
+           "integerValue": "4"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:04.180542Z"
+       },
+       {
+        "updateTime": "2026-10-10T02:41:04.180542Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:04.180542Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/p-list-admin/databases/(default)/documents/c?showMissing=true",
+     "body": null,
+     "status": 200,
+     "response": {
+      "documents": [
+       {
+        "name": "projects/p-list-admin/databases/(default)/documents/c/a",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        },
+        "createTime": "2026-10-10T02:41:04.180542Z",
+        "updateTime": "2026-10-10T02:41:04.180542Z"
+       },
+       {
+        "name": "projects/p-list-admin/databases/(default)/documents/c/ghost"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "list documents next page",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-list3/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-list3/databases/(default)/documents/c/a",
+         "fields": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       },
+       {
+        "update": {
+         "name": "projects/p-list3/databases/(default)/documents/c/b",
+         "fields": {
+          "n": {
+           "integerValue": "2"
+          }
+         }
+        }
+       },
+       {
+        "update": {
+         "name": "projects/p-list3/databases/(default)/documents/c/c",
+         "fields": {
+          "n": {
+           "integerValue": "3"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:04.193361Z"
+       },
+       {
+        "updateTime": "2026-10-10T02:41:04.193361Z"
+       },
+       {
+        "updateTime": "2026-10-10T02:41:04.193361Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:04.193361Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/p-list3/databases/(default)/documents/c?pageSize=2",
+     "body": null,
+     "status": 200,
+     "response": {
+      "documents": [
+       {
+        "name": "projects/p-list3/databases/(default)/documents/c/a",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        },
+        "createTime": "2026-10-10T02:41:04.193361Z",
+        "updateTime": "2026-10-10T02:41:04.193361Z"
+       },
+       {
+        "name": "projects/p-list3/databases/(default)/documents/c/b",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        },
+        "createTime": "2026-10-10T02:41:04.193361Z",
+        "updateTime": "2026-10-10T02:41:04.193361Z"
+       }
+      ],
+      "nextPageToken": "CjJwcm9qZWN0cy9wLWxpc3QzL2RhdGFiYXNlcy8oZGVmYXVsdCkvZG9jdW1lbnRzL2MvYhIIgXtbF8m9qZY="
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/p-list3/databases/(default)/documents/c?pageSize=2&pageToken=CjJwcm9qZWN0cy9wLWxpc3QzL2RhdGFiYXNlcy8oZGVmYXVsdCkvZG9jdW1lbnRzL2MvYhIIgXtbF8m9qZY%3D",
+     "body": null,
+     "status": 200,
+     "response": {
+      "documents": [
+       {
+        "name": "projects/p-list3/databases/(default)/documents/c/c",
+        "fields": {
+         "n": {
+          "integerValue": "3"
+         }
+        },
+        "createTime": "2026-10-10T02:41:04.193361Z",
+        "updateTime": "2026-10-10T02:41:04.193361Z"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "update_time precondition that matches",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/p-upd-time-ok/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-upd-time-ok/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:04.207523Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:04.207523Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-upd-time-ok/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-upd-time-ok/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "2"
+          }
+         }
+        },
+        "currentDocument": {
+         "updateTime": "2026-10-10T02:41:04.207523Z"
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T02:41:04.212568Z"
+       }
+      ],
+      "commitTime": "2026-10-10T02:41:04.212568Z"
+     }
+    }
+   ]
+  }
+ ]
+}

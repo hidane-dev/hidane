@@ -148,11 +148,31 @@ pub trait WriteBatch {
 /// Called for each document of a scan, in `__name__` order; return `Break` to stop early.
 pub type Visit<'a> = dyn FnMut(&Arc<StoredDocument>) -> ControlFlow<()> + 'a;
 
+/// An entry of a collection listing.
+#[derive(Debug)]
+pub enum ListItem<'a> {
+    Document(&'a Arc<StoredDocument>),
+    /// No document exists at this path, but documents exist below it (in subcollections).
+    Missing(&'a ResourcePath),
+}
+
+/// Options of [`Store::list_collection`].
+#[derive(Debug, Default, Clone, Copy)]
+pub struct ListOptions<'a> {
+    /// Resume after this document path (exclusive), for paging.
+    pub after: Option<&'a ResourcePath>,
+    /// Also report missing documents that have descendants (`ListDocuments.show_missing`).
+    pub include_missing: bool,
+}
+
 /// The storage engine. `database` is the full database name,
 /// `projects/{project}/databases/{database}`; databases are created on first write.
 pub trait Store: Send + Sync {
     /// A read time that sees every commit made so far.
     fn latest_read_time(&self, database: &str) -> ReadTime;
+
+    /// The oldest read time still served; older versions may have been dropped.
+    fn earliest_read_time(&self, database: &str) -> ReadTime;
 
     fn get(&self, database: &str, path: &ResourcePath, at: ReadTime)
     -> Option<Arc<StoredDocument>>;
@@ -164,6 +184,27 @@ pub trait Store: Send + Sync {
         collection: &ResourcePath,
         at: ReadTime,
         visit: &mut Visit<'_>,
+    ) {
+        self.list_collection(
+            database,
+            collection,
+            at,
+            ListOptions::default(),
+            &mut |item| match item {
+                ListItem::Document(doc) => visit(doc),
+                ListItem::Missing(_) => ControlFlow::Continue(()),
+            },
+        );
+    }
+
+    /// Like [`Store::scan_collection`], with paging and missing documents.
+    fn list_collection(
+        &self,
+        database: &str,
+        collection: &ResourcePath,
+        at: ReadTime,
+        options: ListOptions<'_>,
+        visit: &mut dyn FnMut(ListItem<'_>) -> ControlFlow<()>,
     );
 
     /// Every document under `parent` (a document path, or the root) whose collection ID is

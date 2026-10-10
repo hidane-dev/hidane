@@ -1,0 +1,151 @@
+[
+ {
+  "name": "set alice",
+  "ok": "ok"
+ },
+ {
+  "name": "get alice",
+  "ok": {
+   "exists": true,
+   "data": {
+    "age": 30,
+    "name": "Alice",
+    "nested": {
+     "x": 1
+    },
+    "tags": [
+     "a",
+     "b"
+    ]
+   },
+   "createEqualsUpdate": true,
+   "updateEqualsWrite": true
+  }
+ },
+ {
+  "name": "update dotted",
+  "ok": {
+   "age": 31,
+   "name": "Alice",
+   "nested": {
+    "x": 1,
+    "y": 2
+   },
+   "tags": [
+    "a",
+    "b"
+   ]
+  }
+ },
+ {
+  "name": "set merge",
+  "ok": {
+   "age": 31,
+   "city": "Tokyo",
+   "name": "Alice",
+   "nested": {
+    "x": 1,
+    "y": 2,
+    "z": 3
+   },
+   "tags": [
+    "a",
+    "b"
+   ]
+  }
+ },
+ {
+  "name": "create existing",
+  "error": {
+   "code": 6,
+   "message": "Document already exists: projects/demo-sdk-diff/databases/(default)/documents/users/alice"
+  }
+ },
+ {
+  "name": "update missing",
+  "error": {
+   "code": 5,
+   "message": "No document to update: projects/demo-sdk-diff/databases/(default)/documents/users/nobody"
+  }
+ },
+ {
+  "name": "delete with stale lastUpdateTime",
+  "error": {
+   "code": 9,
+   "message": "the stored version (<n>) does not match the required base version (<n>)"
+  }
+ },
+ {
+  "name": "identical set keeps updateTime",
+  "ok": {
+   "writeTimeIsOldUpdateTime": true,
+   "updateTimeUnchanged": true
+  }
+ },
+ {
+  "name": "getAll",
+  "ok": [
+   {
+    "id": "nobody",
+    "exists": false
+   },
+   {
+    "id": "alice",
+    "exists": true
+   }
+  ]
+ },
+ {
+  "name": "batch",
+  "ok": 5
+ },
+ {
+  "name": "listDocuments users",
+  "ok": [
+   "bob",
+   "carol"
+  ]
+ },
+ {
+  "name": "listDocuments ghosts (missing parent)",
+  "ok": [
+   "g"
+  ]
+ },
+ {
+  "name": "listCollections root",
+  "ok": [
+   "ghosts",
+   "users"
+  ]
+ },
+ {
+  "name": "listCollections bob",
+  "ok": [
+   "posts"
+  ]
+ },
+ {
+  "name": "bulkWriter",
+  "ok": [
+   "ok",
+   "error 6",
+   "error 5",
+   "ok"
+  ]
+ },
+ {
+  "name": "after bulkWriter",
+  "ok": [
+   "bob",
+   "dave"
+  ]
+ },
+ {
+  "name": "serverTimestamp (transforms, #23)",
+  "error": {
+   "code": 12,
+   "message": "Field transforms are not implemented yet (https://github.com/hidane-dev/hidane/issues/23)"
+  }
+ }
+]

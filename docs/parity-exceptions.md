@@ -18,6 +18,9 @@ Status: Phase 0 draft. Entries will be tagged in the conformance suite (issue #4
 | The `issues[].severity` returned by `:securityRules` is a string (`"ERROR"`) while firebase-tools compares it against a numeric enum, so invalid rules still print "Rules updated." | hidane returns the same string the official emulator does; the CLI-side comparison is an upstream bug | Keep wire parity; report upstream |
 | gRPC reflection lists services but `grpcurl describe` fails on a `google.api.api_visibility` extension | Full reflection that works with `grpcurl` | Developer convenience |
 | `GET //` never answers (the connection hangs) | `404 Not Found` | Bug |
+| Precondition failures print the emulator's internal Datastore key: `entity already exists: EntityRef[partitionRef=dev~p, path=/c/d]`, and a protobuf text dump of the key for `no entity to update` | Production Firestore's wording, `Document already exists: <name>` and `No document to update: <name>`; same status codes (`ALREADY_EXISTS`, `NOT_FOUND`) | Internal detail; applications see the production wording in production |
+| `read_time` older than at least two hours is still served (the exact limit is #86) | Up to one hour old, like production Firestore; older answers `FAILED_PRECONDITION` "The requested 'read_time' is too old." with the official message | Bounded memory for old versions (ADR 0002) |
+| The REST `readTime` parameter always fails with "Only timestamps past epoch are supported.", even for the latest commit time (gRPC works) | Will follow the gRPC behaviour when REST lands (#34) | Bug |
 
 ## Official-emulator behaviour that differs from production (parity target to be decided)
 
