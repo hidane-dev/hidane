@@ -7,3 +7,43 @@ bun = "latest"
 [env]
 NPM_CONFIG_USERCONFIG = "{{config_root}}/.npmrc.local"
 _.file = ".env.local"
+
+# One-time and release chores (docs/releasing.md). They run with the settings above, so npm and
+# cargo use the credentials kept in the ignored local files.
+
+[tasks."npm:placeholders"]
+description = "Create the @hidane/<platform> packages on npm once, as empty placeholders, so trusted publishing can be configured for them"
+run = '''
+out=$(mktemp -d)
+node packaging/npm/assemble.mjs --placeholders 0.0.1 "$out"
+for p in darwin-arm64 darwin-x64 linux-arm64 linux-x64 win32-x64; do
+  if [ "$(npm view "@hidane/$p@0.0.1" version 2>/dev/null)" = 0.0.1 ]; then
+    echo "@hidane/$p@0.0.1 is already on npm"
+  else
+    (cd "$out/$p" && npm publish --access public)
+  fi
+done
+rm -rf "$out"
+'''
+
+[tasks."crates:bootstrap"]
+description = "Publish hidane-proto and hidane-core to crates.io once, at the current version, so trusted publishing can be configured for them"
+run = '''
+version=$(cargo pkgid -p hidane | sed 's/.*[#@]//')
+for crate in hidane-proto hidane-core; do
+  if [ "$(curl -s -o /dev/null -w '%{http_code}' -H 'User-Agent: hidane-release (github.com/hidane-dev/hidane)' "https://crates.io/api/v1/crates/$crate/$version")" = 200 ]; then
+    echo "$crate $version is already on crates.io"
+  else
+    cargo publish --locked -p "$crate"
+  fi
+done
+'''
+
+[tasks."release:check"]
+description = "Check that Cargo.toml, its pins and the pub launcher carry one version (pass a tag to check it too)"
+run = "node packaging/check-versions.mjs"
+
+[tasks."site:deploy"]
+description = "Deploy hidane.dev (website/) with wrangler"
+dir = "{{config_root}}/website"
+run = "bun run deploy"

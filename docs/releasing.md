@@ -43,7 +43,8 @@ The macOS binaries are not signed or notarized yet. Archives fetched with `curl`
    `Cargo.toml` and the `=` pins of `hidane-core` and `hidane-proto` under
    `[workspace.dependencies]`; `version` in `packaging/pub/pubspec.yaml` and `hidaneVersion` in
    `packaging/pub/lib/hidane.dart`, with a `packaging/pub/CHANGELOG.md` entry.
-   `node packaging/check-versions.mjs` checks that they agree, and CI runs it.
+   `mise run release:check` (`node packaging/check-versions.mjs`) checks that they agree, and CI
+   runs it.
 2. Push the tag `v<version>` on that commit. The workflow checks the tag against those versions,
    builds every target, writes `sha256sums.txt`, attests the archives and creates a **draft**
    release with all of them.
@@ -62,8 +63,8 @@ The macOS binaries are not signed or notarized yet. Archives fetched with `curl`
    crates.io, npm and pub.dev are reached through trusted publishing: each job gets a
    short-lived token for this workflow, and no registry token is stored in the repository. A
    failed job can be re-run; the crates.io and npm jobs skip versions that are already published.
-5. Deploy hidane.dev (`bun run deploy` in `website/`), whose `install.sh` installs the latest
-   release.
+5. Deploy hidane.dev (`mise run site:deploy`, `bun run deploy` in `website/`), whose `install.sh`
+   installs the latest release.
 
 A tag with a pre-release suffix (`v0.1.0-rc.1`) stops at the draft. A pull request that changes the
 workflow runs the builds as a dry run; nothing is released.
@@ -80,17 +81,14 @@ it can be configured. The registries and the GitHub settings below are set up on
    packages once, from empty placeholders, while logged in to npm:
 
    ```sh
-   node packaging/npm/assemble.mjs --placeholders 0.0.1 /tmp/hidane-npm
-   for p in darwin-arm64 darwin-x64 linux-arm64 linux-x64 win32-x64; do
-     (cd /tmp/hidane-npm/$p && npm publish --access public)
-   done
+   mise run npm:placeholders   # node packaging/npm/assemble.mjs --placeholders 0.0.1 <dir>, then npm publish each
    ```
 
    Then, for `hidane` and each `@hidane/<platform>` package: *Settings → Trusted publishing →
    GitHub Actions*, repository `hidane-dev/hidane`, workflow `release.yml`.
 3. **crates.io**: publish `hidane-proto` and `hidane-core` once with an API token, at any version
-   before the first release (a release candidate): `cargo login`, then
-   `cargo publish -p hidane-proto` and `cargo publish -p hidane-core`. Then, for `hidane`,
+   before the first release (a release candidate): `mise run crates:bootstrap` (`cargo publish -p
+   hidane-proto`, then `-p hidane-core`). Then, for `hidane`,
    `hidane-core` and `hidane-proto`: *Settings → Trusted Publishing*, repository
    `hidane-dev/hidane`, workflow `release.yml`.
 4. **pub.dev**: for `hidane`, *Admin → Automated publishing → Enable publishing from GitHub
