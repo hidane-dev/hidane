@@ -114,6 +114,11 @@ case("numeric id document", "p-numeric", [
     commit(update("c/__id5__", {"a": i(1)})),
     ("GET", "{base}/c/__id5__", None),
     commit(update("c/__id5x__", {"a": i(1)})),
+    commit(update("c/__id0__", {"a": i(1)})),
+    commit(update("c/__id-0__", {"a": i(1)})),
+    commit(update("c/__id007__", {"a": i(1)})),
+    commit(update("c/__id+5__", {"a": i(1)})),
+    commit(update("c/__id-9223372036854775808__", {"a": i(1)})),
 ])
 case("batch write statuses", "p-batchwrite2", [
     commit(update("c/exists", {"n": i(1)})),

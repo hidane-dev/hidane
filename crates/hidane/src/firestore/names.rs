@@ -178,11 +178,19 @@ fn reserved_pattern(id: &str) -> bool {
 fn reserved(id: &str) -> Result<(), Status> {
     if reserved_pattern(id) {
         if id.starts_with("__id") {
-            if numeric_id(id).is_none() {
-                return Err(Status::invalid_argument(format!(
-                    "A long document ID string must be formatted like '__id{{LONG}}__', where \
-                     LONG is a 64-bit integer. Found: '{id}'."
-                )));
+            match numeric_id(id) {
+                None => {
+                    return Err(Status::invalid_argument(format!(
+                        "A long document ID string must be formatted like '__id{{LONG}}__', \
+                         where LONG is a 64-bit integer. Found: '{id}'."
+                    )));
+                }
+                Some(0) => {
+                    return Err(Status::invalid_argument(
+                        "Document ID of type long must be non-zero",
+                    ));
+                }
+                Some(_) => {}
             }
         } else {
             return Err(Status::invalid_argument(format!(

@@ -1599,10 +1599,10 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T02:41:04.150481Z"
+        "updateTime": "2026-10-10T12:37:37.056287Z"
        }
       ],
-      "commitTime": "2026-10-10T02:41:04.150481Z"
+      "commitTime": "2026-10-10T12:37:37.056287Z"
      }
     },
     {
@@ -1617,8 +1617,8 @@
         "integerValue": "1"
        }
       },
-      "createTime": "2026-10-10T02:41:04.150481Z",
-      "updateTime": "2026-10-10T02:41:04.150481Z"
+      "createTime": "2026-10-10T12:37:37.056287Z",
+      "updateTime": "2026-10-10T12:37:37.056287Z"
      }
     },
     {
@@ -1645,6 +1645,137 @@
        "message": "A long document ID string must be formatted like '__id{LONG}__', where LONG is a 64-bit integer. Found: '__id5x__'.",
        "status": "INVALID_ARGUMENT"
       }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-numeric/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-numeric/databases/(default)/documents/c/__id0__",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Document ID of type long must be non-zero",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-numeric/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-numeric/databases/(default)/documents/c/__id-0__",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "A long document ID string must be formatted like '__id{LONG}__', where LONG is a 64-bit integer. Found: '__id-0__'.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-numeric/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-numeric/databases/(default)/documents/c/__id007__",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "A long document ID string must be formatted like '__id{LONG}__', where LONG is a 64-bit integer. Found: '__id007__'.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-numeric/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-numeric/databases/(default)/documents/c/__id+5__",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "A long document ID string must be formatted like '__id{LONG}__', where LONG is a 64-bit integer. Found: '__id+5__'.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/p-numeric/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/p-numeric/databases/(default)/documents/c/__id-9223372036854775808__",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-10T12:37:37.083721Z"
+       }
+      ],
+      "commitTime": "2026-10-10T12:37:37.083721Z"
      }
     }
    ]
