@@ -15,9 +15,15 @@ Each release has one archive per target, its checksum and its build provenance:
 | Windows x64 | `hidane-<version>-x86_64-pc-windows-msvc.zip` |
 
 An archive holds one directory, `hidane-<version>-<target>/`, with the `hidane` binary
-(`hidane.exe` on Windows), `LICENSE-MIT`, `LICENSE-APACHE` and `README.md`. `sha256sums.txt` lists the SHA-256 of every
-archive, as `sha256sum` prints it. Linux binaries are statically linked, so they run on any
-distribution, Alpine included.
+(`hidane.exe` on Windows), `LICENSE-MIT`, `LICENSE-APACHE`, `THIRD-PARTY-LICENSES.txt` and
+`README.md`. `sha256sums.txt` lists the SHA-256 of every archive, as `sha256sum` prints it. Linux
+binaries are statically linked, so they run on any distribution, Alpine included.
+
+`THIRD-PARTY-LICENSES.txt` holds the licenses of the crates built into the binary and of the
+googleapis protobuf definitions it is generated from; `hidane --licenses` prints the same text.
+The release workflow writes it with [cargo-about](https://github.com/EmbarkStudios/cargo-about)
+(`about.toml`, `about.hbs`) and embeds it at build time; CI checks on every pull request that
+each dependency's license is one `about.toml` accepts.
 
 Each archive carries a [GitHub artifact attestation](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)
 of its build provenance, which ties it to the workflow run and commit that built it:

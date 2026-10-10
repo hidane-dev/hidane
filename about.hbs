@@ -1,0 +1,26 @@
+Third-party software in hidane
+==============================
+
+hidane is licensed under the MIT License or the Apache License, Version 2.0, at your option
+(https://github.com/hidane-dev/hidane). Its binaries also contain the software listed below,
+under the licenses that follow.
+
+The protocol buffer definitions hidane is built from (google/firestore/v1, google/api,
+google/rpc, google/type) come from googleapis, https://github.com/googleapis/googleapis,
+Copyright Google LLC, under the Apache License, Version 2.0, whose text is below.
+
+{{#each overview}}
+- {{{name}}}: {{count}} crate{{#if (ne count 1)}}s{{/if}}
+{{/each}}
+{{#each licenses}}
+
+--------------------------------------------------------------------------------
+{{{name}}}
+
+Used by:
+{{#each used_by}}
+- {{crate.name}} {{crate.version}}{{#if crate.repository}} ({{crate.repository}}){{/if}}
+{{/each}}
+
+{{{text}}}
+{{/each}}
