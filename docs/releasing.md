@@ -49,7 +49,6 @@ A pull request that changes the workflow runs the builds as a dry run; nothing i
 
 ## Not decided here
 
-- The license before the first release ([ADR 0001](adr/0001-license.md), #76).
 - Further channels (Homebrew tap, `cargo binstall`, npm, pub.dev, a container image, `curl | sh`)
   build on these assets: #77, #78, #79. `cargo binstall` also needs the crate published, which
   `publish = false` prevents today.
