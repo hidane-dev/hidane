@@ -25,6 +25,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build_client(true)
         .build_transport(false)
         .generate_default_stubs(true)
+        // Firestore orders map keys by UTF-8 bytes, which is exactly `String`'s `Ord`, so a
+        // BTreeMap keeps document fields and map values in canonical order for free.
+        .btree_map(".google.firestore.v1")
         .include_file("mod.rs")
         .compile_fds(fds)?;
     Ok(())

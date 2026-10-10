@@ -1,0 +1,728 @@
+{
+ "comment": "Values whose relative order hidane must reproduce. Listed roughly in the expected order; the oracle decides. Labels are only for humans.",
+ "values": [
+  [
+   "null",
+   {
+    "nullValue": null
+   }
+  ],
+  [
+   "false",
+   {
+    "booleanValue": false
+   }
+  ],
+  [
+   "true",
+   {
+    "booleanValue": true
+   }
+  ],
+  [
+   "NaN",
+   {
+    "doubleValue": "NaN"
+   }
+  ],
+  [
+   "NaN again",
+   {
+    "doubleValue": "NaN"
+   }
+  ],
+  [
+   "-Infinity",
+   {
+    "doubleValue": "-Infinity"
+   }
+  ],
+  [
+   "int64 min",
+   {
+    "integerValue": "-9223372036854775808"
+   }
+  ],
+  [
+   "double -2^63",
+   {
+    "doubleValue": -9.223372036854776e+18
+   }
+  ],
+  [
+   "double -1e300",
+   {
+    "doubleValue": -1e+300
+   }
+  ],
+  [
+   "double -2.5",
+   {
+    "doubleValue": -2.5
+   }
+  ],
+  [
+   "int -1",
+   {
+    "integerValue": "-1"
+   }
+  ],
+  [
+   "double -1.0",
+   {
+    "doubleValue": -1.0
+   }
+  ],
+  [
+   "double -0.0",
+   {
+    "doubleValue": -0.0
+   }
+  ],
+  [
+   "int 0",
+   {
+    "integerValue": "0"
+   }
+  ],
+  [
+   "double 0.0",
+   {
+    "doubleValue": 0.0
+   }
+  ],
+  [
+   "double min subnormal",
+   {
+    "doubleValue": 5e-324
+   }
+  ],
+  [
+   "double 0.5",
+   {
+    "doubleValue": 0.5
+   }
+  ],
+  [
+   "int 1",
+   {
+    "integerValue": "1"
+   }
+  ],
+  [
+   "double 1.0",
+   {
+    "doubleValue": 1.0
+   }
+  ],
+  [
+   "int 2^53",
+   {
+    "integerValue": "9007199254740992"
+   }
+  ],
+  [
+   "double 2^53",
+   {
+    "doubleValue": 9007199254740992.0
+   }
+  ],
+  [
+   "int 2^53+1",
+   {
+    "integerValue": "9007199254740993"
+   }
+  ],
+  [
+   "double 2^53+2",
+   {
+    "doubleValue": 9007199254740994.0
+   }
+  ],
+  [
+   "int64 max",
+   {
+    "integerValue": "9223372036854775807"
+   }
+  ],
+  [
+   "double 2^63",
+   {
+    "doubleValue": 9.223372036854776e+18
+   }
+  ],
+  [
+   "double 1e300",
+   {
+    "doubleValue": 1e+300
+   }
+  ],
+  [
+   "Infinity",
+   {
+    "doubleValue": "Infinity"
+   }
+  ],
+  [
+   "ts 0001-01-01",
+   {
+    "timestampValue": "0001-01-01T00:00:00Z"
+   }
+  ],
+  [
+   "ts epoch",
+   {
+    "timestampValue": "1970-01-01T00:00:00Z"
+   }
+  ],
+  [
+   "ts epoch in +09:00",
+   {
+    "timestampValue": "1970-01-01T09:00:00+09:00"
+   }
+  ],
+  [
+   "ts epoch+1ns",
+   {
+    "timestampValue": "1970-01-01T00:00:00.000000001Z"
+   }
+  ],
+  [
+   "ts epoch+999ns",
+   {
+    "timestampValue": "1970-01-01T00:00:00.000000999Z"
+   }
+  ],
+  [
+   "ts epoch+1us",
+   {
+    "timestampValue": "1970-01-01T00:00:00.000001Z"
+   }
+  ],
+  [
+   "ts epoch+1500ns",
+   {
+    "timestampValue": "1970-01-01T00:00:00.000001500Z"
+   }
+  ],
+  [
+   "ts epoch+2us",
+   {
+    "timestampValue": "1970-01-01T00:00:00.000002Z"
+   }
+  ],
+  [
+   "ts 2026-10-10",
+   {
+    "timestampValue": "2026-10-10T00:00:00Z"
+   }
+  ],
+  [
+   "ts 9999-12-31",
+   {
+    "timestampValue": "9999-12-31T23:59:59.999999999Z"
+   }
+  ],
+  [
+   "str empty",
+   {
+    "stringValue": ""
+   }
+  ],
+  [
+   "str NUL",
+   {
+    "stringValue": "\u0000"
+   }
+  ],
+  [
+   "str U+0001",
+   {
+    "stringValue": "\u0001"
+   }
+  ],
+  [
+   "str A",
+   {
+    "stringValue": "A"
+   }
+  ],
+  [
+   "str B",
+   {
+    "stringValue": "B"
+   }
+  ],
+  [
+   "str a",
+   {
+    "stringValue": "a"
+   }
+  ],
+  [
+   "str a NUL",
+   {
+    "stringValue": "a\u0000"
+   }
+  ],
+  [
+   "str aa",
+   {
+    "stringValue": "aa"
+   }
+  ],
+  [
+   "str ab",
+   {
+    "stringValue": "ab"
+   }
+  ],
+  [
+   "str e-acute",
+   {
+    "stringValue": "é"
+   }
+  ],
+  [
+   "str U+E000",
+   {
+    "stringValue": ""
+   }
+  ],
+  [
+   "str U+FF5E",
+   {
+    "stringValue": "～"
+   }
+  ],
+  [
+   "str U+10000",
+   {
+    "stringValue": "𐀀"
+   }
+  ],
+  [
+   "str U+1F600",
+   {
+    "stringValue": "😀"
+   }
+  ],
+  [
+   "bytes empty",
+   {
+    "bytesValue": ""
+   }
+  ],
+  [
+   "bytes 00",
+   {
+    "bytesValue": "AA=="
+   }
+  ],
+  [
+   "bytes 00 00",
+   {
+    "bytesValue": "AAA="
+   }
+  ],
+  [
+   "bytes 01",
+   {
+    "bytesValue": "AQ=="
+   }
+  ],
+  [
+   "bytes 80",
+   {
+    "bytesValue": "gA=="
+   }
+  ],
+  [
+   "bytes ff",
+   {
+    "bytesValue": "/w=="
+   }
+  ],
+  [
+   "ref c/a",
+   {
+    "referenceValue": "projects/demo/databases/(default)/documents/c/a"
+   }
+  ],
+  [
+   "ref c/a/sub/x",
+   {
+    "referenceValue": "projects/demo/databases/(default)/documents/c/a/sub/x"
+   }
+  ],
+  [
+   "ref c/b",
+   {
+    "referenceValue": "projects/demo/databases/(default)/documents/c/b"
+   }
+  ],
+  [
+   "ref c/__id5__",
+   {
+    "referenceValue": "projects/demo/databases/(default)/documents/c/__id5__"
+   }
+  ],
+  [
+   "ref c/__id10__",
+   {
+    "referenceValue": "projects/demo/databases/(default)/documents/c/__id10__"
+   }
+  ],
+  [
+   "ref c/__id-1__",
+   {
+    "referenceValue": "projects/demo/databases/(default)/documents/c/__id-1__"
+   }
+  ],
+  [
+   "ref c/__idx__",
+   {
+    "referenceValue": "projects/demo/databases/(default)/documents/c/__idx__"
+   }
+  ],
+  [
+   "ref c-b/x",
+   {
+    "referenceValue": "projects/demo/databases/(default)/documents/c-b/x"
+   }
+  ],
+  [
+   "ref c/U+FF5E",
+   {
+    "referenceValue": "projects/demo/databases/(default)/documents/c/～"
+   }
+  ],
+  [
+   "ref c/U+1F600",
+   {
+    "referenceValue": "projects/demo/databases/(default)/documents/c/😀"
+   }
+  ],
+  [
+   "ref other project",
+   {
+    "referenceValue": "projects/demo2/databases/(default)/documents/c/a"
+   }
+  ],
+  [
+   "geo -90,0",
+   {
+    "geoPointValue": {
+     "latitude": -90,
+     "longitude": 0
+    }
+   }
+  ],
+  [
+   "geo 0,-180",
+   {
+    "geoPointValue": {
+     "latitude": 0,
+     "longitude": -180
+    }
+   }
+  ],
+  [
+   "geo 0,0",
+   {
+    "geoPointValue": {
+     "latitude": 0,
+     "longitude": 0
+    }
+   }
+  ],
+  [
+   "geo 0,180",
+   {
+    "geoPointValue": {
+     "latitude": 0,
+     "longitude": 180
+    }
+   }
+  ],
+  [
+   "geo 90,0",
+   {
+    "geoPointValue": {
+     "latitude": 90,
+     "longitude": 0
+    }
+   }
+  ],
+  [
+   "array []",
+   {
+    "arrayValue": {}
+   }
+  ],
+  [
+   "array [null]",
+   {
+    "arrayValue": {
+     "values": [
+      {
+       "nullValue": null
+      }
+     ]
+    }
+   }
+  ],
+  [
+   "array [1]",
+   {
+    "arrayValue": {
+     "values": [
+      {
+       "integerValue": "1"
+      }
+     ]
+    }
+   }
+  ],
+  [
+   "array [1.0]",
+   {
+    "arrayValue": {
+     "values": [
+      {
+       "doubleValue": 1.0
+      }
+     ]
+    }
+   }
+  ],
+  [
+   "array [1,2]",
+   {
+    "arrayValue": {
+     "values": [
+      {
+       "integerValue": "1"
+      },
+      {
+       "integerValue": "2"
+      }
+     ]
+    }
+   }
+  ],
+  [
+   "array [2]",
+   {
+    "arrayValue": {
+     "values": [
+      {
+       "integerValue": "2"
+      }
+     ]
+    }
+   }
+  ],
+  [
+   "array [\"a\"]",
+   {
+    "arrayValue": {
+     "values": [
+      {
+       "stringValue": "a"
+      }
+     ]
+    }
+   }
+  ],
+  [
+   "array [[]]",
+   {
+    "arrayValue": {
+     "values": [
+      {
+       "arrayValue": {}
+      }
+     ]
+    }
+   }
+  ],
+  [
+   "vector [3]",
+   {
+    "mapValue": {
+     "fields": {
+      "__type__": {
+       "stringValue": "__vector__"
+      },
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "doubleValue": 3
+         }
+        ]
+       }
+      }
+     }
+    }
+   }
+  ],
+  [
+   "vector [0,5]",
+   {
+    "mapValue": {
+     "fields": {
+      "__type__": {
+       "stringValue": "__vector__"
+      },
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "doubleValue": 0
+         },
+         {
+          "doubleValue": 5
+         }
+        ]
+       }
+      }
+     }
+    }
+   }
+  ],
+  [
+   "vector [1,2]",
+   {
+    "mapValue": {
+     "fields": {
+      "__type__": {
+       "stringValue": "__vector__"
+      },
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "doubleValue": 1
+         },
+         {
+          "doubleValue": 2
+         }
+        ]
+       }
+      }
+     }
+    }
+   }
+  ],
+  [
+   "map {}",
+   {
+    "mapValue": {}
+   }
+  ],
+  [
+   "map {a:1}",
+   {
+    "mapValue": {
+     "fields": {
+      "a": {
+       "integerValue": "1"
+      }
+     }
+    }
+   }
+  ],
+  [
+   "map {a:1.0}",
+   {
+    "mapValue": {
+     "fields": {
+      "a": {
+       "doubleValue": 1.0
+      }
+     }
+    }
+   }
+  ],
+  [
+   "map {a:1,b:0}",
+   {
+    "mapValue": {
+     "fields": {
+      "a": {
+       "integerValue": "1"
+      },
+      "b": {
+       "integerValue": "0"
+      }
+     }
+    }
+   }
+  ],
+  [
+   "map {a:2}",
+   {
+    "mapValue": {
+     "fields": {
+      "a": {
+       "integerValue": "2"
+      }
+     }
+    }
+   }
+  ],
+  [
+   "map {b:0}",
+   {
+    "mapValue": {
+     "fields": {
+      "b": {
+       "integerValue": "0"
+      }
+     }
+    }
+   }
+  ],
+  [
+   "map {U+FF5E:1}",
+   {
+    "mapValue": {
+     "fields": {
+      "～": {
+       "integerValue": "1"
+      }
+     }
+    }
+   }
+  ],
+  [
+   "map {U+1F600:1}",
+   {
+    "mapValue": {
+     "fields": {
+      "😀": {
+       "integerValue": "1"
+      }
+     }
+    }
+   }
+  ]
+ ],
+ "paths": [
+  "c/a/items/x",
+  "c/a/items/y",
+  "c/b/items/x",
+  "c-b/x/items/x",
+  "c/a/sub/b/items/x",
+  "c/～/items/x",
+  "c/😀/items/x",
+  "c/A/items/x",
+  "c/aa/items/x",
+  "c/a\u0001/items/x",
+  "items/top",
+  "c/__id5__/items/x",
+  "c/__id10__/items/x"
+ ]
+}
