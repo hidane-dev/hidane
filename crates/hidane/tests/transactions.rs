@@ -15,13 +15,17 @@ use base64::{Engine as _, engine::general_purpose::STANDARD};
 use hidane_proto::google::firestore::v1::{
     BatchGetDocumentsRequest, BatchWriteRequest, BeginTransactionRequest, CommitRequest, Document,
     DocumentMask, GetDocumentRequest, ListDocumentsRequest, Precondition, RollbackRequest,
-    RunQueryRequest, StructuredQuery, TransactionOptions, Value, Write,
-    batch_get_documents_request, batch_get_documents_response,
+    RunAggregationQueryRequest, RunQueryRequest, StructuredAggregationQuery, StructuredQuery,
+    TransactionOptions, Value, Write, batch_get_documents_request, batch_get_documents_response,
     document_transform::{FieldTransform, field_transform::TransformType},
     firestore_client::FirestoreClient,
     get_document_request, list_documents_request,
     precondition::ConditionType,
-    run_query_request,
+    run_aggregation_query_request, run_query_request,
+    structured_aggregation_query::{
+        self, Aggregation,
+        aggregation::{Count, Operator},
+    },
     structured_query::CollectionSelector,
     transaction_options,
     value::ValueType,
@@ -396,6 +400,79 @@ impl Context {
                                     }
                                     if let Some(doc) = &r.document {
                                         out.push(json!({"document": self.document(doc)}));
+                                    }
+                                }
+                                Ok(None) => break Ok(Some(Json::Array(out))),
+                                Err(status) => break Err(status),
+                            }
+                        }
+                    }
+                }
+            }
+            "aggregate" => {
+                let consistency_selector = if let Some(new) = step.get("new") {
+                    Some(
+                        run_aggregation_query_request::ConsistencySelector::NewTransaction(
+                            self.options(new),
+                        ),
+                    )
+                } else if step.get("txn").is_some() {
+                    Some(
+                        run_aggregation_query_request::ConsistencySelector::Transaction(
+                            self.transaction(step),
+                        ),
+                    )
+                } else {
+                    None
+                };
+                let query = StructuredQuery {
+                    from: vec![CollectionSelector {
+                        collection_id: step["collection"].as_str().unwrap().to_owned(),
+                        all_descendants: false,
+                    }],
+                    ..StructuredQuery::default()
+                };
+                let request = RunAggregationQueryRequest {
+                    parent: self.base(),
+                    query_type: Some(
+                        run_aggregation_query_request::QueryType::StructuredAggregationQuery(
+                            StructuredAggregationQuery {
+                                aggregations: vec![Aggregation {
+                                    operator: Some(Operator::Count(Count { up_to: None })),
+                                    alias: "n".to_owned(),
+                                }],
+                                query_type: Some(
+                                    structured_aggregation_query::QueryType::StructuredQuery(query),
+                                ),
+                            },
+                        ),
+                    ),
+                    consistency_selector,
+                    ..RunAggregationQueryRequest::default()
+                };
+                match self.client.run_aggregation_query(owner(request)).await {
+                    Err(status) => Err(status),
+                    Ok(stream) => {
+                        let mut stream = stream.into_inner();
+                        let mut out = Vec::new();
+                        loop {
+                            match stream.message().await {
+                                Ok(Some(r)) => {
+                                    if !r.transaction.is_empty() {
+                                        opened.push((
+                                            step["as"].as_str().unwrap().to_owned(),
+                                            r.transaction.clone(),
+                                        ));
+                                        out.push(
+                                            json!({"transaction": STANDARD.encode(&r.transaction)}),
+                                        );
+                                    }
+                                    if let Some(result) = &r.result {
+                                        let n = match result.aggregate_fields["n"].value_type {
+                                            Some(ValueType::IntegerValue(n)) => n,
+                                            _ => -1,
+                                        };
+                                        out.push(json!({"count": n}));
                                     }
                                 }
                                 Ok(None) => break Ok(Some(Json::Array(out))),

@@ -18,6 +18,7 @@ curl -X POST http://127.0.0.1:8086/shutdown
 | `transforms.py` | How are field transforms applied (server time, increment, maximum / minimum, array union / remove), in which order, with which results? | `crates/hidane/tests/fixtures/transforms.json` | `crates/hidane/tests/transforms.rs` |
 | `document_writes.py` | How do document reads and writes answer, including errors, preconditions, masks, paging and admin checks? | `crates/hidane/tests/fixtures/document_writes.json` | `crates/hidane/tests/documents.rs` |
 | `queries.py` | What does RunQuery return for every filter operator on every value type, composite filters, implicit ordering, cursors, offsets, projections, collection groups and queries over every collection, and with which errors? | `crates/hidane/tests/fixtures/queries.json` | `crates/hidane/tests/queries.rs` |
+| `aggregations.py` | What do `count`, `sum` and `avg` return at the edges (integer overflow, NaN, infinities, precision, non-numbers, empty sets), how do they interact with `offset` / `limit`, and which aggregation lists are rejected? | `crates/hidane/tests/fixtures/aggregations.json` | `crates/hidane/tests/aggregations.rs` |
 | `transactions.py` | What do transactions lock, how long do writes wait, when do transactions end, and how are `verify` writes checked? Scenarios with concurrent steps and timing; needs `grpcurl` on `PATH` and takes about two minutes | `crates/hidane/tests/fixtures/transactions.json` | `crates/hidane/tests/transactions.rs` |
 
 `sdk_documents.mjs` drives the same operations through `@google-cloud/firestore` (the engine of
@@ -35,6 +36,9 @@ The transcripts of the last run are in `results/sdk-documents-*.json`.
 `sdk_queries.mjs` does the same for queries (filters, `Filter.or`, `limitToLast`, snapshot
 cursors, `documentId`, collection groups, `stream`, queries in transactions and
 `recursiveDelete`); its transcripts are in `results/sdk-queries-*.json`.
+
+`sdk_aggregations.mjs` does the same for `count()` and `AggregateField.sum` / `average`;
+its transcripts are in `results/sdk-aggregations-*.json`.
 
 `sdk_transactions.mjs` does the same for `runTransaction` (server transactions, retries on
 `ABORTED`, lock waits), and `sdk_web_transactions.mjs` for the web SDK (`npm i firebase`), whose

@@ -2147,6 +2147,129 @@
    ]
   },
   {
+   "name": "RunAggregationQuery can start a transaction and locks the collection ID",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/a and c/b",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 1
+      },
+      {
+       "update": "c/b",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "aggregate",
+     "label": "new read-write transaction counts c",
+     "new": {
+      "readWrite": {}
+     },
+     "collection": "c",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "transaction": "EQIAAAAAAAAA"
+       },
+       {
+        "count": 2
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside create of c/new",
+     "writes": [
+      {
+       "update": "c/new",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside create of other/x",
+     "writes": [
+      {
+       "update": "other/x",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "aggregate",
+     "label": "T counts c again",
+     "txn": "T",
+     "collection": "c",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "count": 2
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "T creates c/mine",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/mine",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "aggregate",
+     "label": "count c after T",
+     "collection": "c",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "count": 3
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
    "name": "BatchGetDocuments can start a transaction",
    "steps": [
     {

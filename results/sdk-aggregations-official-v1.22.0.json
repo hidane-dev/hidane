@@ -1,0 +1,83 @@
+[
+ {
+  "name": "seed",
+  "ok": "ok"
+ },
+ {
+  "name": "count",
+  "ok": {
+   "count": 5
+  }
+ },
+ {
+  "name": "count with a filter",
+  "ok": {
+   "count": 2
+  }
+ },
+ {
+  "name": "count with a limit",
+  "ok": {
+   "count": 2
+  }
+ },
+ {
+  "name": "sum and average",
+  "ok": {
+   "total": 19.5,
+   "mean": 6.5
+  }
+ },
+ {
+  "name": "count next to sum",
+  "ok": {
+   "n": 5,
+   "qty": 12
+  }
+ },
+ {
+  "name": "count next to sum of a sparse field",
+  "ok": {
+   "n": 4,
+   "total": 19.5
+  }
+ },
+ {
+  "name": "average of nothing",
+  "ok": {
+   "mean": null,
+   "total": 0
+  }
+ },
+ {
+  "name": "sum beyond 2^53",
+  "ok": {
+   "n": 18014398509481982
+  }
+ },
+ {
+  "name": "collection group count and sum",
+  "ok": {
+   "n": 2,
+   "qty": 10
+  }
+ },
+ {
+  "name": "in a transaction",
+  "ok": {
+   "count": 2
+  }
+ },
+ {
+  "name": "after the transaction",
+  "ok": {
+   "count": 3
+  }
+ },
+ {
+  "name": "in a read-only transaction",
+  "ok": {
+   "count": 6
+  }
+ }
+]

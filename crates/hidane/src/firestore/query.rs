@@ -134,6 +134,8 @@ pub struct Query {
     offset: usize,
     limit: Option<usize>,
     projection: Option<Vec<FieldPath>>,
+    /// Fields a document must have, besides the ordered ones (those of `sum` and `avg`).
+    required: Vec<FieldPath>,
 }
 
 /// What a query returns.
@@ -236,7 +238,14 @@ impl Query {
             offset,
             limit,
             projection,
+            required: Vec::new(),
         })
+    }
+
+    /// Leaves out documents without `fields`, before `offset` and `limit` apply. Aggregating a
+    /// field does this on the official emulator, also for the `count` next to it.
+    pub fn require(&mut self, fields: impl IntoIterator<Item = FieldPath>) {
+        self.required.extend(fields);
     }
 
     /// The collection ID a transaction locks for this query: the official emulator locks
@@ -266,6 +275,10 @@ impl Query {
                 .filter
                 .as_ref()
                 .is_some_and(|f| !matches_filter(f, &field_value))
+                || self
+                    .required
+                    .iter()
+                    .any(|path| get(&fields, path).is_none())
             {
                 return;
             }
