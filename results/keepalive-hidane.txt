@@ -1,0 +1,5 @@
+# tools/oracle/keepalive.mjs: a client pinging every 10 s for 70 s
+# hidane
+0.0s state CONNECTING
+0.0s state READY
+70.0s done

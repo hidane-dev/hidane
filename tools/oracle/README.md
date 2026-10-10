@@ -22,6 +22,7 @@ curl -X POST http://127.0.0.1:8086/shutdown
 | `write_stream.mjs` | How does the Write stream answer: handshake, tokens, pipelined batches, empty requests, errors, resumption, locks? Node.js with `@grpc/grpc-js` and `@grpc/proto-loader`, run like the SDK scripts below with the repository's `proto/` directory as its second argument | `crates/hidane/tests/fixtures/write_stream.json` | `crates/hidane/tests/write_stream.rs` |
 | `rest.py` | What does every REST binding answer, byte for byte: JSON layout, ProtoJSON values, streams as arrays, errors, 404s, lenient input? | `crates/hidane/tests/fixtures/rest.json` | `crates/hidane/tests/rest.rs` |
 | `list_documents.py` | What does ListDocuments list without a collection ID, how do page tokens continue across collections, which checks come first, and what do REST paths with a trailing slash mean? Needs `grpcurl` on `PATH` | `crates/hidane/tests/fixtures/list_documents.json` | `crates/hidane/tests/list_documents.rs` |
+| `grpc_settings.py` | Which gRPC services answer, is v1beta1 the same service as v1, and how large may gRPC and REST requests be? Needs `grpcurl` on `PATH`; sends requests of up to 105 MB | `crates/hidane/tests/fixtures/grpc_settings.json` | `crates/hidane/tests/grpc_settings.rs` |
 | `find_nearest.py` | How does `find_nearest` rank, filter, tie-break and validate, how does it combine with aggregations, and which vector values can be stored? | `crates/hidane/tests/fixtures/find_nearest.json` | `crates/hidane/tests/find_nearest.rs` |
 | `unsupported.py` | What does the official emulator ignore or refuse: `explain_options`, ExecutePipeline on a standard database, PartitionQuery? Needs `grpcurl` on `PATH` | `crates/hidane/tests/fixtures/unsupported.json` | `crates/hidane/tests/unsupported.rs` |
 | `auth.py` | How is the `Authorization` header read: administrators, users and anonymous callers, which tokens fail and how, and where each RPC, stream and REST endpoint reads it among its other checks? Needs `grpcurl` on `PATH` | `crates/hidane/tests/fixtures/auth.json` | `crates/hidane/tests/auth.rs` |
@@ -69,6 +70,9 @@ transcripts are in `results/sdk-auth-*.json`.
 `sdk_find_nearest.mjs` writes vectors through the Admin SDK and the web SDK and runs the Admin
 SDK's `findNearest` with each distance measure; its transcripts are in
 `results/sdk-find-nearest-*.json`.
+
+`keepalive.mjs` pings an idle gRPC connection every 10 s and prints whether the server answers
+with `GOAWAY`; its output is in `results/keepalive-*.txt`.
 
 `sdk_rest.mjs` drives the REST surface through the web SDK's Lite build (`firebase/firestore/lite`);
 its transcripts are in `results/sdk-rest-*.json`.
