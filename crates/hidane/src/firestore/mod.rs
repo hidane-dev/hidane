@@ -1,15 +1,18 @@
 //! `google.firestore.v1.Firestore`.
 //!
 //! Implemented: GetDocument, ListDocuments, CreateDocument, UpdateDocument, DeleteDocument,
-//! BatchGetDocuments, BeginTransaction, Commit, Rollback, BatchWrite, ListCollectionIds. The
-//! rest answer `UNIMPLEMENTED` through the generated default stubs until their issues land.
+//! BatchGetDocuments, BeginTransaction, Commit, Rollback, RunQuery, BatchWrite,
+//! ListCollectionIds. The rest answer `UNIMPLEMENTED` through the generated default stubs
+//! until their issues land.
 //!
 //! Behaviour follows the official emulator as recorded in `tests/fixtures/document_writes.json`
 //! (`tools/oracle/document_writes.py`) and `tests/fixtures/transactions.json`
-//! (`tools/oracle/transactions.py`), including its error messages, except where the official
+//! (`tools/oracle/transactions.py`) and `tests/fixtures/queries.json` (`tools/oracle/queries.py`),
+//! including its error messages, except where the official
 //! message prints internal Datastore keys (docs/parity-exceptions.md).
 
 mod names;
+mod query;
 pub(crate) mod transactions;
 mod validate;
 mod writes;
@@ -36,11 +39,11 @@ use hidane_proto::google::{
         BeginTransactionRequest, BeginTransactionResponse, CommitRequest, CommitResponse,
         CreateDocumentRequest, DeleteDocumentRequest, Document, DocumentMask, GetDocumentRequest,
         ListCollectionIdsRequest, ListCollectionIdsResponse, ListDocumentsRequest,
-        ListDocumentsResponse, Precondition, RollbackRequest, TransactionOptions,
-        UpdateDocumentRequest, Write, WriteResult, batch_get_documents_request,
+        ListDocumentsResponse, Precondition, RollbackRequest, RunQueryRequest, RunQueryResponse,
+        TransactionOptions, UpdateDocumentRequest, Write, WriteResult, batch_get_documents_request,
         batch_get_documents_response, firestore_server::Firestore, get_document_request,
         list_collection_ids_request, list_documents_request, precondition::ConditionType,
-        transaction_options, write::Operation,
+        run_query_request, run_query_response, transaction_options, write::Operation,
     },
     rpc,
 };
@@ -49,6 +52,7 @@ use tonic::{Request, Response, Status, async_trait, codegen::BoxStream};
 
 use self::{
     names::Name,
+    query::Query,
     transactions::{Mode, Transactions},
 };
 
@@ -484,6 +488,71 @@ impl Firestore for FirestoreService {
                 None => CommitResponse::default(),
             },
         ))
+    }
+
+    async fn run_query(
+        &self,
+        request: Request<RunQueryRequest>,
+    ) -> Result<Response<BoxStream<RunQueryResponse>>, Status> {
+        let req = request.into_inner();
+        let parent = names::parent(&req.parent)?;
+        let database = parent.database;
+        if req.explain_options.is_some() {
+            return Err(Status::unimplemented(
+                "explain_options is not implemented yet (https://github.com/hidane-dev/hidane/issues/26)",
+            ));
+        }
+        let Some(run_query_request::QueryType::StructuredQuery(structured)) = &req.query_type
+        else {
+            return Err(Status::invalid_argument("A structured query is required."));
+        };
+        let query = Query::parse(parent.path, structured)?;
+        let mut responses = Vec::new();
+        let at = match &req.consistency_selector {
+            Some(run_query_request::ConsistencySelector::Transaction(transaction)) => {
+                self.read_in(&database, transaction, &[], query.collection_id())?
+            }
+            Some(run_query_request::ConsistencySelector::NewTransaction(options)) => {
+                let transaction = self.begin(&database, Some(options))?;
+                let at = self.read_in(&database, &transaction, &[], query.collection_id())?;
+                // The new transaction's ID comes first, in a response of its own.
+                responses.push(Ok(RunQueryResponse {
+                    transaction,
+                    ..RunQueryResponse::default()
+                }));
+                at
+            }
+            Some(run_query_request::ConsistencySelector::ReadTime(ts)) => {
+                self.read_time(&database, Some(ts))?
+            }
+            None => self.read_time(&database, None)?,
+        };
+        let results = query.run(self.store.as_ref(), &database, at);
+        let read_time = Some(at.to_timestamp());
+        let done = Some(run_query_response::ContinuationSelector::Done(true));
+        // As on the official emulator: one document per response, `done` on the last one (or
+        // on a response of its own when nothing matched), and the number of documents
+        // `offset` skipped on every response but the last.
+        let skipped = i32::try_from(results.skipped).unwrap_or(i32::MAX);
+        let count = results.documents.len();
+        if count == 0 {
+            responses.push(Ok(RunQueryResponse {
+                read_time,
+                continuation_selector: done,
+                ..RunQueryResponse::default()
+            }));
+        }
+        for (i, doc) in results.documents.iter().enumerate() {
+            let last = i + 1 == count;
+            responses.push(Ok(RunQueryResponse {
+                document: Some(to_document(&database, doc, query.projection())),
+                read_time,
+                skipped_results: if last { 0 } else { skipped },
+                continuation_selector: if last { done } else { None },
+                ..RunQueryResponse::default()
+            }));
+        }
+        Ok(Response::new(Box::pin(tokio_stream::iter(responses))))
     }
 
     async fn begin_transaction(

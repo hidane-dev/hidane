@@ -233,8 +233,30 @@ impl Store for MemoryStore {
                 let doc = db
                     .documents
                     .get(&entry[group_len..])
+                    // The parent itself is not under the parent.
+                    .filter(|record| record.path.len() > parent.len())
                     .and_then(|record| record.at(at.0));
                 if let Some(doc) = doc
+                    && visit(doc).is_break()
+                {
+                    return;
+                }
+            }
+        });
+    }
+
+    fn scan_descendants(
+        &self,
+        database: &str,
+        parent: &ResourcePath,
+        at: ReadTime,
+        visit: &mut Visit<'_>,
+    ) {
+        self.read(database, (), |db| {
+            let start = Bound::Excluded(encode_path(parent.segments()));
+            let end = Bound::Excluded(path_subtree_end(&encode_path_prefix(parent.segments())));
+            for (_, record) in db.documents.range((start, end)) {
+                if let Some(doc) = record.at(at.0)
                     && visit(doc).is_break()
                 {
                     return;

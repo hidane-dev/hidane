@@ -1745,6 +1745,408 @@
    ]
   },
   {
+   "name": "RunQuery in a transaction locks every collection with that ID",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/a and c/b",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 1
+      },
+      {
+       "update": "c/b",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "query",
+     "label": "T queries c",
+     "txn": "T",
+     "collection": "c",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "document": {
+         "name": "c/a",
+         "n": 1
+        }
+       },
+       {
+        "document": {
+         "name": "c/b",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside write to c/a",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside create of c/new",
+     "writes": [
+      {
+       "update": "c/new",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside create of x/y/c/z",
+     "writes": [
+      {
+       "update": "x/y/c/z",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside create of c/a/sub/x",
+     "writes": [
+      {
+       "update": "c/a/sub/x",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "T creates c/mine",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/mine",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    }
+   ]
+  },
+  {
+   "name": "a collection-group RunQuery in a transaction locks the collection ID",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/a and c/b",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 1
+      },
+      {
+       "update": "c/b",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "query",
+     "label": "T queries group c",
+     "txn": "T",
+     "collection": "c",
+     "group": true,
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "document": {
+         "name": "c/a",
+         "n": 1
+        }
+       },
+       {
+        "document": {
+         "name": "c/b",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside create of x/y/c/z",
+     "writes": [
+      {
+       "update": "x/y/c/z",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside create of d/q",
+     "writes": [
+      {
+       "update": "d/q",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "rollback",
+     "label": "rollback T",
+     "txn": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside create of x/y/c/z after the rollback",
+     "writes": [
+      {
+       "update": "x/y/c/z",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    }
+   ]
+  },
+  {
+   "name": "RunQuery can start a transaction",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/a and c/b",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 1
+      },
+      {
+       "update": "c/b",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "query",
+     "label": "new read-write transaction queries c",
+     "new": {
+      "readWrite": {}
+     },
+     "collection": "c",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "transaction": "EQIAAAAAAAAA"
+       },
+       {
+        "document": {
+         "name": "c/a",
+         "n": 1
+        }
+       },
+       {
+        "document": {
+         "name": "c/b",
+         "n": 1
+        }
+       }
+      ]
+     }
+    },
+    {
+     "op": "commit",
+     "label": "outside write to c/a",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 2
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "Transaction lock timeout.",
+      "elapsed": 2.0
+     }
+    },
+    {
+     "op": "query",
+     "label": "new transaction queries an empty collection",
+     "new": {
+      "readWrite": {}
+     },
+     "collection": "zz",
+     "as": "E",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "transaction": "EQQAAAAAAAAA"
+       }
+      ]
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin R",
+     "as": "R",
+     "options": {
+      "readOnly": {}
+     },
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQUAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "commit",
+     "label": "T writes c/a",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 3
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "query",
+     "label": "read-only R queries c and sees its snapshot",
+     "txn": "R",
+     "collection": "c",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": [
+       {
+        "document": {
+         "name": "c/a",
+         "n": 1
+        }
+       },
+       {
+        "document": {
+         "name": "c/b",
+         "n": 1
+        }
+       }
+      ]
+     }
+    }
+   ]
+  },
+  {
    "name": "BatchGetDocuments can start a transaction",
    "steps": [
     {

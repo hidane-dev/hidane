@@ -218,6 +218,16 @@ pub trait Store: Send + Sync {
         visit: &mut Visit<'_>,
     );
 
+    /// Every document below `parent` (a document path, or the root), at any depth, ordered by
+    /// path. `parent` itself is not included.
+    fn scan_descendants(
+        &self,
+        database: &str,
+        parent: &ResourcePath,
+        at: ReadTime,
+        visit: &mut Visit<'_>,
+    );
+
     /// IDs of the collections directly under `parent` that contain at least one document at
     /// any depth, in UTF-8 order.
     fn list_collection_ids(

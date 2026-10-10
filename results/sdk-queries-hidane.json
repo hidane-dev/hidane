@@ -1,0 +1,305 @@
+[
+ {
+  "name": "seed",
+  "ok": "ok"
+ },
+ {
+  "name": "all",
+  "ok": [
+   "cities/BJ",
+   "cities/DC",
+   "cities/LA",
+   "cities/NAN",
+   "cities/SF",
+   "cities/TOK"
+  ]
+ },
+ {
+  "name": "where ==",
+  "ok": [
+   "cities/LA",
+   "cities/SF"
+  ]
+ },
+ {
+  "name": "where == null (IS_NULL)",
+  "ok": [
+   "cities/BJ",
+   "cities/DC",
+   "cities/TOK"
+  ]
+ },
+ {
+  "name": "where != null (IS_NOT_NULL)",
+  "ok": [
+   "cities/LA",
+   "cities/SF"
+  ]
+ },
+ {
+  "name": "where == NaN (IS_NAN)",
+  "ok": [
+   "cities/NAN"
+  ]
+ },
+ {
+  "name": "where <",
+  "ok": [
+   "cities/DC",
+   "cities/SF"
+  ]
+ },
+ {
+  "name": "where >= orderBy desc",
+  "ok": [
+   "cities/BJ",
+   "cities/TOK",
+   "cities/LA"
+  ]
+ },
+ {
+  "name": "where !=",
+  "ok": [
+   "cities/BJ",
+   "cities/TOK",
+   "cities/NAN"
+  ]
+ },
+ {
+  "name": "where in",
+  "ok": [
+   "cities/BJ",
+   "cities/TOK"
+  ]
+ },
+ {
+  "name": "where not-in",
+  "ok": [
+   "cities/BJ",
+   "cities/NAN"
+  ]
+ },
+ {
+  "name": "array-contains",
+  "ok": [
+   "cities/LA",
+   "cities/SF"
+  ]
+ },
+ {
+  "name": "array-contains-any",
+  "ok": [
+   "cities/LA",
+   "cities/SF",
+   "cities/TOK"
+  ]
+ },
+ {
+  "name": "nested field",
+  "ok": [
+   "cities/TOK",
+   "cities/SF"
+  ]
+ },
+ {
+  "name": "two inequalities",
+  "ok": [
+   "cities/BJ",
+   "cities/LA",
+   "cities/SF",
+   "cities/TOK"
+  ]
+ },
+ {
+  "name": "Filter.or",
+  "ok": [
+   "cities/BJ",
+   "cities/DC",
+   "cities/LA",
+   "cities/SF",
+   "cities/TOK"
+  ]
+ },
+ {
+  "name": "Filter.or of and",
+  "ok": [
+   "cities/LA",
+   "cities/TOK"
+  ]
+ },
+ {
+  "name": "orderBy limit",
+  "ok": [
+   "cities/BJ",
+   "cities/LA",
+   "cities/NAN"
+  ]
+ },
+ {
+  "name": "limitToLast",
+  "ok": [
+   "cities/TOK",
+   "cities/DC"
+  ]
+ },
+ {
+  "name": "offset",
+  "ok": [
+   "cities/SF",
+   "cities/LA"
+  ]
+ },
+ {
+  "name": "startAt / endBefore values",
+  "ok": [
+   "cities/SF",
+   "cities/LA"
+  ]
+ },
+ {
+  "name": "startAfter a snapshot",
+  "ok": []
+ },
+ {
+  "name": "paging with startAfter",
+  "ok": [
+   [
+    "cities/NAN",
+    "cities/DC"
+   ],
+   [
+    "cities/SF",
+    "cities/LA"
+   ],
+   [
+    "cities/TOK",
+    "cities/BJ"
+   ]
+  ]
+ },
+ {
+  "name": "select",
+  "ok": [
+   {
+    "id": "BJ",
+    "data": {
+     "name": "Beijing"
+    }
+   },
+   {
+    "id": "DC",
+    "data": {
+     "name": "Washington, D.C."
+    }
+   },
+   {
+    "id": "TOK",
+    "data": {
+     "loc": {
+      "lat": 35.7
+     },
+     "name": "Tokyo"
+    }
+   }
+  ]
+ },
+ {
+  "name": "documentId in",
+  "ok": [
+   "cities/SF",
+   "cities/TOK"
+  ]
+ },
+ {
+  "name": "documentId range",
+  "ok": [
+   "cities/LA",
+   "cities/NAN",
+   "cities/SF"
+  ]
+ },
+ {
+  "name": "orderBy documentId desc",
+  "error": {
+   "code": 9,
+   "message": "Firestore does not support descending key scans"
+  }
+ },
+ {
+  "name": "collectionGroup",
+  "ok": [
+   "cities/BJ/landmarks/forbidden",
+   "cities/SF/landmarks/legion",
+   "cities/TOK/landmarks/national"
+  ]
+ },
+ {
+  "name": "collectionGroup orderBy name",
+  "ok": [
+   "cities/BJ/landmarks/forbidden",
+   "cities/SF/landmarks/golden-gate",
+   "cities/SF/landmarks/legion",
+   "cities/TOK/landmarks/national"
+  ]
+ },
+ {
+  "name": "subcollection",
+  "ok": [
+   "cities/SF/landmarks/golden-gate",
+   "cities/SF/landmarks/legion"
+  ]
+ },
+ {
+  "name": "stream",
+  "ok": [
+   "BJ",
+   "DC",
+   "TOK"
+  ]
+ },
+ {
+  "name": "in with 31 values",
+  "error": {
+   "code": 3,
+   "message": "'IN' supports up to 30 comparison values."
+  }
+ },
+ {
+  "name": "query in a transaction",
+  "ok": [
+   "cities/BJ",
+   "cities/DC",
+   "cities/TOK"
+  ]
+ },
+ {
+  "name": "read-only transaction query",
+  "ok": [
+   "cities/LA",
+   "cities/SF"
+  ]
+ },
+ {
+  "name": "recursiveDelete a document",
+  "ok": {
+   "cities": [
+    "cities/BJ",
+    "cities/DC",
+    "cities/LA",
+    "cities/NAN",
+    "cities/TOK"
+   ],
+   "landmarks": [
+    "cities/BJ/landmarks/forbidden",
+    "cities/TOK/landmarks/national"
+   ]
+  }
+ },
+ {
+  "name": "recursiveDelete a collection",
+  "ok": {
+   "cities": [],
+   "landmarks": []
+  }
+ }
+]

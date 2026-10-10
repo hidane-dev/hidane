@@ -15,11 +15,14 @@ use base64::{Engine as _, engine::general_purpose::STANDARD};
 use hidane_proto::google::firestore::v1::{
     BatchGetDocumentsRequest, BatchWriteRequest, BeginTransactionRequest, CommitRequest, Document,
     DocumentMask, GetDocumentRequest, ListDocumentsRequest, Precondition, RollbackRequest,
-    TransactionOptions, Value, Write, batch_get_documents_request, batch_get_documents_response,
+    RunQueryRequest, StructuredQuery, TransactionOptions, Value, Write,
+    batch_get_documents_request, batch_get_documents_response,
     document_transform::{FieldTransform, field_transform::TransformType},
     firestore_client::FirestoreClient,
     get_document_request, list_documents_request,
     precondition::ConditionType,
+    run_query_request,
+    structured_query::CollectionSelector,
     transaction_options,
     value::ValueType,
     write::Operation,
@@ -347,6 +350,60 @@ impl Context {
                             .collect(),
                     ))
                 })
+            }
+            "query" => {
+                let consistency_selector = if let Some(new) = step.get("new") {
+                    Some(run_query_request::ConsistencySelector::NewTransaction(
+                        self.options(new),
+                    ))
+                } else if step.get("txn").is_some() {
+                    Some(run_query_request::ConsistencySelector::Transaction(
+                        self.transaction(step),
+                    ))
+                } else {
+                    None
+                };
+                let request = RunQueryRequest {
+                    parent: self.base(),
+                    query_type: Some(run_query_request::QueryType::StructuredQuery(
+                        StructuredQuery {
+                            from: vec![CollectionSelector {
+                                collection_id: step["collection"].as_str().unwrap().to_owned(),
+                                all_descendants: step["group"] == true,
+                            }],
+                            ..StructuredQuery::default()
+                        },
+                    )),
+                    consistency_selector,
+                    ..RunQueryRequest::default()
+                };
+                match self.client.run_query(owner(request)).await {
+                    Err(status) => Err(status),
+                    Ok(stream) => {
+                        let mut stream = stream.into_inner();
+                        let mut out = Vec::new();
+                        loop {
+                            match stream.message().await {
+                                Ok(Some(r)) => {
+                                    if !r.transaction.is_empty() {
+                                        opened.push((
+                                            step["as"].as_str().unwrap().to_owned(),
+                                            r.transaction.clone(),
+                                        ));
+                                        out.push(
+                                            json!({"transaction": STANDARD.encode(&r.transaction)}),
+                                        );
+                                    }
+                                    if let Some(doc) = &r.document {
+                                        out.push(json!({"document": self.document(doc)}));
+                                    }
+                                }
+                                Ok(None) => break Ok(Some(Json::Array(out))),
+                                Err(status) => break Err(status),
+                            }
+                        }
+                    }
+                }
             }
             "commit" => {
                 let request = CommitRequest {
