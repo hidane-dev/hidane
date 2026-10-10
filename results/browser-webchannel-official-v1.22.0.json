@@ -1,0 +1,274 @@
+{
+ "streaming": [
+  {
+   "exists": false,
+   "data": null,
+   "fromCache": false,
+   "pending": false
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 1
+   },
+   "fromCache": false,
+   "pending": true
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 1
+   },
+   "fromCache": false,
+   "pending": false
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 2
+   },
+   "fromCache": false,
+   "pending": true
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 2
+   },
+   "fromCache": false,
+   "pending": false
+  },
+  {
+   "get": {
+    "n": 2
+   }
+  },
+  {
+   "exists": false,
+   "data": null,
+   "fromCache": false,
+   "pending": false
+  }
+ ],
+ "queriesAndBatches": [
+  {
+   "exists": false,
+   "data": null,
+   "fromCache": false,
+   "pending": false
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 1
+   },
+   "fromCache": false,
+   "pending": true
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 1
+   },
+   "fromCache": false,
+   "pending": false
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 2
+   },
+   "fromCache": false,
+   "pending": true
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 2
+   },
+   "fromCache": false,
+   "pending": false
+  },
+  {
+   "get": {
+    "n": 2
+   }
+  },
+  {
+   "query": [
+    "more-<n>"
+   ]
+  },
+  {
+   "query": [
+    "good",
+    "more-<n>",
+    "b1",
+    "b2"
+   ]
+  },
+  {
+   "exists": false,
+   "data": null,
+   "fromCache": false,
+   "pending": false
+  }
+ ],
+ "forceLongPolling": [
+  {
+   "exists": false,
+   "data": null,
+   "fromCache": false,
+   "pending": false
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 1
+   },
+   "fromCache": false,
+   "pending": true
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 1
+   },
+   "fromCache": false,
+   "pending": false
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 2
+   },
+   "fromCache": false,
+   "pending": true
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 2
+   },
+   "fromCache": false,
+   "pending": false
+  },
+  {
+   "get": {
+    "n": 2
+   }
+  },
+  {
+   "exists": false,
+   "data": null,
+   "fromCache": false,
+   "pending": false
+  }
+ ],
+ "autoDetectLongPolling": [
+  {
+   "exists": false,
+   "data": null,
+   "fromCache": false,
+   "pending": false
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 1
+   },
+   "fromCache": false,
+   "pending": true
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 1
+   },
+   "fromCache": false,
+   "pending": false
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 2
+   },
+   "fromCache": false,
+   "pending": true
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 2
+   },
+   "fromCache": false,
+   "pending": false
+  },
+  {
+   "get": {
+    "n": 2
+   }
+  },
+  {
+   "exists": false,
+   "data": null,
+   "fromCache": false,
+   "pending": false
+  }
+ ],
+ "mockUserToken": [
+  {
+   "exists": false,
+   "data": null,
+   "fromCache": false,
+   "pending": false
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 1
+   },
+   "fromCache": false,
+   "pending": true
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 1
+   },
+   "fromCache": false,
+   "pending": false
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 2
+   },
+   "fromCache": false,
+   "pending": true
+  },
+  {
+   "exists": true,
+   "data": {
+    "n": 2
+   },
+   "fromCache": false,
+   "pending": false
+  },
+  {
+   "get": {
+    "n": 2
+   }
+  },
+  {
+   "exists": false,
+   "data": null,
+   "fromCache": false,
+   "pending": false
+  }
+ ],
+ "refusedWrite": [
+  "invalid-argument: INVALID_ARGUMENT: The value of property \"s\" is longer than 1048487 bytes.",
+  "ok"
+ ]
+}

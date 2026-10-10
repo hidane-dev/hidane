@@ -42,9 +42,9 @@ read the SDK sources to settle this ([`docs/compatibility.md`](docs/compatibilit
 | **v0.2** rules | Security Rules, `@firebase/rules-unit-testing`, the Emulator UI request monitor |
 | **v0.3** webchannel | firebase-js-sdk **in the browser**, Flutter Web |
 
-Browser apps do not work before v0.3: the Web SDK does almost everything over WebChannel and the
-rest over REST, and a gRPC-only server does nothing for it. This is stated up front so nobody is
-surprised.
+The Web SDK in the browser does almost everything over WebChannel and the rest over REST, so a
+gRPC-only server does nothing for it. WebChannel landed on `main` ahead of v0.3
+([`docs/webchannel.md`](docs/webchannel.md)); Flutter Web is not verified yet.
 
 ## Parity
 

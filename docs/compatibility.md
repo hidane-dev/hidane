@@ -21,13 +21,15 @@ Status legend: **planned (v0.1)** gRPC only · **planned (v0.2)** Security Rules
 | Firebase C++ SDK / Unity | iOS C++ core or Android SDK (gRPC) | planned (v0.1) |
 | firebase-js-sdk imported **in Node** | gRPC (`@grpc/grpc-js`) | planned (v0.1) |
 | firebase-js-sdk **Lite** (`firebase/firestore/lite`, any platform) | REST (`fetch`) only | planned (v0.1 stretch: REST) |
-| firebase-js-sdk **in the browser** | **WebChannel** for Listen and Write (this includes `getDoc`, `getDocs`, `setDoc`, `updateDoc`, `deleteDoc`, `writeBatch`), REST for `runTransaction`, aggregate queries and pipelines | planned (v0.3) |
-| FlutterFire `cloud_firestore_web` | Same as firebase-js-sdk in the browser | planned (v0.3) |
+| firebase-js-sdk **in the browser** | **WebChannel** for Listen and Write (this includes `getDoc`, `getDocs`, `setDoc`, `updateDoc`, `deleteDoc`, `writeBatch`), REST for `runTransaction`, aggregate queries and pipelines | on `main` since #71, ahead of v0.3 ([webchannel.md](webchannel.md)) |
+| FlutterFire `cloud_firestore_web` | Same as firebase-js-sdk in the browser | on `main` through WebChannel; not verified yet (#75) |
 | Emulator UI, `curl`, `firebase-tools` itself | REST and emulator-specific HTTP endpoints | planned (v0.1) |
 
 So with v0.1 (gRPC only) the server-side SDKs, the mobile SDKs and Node-based test suites work.
-**Browser apps do not work until v0.3**, because the Web SDK does almost everything over
-WebChannel and the rest over REST.
+Browser apps need WebChannel as well as REST, because the Web SDK does almost everything over
+WebChannel. `main` serves both: listeners, writes, queries, batches, long polling and mock tokens
+from Chromium give the same results on hidane as on the official emulator
+(`results/browser-webchannel-*.json`).
 
 ## How each client finds the emulator
 

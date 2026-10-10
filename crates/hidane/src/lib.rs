@@ -17,6 +17,7 @@
 pub mod cli;
 mod firestore;
 mod rest;
+mod webchannel;
 
 use std::{
     future::Future,
@@ -29,7 +30,7 @@ use std::{
 use axum::{
     Router,
     body::Body,
-    extract::{Path, State},
+    extract::{Path, RawQuery, State},
     http::{HeaderMap, StatusCode, header},
     response::{IntoResponse, Response},
     routing::{delete, get, post},
@@ -67,6 +68,7 @@ pub struct Admin {
     changes: Arc<ChangeFeed>,
     shutdown: Arc<watch::Sender<bool>>,
     enterprise: bool,
+    channels: Arc<webchannel::Channels>,
 }
 
 impl Default for Admin {
@@ -93,6 +95,7 @@ impl Admin {
             changes: Arc::default(),
             shutdown: Arc::new(watch::Sender::new(false)),
             enterprise: false,
+            channels: Arc::default(),
         }
     }
 
@@ -148,6 +151,11 @@ pub fn http_routes(admin: Admin) -> Router {
         .route(
             "/emulator/v1/projects/{project}/databases/{database}/documents/{*path}",
             delete(delete_tree).fallback(not_found),
+        )
+        // WebChannel, the browser SDK's transport for the Listen and Write streams.
+        .route(
+            "/google.firestore.v1.Firestore/{rpc}/channel",
+            get(channel_get).post(channel_post).fallback(not_found),
         )
         .fallback(fallback)
         .with_state(admin);
@@ -206,6 +214,45 @@ async fn cors(request: axum::extract::Request, next: axum::middleware::Next) -> 
     }
     response
 }
+
+async fn channel_get(
+    State(admin): State<Admin>,
+    Path(rpc): Path<String>,
+    RawQuery(query): RawQuery,
+) -> Response {
+    match webchannel::Kind::from_rpc(&rpc) {
+        Some(kind) => admin
+            .channels
+            .get_back_channel(kind, query.as_deref().unwrap_or_default()),
+        None => not_found_response(),
+    }
+}
+
+async fn channel_post(
+    State(admin): State<Admin>,
+    Path(rpc): Path<String>,
+    RawQuery(query): RawQuery,
+    body: Body,
+) -> Response {
+    let Some(kind) = webchannel::Kind::from_rpc(&rpc) else {
+        return not_found_response();
+    };
+    let Ok(body) = axum::body::to_bytes(body, MAX_CHANNEL_BODY).await else {
+        return not_found_response();
+    };
+    admin
+        .channels
+        .post(
+            admin.firestore(),
+            kind,
+            query.as_deref().unwrap_or_default(),
+            &body,
+        )
+        .await
+}
+
+/// The largest WebChannel POST read (as REST bodies).
+const MAX_CHANNEL_BODY: usize = 16 * 1024 * 1024;
 
 /// REST (`/v1/…`, `/v1beta1/…`), or 404.
 async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -> Response {
