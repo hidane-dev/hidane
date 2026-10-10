@@ -1,11 +1,41 @@
-use std::{io::ErrorKind, process::ExitCode};
+use std::{ffi::OsString, io::ErrorKind, process::ExitCode};
 
 use clap::Parser;
 use hidane::cli::{self, Cli};
 
-#[tokio::main]
-async fn main() -> ExitCode {
-    let cli = match Cli::try_parse() {
+mod launch;
+
+fn main() -> ExitCode {
+    match launch::mode(std::env::args_os().collect()) {
+        launch::Mode::Exec(command) => launch::exec(&command),
+        // firebase-tools running "java" in a `hidane exec` command (ADR 0006).
+        launch::Mode::Java(args) => match launch::java(&args) {
+            Ok(flags) => emulator(
+                std::iter::once(OsString::from("hidane"))
+                    .chain(flags)
+                    .collect(),
+            ),
+            Err(code) => code,
+        },
+        launch::Mode::Emulator(args) => emulator(args),
+    }
+}
+
+fn emulator(args: Vec<OsString>) -> ExitCode {
+    match tokio::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+    {
+        Ok(runtime) => runtime.block_on(run(args)),
+        Err(err) => {
+            eprintln!("ERROR: could not start the runtime: {err}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+async fn run(args: Vec<OsString>) -> ExitCode {
+    let cli = match Cli::try_parse_from(args) {
         Ok(cli) => cli,
         Err(err) => {
             let _ = err.print();

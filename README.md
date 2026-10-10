@@ -12,16 +12,21 @@ official emulator as the oracle.
 
 > **Pre-release.** The emulator runs from source and serves the Firestore API over gRPC, REST and
 > WebChannel: documents, queries, aggregations, vector search, transactions, listeners and the
-> emulator's own endpoints, each checked against the official emulator. Security Rules,
-> export / import and launching under `firebase-tools` are not there yet, and there is no binary
-> release: the `hidane` packages on crates.io, npm and pub.dev are 0.0.1 name reservations and do
+> emulator's own endpoints, each checked against the official emulator, and `firebase-tools` can
+> launch it in place of the official one. Security Rules and export / import are not there yet,
+> and there is no binary release: the `hidane` packages on crates.io, npm and pub.dev are 0.0.1 name reservations and do
 > nothing. The plan is in [`docs/ROADMAP.md`](docs/ROADMAP.md), the work in
 > [issues](https://github.com/hidane-dev/hidane/issues).
 
 ```sh
-cargo run --release -p hidane -- --host 127.0.0.1 --port 8080
+cargo build --release -p hidane
+target/release/hidane exec -- firebase emulators:start --only firestore   # under firebase-tools, no Java needed
+target/release/hidane --host 127.0.0.1 --port 8080                         # or on its own:
 export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080
 ```
+
+`hidane exec` runs the command with hidane standing in for `java` and the official jar, for that
+command only ([ADR 0006](docs/adr/0006-launch-under-firebase-tools.md)).
 
 ## Why hidane?
 
@@ -55,7 +60,8 @@ compared with the official emulator's (`results/`):
 | `@firebase/rules-unit-testing` | the above | verified without rules: contexts, `clearFirestore()` |
 | Go, Python, Java, iOS, Android, Flutter (all platforms), C++ / Unity | gRPC or WebChannel | same transports, not verified yet |
 | Security Rules, the Emulator UI request monitor | — | not yet (v0.2): every request is allowed |
-| Export / import, launching under `firebase-tools` | — | not yet (#31, #32, #13) |
+| `firebase emulators:start` / `emulators:exec` | `hidane exec -- firebase …` | verified with firebase-tools 15.33.0, no Java installed |
+| Export / import | — | not yet (#31, #32) |
 
 ## Parity
 
@@ -97,7 +103,8 @@ dart pub global activate hidane                     # pub.dev launcher
 docker run --rm -p 8080:8080 ghcr.io/hidane-dev/hidane
 ```
 
-Then `export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080`, or let `firebase emulators:start` launch it.
+Then `export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080`, or let `firebase emulators:start` launch it
+through `hidane exec`.
 
 ## Documentation
 

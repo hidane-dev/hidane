@@ -8,9 +8,9 @@ project currently stands and how to get involved.
 The emulator runs from source (`cargo run --release -p hidane`) and serves the
 Firestore API over gRPC, REST and WebChannel. Each feature is built issue by
 issue: the official emulator's behaviour is recorded first (`tools/oracle/`),
-then implemented and replayed by the test suite. Security Rules, import /
-export and launching under `firebase-tools` are still ahead, and there is no
-release yet; the `reserve/` directory only holds name-reservation placeholders
+then implemented and replayed by the test suite; `hidane exec -- firebase
+emulators:start` runs it under firebase-tools. Security Rules and import /
+export are still ahead, and there is no release yet; the `reserve/` directory only holds name-reservation placeholders
 for crates.io, npm and pub.dev.
 
 What this means for contributions right now:
