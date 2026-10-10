@@ -46,6 +46,13 @@ Undecided. Placeholder: **A + C**. Keep WebChannel in v0.3, but in v0.1 (1) pull
 forward so one half of Web support is done, (2) design the Listen / Write core transport-agnostic,
 and (3) run the traffic-capture research issue.
 
+## Update (2026-10-10)
+
+The capture (#87) and the server (#71) landed while v0.1 work was still going on: the framing
+turned out to be small (see [webchannel.md](../webchannel.md)) and the Listen / Write core was
+already transport-agnostic, so WebChannel is an adapter over the same streams. The browser
+integration-test runner (#74) and Flutter Web (#75) remain.
+
 ## Consequences
 
 - The WebChannel epic (v0.3) and the v0.1 Listen / Write issues reference this ADR

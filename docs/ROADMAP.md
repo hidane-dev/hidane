@@ -88,7 +88,7 @@ Parity exception: #6252 (first evaluation of rules that use `resource.data` erro
 
 | Priority | Item |
 |---|---|
-| P1 | WebChannel v8: handshake, forward channel, back channel (chunked), `noop`, `terminate` |
+| P1 | WebChannel v8: handshake, forward channel, back channel (chunked), `noop`, `terminate` (landed early: #71, [webchannel.md](webchannel.md)) |
 | P1 | Authorization extracted from the `headers=` body field; CORS expose-headers |
 | P1 | `forceLongPolling` (`CI=1`) and `detectBufferingProxy` must keep working |
 | P1 | firebase-js-sdk browser integration tests (Playwright) run against hidane |

@@ -22,6 +22,7 @@ curl -X POST http://127.0.0.1:8086/shutdown
 | `write_stream.mjs` | How does the Write stream answer: handshake, tokens, pipelined batches, empty requests, errors, resumption, locks? Node.js with `@grpc/grpc-js` and `@grpc/proto-loader`, run like the SDK scripts below with the repository's `proto/` directory as its second argument | `crates/hidane/tests/fixtures/write_stream.json` | `crates/hidane/tests/write_stream.rs` |
 | `rest.py` | What does every REST binding answer, byte for byte: JSON layout, ProtoJSON values, streams as arrays, errors, 404s, lenient input? | `crates/hidane/tests/fixtures/rest.json` | `crates/hidane/tests/rest.rs` |
 | `list_documents.py` | What does ListDocuments list without a collection ID, how do page tokens continue across collections, which checks come first, and what do REST paths with a trailing slash mean? Needs `grpcurl` on `PATH` | `crates/hidane/tests/fixtures/list_documents.json` | `crates/hidane/tests/list_documents.rs` |
+| `webchannel.py` | How does the browser SDK's transport behave: handshake, back channel (streaming and long polling), forward channel, stream errors, terminate, unknown sessions? Speaks the protocol directly, no browser | `crates/hidane/tests/fixtures/webchannel.json` | `crates/hidane/tests/webchannel.rs` |
 | `limits.py` | Which document limits are enforced (value, name, ID, depth, size), with which messages, in which order? | `crates/hidane/tests/fixtures/limits.json` | `crates/hidane/tests/limits.rs` |
 | `grpc_settings.py` | Which gRPC services answer, is v1beta1 the same service as v1, and how large may gRPC and REST requests be? Needs `grpcurl` on `PATH`; sends requests of up to 105 MB | `crates/hidane/tests/fixtures/grpc_settings.json` | `crates/hidane/tests/grpc_settings.rs` |
 | `find_nearest.py` | How does `find_nearest` rank, filter, tie-break and validate, how does it combine with aggregations, and which vector values can be stored? | `crates/hidane/tests/fixtures/find_nearest.json` | `crates/hidane/tests/find_nearest.rs` |
@@ -74,6 +75,11 @@ SDK's `findNearest` with each distance measure; its transcripts are in
 
 `keepalive.mjs` pings an idle gRPC connection every 10 s and prints whether the server answers
 with `GOAWAY`; its output is in `results/keepalive-*.txt`.
+
+`webchannel/page.js` runs firebase-js-sdk scenarios in a browser (listeners, writes, queries,
+batches, long polling, mock tokens, a refused write); its transcripts are in
+`results/browser-webchannel-*.json`. `webchannel/tap.py` records the wire between a browser and an
+emulator, which is how `docs/webchannel.md` was written.
 
 `sdk_rest.mjs` drives the REST surface through the web SDK's Lite build (`firebase/firestore/lite`);
 its transcripts are in `results/sdk-rest-*.json`.

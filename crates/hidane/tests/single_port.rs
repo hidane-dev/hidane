@@ -70,8 +70,8 @@ async fn http1_on_the_same_port_reaches_the_http_router() {
 #[tokio::test]
 async fn webchannel_paths_are_dispatched_by_content_type_not_path() {
     // `/google.firestore.v1.Firestore/Listen/channel` shares the gRPC service prefix. A
-    // non-gRPC request there must reach the HTTP router (404 until WebChannel exists), never
-    // the tonic service (which would answer with a `grpc-status` header).
+    // non-gRPC request there must reach the HTTP router (a WebChannel handshake), never the
+    // tonic service (which would answer with a `grpc-status` header).
     let addr = start(hidane::http_routes(hidane::Admin::default())).await;
     let req = Request::builder()
         .method(Method::POST)
@@ -82,8 +82,13 @@ async fn webchannel_paths_are_dispatched_by_content_type_not_path() {
         .body(Empty::new())
         .unwrap();
     let res = http1_client().request(req).await.unwrap();
-    assert_eq!(res.status(), StatusCode::NOT_FOUND);
+    assert_eq!(res.status(), StatusCode::OK);
     assert!(res.headers().get("grpc-status").is_none());
+    let body = res.into_body().collect().await.unwrap().to_bytes();
+    assert!(
+        String::from_utf8_lossy(&body).contains(r#"[[0,["c","#),
+        "a session is created"
+    );
 }
 
 #[tokio::test]

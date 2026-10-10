@@ -36,7 +36,7 @@ const INVALID_PAYLOAD: &str = "Payload isn't valid for request.";
 /// The largest body the official emulator's REST layer reads; one byte more is `413`.
 const MAX_BODY: usize = 16 * 1024 * 1024;
 
-fn pool() -> &'static DescriptorPool {
+pub(crate) fn pool() -> &'static DescriptorPool {
     static POOL: OnceLock<DescriptorPool> = OnceLock::new();
     POOL.get_or_init(|| {
         DescriptorPool::decode(hidane_proto::FILE_DESCRIPTOR_SET).expect("embedded descriptors")
@@ -44,7 +44,7 @@ fn pool() -> &'static DescriptorPool {
 }
 
 /// A message of `google.firestore.v1`, or a full name.
-fn descriptor(name: &str) -> MessageDescriptor {
+pub(crate) fn descriptor(name: &str) -> MessageDescriptor {
     let full = if name.contains('.') {
         name.to_owned()
     } else {
@@ -135,7 +135,7 @@ pub async fn handle(
     dispatch(&service, call).await
 }
 
-fn parse_query(query: &str) -> Vec<(String, String)> {
+pub(crate) fn parse_query(query: &str) -> Vec<(String, String)> {
     query
         .split('&')
         .filter(|pair| !pair.is_empty())
@@ -607,7 +607,7 @@ pub fn error(status: &Status) -> Response {
 }
 
 /// The HTTP mapping of gRPC status codes (`google.rpc.Code`).
-fn http_status(code: Code) -> (StatusCode, &'static str) {
+pub(crate) fn http_status(code: Code) -> (StatusCode, &'static str) {
     match code {
         Code::Ok => (StatusCode::OK, "OK"),
         Code::Cancelled => (StatusCode::from_u16(499).expect("valid"), "CANCELLED"),
