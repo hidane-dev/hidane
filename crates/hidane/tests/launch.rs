@@ -88,6 +88,38 @@ fn a_recent_java_answers_the_probe_itself_and_an_old_one_does_not() {
     );
 }
 
+/// Like a version manager's shim (mise, asdf) with no Java behind it: it runs the first `java`
+/// on `PATH`, which is hidane's again. It gives up after a few rounds, so a regression fails
+/// instead of spawning processes forever.
+fn version_manager_dir(name: &str) -> std::path::PathBuf {
+    use std::os::unix::fs::PermissionsExt as _;
+    let dir = path_dir(name, None);
+    let java = dir.join("java");
+    std::fs::write(
+        &java,
+        "#!/bin/sh\nROUNDS=$((${ROUNDS:-0} + 1)); export ROUNDS\n[ \"$ROUNDS\" -gt 5 ] && { echo looped >&2; exit 9; }\nexec java \"$@\"\n",
+    )
+    .unwrap();
+    std::fs::set_permissions(&java, std::fs::Permissions::from_mode(0o755)).unwrap();
+    dir
+}
+
+#[test]
+fn a_version_manager_shim_does_not_send_the_probe_round_in_circles() {
+    let (code, out) = exec(&version_manager_dir("manager-probe"), PROBE);
+    assert_eq!(code, 0, "{out}");
+    assert!(
+        out.contains(r#"version "21""#) && !out.contains("looped"),
+        "{out}"
+    );
+    let (code, out) = exec(
+        &version_manager_dir("manager-jar"),
+        "java -jar /x/firebase-database-emulator.jar",
+    );
+    assert_eq!(code, 127, "{out}");
+    assert!(out.contains("leads back to hidane"), "{out}");
+}
+
 #[test]
 fn other_jars_go_to_the_real_java() {
     let (code, out) = exec(
