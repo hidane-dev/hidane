@@ -23,4 +23,4 @@ emulator? Pick one and explain. -->
 - [ ] Commit messages follow Conventional Commits
 - [ ] Tests added or updated where it makes sense
 - [ ] Documentation updated where it makes sense
-- [ ] `reserve/` is untouched (unless the issue is about package reservation)
+- [ ] Release packaging (`packaging/`, `.github/workflows/release.yml`) is untouched, unless the issue is about distribution

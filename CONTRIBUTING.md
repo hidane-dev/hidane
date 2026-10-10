@@ -10,8 +10,8 @@ Firestore API over gRPC, REST and WebChannel. Each feature is built issue by
 issue: the official emulator's behaviour is recorded first (`tools/oracle/`),
 then implemented and replayed by the test suite; `hidane exec -- firebase
 emulators:start` runs it under firebase-tools, with imports and exports.
-Security Rules are still ahead, and there is no release yet; the `reserve/` directory only holds name-reservation placeholders
-for crates.io, npm and pub.dev.
+Security Rules are still ahead. `packaging/` holds what the release workflow turns
+into the npm and pub.dev packages, the Homebrew formula and the container image.
 
 What this means for contributions right now:
 
@@ -60,8 +60,8 @@ docs: describe import/export directory layout
 - Fill in the PR template, including the **parity impact** section. If the
   change makes hidane behave differently from the official emulator on
   purpose, say so and explain why.
-- Do not modify `reserve/` unless the issue is explicitly about package
-  reservation.
+- Leave `packaging/` and the release workflow alone unless the issue is about
+  distribution.
 
 ## DCO / CLA
 

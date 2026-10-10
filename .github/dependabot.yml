@@ -5,16 +5,8 @@ updates:
     schedule: { interval: weekly }
     groups:
       cargo-workspace: { patterns: ["*"] }
-  - package-ecosystem: cargo
-    directory: /reserve/crate
-    schedule: { interval: weekly }
-    groups:
-      cargo-all: { patterns: ["*"] }
-  - package-ecosystem: npm
-    directory: /reserve/npm
-    schedule: { interval: weekly }
   - package-ecosystem: pub
-    directory: /reserve/pub
+    directory: /packaging/pub
     schedule: { interval: weekly }
   - package-ecosystem: github-actions
     directory: /

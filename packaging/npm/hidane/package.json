@@ -1,0 +1,14 @@
+{
+  "name": "hidane",
+  "version": "0.0.0-dev",
+  "description": "hidane (火種) — a Firestore emulator without Java. A single binary, tested against the official emulator.",
+  "keywords": ["firestore", "emulator", "firebase", "testing"],
+  "homepage": "https://hidane.dev",
+  "repository": { "type": "git", "url": "git+https://github.com/hidane-dev/hidane.git" },
+  "bugs": "https://github.com/hidane-dev/hidane/issues",
+  "license": "(MIT OR Apache-2.0)",
+  "bin": { "hidane": "bin/hidane.js" },
+  "files": ["bin"],
+  "engines": { "node": ">=18" },
+  "optionalDependencies": {}
+}
