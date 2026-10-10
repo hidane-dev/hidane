@@ -39,20 +39,64 @@ The macOS binaries are not signed or notarized yet. Archives fetched with `curl`
 
 ## Cutting a release
 
-1. Set `version` in the workspace `Cargo.toml`, and the same version in the `=` pins of
-   `hidane-core` and `hidane-proto` under `[workspace.dependencies]`, and merge it.
-2. Push the tag `v<version>` on that commit. The workflow checks the tag against the crate version,
+1. Set the version everywhere it is written and merge it: `version` in the workspace
+   `Cargo.toml` and the `=` pins of `hidane-core` and `hidane-proto` under
+   `[workspace.dependencies]`; `version` in `packaging/pub/pubspec.yaml` and `hidaneVersion` in
+   `packaging/pub/lib/hidane.dart`, with a `packaging/pub/CHANGELOG.md` entry.
+   `node packaging/check-versions.mjs` checks that they agree, and CI runs it.
+2. Push the tag `v<version>` on that commit. The workflow checks the tag against those versions,
    builds every target, writes `sha256sums.txt`, attests the archives and creates a **draft**
    release with all of them.
-3. Write the notes on the draft, check the assets, and publish it.
+3. Write the notes on the draft and check the assets.
+4. Approve the workflow's `publish the release` job (the `release` environment). It publishes the
+   GitHub Release; then, in parallel:
 
-A pull request that changes the workflow runs the builds as a dry run; nothing is released.
+   | Job | Publishes |
+   |---|---|
+   | `crates.io` | `hidane-proto`, `hidane-core`, then `hidane`; `cargo install` and `cargo binstall` then work |
+   | `npm` | the five `@hidane/<platform>` packages, then `hidane` (`packaging/npm/assemble.mjs`), with provenance |
+   | `pub.dev` | `packaging/pub` |
+   | `ghcr.io/hidane-dev/hidane` | the image for linux/amd64 and linux/arm64, tagged `<version>`, `<major>.<minor>` and `latest` |
+   | `Homebrew tap` | `Formula/hidane.rb` in hidane-dev/homebrew-tap, or the formula in the job summary when `HOMEBREW_TAP_TOKEN` is not set |
 
-## Not decided here
+   crates.io, npm and pub.dev are reached through trusted publishing: each job gets a
+   short-lived token for this workflow, and no registry token is stored in the repository. A
+   failed job can be re-run; the crates.io and npm jobs skip versions that are already published.
+5. Deploy hidane.dev (`bun run deploy` in `website/`), whose `install.sh` installs the latest
+   release.
 
-- Further channels (Homebrew tap, npm, pub.dev, a container image, `curl | sh`) build on these
-  assets: #77, #78, #79. `cargo binstall hidane` finds them through the crate's
-  `[package.metadata.binstall]` once the crates are on crates.io.
+A tag with a pre-release suffix (`v0.1.0-rc.1`) stops at the draft. A pull request that changes the
+workflow runs the builds as a dry run; nothing is released.
+
+## One-time setup
+
+Trusted publishing is configured per package on each registry, and a package has to exist before
+it can be configured. The registries and the GitHub settings below are set up once, by an owner.
+
+1. **GitHub**: the `release` environment requires a maintainer's approval and accepts tags `v*`
+   only. Optionally, a fine-grained token with `contents: write` on hidane-dev/homebrew-tap as the
+   repository secret `HOMEBREW_TAP_TOKEN`.
+2. **npm**: an organization named `hidane` for the `@hidane/` packages. Create the five platform
+   packages once, from empty placeholders, while logged in to npm:
+
+   ```sh
+   node packaging/npm/assemble.mjs --placeholders 0.0.1 /tmp/hidane-npm
+   for p in darwin-arm64 darwin-x64 linux-arm64 linux-x64 win32-x64; do
+     (cd /tmp/hidane-npm/$p && npm publish --access public)
+   done
+   ```
+
+   Then, for `hidane` and each `@hidane/<platform>` package: *Settings → Trusted publishing →
+   GitHub Actions*, repository `hidane-dev/hidane`, workflow `release.yml`.
+3. **crates.io**: publish `hidane-proto` and `hidane-core` once with an API token, at any version
+   before the first release (a release candidate): `cargo login`, then
+   `cargo publish -p hidane-proto` and `cargo publish -p hidane-core`. Then, for `hidane`,
+   `hidane-core` and `hidane-proto`: *Settings → Trusted Publishing*, repository
+   `hidane-dev/hidane`, workflow `release.yml`.
+4. **pub.dev**: for `hidane`, *Admin → Automated publishing → Enable publishing from GitHub
+   Actions*, repository `hidane-dev/hidane`, tag pattern `v{{version}}`.
+5. **ghcr.io**: after the first image is pushed, set the `hidane` package's visibility to public
+   (organization *Packages → hidane → Package settings*).
 
 [cargo-dist](https://github.com/axodotdev/cargo-dist) was considered (#56) and not adopted: the
 workflow above is about one hundred lines that the project controls, with no generator to keep in

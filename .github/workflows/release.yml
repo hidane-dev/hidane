@@ -1,7 +1,7 @@
 name: Release
 
-# A tag `v<version>` generates the third-party notices (cargo-about), builds every target with
-# them embedded and packaged, checks the tag against the crate version, writes
+# A tag `v<version>` checks the version everywhere it is written, generates the third-party
+# notices (cargo-about), builds every target with them embedded and packaged, writes
 # sha256sums.txt, attests each archive's build provenance and creates a **draft** GitHub Release
 # for a maintainer to publish (docs/releasing.md). A pull request that changes this file runs
 # the builds only, as a dry run.
@@ -25,6 +25,14 @@ jobs:
         with:
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@stable
+      - name: Versions
+        run: |
+          # Cargo.toml, its pins, the pub launcher and the tag agree (packaging/check-versions.mjs).
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            node packaging/check-versions.mjs "$GITHUB_REF_NAME"
+          else
+            node packaging/check-versions.mjs
+          fi
       - name: Install cargo-about
         run: cargo install cargo-about --locked --features cli --version 0.9.2
       - name: Generate
@@ -133,6 +141,8 @@ jobs:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           path: dist
+          # The archives (named by target), not the notices, which each archive holds.
+          pattern: "*-*"
           merge-multiple: true
       - name: Checksums
         working-directory: dist
@@ -148,4 +158,186 @@ jobs:
             --repo "$GITHUB_REPOSITORY" \
             --draft \
             --title "hidane ${GITHUB_REF_NAME#v}" \
-            --notes "Draft created by the release workflow. Write the notes before publishing (docs/releasing.md)."
+            --notes "Draft created by the release workflow. Write the notes, then approve the publish job (docs/releasing.md)."
+
+  # Everything below waits for a maintainer's approval of the `release` environment, given after
+  # the draft's notes are written. Release candidates (`v0.1.0-rc.1`) stop at the draft.
+  publish:
+    name: publish the release
+    needs: release
+    if: ${{ !contains(github.ref_name, '-') }}
+    runs-on: ubuntu-24.04
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - name: Publish the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false --latest
+
+  crates:
+    name: crates.io
+    needs: publish
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      # Trusted publishing: a short-lived token for this workflow, no stored secret.
+      - uses: rust-lang/crates-io-auth-action@c6f97d42243bad5fab37ca0427f495c86d5b1a18 # v1.0.5
+        id: auth
+      # Dependencies first; `cargo publish` returns once the crate is in the index. Versions
+      # already on crates.io are skipped, so a re-run finishes what a failed run left.
+      - name: Publish
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          for crate in hidane-proto hidane-core hidane; do
+            status=$(curl -s -o /dev/null -w '%{http_code}' -H "User-Agent: hidane-release (github.com/hidane-dev/hidane)" \
+              "https://crates.io/api/v1/crates/$crate/$version")
+            if [[ "$status" == 200 ]]; then
+              echo "$crate $version is already on crates.io"
+              continue
+            fi
+            cargo publish --locked -p "$crate"
+          done
+
+  npm:
+    name: npm
+    needs: publish
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          # npm 11.5.1 or newer publishes through trusted publishing, with provenance.
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: Assemble
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --pattern 'hidane-*' --dir dist
+          node packaging/npm/assemble.mjs "${GITHUB_REF_NAME#v}" dist npm
+      - name: Publish
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          # The platform packages first: hidane depends on them. Versions already on npm are
+          # skipped, so a re-run finishes what a failed run left.
+          for dir in darwin-arm64 darwin-x64 linux-arm64 linux-x64 win32-x64 hidane; do
+            name=$(node -p "require('./npm/$dir/package.json').name")
+            if [[ "$(npm view "$name@$version" version 2>/dev/null)" == "$version" ]]; then
+              echo "$name@$version is already on npm"
+              continue
+            fi
+            (cd "npm/$dir" && npm publish --access public)
+          done
+
+  pub:
+    name: pub.dev
+    needs: publish
+    permissions:
+      id-token: write
+    # pub.dev accepts only workflows started by a tag push matching its pattern (`v{{version}}`).
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+    with:
+      working-directory: packaging/pub
+
+  docker:
+    name: ghcr.io/hidane-dev/hidane
+    needs: publish
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Context
+        id: context
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          gh release download "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --pattern 'hidane-*-unknown-linux-musl.tar.gz' --dir dist
+          mkdir -p ctx/amd64 ctx/arm64
+          for pair in x86_64:amd64 aarch64:arm64; do
+            name="hidane-$version-${pair%%:*}-unknown-linux-musl"
+            tar -xzf "dist/$name.tar.gz" -C dist
+            mv "dist/$name/hidane" "ctx/${pair##*:}/hidane"
+          done
+          cp "dist/$name/LICENSE-MIT" "dist/$name/LICENSE-APACHE" "dist/$name/THIRD-PARTY-LICENSES.txt" ctx/
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "minor=${version%.*}" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+      # FROM scratch with prebuilt binaries: nothing runs during the build, so no emulation.
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: ctx
+          file: packaging/docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ghcr.io/hidane-dev/hidane:${{ steps.context.outputs.version }}
+            ghcr.io/hidane-dev/hidane:${{ steps.context.outputs.minor }}
+            ghcr.io/hidane-dev/hidane:latest
+          labels: |
+            org.opencontainers.image.source=https://github.com/hidane-dev/hidane
+            org.opencontainers.image.description=hidane, a Firestore emulator without Java
+            org.opencontainers.image.licenses=MIT OR Apache-2.0
+            org.opencontainers.image.version=${{ steps.context.outputs.version }}
+
+  homebrew:
+    name: Homebrew tap
+    needs: publish
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    env:
+      # A fine-grained token with contents: write on hidane-dev/homebrew-tap. Without it, the
+      # formula is left in the job summary to commit by hand.
+      TAP_TOKEN: ${{ secrets.HOMEBREW_TAP_TOKEN }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Formula
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --pattern sha256sums.txt
+          node packaging/homebrew/formula.mjs "${GITHUB_REF_NAME#v}" sha256sums.txt > hidane.rb
+      - name: Push to hidane-dev/homebrew-tap
+        if: env.TAP_TOKEN != ''
+        run: |
+          git clone "https://x-access-token:${TAP_TOKEN}@github.com/hidane-dev/homebrew-tap.git" tap
+          mkdir -p tap/Formula
+          cp hidane.rb tap/Formula/hidane.rb
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Formula/hidane.rb
+          git commit -m "hidane ${GITHUB_REF_NAME#v}"
+          git push
+      - name: Without a token
+        if: env.TAP_TOKEN == ''
+        run: |
+          echo "::notice::HOMEBREW_TAP_TOKEN is not set; commit Formula/hidane.rb to hidane-dev/homebrew-tap from the job summary"
+          { echo '```ruby'; cat hidane.rb; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
