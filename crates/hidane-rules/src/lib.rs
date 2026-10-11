@@ -21,6 +21,7 @@
 mod ast;
 mod check;
 mod diag;
+pub mod eval;
 mod lexer;
 mod parser;
 pub mod paths;

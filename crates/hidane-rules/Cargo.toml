@@ -13,6 +13,7 @@ categories = ["development-tools::testing", "parser-implementations"]
 include = ["/src", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
 
 [dependencies]
+indexmap.workspace = true
 regex.workspace = true
 
 [lints]
