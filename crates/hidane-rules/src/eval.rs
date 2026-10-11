@@ -135,6 +135,11 @@ pub struct Query {
 #[derive(Debug, Clone, PartialEq)]
 pub struct Request {
     pub method: Method,
+    /// A create or an update without an existence precondition (a set, a patch, a transform):
+    /// whether the document exists chose the method. A denial then also lists the statements of
+    /// the other of the two, which cannot allow the write (`tools/oracle/rules_writes.py`,
+    /// `rules_denials.py`).
+    pub upsert: bool,
     /// The path checked, from `databases` (a document, or for a list its collection).
     pub path: Vec<String>,
     pub auth: Option<Auth>,
@@ -222,7 +227,9 @@ pub enum Decision {
 /// The `allow` statements of every `match` that covers the path and names the method apply, in
 /// source order; the first whose condition is true allows. A denial lists each one's result:
 /// `false for 'get' @ L5` or the error instead of `false`, with the line of the condition, or
-/// says `No matching allow statements` when none applies.
+/// says `No matching allow statements` when none applies. For an upsert the statements of the
+/// other method are listed too, `create`'s first: each is `false`, or its condition's error.
+/// Their lookups do not count against `budget`.
 ///
 /// A list (a query) is allowed for now: deciding it needs the query's constraints to imply the
 /// conditions (#66).
@@ -240,57 +247,112 @@ pub fn authorize(
     let Some(service) = ruleset.service("cloud.firestore") else {
         return no_match();
     };
-    let method = request.method.statement();
     let path: Vec<&str> = request.path.iter().map(String::as_str).collect();
     let coverings = crate::paths::covering(ruleset.version, service, &path);
-    let mut statements: Vec<(&ast::Allow, &Covering<'_>)> = Vec::new();
-    for covering in &coverings {
-        for allow in &covering.target().body.allows {
-            if allow
-                .methods
-                .iter()
-                .any(|m| m.method.is_some_and(|m| m.covers(method)))
-            {
-                statements.push((allow, covering));
+    let statements = |method: Method| {
+        let method = method.statement();
+        let mut statements: Vec<(&ast::Allow, &Covering<'_>)> = Vec::new();
+        for covering in &coverings {
+            for allow in &covering.target().body.allows {
+                if allow
+                    .methods
+                    .iter()
+                    .any(|m| m.method.is_some_and(|m| m.covers(method)))
+                {
+                    statements.push((allow, covering));
+                }
             }
         }
-    }
-    if statements.is_empty() {
+        statements.sort_by_key(|(allow, _)| allow.span.start);
+        statements
+    };
+    let other = match request.method {
+        Method::Create if request.upsert => Some(Method::Update),
+        Method::Update if request.upsert => Some(Method::Create),
+        _ => None,
+    };
+    let applying = statements(request.method);
+    let others = other.map(|other| (other, statements(other)));
+    if applying.is_empty() && others.as_ref().is_none_or(|(_, s)| s.is_empty()) {
         return no_match();
     }
-    statements.sort_by_key(|(allow, _)| allow.span.start);
 
-    let request_value = request_value(request);
-    let resource_value = resource.map_or(Val::Null, value::resource);
-    let mut entries = Vec::with_capacity(statements.len());
-    for (allow, covering) in statements {
+    let context = Context {
+        ruleset,
+        service,
+        request: request_value(request),
+        resource: resource.map_or(Val::Null, value::resource),
+        path: &request.path,
+        documents,
+    };
+    let mut entries = Vec::with_capacity(applying.len());
+    for (allow, covering) in applying {
         let Some(condition) = &allow.condition else {
             return Decision::Allow;
         };
+        let text = match context.evaluate(covering, condition, budget) {
+            Ok(true) => return Decision::Allow,
+            Ok(false) => "false".to_owned(),
+            Err(e) => e,
+        };
+        entries.push(entry(&text, request.method, condition.span.line));
+    }
+    if let Some((other, statements)) = others {
+        let mut scratch = budget.clone();
+        let listed = statements.into_iter().map(|(allow, covering)| {
+            let Some(condition) = &allow.condition else {
+                return entry("false", other, allow.span.line);
+            };
+            let text = context
+                .evaluate(covering, condition, &mut scratch)
+                .err()
+                .unwrap_or_else(|| "false".to_owned());
+            entry(&text, other, condition.span.line)
+        });
+        entries = match other {
+            Method::Create => listed.chain(entries).collect(),
+            _ => entries.into_iter().chain(listed).collect(),
+        };
+    }
+    Decision::Deny(format!("\n{}", entries.join(", ")))
+}
+
+fn entry(text: &str, method: Method, line: u32) -> String {
+    format!("{text} for '{}' @ L{line}", method.name())
+}
+
+/// What every condition of one request is evaluated with.
+struct Context<'a> {
+    ruleset: &'a Ruleset,
+    service: &'a ast::Service,
+    request: Val,
+    resource: Val,
+    path: &'a [String],
+    documents: &'a dyn Documents,
+}
+
+impl Context<'_> {
+    /// The condition of a statement at the end of `covering`: true, false or the error's text.
+    fn evaluate(
+        &self,
+        covering: &Covering<'_>,
+        condition: &ast::Expr,
+        budget: &mut Budget,
+    ) -> Result<bool, String> {
         let mut interp = Interp::new(
-            levels(ruleset, service, covering),
-            request_value.clone(),
-            resource_value.clone(),
-            &request.path,
-            documents,
+            levels(self.ruleset, self.service, covering),
+            self.request.clone(),
+            self.resource.clone(),
+            self.path,
+            self.documents,
             budget,
         );
         let frame = Frame::condition(covering.chain.len() + 1);
-        let text = match interp
+        interp
             .eval(condition, frame.scope())
             .and_then(interp::boolean)
-        {
-            Ok(true) => return Decision::Allow,
-            Ok(false) => "false".to_owned(),
-            Err(e) => e.0,
-        };
-        entries.push(format!(
-            "{text} for '{}' @ L{}",
-            request.method.name(),
-            condition.span.line
-        ));
+            .map_err(|e| e.0)
     }
-    Decision::Deny(format!("\n{}", entries.join(", ")))
 }
 
 /// The names a condition at the end of `covering` sees: the functions of the file, of the

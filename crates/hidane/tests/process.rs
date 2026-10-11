@@ -127,7 +127,7 @@ fn starts_with_the_firebase_tools_arguments_and_stops_on_sigint_with_130() {
     assert_eq!(status.code(), Some(130));
     let stderr = stderr_of(&mut child);
     assert!(
-        stderr.contains("WARNING: Security Rules are not evaluated yet"),
+        stderr.contains("WARNING: Security Rules do not check queries yet"),
         "{stderr}"
     );
     // The rules file is compiled at startup and what the compiler found is printed.

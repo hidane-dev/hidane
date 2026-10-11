@@ -97,6 +97,7 @@ impl Guard {
     ) -> Request {
         Request {
             method,
+            upsert: false,
             path: self.path(path),
             auth: self.auth.clone(),
             time,
@@ -169,6 +170,10 @@ impl Guard {
         } else {
             Budget::single()
         };
+        // Any write may look up a document of the batch for free.
+        for write in writes {
+            budget.add_written(self.path(&write.path));
+        }
         let mut denials = Vec::new();
         for write in writes {
             budget.next_write();
@@ -176,7 +181,8 @@ impl Guard {
                 Method::Delete => None,
                 _ => write.after.as_deref().map(|doc| self.document(doc)),
             };
-            let request = self.request(write.method, &write.path, new, time);
+            let mut request = self.request(write.method, &write.path, new, time);
+            request.upsert = write.upsert;
             let resource = write.before.as_deref().map(|doc| self.document(doc));
             if let Err(message) = decided(eval::authorize(
                 &self.ruleset,
@@ -199,6 +205,8 @@ impl Guard {
 /// A write of a commit, as the rules check it.
 pub(crate) struct CheckedWrite {
     pub method: Method,
+    /// Whether the document's existence chose the method (see `eval::Request::upsert`).
+    pub upsert: bool,
     pub path: ResourcePath,
     /// The document before the commit.
     pub before: Option<Arc<StoredDocument>>,

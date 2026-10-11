@@ -315,7 +315,8 @@ impl Cli {
         }
         if self.rules.is_some() {
             warnings.push(format!(
-                "Security Rules are not evaluated yet: every request is allowed ({ISSUES}/9)"
+                "Security Rules do not check queries yet: every query and listing is allowed \
+                 ({ISSUES}/66)"
             ));
         }
         if self.functions_emulator.is_some() {

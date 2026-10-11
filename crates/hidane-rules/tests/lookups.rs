@@ -76,6 +76,7 @@ fn store() -> Store {
 
 fn request(method: Method, path: &str, resource: Option<Document>) -> Request {
     Request {
+        upsert: false,
         method,
         path: document_path(path),
         auth: None,

@@ -1,6 +1,6 @@
 //! Applying one `Write` inside a commit.
 
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 
 use hidane_core::{
     field_path::{FieldPath, Fields, apply_mask},
@@ -16,7 +16,7 @@ use hidane_proto::google::firestore::v1::{
 use hidane_rules::eval::Method;
 use tonic::Status;
 
-use super::{names, validate};
+use super::{guard::CheckedWrite, names, validate};
 
 /// The document a write targets, for duplicate detection.
 pub fn target(write: &Write) -> Option<&str> {
@@ -107,31 +107,34 @@ fn parse_mask(paths: &[String]) -> Result<Vec<FieldPath>, Status> {
         .collect()
 }
 
-/// The method Security Rules check `write` against, its document, and that document before the
-/// write; `None` for a verify, which the rules do not check (`tools/oracle/rules_writes.py`): an
-/// `exists` precondition decides between create and update, else whether the document exists;
-/// a delete is a delete.
-pub fn rules_method(
-    batch: &dyn WriteBatch,
-    write: &Write,
-) -> Option<(Method, ResourcePath, Option<Arc<StoredDocument>>)> {
+/// How Security Rules check `write` (`None` for a verify, which they do not check;
+/// `tools/oracle/rules_writes.py`): an `exists` precondition decides between create and update,
+/// else whether the document exists, which makes the write an upsert; a delete is a delete.
+/// The document after the write is left for the caller to fill in.
+pub(crate) fn rules_method(batch: &dyn WriteBatch, write: &Write) -> Option<CheckedWrite> {
     let path = names::document(target(write)?).ok()?.path;
     let existing = batch.get(&path);
-    let method = match &write.operation {
-        Some(Operation::Delete(_)) => Method::Delete,
+    let (method, upsert) = match &write.operation {
+        Some(Operation::Delete(_)) => (Method::Delete, false),
         Some(Operation::Update(_) | Operation::Transform(_)) => match write
             .current_document
             .as_ref()
             .and_then(|p| p.condition_type.as_ref())
         {
-            Some(ConditionType::Exists(false)) => Method::Create,
-            Some(ConditionType::Exists(true)) => Method::Update,
-            _ if existing.is_some() => Method::Update,
-            _ => Method::Create,
+            Some(ConditionType::Exists(false)) => (Method::Create, false),
+            Some(ConditionType::Exists(true)) => (Method::Update, false),
+            _ if existing.is_some() => (Method::Update, true),
+            _ => (Method::Create, true),
         },
         Some(Operation::Verify(_)) | None => return None,
     };
-    Some((method, path, existing))
+    Some(CheckedWrite {
+        method,
+        upsert,
+        path,
+        before: existing,
+        after: None,
+    })
 }
 
 /// Applies `write` to `batch` (which must belong to `database`). Nothing is written when an

@@ -193,41 +193,31 @@ impl FirestoreService {
             };
             for write in writes {
                 let view = guard.and_then(|_| writes::rules_method(&*batch, write));
-                if let Some((_, path, existing)) = &view {
+                if let Some(view) = &view {
                     before
                         .touched
-                        .entry(path.clone())
-                        .or_insert_with(|| existing.clone());
+                        .entry(view.path.clone())
+                        .or_insert_with(|| view.before.clone());
                 }
                 match writes::apply(batch, database, write) {
                     Ok(result) => {
                         results.push(result);
-                        if let Some((method, path, existing)) = view {
-                            let after = batch.get(&path);
-                            checked.push(guard::CheckedWrite {
-                                method,
-                                path,
-                                before: existing,
-                                after,
-                            });
+                        if let Some(mut view) = view {
+                            view.after = batch.get(&view.path);
+                            checked.push(view);
                         }
                     }
                     Err(status) => {
                         // The rules come before the precondition: check the write as if it
                         // had none, and deny it if they do.
-                        if let (Some(guard), Some((method, path, existing)), true) =
+                        if let (Some(guard), Some(mut view), true) =
                             (guard, view, is_precondition(&status))
                         {
                             let mut unconditional = write.clone();
                             unconditional.current_document = None;
                             if writes::apply(batch, database, &unconditional).is_ok() {
-                                let after = batch.get(&path);
-                                checked.push(guard::CheckedWrite {
-                                    method,
-                                    path,
-                                    before: existing,
-                                    after,
-                                });
+                                view.after = batch.get(&view.path);
+                                checked.push(view);
                                 if let Err(message) = check_writes(guard, &checked, &before, batch)
                                 {
                                     failure = Some(guard::denied(message));

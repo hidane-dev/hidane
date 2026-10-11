@@ -1,10 +1,8 @@
 //! Security Rules end to end, against the official emulator's recordings: the cases of
 //! `tools/oracle/rules_{request,writes,lookups,auth,denials}.py` (`fixtures/rules_*.json`),
 //! each a list of REST calls, are replayed in order against a fresh hidane. Every answer's
-//! status must match, and a denial's reasons must be among the official emulator's: it
-//! evaluates conditions in two passes and lists the reasons of both, where the first pass fails
-//! on `resource` and on lookups (firebase-tools #6252, `docs/parity-exceptions.md`). hidane
-//! evaluates each condition once.
+//! status must match, and a denial must say what the official emulator's does, as
+//! `common::rules::same_denial` compares them.
 
 mod common;
 
@@ -90,9 +88,8 @@ fn same_message(hidane: Option<&str>, official: Option<&str>, status: u16) -> bo
 }
 
 /// Replays every case of `fixture` but those `skip` names, each case's steps in order on one
-/// server; for the cases `statuses_only` names, only statuses are compared. A case stops at its
-/// first answer that differs; the differences are listed at the end.
-async fn replay(fixture: &str, skip: &[&str], statuses_only: &[&str]) {
+/// server. A case stops at its first answer that differs; the differences are listed at the end.
+async fn replay(fixture: &str, skip: &[&str]) {
     let cases: Vec<Json> = serde_json::from_str(fixture).unwrap();
     let addr = start().await;
     let mut compared = 0;
@@ -113,8 +110,7 @@ async fn replay(fixture: &str, skip: &[&str], statuses_only: &[&str]) {
             )
             .await;
             let same = status == step["status"]
-                && (statuses_only.contains(&name)
-                    || same_message(message(&response), message(&step["response"]), status));
+                && same_message(message(&response), message(&step["response"]), status);
             if !same {
                 differences.push(format!(
                     "{name}, step {i}: {} {}\n  official: {} {}\n  hidane:   {status} {}",
@@ -163,38 +159,24 @@ const LISTS: &[&str] = &[
     "query denied",
 ];
 
-/// Batches over the lookup limit: the official emulator's first evaluation (see the module
-/// comment) calls `exists` too, so it reaches the limit at another call and lists other reasons.
-const FIRST_PASS_LOOKUPS: &[&str] = &[
-    "batch of two writes: 21 distinct exists in each",
-    "batch of two writes: 11 exists of the write's own documents in each",
-    "batch of four writes: 6 exists of the write's own documents in each",
-    "batch of four writes: 7 exists of the write's own documents in each",
-];
-
 #[tokio::test]
 async fn request_and_resource() {
-    replay(include_str!("fixtures/rules_request.json"), LISTS, &[]).await;
+    replay(include_str!("fixtures/rules_request.json"), LISTS).await;
 }
 
 #[tokio::test]
 async fn writes_are_checked_as_create_update_or_delete() {
-    replay(include_str!("fixtures/rules_writes.json"), LISTS, &[]).await;
+    replay(include_str!("fixtures/rules_writes.json"), LISTS).await;
 }
 
 #[tokio::test]
 async fn lookups_and_their_limits() {
-    replay(
-        include_str!("fixtures/rules_lookups.json"),
-        LISTS,
-        FIRST_PASS_LOOKUPS,
-    )
-    .await;
+    replay(include_str!("fixtures/rules_lookups.json"), LISTS).await;
 }
 
 #[tokio::test]
 async fn request_auth_from_tokens() {
-    replay(include_str!("fixtures/rules_auth.json"), &[], &[]).await;
+    replay(include_str!("fixtures/rules_auth.json"), &[]).await;
 }
 
 #[tokio::test]
@@ -203,7 +185,6 @@ async fn denials() {
     replay(
         include_str!("fixtures/rules_denials.json"),
         &[LISTS, &["coverage"]].concat(),
-        &[],
     )
     .await;
 }

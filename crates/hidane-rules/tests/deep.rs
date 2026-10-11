@@ -23,6 +23,7 @@ fn decide(content: String) -> Decision {
         .stack_size(STACK)
         .spawn(move || {
             let request = Request {
+                upsert: false,
                 method: Method::Get,
                 path: document_path("c/d"),
                 auth: None,
