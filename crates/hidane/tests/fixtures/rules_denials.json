@@ -13,13 +13,16 @@
      }
     },
     "auth": "Bearer owner",
-    "status": 409,
+    "status": 200,
     "response": {
-     "error": {
-      "code": 409,
-      "message": "entity already exists: EntityRef[partitionRef=dev~denials-0, path=/c/d]",
-      "status": "ALREADY_EXISTS"
-     }
+     "name": "projects/denials-0/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.482503Z",
+     "updateTime": "2026-10-11T14:31:42.482503Z"
     }
    },
    {
@@ -69,13 +72,16 @@
      }
     },
     "auth": "Bearer owner",
-    "status": 409,
+    "status": 200,
     "response": {
-     "error": {
-      "code": 409,
-      "message": "entity already exists: EntityRef[partitionRef=dev~denials-1, path=/c/d]",
-      "status": "ALREADY_EXISTS"
-     }
+     "name": "projects/denials-1/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.494668Z",
+     "updateTime": "2026-10-11T14:31:42.494668Z"
     }
    },
    {
@@ -125,13 +131,16 @@
      }
     },
     "auth": "Bearer owner",
-    "status": 409,
+    "status": 200,
     "response": {
-     "error": {
-      "code": 409,
-      "message": "entity already exists: EntityRef[partitionRef=dev~denials-2, path=/c/d]",
-      "status": "ALREADY_EXISTS"
-     }
+     "name": "projects/denials-2/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.505861Z",
+     "updateTime": "2026-10-11T14:31:42.505861Z"
     }
    },
    {
@@ -181,13 +190,16 @@
      }
     },
     "auth": "Bearer owner",
-    "status": 409,
+    "status": 200,
     "response": {
-     "error": {
-      "code": 409,
-      "message": "entity already exists: EntityRef[partitionRef=dev~denials-3, path=/c/d]",
-      "status": "ALREADY_EXISTS"
-     }
+     "name": "projects/denials-3/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.520313Z",
+     "updateTime": "2026-10-11T14:31:42.520313Z"
     }
    },
    {
@@ -237,13 +249,16 @@
      }
     },
     "auth": "Bearer owner",
-    "status": 409,
+    "status": 200,
     "response": {
-     "error": {
-      "code": 409,
-      "message": "entity already exists: EntityRef[partitionRef=dev~denials-4, path=/c/d]",
-      "status": "ALREADY_EXISTS"
-     }
+     "name": "projects/denials-4/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.543906Z",
+     "updateTime": "2026-10-11T14:31:42.543906Z"
     }
    },
    {
@@ -293,13 +308,16 @@
      }
     },
     "auth": "Bearer owner",
-    "status": 409,
+    "status": 200,
     "response": {
-     "error": {
-      "code": 409,
-      "message": "entity already exists: EntityRef[partitionRef=dev~denials-5, path=/c/d]",
-      "status": "ALREADY_EXISTS"
-     }
+     "name": "projects/denials-5/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.557193Z",
+     "updateTime": "2026-10-11T14:31:42.557193Z"
     }
    },
    {
@@ -349,13 +367,16 @@
      }
     },
     "auth": "Bearer owner",
-    "status": 409,
+    "status": 200,
     "response": {
-     "error": {
-      "code": 409,
-      "message": "entity already exists: EntityRef[partitionRef=dev~denials-6, path=/c/d]",
-      "status": "ALREADY_EXISTS"
-     }
+     "name": "projects/denials-6/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.568389Z",
+     "updateTime": "2026-10-11T14:31:42.568389Z"
     }
    },
    {
@@ -405,13 +426,16 @@
      }
     },
     "auth": "Bearer owner",
-    "status": 409,
+    "status": 200,
     "response": {
-     "error": {
-      "code": 409,
-      "message": "entity already exists: EntityRef[partitionRef=dev~denials-7, path=/c/d]",
-      "status": "ALREADY_EXISTS"
-     }
+     "name": "projects/denials-7/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.577878Z",
+     "updateTime": "2026-10-11T14:31:42.577878Z"
     }
    },
    {
@@ -461,13 +485,16 @@
      }
     },
     "auth": "Bearer owner",
-    "status": 409,
+    "status": 200,
     "response": {
-     "error": {
-      "code": 409,
-      "message": "entity already exists: EntityRef[partitionRef=dev~denials-8, path=/c/d]",
-      "status": "ALREADY_EXISTS"
-     }
+     "name": "projects/denials-8/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.589577Z",
+     "updateTime": "2026-10-11T14:31:42.589577Z"
     }
    },
    {
@@ -517,13 +544,16 @@
      }
     },
     "auth": "Bearer owner",
-    "status": 409,
+    "status": 200,
     "response": {
-     "error": {
-      "code": 409,
-      "message": "entity already exists: EntityRef[partitionRef=dev~denials-9, path=/c/d]",
-      "status": "ALREADY_EXISTS"
-     }
+     "name": "projects/denials-9/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.600651Z",
+     "updateTime": "2026-10-11T14:31:42.600651Z"
     }
    },
    {
@@ -573,13 +603,16 @@
      }
     },
     "auth": "Bearer owner",
-    "status": 409,
+    "status": 200,
     "response": {
-     "error": {
-      "code": 409,
-      "message": "entity already exists: EntityRef[partitionRef=dev~denials-10, path=/c/d]",
-      "status": "ALREADY_EXISTS"
-     }
+     "name": "projects/denials-10/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.611697Z",
+     "updateTime": "2026-10-11T14:31:42.611697Z"
     }
    },
    {
@@ -629,13 +662,16 @@
      }
     },
     "auth": "Bearer owner",
-    "status": 409,
+    "status": 200,
     "response": {
-     "error": {
-      "code": 409,
-      "message": "entity already exists: EntityRef[partitionRef=dev~denials-11, path=/c/d]",
-      "status": "ALREADY_EXISTS"
-     }
+     "name": "projects/denials-11/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.639126Z",
+     "updateTime": "2026-10-11T14:31:42.639126Z"
     }
    },
    {
@@ -693,13 +729,16 @@
      }
     },
     "auth": "Bearer owner",
-    "status": 409,
+    "status": 200,
     "response": {
-     "error": {
-      "code": 409,
-      "message": "entity already exists: EntityRef[partitionRef=dev~denials-12, path=/c/d]",
-      "status": "ALREADY_EXISTS"
-     }
+     "name": "projects/denials-12/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.662232Z",
+     "updateTime": "2026-10-11T14:31:42.662232Z"
     }
    },
    {
@@ -755,13 +794,16 @@
      }
     },
     "auth": "Bearer owner",
-    "status": 409,
+    "status": 200,
     "response": {
-     "error": {
-      "code": 409,
-      "message": "entity already exists: EntityRef[partitionRef=dev~denials-13, path=/c/d]",
-      "status": "ALREADY_EXISTS"
-     }
+     "name": "projects/denials-13/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.673569Z",
+     "updateTime": "2026-10-11T14:31:42.673569Z"
     }
    },
    {
@@ -817,13 +859,16 @@
      }
     },
     "auth": "Bearer owner",
-    "status": 409,
+    "status": 200,
     "response": {
-     "error": {
-      "code": 409,
-      "message": "entity already exists: EntityRef[partitionRef=dev~denials-14, path=/c/d]",
-      "status": "ALREADY_EXISTS"
-     }
+     "name": "projects/denials-14/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.689491Z",
+     "updateTime": "2026-10-11T14:31:42.689491Z"
     }
    },
    {
@@ -873,13 +918,16 @@
      }
     },
     "auth": "Bearer owner",
-    "status": 409,
+    "status": 200,
     "response": {
-     "error": {
-      "code": 409,
-      "message": "entity already exists: EntityRef[partitionRef=dev~denials-15, path=/c/d]",
-      "status": "ALREADY_EXISTS"
-     }
+     "name": "projects/denials-15/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.701573Z",
+     "updateTime": "2026-10-11T14:31:42.701573Z"
     }
    },
    {
@@ -935,13 +983,16 @@
      }
     },
     "auth": "Bearer owner",
-    "status": 409,
+    "status": 200,
     "response": {
-     "error": {
-      "code": 409,
-      "message": "entity already exists: EntityRef[partitionRef=dev~denials-16, path=/c/d]",
-      "status": "ALREADY_EXISTS"
-     }
+     "name": "projects/denials-16/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.712958Z",
+     "updateTime": "2026-10-11T14:31:42.712958Z"
     }
    },
    {
@@ -994,6 +1045,273 @@
      "error": {
       "code": 403,
       "message": "\nfalse for 'create' @ L5, false for 'update' @ L5, false for 'create' @ L5, false for 'update' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "commit of one denied write",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-17/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/denials-17/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.739310Z",
+     "updateTime": "2026-10-11T14:31:42.739310Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-17:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if d == 'a';\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-17/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/denials-17/databases/(default)/documents/c/b",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'create' @ L5, false for 'update' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "upsert, update before create",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-18/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/denials-18/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.752304Z",
+     "updateTime": "2026-10-11T14:31:42.752304Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-18:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if false;\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/denials-18/databases/(default)/documents/c/d?updateMask.fieldPaths=n",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'create' @ L6, false for 'update' @ L5, false for 'update' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "upsert of a new document, update before create",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-19/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/denials-19/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.764584Z",
+     "updateTime": "2026-10-11T14:31:42.764584Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-19:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n      allow create: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/denials-19/databases/(default)/documents/c/new",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'create' @ L6, false for 'update' @ L5, false for 'create' @ L6",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "upsert, the other method's condition fails",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-20/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/denials-20/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:31:42.777235Z",
+     "updateTime": "2026-10-11T14:31:42.777235Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-20:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if int('a') == 1;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/denials-20/databases/(default)/documents/c/d?updateMask.fieldPaths=n",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nType conversion error. Argument: [a], From type: [string], To type: [int]. for 'create' @ L5",
       "status": "PERMISSION_DENIED"
      }
     }

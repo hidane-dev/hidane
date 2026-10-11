@@ -382,7 +382,10 @@ fn check_writes(
     before: &guard::Before,
     batch: &dyn hidane_core::store::WriteBatch,
 ) -> Result<(), String> {
-    let time = guard::timestamp(&batch.commit_time().to_timestamp());
+    // `request.time` is the time `REQUEST_TIME` writes, to the millisecond.
+    let time = guard::timestamp(&hidane_core::transform::request_time(
+        &batch.commit_time().to_timestamp(),
+    ));
     guard.writes(
         checked,
         time,

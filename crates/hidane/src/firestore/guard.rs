@@ -282,8 +282,8 @@ fn now() -> eval::Timestamp {
         .unwrap_or_default();
     eval::Timestamp {
         seconds: i64::try_from(since.as_secs()).unwrap_or(i64::MAX),
-        // Firestore keeps microseconds.
-        nanos: i32::try_from(since.subsec_micros() * 1000).unwrap_or(0),
+        // `request.time` has millisecond precision, as `REQUEST_TIME` does.
+        nanos: i32::try_from(since.subsec_millis() * 1_000_000).unwrap_or(0),
     }
 }
 

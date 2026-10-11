@@ -36,8 +36,11 @@ QUERY = lambda b: ("POST", f"{b}:runQuery", {"structuredQuery": {"from": [{"coll
 CREATE = lambda b: ("POST", f"{b}/c?documentId=new", {"fields": {"n": I(1)}})
 UPDATE = lambda b: ("PATCH", f"{b}/c/d?updateMask.fieldPaths=n", {"fields": {"n": I(2)}})
 DELETE = lambda b: ("DELETE", f"{b}/c/d", None)
+UPSERT_NEW = lambda b: ("PATCH", f"{b}/c/new", {"fields": {"n": I(1)}})
 BATCH = lambda b: ("POST", f"{b}:commit", {"writes": [
     {"update": {"name": f"{b[4:]}/c/a", "fields": {"n": I(1)}}},
+    {"update": {"name": f"{b[4:]}/c/b", "fields": {"n": I(1)}}}]})
+BATCH_ONE = lambda b: ("POST", f"{b}:commit", {"writes": [
     {"update": {"name": f"{b[4:]}/c/b", "fields": {"n": I(1)}}}]})
 
 CASES = [
@@ -58,6 +61,11 @@ CASES = [
     ("delete denied", "match /c/{d} {\n  allow delete: if false;\n}", DELETE),
     ("write denied", "match /c/{d} {\n  allow write: if false;\n}", UPDATE),
     ("batch, second write denied", "match /c/{d} {\n  allow write: if d == 'a';\n}", BATCH),
+    ("commit of one denied write", "match /c/{d} {\n  allow write: if d == 'a';\n}", BATCH_ONE),
+    ("upsert, update before create", "match /c/{d} {\n  allow update: if false;\n  allow create: if true;\n}", UPDATE),
+    ("upsert of a new document, update before create",
+     "match /c/{d} {\n  allow update: if true;\n  allow create: if false;\n}", UPSERT_NEW),
+    ("upsert, the other method's condition fails", "match /c/{d} {\n  allow create: if int('a') == 1;\n}", UPDATE),
 ]
 
 for i, (name, body, op) in enumerate(CASES):

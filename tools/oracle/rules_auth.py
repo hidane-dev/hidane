@@ -58,6 +58,7 @@ TOKENS = {
 
 PROBES = [
     "true", "request.auth == null", "request.auth != null", "request.auth.uid == 'u1'", "request.auth.uid == 'u2'",
+    "request.auth.uid == null", "request.auth.uid == ''", "request.auth.uid is string",
     "request.auth.token.sub == 'u1'", "request.auth.token.user_id == 'u1'", "request.auth.token.email == 'a@example.com'",
     "request.auth.token.email_verified == true", "request.auth.token.firebase.sign_in_provider == 'password'",
     "request.auth.token.admin == true", "request.auth.token.aud == 'auth-rules'", "request.auth.token.exp is int",

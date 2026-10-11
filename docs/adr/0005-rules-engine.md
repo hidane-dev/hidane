@@ -100,7 +100,7 @@ It is the parity target, and it is not CEL:
 | 6 cel-spec cases evaluate differently: `matches` is a full match, and `[1] == [1.0]` is false although `1 == 1.0` is true. `1 in [1.0]` is false too, and `int()` of an out-of-range double has no range error | `cel/string/matches/…`, `rules/…` |
 | Rules adds `is`, path literals with `$( )`, slices `[i:j]`, string indexing and mixed int / float arithmetic | `rules/…` |
 | Errors are absorbed the CEL way, whatever they come from: `error \|\| true` and `true \|\| error` allow, `error && false` and `false && error` are false, `error \|\| false` denies. Missing fields, a null `request.auth`, `request.path[10]`, `int('abc')`, division by zero and integer overflow all behave so | `heldout/…` (error absorption), `rules/…` (missing fields and errors) |
-| A denial reports the condition's start and the error: `evaluation error at L5:22 for 'get' @ L5, Type conversion error. Argument: [abc], From type: [string], To type: [int]. for 'get' @ L5` | a `PERMISSION_DENIED` body |
+| A denial lists each statement's result with its line: `false for 'get' @ L5`, or the error, `Type conversion error. Argument: [abc], From type: [string], To type: [int]. for 'get' @ L5`. The first of its two passes (#6252) adds its own: the same error again, or `evaluation error at L5:22 for 'get' @ L5` (the condition's start) where `resource.data` or a lookup failed | a `PERMISSION_DENIED` body; `crates/hidane/tests/fixtures/rules_denials.json` |
 
 ### cel-rust
 

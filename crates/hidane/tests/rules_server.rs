@@ -1,10 +1,10 @@
 //! Security Rules end to end, against the official emulator's recordings: the cases of
 //! `tools/oracle/rules_{request,writes,lookups,auth,denials}.py` (`fixtures/rules_*.json`),
 //! each a list of REST calls, are replayed in order against a fresh hidane. Every answer's
-//! status must match, and a denial for want of any statement must say so the same way.
-//!
-//! Other denial messages are not compared: the official emulator evaluates conditions that read
-//! `resource` twice and lists some entries twice (`docs/parity-exceptions.md`).
+//! status must match, and a denial's reasons must be among the official emulator's: it
+//! evaluates conditions in two passes and lists the reasons of both, where the first pass fails
+//! on `resource` and on lookups (firebase-tools #6252, `docs/parity-exceptions.md`). hidane
+//! evaluates each condition once.
 
 use std::net::SocketAddr;
 
@@ -76,17 +76,54 @@ fn message(response: &Json) -> Option<&str> {
     response.pointer("/error/message").and_then(Json::as_str)
 }
 
-/// Replays every case of `fixture`; the cases `skip` names are left out (with the reason
-/// given there).
-async fn replay(fixture: &str, skip: &dyn Fn(&Json) -> bool) {
+/// A denial's reasons: `\nfalse for 'get' @ L5, <error> for 'get' @ L6`, each ending in a line
+/// number (an error's own text may hold `, `).
+fn reasons(message: &str) -> Vec<&str> {
+    let mut rest = message.strip_prefix('\n').unwrap_or(message);
+    let mut reasons = Vec::new();
+    let mut scanned = 0;
+    while let Some(at) = rest[scanned..].find(" @ L").map(|i| scanned + i + 4) {
+        let end = at + rest[at..].bytes().take_while(u8::is_ascii_digit).count();
+        match rest[end..].strip_prefix(", ") {
+            Some(next) if end > at => {
+                reasons.push(&rest[..end]);
+                rest = next;
+                scanned = 0;
+            }
+            _ => scanned = end,
+        }
+    }
+    reasons.push(rest);
+    reasons
+}
+
+/// Whether hidane's error message says what the official emulator's does.
+fn same_message(hidane: Option<&str>, official: Option<&str>) -> bool {
+    match (hidane, official) {
+        (Some(hidane), Some(official)) if official.starts_with('\n') => {
+            let official = reasons(official);
+            hidane.starts_with('\n') && reasons(hidane).iter().all(|r| official.contains(r))
+        }
+        (hidane, Some("No matching allow statements")) => {
+            hidane == Some("No matching allow statements")
+        }
+        _ => true,
+    }
+}
+
+/// Replays every case of `fixture` but those `skip` names, each case's steps in order on one
+/// server; for the cases `statuses_only` names, only statuses are compared. A case stops at its
+/// first answer that differs; the differences are listed at the end.
+async fn replay(fixture: &str, skip: &[&str], statuses_only: &[&str]) {
     let cases: Vec<Json> = serde_json::from_str(fixture).unwrap();
     let addr = start().await;
     let mut compared = 0;
+    let mut differences = Vec::new();
     for case in &cases {
-        if skip(case) {
+        let name = case["name"].as_str().unwrap();
+        if skip.contains(&name) {
             continue;
         }
-        let name = case["name"].as_str().unwrap();
         for (i, step) in case["steps"].as_array().unwrap().iter().enumerate() {
             let body = (!step["body"].is_null()).then(|| step["body"].to_string());
             let (status, response) = send(
@@ -97,70 +134,98 @@ async fn replay(fixture: &str, skip: &dyn Fn(&Json) -> bool) {
                 step["auth"].as_str(),
             )
             .await;
-            let context = format!("{name}, step {i}: {} {}", step["method"], step["path"]);
-            assert_eq!(status, step["status"], "{context}\n{response:#}");
-            let official = message(&step["response"]);
-            if official == Some("No matching allow statements") {
-                assert_eq!(message(&response), official, "{context}");
+            let same = status == step["status"]
+                && (statuses_only.contains(&name)
+                    || same_message(message(&response), message(&step["response"])));
+            if !same {
+                differences.push(format!(
+                    "{name}, step {i}: {} {}\n  official: {} {}\n  hidane:   {status} {}",
+                    step["method"], step["path"], step["status"], step["response"], response
+                ));
+                break;
             }
             compared += 1;
         }
     }
     assert!(compared > 0);
+    assert!(
+        differences.is_empty(),
+        "{} of {} cases differ:\n{}",
+        differences.len(),
+        cases.len(),
+        differences.join("\n")
+    );
 }
 
-/// A case that needs `list` decided from the query's constraints, which is #66.
-fn needs_list_rules(case: &Json) -> bool {
-    let steps = case["steps"].as_array().unwrap();
-    case["method"] == "list"
-        || steps.iter().any(|step| {
-            let path = step["path"].as_str().unwrap_or_default();
-            step["auth"].is_null()
-                && (path.ends_with(":runQuery")
-                    || path.ends_with(":runAggregationQuery")
-                    || (step["method"] == "GET"
-                        && path.split('/').count() % 2 == 0
-                        && !path.contains("emulator")))
-        })
-}
+/// Lists and queries that the official emulator denies: hidane allows every list until it
+/// decides them from the query's constraints (#66).
+const LISTS: &[&str] = &[
+    "list: false",
+    "list: request.method == 'get'",
+    "list: request.method == 'create'",
+    "list: request.method == 'update'",
+    "list: request.method == 'delete'",
+    "list: resource.data.n == 1",
+    "list: resource == null",
+    "list: request.query.limit == null",
+    "list: request.query.orderBy == null",
+    "query: false",
+    "query: request.method == 'get'",
+    "query: request.method == 'create'",
+    "query: request.method == 'update'",
+    "query: request.method == 'delete'",
+    "query: request.query.orderBy == 'n'",
+    "query: request.query.orderBy == ['n']",
+    "query: request.query.orderBy[0] == 'n'",
+    "query: 21 distinct exists",
+    "query: 21 distinct exists, with a filter",
+    "aggregation, denied",
+    "listDocuments, denied",
+    "list denied",
+    "query denied",
+];
+
+/// Batches over the lookup limit: the official emulator's first evaluation (see the module
+/// comment) calls `exists` too, so it reaches the limit at another call and lists other reasons.
+const FIRST_PASS_LOOKUPS: &[&str] = &[
+    "batch of two writes: 21 distinct exists in each",
+    "batch of two writes: 11 exists of the write's own documents in each",
+    "batch of four writes: 6 exists of the write's own documents in each",
+    "batch of four writes: 7 exists of the write's own documents in each",
+];
 
 #[tokio::test]
 async fn request_and_resource() {
-    replay(
-        include_str!("fixtures/rules_request.json"),
-        &needs_list_rules,
-    )
-    .await;
+    replay(include_str!("fixtures/rules_request.json"), LISTS, &[]).await;
 }
 
 #[tokio::test]
 async fn writes_are_checked_as_create_update_or_delete() {
-    replay(
-        include_str!("fixtures/rules_writes.json"),
-        &needs_list_rules,
-    )
-    .await;
+    replay(include_str!("fixtures/rules_writes.json"), LISTS, &[]).await;
 }
 
 #[tokio::test]
 async fn lookups_and_their_limits() {
     replay(
         include_str!("fixtures/rules_lookups.json"),
-        &needs_list_rules,
+        LISTS,
+        FIRST_PASS_LOOKUPS,
     )
     .await;
 }
 
 #[tokio::test]
 async fn request_auth_from_tokens() {
-    replay(include_str!("fixtures/rules_auth.json"), &|_| false).await;
+    replay(include_str!("fixtures/rules_auth.json"), &[], &[]).await;
 }
 
 #[tokio::test]
 async fn denials() {
+    // `:ruleCoverage` is not served yet.
     replay(
         include_str!("fixtures/rules_denials.json"),
-        &needs_list_rules,
+        &[LISTS, &["coverage"]].concat(),
+        &[],
     )
     .await;
 }
