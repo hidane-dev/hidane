@@ -16,9 +16,8 @@ pub mod entity;
 pub mod log;
 mod wire;
 
-use std::collections::BTreeMap;
-
 use hidane_proto::google::firestore::v1::{Value, value::ValueType};
+use hidane_proto::ordered::Fields;
 
 pub use wire::Malformed;
 
@@ -42,13 +41,13 @@ pub struct ExportedDocument {
     pub path: ResourcePath,
     /// References relative to the importing project have an empty project
     /// (`projects//databases/…`); see [`Self::fields_in`].
-    pub fields: BTreeMap<String, Value>,
+    pub fields: Fields,
 }
 
 impl ExportedDocument {
     /// The fields as imported into `project`: references relative to the importing project
     /// (top-level indexed properties, see [`entity`]) point into it.
-    pub fn fields_in(&self, project: &str) -> BTreeMap<String, Value> {
+    pub fn fields_in(&self, project: &str) -> Fields {
         fn resolve(value: &mut Value, project: &str) {
             match &mut value.value_type {
                 Some(ValueType::ReferenceValue(name)) => {

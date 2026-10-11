@@ -9,9 +9,10 @@
 //! - Documents without a field that a `sum` or `avg` reads are left out of the whole query,
 //!   `count` included, before `offset` and `limit`.
 
-use std::{collections::BTreeMap, sync::Arc};
+use std::sync::Arc;
 
 use hidane_core::{
+    field_path::Fields,
     field_path::{FieldPath, get},
     store::StoredDocument,
 };
@@ -103,8 +104,9 @@ impl Aggregations {
         })
     }
 
-    /// The result of every aggregation over `documents`, by alias.
-    pub fn compute(&self, documents: &[Arc<StoredDocument>]) -> BTreeMap<String, Value> {
+    /// The result of every aggregation over `documents`, by alias, in the order of the request
+    /// (as on the official emulator, #108).
+    pub fn compute(&self, documents: &[Arc<StoredDocument>]) -> Fields {
         let fields: Vec<_> = documents.iter().map(|doc| doc.fields()).collect();
         self.0
             .iter()

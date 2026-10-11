@@ -129,8 +129,8 @@ pub fn write_value(value: &Value, out: &mut Vec<u8>) {
         }
         Some(ValueType::MapValue(map)) => {
             out.push(MAP);
-            // `fields` is a BTreeMap: UTF-8 key order, as Firestore compares maps.
-            for (key, field) in &map.fields {
+            // UTF-8 key order, as Firestore compares maps.
+            for (key, field) in map.fields.sorted() {
                 write_escaped(key.as_bytes(), out);
                 write_value(field, out);
             }

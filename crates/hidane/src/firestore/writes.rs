@@ -134,15 +134,19 @@ pub fn apply(
             transform_results: Vec::new(),
         }),
         Some(Operation::Update(document)) => {
+            // Normalised first, so a value that only differs below a microsecond is no change
+            // and does not move (#108).
+            let mut input = document.fields.clone();
+            input.values_mut().for_each(normalize_value);
             let mut fields = match &write.update_mask {
-                None => document.fields.clone(),
+                None => input,
                 Some(mask) => {
                     let mask = parse_mask(&mask.field_paths)?;
                     let mut fields = existing
                         .as_ref()
                         .map(|doc| doc.fields())
                         .unwrap_or_default();
-                    apply_mask(&mut fields, &document.fields, &mask);
+                    apply_mask(&mut fields, &input, &mask);
                     fields
                 }
             };
@@ -182,20 +186,32 @@ pub fn apply(
     }
 }
 
+/// Runs `transforms` in request order, for their results. The fields they change then land as
+/// a masked update of their paths would put them (#108): the official emulator moves them to
+/// the end in the order of a Java `HashMap`, and leaves unchanged ones in place.
 fn apply_transforms(
     fields: &mut Fields,
     transforms: &[FieldTransform],
     commit_time: ReadTime,
 ) -> Result<Vec<Value>, Status> {
+    if transforms.is_empty() {
+        return Ok(Vec::new());
+    }
     let commit_time = commit_time.to_timestamp();
+    let mut transformed = fields.clone();
     let results = transforms
         .iter()
-        .map(|t| transform::apply(fields, t, &commit_time).map_err(Status::invalid_argument))
+        .map(|t| {
+            transform::apply(&mut transformed, t, &commit_time).map_err(Status::invalid_argument)
+        })
         .collect::<Result<Vec<_>, _>>()?;
-    if !transforms.is_empty() {
-        // Operands can introduce nested arrays or reserved names.
-        validate::fields(fields)?;
-    }
+    // Operands can introduce nested arrays or reserved names.
+    validate::fields(&transformed)?;
+    let paths = transforms
+        .iter()
+        .map(|t| FieldPath::parse(&t.field_path).map_err(Status::invalid_argument))
+        .collect::<Result<Vec<_>, _>>()?;
+    apply_mask(fields, &transformed, &paths);
     Ok(results)
 }
 

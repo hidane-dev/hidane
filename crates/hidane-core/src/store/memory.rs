@@ -7,7 +7,7 @@ use std::{
     time::{Duration, SystemTime, UNIX_EPOCH},
 };
 
-use hidane_proto::google::firestore::v1::Value;
+use hidane_proto::ordered::Fields;
 
 use super::{
     Change, Commit, ListItem, ListOptions, ReadTime, Store, StoreError, StoredDocument, Visit,
@@ -413,7 +413,7 @@ impl WriteBatch for MemoryBatch<'_> {
         }
     }
 
-    fn set(&mut self, path: &ResourcePath, fields: BTreeMap<String, Value>) {
+    fn set(&mut self, path: &ResourcePath, fields: Fields) {
         let now = ReadTime(self.commit_time).to_timestamp();
         let create_time = self
             .get(path)

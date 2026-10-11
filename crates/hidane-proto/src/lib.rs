@@ -11,7 +11,14 @@ mod generated {
 
 pub use generated::google;
 
+pub mod ordered;
+
 /// Encoded `FileDescriptorSet` of every compiled proto, including imports. Served through gRPC
 /// reflection so `grpcurl list` / `describe` work without local `.proto` files.
 pub const FILE_DESCRIPTOR_SET: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/hidane_descriptor.bin"));
+
+/// The same descriptors, with the map fields of `Document`, `MapValue` and `AggregationResult`
+/// described as repeated entries (`key`, `value`), so a `DynamicMessage` keeps their order.
+pub const ORDERED_FILE_DESCRIPTOR_SET: &[u8] =
+    include_bytes!(concat!(env!("OUT_DIR"), "/hidane_descriptor_ordered.bin"));

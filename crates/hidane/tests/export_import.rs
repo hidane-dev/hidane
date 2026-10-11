@@ -5,7 +5,6 @@
 mod common;
 
 use std::{
-    collections::BTreeMap,
     fs,
     net::SocketAddr,
     path::{Path, PathBuf},
@@ -18,6 +17,7 @@ use hidane_core::{
     normalize::normalize_value,
 };
 use hidane_proto::google::firestore::v1::{MapValue, Value, value::ValueType};
+use hidane_proto::ordered::Fields;
 use prost::Message as _;
 use serde_json::{Value as Json, json};
 use tokio::{
@@ -89,7 +89,7 @@ fn sorted_records(data: &[u8]) -> Vec<Vec<u8>> {
 
 /// What a stored document holds: timestamps to the microsecond; an export also writes `-0.0`
 /// as `0.0`.
-fn stored(json: &Json) -> BTreeMap<String, Value> {
+fn stored(json: &Json) -> Fields {
     fn zero(value: &mut Value) {
         match &mut value.value_type {
             Some(ValueType::DoubleValue(d)) if *d == 0.0 => *d = 0.0,
@@ -106,15 +106,57 @@ fn stored(json: &Json) -> BTreeMap<String, Value> {
     fields
 }
 
-/// Bit for bit, so NaN equals NaN.
-fn exact(a: &BTreeMap<String, Value>, b: &BTreeMap<String, Value>) -> bool {
-    let encode = |fields: &BTreeMap<String, Value>| {
+/// Bit for bit, so NaN equals NaN, whatever the order of the fields.
+fn exact(a: &Fields, b: &Fields) -> bool {
+    fn sorted(fields: &Fields) -> Fields {
+        fields
+            .sorted()
+            .into_iter()
+            .map(|(name, value)| (name.clone(), sorted_value(value)))
+            .collect()
+    }
+    fn sorted_value(value: &Value) -> Value {
+        let mut value = value.clone();
+        match &mut value.value_type {
+            Some(ValueType::MapValue(map)) => map.fields = sorted(&map.fields),
+            Some(ValueType::ArrayValue(array)) => {
+                array.values = array.values.iter().map(sorted_value).collect();
+            }
+            _ => {}
+        }
+        value
+    }
+    let encode = |fields: &Fields| {
         MapValue {
-            fields: fields.clone(),
+            fields: sorted(fields),
         }
         .encode_to_vec()
     };
     encode(a) == encode(b)
+}
+
+/// The order an import gives a document's fields, at every level: the official emulator
+/// writes empty arrays first and the other fields after them, and reads them back in that
+/// order (#108).
+fn imported_order(fields: &Fields) -> Vec<String> {
+    let empty = |value: &Value| matches!(&value.value_type, Some(ValueType::ArrayValue(a)) if a.values.is_empty());
+    let describe = |(name, value): (&String, &Value)| match &value.value_type {
+        Some(ValueType::MapValue(map)) => format!("{name}{:?}", imported_order(&map.fields)),
+        _ => name.clone(),
+    };
+    let empties = fields.iter().filter(|(_, v)| empty(v));
+    let others = fields.iter().filter(|(_, v)| !empty(v));
+    empties.chain(others).map(describe).collect()
+}
+
+fn held_order(fields: &Fields) -> Vec<String> {
+    fields
+        .iter()
+        .map(|(name, value)| match &value.value_type {
+            Some(ValueType::MapValue(map)) => format!("{name}{:?}", held_order(&map.fields)),
+            _ => name.clone(),
+        })
+        .collect()
 }
 
 fn documents_of<'a>(fixture: &'a Json, database: &'a str) -> impl Iterator<Item = &'a Json> {
@@ -141,10 +183,16 @@ fn official_exports_read_back_as_the_written_documents() {
                 .find(|d| d.path.to_string() == path)
                 .unwrap_or_else(|| panic!("{key}: {path} missing"));
             assert_eq!(found.database_id, database);
+            let written = stored(&doc["fields"]);
             assert!(
-                exact(&found.fields, &stored(&doc["fields"])),
+                exact(&found.fields, &written),
                 "{key} {path}:\n{:#?}",
                 found.fields
+            );
+            assert_eq!(
+                held_order(&found.fields),
+                imported_order(&written),
+                "{key} {path}"
             );
         }
     }

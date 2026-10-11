@@ -1,12 +1,27 @@
 //! Compiles the vendored googleapis protos (`proto/`) with protox (pure Rust, no protoc) and
 //! generates prost messages plus tonic servers and clients. The encoded descriptor set is written
 //! next to the generated code so the server can expose it through gRPC reflection.
+//!
+//! `Document`, `MapValue` and `AggregationResult` are not generated: `src/ordered.rs` has them,
+//! with maps that keep their order (#108). A second descriptor set describes their map fields
+//! as repeated entries, so JSON handled through it keeps the order too.
 
 use std::{env, fs, path::PathBuf};
 
 use prost::Message;
 
 const PROTOS: &[&str] = &["google/firestore/v1/firestore.proto"];
+
+/// The messages written by hand in `src/ordered.rs`, and the map entry each one holds.
+const ORDERED: &[(&str, &str, &str)] = &[
+    ("Document", "crate::ordered::Document", "FieldsEntry"),
+    ("MapValue", "crate::ordered::MapValue", "FieldsEntry"),
+    (
+        "AggregationResult",
+        "crate::ordered::AggregationResult",
+        "AggregateFieldsEntry",
+    ),
+];
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let root = PathBuf::from(env::var("CARGO_MANIFEST_DIR")?).join("proto");
@@ -19,8 +34,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .open_files(PROTOS)?
         .file_descriptor_set();
     fs::write(out.join("hidane_descriptor.bin"), fds.encode_to_vec())?;
+    fs::write(
+        out.join("hidane_descriptor_ordered.bin"),
+        ordered(fds.clone()).encode_to_vec(),
+    )?;
 
-    tonic_prost_build::configure()
+    let mut builder = tonic_prost_build::configure();
+    for (message, rust, _) in ORDERED {
+        builder = builder.extern_path(format!(".google.firestore.v1.{message}"), *rust);
+    }
+    builder
         .build_server(true)
         .build_client(true)
         .build_transport(false)
@@ -34,5 +57,33 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .boxed(".google.firestore.v1.Value.value_type.pipeline_value")
         .include_file("mod.rs")
         .compile_fds(fds)?;
+
+    // The hand-written messages, where the generated ones would have been.
+    let v1 = out.join("google.firestore.v1.rs");
+    let mut generated = fs::read_to_string(&v1)?;
+    generated.push_str("\npub use crate::ordered::{AggregationResult, Document, MapValue};\n");
+    fs::write(v1, generated)?;
     Ok(())
+}
+
+/// The descriptors with the ordered messages' maps turned into repeated entries.
+fn ordered(mut fds: prost_types::FileDescriptorSet) -> prost_types::FileDescriptorSet {
+    for file in &mut fds.file {
+        if file.package() != "google.firestore.v1" {
+            continue;
+        }
+        for message in &mut file.message_type {
+            let Some((_, _, entry)) = ORDERED.iter().find(|(m, _, _)| *m == message.name()) else {
+                continue;
+            };
+            for nested in &mut message.nested_type {
+                if nested.name() == *entry
+                    && let Some(options) = &mut nested.options
+                {
+                    options.map_entry = None;
+                }
+            }
+        }
+    }
+    fds
 }

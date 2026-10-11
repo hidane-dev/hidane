@@ -26,8 +26,7 @@ Status: Phase 0 draft. Entries will be tagged in the conformance suite (issue #4
 | The Write stream fails with `UNKNOWN` and no message unless the call carries `google-cloud-resource-prefix` or `x-goog-request-params` metadata (every SDK sends one) | Accepts the stream either way; the database comes from the first request | Bug (an internal error) |
 | The Write stream handshake accepts any database name | `INVALID_ARGUMENT` for a malformed name, as other RPCs answer | Bug |
 | A Write stream write to a document of another database is acknowledged, with a write result and a commit time, and stored nowhere | `INVALID_ARGUMENT` "Document "…" is not in database "…".", as Commit answers | Bug (silent data loss) |
-| Document fields come back in the order they were written, nested maps included | In name order | Open, #108 |
-| An export lists its documents in no particular order, and their fields in the order they were written | Documents in name order, fields in name order | The same documents either way ([export-format.md](export-format.md)) |
+| An export lists its documents in no particular order | In name order | The same documents either way ([export-format.md](export-format.md)) |
 | A seed's documents of another database are kept in the seeded database, where no read finds them, and written into its exports | Left out | Bug (unreadable data that resurfaces in exports) |
 | `find_nearest` reads a vector field path such as `m.v` as one field named `m.v` | Resolves the path (the field `v` of the map `m`), as production and the SDKs do; `` `m.v` `` names the field `m.v` | Bug (nested vector fields could not be searched) |
 | A gRPC message over 100 MiB fails with `RESOURCE_EXHAUSTED` "gRPC message exceeds maximum size 104857600: …" | Same limit, but tonic answers `OUT_OF_RANGE` "Error, decoded message length too large: …" | Wording of a transport error |
@@ -44,7 +43,6 @@ Status: Phase 0 draft. Entries will be tagged in the conformance suite (issue #4
 | A REST query parameter that does not parse (`pageSize=abc`, `showMissing=maybe`) leaves the request unanswered | `400` "Payload isn't valid for request.", the answer to a body that does not parse | Bug |
 | A `:listCollectionIds` body that names a `parent` as the path does leaves the request unanswered | The path wins | Bug |
 | REST page tokens (`nextPageToken`) are an encoded internal message | The last name returned, encoded; both are opaque to clients | Internal format |
-| Masked fields come back in an internal hash order, and aggregation results in request order | In name order | Open, #108 |
 | iOS clients receive `GOAWAY too_many_pings` after about 90 s (firebase-tools [#11238](https://github.com/firebase/firebase-tools/issues/11238)) | Keepalive settings that do not trip the client | Bug |
 | The `issues[].severity` returned by `:securityRules` is a string (`"ERROR"`) while firebase-tools compares it against a numeric enum, so invalid rules still print "Rules updated." | hidane returns the same string the official emulator does; the CLI-side comparison is an upstream bug | Keep wire parity; report upstream |
 | gRPC reflection lists services but `grpcurl describe` fails on a `google.api.api_visibility` extension | Full reflection that works with `grpcurl` | Developer convenience |

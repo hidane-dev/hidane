@@ -44,7 +44,7 @@ use tonic::Status;
 
 use crate::{
     firestore::{FirestoreService, auth},
-    rest,
+    ordered_json, rest,
 };
 
 const NOOP_INTERVAL: Duration = Duration::from_secs(30);
@@ -204,18 +204,28 @@ impl Session {
 }
 
 fn parse<T: prost::Message + Default>(json: &str, name: &str) -> Result<T, ()> {
-    let mut deserializer = serde_json::Deserializer::from_str(json);
-    DynamicMessage::deserialize(rest::descriptor(name), &mut deserializer)
+    let desc = rest::descriptor(name);
+    // Read as a value first (trailing text is ignored, as before), so the ordered maps can be
+    // turned into entries for the ordered descriptors (#108).
+    let mut json = serde_json::Deserializer::from_str(json)
+        .into_iter::<serde_json::Value>()
+        .next()
+        .and_then(Result::ok)
+        .ok_or(())?;
+    ordered_json::objects_to_entries(&mut json, &desc);
+    DynamicMessage::deserialize(desc, json)
         .ok()
         .and_then(|message| message.transcode_to().ok())
         .ok_or(())
 }
 
-/// ProtoJSON of a response, compact.
+/// ProtoJSON of a response, compact, with document fields and map values in their order.
 fn to_json<T: prost::Message>(message: &T, descriptor: &MessageDescriptor) -> String {
     let dynamic = DynamicMessage::decode(descriptor.clone(), message.encode_to_vec().as_slice())
         .expect("a message of its own type");
-    serde_json::to_string(&dynamic).expect("ProtoJSON")
+    let mut json = serde_json::to_value(&dynamic).expect("ProtoJSON");
+    ordered_json::entries_to_objects(&mut json, descriptor);
+    json.to_string()
 }
 
 fn error_json(status: &Status) -> String {

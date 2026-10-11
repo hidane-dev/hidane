@@ -1,7 +1,5 @@
 //! Just enough ProtoJSON → proto to replay the REST requests recorded in the fixtures over gRPC.
 
-use std::collections::BTreeMap;
-
 use base64::Engine as _;
 use hidane_proto::google::{
     firestore::v1::{
@@ -14,6 +12,7 @@ use hidane_proto::google::{
     },
     r#type::LatLng,
 };
+use hidane_proto::ordered::Fields;
 use prost_types::Timestamp;
 use serde_json::Value as Json;
 use tonic::Code;
@@ -76,7 +75,7 @@ fn array(json: &Json) -> ArrayValue {
     }
 }
 
-pub fn fields(json: &Json) -> BTreeMap<String, Value> {
+pub fn fields(json: &Json) -> Fields {
     json.as_object()
         .map(|o| o.iter().map(|(k, v)| (k.clone(), value(v))).collect())
         .unwrap_or_default()
@@ -198,9 +197,11 @@ pub fn same(a: &Value, b: &Value) -> bool {
     }
 }
 
-pub fn same_fields(a: &BTreeMap<String, Value>, b: &BTreeMap<String, Value>) -> bool {
+/// Same names and values, whatever their order (the order is checked by field_order.rs).
+pub fn same_fields(a: &Fields, b: &Fields) -> bool {
     a.len() == b.len()
-        && a.iter()
-            .zip(b)
+        && a.sorted()
+            .into_iter()
+            .zip(b.sorted())
             .all(|((ka, va), (kb, vb))| ka == kb && same(va, vb))
 }

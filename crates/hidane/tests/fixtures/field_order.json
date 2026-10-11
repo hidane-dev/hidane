@@ -1,0 +1,6670 @@
+[
+ {
+  "name": "set keeps the written order",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-set/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-set/databases/(default)/documents/c/d",
+        "fields": {
+         "zeta": {
+          "integerValue": "1"
+         },
+         "alpha": {
+          "integerValue": "2"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "3"
+            },
+            "a": {
+             "integerValue": "4"
+            }
+           }
+          }
+         },
+         "arr": {
+          "arrayValue": {
+           "values": [
+            {
+             "mapValue": {
+              "fields": {
+               "b": {
+                "integerValue": "1"
+               },
+               "a": {
+                "integerValue": "2"
+               }
+              }
+             }
+            }
+           ]
+          }
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.523502Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.523502Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-set/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-set/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "z": {
+          "integerValue": "3"
+         },
+         "a": {
+          "integerValue": "4"
+         }
+        }
+       }
+      },
+      "arr": {
+       "arrayValue": {
+        "values": [
+         {
+          "mapValue": {
+           "fields": {
+            "b": {
+             "integerValue": "1"
+            },
+            "a": {
+             "integerValue": "2"
+            }
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.523502Z",
+     "updateTime": "2026-10-11T08:29:42.523502Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "set again with another order",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-reset/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-reset/databases/(default)/documents/c/d",
+        "fields": {
+         "zeta": {
+          "integerValue": "1"
+         },
+         "alpha": {
+          "integerValue": "2"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "3"
+            },
+            "a": {
+             "integerValue": "4"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.537991Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.537991Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-reset/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-reset/databases/(default)/documents/c/d",
+        "fields": {
+         "alpha": {
+          "integerValue": "5"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "a": {
+             "integerValue": "6"
+            },
+            "z": {
+             "integerValue": "7"
+            }
+           }
+          }
+         },
+         "zeta": {
+          "integerValue": "8"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.541949Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.541949Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-reset/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-reset/databases/(default)/documents/c/d",
+     "fields": {
+      "alpha": {
+       "integerValue": "5"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "a": {
+          "integerValue": "6"
+         },
+         "z": {
+          "integerValue": "7"
+         }
+        }
+       }
+      },
+      "zeta": {
+       "integerValue": "8"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.537991Z",
+     "updateTime": "2026-10-11T08:29:42.541949Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "create through POST keeps the JSON order",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-create/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "z": {
+          "integerValue": "3"
+         },
+         "a": {
+          "integerValue": "4"
+         }
+        }
+       }
+      }
+     }
+    },
+    "status": 200,
+    "response": {
+     "name": "projects/fo-create/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "z": {
+          "integerValue": "3"
+         },
+         "a": {
+          "integerValue": "4"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.549293Z",
+     "updateTime": "2026-10-11T08:29:42.549293Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-create/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-create/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "z": {
+          "integerValue": "3"
+         },
+         "a": {
+          "integerValue": "4"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.549293Z",
+     "updateTime": "2026-10-11T08:29:42.549293Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "masked update: new fields at the end, existing ones in place",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-mask/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-mask/databases/(default)/documents/c/d",
+        "fields": {
+         "zeta": {
+          "integerValue": "1"
+         },
+         "alpha": {
+          "integerValue": "2"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "3"
+            },
+            "a": {
+             "integerValue": "4"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.556455Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.556455Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-mask/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-mask/databases/(default)/documents/c/d",
+        "fields": {
+         "beta": {
+          "integerValue": "9"
+         },
+         "alpha": {
+          "integerValue": "10"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "beta",
+         "alpha"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.562094Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.562094Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-mask/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-mask/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "z": {
+          "integerValue": "3"
+         },
+         "a": {
+          "integerValue": "4"
+         }
+        }
+       }
+      },
+      "alpha": {
+       "integerValue": "10"
+      },
+      "beta": {
+       "integerValue": "9"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.556455Z",
+     "updateTime": "2026-10-11T08:29:42.562094Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "masked update: a removed field comes back at the end",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-readd/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-readd/databases/(default)/documents/c/d",
+        "fields": {
+         "zeta": {
+          "integerValue": "1"
+         },
+         "alpha": {
+          "integerValue": "2"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "3"
+            },
+            "a": {
+             "integerValue": "4"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.578200Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.578200Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-readd/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-readd/databases/(default)/documents/c/d",
+        "fields": {}
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "zeta"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.581842Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.581842Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-readd/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-readd/databases/(default)/documents/c/d",
+        "fields": {
+         "zeta": {
+          "integerValue": "11"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "zeta"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.585307Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.585307Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-readd/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-readd/databases/(default)/documents/c/d",
+     "fields": {
+      "alpha": {
+       "integerValue": "2"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "z": {
+          "integerValue": "3"
+         },
+         "a": {
+          "integerValue": "4"
+         }
+        }
+       }
+      },
+      "zeta": {
+       "integerValue": "11"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.578200Z",
+     "updateTime": "2026-10-11T08:29:42.585307Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "masked update inside a map",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-nested-mask/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-nested-mask/databases/(default)/documents/c/d",
+        "fields": {
+         "zeta": {
+          "integerValue": "1"
+         },
+         "alpha": {
+          "integerValue": "2"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "3"
+            },
+            "a": {
+             "integerValue": "4"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.593551Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.593551Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-nested-mask/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-nested-mask/databases/(default)/documents/c/d",
+        "fields": {
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "b": {
+             "integerValue": "12"
+            },
+            "z": {
+             "integerValue": "13"
+            }
+           }
+          }
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "mid.b",
+         "mid.z"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.597485Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.597485Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-nested-mask/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-nested-mask/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "a": {
+          "integerValue": "4"
+         },
+         "b": {
+          "integerValue": "12"
+         },
+         "z": {
+          "integerValue": "13"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.593551Z",
+     "updateTime": "2026-10-11T08:29:42.597485Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "masked update replacing a whole map",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-replace-map/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-replace-map/databases/(default)/documents/c/d",
+        "fields": {
+         "zeta": {
+          "integerValue": "1"
+         },
+         "alpha": {
+          "integerValue": "2"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "3"
+            },
+            "a": {
+             "integerValue": "4"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.605789Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.605789Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-replace-map/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-replace-map/databases/(default)/documents/c/d",
+        "fields": {
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "y": {
+             "integerValue": "14"
+            },
+            "b": {
+             "integerValue": "15"
+            }
+           }
+          }
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "mid"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.609655Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.609655Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-replace-map/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-replace-map/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "y": {
+          "integerValue": "14"
+         },
+         "b": {
+          "integerValue": "15"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.605789Z",
+     "updateTime": "2026-10-11T08:29:42.609655Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "transforms on new and existing fields",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-transforms/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-transforms/databases/(default)/documents/c/d",
+        "fields": {
+         "zeta": {
+          "integerValue": "1"
+         },
+         "alpha": {
+          "integerValue": "2"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "3"
+            },
+            "a": {
+             "integerValue": "4"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.617687Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.617687Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-transforms/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-transforms/databases/(default)/documents/c/d",
+        "fields": {
+         "omega": {
+          "integerValue": "16"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "omega"
+        ]
+       },
+       "updateTransforms": [
+        {
+         "fieldPath": "new2",
+         "increment": {
+          "integerValue": "1"
+         }
+        },
+        {
+         "fieldPath": "alpha",
+         "increment": {
+          "integerValue": "1"
+         }
+        },
+        {
+         "fieldPath": "new1",
+         "setToServerValue": "REQUEST_TIME"
+        },
+        {
+         "fieldPath": "mid.c",
+         "increment": {
+          "integerValue": "1"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.621349Z",
+       "transformResults": [
+        {
+         "integerValue": "1"
+        },
+        {
+         "integerValue": "3"
+        },
+        {
+         "timestampValue": "2026-10-11T08:29:42.620Z"
+        },
+        {
+         "integerValue": "1"
+        }
+       ]
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.621349Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-transforms/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-transforms/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "omega": {
+       "integerValue": "16"
+      },
+      "new2": {
+       "integerValue": "1"
+      },
+      "new1": {
+       "timestampValue": "2026-10-11T08:29:42.620Z"
+      },
+      "alpha": {
+       "integerValue": "3"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "z": {
+          "integerValue": "3"
+         },
+         "a": {
+          "integerValue": "4"
+         },
+         "c": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.617687Z",
+     "updateTime": "2026-10-11T08:29:42.621349Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "transforms on a new document",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-transforms-new/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-transforms-new/databases/(default)/documents/c/d",
+        "fields": {
+         "zeta": {
+          "integerValue": "1"
+         },
+         "alpha": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "updateTransforms": [
+        {
+         "fieldPath": "new2",
+         "increment": {
+          "integerValue": "1"
+         }
+        },
+        {
+         "fieldPath": "new1",
+         "setToServerValue": "REQUEST_TIME"
+        }
+       ]
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.665541Z",
+       "transformResults": [
+        {
+         "integerValue": "1"
+        },
+        {
+         "timestampValue": "2026-10-11T08:29:42.663Z"
+        }
+       ]
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.665541Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-transforms-new/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-transforms-new/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "new2": {
+       "integerValue": "1"
+      },
+      "new1": {
+       "timestampValue": "2026-10-11T08:29:42.663Z"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.665541Z",
+     "updateTime": "2026-10-11T08:29:42.665541Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "masked update inside a map that is not last",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-nested-not-last/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-nested-not-last/databases/(default)/documents/c/d",
+        "fields": {
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "3"
+            },
+            "a": {
+             "integerValue": "4"
+            }
+           }
+          }
+         },
+         "zeta": {
+          "integerValue": "1"
+         },
+         "alpha": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.706118Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.706118Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-nested-not-last/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-nested-not-last/databases/(default)/documents/c/d",
+        "fields": {
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "b": {
+             "integerValue": "5"
+            }
+           }
+          }
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "mid.b"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.713697Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.713697Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-nested-not-last/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-nested-not-last/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "z": {
+          "integerValue": "3"
+         },
+         "a": {
+          "integerValue": "4"
+         },
+         "b": {
+          "integerValue": "5"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.706118Z",
+     "updateTime": "2026-10-11T08:29:42.713697Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "masked update replacing a map that is not last",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-replace-not-last/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-replace-not-last/databases/(default)/documents/c/d",
+        "fields": {
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "3"
+            },
+            "a": {
+             "integerValue": "4"
+            }
+           }
+          }
+         },
+         "zeta": {
+          "integerValue": "1"
+         },
+         "alpha": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.725297Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.725297Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-replace-not-last/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-replace-not-last/databases/(default)/documents/c/d",
+        "fields": {
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "y": {
+             "integerValue": "6"
+            },
+            "b": {
+             "integerValue": "7"
+            }
+           }
+          }
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "mid"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.729719Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.729719Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-replace-not-last/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-replace-not-last/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "y": {
+          "integerValue": "6"
+         },
+         "b": {
+          "integerValue": "7"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.725297Z",
+     "updateTime": "2026-10-11T08:29:42.729719Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "masked update deleting inside a map that is not last",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-delete-nested/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-delete-nested/databases/(default)/documents/c/d",
+        "fields": {
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "3"
+            },
+            "a": {
+             "integerValue": "4"
+            }
+           }
+          }
+         },
+         "zeta": {
+          "integerValue": "1"
+         },
+         "alpha": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.738438Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.738438Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-delete-nested/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-delete-nested/databases/(default)/documents/c/d",
+        "fields": {}
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "mid.z"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.743042Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.743042Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-delete-nested/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-delete-nested/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "a": {
+          "integerValue": "4"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.738438Z",
+     "updateTime": "2026-10-11T08:29:42.743042Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "masked update with an unchanged value",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-same-value/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-same-value/databases/(default)/documents/c/d",
+        "fields": {
+         "zeta": {
+          "integerValue": "1"
+         },
+         "alpha": {
+          "integerValue": "2"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "3"
+            },
+            "a": {
+             "integerValue": "4"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.751214Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.751214Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-same-value/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-same-value/databases/(default)/documents/c/d",
+        "fields": {
+         "zeta": {
+          "integerValue": "1"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "zeta"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.751214Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.755080Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-same-value/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-same-value/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "z": {
+          "integerValue": "3"
+         },
+         "a": {
+          "integerValue": "4"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.751214Z",
+     "updateTime": "2026-10-11T08:29:42.751214Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "masked update over several maps",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-tree/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-tree/databases/(default)/documents/c/d",
+        "fields": {
+         "p": {
+          "mapValue": {
+           "fields": {
+            "a": {
+             "integerValue": "1"
+            },
+            "b": {
+             "integerValue": "2"
+            }
+           }
+          }
+         },
+         "q": {
+          "mapValue": {
+           "fields": {
+            "a": {
+             "integerValue": "3"
+            }
+           }
+          }
+         },
+         "r": {
+          "integerValue": "4"
+         },
+         "s": {
+          "integerValue": "5"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.762976Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.762976Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-tree/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-tree/databases/(default)/documents/c/d",
+        "fields": {
+         "p": {
+          "mapValue": {
+           "fields": {
+            "b": {
+             "integerValue": "6"
+            },
+            "a": {
+             "integerValue": "7"
+            }
+           }
+          }
+         },
+         "q": {
+          "mapValue": {
+           "fields": {
+            "a": {
+             "integerValue": "8"
+            }
+           }
+          }
+         },
+         "r": {
+          "integerValue": "9"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "p.b",
+         "q.a",
+         "p.a",
+         "r"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.767293Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.767293Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-tree/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-tree/databases/(default)/documents/c/d",
+     "fields": {
+      "s": {
+       "integerValue": "5"
+      },
+      "p": {
+       "mapValue": {
+        "fields": {
+         "a": {
+          "integerValue": "7"
+         },
+         "b": {
+          "integerValue": "6"
+         }
+        }
+       }
+      },
+      "q": {
+       "mapValue": {
+        "fields": {
+         "a": {
+          "integerValue": "8"
+         }
+        }
+       }
+      },
+      "r": {
+       "integerValue": "9"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.762976Z",
+     "updateTime": "2026-10-11T08:29:42.767293Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "masked update creating nested maps",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-deep/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-deep/databases/(default)/documents/c/d",
+        "fields": {
+         "zeta": {
+          "integerValue": "1"
+         },
+         "alpha": {
+          "integerValue": "2"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "3"
+            },
+            "a": {
+             "integerValue": "4"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.775853Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.775853Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-deep/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-deep/databases/(default)/documents/c/d",
+        "fields": {
+         "deep": {
+          "mapValue": {
+           "fields": {
+            "x": {
+             "mapValue": {
+              "fields": {
+               "y": {
+                "integerValue": "1"
+               }
+              }
+             }
+            }
+           }
+          }
+         },
+         "alpha": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "deep.x.y",
+         "alpha"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.780192Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.780192Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-deep/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-deep/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "z": {
+          "integerValue": "3"
+         },
+         "a": {
+          "integerValue": "4"
+         }
+        }
+       }
+      },
+      "deep": {
+       "mapValue": {
+        "fields": {
+         "x": {
+          "mapValue": {
+           "fields": {
+            "y": {
+             "integerValue": "1"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.775853Z",
+     "updateTime": "2026-10-11T08:29:42.780192Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "masked update of many fields",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-wide/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-wide/databases/(default)/documents/c/d",
+        "fields": {
+         "keep": {
+          "integerValue": "0"
+         },
+         "w0": {
+          "integerValue": "1"
+         },
+         "w1": {
+          "integerValue": "2"
+         },
+         "w2": {
+          "integerValue": "3"
+         },
+         "w3": {
+          "integerValue": "4"
+         },
+         "w4": {
+          "integerValue": "5"
+         },
+         "w5": {
+          "integerValue": "6"
+         },
+         "w6": {
+          "integerValue": "7"
+         },
+         "w7": {
+          "integerValue": "8"
+         },
+         "w8": {
+          "integerValue": "9"
+         },
+         "w9": {
+          "integerValue": "10"
+         },
+         "w10": {
+          "integerValue": "11"
+         },
+         "w11": {
+          "integerValue": "12"
+         },
+         "w12": {
+          "integerValue": "13"
+         },
+         "w13": {
+          "integerValue": "14"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.788900Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.788900Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-wide/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-wide/databases/(default)/documents/c/d",
+        "fields": {
+         "w0": {
+          "integerValue": "0"
+         },
+         "w1": {
+          "integerValue": "1"
+         },
+         "w2": {
+          "integerValue": "2"
+         },
+         "w3": {
+          "integerValue": "3"
+         },
+         "w4": {
+          "integerValue": "4"
+         },
+         "w5": {
+          "integerValue": "5"
+         },
+         "w6": {
+          "integerValue": "6"
+         },
+         "w7": {
+          "integerValue": "7"
+         },
+         "w8": {
+          "integerValue": "8"
+         },
+         "w9": {
+          "integerValue": "9"
+         },
+         "w10": {
+          "integerValue": "10"
+         },
+         "w11": {
+          "integerValue": "11"
+         },
+         "w12": {
+          "integerValue": "12"
+         },
+         "w13": {
+          "integerValue": "13"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "w0",
+         "w1",
+         "w2",
+         "w3",
+         "w4",
+         "w5",
+         "w6",
+         "w7",
+         "w8",
+         "w9",
+         "w10",
+         "w11",
+         "w12",
+         "w13"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.794573Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.794573Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-wide/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-wide/databases/(default)/documents/c/d",
+     "fields": {
+      "keep": {
+       "integerValue": "0"
+      },
+      "w7": {
+       "integerValue": "7"
+      },
+      "w8": {
+       "integerValue": "8"
+      },
+      "w9": {
+       "integerValue": "9"
+      },
+      "w11": {
+       "integerValue": "11"
+      },
+      "w10": {
+       "integerValue": "10"
+      },
+      "w13": {
+       "integerValue": "13"
+      },
+      "w0": {
+       "integerValue": "0"
+      },
+      "w12": {
+       "integerValue": "12"
+      },
+      "w1": {
+       "integerValue": "1"
+      },
+      "w2": {
+       "integerValue": "2"
+      },
+      "w3": {
+       "integerValue": "3"
+      },
+      "w4": {
+       "integerValue": "4"
+      },
+      "w5": {
+       "integerValue": "5"
+      },
+      "w6": {
+       "integerValue": "6"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.788900Z",
+     "updateTime": "2026-10-11T08:29:42.794573Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "masked update with other names",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-names/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-names/databases/(default)/documents/c/d",
+        "fields": {
+         "zeta": {
+          "integerValue": "1"
+         },
+         "x.y": {
+          "integerValue": "2"
+         },
+         "\u65e5\u672c": {
+          "integerValue": "3"
+         },
+         "\u00e9t\u00e9": {
+          "integerValue": "4"
+         },
+         "Z": {
+          "integerValue": "5"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.807235Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.807235Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-names/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-names/databases/(default)/documents/c/d",
+        "fields": {
+         "x.y": {
+          "integerValue": "6"
+         },
+         "\u65e5\u672c": {
+          "integerValue": "7"
+         },
+         "\u00e9t\u00e9": {
+          "integerValue": "8"
+         },
+         "Z": {
+          "integerValue": "9"
+         },
+         "zeta": {
+          "integerValue": "10"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "`x.y`",
+         "`\u65e5\u672c`",
+         "`\u00e9t\u00e9`",
+         "Z",
+         "zeta"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.811666Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.811666Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-names/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-names/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "10"
+      },
+      "x.y": {
+       "integerValue": "6"
+      },
+      "Z": {
+       "integerValue": "9"
+      },
+      "\u65e5\u672c": {
+       "integerValue": "7"
+      },
+      "\u00e9t\u00e9": {
+       "integerValue": "8"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.807235Z",
+     "updateTime": "2026-10-11T08:29:42.811666Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-names/databases/(default)/documents/c/d?mask.fieldPaths=%60x.y%60&mask.fieldPaths=%60%E6%97%A5%E6%9C%AC%60&mask.fieldPaths=%60%C3%A9t%C3%A9%60&mask.fieldPaths=Z&mask.fieldPaths=zeta",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-names/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "10"
+      },
+      "x.y": {
+       "integerValue": "6"
+      },
+      "Z": {
+       "integerValue": "9"
+      },
+      "\u65e5\u672c": {
+       "integerValue": "7"
+      },
+      "\u00e9t\u00e9": {
+       "integerValue": "8"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.807235Z",
+     "updateTime": "2026-10-11T08:29:42.811666Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-names/databases/(default)/documents/c/d?mask.fieldPaths=%E6%97%A5%E6%9C%AC",
+    "body": null,
+    "status": 400,
+    "response": {
+     "error": {
+      "code": 400,
+      "message": "Invalid property path \"\u65e5\u672c\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\]|(?:\\\\.))+`)",
+      "status": "INVALID_ARGUMENT"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "set again with the same values in another order",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-same-reordered/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-same-reordered/databases/(default)/documents/c/d",
+        "fields": {
+         "zeta": {
+          "integerValue": "1"
+         },
+         "alpha": {
+          "integerValue": "2"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "3"
+            },
+            "a": {
+             "integerValue": "4"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.828995Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.828995Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-same-reordered/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-same-reordered/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "z": {
+          "integerValue": "3"
+         },
+         "a": {
+          "integerValue": "4"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.828995Z",
+     "updateTime": "2026-10-11T08:29:42.828995Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-same-reordered/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-same-reordered/databases/(default)/documents/c/d",
+        "fields": {
+         "alpha": {
+          "integerValue": "2"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "a": {
+             "integerValue": "4"
+            },
+            "z": {
+             "integerValue": "3"
+            }
+           }
+          }
+         },
+         "zeta": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.828995Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.835815Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-same-reordered/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-same-reordered/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "z": {
+          "integerValue": "3"
+         },
+         "a": {
+          "integerValue": "4"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.828995Z",
+     "updateTime": "2026-10-11T08:29:42.828995Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "set again with some values changed",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-set-partial/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-set-partial/databases/(default)/documents/c/d",
+        "fields": {
+         "zeta": {
+          "integerValue": "1"
+         },
+         "alpha": {
+          "integerValue": "2"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "3"
+            },
+            "a": {
+             "integerValue": "4"
+            }
+           }
+          }
+         },
+         "beta": {
+          "integerValue": "5"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.843239Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.843239Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-set-partial/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-set-partial/databases/(default)/documents/c/d",
+        "fields": {
+         "alpha": {
+          "integerValue": "2"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "a": {
+             "integerValue": "4"
+            },
+            "z": {
+             "integerValue": "9"
+            }
+           }
+          }
+         },
+         "beta": {
+          "integerValue": "5"
+         },
+         "zeta": {
+          "integerValue": "9"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.847131Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.847131Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-set-partial/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-set-partial/databases/(default)/documents/c/d",
+     "fields": {
+      "alpha": {
+       "integerValue": "2"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "a": {
+          "integerValue": "4"
+         },
+         "z": {
+          "integerValue": "9"
+         }
+        }
+       }
+      },
+      "beta": {
+       "integerValue": "5"
+      },
+      "zeta": {
+       "integerValue": "9"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.843239Z",
+     "updateTime": "2026-10-11T08:29:42.847131Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "masked update with an int that equals a double",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-int-double/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-int-double/databases/(default)/documents/c/d",
+        "fields": {
+         "zeta": {
+          "integerValue": "1"
+         },
+         "alpha": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.854760Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.854760Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-int-double/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-int-double/databases/(default)/documents/c/d",
+        "fields": {
+         "zeta": {
+          "doubleValue": 1.0
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "zeta"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.858506Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.858506Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-int-double/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-int-double/databases/(default)/documents/c/d",
+     "fields": {
+      "alpha": {
+       "integerValue": "2"
+      },
+      "zeta": {
+       "doubleValue": 1.0
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.854760Z",
+     "updateTime": "2026-10-11T08:29:42.858506Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "transforms inside a map that is not last",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-transform-nested/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-transform-nested/databases/(default)/documents/c/d",
+        "fields": {
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "3"
+            },
+            "a": {
+             "integerValue": "4"
+            }
+           }
+          }
+         },
+         "zeta": {
+          "integerValue": "1"
+         },
+         "alpha": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.867314Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.867314Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-transform-nested/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-transform-nested/databases/(default)/documents/c/d",
+        "fields": {}
+       },
+       "updateMask": {
+        "fieldPaths": []
+       },
+       "updateTransforms": [
+        {
+         "fieldPath": "mid.z",
+         "increment": {
+          "integerValue": "1"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.870904Z",
+       "transformResults": [
+        {
+         "integerValue": "4"
+        }
+       ]
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.870904Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-transform-nested/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-transform-nested/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "a": {
+          "integerValue": "4"
+         },
+         "z": {
+          "integerValue": "4"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.867314Z",
+     "updateTime": "2026-10-11T08:29:42.870904Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-transform-nested/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-transform-nested/databases/(default)/documents/c/d",
+        "fields": {}
+       },
+       "updateMask": {
+        "fieldPaths": []
+       },
+       "updateTransforms": [
+        {
+         "fieldPath": "mid.c",
+         "increment": {
+          "integerValue": "1"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.876539Z",
+       "transformResults": [
+        {
+         "integerValue": "1"
+        }
+       ]
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.876539Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-transform-nested/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-transform-nested/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "a": {
+          "integerValue": "4"
+         },
+         "z": {
+          "integerValue": "4"
+         },
+         "c": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.867314Z",
+     "updateTime": "2026-10-11T08:29:42.876539Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "array and maximum transforms on existing fields",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-array-transforms/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-array-transforms/databases/(default)/documents/c/d",
+        "fields": {
+         "tags": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "1"
+            }
+           ]
+          }
+         },
+         "zeta": {
+          "integerValue": "1"
+         },
+         "top": {
+          "integerValue": "5"
+         },
+         "alpha": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.884650Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.884650Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-array-transforms/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-array-transforms/databases/(default)/documents/c/d",
+        "fields": {}
+       },
+       "updateMask": {
+        "fieldPaths": []
+       },
+       "updateTransforms": [
+        {
+         "fieldPath": "tags",
+         "appendMissingElements": {
+          "values": [
+           {
+            "integerValue": "2"
+           }
+          ]
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.888797Z",
+       "transformResults": [
+        {
+         "nullValue": null
+        }
+       ]
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.888797Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-array-transforms/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-array-transforms/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "top": {
+       "integerValue": "5"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "tags": {
+       "arrayValue": {
+        "values": [
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "2"
+         }
+        ]
+       }
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.884650Z",
+     "updateTime": "2026-10-11T08:29:42.888797Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-array-transforms/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-array-transforms/databases/(default)/documents/c/d",
+        "fields": {}
+       },
+       "updateMask": {
+        "fieldPaths": []
+       },
+       "updateTransforms": [
+        {
+         "fieldPath": "top",
+         "maximum": {
+          "integerValue": "9"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.896792Z",
+       "transformResults": [
+        {
+         "integerValue": "9"
+        }
+       ]
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.896792Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-array-transforms/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-array-transforms/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "tags": {
+       "arrayValue": {
+        "values": [
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "2"
+         }
+        ]
+       }
+      },
+      "top": {
+       "integerValue": "9"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.884650Z",
+     "updateTime": "2026-10-11T08:29:42.896792Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-array-transforms/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-array-transforms/databases/(default)/documents/c/d",
+        "fields": {}
+       },
+       "updateMask": {
+        "fieldPaths": []
+       },
+       "updateTransforms": [
+        {
+         "fieldPath": "zeta",
+         "minimum": {
+          "integerValue": "9"
+         }
+        }
+       ]
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.896792Z",
+       "transformResults": [
+        {
+         "integerValue": "1"
+        }
+       ]
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.903769Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-array-transforms/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-array-transforms/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "2"
+      },
+      "tags": {
+       "arrayValue": {
+        "values": [
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "2"
+         }
+        ]
+       }
+      },
+      "top": {
+       "integerValue": "9"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.884650Z",
+     "updateTime": "2026-10-11T08:29:42.896792Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "document transform write",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-transform-write/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-transform-write/databases/(default)/documents/c/d",
+        "fields": {
+         "zeta": {
+          "integerValue": "1"
+         },
+         "alpha": {
+          "integerValue": "2"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "3"
+            },
+            "a": {
+             "integerValue": "4"
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.913019Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.913019Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-transform-write/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "transform": {
+        "document": "projects/fo-transform-write/databases/(default)/documents/c/d",
+        "fieldTransforms": [
+         {
+          "fieldPath": "alpha",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "new",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.917254Z",
+       "transformResults": [
+        {
+         "integerValue": "3"
+        },
+        {
+         "integerValue": "1"
+        }
+       ]
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.917254Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-transform-write/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-transform-write/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "1"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "z": {
+          "integerValue": "3"
+         },
+         "a": {
+          "integerValue": "4"
+         }
+        }
+       }
+      },
+      "new": {
+       "integerValue": "1"
+      },
+      "alpha": {
+       "integerValue": "3"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.913019Z",
+     "updateTime": "2026-10-11T08:29:42.917254Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "get with a mask",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-get-mask/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-get-mask/databases/(default)/documents/c/d",
+        "fields": {
+         "str": {
+          "integerValue": "0"
+         },
+         "int": {
+          "integerValue": "1"
+         },
+         "dbl": {
+          "integerValue": "2"
+         },
+         "zeta": {
+          "integerValue": "3"
+         },
+         "alpha": {
+          "integerValue": "4"
+         },
+         "a": {
+          "integerValue": "5"
+         },
+         "b": {
+          "integerValue": "6"
+         },
+         "c": {
+          "integerValue": "7"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "1"
+            },
+            "a": {
+             "integerValue": "2"
+            }
+           }
+          }
+         },
+         "x1": {
+          "integerValue": "9"
+         },
+         "x2": {
+          "integerValue": "10"
+         },
+         "x3": {
+          "integerValue": "11"
+         },
+         "x4": {
+          "integerValue": "12"
+         },
+         "x5": {
+          "integerValue": "13"
+         },
+         "longer_name": {
+          "integerValue": "14"
+         },
+         "Upper": {
+          "integerValue": "15"
+         },
+         "_under": {
+          "integerValue": "16"
+         },
+         "n10": {
+          "integerValue": "17"
+         },
+         "n2": {
+          "integerValue": "18"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.925517Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.925517Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-get-mask/databases/(default)/documents/c/d?mask.fieldPaths=str&mask.fieldPaths=int",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-get-mask/databases/(default)/documents/c/d",
+     "fields": {
+      "str": {
+       "integerValue": "0"
+      },
+      "int": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.925517Z",
+     "updateTime": "2026-10-11T08:29:42.925517Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-get-mask/databases/(default)/documents/c/d?mask.fieldPaths=int&mask.fieldPaths=str",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-get-mask/databases/(default)/documents/c/d",
+     "fields": {
+      "str": {
+       "integerValue": "0"
+      },
+      "int": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.925517Z",
+     "updateTime": "2026-10-11T08:29:42.925517Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-get-mask/databases/(default)/documents/c/d?mask.fieldPaths=dbl&mask.fieldPaths=int",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-get-mask/databases/(default)/documents/c/d",
+     "fields": {
+      "int": {
+       "integerValue": "1"
+      },
+      "dbl": {
+       "integerValue": "2"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.925517Z",
+     "updateTime": "2026-10-11T08:29:42.925517Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-get-mask/databases/(default)/documents/c/d?mask.fieldPaths=int&mask.fieldPaths=dbl",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-get-mask/databases/(default)/documents/c/d",
+     "fields": {
+      "int": {
+       "integerValue": "1"
+      },
+      "dbl": {
+       "integerValue": "2"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.925517Z",
+     "updateTime": "2026-10-11T08:29:42.925517Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-get-mask/databases/(default)/documents/c/d?mask.fieldPaths=zeta&mask.fieldPaths=alpha&mask.fieldPaths=a",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-get-mask/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "3"
+      },
+      "a": {
+       "integerValue": "5"
+      },
+      "alpha": {
+       "integerValue": "4"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.925517Z",
+     "updateTime": "2026-10-11T08:29:42.925517Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-get-mask/databases/(default)/documents/c/d?mask.fieldPaths=a&mask.fieldPaths=alpha&mask.fieldPaths=zeta",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-get-mask/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "3"
+      },
+      "a": {
+       "integerValue": "5"
+      },
+      "alpha": {
+       "integerValue": "4"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.925517Z",
+     "updateTime": "2026-10-11T08:29:42.925517Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-get-mask/databases/(default)/documents/c/d?mask.fieldPaths=mid.z&mask.fieldPaths=mid.a",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-get-mask/databases/(default)/documents/c/d",
+     "fields": {
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "a": {
+          "integerValue": "2"
+         },
+         "z": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.925517Z",
+     "updateTime": "2026-10-11T08:29:42.925517Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-get-mask/databases/(default)/documents/c/d?mask.fieldPaths=mid.a&mask.fieldPaths=mid.z&mask.fieldPaths=str",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-get-mask/databases/(default)/documents/c/d",
+     "fields": {
+      "str": {
+       "integerValue": "0"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "a": {
+          "integerValue": "2"
+         },
+         "z": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.925517Z",
+     "updateTime": "2026-10-11T08:29:42.925517Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-get-mask/databases/(default)/documents/c/d?mask.fieldPaths=str&mask.fieldPaths=int&mask.fieldPaths=dbl&mask.fieldPaths=zeta&mask.fieldPaths=alpha&mask.fieldPaths=a&mask.fieldPaths=b&mask.fieldPaths=c&mask.fieldPaths=mid&mask.fieldPaths=x1&mask.fieldPaths=x2&mask.fieldPaths=x3",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-get-mask/databases/(default)/documents/c/d",
+     "fields": {
+      "str": {
+       "integerValue": "0"
+      },
+      "zeta": {
+       "integerValue": "3"
+      },
+      "a": {
+       "integerValue": "5"
+      },
+      "b": {
+       "integerValue": "6"
+      },
+      "c": {
+       "integerValue": "7"
+      },
+      "alpha": {
+       "integerValue": "4"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "z": {
+          "integerValue": "1"
+         },
+         "a": {
+          "integerValue": "2"
+         }
+        }
+       }
+      },
+      "x1": {
+       "integerValue": "9"
+      },
+      "x2": {
+       "integerValue": "10"
+      },
+      "x3": {
+       "integerValue": "11"
+      },
+      "int": {
+       "integerValue": "1"
+      },
+      "dbl": {
+       "integerValue": "2"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.925517Z",
+     "updateTime": "2026-10-11T08:29:42.925517Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-get-mask/databases/(default)/documents/c/d?mask.fieldPaths=str&mask.fieldPaths=int&mask.fieldPaths=dbl&mask.fieldPaths=zeta&mask.fieldPaths=alpha&mask.fieldPaths=a&mask.fieldPaths=b&mask.fieldPaths=c&mask.fieldPaths=mid&mask.fieldPaths=x1&mask.fieldPaths=x2&mask.fieldPaths=x3&mask.fieldPaths=x4",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-get-mask/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "3"
+      },
+      "a": {
+       "integerValue": "5"
+      },
+      "b": {
+       "integerValue": "6"
+      },
+      "c": {
+       "integerValue": "7"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "z": {
+          "integerValue": "1"
+         },
+         "a": {
+          "integerValue": "2"
+         }
+        }
+       }
+      },
+      "int": {
+       "integerValue": "1"
+      },
+      "dbl": {
+       "integerValue": "2"
+      },
+      "str": {
+       "integerValue": "0"
+      },
+      "alpha": {
+       "integerValue": "4"
+      },
+      "x1": {
+       "integerValue": "9"
+      },
+      "x2": {
+       "integerValue": "10"
+      },
+      "x3": {
+       "integerValue": "11"
+      },
+      "x4": {
+       "integerValue": "12"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.925517Z",
+     "updateTime": "2026-10-11T08:29:42.925517Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-get-mask/databases/(default)/documents/c/d?mask.fieldPaths=n2&mask.fieldPaths=n10&mask.fieldPaths=_under&mask.fieldPaths=Upper&mask.fieldPaths=longer_name&mask.fieldPaths=x5&mask.fieldPaths=x4&mask.fieldPaths=x3&mask.fieldPaths=x2&mask.fieldPaths=x1&mask.fieldPaths=mid&mask.fieldPaths=c&mask.fieldPaths=b&mask.fieldPaths=a&mask.fieldPaths=alpha&mask.fieldPaths=zeta&mask.fieldPaths=dbl&mask.fieldPaths=int&mask.fieldPaths=str",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-get-mask/databases/(default)/documents/c/d",
+     "fields": {
+      "Upper": {
+       "integerValue": "15"
+      },
+      "zeta": {
+       "integerValue": "3"
+      },
+      "longer_name": {
+       "integerValue": "14"
+      },
+      "a": {
+       "integerValue": "5"
+      },
+      "b": {
+       "integerValue": "6"
+      },
+      "c": {
+       "integerValue": "7"
+      },
+      "n2": {
+       "integerValue": "18"
+      },
+      "mid": {
+       "mapValue": {
+        "fields": {
+         "z": {
+          "integerValue": "1"
+         },
+         "a": {
+          "integerValue": "2"
+         }
+        }
+       }
+      },
+      "n10": {
+       "integerValue": "17"
+      },
+      "int": {
+       "integerValue": "1"
+      },
+      "dbl": {
+       "integerValue": "2"
+      },
+      "str": {
+       "integerValue": "0"
+      },
+      "alpha": {
+       "integerValue": "4"
+      },
+      "_under": {
+       "integerValue": "16"
+      },
+      "x1": {
+       "integerValue": "9"
+      },
+      "x2": {
+       "integerValue": "10"
+      },
+      "x3": {
+       "integerValue": "11"
+      },
+      "x4": {
+       "integerValue": "12"
+      },
+      "x5": {
+       "integerValue": "13"
+      }
+     },
+     "createTime": "2026-10-11T08:29:42.925517Z",
+     "updateTime": "2026-10-11T08:29:42.925517Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "batchGet with a mask",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-batch-mask/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-batch-mask/databases/(default)/documents/c/d",
+        "fields": {
+         "str": {
+          "integerValue": "0"
+         },
+         "int": {
+          "integerValue": "1"
+         },
+         "dbl": {
+          "integerValue": "2"
+         },
+         "zeta": {
+          "integerValue": "3"
+         },
+         "alpha": {
+          "integerValue": "4"
+         },
+         "a": {
+          "integerValue": "5"
+         },
+         "b": {
+          "integerValue": "6"
+         },
+         "c": {
+          "integerValue": "7"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "1"
+            },
+            "a": {
+             "integerValue": "2"
+            }
+           }
+          }
+         },
+         "x1": {
+          "integerValue": "9"
+         },
+         "x2": {
+          "integerValue": "10"
+         },
+         "x3": {
+          "integerValue": "11"
+         },
+         "x4": {
+          "integerValue": "12"
+         },
+         "x5": {
+          "integerValue": "13"
+         },
+         "longer_name": {
+          "integerValue": "14"
+         },
+         "Upper": {
+          "integerValue": "15"
+         },
+         "_under": {
+          "integerValue": "16"
+         },
+         "n10": {
+          "integerValue": "17"
+         },
+         "n2": {
+          "integerValue": "18"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:42.970330Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:42.970330Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-batch-mask/databases/(default)/documents:batchGet",
+    "body": {
+     "documents": [
+      "projects/fo-batch-mask/databases/(default)/documents/c/d"
+     ],
+     "mask": {
+      "fieldPaths": [
+       "str",
+       "int"
+      ]
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "found": {
+       "name": "projects/fo-batch-mask/databases/(default)/documents/c/d",
+       "fields": {
+        "str": {
+         "integerValue": "0"
+        },
+        "int": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T08:29:42.970330Z",
+       "updateTime": "2026-10-11T08:29:42.970330Z"
+      },
+      "readTime": "2026-10-11T08:29:42.972689Z"
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-batch-mask/databases/(default)/documents:batchGet",
+    "body": {
+     "documents": [
+      "projects/fo-batch-mask/databases/(default)/documents/c/d"
+     ],
+     "mask": {
+      "fieldPaths": [
+       "int",
+       "str"
+      ]
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "found": {
+       "name": "projects/fo-batch-mask/databases/(default)/documents/c/d",
+       "fields": {
+        "str": {
+         "integerValue": "0"
+        },
+        "int": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T08:29:42.970330Z",
+       "updateTime": "2026-10-11T08:29:42.970330Z"
+      },
+      "readTime": "2026-10-11T08:29:42.975257Z"
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-batch-mask/databases/(default)/documents:batchGet",
+    "body": {
+     "documents": [
+      "projects/fo-batch-mask/databases/(default)/documents/c/d"
+     ],
+     "mask": {
+      "fieldPaths": [
+       "dbl",
+       "int"
+      ]
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "found": {
+       "name": "projects/fo-batch-mask/databases/(default)/documents/c/d",
+       "fields": {
+        "int": {
+         "integerValue": "1"
+        },
+        "dbl": {
+         "integerValue": "2"
+        }
+       },
+       "createTime": "2026-10-11T08:29:42.970330Z",
+       "updateTime": "2026-10-11T08:29:42.970330Z"
+      },
+      "readTime": "2026-10-11T08:29:42.977541Z"
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-batch-mask/databases/(default)/documents:batchGet",
+    "body": {
+     "documents": [
+      "projects/fo-batch-mask/databases/(default)/documents/c/d"
+     ],
+     "mask": {
+      "fieldPaths": [
+       "int",
+       "dbl"
+      ]
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "found": {
+       "name": "projects/fo-batch-mask/databases/(default)/documents/c/d",
+       "fields": {
+        "int": {
+         "integerValue": "1"
+        },
+        "dbl": {
+         "integerValue": "2"
+        }
+       },
+       "createTime": "2026-10-11T08:29:42.970330Z",
+       "updateTime": "2026-10-11T08:29:42.970330Z"
+      },
+      "readTime": "2026-10-11T08:29:42.980391Z"
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-batch-mask/databases/(default)/documents:batchGet",
+    "body": {
+     "documents": [
+      "projects/fo-batch-mask/databases/(default)/documents/c/d"
+     ],
+     "mask": {
+      "fieldPaths": [
+       "zeta",
+       "alpha",
+       "a"
+      ]
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "found": {
+       "name": "projects/fo-batch-mask/databases/(default)/documents/c/d",
+       "fields": {
+        "zeta": {
+         "integerValue": "3"
+        },
+        "a": {
+         "integerValue": "5"
+        },
+        "alpha": {
+         "integerValue": "4"
+        }
+       },
+       "createTime": "2026-10-11T08:29:42.970330Z",
+       "updateTime": "2026-10-11T08:29:42.970330Z"
+      },
+      "readTime": "2026-10-11T08:29:42.982819Z"
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-batch-mask/databases/(default)/documents:batchGet",
+    "body": {
+     "documents": [
+      "projects/fo-batch-mask/databases/(default)/documents/c/d"
+     ],
+     "mask": {
+      "fieldPaths": [
+       "a",
+       "alpha",
+       "zeta"
+      ]
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "found": {
+       "name": "projects/fo-batch-mask/databases/(default)/documents/c/d",
+       "fields": {
+        "zeta": {
+         "integerValue": "3"
+        },
+        "a": {
+         "integerValue": "5"
+        },
+        "alpha": {
+         "integerValue": "4"
+        }
+       },
+       "createTime": "2026-10-11T08:29:42.970330Z",
+       "updateTime": "2026-10-11T08:29:42.970330Z"
+      },
+      "readTime": "2026-10-11T08:29:42.984929Z"
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-batch-mask/databases/(default)/documents:batchGet",
+    "body": {
+     "documents": [
+      "projects/fo-batch-mask/databases/(default)/documents/c/d"
+     ],
+     "mask": {
+      "fieldPaths": [
+       "mid.z",
+       "mid.a"
+      ]
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "found": {
+       "name": "projects/fo-batch-mask/databases/(default)/documents/c/d",
+       "fields": {
+        "mid": {
+         "mapValue": {
+          "fields": {
+           "a": {
+            "integerValue": "2"
+           },
+           "z": {
+            "integerValue": "1"
+           }
+          }
+         }
+        }
+       },
+       "createTime": "2026-10-11T08:29:42.970330Z",
+       "updateTime": "2026-10-11T08:29:42.970330Z"
+      },
+      "readTime": "2026-10-11T08:29:42.987188Z"
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-batch-mask/databases/(default)/documents:batchGet",
+    "body": {
+     "documents": [
+      "projects/fo-batch-mask/databases/(default)/documents/c/d"
+     ],
+     "mask": {
+      "fieldPaths": [
+       "mid.a",
+       "mid.z",
+       "str"
+      ]
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "found": {
+       "name": "projects/fo-batch-mask/databases/(default)/documents/c/d",
+       "fields": {
+        "str": {
+         "integerValue": "0"
+        },
+        "mid": {
+         "mapValue": {
+          "fields": {
+           "a": {
+            "integerValue": "2"
+           },
+           "z": {
+            "integerValue": "1"
+           }
+          }
+         }
+        }
+       },
+       "createTime": "2026-10-11T08:29:42.970330Z",
+       "updateTime": "2026-10-11T08:29:42.970330Z"
+      },
+      "readTime": "2026-10-11T08:29:42.989605Z"
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-batch-mask/databases/(default)/documents:batchGet",
+    "body": {
+     "documents": [
+      "projects/fo-batch-mask/databases/(default)/documents/c/d"
+     ],
+     "mask": {
+      "fieldPaths": [
+       "str",
+       "int",
+       "dbl",
+       "zeta",
+       "alpha",
+       "a",
+       "b",
+       "c",
+       "mid",
+       "x1",
+       "x2",
+       "x3"
+      ]
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "found": {
+       "name": "projects/fo-batch-mask/databases/(default)/documents/c/d",
+       "fields": {
+        "str": {
+         "integerValue": "0"
+        },
+        "zeta": {
+         "integerValue": "3"
+        },
+        "a": {
+         "integerValue": "5"
+        },
+        "b": {
+         "integerValue": "6"
+        },
+        "c": {
+         "integerValue": "7"
+        },
+        "alpha": {
+         "integerValue": "4"
+        },
+        "mid": {
+         "mapValue": {
+          "fields": {
+           "z": {
+            "integerValue": "1"
+           },
+           "a": {
+            "integerValue": "2"
+           }
+          }
+         }
+        },
+        "x1": {
+         "integerValue": "9"
+        },
+        "x2": {
+         "integerValue": "10"
+        },
+        "x3": {
+         "integerValue": "11"
+        },
+        "int": {
+         "integerValue": "1"
+        },
+        "dbl": {
+         "integerValue": "2"
+        }
+       },
+       "createTime": "2026-10-11T08:29:42.970330Z",
+       "updateTime": "2026-10-11T08:29:42.970330Z"
+      },
+      "readTime": "2026-10-11T08:29:42.992201Z"
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-batch-mask/databases/(default)/documents:batchGet",
+    "body": {
+     "documents": [
+      "projects/fo-batch-mask/databases/(default)/documents/c/d"
+     ],
+     "mask": {
+      "fieldPaths": [
+       "str",
+       "int",
+       "dbl",
+       "zeta",
+       "alpha",
+       "a",
+       "b",
+       "c",
+       "mid",
+       "x1",
+       "x2",
+       "x3",
+       "x4"
+      ]
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "found": {
+       "name": "projects/fo-batch-mask/databases/(default)/documents/c/d",
+       "fields": {
+        "zeta": {
+         "integerValue": "3"
+        },
+        "a": {
+         "integerValue": "5"
+        },
+        "b": {
+         "integerValue": "6"
+        },
+        "c": {
+         "integerValue": "7"
+        },
+        "mid": {
+         "mapValue": {
+          "fields": {
+           "z": {
+            "integerValue": "1"
+           },
+           "a": {
+            "integerValue": "2"
+           }
+          }
+         }
+        },
+        "int": {
+         "integerValue": "1"
+        },
+        "dbl": {
+         "integerValue": "2"
+        },
+        "str": {
+         "integerValue": "0"
+        },
+        "alpha": {
+         "integerValue": "4"
+        },
+        "x1": {
+         "integerValue": "9"
+        },
+        "x2": {
+         "integerValue": "10"
+        },
+        "x3": {
+         "integerValue": "11"
+        },
+        "x4": {
+         "integerValue": "12"
+        }
+       },
+       "createTime": "2026-10-11T08:29:42.970330Z",
+       "updateTime": "2026-10-11T08:29:42.970330Z"
+      },
+      "readTime": "2026-10-11T08:29:42.994692Z"
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-batch-mask/databases/(default)/documents:batchGet",
+    "body": {
+     "documents": [
+      "projects/fo-batch-mask/databases/(default)/documents/c/d"
+     ],
+     "mask": {
+      "fieldPaths": [
+       "n2",
+       "n10",
+       "_under",
+       "Upper",
+       "longer_name",
+       "x5",
+       "x4",
+       "x3",
+       "x2",
+       "x1",
+       "mid",
+       "c",
+       "b",
+       "a",
+       "alpha",
+       "zeta",
+       "dbl",
+       "int",
+       "str"
+      ]
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "found": {
+       "name": "projects/fo-batch-mask/databases/(default)/documents/c/d",
+       "fields": {
+        "Upper": {
+         "integerValue": "15"
+        },
+        "zeta": {
+         "integerValue": "3"
+        },
+        "longer_name": {
+         "integerValue": "14"
+        },
+        "a": {
+         "integerValue": "5"
+        },
+        "b": {
+         "integerValue": "6"
+        },
+        "c": {
+         "integerValue": "7"
+        },
+        "n2": {
+         "integerValue": "18"
+        },
+        "mid": {
+         "mapValue": {
+          "fields": {
+           "z": {
+            "integerValue": "1"
+           },
+           "a": {
+            "integerValue": "2"
+           }
+          }
+         }
+        },
+        "n10": {
+         "integerValue": "17"
+        },
+        "int": {
+         "integerValue": "1"
+        },
+        "dbl": {
+         "integerValue": "2"
+        },
+        "str": {
+         "integerValue": "0"
+        },
+        "alpha": {
+         "integerValue": "4"
+        },
+        "_under": {
+         "integerValue": "16"
+        },
+        "x1": {
+         "integerValue": "9"
+        },
+        "x2": {
+         "integerValue": "10"
+        },
+        "x3": {
+         "integerValue": "11"
+        },
+        "x4": {
+         "integerValue": "12"
+        },
+        "x5": {
+         "integerValue": "13"
+        }
+       },
+       "createTime": "2026-10-11T08:29:42.970330Z",
+       "updateTime": "2026-10-11T08:29:42.970330Z"
+      },
+      "readTime": "2026-10-11T08:29:42.997749Z"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "name": "list with a mask",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-list-mask/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-list-mask/databases/(default)/documents/c/d",
+        "fields": {
+         "str": {
+          "integerValue": "0"
+         },
+         "int": {
+          "integerValue": "1"
+         },
+         "dbl": {
+          "integerValue": "2"
+         },
+         "zeta": {
+          "integerValue": "3"
+         },
+         "alpha": {
+          "integerValue": "4"
+         },
+         "a": {
+          "integerValue": "5"
+         },
+         "b": {
+          "integerValue": "6"
+         },
+         "c": {
+          "integerValue": "7"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "1"
+            },
+            "a": {
+             "integerValue": "2"
+            }
+           }
+          }
+         },
+         "x1": {
+          "integerValue": "9"
+         },
+         "x2": {
+          "integerValue": "10"
+         },
+         "x3": {
+          "integerValue": "11"
+         },
+         "x4": {
+          "integerValue": "12"
+         },
+         "x5": {
+          "integerValue": "13"
+         },
+         "longer_name": {
+          "integerValue": "14"
+         },
+         "Upper": {
+          "integerValue": "15"
+         },
+         "_under": {
+          "integerValue": "16"
+         },
+         "n10": {
+          "integerValue": "17"
+         },
+         "n2": {
+          "integerValue": "18"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:43.003266Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:43.003266Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-list-mask/databases/(default)/documents/c?mask.fieldPaths=str&mask.fieldPaths=int",
+    "body": null,
+    "status": 200,
+    "response": {
+     "documents": [
+      {
+       "name": "projects/fo-list-mask/databases/(default)/documents/c/d",
+       "fields": {
+        "str": {
+         "integerValue": "0"
+        },
+        "int": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T08:29:43.003266Z",
+       "updateTime": "2026-10-11T08:29:43.003266Z"
+      }
+     ]
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-list-mask/databases/(default)/documents/c?mask.fieldPaths=int&mask.fieldPaths=str",
+    "body": null,
+    "status": 200,
+    "response": {
+     "documents": [
+      {
+       "name": "projects/fo-list-mask/databases/(default)/documents/c/d",
+       "fields": {
+        "str": {
+         "integerValue": "0"
+        },
+        "int": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T08:29:43.003266Z",
+       "updateTime": "2026-10-11T08:29:43.003266Z"
+      }
+     ]
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-list-mask/databases/(default)/documents/c?mask.fieldPaths=dbl&mask.fieldPaths=int",
+    "body": null,
+    "status": 200,
+    "response": {
+     "documents": [
+      {
+       "name": "projects/fo-list-mask/databases/(default)/documents/c/d",
+       "fields": {
+        "int": {
+         "integerValue": "1"
+        },
+        "dbl": {
+         "integerValue": "2"
+        }
+       },
+       "createTime": "2026-10-11T08:29:43.003266Z",
+       "updateTime": "2026-10-11T08:29:43.003266Z"
+      }
+     ]
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-list-mask/databases/(default)/documents/c?mask.fieldPaths=int&mask.fieldPaths=dbl",
+    "body": null,
+    "status": 200,
+    "response": {
+     "documents": [
+      {
+       "name": "projects/fo-list-mask/databases/(default)/documents/c/d",
+       "fields": {
+        "int": {
+         "integerValue": "1"
+        },
+        "dbl": {
+         "integerValue": "2"
+        }
+       },
+       "createTime": "2026-10-11T08:29:43.003266Z",
+       "updateTime": "2026-10-11T08:29:43.003266Z"
+      }
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "name": "query projection",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-select/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-select/databases/(default)/documents/c/d",
+        "fields": {
+         "str": {
+          "integerValue": "0"
+         },
+         "int": {
+          "integerValue": "1"
+         },
+         "dbl": {
+          "integerValue": "2"
+         },
+         "zeta": {
+          "integerValue": "3"
+         },
+         "alpha": {
+          "integerValue": "4"
+         },
+         "a": {
+          "integerValue": "5"
+         },
+         "b": {
+          "integerValue": "6"
+         },
+         "c": {
+          "integerValue": "7"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "1"
+            },
+            "a": {
+             "integerValue": "2"
+            }
+           }
+          }
+         },
+         "x1": {
+          "integerValue": "9"
+         },
+         "x2": {
+          "integerValue": "10"
+         },
+         "x3": {
+          "integerValue": "11"
+         },
+         "x4": {
+          "integerValue": "12"
+         },
+         "x5": {
+          "integerValue": "13"
+         },
+         "longer_name": {
+          "integerValue": "14"
+         },
+         "Upper": {
+          "integerValue": "15"
+         },
+         "_under": {
+          "integerValue": "16"
+         },
+         "n10": {
+          "integerValue": "17"
+         },
+         "n2": {
+          "integerValue": "18"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:43.025003Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:43.025003Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-select/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "select": {
+       "fields": [
+        {
+         "fieldPath": "str"
+        },
+        {
+         "fieldPath": "int"
+        }
+       ]
+      }
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "document": {
+       "name": "projects/fo-select/databases/(default)/documents/c/d",
+       "fields": {
+        "str": {
+         "integerValue": "0"
+        },
+        "int": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T08:29:43.025003Z",
+       "updateTime": "2026-10-11T08:29:43.025003Z"
+      },
+      "readTime": "2026-10-11T08:29:43.027963Z",
+      "done": true
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-select/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "select": {
+       "fields": [
+        {
+         "fieldPath": "int"
+        },
+        {
+         "fieldPath": "str"
+        }
+       ]
+      }
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "document": {
+       "name": "projects/fo-select/databases/(default)/documents/c/d",
+       "fields": {
+        "str": {
+         "integerValue": "0"
+        },
+        "int": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T08:29:43.025003Z",
+       "updateTime": "2026-10-11T08:29:43.025003Z"
+      },
+      "readTime": "2026-10-11T08:29:43.031915Z",
+      "done": true
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-select/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "select": {
+       "fields": [
+        {
+         "fieldPath": "dbl"
+        },
+        {
+         "fieldPath": "int"
+        }
+       ]
+      }
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "document": {
+       "name": "projects/fo-select/databases/(default)/documents/c/d",
+       "fields": {
+        "int": {
+         "integerValue": "1"
+        },
+        "dbl": {
+         "integerValue": "2"
+        }
+       },
+       "createTime": "2026-10-11T08:29:43.025003Z",
+       "updateTime": "2026-10-11T08:29:43.025003Z"
+      },
+      "readTime": "2026-10-11T08:29:43.035403Z",
+      "done": true
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-select/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "select": {
+       "fields": [
+        {
+         "fieldPath": "int"
+        },
+        {
+         "fieldPath": "dbl"
+        }
+       ]
+      }
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "document": {
+       "name": "projects/fo-select/databases/(default)/documents/c/d",
+       "fields": {
+        "int": {
+         "integerValue": "1"
+        },
+        "dbl": {
+         "integerValue": "2"
+        }
+       },
+       "createTime": "2026-10-11T08:29:43.025003Z",
+       "updateTime": "2026-10-11T08:29:43.025003Z"
+      },
+      "readTime": "2026-10-11T08:29:43.038748Z",
+      "done": true
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-select/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "select": {
+       "fields": [
+        {
+         "fieldPath": "zeta"
+        },
+        {
+         "fieldPath": "alpha"
+        },
+        {
+         "fieldPath": "a"
+        }
+       ]
+      }
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "document": {
+       "name": "projects/fo-select/databases/(default)/documents/c/d",
+       "fields": {
+        "zeta": {
+         "integerValue": "3"
+        },
+        "a": {
+         "integerValue": "5"
+        },
+        "alpha": {
+         "integerValue": "4"
+        }
+       },
+       "createTime": "2026-10-11T08:29:43.025003Z",
+       "updateTime": "2026-10-11T08:29:43.025003Z"
+      },
+      "readTime": "2026-10-11T08:29:43.042529Z",
+      "done": true
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-select/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "select": {
+       "fields": [
+        {
+         "fieldPath": "a"
+        },
+        {
+         "fieldPath": "alpha"
+        },
+        {
+         "fieldPath": "zeta"
+        }
+       ]
+      }
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "document": {
+       "name": "projects/fo-select/databases/(default)/documents/c/d",
+       "fields": {
+        "zeta": {
+         "integerValue": "3"
+        },
+        "a": {
+         "integerValue": "5"
+        },
+        "alpha": {
+         "integerValue": "4"
+        }
+       },
+       "createTime": "2026-10-11T08:29:43.025003Z",
+       "updateTime": "2026-10-11T08:29:43.025003Z"
+      },
+      "readTime": "2026-10-11T08:29:43.045710Z",
+      "done": true
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-select/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "select": {
+       "fields": [
+        {
+         "fieldPath": "mid.z"
+        },
+        {
+         "fieldPath": "mid.a"
+        }
+       ]
+      }
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "document": {
+       "name": "projects/fo-select/databases/(default)/documents/c/d",
+       "fields": {
+        "mid": {
+         "mapValue": {
+          "fields": {
+           "a": {
+            "integerValue": "2"
+           },
+           "z": {
+            "integerValue": "1"
+           }
+          }
+         }
+        }
+       },
+       "createTime": "2026-10-11T08:29:43.025003Z",
+       "updateTime": "2026-10-11T08:29:43.025003Z"
+      },
+      "readTime": "2026-10-11T08:29:43.048808Z",
+      "done": true
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-select/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "select": {
+       "fields": [
+        {
+         "fieldPath": "mid.a"
+        },
+        {
+         "fieldPath": "mid.z"
+        },
+        {
+         "fieldPath": "str"
+        }
+       ]
+      }
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "document": {
+       "name": "projects/fo-select/databases/(default)/documents/c/d",
+       "fields": {
+        "str": {
+         "integerValue": "0"
+        },
+        "mid": {
+         "mapValue": {
+          "fields": {
+           "a": {
+            "integerValue": "2"
+           },
+           "z": {
+            "integerValue": "1"
+           }
+          }
+         }
+        }
+       },
+       "createTime": "2026-10-11T08:29:43.025003Z",
+       "updateTime": "2026-10-11T08:29:43.025003Z"
+      },
+      "readTime": "2026-10-11T08:29:43.051969Z",
+      "done": true
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-select/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "select": {
+       "fields": [
+        {
+         "fieldPath": "str"
+        },
+        {
+         "fieldPath": "int"
+        },
+        {
+         "fieldPath": "dbl"
+        },
+        {
+         "fieldPath": "zeta"
+        },
+        {
+         "fieldPath": "alpha"
+        },
+        {
+         "fieldPath": "a"
+        },
+        {
+         "fieldPath": "b"
+        },
+        {
+         "fieldPath": "c"
+        },
+        {
+         "fieldPath": "mid"
+        },
+        {
+         "fieldPath": "x1"
+        },
+        {
+         "fieldPath": "x2"
+        },
+        {
+         "fieldPath": "x3"
+        }
+       ]
+      }
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "document": {
+       "name": "projects/fo-select/databases/(default)/documents/c/d",
+       "fields": {
+        "str": {
+         "integerValue": "0"
+        },
+        "zeta": {
+         "integerValue": "3"
+        },
+        "a": {
+         "integerValue": "5"
+        },
+        "b": {
+         "integerValue": "6"
+        },
+        "c": {
+         "integerValue": "7"
+        },
+        "alpha": {
+         "integerValue": "4"
+        },
+        "mid": {
+         "mapValue": {
+          "fields": {
+           "z": {
+            "integerValue": "1"
+           },
+           "a": {
+            "integerValue": "2"
+           }
+          }
+         }
+        },
+        "x1": {
+         "integerValue": "9"
+        },
+        "x2": {
+         "integerValue": "10"
+        },
+        "x3": {
+         "integerValue": "11"
+        },
+        "int": {
+         "integerValue": "1"
+        },
+        "dbl": {
+         "integerValue": "2"
+        }
+       },
+       "createTime": "2026-10-11T08:29:43.025003Z",
+       "updateTime": "2026-10-11T08:29:43.025003Z"
+      },
+      "readTime": "2026-10-11T08:29:43.054903Z",
+      "done": true
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-select/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "select": {
+       "fields": [
+        {
+         "fieldPath": "str"
+        },
+        {
+         "fieldPath": "int"
+        },
+        {
+         "fieldPath": "dbl"
+        },
+        {
+         "fieldPath": "zeta"
+        },
+        {
+         "fieldPath": "alpha"
+        },
+        {
+         "fieldPath": "a"
+        },
+        {
+         "fieldPath": "b"
+        },
+        {
+         "fieldPath": "c"
+        },
+        {
+         "fieldPath": "mid"
+        },
+        {
+         "fieldPath": "x1"
+        },
+        {
+         "fieldPath": "x2"
+        },
+        {
+         "fieldPath": "x3"
+        },
+        {
+         "fieldPath": "x4"
+        }
+       ]
+      }
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "document": {
+       "name": "projects/fo-select/databases/(default)/documents/c/d",
+       "fields": {
+        "zeta": {
+         "integerValue": "3"
+        },
+        "a": {
+         "integerValue": "5"
+        },
+        "b": {
+         "integerValue": "6"
+        },
+        "c": {
+         "integerValue": "7"
+        },
+        "mid": {
+         "mapValue": {
+          "fields": {
+           "z": {
+            "integerValue": "1"
+           },
+           "a": {
+            "integerValue": "2"
+           }
+          }
+         }
+        },
+        "int": {
+         "integerValue": "1"
+        },
+        "dbl": {
+         "integerValue": "2"
+        },
+        "str": {
+         "integerValue": "0"
+        },
+        "alpha": {
+         "integerValue": "4"
+        },
+        "x1": {
+         "integerValue": "9"
+        },
+        "x2": {
+         "integerValue": "10"
+        },
+        "x3": {
+         "integerValue": "11"
+        },
+        "x4": {
+         "integerValue": "12"
+        }
+       },
+       "createTime": "2026-10-11T08:29:43.025003Z",
+       "updateTime": "2026-10-11T08:29:43.025003Z"
+      },
+      "readTime": "2026-10-11T08:29:43.058531Z",
+      "done": true
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-select/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "select": {
+       "fields": [
+        {
+         "fieldPath": "n2"
+        },
+        {
+         "fieldPath": "n10"
+        },
+        {
+         "fieldPath": "_under"
+        },
+        {
+         "fieldPath": "Upper"
+        },
+        {
+         "fieldPath": "longer_name"
+        },
+        {
+         "fieldPath": "x5"
+        },
+        {
+         "fieldPath": "x4"
+        },
+        {
+         "fieldPath": "x3"
+        },
+        {
+         "fieldPath": "x2"
+        },
+        {
+         "fieldPath": "x1"
+        },
+        {
+         "fieldPath": "mid"
+        },
+        {
+         "fieldPath": "c"
+        },
+        {
+         "fieldPath": "b"
+        },
+        {
+         "fieldPath": "a"
+        },
+        {
+         "fieldPath": "alpha"
+        },
+        {
+         "fieldPath": "zeta"
+        },
+        {
+         "fieldPath": "dbl"
+        },
+        {
+         "fieldPath": "int"
+        },
+        {
+         "fieldPath": "str"
+        }
+       ]
+      }
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "document": {
+       "name": "projects/fo-select/databases/(default)/documents/c/d",
+       "fields": {
+        "Upper": {
+         "integerValue": "15"
+        },
+        "zeta": {
+         "integerValue": "3"
+        },
+        "longer_name": {
+         "integerValue": "14"
+        },
+        "a": {
+         "integerValue": "5"
+        },
+        "b": {
+         "integerValue": "6"
+        },
+        "c": {
+         "integerValue": "7"
+        },
+        "n2": {
+         "integerValue": "18"
+        },
+        "mid": {
+         "mapValue": {
+          "fields": {
+           "z": {
+            "integerValue": "1"
+           },
+           "a": {
+            "integerValue": "2"
+           }
+          }
+         }
+        },
+        "n10": {
+         "integerValue": "17"
+        },
+        "int": {
+         "integerValue": "1"
+        },
+        "dbl": {
+         "integerValue": "2"
+        },
+        "str": {
+         "integerValue": "0"
+        },
+        "alpha": {
+         "integerValue": "4"
+        },
+        "_under": {
+         "integerValue": "16"
+        },
+        "x1": {
+         "integerValue": "9"
+        },
+        "x2": {
+         "integerValue": "10"
+        },
+        "x3": {
+         "integerValue": "11"
+        },
+        "x4": {
+         "integerValue": "12"
+        },
+        "x5": {
+         "integerValue": "13"
+        }
+       },
+       "createTime": "2026-10-11T08:29:43.025003Z",
+       "updateTime": "2026-10-11T08:29:43.025003Z"
+      },
+      "readTime": "2026-10-11T08:29:43.061848Z",
+      "done": true
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "name": "aggregation aliases",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-aggregations/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-aggregations/databases/(default)/documents/c/d",
+        "fields": {
+         "str": {
+          "integerValue": "0"
+         },
+         "int": {
+          "integerValue": "1"
+         },
+         "dbl": {
+          "integerValue": "2"
+         },
+         "zeta": {
+          "integerValue": "3"
+         },
+         "alpha": {
+          "integerValue": "4"
+         },
+         "a": {
+          "integerValue": "5"
+         },
+         "b": {
+          "integerValue": "6"
+         },
+         "c": {
+          "integerValue": "7"
+         },
+         "mid": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "integerValue": "1"
+            },
+            "a": {
+             "integerValue": "2"
+            }
+           }
+          }
+         },
+         "x1": {
+          "integerValue": "9"
+         },
+         "x2": {
+          "integerValue": "10"
+         },
+         "x3": {
+          "integerValue": "11"
+         },
+         "x4": {
+          "integerValue": "12"
+         },
+         "x5": {
+          "integerValue": "13"
+         },
+         "longer_name": {
+          "integerValue": "14"
+         },
+         "Upper": {
+          "integerValue": "15"
+         },
+         "_under": {
+          "integerValue": "16"
+         },
+         "n10": {
+          "integerValue": "17"
+         },
+         "n2": {
+          "integerValue": "18"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:43.068005Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:43.068005Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-aggregations/databases/(default)/documents:runAggregationQuery",
+    "body": {
+     "structuredAggregationQuery": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ]
+      },
+      "aggregations": [
+       {
+        "alias": "zeta",
+        "count": {}
+       },
+       {
+        "alias": "alpha",
+        "count": {}
+       },
+       {
+        "alias": "mid",
+        "count": {}
+       }
+      ]
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "result": {
+       "aggregateFields": {
+        "zeta": {
+         "integerValue": "1"
+        },
+        "alpha": {
+         "integerValue": "1"
+        },
+        "mid": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "2026-10-11T08:29:43.070449Z",
+      "done": true
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-aggregations/databases/(default)/documents:runAggregationQuery",
+    "body": {
+     "structuredAggregationQuery": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ]
+      },
+      "aggregations": [
+       {
+        "alias": "mid",
+        "count": {}
+       },
+       {
+        "alias": "alpha",
+        "count": {}
+       },
+       {
+        "alias": "zeta",
+        "count": {}
+       }
+      ]
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "result": {
+       "aggregateFields": {
+        "mid": {
+         "integerValue": "1"
+        },
+        "alpha": {
+         "integerValue": "1"
+        },
+        "zeta": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "2026-10-11T08:29:43.073627Z",
+      "done": true
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-aggregations/databases/(default)/documents:runAggregationQuery",
+    "body": {
+     "structuredAggregationQuery": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ]
+      },
+      "aggregations": [
+       {
+        "alias": "str",
+        "count": {}
+       },
+       {
+        "alias": "int",
+        "count": {}
+       },
+       {
+        "alias": "dbl",
+        "count": {}
+       }
+      ]
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "result": {
+       "aggregateFields": {
+        "str": {
+         "integerValue": "1"
+        },
+        "int": {
+         "integerValue": "1"
+        },
+        "dbl": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "2026-10-11T08:29:43.076794Z",
+      "done": true
+     }
+    ]
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-aggregations/databases/(default)/documents:runAggregationQuery",
+    "body": {
+     "structuredAggregationQuery": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ]
+      },
+      "aggregations": [
+       {
+        "alias": "dbl",
+        "count": {}
+       },
+       {
+        "alias": "int",
+        "count": {}
+       },
+       {
+        "alias": "str",
+        "count": {}
+       }
+      ]
+     }
+    },
+    "status": 200,
+    "response": [
+     {
+      "result": {
+       "aggregateFields": {
+        "dbl": {
+         "integerValue": "1"
+        },
+        "int": {
+         "integerValue": "1"
+        },
+        "str": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "2026-10-11T08:29:43.079904Z",
+      "done": true
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "name": "one bucket, two names",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-bucket/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-bucket/databases/(default)/documents/c/d",
+        "fields": {
+         "a": {
+          "integerValue": "1"
+         },
+         "q": {
+          "integerValue": "2"
+         },
+         "zeta": {
+          "integerValue": "3"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:43.085909Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:43.085909Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-bucket/databases/(default)/documents/c/d?mask.fieldPaths=q&mask.fieldPaths=a",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-bucket/databases/(default)/documents/c/d",
+     "fields": {
+      "q": {
+       "integerValue": "2"
+      },
+      "a": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T08:29:43.085909Z",
+     "updateTime": "2026-10-11T08:29:43.085909Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-bucket/databases/(default)/documents/c/d?mask.fieldPaths=a&mask.fieldPaths=q",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-bucket/databases/(default)/documents/c/d",
+     "fields": {
+      "a": {
+       "integerValue": "1"
+      },
+      "q": {
+       "integerValue": "2"
+      }
+     },
+     "createTime": "2026-10-11T08:29:43.085909Z",
+     "updateTime": "2026-10-11T08:29:43.085909Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-bucket/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-bucket/databases/(default)/documents/c/e",
+        "fields": {
+         "a": {
+          "integerValue": "1"
+         },
+         "q": {
+          "integerValue": "2"
+         },
+         "zeta": {
+          "integerValue": "3"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:43.100313Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:43.100313Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-bucket/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-bucket/databases/(default)/documents/c/e",
+        "fields": {
+         "a": {
+          "integerValue": "9"
+         },
+         "q": {
+          "integerValue": "9"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "q",
+         "a"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:43.103659Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:43.103659Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-bucket/databases/(default)/documents/c/e",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-bucket/databases/(default)/documents/c/e",
+     "fields": {
+      "zeta": {
+       "integerValue": "3"
+      },
+      "q": {
+       "integerValue": "9"
+      },
+      "a": {
+       "integerValue": "9"
+      }
+     },
+     "createTime": "2026-10-11T08:29:43.100313Z",
+     "updateTime": "2026-10-11T08:29:43.103659Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-bucket/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-bucket/databases/(default)/documents/c/f",
+        "fields": {
+         "a": {
+          "integerValue": "1"
+         },
+         "q": {
+          "integerValue": "2"
+         },
+         "zeta": {
+          "integerValue": "3"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:43.108905Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:43.108905Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-bucket/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-bucket/databases/(default)/documents/c/f",
+        "fields": {
+         "a": {
+          "integerValue": "9"
+         },
+         "q": {
+          "integerValue": "9"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "a",
+         "q"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:43.112091Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:43.112091Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-bucket/databases/(default)/documents/c/f",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-bucket/databases/(default)/documents/c/f",
+     "fields": {
+      "zeta": {
+       "integerValue": "3"
+      },
+      "a": {
+       "integerValue": "9"
+      },
+      "q": {
+       "integerValue": "9"
+      }
+     },
+     "createTime": "2026-10-11T08:29:43.108905Z",
+     "updateTime": "2026-10-11T08:29:43.112091Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "read mask naming missing fields",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-mask-missing/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-mask-missing/databases/(default)/documents/c/d",
+        "fields": {
+         "str": {
+          "integerValue": "0"
+         },
+         "int": {
+          "integerValue": "1"
+         },
+         "dbl": {
+          "integerValue": "2"
+         },
+         "zeta": {
+          "integerValue": "3"
+         },
+         "alpha": {
+          "integerValue": "4"
+         },
+         "a": {
+          "integerValue": "5"
+         },
+         "b": {
+          "integerValue": "6"
+         },
+         "c": {
+          "integerValue": "7"
+         },
+         "x1": {
+          "integerValue": "8"
+         },
+         "x2": {
+          "integerValue": "9"
+         },
+         "x3": {
+          "integerValue": "10"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:43.118880Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:43.118880Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-mask-missing/databases/(default)/documents/c/d?mask.fieldPaths=str&mask.fieldPaths=int&mask.fieldPaths=dbl&mask.fieldPaths=zeta&mask.fieldPaths=alpha&mask.fieldPaths=a&mask.fieldPaths=b&mask.fieldPaths=c&mask.fieldPaths=x1&mask.fieldPaths=x2&mask.fieldPaths=x3&mask.fieldPaths=gone1&mask.fieldPaths=gone2",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-mask-missing/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "3"
+      },
+      "str": {
+       "integerValue": "0"
+      },
+      "a": {
+       "integerValue": "5"
+      },
+      "b": {
+       "integerValue": "6"
+      },
+      "c": {
+       "integerValue": "7"
+      },
+      "alpha": {
+       "integerValue": "4"
+      },
+      "x1": {
+       "integerValue": "8"
+      },
+      "x2": {
+       "integerValue": "9"
+      },
+      "x3": {
+       "integerValue": "10"
+      },
+      "int": {
+       "integerValue": "1"
+      },
+      "dbl": {
+       "integerValue": "2"
+      }
+     },
+     "createTime": "2026-10-11T08:29:43.118880Z",
+     "updateTime": "2026-10-11T08:29:43.118880Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "masked update deleting missing fields",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-delete-missing/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-delete-missing/databases/(default)/documents/c/d",
+        "fields": {
+         "keep": {
+          "integerValue": "0"
+         },
+         "str": {
+          "integerValue": "0"
+         },
+         "int": {
+          "integerValue": "1"
+         },
+         "dbl": {
+          "integerValue": "2"
+         },
+         "zeta": {
+          "integerValue": "3"
+         },
+         "alpha": {
+          "integerValue": "4"
+         },
+         "a": {
+          "integerValue": "5"
+         },
+         "b": {
+          "integerValue": "6"
+         },
+         "c": {
+          "integerValue": "7"
+         },
+         "x1": {
+          "integerValue": "8"
+         },
+         "x2": {
+          "integerValue": "9"
+         },
+         "x3": {
+          "integerValue": "10"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:43.126029Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:43.126029Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-delete-missing/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-delete-missing/databases/(default)/documents/c/d",
+        "fields": {
+         "str": {
+          "integerValue": "100"
+         },
+         "int": {
+          "integerValue": "101"
+         },
+         "dbl": {
+          "integerValue": "102"
+         },
+         "zeta": {
+          "integerValue": "103"
+         },
+         "alpha": {
+          "integerValue": "104"
+         },
+         "a": {
+          "integerValue": "105"
+         },
+         "b": {
+          "integerValue": "106"
+         },
+         "c": {
+          "integerValue": "107"
+         },
+         "x1": {
+          "integerValue": "108"
+         },
+         "x2": {
+          "integerValue": "109"
+         },
+         "x3": {
+          "integerValue": "110"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "str",
+         "int",
+         "dbl",
+         "zeta",
+         "alpha",
+         "a",
+         "b",
+         "c",
+         "x1",
+         "x2",
+         "x3",
+         "gone1",
+         "gone2"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:43.130488Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:43.130488Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-delete-missing/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-delete-missing/databases/(default)/documents/c/d",
+     "fields": {
+      "keep": {
+       "integerValue": "0"
+      },
+      "zeta": {
+       "integerValue": "103"
+      },
+      "str": {
+       "integerValue": "100"
+      },
+      "a": {
+       "integerValue": "105"
+      },
+      "b": {
+       "integerValue": "106"
+      },
+      "c": {
+       "integerValue": "107"
+      },
+      "alpha": {
+       "integerValue": "104"
+      },
+      "x1": {
+       "integerValue": "108"
+      },
+      "x2": {
+       "integerValue": "109"
+      },
+      "x3": {
+       "integerValue": "110"
+      },
+      "int": {
+       "integerValue": "101"
+      },
+      "dbl": {
+       "integerValue": "102"
+      }
+     },
+     "createTime": "2026-10-11T08:29:43.126029Z",
+     "updateTime": "2026-10-11T08:29:43.130488Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "masked update deleting existing fields",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-delete-existing/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-delete-existing/databases/(default)/documents/c/d",
+        "fields": {
+         "keep": {
+          "integerValue": "0"
+         },
+         "str": {
+          "integerValue": "0"
+         },
+         "int": {
+          "integerValue": "1"
+         },
+         "dbl": {
+          "integerValue": "2"
+         },
+         "zeta": {
+          "integerValue": "3"
+         },
+         "alpha": {
+          "integerValue": "4"
+         },
+         "a": {
+          "integerValue": "5"
+         },
+         "b": {
+          "integerValue": "6"
+         },
+         "c": {
+          "integerValue": "7"
+         },
+         "x1": {
+          "integerValue": "8"
+         },
+         "x2": {
+          "integerValue": "9"
+         },
+         "x3": {
+          "integerValue": "10"
+         },
+         "gone1": {
+          "integerValue": "1"
+         },
+         "gone2": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:43.138294Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:43.138294Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-delete-existing/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-delete-existing/databases/(default)/documents/c/d",
+        "fields": {
+         "str": {
+          "integerValue": "100"
+         },
+         "int": {
+          "integerValue": "101"
+         },
+         "dbl": {
+          "integerValue": "102"
+         },
+         "zeta": {
+          "integerValue": "103"
+         },
+         "alpha": {
+          "integerValue": "104"
+         },
+         "a": {
+          "integerValue": "105"
+         },
+         "b": {
+          "integerValue": "106"
+         },
+         "c": {
+          "integerValue": "107"
+         },
+         "x1": {
+          "integerValue": "108"
+         },
+         "x2": {
+          "integerValue": "109"
+         },
+         "x3": {
+          "integerValue": "110"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "str",
+         "int",
+         "dbl",
+         "zeta",
+         "alpha",
+         "a",
+         "b",
+         "c",
+         "x1",
+         "x2",
+         "x3",
+         "gone1",
+         "gone2"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:43.142324Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:43.142324Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-delete-existing/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-delete-existing/databases/(default)/documents/c/d",
+     "fields": {
+      "keep": {
+       "integerValue": "0"
+      },
+      "zeta": {
+       "integerValue": "103"
+      },
+      "a": {
+       "integerValue": "105"
+      },
+      "b": {
+       "integerValue": "106"
+      },
+      "c": {
+       "integerValue": "107"
+      },
+      "int": {
+       "integerValue": "101"
+      },
+      "dbl": {
+       "integerValue": "102"
+      },
+      "str": {
+       "integerValue": "100"
+      },
+      "alpha": {
+       "integerValue": "104"
+      },
+      "x1": {
+       "integerValue": "108"
+      },
+      "x2": {
+       "integerValue": "109"
+      },
+      "x3": {
+       "integerValue": "110"
+      }
+     },
+     "createTime": "2026-10-11T08:29:43.138294Z",
+     "updateTime": "2026-10-11T08:29:43.142324Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "masked update with unchanged values in the input",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-unchanged-input/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-unchanged-input/databases/(default)/documents/c/d",
+        "fields": {
+         "keep": {
+          "integerValue": "0"
+         },
+         "str": {
+          "integerValue": "0"
+         },
+         "int": {
+          "integerValue": "1"
+         },
+         "dbl": {
+          "integerValue": "2"
+         },
+         "zeta": {
+          "integerValue": "3"
+         },
+         "alpha": {
+          "integerValue": "4"
+         },
+         "a": {
+          "integerValue": "5"
+         },
+         "b": {
+          "integerValue": "6"
+         },
+         "c": {
+          "integerValue": "7"
+         },
+         "x1": {
+          "integerValue": "8"
+         },
+         "x2": {
+          "integerValue": "9"
+         },
+         "x3": {
+          "integerValue": "10"
+         },
+         "u1": {
+          "integerValue": "1"
+         },
+         "u2": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:43.150896Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:43.150896Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-unchanged-input/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-unchanged-input/databases/(default)/documents/c/d",
+        "fields": {
+         "str": {
+          "integerValue": "100"
+         },
+         "int": {
+          "integerValue": "101"
+         },
+         "dbl": {
+          "integerValue": "102"
+         },
+         "zeta": {
+          "integerValue": "103"
+         },
+         "alpha": {
+          "integerValue": "104"
+         },
+         "a": {
+          "integerValue": "105"
+         },
+         "b": {
+          "integerValue": "106"
+         },
+         "c": {
+          "integerValue": "107"
+         },
+         "x1": {
+          "integerValue": "108"
+         },
+         "x2": {
+          "integerValue": "109"
+         },
+         "x3": {
+          "integerValue": "110"
+         },
+         "u1": {
+          "integerValue": "1"
+         },
+         "u2": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "str",
+         "int",
+         "dbl",
+         "zeta",
+         "alpha",
+         "a",
+         "b",
+         "c",
+         "x1",
+         "x2",
+         "x3",
+         "u1",
+         "u2"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:43.154440Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:43.154440Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-unchanged-input/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-unchanged-input/databases/(default)/documents/c/d",
+     "fields": {
+      "keep": {
+       "integerValue": "0"
+      },
+      "u1": {
+       "integerValue": "1"
+      },
+      "u2": {
+       "integerValue": "2"
+      },
+      "zeta": {
+       "integerValue": "103"
+      },
+      "str": {
+       "integerValue": "100"
+      },
+      "a": {
+       "integerValue": "105"
+      },
+      "b": {
+       "integerValue": "106"
+      },
+      "c": {
+       "integerValue": "107"
+      },
+      "alpha": {
+       "integerValue": "104"
+      },
+      "x1": {
+       "integerValue": "108"
+      },
+      "x2": {
+       "integerValue": "109"
+      },
+      "x3": {
+       "integerValue": "110"
+      },
+      "int": {
+       "integerValue": "101"
+      },
+      "dbl": {
+       "integerValue": "102"
+      }
+     },
+     "createTime": "2026-10-11T08:29:43.150896Z",
+     "updateTime": "2026-10-11T08:29:43.154440Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "masked update deleting inside one map and changing another field",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-delete-and-put/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-delete-and-put/databases/(default)/documents/c/d",
+        "fields": {
+         "p": {
+          "mapValue": {
+           "fields": {
+            "x": {
+             "integerValue": "1"
+            },
+            "y": {
+             "integerValue": "2"
+            }
+           }
+          }
+         },
+         "alpha": {
+          "integerValue": "1"
+         },
+         "zeta": {
+          "integerValue": "2"
+         },
+         "mid": {
+          "integerValue": "3"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:43.161844Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:43.161844Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-delete-and-put/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-delete-and-put/databases/(default)/documents/c/d",
+        "fields": {
+         "alpha": {
+          "integerValue": "9"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "p.y",
+         "alpha"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T08:29:43.165328Z"
+      }
+     ],
+     "commitTime": "2026-10-11T08:29:43.165328Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-delete-and-put/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-delete-and-put/databases/(default)/documents/c/d",
+     "fields": {
+      "zeta": {
+       "integerValue": "2"
+      },
+      "mid": {
+       "integerValue": "3"
+      },
+      "p": {
+       "mapValue": {
+        "fields": {
+         "x": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      "alpha": {
+       "integerValue": "9"
+      }
+     },
+     "createTime": "2026-10-11T08:29:43.161844Z",
+     "updateTime": "2026-10-11T08:29:43.165328Z"
+    }
+   }
+  ]
+ }
+]

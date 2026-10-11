@@ -3,13 +3,16 @@
 //!
 //! `cargo run --release -p hidane-core --example rss -- 1000000`
 
-use std::{collections::BTreeMap, process::Command, time::Instant};
+use std::{process::Command, time::Instant};
 
 use hidane_core::{
     path::ResourcePath,
     store::{MemoryStore, Store},
 };
-use hidane_proto::google::firestore::v1::{Value, value::ValueType};
+use hidane_proto::{
+    google::firestore::v1::{Value, value::ValueType},
+    ordered::Fields,
+};
 
 const DB: &str = "projects/demo/databases/(default)";
 
@@ -42,7 +45,7 @@ fn main() {
             .commit(DB, &mut |batch| {
                 for i in written..batch_end {
                     let path = ResourcePath::from_segments(["users".to_owned(), i.to_string()]);
-                    let fields: BTreeMap<String, Value> = [
+                    let fields: Fields = [
                         (
                             "mykey".to_owned(),
                             Value {
