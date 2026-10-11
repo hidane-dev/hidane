@@ -59,8 +59,8 @@ Admin SDK, and prints every snapshot each listener received; its transcripts are
 `results/sdk-listen-*.json`.
 
 `sdk_listen_resume.mjs` takes the web SDK offline and back online (it then resumes its targets
-with their tokens) while the Admin SDK writes; its transcripts are in
-`results/sdk-listen-resume-*.json`.
+with their tokens) while the Admin SDK writes, including writes that move two limit queries'
+windows; its transcripts are in `results/sdk-listen-resume-*.json`.
 
 `sdk_clear.mjs` clears data the ways test suites and the Emulator UI do (recursive delete,
 rules-unit-testing's `clearFirestore()`, `POST /reset`; needs `npm i @firebase/rules-unit-testing`)
