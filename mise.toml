@@ -38,10 +38,10 @@ rm -rf "$out"
 '''
 
 [tasks."crates:bootstrap"]
-description = "Publish hidane-proto and hidane-core to crates.io once, at the current version, so trusted publishing can be configured for them"
+description = "Publish hidane-proto, hidane-core and hidane-rules to crates.io once, at the current version, so trusted publishing can be configured for them"
 run = '''
 version=$(cargo pkgid -p hidane | sed 's/.*[#@]//')
-for crate in hidane-proto hidane-core; do
+for crate in hidane-proto hidane-core hidane-rules; do
   if [ "$(curl -s -o /dev/null -w '%{http_code}' -H 'User-Agent: hidane-release (github.com/hidane-dev/hidane)' "https://crates.io/api/v1/crates/$crate/$version")" = 200 ]; then
     echo "$crate $version is already on crates.io"
   else

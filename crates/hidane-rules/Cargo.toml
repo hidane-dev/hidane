@@ -1,0 +1,19 @@
+[package]
+name = "hidane-rules"
+description = "Firestore Security Rules for hidane: lexer, parser and compile-time checks"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+readme = "README.md"
+keywords = ["firestore", "emulator", "security-rules"]
+categories = ["development-tools::testing", "parser-implementations"]
+include = ["/src", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
+
+[dependencies]
+regex.workspace = true
+
+[lints]
+workspace = true

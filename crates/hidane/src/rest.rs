@@ -594,7 +594,7 @@ pub fn error(status: &Status) -> Response {
             '\n' => message.push_str("\\n"),
             '\r' => message.push_str("\\r"),
             '\t' => message.push_str("\\t"),
-            c if u32::from(c) < 0x20 => {
+            c if u32::from(c) < 0x20 || c == '\u{2028}' || c == '\u{2029}' => {
                 let _ = write!(message, "\\u{:04x}", u32::from(c));
             }
             c => message.push(c),

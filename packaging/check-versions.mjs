@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Checks that every place carrying hidane's version agrees with the workspace Cargo.toml: the
-// `=` pins of hidane-core and hidane-proto, and the pub launcher's pubspec.yaml and constant.
+// `=` pins of hidane-core, hidane-proto and hidane-rules, and the pub launcher's pubspec.yaml and
+// constant.
 // With a tag argument (`v<version>`), checks that too. Run by CI and the release workflow.
 
 import { readFileSync } from "node:fs";
@@ -20,6 +21,7 @@ const version = cargo.match(/\[workspace\.package\][^[]*?\nversion = "([^"]+)"/s
 const found = {
   "Cargo.toml hidane-core pin": match("Cargo.toml", /hidane-core = \{[^}]*version = "=([^"]+)"/),
   "Cargo.toml hidane-proto pin": match("Cargo.toml", /hidane-proto = \{[^}]*version = "=([^"]+)"/),
+  "Cargo.toml hidane-rules pin": match("Cargo.toml", /hidane-rules = \{[^}]*version = "=([^"]+)"/),
   "packaging/pub/pubspec.yaml": match("packaging/pub/pubspec.yaml", /^version: (\S+)$/m),
   "packaging/pub/lib/hidane.dart": match("packaging/pub/lib/hidane.dart", /hidaneVersion = '([^']+)'/),
 };

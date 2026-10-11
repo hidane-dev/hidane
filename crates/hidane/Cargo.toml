@@ -28,6 +28,7 @@ base64.workspace = true
 clap.workspace = true
 hidane-core.workspace = true
 hidane-proto.workspace = true
+hidane-rules.workspace = true
 hyper.workspace = true
 hyper-util.workspace = true
 percent-encoding.workspace = true
