@@ -65,22 +65,26 @@ The test set:
 - 580 cel-spec conformance cases (v0.25.3: `basic`, `integer_math`, `fp_math`, `comparisons`,
   `logic`, `string`, `lists`, `conversions`, `fields`, `parse`, `plumbing`), without uint,
   protobuf messages, type values, macros or optionals
-- 242 Rules conditions written together with the evaluators, and 97 written afterwards that were
-  not used to change them (held out)
+- 242 Rules conditions written together with the evaluators, and 106 written afterwards that
+  were not used to change them (held out)
 - The official emulator's outcome (allow, false, error, compile error) for every condition,
   recorded by [`tools/oracle/rules_conditions.py`](../../tools/oracle/rules_conditions.py) in
   `results/rules-conditions-official-v1.22.0.json`; a cel-spec case is sent as a check of the
-  value cel-spec expects. 55 conditions it answered with a 500 are left out
+  value cel-spec expects. The jar runs with an English JVM locale: its messages for warnings and
+  evaluation errors exist in English only, and under another locale every warning or evaluation
+  error becomes a 500 `UNKNOWN`. The first recording, under `ja_JP`, had 70 such 500s and 188
+  false compile errors; the tables and findings below are from the corrected one
 
 | | A | B | C | stock |
 |---|---:|---:|---:|---:|
-| Matches the official emulator, held-out conditions (97) | **88** | 74 | 81 | 45 |
-| Matches the official emulator, the rest (774) | 774 | 495 | 765 | 421 |
+| Matches the official emulator, held-out conditions (106) | **105** | 91 | 98 | 62 |
+| Matches the official emulator, the rest (820) | 709 | 608 | 687 | 486 |
 | Matches cel-spec's expected values (580) | 352 | 523 | 366 | 580 |
 | Code written (non-blank lines) | 1,405 | 692 | 139, plus A's parser and checks and B's library | 0 |
 | Stripped binary, macOS arm64 (no evaluator: 0.4 MiB) | 1.9 MiB | 3.3 MiB | about B | |
 
-A was tuned against the 774, so its score there only says the measured behaviour fits in it.
+A was tuned against the rest while it was recorded under the wrong locale, so it rejects some
+conditions the official emulator accepts with a warning; it still matches the most.
 A and C score lower against cel-spec because they follow the official emulator where it differs
 from CEL. Per-group tables are in the spike's README.
 
@@ -90,13 +94,13 @@ It is the parity target, and it is not CEL:
 
 | Finding | Evidence (`results/rules-conditions-official-v1.22.0.json`) |
 |---|---|
-| 230 of the 578 cel-spec cases do not compile, for the reasons in this row and the next. No exponents or hex in numbers; no raw or triple-quoted strings; no `\a` `\v` `\X` `\U` escapes; no raw backspace or form feed in a string; `--` is a token; CEL's `size(x)`, `startsWith`, `endsWith`, `contains` and `bool()` do not exist | `cel/…` with `outcome: compile` |
-| A static type check runs before evaluation: `'1' == 1`, `null == false`, `true ? 'a' : 1`, `false && 32`, `[1] + [2]`, `resource.data.arr + [4]`, `string(b'')`, a map literal with an int key, a regex literal that does not compile | `rules/…`, `cel/…` with `outcome: compile` (status 500, no message) |
-| 10 cel-spec cases evaluate differently: `matches` is a full match, `[1] == [1.0]` is false although `1 == 1.0` is true, float `%` works, `int()` of an out-of-range double has no range error. `1 in [1.0]` is false too | `cel/string/matches/…`, `rules/…` |
+| 130 of the 578 cel-spec cases do not compile, all for lexical reasons: no exponents or hex in numbers; no raw or triple-quoted strings; no `\a` `\v` `\?` `` \` `` `\e` `\X` `\U` escapes; no raw control characters in a string; `--` is a token | `cel/…` with `outcome: compile` |
+| A function or method that does not exist (CEL's `size(x)`, `startsWith`, `endsWith`, `contains`, `bool()`, any unknown `f()`) compiles with a warning, `Invalid function name: f.`, and fails when evaluated. An unused function is a warning too | `cel/…` with `outcome: error`; `:securityRules` answers `200` with `issues[]` |
+| Types are checked when the condition runs, not before. `'1' == 1` and `null == false` are false; `[1] + [2]`, `true < false`, `7 in {}` and a map literal with int keys are errors; `false && 32` is false. The one static check found: a regex literal that does not compile is a compile error | `rules/…`, `cel/…`, `heldout/…` |
+| 6 cel-spec cases evaluate differently: `matches` is a full match, and `[1] == [1.0]` is false although `1 == 1.0` is true. `1 in [1.0]` is false too, and `int()` of an out-of-range double has no range error | `cel/string/matches/…`, `rules/…` |
 | Rules adds `is`, path literals with `$( )`, slices `[i:j]`, string indexing and mixed int / float arithmetic | `rules/…` |
-| An error from `resource` is absorbed by `\|\|` / `&&` only when the deciding operand does not read `resource`: `missing == 1 \|\| request.method == 'get'` allows, `missing == 1 \|\| resource.data.n == 1` is an error. CEL absorbs both | `heldout/…` (error absorption) |
-| An error that does not come from `resource` (a null `request.auth`, `request.path[10]`, `int('abc')`, division by zero, literal overflow, ordering bools, `7 in {}`) ends the request with 500 `UNKNOWN`, even under `\|\| true` | `outcome: internal` |
-| A denial reports the condition's start (`evaluation error at L5:22`), never the failing part | every `outcome: error` |
+| Errors are absorbed the CEL way, whatever they come from: `error \|\| true` and `true \|\| error` allow, `error && false` and `false && error` are false, `error \|\| false` denies. Missing fields, a null `request.auth`, `request.path[10]`, `int('abc')`, division by zero and integer overflow all behave so | `heldout/…` (error absorption), `rules/…` (missing fields and errors) |
+| A denial reports the condition's start and the error: `evaluation error at L5:22 for 'get' @ L5, Type conversion error. Argument: [abc], From type: [string], To type: [int]. for 'get' @ L5` | a `PERMISSION_DENIED` body |
 
 ### cel-rust
 
@@ -107,15 +111,14 @@ It is the parity target, and it is not CEL:
 | Conformance | Runs the cel-spec v0.25.3 suite in CI; the ignored cases are mostly protobuf, dynamic types and extensions. Stock cel-rust passed all 580 cases here |
 | What can be added | Custom types (the `Val` trait and capabilities such as `Indexer`, `Container`), functions (`Context::add_function` untyped, `Env::add_overload` typed), macros, type names |
 | What cannot, without a fork | The grammar (ANTLR-generated: no `is`, path literals or slices); the operators (`+ - * / % == < in []` and `&&` / `\|\|` / `?:` are hard-coded in the interpreter for built-in types); the standard library, all or nothing (changing `matches` means dropping it and registering every function) |
-| Error semantics | CEL's commutative `&&` / `\|\|`, built in. Not what the official emulator does |
+| Error semantics | CEL's commutative `&&` / `\|\|`, built in, which is what the official emulator does |
 | Diagnostics | Parse errors with line and column, for CEL syntax only; runtime errors carry no position; no type checker; no evaluation hooks (`:ruleCoverage` needs them) |
 | Cost | 41 crates (`antlr4rust`, `nom`, `chrono-tz` among them), 1.4 MiB more than A in a stripped binary, about 14 s more crate compile time in a release build |
 
 ### Effort
 
 - **A**: every mismatch found while writing it was a few lines in the lexer, the checker or the
-  operators. Its held-out misses are one rule, error absorption (8), and one static check, an
-  invalid regex literal (1).
+  operators. Its one held-out miss is the static check of a regex literal.
 - **B**: its Rules library is longer than A's (402 lines against 342) for the same functions:
   arguments arrive as `dyn Val` and are downcast one at a time, values passed to a function
   borrow the expression or the variables and need a `'static` copy to go into a set, and a
@@ -123,21 +126,21 @@ It is the parity target, and it is not CEL:
   slices, accepts CEL syntax that Rules rejects and has no static checks.
 - **C**: as much code as A, since it needs A's front end, and it still fails wherever cel-rust's
   operators differ from Rules: mixed arithmetic, strict equality inside lists and maps,
-  membership, string indexing, error absorption. Fixing those means forking the interpreter.
+  membership, string indexing and slices. Fixing those means forking the interpreter.
 
 ## Decision
 
 **Option A**: a hand-written lexer, parser, static checker and tree-walking interpreter, with no
 dependency on cel-rust.
 
-Rules is a dialect of CEL, not CEL. Its grammar is narrower in some places and wider in others,
-it type-checks before it runs, and its library, several operators and its error semantics
-differ. cel-rust's parser, operators, standard library and error handling are the parts that
-would have to be replaced, and the operators and `&&` / `||` cannot be replaced without a fork.
+Rules is a dialect of CEL, not CEL. Its grammar and lexical rules are narrower in some places
+and wider in others, and its library and several operators differ; its error semantics are
+CEL's. cel-rust's parser, operators and standard library are the parts that would have to be
+replaced, and the grammar and the operators cannot be replaced without a fork.
 What would stay, the value model and overload dispatch, costs more code than it saves (B's
 library is longer than A's) and brings 41 crates, 1.4 MiB and a 0.x API that breaks every few
-months. A matched more of the held-out set than C (88 of 97 against 81), and its misses are cheap
-to fix.
+months. A matched more of the held-out set than C (105 of 106 against 98), and its miss is cheap to
+fix.
 
 cel-spec's conformance tests stay in use: the cases the official emulator agrees with test the
 CEL part, and the ones it rejects or evaluates differently are kept as Rules expectations.
@@ -148,12 +151,11 @@ the production Rules API `projects:test`.
 
 - #59 (parser and diagnostics) follows the spike's lexer and parser: Rules lexical rules as
   measured, byte offsets on every node, `--` / `++` tokens, path literals, `is`, slices
-- #60 (types and built-ins) includes the compiler's static checks (names, functions, methods,
-  literal types, string map keys, regex literals). The spike's checker covers what was measured;
-  the rest needs a real type checker
-- #62 / #89 start from the error findings above: the official emulator's `&&` / `||` is not
-  CEL's, non-`resource` errors are 500s, and #6252 (two evaluations) is involved. Which of these
-  hidane reproduces is decided there
+- #60 (types and built-ins) checks types when a condition runs. At compile time it reports
+  regex literals that do not compile (an error) and unknown or unused functions (warnings), as
+  the official emulator does
+- #62: errors are absorbed the CEL way, as on the official emulator, and every condition is
+  evaluated once (#6252 is not reproduced)
 - `spikes/rules-eval/cases/` and `results/rules-conditions-official-v1.22.0.json` become fixtures
   for the evaluator's tests; the spike code is a reference, not a starting crate
 - Dependencies for the evaluator: `regex` for `matches` / `split` / `replace` and a SHA-2 crate

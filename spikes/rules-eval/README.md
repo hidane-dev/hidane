@@ -34,8 +34,7 @@ Two views:
 - **CEL view**: each cel-spec expression against cel-spec's expected value.
 - **Rules view**: each condition against the official emulator's outcome (allow, false, error,
   compile error). For a cel-spec case the evaluator runs the expression and its value is
-  compared the way the check does. Conditions the official emulator answered with a 500 are left
-  out.
+  compared the way the check does.
 
 ## Run
 
@@ -45,7 +44,9 @@ cargo run --release                        # the tables below
 cargo run --release -- failures c          # what C fails, with its result
 ```
 
-To record again, with the official emulator jar running on 127.0.0.1:8086:
+To record again, with the official emulator jar running on 127.0.0.1:8086 under an English
+locale (`java -Duser.language=en -Duser.country=US -jar …`; under another locale its warnings
+and evaluation errors turn into 500s):
 
 ```sh
 python3 -I extract_cel_spec.py <cel-spec>/tests/simple/testdata > cases/cel-spec.json
@@ -75,34 +76,34 @@ CEL view: cel-spec expressions against cel-spec's expected values
 | string | 51 | 13 | 17 | 13 | 51 |
 | **total** | 580 | 352 | 523 | 366 | 580 |
 
-Rules view: conditions against the official emulator's outcome (55 internal errors left out)
+Rules view: conditions against the official emulator's outcome (0 internal errors left out)
 
 | Group | Cases | A | B | C | stock |
 |---|---:|---:|---:|---:|---:|
-| cel-spec: basic | 33 | 33 | 20 | 33 | 20 |
-| cel-spec: comparisons | 134 | 134 | 112 | 133 | 112 |
-| cel-spec: conversions | 32 | 32 | 14 | 32 | 11 |
-| cel-spec: fields | 15 | 15 | 3 | 15 | 3 |
+| cel-spec: basic | 33 | 29 | 24 | 29 | 24 |
+| cel-spec: comparisons | 158 | 147 | 128 | 134 | 128 |
+| cel-spec: conversions | 32 | 16 | 30 | 16 | 14 |
+| cel-spec: fields | 16 | 3 | 7 | 3 | 7 |
 | cel-spec: fp_math | 30 | 30 | 26 | 29 | 26 |
-| cel-spec: integer_math | 32 | 32 | 30 | 32 | 30 |
-| cel-spec: lists | 18 | 18 | 8 | 18 | 8 |
-| cel-spec: logic | 27 | 27 | 14 | 27 | 14 |
-| cel-spec: parse | 163 | 163 | 58 | 163 | 58 |
-| cel-spec: plumbing | 3 | 3 | 3 | 3 | 3 |
-| cel-spec: string | 51 | 51 | 18 | 51 | 13 |
-| held out: error absorption | 27 | 19 | 19 | 19 | 19 |
-| held out: mixed | 70 | 69 | 55 | 62 | 26 |
+| cel-spec: integer_math | 42 | 41 | 41 | 41 | 41 |
+| cel-spec: lists | 19 | 9 | 13 | 9 | 9 |
+| cel-spec: logic | 30 | 21 | 26 | 21 | 26 |
+| cel-spec: parse | 163 | 155 | 65 | 155 | 63 |
+| cel-spec: plumbing | 4 | 4 | 4 | 4 | 4 |
+| cel-spec: string | 51 | 18 | 47 | 18 | 13 |
+| held out: error absorption | 36 | 35 | 35 | 35 | 35 |
+| held out: mixed | 70 | 70 | 56 | 63 | 27 |
 | rules: is | 17 | 17 | 0 | 17 | 0 |
 | rules: latlng, bytes, hashing | 6 | 6 | 6 | 6 | 2 |
-| rules: lexical and static checks | 86 | 86 | 70 | 84 | 70 |
+| rules: lexical and static checks | 86 | 82 | 71 | 80 | 71 |
 | rules: lists and sets | 17 | 17 | 15 | 16 | 2 |
 | rules: maps | 20 | 20 | 19 | 19 | 6 |
-| rules: missing fields and errors | 20 | 20 | 20 | 20 | 20 |
-| rules: numbers | 21 | 21 | 17 | 19 | 10 |
+| rules: missing fields and errors | 22 | 22 | 22 | 22 | 22 |
+| rules: numbers | 25 | 23 | 22 | 20 | 15 |
 | rules: paths | 12 | 12 | 7 | 12 | 4 |
 | rules: strings | 20 | 20 | 18 | 19 | 8 |
 | rules: timestamps and durations | 17 | 17 | 17 | 17 | 1 |
-| **total** | 871 | 862 | 569 | 846 | 466 |
+| **total** | 926 | 814 | 699 | 785 | 548 |
 
 Lines of code (non-blank, non-comment, after `cargo fmt`): A 1,405 (lexer and parser 484,
 static checks 167, values and interpreter 351, library 342, glue 61); B 692 (custom types 96,
