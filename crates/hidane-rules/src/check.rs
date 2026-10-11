@@ -116,6 +116,33 @@ fn paths(
     too_deep
 }
 
+/// An int literal beyond 64 bits, except the smallest int written negated:
+/// `-9223372036854775808` compiles, `-(9223372036854775808)` does not.
+pub(crate) fn numbers(file: &FileAst, diags: &mut Vec<Diag>) {
+    for_each_expression(file, &mut |root| {
+        let mut stack = vec![(root, false)];
+        while let Some((e, negated)) = stack.pop() {
+            if let ExprKind::IntOverflow(text) = &e.kind {
+                let bare = !file.parens.contains_key(&(e.span.start, e.span.end));
+                if !(negated && bare && text == "9223372036854775808") {
+                    diags.push(Diag::error(
+                        e.span,
+                        format!("Invalid number literal {text}."),
+                    ));
+                }
+            }
+            let negation = matches!(
+                e.kind,
+                ExprKind::Unary {
+                    op: UnaryOp::Neg,
+                    ..
+                }
+            );
+            stack.extend(children(e).into_iter().map(|(child, _)| (child, negation)));
+        }
+    });
+}
+
 /// A namespace used as a variable: `math == 1`, `math.PI`.
 pub(crate) fn packages(file: &FileAst, diags: &mut Vec<Diag>) {
     let mut visit = |e: &Expr| {
@@ -1118,7 +1145,7 @@ impl<'a> Semantics<'a> {
 
 /// Whether a repetition operator repeats another (`a**`, `a++`, `a*{2}`), which RE2 refuses
 /// and Rust's `regex` accepts. One `?` after an operator makes it lazy and is fine.
-fn repeated_repetition(pattern: &str) -> bool {
+pub(crate) fn repeated_repetition(pattern: &str) -> bool {
     let chars: Vec<char> = pattern.chars().collect();
     let mut i = 0;
     let mut after_repetition = false;

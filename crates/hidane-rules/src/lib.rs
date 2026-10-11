@@ -3,7 +3,8 @@
 //!
 //! [`compile`] takes the files of a ruleset and returns the [`Ruleset`] (if it compiled) and
 //! the [`Issue`]s: warnings for a ruleset that compiles, warnings and errors for one that does
-//! not, in the official emulator's words and positions. The evaluator comes later (#60, #62).
+//! not, in the official emulator's words and positions. [`eval::authorize`] decides a request
+//! against a ruleset.
 //!
 //! What the official emulator does, as measured with `tools/oracle/rules_compile.py`
 //! (`crates/hidane/tests/fixtures/rules_compile.json`):
@@ -127,6 +128,7 @@ fn compile_here(files: &[SourceFile]) -> Compilation {
     }
     for p in &mut parsed {
         check::packages(&p.file, &mut p.diags);
+        check::numbers(&p.file, &mut p.diags);
         check::complexity(&p.file, &mut p.diags);
     }
     let has_errors = |parsed: &[parser::Parsed]| {
@@ -270,6 +272,34 @@ mod tests {
             c.error_message(),
             "Error compiling rules:\nL1:1 Unsupported rules version 3."
         );
+    }
+
+    #[test]
+    fn int_literals_beyond_64_bits() {
+        for (condition, error) in [
+            ("-9223372036854775808 == 1", None),
+            ("- 9223372036854775808 == 1", None),
+            (
+                "-9223372036854775809 == 1",
+                Some("L5:23 Invalid number literal 9223372036854775809."),
+            ),
+            (
+                "-(9223372036854775808) == 1",
+                Some("L5:24 Invalid number literal 9223372036854775808."),
+            ),
+            (
+                "1 - 9223372036854775808 == 1",
+                Some("L5:26 Invalid number literal 9223372036854775808."),
+            ),
+            (
+                "[9223372036854775808] == 1",
+                Some("L5:23 Invalid number literal 9223372036854775808."),
+            ),
+        ] {
+            let c = compile(&[file("f", &rules(condition))]);
+            let lines: Vec<String> = c.issues.iter().map(Issue::line).collect();
+            assert_eq!(lines, error.into_iter().collect::<Vec<_>>(), "{condition}");
+        }
     }
 
     /// Input nested far beyond the limits is refused, not a stack overflow.
