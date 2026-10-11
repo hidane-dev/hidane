@@ -1,0 +1,268 @@
+name: Install
+
+# Installs the latest release through every channel in the README and runs it: `hidane --version`
+# must print the release's version, and on macOS and Linux the server must answer `GET /` and
+# exit 0 on `POST /shutdown`, through the channel's launcher.
+#
+# A run right after a release can find a channel still on the previous version: npm waits for a
+# maintainer's approval, and the Homebrew formula may be committed by hand. The release workflow
+# publishes the release with its own token, which starts no workflow, so `release: published`
+# fires only for a release published by hand; otherwise the weekly run, or one started by hand,
+# checks the release.
+
+on:
+  release:
+    types: [published]
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+  pull_request:
+    paths: [".github/workflows/install.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  latest:
+    name: latest release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(gh release view --repo hidane-dev/hidane --json tagName --jq .tagName)
+          echo "version=${tag#v}" | tee -a "$GITHUB_OUTPUT"
+
+  script:
+    name: curl | sh (${{ matrix.os }})
+    needs: latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    env:
+      VERSION: ${{ needs.latest.outputs.version }}
+      HIDANE: hidane
+    steps:
+      - name: Install
+        run: |
+          curl -fsSL https://hidane.dev/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+      # The same checks follow every install below (YAML aliases). $HIDANE is the command a user
+      # of the channel runs.
+      - &check
+        name: Check
+        if: runner.os != 'Windows'
+        run: |
+          $HIDANE --version | tee version.txt
+          grep -Fqx "hidane $VERSION" version.txt
+          $HIDANE --host 127.0.0.1 --port 8080 &
+          pid=$!
+          curl -fsS --retry 30 --retry-connrefused --retry-delay 1 http://127.0.0.1:8080/ | grep -Fx Ok
+          curl -fsS -X POST http://127.0.0.1:8080/shutdown
+          wait "$pid"
+
+  script-alpine:
+    name: wget | sh (Alpine, busybox)
+    needs: latest
+    runs-on: ubuntu-latest
+    container: alpine:3
+    timeout-minutes: 10
+    env:
+      VERSION: ${{ needs.latest.outputs.version }}
+    defaults:
+      run:
+        shell: sh
+    steps:
+      # No curl in the image: install.sh falls back to busybox wget.
+      - name: Install
+        run: wget -qO- https://hidane.dev/install.sh | sh
+      - name: Check
+        run: |
+          hidane="$HOME/.local/bin/hidane"
+          "$hidane" --version | tee version.txt
+          grep -Fqx "hidane $VERSION" version.txt
+          "$hidane" --host 127.0.0.1 --port 8080 &
+          pid=$!
+          tries=0
+          until wget -qO response.txt http://127.0.0.1:8080/; do
+            tries=$((tries + 1))
+            [ "$tries" -lt 30 ] || exit 1
+            sleep 1
+          done
+          grep -Fx Ok response.txt
+          wget -qO- --post-data "" http://127.0.0.1:8080/shutdown
+          wait "$pid"
+
+  homebrew:
+    name: Homebrew (${{ matrix.os }})
+    needs: latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    env:
+      VERSION: ${{ needs.latest.outputs.version }}
+      HIDANE: hidane
+      HOMEBREW_NO_AUTO_UPDATE: 1
+      HOMEBREW_NO_ENV_HINTS: 1
+    steps:
+      - name: Homebrew on Linux
+        if: runner.os == 'Linux'
+        run: echo /home/linuxbrew/.linuxbrew/bin >> "$GITHUB_PATH"
+      - name: Install
+        run: |
+          brew install hidane-dev/tap/hidane
+          brew test hidane
+      - *check
+
+  binstall:
+    name: cargo binstall (${{ matrix.os }})
+    needs: latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    env:
+      VERSION: ${{ needs.latest.outputs.version }}
+      HIDANE: hidane
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: cargo-bins/cargo-binstall@3be4ad2b146f3302f92e5956c54fedbb6ae8cccc # v1.25.3
+      # Only the archive named by [package.metadata.binstall]: no third-party build, no compiling.
+      - name: Install
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: cargo binstall --no-confirm --strategies crate-meta-data hidane
+      - *check
+      - &check-windows
+        name: Check
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $version = hidane --version
+          $version
+          if ($version -ne "hidane $env:VERSION") { throw "expected hidane $env:VERSION" }
+
+  docker:
+    name: ghcr.io (${{ matrix.os }})
+    needs: latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    env:
+      VERSION: ${{ needs.latest.outputs.version }}
+      IMAGE: ghcr.io/hidane-dev/hidane
+    steps:
+      - name: Pull
+        run: |
+          docker pull "$IMAGE"
+          docker image inspect "$IMAGE" --format '{{.Os}}/{{.Architecture}}'
+      # The image's own command: --host 0.0.0.0 --port 8080.
+      - name: Check
+        run: |
+          docker run --rm "$IMAGE" --version | tee version.txt
+          grep -Fqx "hidane $VERSION" version.txt
+          docker run --rm -p 127.0.0.1:8080:8080 "$IMAGE" &
+          pid=$!
+          curl -fsS --retry 30 --retry-connrefused --retry-delay 1 http://127.0.0.1:8080/ | grep -Fx Ok
+          curl -fsS -X POST http://127.0.0.1:8080/shutdown
+          wait "$pid"
+
+  npm:
+    name: npm (${{ matrix.os }})
+    needs: latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    env:
+      VERSION: ${{ needs.latest.outputs.version }}
+      HIDANE: hidane
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: lts/*
+      # A project of its own; npm installs the binary package for this platform only.
+      - name: Install
+        run: |
+          mkdir "$RUNNER_TEMP/project"
+          cd "$RUNNER_TEMP/project"
+          npm init -y > /dev/null
+          npm install hidane
+          npx hidane --version
+          echo "$RUNNER_TEMP/project/node_modules/.bin" >> "$GITHUB_PATH"
+      - *check
+      - *check-windows
+
+  pub:
+    name: pub.dev (${{ matrix.os }})
+    needs: latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    env:
+      VERSION: ${{ needs.latest.outputs.version }}
+      HIDANE: hidane
+    defaults:
+      run:
+        shell: bash
+    steps:
+      # Puts the pub cache's bin directory on PATH.
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+      # The launcher downloads the release archive on its first run, in the checks below.
+      - name: Install
+        run: dart pub global activate hidane
+      - *check
+      - *check-windows
+
+  mise:
+    name: mise (${{ matrix.os }})
+    needs: latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    env:
+      VERSION: ${{ needs.latest.outputs.version }}
+      HIDANE: mise exec -- hidane
+    steps:
+      - uses: jdx/mise-action@2d8d4cafcbd33be2ea37d2b6f5ad595363d1f1ca # v5.1.1
+        with:
+          install: false
+          cache: false
+      # mise hides releases younger than its minimum_release_age by default; this checks the
+      # latest one, however new.
+      - name: Install
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: mise use --global --minimum-release-age 0s github:hidane-dev/hidane
+      - *check
