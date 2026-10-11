@@ -7,10 +7,14 @@ committed, the official jar is not (it may not be redistributed, see `docs/parit
 Python 3 standard library only; `harness.py` holds the shared request and recording helpers. Run them against a freshly started official emulator:
 
 ```sh
-java -jar cloud-firestore-emulator-v1.22.0.jar --host 127.0.0.1 --port 8086 &
+java -Duser.language=en -Duser.country=US -jar cloud-firestore-emulator-v1.22.0.jar --host 127.0.0.1 --port 8086 &
 python3 -I tools/oracle/value_order.py 127.0.0.1:8086 > crates/hidane-core/tests/fixtures/value_order.json
 curl -X POST http://127.0.0.1:8086/shutdown
 ```
+
+Start the jar with an English locale, as above: its messages for Security Rules warnings and
+evaluation errors exist in English only, and under another locale each of them becomes a
+`500 UNKNOWN` (a `MissingResourceException` in its log).
 
 | Script | Question | Fixture | Test |
 |---|---|---|---|
@@ -31,7 +35,7 @@ curl -X POST http://127.0.0.1:8086/shutdown
 | `auth.py` | How is the `Authorization` header read: administrators, users and anonymous callers, which tokens fail and how, and where each RPC, stream and REST endpoint reads it among its other checks? Needs `grpcurl` on `PATH` | `crates/hidane/tests/fixtures/auth.json` | `crates/hidane/tests/auth.rs` |
 | `cors.py` | How does every HTTP path answer CORS: `Origin` reflection, credentials, methods, preflights on any path, requested headers, Private Network Access? | `crates/hidane/tests/fixtures/cors.json` | `crates/hidane/tests/cors.rs` |
 | `export_import.py` | What do exports hold, byte for byte (LevelDB logs of App Engine entities), what does an import write where, how do `:export` and `:import` answer bad requests and damaged files, when does `--seed_from_export` seed which database, and how does a managed export's layout import? Takes the jar and `java` as arguments to start emulators of its own | `crates/hidane/tests/fixtures/export_import.json` | `crates/hidane/tests/export_import.rs` |
-| `rules_conditions.py` | What does the official emulator decide for a Security Rules condition (allow, false, evaluation error, 500, compile error) on a fixed document? Takes a JSON list of conditions; `spikes/rules-eval/conditions.py` builds the list the #61 spike used | `results/rules-conditions-official-v1.22.0.json` | `spikes/rules-eval` (run by hand) |
+| `rules_conditions.py` | What does the official emulator decide for a Security Rules condition (allow, false, evaluation error, compile error) on a fixed document? Takes a JSON list of conditions; `spikes/rules-eval/conditions.py` builds the list the #61 spike used | `results/rules-conditions-official-v1.22.0.json` | `spikes/rules-eval` (run by hand) |
 | `transactions.py` | What do transactions lock, how long do writes wait, when do transactions end, and how are `verify` writes checked? Scenarios with concurrent steps and timing; needs `grpcurl` on `PATH` and takes about two minutes | `crates/hidane/tests/fixtures/transactions.json` | `crates/hidane/tests/transactions.rs` |
 
 `sdk_documents.mjs` drives the same operations through `@google-cloud/firestore` (the engine of

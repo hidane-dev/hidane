@@ -1,6 +1,8 @@
 """What does the official emulator decide for a Security Rules condition? (#61, #89)
 
-Usage (from the repository root):
+Usage (from the repository root), with the jar started under an English locale
+(`java -Duser.language=en -Duser.country=US -jar …`; under another locale every warning and
+evaluation error comes back as a 500):
     python3 -I tools/oracle/rules_conditions.py 127.0.0.1:8086 conditions.json > out.json
 
 `conditions.json` is a list of `{"name": ..., "condition": ...}`. For each one the script loads
