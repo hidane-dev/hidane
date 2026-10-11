@@ -77,8 +77,9 @@ Directory _cacheRoot() {
     return Directory(
         '${env['LOCALAPPDATA'] ?? env['USERPROFILE']}\\hidane\\cache');
   }
-  if (Platform.isMacOS)
+  if (Platform.isMacOS) {
     return Directory('${env['HOME']}/Library/Caches/hidane');
+  }
   final xdg = env['XDG_CACHE_HOME'];
   return Directory(xdg != null && xdg.isNotEmpty
       ? '$xdg/hidane'
@@ -121,8 +122,9 @@ Future<File> _binary() async {
     // tar ships with macOS, Linux and Windows 10 and later, where it also reads .zip.
     final tar = await Process.run('tar',
         [Platform.isWindows ? '-xf' : '-xzf', file.path, '-C', work.path]);
-    if (tar.exitCode != 0)
+    if (tar.exitCode != 0) {
       throw HidaneException('could not unpack $archive: ${tar.stderr}');
+    }
     File('${work.path}/hidane-$hidaneVersion-$target/$exe')
         .renameSync(binary.path);
   } finally {
