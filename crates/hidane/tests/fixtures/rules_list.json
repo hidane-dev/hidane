@@ -1,0 +1,685 @@
+{
+ "queries": {
+  "all": {
+   "from": [
+    {
+     "collectionId": "c"
+    }
+   ]
+  },
+  "n == 1": {
+   "from": [
+    {
+     "collectionId": "c"
+    }
+   ],
+   "where": {
+    "fieldFilter": {
+     "field": {
+      "fieldPath": "n"
+     },
+     "op": "EQUAL",
+     "value": {
+      "integerValue": "1"
+     }
+    }
+   }
+  },
+  "n == 2": {
+   "from": [
+    {
+     "collectionId": "c"
+    }
+   ],
+   "where": {
+    "fieldFilter": {
+     "field": {
+      "fieldPath": "n"
+     },
+     "op": "EQUAL",
+     "value": {
+      "integerValue": "2"
+     }
+    }
+   }
+  },
+  "n > 0": {
+   "from": [
+    {
+     "collectionId": "c"
+    }
+   ],
+   "where": {
+    "fieldFilter": {
+     "field": {
+      "fieldPath": "n"
+     },
+     "op": "GREATER_THAN",
+     "value": {
+      "integerValue": "0"
+     }
+    }
+   }
+  },
+  "n >= 1 and n <= 1": {
+   "from": [
+    {
+     "collectionId": "c"
+    }
+   ],
+   "where": {
+    "compositeFilter": {
+     "op": "AND",
+     "filters": [
+      {
+       "fieldFilter": {
+        "field": {
+         "fieldPath": "n"
+        },
+        "op": "GREATER_THAN_OR_EQUAL",
+        "value": {
+         "integerValue": "1"
+        }
+       }
+      },
+      {
+       "fieldFilter": {
+        "field": {
+         "fieldPath": "n"
+        },
+        "op": "LESS_THAN_OR_EQUAL",
+        "value": {
+         "integerValue": "1"
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "n in [1]": {
+   "from": [
+    {
+     "collectionId": "c"
+    }
+   ],
+   "where": {
+    "fieldFilter": {
+     "field": {
+      "fieldPath": "n"
+     },
+     "op": "IN",
+     "value": {
+      "arrayValue": {
+       "values": [
+        {
+         "integerValue": "1"
+        }
+       ]
+      }
+     }
+    }
+   }
+  },
+  "n in [1, 2]": {
+   "from": [
+    {
+     "collectionId": "c"
+    }
+   ],
+   "where": {
+    "fieldFilter": {
+     "field": {
+      "fieldPath": "n"
+     },
+     "op": "IN",
+     "value": {
+      "arrayValue": {
+       "values": [
+        {
+         "integerValue": "1"
+        },
+        {
+         "integerValue": "2"
+        }
+       ]
+      }
+     }
+    }
+   }
+  },
+  "n != 3": {
+   "from": [
+    {
+     "collectionId": "c"
+    }
+   ],
+   "where": {
+    "fieldFilter": {
+     "field": {
+      "fieldPath": "n"
+     },
+     "op": "NOT_EQUAL",
+     "value": {
+      "integerValue": "3"
+     }
+    }
+   }
+  },
+  "s == 'x'": {
+   "from": [
+    {
+     "collectionId": "c"
+    }
+   ],
+   "where": {
+    "fieldFilter": {
+     "field": {
+      "fieldPath": "s"
+     },
+     "op": "EQUAL",
+     "value": {
+      "stringValue": "x"
+     }
+    }
+   }
+  },
+  "n == 1 and s == 'x'": {
+   "from": [
+    {
+     "collectionId": "c"
+    }
+   ],
+   "where": {
+    "compositeFilter": {
+     "op": "AND",
+     "filters": [
+      {
+       "fieldFilter": {
+        "field": {
+         "fieldPath": "n"
+        },
+        "op": "EQUAL",
+        "value": {
+         "integerValue": "1"
+        }
+       }
+      },
+      {
+       "fieldFilter": {
+        "field": {
+         "fieldPath": "s"
+        },
+        "op": "EQUAL",
+        "value": {
+         "stringValue": "x"
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "n == 1 or n == 2": {
+   "from": [
+    {
+     "collectionId": "c"
+    }
+   ],
+   "where": {
+    "compositeFilter": {
+     "op": "OR",
+     "filters": [
+      {
+       "fieldFilter": {
+        "field": {
+         "fieldPath": "n"
+        },
+        "op": "EQUAL",
+        "value": {
+         "integerValue": "1"
+        }
+       }
+      },
+      {
+       "fieldFilter": {
+        "field": {
+         "fieldPath": "n"
+        },
+        "op": "EQUAL",
+        "value": {
+         "integerValue": "2"
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  "tags array-contains 'a'": {
+   "from": [
+    {
+     "collectionId": "c"
+    }
+   ],
+   "where": {
+    "fieldFilter": {
+     "field": {
+      "fieldPath": "tags"
+     },
+     "op": "ARRAY_CONTAINS",
+     "value": {
+      "stringValue": "a"
+     }
+    }
+   }
+  },
+  "tags array-contains-any ['a']": {
+   "from": [
+    {
+     "collectionId": "c"
+    }
+   ],
+   "where": {
+    "fieldFilter": {
+     "field": {
+      "fieldPath": "tags"
+     },
+     "op": "ARRAY_CONTAINS_ANY",
+     "value": {
+      "arrayValue": {
+       "values": [
+        {
+         "stringValue": "a"
+        }
+       ]
+      }
+     }
+    }
+   }
+  },
+  "limit 5": {
+   "from": [
+    {
+     "collectionId": "c"
+    }
+   ],
+   "limit": 5
+  },
+  "n == 1 limit 5": {
+   "from": [
+    {
+     "collectionId": "c"
+    }
+   ],
+   "where": {
+    "fieldFilter": {
+     "field": {
+      "fieldPath": "n"
+     },
+     "op": "EQUAL",
+     "value": {
+      "integerValue": "1"
+     }
+    }
+   },
+   "limit": 5
+  },
+  "limit 20": {
+   "from": [
+    {
+     "collectionId": "c"
+    }
+   ],
+   "limit": 20
+  }
+ },
+ "results": [
+  {
+   "condition": "true",
+   "queries": {
+    "all": "allow",
+    "n == 1": "allow",
+    "n == 2": "allow",
+    "n > 0": "allow",
+    "n >= 1 and n <= 1": "allow",
+    "n in [1]": "allow",
+    "n in [1, 2]": "allow",
+    "n != 3": "allow",
+    "s == 'x'": "allow",
+    "n == 1 and s == 'x'": "allow",
+    "n == 1 or n == 2": "allow",
+    "tags array-contains 'a'": "allow",
+    "tags array-contains-any ['a']": "allow",
+    "limit 5": "allow",
+    "n == 1 limit 5": "allow",
+    "limit 20": "allow"
+   }
+  },
+  {
+   "condition": "resource.data.n == 1",
+   "queries": {
+    "all": "deny",
+    "n == 1": "allow",
+    "n == 2": "deny",
+    "n > 0": "deny",
+    "n >= 1 and n <= 1": "deny",
+    "n in [1]": "allow",
+    "n in [1, 2]": "deny",
+    "n != 3": "deny",
+    "s == 'x'": "deny",
+    "n == 1 and s == 'x'": "allow",
+    "n == 1 or n == 2": "deny",
+    "tags array-contains 'a'": "deny",
+    "tags array-contains-any ['a']": "deny",
+    "limit 5": "deny",
+    "n == 1 limit 5": "allow",
+    "limit 20": "deny"
+   }
+  },
+  {
+   "condition": "resource.data.n > 0",
+   "queries": {
+    "all": "deny",
+    "n == 1": "allow",
+    "n == 2": "allow",
+    "n > 0": "allow",
+    "n >= 1 and n <= 1": "allow",
+    "n in [1]": "allow",
+    "n in [1, 2]": "allow",
+    "n != 3": "deny",
+    "s == 'x'": "deny",
+    "n == 1 and s == 'x'": "allow",
+    "n == 1 or n == 2": "allow",
+    "tags array-contains 'a'": "deny",
+    "tags array-contains-any ['a']": "deny",
+    "limit 5": "deny",
+    "n == 1 limit 5": "allow",
+    "limit 20": "deny"
+   }
+  },
+  {
+   "condition": "resource.data.n >= 1",
+   "queries": {
+    "all": "deny",
+    "n == 1": "allow",
+    "n == 2": "allow",
+    "n > 0": "deny",
+    "n >= 1 and n <= 1": "allow",
+    "n in [1]": "allow",
+    "n in [1, 2]": "allow",
+    "n != 3": "deny",
+    "s == 'x'": "deny",
+    "n == 1 and s == 'x'": "allow",
+    "n == 1 or n == 2": "allow",
+    "tags array-contains 'a'": "deny",
+    "tags array-contains-any ['a']": "deny",
+    "limit 5": "deny",
+    "n == 1 limit 5": "allow",
+    "limit 20": "deny"
+   }
+  },
+  {
+   "condition": "resource.data.n != 3",
+   "queries": {
+    "all": "deny",
+    "n == 1": "allow",
+    "n == 2": "allow",
+    "n > 0": "deny",
+    "n >= 1 and n <= 1": "allow",
+    "n in [1]": "allow",
+    "n in [1, 2]": "allow",
+    "n != 3": "allow",
+    "s == 'x'": "deny",
+    "n == 1 and s == 'x'": "allow",
+    "n == 1 or n == 2": "allow",
+    "tags array-contains 'a'": "deny",
+    "tags array-contains-any ['a']": "deny",
+    "limit 5": "deny",
+    "n == 1 limit 5": "allow",
+    "limit 20": "deny"
+   }
+  },
+  {
+   "condition": "resource.data.n in [1, 2]",
+   "queries": {
+    "all": "deny",
+    "n == 1": "allow",
+    "n == 2": "allow",
+    "n > 0": "deny",
+    "n >= 1 and n <= 1": "deny",
+    "n in [1]": "allow",
+    "n in [1, 2]": "allow",
+    "n != 3": "deny",
+    "s == 'x'": "deny",
+    "n == 1 and s == 'x'": "allow",
+    "n == 1 or n == 2": "allow",
+    "tags array-contains 'a'": "deny",
+    "tags array-contains-any ['a']": "deny",
+    "limit 5": "deny",
+    "n == 1 limit 5": "allow",
+    "limit 20": "deny"
+   }
+  },
+  {
+   "condition": "resource.data.s == 'x'",
+   "queries": {
+    "all": "deny",
+    "n == 1": "deny",
+    "n == 2": "deny",
+    "n > 0": "deny",
+    "n >= 1 and n <= 1": "deny",
+    "n in [1]": "deny",
+    "n in [1, 2]": "deny",
+    "n != 3": "deny",
+    "s == 'x'": "allow",
+    "n == 1 and s == 'x'": "allow",
+    "n == 1 or n == 2": "deny",
+    "tags array-contains 'a'": "deny",
+    "tags array-contains-any ['a']": "deny",
+    "limit 5": "deny",
+    "n == 1 limit 5": "deny",
+    "limit 20": "deny"
+   }
+  },
+  {
+   "condition": "resource.data.n == 1 || resource.data.n == 2",
+   "queries": {
+    "all": "deny",
+    "n == 1": "allow",
+    "n == 2": "allow",
+    "n > 0": "deny",
+    "n >= 1 and n <= 1": "deny",
+    "n in [1]": "allow",
+    "n in [1, 2]": "allow",
+    "n != 3": "deny",
+    "s == 'x'": "deny",
+    "n == 1 and s == 'x'": "allow",
+    "n == 1 or n == 2": "allow",
+    "tags array-contains 'a'": "deny",
+    "tags array-contains-any ['a']": "deny",
+    "limit 5": "deny",
+    "n == 1 limit 5": "allow",
+    "limit 20": "deny"
+   }
+  },
+  {
+   "condition": "resource.data.n == 1 && resource.data.s == 'x'",
+   "queries": {
+    "all": "deny",
+    "n == 1": "deny",
+    "n == 2": "deny",
+    "n > 0": "deny",
+    "n >= 1 and n <= 1": "deny",
+    "n in [1]": "deny",
+    "n in [1, 2]": "deny",
+    "n != 3": "deny",
+    "s == 'x'": "deny",
+    "n == 1 and s == 'x'": "allow",
+    "n == 1 or n == 2": "deny",
+    "tags array-contains 'a'": "deny",
+    "tags array-contains-any ['a']": "deny",
+    "limit 5": "deny",
+    "n == 1 limit 5": "deny",
+    "limit 20": "deny"
+   }
+  },
+  {
+   "condition": "'a' in resource.data.tags",
+   "queries": {
+    "all": "deny",
+    "n == 1": "deny",
+    "n == 2": "deny",
+    "n > 0": "deny",
+    "n >= 1 and n <= 1": "deny",
+    "n in [1]": "deny",
+    "n in [1, 2]": "deny",
+    "n != 3": "deny",
+    "s == 'x'": "deny",
+    "n == 1 and s == 'x'": "deny",
+    "n == 1 or n == 2": "deny",
+    "tags array-contains 'a'": "allow",
+    "tags array-contains-any ['a']": "allow",
+    "limit 5": "deny",
+    "n == 1 limit 5": "deny",
+    "limit 20": "deny"
+   }
+  },
+  {
+   "condition": "resource.data.tags.hasAny(['a'])",
+   "queries": {
+    "all": "deny",
+    "n == 1": "deny",
+    "n == 2": "deny",
+    "n > 0": "deny",
+    "n >= 1 and n <= 1": "deny",
+    "n in [1]": "deny",
+    "n in [1, 2]": "deny",
+    "n != 3": "deny",
+    "s == 'x'": "deny",
+    "n == 1 and s == 'x'": "deny",
+    "n == 1 or n == 2": "deny",
+    "tags array-contains 'a'": "allow",
+    "tags array-contains-any ['a']": "allow",
+    "limit 5": "deny",
+    "n == 1 limit 5": "deny",
+    "limit 20": "deny"
+   }
+  },
+  {
+   "condition": "request.query.limit <= 5",
+   "queries": {
+    "all": "deny",
+    "n == 1": "deny",
+    "n == 2": "deny",
+    "n > 0": "deny",
+    "n >= 1 and n <= 1": "deny",
+    "n in [1]": "deny",
+    "n in [1, 2]": "deny",
+    "n != 3": "deny",
+    "s == 'x'": "deny",
+    "n == 1 and s == 'x'": "deny",
+    "n == 1 or n == 2": "deny",
+    "tags array-contains 'a'": "deny",
+    "tags array-contains-any ['a']": "deny",
+    "limit 5": "allow",
+    "n == 1 limit 5": "allow",
+    "limit 20": "deny"
+   }
+  },
+  {
+   "condition": "request.query.limit <= 5 && resource.data.n == 1",
+   "queries": {
+    "all": "deny",
+    "n == 1": "deny",
+    "n == 2": "deny",
+    "n > 0": "deny",
+    "n >= 1 and n <= 1": "deny",
+    "n in [1]": "deny",
+    "n in [1, 2]": "deny",
+    "n != 3": "deny",
+    "s == 'x'": "deny",
+    "n == 1 and s == 'x'": "deny",
+    "n == 1 or n == 2": "deny",
+    "tags array-contains 'a'": "deny",
+    "tags array-contains-any ['a']": "deny",
+    "limit 5": "deny",
+    "n == 1 limit 5": "allow",
+    "limit 20": "deny"
+   }
+  },
+  {
+   "condition": "resource.data.n == 1 || request.query.limit <= 5",
+   "queries": {
+    "all": "deny",
+    "n == 1": "allow",
+    "n == 2": "deny",
+    "n > 0": "deny",
+    "n >= 1 and n <= 1": "deny",
+    "n in [1]": "allow",
+    "n in [1, 2]": "deny",
+    "n != 3": "deny",
+    "s == 'x'": "deny",
+    "n == 1 and s == 'x'": "allow",
+    "n == 1 or n == 2": "deny",
+    "tags array-contains 'a'": "deny",
+    "tags array-contains-any ['a']": "deny",
+    "limit 5": "allow",
+    "n == 1 limit 5": "allow",
+    "limit 20": "deny"
+   }
+  }
+ ],
+ "orderBy": [
+  {
+   "condition": "request.query.orderBy is map",
+   "query": "orderBy n desc limit 3",
+   "outcome": "allow"
+  },
+  {
+   "condition": "request.query.orderBy is list",
+   "query": "orderBy n desc limit 3",
+   "outcome": "deny"
+  },
+  {
+   "condition": "request.query.orderBy is string",
+   "query": "orderBy n desc limit 3",
+   "outcome": "deny"
+  },
+  {
+   "condition": "request.query.orderBy.n == 'DESC'",
+   "query": "orderBy n desc limit 3",
+   "outcome": "allow"
+  },
+  {
+   "condition": "request.query.orderBy['n'] == 'DESC'",
+   "query": "orderBy n desc limit 3",
+   "outcome": "allow"
+  },
+  {
+   "condition": "request.query.orderBy.n == 'desc'",
+   "query": "orderBy n desc limit 3",
+   "outcome": "deny"
+  },
+  {
+   "condition": "request.query.orderBy.n == 'DESCENDING'",
+   "query": "orderBy n desc limit 3",
+   "outcome": "deny"
+  },
+  {
+   "condition": "request.query.orderBy.size() == 1",
+   "query": "orderBy n desc limit 3",
+   "outcome": "allow"
+  },
+  {
+   "condition": "request.query.orderBy.keys().hasAll(['n'])",
+   "query": "orderBy n desc limit 3",
+   "outcome": "allow"
+  },
+  {
+   "condition": "request.query.orderBy == {'n': 'DESC'}",
+   "query": "orderBy n desc limit 3",
+   "outcome": "allow"
+  }
+ ]
+}
