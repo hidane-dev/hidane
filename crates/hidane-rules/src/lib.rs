@@ -23,6 +23,7 @@ mod check;
 mod diag;
 mod lexer;
 mod parser;
+pub mod paths;
 
 pub use ast::*;
 pub use diag::{Issue, Position, Severity};
