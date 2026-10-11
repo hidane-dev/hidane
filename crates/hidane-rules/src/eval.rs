@@ -113,9 +113,10 @@ pub struct Document {
     pub data: Map,
 }
 
-/// `request.auth` for a caller with a token: `uid` is the token's `sub`.
+/// `request.auth` for a caller with a token.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Auth {
+    /// The token's `sub`; without one, `request.auth.uid` is null.
     pub uid: Option<String>,
     /// Every claim of the token.
     pub token: Map,
@@ -335,17 +336,18 @@ fn levels<'a>(
     levels
 }
 
-/// `request`: `auth`, `method`, `path` and `time`; `resource` for a write (null for a delete);
-/// `query` for a list.
+/// `request`: `auth` (null without a token, else `uid` and `token`), `method`, `path` and
+/// `time`; `resource` for a write (null for a delete); `query` for a list.
 fn request_value(request: &Request) -> Val {
     let mut map = IndexMap::new();
     let auth = match &request.auth {
         None => Val::Null,
         Some(auth) => {
             let mut a = IndexMap::new();
-            if let Some(uid) = &auth.uid {
-                a.insert("uid".to_owned(), Val::str(uid));
-            }
+            a.insert(
+                "uid".to_owned(),
+                auth.uid.as_deref().map_or(Val::Null, Val::str),
+            );
             a.insert(
                 "token".to_owned(),
                 Val::from(&Value::Map(auth.token.clone())),
