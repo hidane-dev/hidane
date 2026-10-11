@@ -1,0 +1,741 @@
+{
+ "writes": [
+  {
+   "document": "exists",
+   "write": "set",
+   "rules": "create only",
+   "status": 403,
+   "message": "\nfalse for 'create' @ L5"
+  },
+  {
+   "document": "exists",
+   "write": "set",
+   "rules": "update only",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "exists",
+   "write": "set",
+   "rules": "delete only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "set",
+   "rules": "write",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "exists",
+   "write": "set",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "set with a mask",
+   "rules": "create only",
+   "status": 403,
+   "message": "\nfalse for 'create' @ L5"
+  },
+  {
+   "document": "exists",
+   "write": "set with a mask",
+   "rules": "update only",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "exists",
+   "write": "set with a mask",
+   "rules": "delete only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "set with a mask",
+   "rules": "write",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "exists",
+   "write": "set with a mask",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "set with exists=true",
+   "rules": "create only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "set with exists=true",
+   "rules": "update only",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "exists",
+   "write": "set with exists=true",
+   "rules": "delete only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "set with exists=true",
+   "rules": "write",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "exists",
+   "write": "set with exists=true",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "set with exists=false",
+   "rules": "create only",
+   "status": 409,
+   "message": "entity already exists: EntityRef[partitionRef=dev~writes, path=/c/w]"
+  },
+  {
+   "document": "exists",
+   "write": "set with exists=false",
+   "rules": "update only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "set with exists=false",
+   "rules": "delete only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "set with exists=false",
+   "rules": "write",
+   "status": 409,
+   "message": "entity already exists: EntityRef[partitionRef=dev~writes, path=/c/w]"
+  },
+  {
+   "document": "exists",
+   "write": "set with exists=false",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "transform",
+   "rules": "create only",
+   "status": 403,
+   "message": "\nfalse for 'create' @ L5"
+  },
+  {
+   "document": "exists",
+   "write": "transform",
+   "rules": "update only",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "exists",
+   "write": "transform",
+   "rules": "delete only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "transform",
+   "rules": "write",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "exists",
+   "write": "transform",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "delete",
+   "rules": "create only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "delete",
+   "rules": "update only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "delete",
+   "rules": "delete only",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "exists",
+   "write": "delete",
+   "rules": "write",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "exists",
+   "write": "delete",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "REST create",
+   "rules": "create only",
+   "status": 409,
+   "message": "entity already exists: EntityRef[partitionRef=dev~writes, path=/c/w]"
+  },
+  {
+   "document": "exists",
+   "write": "REST create",
+   "rules": "update only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "REST create",
+   "rules": "delete only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "REST create",
+   "rules": "write",
+   "status": 409,
+   "message": "entity already exists: EntityRef[partitionRef=dev~writes, path=/c/w]"
+  },
+  {
+   "document": "exists",
+   "write": "REST create",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "REST patch",
+   "rules": "create only",
+   "status": 403,
+   "message": "\nfalse for 'create' @ L5"
+  },
+  {
+   "document": "exists",
+   "write": "REST patch",
+   "rules": "update only",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "exists",
+   "write": "REST patch",
+   "rules": "delete only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "REST patch",
+   "rules": "write",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "exists",
+   "write": "REST patch",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "REST patch with a mask",
+   "rules": "create only",
+   "status": 403,
+   "message": "\nfalse for 'create' @ L5"
+  },
+  {
+   "document": "exists",
+   "write": "REST patch with a mask",
+   "rules": "update only",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "exists",
+   "write": "REST patch with a mask",
+   "rules": "delete only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "REST patch with a mask",
+   "rules": "write",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "exists",
+   "write": "REST patch with a mask",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "REST delete",
+   "rules": "create only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "REST delete",
+   "rules": "update only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "exists",
+   "write": "REST delete",
+   "rules": "delete only",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "exists",
+   "write": "REST delete",
+   "rules": "write",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "exists",
+   "write": "REST delete",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "set",
+   "rules": "create only",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "missing",
+   "write": "set",
+   "rules": "update only",
+   "status": 403,
+   "message": "\nfalse for 'update' @ L5"
+  },
+  {
+   "document": "missing",
+   "write": "set",
+   "rules": "delete only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "set",
+   "rules": "write",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "missing",
+   "write": "set",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "set with a mask",
+   "rules": "create only",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "missing",
+   "write": "set with a mask",
+   "rules": "update only",
+   "status": 403,
+   "message": "\nfalse for 'update' @ L5"
+  },
+  {
+   "document": "missing",
+   "write": "set with a mask",
+   "rules": "delete only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "set with a mask",
+   "rules": "write",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "missing",
+   "write": "set with a mask",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "set with exists=true",
+   "rules": "create only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "set with exists=true",
+   "rules": "update only",
+   "status": 404,
+   "message": "no entity to update: app: \"dev~writes\"\npath <\n  Element {\n    type: \"c\"\n    name: \"w\"\n  }\n>\n"
+  },
+  {
+   "document": "missing",
+   "write": "set with exists=true",
+   "rules": "delete only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "set with exists=true",
+   "rules": "write",
+   "status": 404,
+   "message": "no entity to update: app: \"dev~writes\"\npath <\n  Element {\n    type: \"c\"\n    name: \"w\"\n  }\n>\n"
+  },
+  {
+   "document": "missing",
+   "write": "set with exists=true",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "set with exists=false",
+   "rules": "create only",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "missing",
+   "write": "set with exists=false",
+   "rules": "update only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "set with exists=false",
+   "rules": "delete only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "set with exists=false",
+   "rules": "write",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "missing",
+   "write": "set with exists=false",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "transform",
+   "rules": "create only",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "missing",
+   "write": "transform",
+   "rules": "update only",
+   "status": 403,
+   "message": "\nfalse for 'update' @ L5"
+  },
+  {
+   "document": "missing",
+   "write": "transform",
+   "rules": "delete only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "transform",
+   "rules": "write",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "missing",
+   "write": "transform",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "delete",
+   "rules": "create only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "delete",
+   "rules": "update only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "delete",
+   "rules": "delete only",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "missing",
+   "write": "delete",
+   "rules": "write",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "missing",
+   "write": "delete",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "REST create",
+   "rules": "create only",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "missing",
+   "write": "REST create",
+   "rules": "update only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "REST create",
+   "rules": "delete only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "REST create",
+   "rules": "write",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "missing",
+   "write": "REST create",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "REST patch",
+   "rules": "create only",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "missing",
+   "write": "REST patch",
+   "rules": "update only",
+   "status": 403,
+   "message": "\nfalse for 'update' @ L5"
+  },
+  {
+   "document": "missing",
+   "write": "REST patch",
+   "rules": "delete only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "REST patch",
+   "rules": "write",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "missing",
+   "write": "REST patch",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "REST patch with a mask",
+   "rules": "create only",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "missing",
+   "write": "REST patch with a mask",
+   "rules": "update only",
+   "status": 403,
+   "message": "\nfalse for 'update' @ L5"
+  },
+  {
+   "document": "missing",
+   "write": "REST patch with a mask",
+   "rules": "delete only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "REST patch with a mask",
+   "rules": "write",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "missing",
+   "write": "REST patch with a mask",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "REST delete",
+   "rules": "create only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "REST delete",
+   "rules": "update only",
+   "status": 403,
+   "message": "No matching allow statements"
+  },
+  {
+   "document": "missing",
+   "write": "REST delete",
+   "rules": "delete only",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "missing",
+   "write": "REST delete",
+   "rules": "write",
+   "status": 200,
+   "message": null
+  },
+  {
+   "document": "missing",
+   "write": "REST delete",
+   "rules": "none",
+   "status": 403,
+   "message": "No matching allow statements"
+  }
+ ],
+ "reads": [
+  {
+   "name": "batchGet, second denied",
+   "status": 403,
+   "response": "{\"error\":{\"code\":403,\"message\":\"\\nfalse for 'get' @ L5, false for 'get' @ L5\",\"status\":\"PERMISSION_DENIED\"}}"
+  },
+  {
+   "name": "batchGet, missing document allowed",
+   "status": 403,
+   "response": "{\"error\":{\"code\":403,\"message\":\"\\nfalse for 'get' @ L5, false for 'get' @ L5\",\"status\":\"PERMISSION_DENIED\"}}"
+  },
+  {
+   "name": "get in a transaction, denied",
+   "status": 403,
+   "response": "{\"error\":{\"code\":403,\"message\":\"\\nfalse for 'get' @ L5\",\"status\":\"PERMISSION_DENIED\"}}"
+  },
+  {
+   "name": "aggregation, denied",
+   "status": 403,
+   "response": "{\"error\":{\"code\":403,\"message\":\"\\nProperty n is undefined on object. for 'list' @ L6\",\"status\":\"PERMISSION_DENIED\"}}"
+  },
+  {
+   "name": "aggregation, allowed by its filter",
+   "status": 200,
+   "response": "[\n{\n  \"result\": {\n    \"aggregateFields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      }\n    }\n  },\n  \"readTime\": \"2026-10-11T12:00:00.857263Z\",\n  \"done\": true\n}\n]\n"
+  },
+  {
+   "name": "listDocuments, denied",
+   "status": 403,
+   "response": "{\"error\":{\"code\":403,\"message\":\"\\nProperty n is undefined on object. for 'list' @ L6\",\"status\":\"PERMISSION_DENIED\"}}"
+  },
+  {
+   "name": "listCollectionIds",
+   "status": 403,
+   "response": "{\"error\":{\"code\":403,\"message\":\"Metadata operations require admin authentication.\",\"status\":\"PERMISSION_DENIED\"}}"
+  }
+ ]
+}

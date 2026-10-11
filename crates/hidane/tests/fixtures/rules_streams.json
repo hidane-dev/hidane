@@ -1,0 +1,32 @@
+[
+ {
+  "name": "listen: allowed document",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if d == 'a';\n      allow list: if false;\n      allow write: if d == 'a';\n    }\n  }\n}\n",
+  "output": "{\n  \"targetChange\": {\n    \"targetChangeType\": \"ADD\",\n    \"targetIds\": [\n      1\n    ]\n  }\n}\n{\n  \"documentChange\": {\n    \"document\": {\n      \"name\": \"projects/streams-a/databases/(default)/documents/c/a\",\n      \"fields\": {\n        \"n\": {\n          \"integerValue\": \"1\"\n        }\n      },\n      \"createTime\": \"2026-10-11T12:02:43.324152Z\",\n      \"updateTime\": \"2026-10-11T12:02:43.324152Z\"\n    },\n    \"targetIds\": [\n      1\n    ]\n  }\n}\n{\n  \"targetChange\": {\n    \"targetChangeType\": \"CURRENT\",\n    \"targetIds\": [\n      1\n    ],\n    \"resumeToken\": \"CgkIjPbF5PWxlwM=\",\n    \"readTime\": \"2026-10-11T12:02:55.008524Z\"\n  }\n}\n{\n  \"targetChange\": {\n    \"resumeToken\": \"CgkIjPbF5PWxlwM=\",\n    \"readTime\": \"2026-10-11T12:02:55.008524Z\"\n  }\n}\n"
+ },
+ {
+  "name": "listen: denied document",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if d == 'a';\n      allow list: if false;\n      allow write: if d == 'a';\n    }\n  }\n}\n",
+  "output": "{\n  \"targetChange\": {\n    \"targetChangeType\": \"ADD\",\n    \"targetIds\": [\n      2\n    ]\n  }\n}\n{\n  \"targetChange\": {\n    \"targetChangeType\": \"REMOVE\",\n    \"targetIds\": [\n      2\n    ],\n    \"cause\": {\n      \"code\": 7,\n      \"message\": \"\\nfalse for 'get' @ L5\"\n    }\n  }\n}\n"
+ },
+ {
+  "name": "listen: one denied of two",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if d == 'a';\n      allow list: if false;\n      allow write: if d == 'a';\n    }\n  }\n}\n",
+  "output": "{\n  \"targetChange\": {\n    \"targetChangeType\": \"ADD\",\n    \"targetIds\": [\n      3\n    ]\n  }\n}\n{\n  \"targetChange\": {\n    \"targetChangeType\": \"REMOVE\",\n    \"targetIds\": [\n      3\n    ],\n    \"cause\": {\n      \"code\": 7,\n      \"message\": \"\\nfalse for 'get' @ L5, false for 'get' @ L5\"\n    }\n  }\n}\n"
+ },
+ {
+  "name": "listen: denied query",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if d == 'a';\n      allow list: if false;\n      allow write: if d == 'a';\n    }\n  }\n}\n",
+  "output": "{\n  \"targetChange\": {\n    \"targetChangeType\": \"ADD\",\n    \"targetIds\": [\n      4\n    ]\n  }\n}\n{\n  \"targetChange\": {\n    \"targetChangeType\": \"REMOVE\",\n    \"targetIds\": [\n      4\n    ],\n    \"cause\": {\n      \"code\": 7,\n      \"message\": \"\\nfalse for 'list' @ L6\"\n    }\n  }\n}\n"
+ },
+ {
+  "name": "write: denied",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if d == 'a';\n      allow list: if false;\n      allow write: if d == 'a';\n    }\n  }\n}\n",
+  "output": "{\n  \"streamId\": \"5\",\n  \"streamToken\": \"MA==\"\n}\nERROR:\n  Code: PermissionDenied\n  Message: \nfalse for 'create' @ L7, false for 'update' @ L7\n"
+ },
+ {
+  "name": "listen: a write makes the document denied",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if resource.data.n == 1;\n    }\n  }\n}\n",
+  "output": "{\n  \"targetChange\": {\n    \"targetChangeType\": \"ADD\",\n    \"targetIds\": [\n      1\n    ]\n  }\n}\n{\n  \"documentChange\": {\n    \"document\": {\n      \"name\": \"projects/streams-b/databases/(default)/documents/c/a\",\n      \"fields\": {\n        \"n\": {\n          \"integerValue\": \"1\"\n        }\n      },\n      \"createTime\": \"2026-10-11T12:03:08.063177Z\",\n      \"updateTime\": \"2026-10-11T12:03:08.063177Z\"\n    },\n    \"targetIds\": [\n      1\n    ]\n  }\n}\n{\n  \"targetChange\": {\n    \"targetChangeType\": \"CURRENT\",\n    \"targetIds\": [\n      1\n    ],\n    \"resumeToken\": \"CgkIktbk6vWxlwM=\",\n    \"readTime\": \"2026-10-11T12:03:08.095250Z\"\n  }\n}\n{\n  \"targetChange\": {\n    \"resumeToken\": \"CgkIktbk6vWxlwM=\",\n    \"readTime\": \"2026-10-11T12:03:08.095250Z\"\n  }\n}\n{\n  \"targetChange\": {\n    \"targetChangeType\": \"REMOVE\",\n    \"targetIds\": [\n      1\n    ],\n    \"cause\": {\n      \"code\": 7,\n      \"message\": \"\\nevaluation error at L5:21 for 'get' @ L5, false for 'get' @ L5\"\n    }\n  }\n}\n"
+ }
+]
