@@ -81,7 +81,8 @@ The test set:
 | Stripped binary, macOS arm64 (no evaluator: 0.4 MiB) | 1.9 MiB | 3.3 MiB | about B | |
 
 A was tuned against the 774, so its score there only says the measured behaviour fits in it.
-Per-group tables are in the spike's README.
+A and C score lower against cel-spec because they follow the official emulator where it differs
+from CEL. Per-group tables are in the spike's README.
 
 ### What the official emulator does
 
