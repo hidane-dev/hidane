@@ -565,6 +565,51 @@ async fn a_resumed_target_gets_only_what_changed() {
 }
 
 #[tokio::test]
+async fn a_resumed_limit_target_gets_what_entered_and_left_its_window() {
+    // Top 2 by n is c=3, b=2. While disconnected, either a new document pushes b out of the
+    // window, or c is deleted and a comes in from below; b and a do not change themselves.
+    let cases = [
+        (
+            vec![set("c/d", 9)],
+            ["ADD [1]", "change c/d=9 [1]", "left c/b=2 [1]"],
+        ),
+        (
+            vec![delete("c/c")],
+            ["ADD [1]", "change c/a=1 [1]", "delete c/c [1]"],
+        ),
+    ];
+    for (writes, changes) in cases {
+        let mut client = start().await;
+        commit(
+            &mut client,
+            vec![set("c/a", 1), set("c/b", 2), set("c/c", 3)],
+        )
+        .await;
+        let mut stream = Stream::open(&mut client).await;
+        stream.add(query_target(1, "c", Some(2))).await;
+        let (token, read_time) = current_token(&mut stream).await;
+        drop(stream);
+        commit(&mut client, writes).await;
+
+        for resume in [
+            target::ResumeType::ResumeToken(token),
+            target::ResumeType::ReadTime(read_time),
+        ] {
+            let mut stream = Stream::open(&mut client).await;
+            let mut target = query_target(1, "c", Some(2));
+            target.resume_type = Some(resume);
+            stream.add(target).await;
+            let mut expected = changes.to_vec();
+            expected.extend([
+                "CURRENT [1] token read_time",
+                "NO_CHANGE [] token read_time",
+            ]);
+            assert_eq!(stream.drain().await, expected);
+        }
+    }
+}
+
+#[tokio::test]
 async fn a_target_resumed_from_beyond_the_kept_versions_gets_a_count() {
     let store = hidane_core::store::MemoryStore::new().with_retention(Duration::from_millis(200));
     let (mut client, _) = start_with(hidane::Admin::new(std::sync::Arc::new(store))).await;

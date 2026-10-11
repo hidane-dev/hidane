@@ -1,12 +1,14 @@
 // Resumes listeners through the web SDK (`firebase`, in Node): disableNetwork / enableNetwork
 // makes it listen again with its resume tokens. Writes go through the Admin SDK while it is
 // offline. Prints every snapshot, so the transcripts of two emulators can be diffed.
+// Two limit queries (top 2 by n, #146) see their window move while offline: a new document
+// pushes `w/b` out, and deleting `v/c` lets `v/a` in; neither `w/b` nor `v/a` changes itself.
 // FIRESTORE_EMULATOR_HOST selects the emulator; start it fresh (or POST /reset) first.
 import { Firestore } from '@google-cloud/firestore';
 import { initializeApp } from 'firebase/app';
 import {
   collection, connectFirestoreEmulator, disableNetwork, doc, enableNetwork, getFirestore,
-  onSnapshot, query, terminate, where,
+  limit, onSnapshot, orderBy, query, terminate, where,
 } from 'firebase/firestore';
 
 const [host, port] = process.env.FIRESTORE_EMULATOR_HOST.split(':');
@@ -27,22 +29,28 @@ const quiet = async () => {
 async function step(name, fn) { steps.push({ step: name, listeners: {} }); await fn(); await quiet(); }
 
 const c = admin.collection('c');
+const w = admin.collection('w');
+const v = admin.collection('v');
 await step('seed', async () => {
   const b = admin.batch();
   for (const [id, n] of [['a', 1], ['b', 2], ['e', 3], ['same', 4]]) b.set(c.doc(id), { n });
+  for (const top of [w, v]) for (const [id, n] of [['a', 1], ['b', 2], ['c', 3]]) b.set(top.doc(id), { n });
   await b.commit();
 });
-await step('listen', async () => {
-  // Wait until the query has its first snapshot from the server (the document listener may
-  // be served from the cache it filled), then give the document target time to become
-  // current, so going offline later resumes both.
-  let ready;
-  const fromServer = new Promise((r) => { ready = r; });
-  onSnapshot(query(collection(web, 'c'), where('n', '<', 10)), (s) => {
-    record('n < 10', { docs: s.docs.map((d) => [d.id, sorted(d.data())]), changes: s.docChanges().map((x) => [x.type, x.doc.id]) });
+const snapshot = (s) => ({ docs: s.docs.map((d) => [d.id, sorted(d.data())]), changes: s.docChanges().map((x) => [x.type, x.doc.id]) });
+// Resolves on the listener's first snapshot from the server.
+const listen = (name, q) => new Promise((ready) => {
+  onSnapshot(q, (s) => {
+    record(name, snapshot(s));
     if (!s.metadata.fromCache) ready();
   });
-  await fromServer;
+});
+await step('listen', async () => {
+  // Wait until the queries have their first snapshots from the server (the document listener
+  // may be served from the cache they filled), then give the document target time to become
+  // current, so going offline later resumes them all.
+  await listen('n < 10', query(collection(web, 'c'), where('n', '<', 10)));
+  for (const top of ['w', 'v']) await listen(`${top}: top 2`, query(collection(web, top), orderBy('n', 'desc'), limit(2)));
   onSnapshot(doc(web, 'c/b'), (s) => record('doc b', { exists: s.exists(), data: sorted(s.data() ?? null) }));
   await new Promise((r) => setTimeout(r, 1000));
 });
@@ -52,6 +60,8 @@ await step('write while offline', async () => {
   await c.doc('b').delete();
   await c.doc('d').set({ n: 6 });
   await c.doc('e').update({ n: 50 });
+  await w.doc('d').set({ n: 9 });
+  await v.doc('c').delete();
 });
 await step('back online', () => enableNetwork(web));
 await step('write while online', () => c.doc('b').set({ n: 7 }));
