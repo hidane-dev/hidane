@@ -4,13 +4,15 @@ name: Install
 # must print the release's version, and on macOS and Linux the server must answer `GET /` and
 # exit 0 on `POST /shutdown`, through the channel's launcher.
 #
-# A run right after a release can find a channel still on the previous version: npm waits for a
-# maintainer's approval, and the Homebrew formula may be committed by hand. The release workflow
-# publishes the release with its own token, which starts no workflow, so `release: published`
-# fires only for a release published by hand; otherwise the weekly run, or one started by hand,
-# checks the release.
+# It runs when the Release workflow finishes a tag's run (that workflow publishes the release
+# with its own token, which starts no `release` event), for a release published by hand, weekly,
+# and by hand. A run right after a release can find a channel still on the previous version:
+# npm waits for a maintainer's approval, and the Homebrew formula may be committed by hand.
 
 on:
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
   release:
     types: [published]
   schedule:
@@ -34,6 +36,10 @@ defaults:
 jobs:
   latest:
     name: latest release
+    # After a Release run, only one that published from a tag; every other job needs this one.
+    if: >-
+      github.event_name != 'workflow_run' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.release.outputs.version }}
