@@ -422,6 +422,7 @@ fn signatures(type_name: &str, method: &str) -> Option<&'static [&'static [&'sta
         ("latlng", "distance") => &[&["latlng"]],
         ("latlng", "latitude" | "longitude") => NONE,
         ("path", "bind") => &[&["map"]],
+        ("constraint", "hasAny") => &[&["list"]],
         _ => return None,
     })
 }
@@ -440,6 +441,13 @@ pub(crate) fn method(interp: &mut Interp<'_>, receiver: &Val, name: &str, args: 
                 .all(|(p, a)| *p == "any" || *p == a.type_name())
     };
     if !signatures.iter().any(fits) {
+        if let Val::Constraint(_) = receiver {
+            // The official emulator names a list's method here.
+            return Err(Error::unsupported(
+                &format!("constraint.{name}({})", types(&args)),
+                &[format!("list.{name}(list)")],
+            ));
+        }
         return Err(mismatch(&format!("{type_name}.{name}"), signatures, &args));
     }
     match receiver {
@@ -493,6 +501,12 @@ pub(crate) fn method(interp: &mut Interp<'_>, receiver: &Val, name: &str, args: 
                     names.join(", ")
                 )))
             }
+        }
+        Val::Constraint(c) => {
+            let Val::List(items) = &args[0] else {
+                unreachable!("the signature check passed")
+            };
+            Ok(Val::Bool(super::constraint::has_any(c, items)))
         }
         _ => Err(Error::not_found(name)),
     }
@@ -751,7 +765,7 @@ pub(crate) fn index(object: &Val, index: &Val) -> R {
         (Val::List(items), Val::Int(i)) => Ok(items[position(*i, items.len())?].clone()),
         (Val::List(_), _) => Err(unsupported(&["int"])),
         (Val::Map(map), Val::Str(key)) => {
-            map.get(&**key).cloned().ok_or_else(|| Error::property(key))
+            super::value::read(map.get(&**key)).unwrap_or_else(|| Err(Error::property(key)))
         }
         (Val::Map(_), _) => Err(unsupported(&["string"])),
         (Val::Str(s), Val::Int(i)) => {
@@ -759,6 +773,9 @@ pub(crate) fn index(object: &Val, index: &Val) -> R {
             Ok(Val::string(utf16_slice(s, at, at + 1)))
         }
         (Val::Str(_), _) => Err(unsupported(&["int"])),
+        (Val::Path(segments), Val::Int(_)) if super::value::has_unknown(segments) => {
+            Err(Error::unbound_template())
+        }
         (Val::Path(segments), Val::Int(i)) => {
             Ok(Val::str(&segments[position(*i, segments.len())?]))
         }
@@ -775,6 +792,9 @@ pub(crate) fn slice(object: &Val, start: &Val, end: &Val) -> R {
     let size = match object {
         Val::List(items) => items.len(),
         Val::Str(s) => string_size(s) as usize,
+        Val::Path(segments) if super::value::has_unknown(segments) => {
+            return Err(Error::unbound_template());
+        }
         Val::Path(segments) => segments.len(),
         Val::Null => return Err(Error::null()),
         _ => return Err(Error::not_found("@range")),

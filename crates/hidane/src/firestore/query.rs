@@ -414,14 +414,14 @@ impl Query {
 
     /// The collection ID a transaction locks for this query: the official emulator locks
     /// every collection with that ID, whatever its parent.
-    /// What Security Rules see of the query: the collection it lists, and `request.query`
-    /// (`tools/oracle/rules_list.py`: `offset` is 0 without one, `orderBy` maps fields to
-    /// `ASC` / `DESC`). A collection group lists its collection ID under the parent; #66
-    /// decides how such a list matches.
+    /// What Security Rules see of the query: the collection it lists (for a collection group,
+    /// the parent below which it looks), `request.query` (`offset` is 0 without one, `orderBy`
+    /// maps fields to `ASC` / `DESC`) and the filter that decides it (`tools/oracle/rules_list.py`).
     pub fn rules_view(&self) -> (ResourcePath, hidane_rules::eval::Query) {
-        let collection = match &self.source {
-            Source::Collection(id) | Source::Group(id) => self.parent.child(id.clone()),
-            Source::Children | Source::Descendants => self.parent.clone(),
+        let (path, group) = match &self.source {
+            Source::Collection(id) => (self.parent.child(id.clone()), None),
+            Source::Group(id) => (self.parent.clone(), Some(id.clone())),
+            Source::Children | Source::Descendants => (self.parent.clone(), Some(String::new())),
         };
         let order_by = self
             .orders
@@ -439,8 +439,10 @@ impl Query {
             limit: self.limit.map(|n| i64::try_from(n).unwrap_or(i64::MAX)),
             offset: Some(i64::try_from(self.offset).unwrap_or(i64::MAX)),
             order_by,
+            filter: self.filter.as_ref().map(rules_filter),
+            group,
         };
-        (collection, query)
+        (path, query)
     }
 
     pub fn collection_id(&self) -> Option<&str> {
@@ -1036,6 +1038,47 @@ fn matches_compare(v: &Value, op: Op, operand: &Value) -> bool {
             !is_null(v)
                 && !array(operand).iter().any(is_null)
                 && !array(operand).iter().any(|o| equal(v, o))
+        }
+    }
+}
+
+/// A filter as Security Rules see it.
+fn rules_filter(filter: &Filter) -> hidane_rules::eval::Filter {
+    use hidane_rules::eval::{Filter as Rules, FilterOp, Value as RulesValue};
+    let rules_field = |field: &Field, op, value| match field {
+        Field::Name => Rules::Name { op, value },
+        Field::Path(path) => Rules::Field {
+            field: path.segments().to_vec(),
+            op,
+            value,
+        },
+    };
+    match filter {
+        Filter::And(filters) => Rules::And(filters.iter().map(rules_filter).collect()),
+        Filter::Or(filters) => Rules::Or(filters.iter().map(rules_filter).collect()),
+        Filter::Compare { field, op, value } => {
+            let op = match op {
+                Op::Less => FilterOp::Lt,
+                Op::LessOrEqual => FilterOp::Le,
+                Op::Greater => FilterOp::Gt,
+                Op::GreaterOrEqual => FilterOp::Ge,
+                Op::Equal => FilterOp::Eq,
+                Op::NotEqual => FilterOp::Ne,
+                Op::ArrayContains => FilterOp::ArrayContains,
+                Op::In => FilterOp::In,
+                Op::ArrayContainsAny => FilterOp::ArrayContainsAny,
+                Op::NotIn => FilterOp::NotIn,
+            };
+            rules_field(field, op, super::guard::value(value))
+        }
+        Filter::Unary { field, op } => {
+            let op = match op {
+                UnaryOp::Nan => FilterOp::IsNan,
+                UnaryOp::Null => FilterOp::IsNull,
+                UnaryOp::NotNan => FilterOp::IsNotNan,
+                UnaryOp::NotNull => FilterOp::IsNotNull,
+            };
+            rules_field(field, op, RulesValue::Null)
         }
     }
 }

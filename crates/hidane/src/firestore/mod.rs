@@ -475,10 +475,15 @@ impl Firestore for FirestoreService {
         // A list of the collection, with `pageSize` as its limit.
         if let Some(guard) = self.guard(&caller, &parent.database) {
             let collection = parent.path.child(req.collection_id.clone());
+            // Without a page size, rules see a limit of 30 (`tools/oracle/rules_list.py`).
             let view = hidane_rules::eval::Query {
-                limit: (req.page_size > 0).then_some(i64::from(req.page_size)),
+                limit: Some(if req.page_size > 0 {
+                    i64::from(req.page_size)
+                } else {
+                    30
+                }),
                 offset: Some(0),
-                order_by: Vec::new(),
+                ..hidane_rules::eval::Query::default()
             };
             let at = self.store.latest_read_time(&parent.database);
             guard

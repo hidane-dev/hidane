@@ -14,6 +14,8 @@ import urllib.request
 HOST = sys.argv[1]
 OWNER = "Bearer owner"
 cases = []
+# Whether to record the body of a successful answer (the tests compare only statuses then).
+KEEP_OK = True
 
 
 def case(name, **extra):
@@ -36,8 +38,9 @@ def call(method, path, body=None, auth=None, record=True):
     except ValueError:
         response = text
     if record and cases:
+        kept = response if KEEP_OK or status >= 300 else None
         cases[-1]["steps"].append({"method": method, "path": path, "body": body, "auth": auth,
-                                   "status": status, "response": response})
+                                   "status": status, "response": kept})
     return status, text
 
 
@@ -48,5 +51,11 @@ def rules(project, content):
 
 
 def dump():
-    json.dump(cases, sys.stdout, indent=1, ensure_ascii=False)
-    print()
+    """Writes `cases` as JSON, one step per line."""
+    compact = lambda v: json.dumps(v, ensure_ascii=False, separators=(",", ":"))
+    print("[")
+    for i, c in enumerate(cases):
+        head = ",".join(f"{compact(k)}:{compact(v)}" for k, v in c.items() if k != "steps")
+        steps = ",\n".join("  " + compact(step) for step in c["steps"])
+        print(f'{{{head},"steps":[\n{steps}\n]}}' + ("," if i + 1 < len(cases) else ""))
+    print("]")

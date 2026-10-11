@@ -1,4 +1,4 @@
-//! Security Rules on each request (#63, #64, #67, #68), applied the way the official emulator
+//! Security Rules on each request (#63–#68), applied the way the official emulator
 //! applies them (`tools/oracle/rules_*.py`, fixtures in `tests/fixtures/rules_*.json`).
 //!
 //! A request is checked when its project has a ruleset (loaded with `:securityRules`, or the
@@ -8,7 +8,7 @@
 //!
 //! - A read of a document is a `get`, whether the document exists or not; a denied document
 //!   denies a whole batchGet.
-//! - A query is a `list` of its collection (#66 decides what a list allows).
+//! - A query is a `list` of its collection, decided from its filter (`hidane_rules::eval`).
 //! - A write is a `create` or an `update` by whether the document exists, unless an `exists`
 //!   precondition says which; a delete is a `delete`. The rules come before the precondition:
 //!   a create allowed on a document that exists fails with `ALREADY_EXISTS`, a denied one with
@@ -129,7 +129,8 @@ impl Guard {
         ))
     }
 
-    /// A query of the collection at `collection` (#66 decides what a list allows).
+    /// A query of the collection at `collection` (for a collection group, of the collections
+    /// below it), decided from the query's filter.
     pub(crate) fn list(
         &self,
         collection: &ResourcePath,

@@ -22,8 +22,10 @@
 //! emulator evaluates again after an error and lists everything twice
 //! (`docs/parity-exceptions.md`).
 
+mod constraint;
 mod interp;
 mod library;
+mod list;
 mod time;
 mod value;
 
@@ -122,13 +124,54 @@ pub struct Auth {
     pub token: Map,
 }
 
-/// `request.query` for a list.
+/// `request.query` for a list, and the filter that decides it.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Query {
     pub limit: Option<i64>,
     pub offset: Option<i64>,
     /// Field path to `ASC` or `DESC`.
     pub order_by: Vec<(String, String)>,
+    pub filter: Option<Filter>,
+    /// For a collection group, its collection ID: the list covers the collections with that ID
+    /// at any depth below [`Request::path`] (an empty ID: every collection below it).
+    pub group: Option<String>,
+}
+
+/// A query's filter.
+#[derive(Debug, Clone, PartialEq)]
+pub enum Filter {
+    And(Vec<Filter>),
+    Or(Vec<Filter>),
+    /// A field, by its segments (`a.b` is `["a", "b"]`), and the value it is compared with
+    /// (null for the unary operators; a list for `In`, `NotIn` and `ArrayContainsAny`).
+    Field {
+        field: Vec<String>,
+        op: FilterOp,
+        value: Value,
+    },
+    /// The document's name, and a reference ([`Value::Path`]) or a list of them.
+    Name {
+        op: FilterOp,
+        value: Value,
+    },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum FilterOp {
+    Lt,
+    Le,
+    Gt,
+    Ge,
+    Eq,
+    Ne,
+    ArrayContains,
+    In,
+    ArrayContainsAny,
+    NotIn,
+    IsNan,
+    IsNull,
+    IsNotNan,
+    IsNotNull,
 }
 
 /// One request, as rules see it.
@@ -231,8 +274,7 @@ pub enum Decision {
 /// other method are listed too, `create`'s first: each is `false`, or its condition's error.
 /// Their lookups do not count against `budget`.
 ///
-/// A list (a query) is allowed for now: deciding it needs the query's constraints to imply the
-/// conditions (#66).
+/// A list is decided from its query's filter, not from the documents (`list`).
 pub fn authorize(
     ruleset: &Ruleset,
     request: &Request,
@@ -240,39 +282,21 @@ pub fn authorize(
     documents: &dyn Documents,
     budget: &mut Budget,
 ) -> Decision {
-    if request.method == Method::List {
-        return Decision::Allow;
-    }
-    let no_match = || Decision::Deny("No matching allow statements".to_owned());
     let Some(service) = ruleset.service("cloud.firestore") else {
         return no_match();
     };
+    if request.method == Method::List {
+        return list::authorize(ruleset, service, request, documents, budget);
+    }
     let path: Vec<&str> = request.path.iter().map(String::as_str).collect();
     let coverings = crate::paths::covering(ruleset.version, service, &path);
-    let statements = |method: Method| {
-        let method = method.statement();
-        let mut statements: Vec<(&ast::Allow, &Covering<'_>)> = Vec::new();
-        for covering in &coverings {
-            for allow in &covering.target().body.allows {
-                if allow
-                    .methods
-                    .iter()
-                    .any(|m| m.method.is_some_and(|m| m.covers(method)))
-                {
-                    statements.push((allow, covering));
-                }
-            }
-        }
-        statements.sort_by_key(|(allow, _)| allow.span.start);
-        statements
-    };
     let other = match request.method {
         Method::Create if request.upsert => Some(Method::Update),
         Method::Update if request.upsert => Some(Method::Create),
         _ => None,
     };
-    let applying = statements(request.method);
-    let others = other.map(|other| (other, statements(other)));
+    let applying = statements(&coverings, request.method);
+    let others = other.map(|other| (other, statements(&coverings, other)));
     if applying.is_empty() && others.as_ref().is_none_or(|(_, s)| s.is_empty()) {
         return no_match();
     }
@@ -282,21 +306,12 @@ pub fn authorize(
         service,
         request: request_value(request),
         resource: resource.map_or(Val::Null, value::resource),
-        path: &request.path,
+        target: &request.path,
         documents,
     };
-    let mut entries = Vec::with_capacity(applying.len());
-    for (allow, covering) in applying {
-        let Some(condition) = &allow.condition else {
-            return Decision::Allow;
-        };
-        let text = match context.evaluate(covering, condition, budget) {
-            Ok(true) => return Decision::Allow,
-            Ok(false) => "false".to_owned(),
-            Err(e) => e,
-        };
-        entries.push(entry(&text, request.method, condition.span.line));
-    }
+    let Err(mut entries) = context.decide(&applying, request.method, budget) else {
+        return Decision::Allow;
+    };
     if let Some((other, statements)) = others {
         let mut scratch = budget.clone();
         let listed = statements.into_iter().map(|(allow, covering)| {
@@ -314,7 +329,38 @@ pub fn authorize(
             _ => entries.into_iter().chain(listed).collect(),
         };
     }
+    denied(&entries)
+}
+
+fn no_match() -> Decision {
+    Decision::Deny("No matching allow statements".to_owned())
+}
+
+/// A denial listing `entries`.
+fn denied(entries: &[String]) -> Decision {
     Decision::Deny(format!("\n{}", entries.join(", ")))
+}
+
+/// The `allow` statements for `method` of every `match` in `coverings`, in source order.
+fn statements<'c, 'a>(
+    coverings: &'c [Covering<'a>],
+    method: Method,
+) -> Vec<(&'c ast::Allow, &'c Covering<'a>)> {
+    let method = method.statement();
+    let mut statements = Vec::new();
+    for covering in coverings {
+        for allow in &covering.target().body.allows {
+            if allow
+                .methods
+                .iter()
+                .any(|m| m.method.is_some_and(|m| m.covers(method)))
+            {
+                statements.push((allow, covering));
+            }
+        }
+    }
+    statements.sort_by_key(|(allow, _)| allow.span.start);
+    statements
 }
 
 fn entry(text: &str, method: Method, line: u32) -> String {
@@ -327,11 +373,34 @@ struct Context<'a> {
     service: &'a ast::Service,
     request: Val,
     resource: Val,
-    path: &'a [String],
+    /// The path whose document is free to look up, in the database `get()` may read.
+    target: &'a [String],
     documents: &'a dyn Documents,
 }
 
 impl Context<'_> {
+    /// Evaluates `statements` in order until one allows; if none does, each one's entry.
+    fn decide(
+        &self,
+        statements: &[(&ast::Allow, &Covering<'_>)],
+        method: Method,
+        budget: &mut Budget,
+    ) -> Result<(), Vec<String>> {
+        let mut entries = Vec::with_capacity(statements.len());
+        for (allow, covering) in statements {
+            let Some(condition) = &allow.condition else {
+                return Ok(());
+            };
+            let text = match self.evaluate(covering, condition, budget) {
+                Ok(true) => return Ok(()),
+                Ok(false) => "false".to_owned(),
+                Err(e) => e,
+            };
+            entries.push(entry(&text, method, condition.span.line));
+        }
+        Err(entries)
+    }
+
     /// The condition of a statement at the end of `covering`: true, false or the error's text.
     fn evaluate(
         &self,
@@ -343,7 +412,7 @@ impl Context<'_> {
             levels(self.ruleset, self.service, covering),
             self.request.clone(),
             self.resource.clone(),
-            self.path,
+            self.target,
             self.documents,
             budget,
         );
@@ -351,7 +420,17 @@ impl Context<'_> {
         interp
             .eval(condition, frame.scope())
             .and_then(interp::boolean)
-            .map_err(|e| e.0)
+            .map_err(|e| {
+                if e.0.is_empty() {
+                    // Undecided: the official emulator names the condition's start.
+                    format!(
+                        "evaluation error at L{}:{}",
+                        condition.span.line, condition.span.column
+                    )
+                } else {
+                    e.0
+                }
+            })
     }
 }
 
@@ -382,12 +461,15 @@ fn levels<'a>(
         let variables = bindings
             .by_ref()
             .take(count)
-            .map(|(name, binding)| {
+            // A wildcard that took a list's unknown document ID is not bound: using it is a
+            // `Null value error`, as for any unknown name.
+            .filter_map(|(name, binding)| {
                 let value = match binding {
                     Binding::Segment(s) => Val::str(s),
                     Binding::Path(p) => Val::path(p.clone()),
+                    Binding::Unbound => return None,
                 };
-                (name.as_str(), value)
+                Some((name.as_str(), value))
             })
             .collect();
         levels.push(Level {

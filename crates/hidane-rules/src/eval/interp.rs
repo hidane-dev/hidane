@@ -5,9 +5,11 @@ use std::{cell::OnceCell, collections::HashMap, rc::Rc};
 use indexmap::IndexMap;
 
 use super::{
-    Budget, Documents,
+    Budget, Documents, constraint,
     library::{self, to_string},
-    value::{Error, R, Val, contains, eq, loose_eq, resource, strict_eq, utf16_cmp, utf16_len},
+    value::{
+        Error, R, Val, contains, eq, loose_eq, read, resource, strict_eq, utf16_cmp, utf16_len,
+    },
 };
 use crate::ast::{BinaryOp, Callee, Expr, ExprKind, Function, PathPart, UnaryOp};
 
@@ -537,10 +539,7 @@ fn not_bool(v: &Val) -> Error {
 #[inline(never)]
 fn member(object: &Val, field: &str) -> R {
     match object {
-        Val::Map(map) => map
-            .get(field)
-            .cloned()
-            .ok_or_else(|| Error::property(field)),
+        Val::Map(map) => read(map.get(field)).unwrap_or_else(|| Err(Error::property(field))),
         Val::Null => Err(Error::null()),
         // A path's fields are the variables bound into it, and literal paths bind none.
         Val::Path(_) => Err(Error::property(field)),
@@ -561,6 +560,9 @@ fn negate(v: Val) -> R {
 }
 
 fn binary(op: BinaryOp, l: &Val, r: &Val) -> R {
+    if let Some(result) = constraint::binary(op, l, r) {
+        return result;
+    }
     match op {
         BinaryOp::Eq => Ok(Val::Bool(eq(l, r))),
         BinaryOp::Ne => Ok(Val::Bool(!eq(l, r))),

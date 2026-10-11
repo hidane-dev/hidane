@@ -12,6 +12,11 @@
 //!   where the compiler only allows it last, and zero or more in version 2, where it may come
 //!   anywhere, once per `match`. So in version 2 `/c/{d}/{rest=**}` covers `c/d` itself, and a
 //!   nested `/{rest=**}` covers the document of the `match` around it.
+//!
+//! A list is checked on its collection's path followed by an unknown document ID, and a
+//! collection group's path holds an unknown run of segments before its collection ID
+//! (`tools/oracle/rules_list.py`): only a wildcard takes the unknown ID, and leaves its variable
+//! unbound (using it is a `Null value error`); only a recursive wildcard takes an unknown run.
 
 use crate::ast::{Match, SegmentKind, Service, Version};
 
@@ -20,9 +25,26 @@ use crate::ast::{Match, SegmentKind, Service, Version};
 pub enum Binding {
     /// A wildcard's segment.
     Segment(String),
-    /// A recursive wildcard's segments.
+    /// A recursive wildcard's segments; an unknown part is [`UNKNOWN_ID`] or [`UNKNOWN_RUN`].
     Path(Vec<String>),
+    /// A wildcard that took an unknown document ID.
+    Unbound,
 }
+
+/// A segment of a path to cover.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Part<'p> {
+    Segment(&'p str),
+    /// The document ID of a list: any one segment.
+    UnknownId,
+    /// The parents of a collection group's collections: any number of segments.
+    UnknownRun,
+}
+
+/// How an unknown document ID shows in a recursive wildcard's path (no segment holds it).
+pub const UNKNOWN_ID: &str = "\u{0}*";
+/// How an unknown run of segments shows in a recursive wildcard's path.
+pub const UNKNOWN_RUN: &str = "\u{0}**";
 
 /// A `match` that covers a path: the matches from the service down to it, and the variables
 /// they bound, outermost first.
@@ -46,6 +68,16 @@ impl Covering<'_> {
 /// differently) is listed once, with the first way found, which gives earlier recursive
 /// wildcards fewer segments.
 pub fn covering<'a>(version: Version, service: &'a Service, path: &[&str]) -> Vec<Covering<'a>> {
+    let parts: Vec<Part<'_>> = path.iter().map(|s| Part::Segment(s)).collect();
+    covering_parts(version, service, &parts)
+}
+
+/// [`covering`] for a path with unknown parts.
+pub fn covering_parts<'a>(
+    version: Version,
+    service: &'a Service,
+    path: &[Part<'_>],
+) -> Vec<Covering<'a>> {
     let mut found = Vec::new();
     for m in &service.body.matches {
         visit(
@@ -64,7 +96,7 @@ pub fn covering<'a>(version: Version, service: &'a Service, path: &[&str]) -> Ve
 fn visit<'a>(
     version: Version,
     m: &'a Match,
-    path: &[&str],
+    path: &[Part<'_>],
     at: usize,
     chain: &mut Vec<&'a Match>,
     bindings: &mut Vec<(String, Binding)>,
@@ -95,7 +127,7 @@ fn visit<'a>(
 fn prefixes(
     version: Version,
     m: &Match,
-    path: &[&str],
+    path: &[Part<'_>],
     at: usize,
 ) -> Vec<(usize, Vec<(String, Binding)>)> {
     let mut out = Vec::new();
@@ -106,7 +138,7 @@ fn prefixes(
 fn take(
     version: Version,
     segments: &[crate::ast::Segment],
-    path: &[&str],
+    path: &[Part<'_>],
     at: usize,
     bound: &mut Vec<(String, Binding)>,
     out: &mut Vec<(usize, Vec<(String, Binding)>)>,
@@ -117,16 +149,19 @@ fn take(
     };
     match &first.kind {
         SegmentKind::Literal(literal) => {
-            if path.get(at) == Some(&literal.as_str()) {
+            if path.get(at) == Some(&Part::Segment(literal)) {
                 take(version, rest, path, at + 1, bound, out);
             }
         }
         SegmentKind::Wildcard(name) => {
-            if let Some(segment) = path.get(at) {
-                bound.push((name.clone(), Binding::Segment((*segment).to_owned())));
-                take(version, rest, path, at + 1, bound, out);
-                bound.pop();
-            }
+            let binding = match path.get(at) {
+                Some(Part::Segment(segment)) => Binding::Segment((*segment).to_owned()),
+                Some(Part::UnknownId) => Binding::Unbound,
+                Some(Part::UnknownRun) | None => return,
+            };
+            bound.push((name.clone(), binding));
+            take(version, rest, path, at + 1, bound, out);
+            bound.pop();
         }
         SegmentKind::Recursive(name) => {
             let fewest = match version {
@@ -134,7 +169,14 @@ fn take(
                 Version::V2 => 0,
             };
             for end in at + fewest..=path.len() {
-                let segments = path[at..end].iter().map(|s| (*s).to_owned()).collect();
+                let segments = path[at..end]
+                    .iter()
+                    .map(|part| match part {
+                        Part::Segment(s) => (*s).to_owned(),
+                        Part::UnknownId => UNKNOWN_ID.to_owned(),
+                        Part::UnknownRun => UNKNOWN_RUN.to_owned(),
+                    })
+                    .collect();
                 bound.push((name.clone(), Binding::Path(segments)));
                 take(version, rest, path, end, bound, out);
                 bound.pop();

@@ -313,12 +313,6 @@ impl Cli {
                     .into(),
             );
         }
-        if self.rules.is_some() {
-            warnings.push(format!(
-                "Security Rules do not check queries yet: every query and listing is allowed \
-                 ({ISSUES}/66)"
-            ));
-        }
         if self.functions_emulator.is_some() {
             warnings.push(format!(
                 "Events are not delivered to the Functions emulator yet ({ISSUES}/70)"
@@ -379,7 +373,7 @@ mod tests {
         assert_eq!(cli.project_id.as_deref(), Some("demo-hidane"));
         assert!(cli.single_project_mode);
         let warnings = cli.validate().unwrap();
-        assert!(warnings.iter().any(|w| w.contains("Security Rules")));
+        assert!(!warnings.iter().any(|w| w.contains("Security Rules")));
         assert!(warnings.iter().any(|w| w.contains("Functions emulator")));
     }
 
