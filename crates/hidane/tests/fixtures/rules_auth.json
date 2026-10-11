@@ -1,0 +1,322 @@
+{
+ "now": "the time of the run (tokens are relative to it)",
+ "tokens": [
+  "none",
+  "owner",
+  "full",
+  "sub only",
+  "user_id only",
+  "no sub or user_id",
+  "sub and user_id differ",
+  "expired",
+  "other project",
+  "no iss or aud",
+  "not a jwt"
+ ],
+ "results": [
+  {
+   "condition": "true",
+   "reads": {
+    "none": "allow",
+    "owner": "allow",
+    "full": "allow",
+    "sub only": "allow",
+    "user_id only": "allow",
+    "no sub or user_id": "allow",
+    "sub and user_id differ": "allow",
+    "expired": "allow",
+    "other project": "allow",
+    "no iss or aud": "allow",
+    "not a jwt": {
+     "status": 400,
+     "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+    }
+   }
+  },
+  {
+   "condition": "request.auth == null",
+   "reads": {
+    "none": "allow",
+    "owner": "allow",
+    "full": "deny",
+    "sub only": "deny",
+    "user_id only": "deny",
+    "no sub or user_id": "deny",
+    "sub and user_id differ": "deny",
+    "expired": "deny",
+    "other project": "deny",
+    "no iss or aud": "deny",
+    "not a jwt": {
+     "status": 400,
+     "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+    }
+   }
+  },
+  {
+   "condition": "request.auth != null",
+   "reads": {
+    "none": "deny",
+    "owner": "allow",
+    "full": "allow",
+    "sub only": "allow",
+    "user_id only": "allow",
+    "no sub or user_id": "allow",
+    "sub and user_id differ": "allow",
+    "expired": "allow",
+    "other project": "allow",
+    "no iss or aud": "allow",
+    "not a jwt": {
+     "status": 400,
+     "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+    }
+   }
+  },
+  {
+   "condition": "request.auth.uid == 'u1'",
+   "reads": {
+    "none": "deny",
+    "owner": "allow",
+    "full": "allow",
+    "sub only": "allow",
+    "user_id only": "deny",
+    "no sub or user_id": "deny",
+    "sub and user_id differ": "allow",
+    "expired": "allow",
+    "other project": "allow",
+    "no iss or aud": "allow",
+    "not a jwt": {
+     "status": 400,
+     "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+    }
+   }
+  },
+  {
+   "condition": "request.auth.uid == 'u2'",
+   "reads": {
+    "none": "deny",
+    "owner": "allow",
+    "full": "deny",
+    "sub only": "deny",
+    "user_id only": "deny",
+    "no sub or user_id": "deny",
+    "sub and user_id differ": "deny",
+    "expired": "deny",
+    "other project": "deny",
+    "no iss or aud": "deny",
+    "not a jwt": {
+     "status": 400,
+     "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+    }
+   }
+  },
+  {
+   "condition": "request.auth.token.sub == 'u1'",
+   "reads": {
+    "none": "deny",
+    "owner": "allow",
+    "full": "allow",
+    "sub only": "allow",
+    "user_id only": "deny",
+    "no sub or user_id": "deny",
+    "sub and user_id differ": "allow",
+    "expired": "allow",
+    "other project": "allow",
+    "no iss or aud": "allow",
+    "not a jwt": {
+     "status": 400,
+     "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+    }
+   }
+  },
+  {
+   "condition": "request.auth.token.user_id == 'u1'",
+   "reads": {
+    "none": "deny",
+    "owner": "allow",
+    "full": "allow",
+    "sub only": "deny",
+    "user_id only": "allow",
+    "no sub or user_id": "deny",
+    "sub and user_id differ": "deny",
+    "expired": "allow",
+    "other project": "allow",
+    "no iss or aud": "allow",
+    "not a jwt": {
+     "status": 400,
+     "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+    }
+   }
+  },
+  {
+   "condition": "request.auth.token.email == 'a@example.com'",
+   "reads": {
+    "none": "deny",
+    "owner": "allow",
+    "full": "allow",
+    "sub only": "deny",
+    "user_id only": "deny",
+    "no sub or user_id": "allow",
+    "sub and user_id differ": "allow",
+    "expired": "allow",
+    "other project": "allow",
+    "no iss or aud": "allow",
+    "not a jwt": {
+     "status": 400,
+     "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+    }
+   }
+  },
+  {
+   "condition": "request.auth.token.email_verified == true",
+   "reads": {
+    "none": "deny",
+    "owner": "allow",
+    "full": "allow",
+    "sub only": "deny",
+    "user_id only": "deny",
+    "no sub or user_id": "allow",
+    "sub and user_id differ": "allow",
+    "expired": "allow",
+    "other project": "allow",
+    "no iss or aud": "allow",
+    "not a jwt": {
+     "status": 400,
+     "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+    }
+   }
+  },
+  {
+   "condition": "request.auth.token.firebase.sign_in_provider == 'password'",
+   "reads": {
+    "none": "deny",
+    "owner": "allow",
+    "full": "allow",
+    "sub only": "deny",
+    "user_id only": "deny",
+    "no sub or user_id": "allow",
+    "sub and user_id differ": "allow",
+    "expired": "allow",
+    "other project": "allow",
+    "no iss or aud": "allow",
+    "not a jwt": {
+     "status": 400,
+     "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+    }
+   }
+  },
+  {
+   "condition": "request.auth.token.admin == true",
+   "reads": {
+    "none": "deny",
+    "owner": "allow",
+    "full": "allow",
+    "sub only": "deny",
+    "user_id only": "deny",
+    "no sub or user_id": "allow",
+    "sub and user_id differ": "allow",
+    "expired": "allow",
+    "other project": "allow",
+    "no iss or aud": "allow",
+    "not a jwt": {
+     "status": 400,
+     "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+    }
+   }
+  },
+  {
+   "condition": "request.auth.token.aud == 'auth-rules'",
+   "reads": {
+    "none": "deny",
+    "owner": "allow",
+    "full": "allow",
+    "sub only": "deny",
+    "user_id only": "deny",
+    "no sub or user_id": "allow",
+    "sub and user_id differ": "allow",
+    "expired": "allow",
+    "other project": "deny",
+    "no iss or aud": "deny",
+    "not a jwt": {
+     "status": 400,
+     "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+    }
+   }
+  },
+  {
+   "condition": "request.auth.token.exp is int",
+   "reads": {
+    "none": "deny",
+    "owner": "allow",
+    "full": "allow",
+    "sub only": "deny",
+    "user_id only": "deny",
+    "no sub or user_id": "allow",
+    "sub and user_id differ": "allow",
+    "expired": "allow",
+    "other project": "allow",
+    "no iss or aud": "allow",
+    "not a jwt": {
+     "status": 400,
+     "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+    }
+   }
+  },
+  {
+   "condition": "request.auth.token.iat is timestamp",
+   "reads": {
+    "none": "deny",
+    "owner": "allow",
+    "full": "deny",
+    "sub only": "deny",
+    "user_id only": "deny",
+    "no sub or user_id": "deny",
+    "sub and user_id differ": "deny",
+    "expired": "deny",
+    "other project": "deny",
+    "no iss or aud": "deny",
+    "not a jwt": {
+     "status": 400,
+     "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+    }
+   }
+  },
+  {
+   "condition": "request.auth.token.exp is timestamp",
+   "reads": {
+    "none": "deny",
+    "owner": "allow",
+    "full": "deny",
+    "sub only": "deny",
+    "user_id only": "deny",
+    "no sub or user_id": "deny",
+    "sub and user_id differ": "deny",
+    "expired": "deny",
+    "other project": "deny",
+    "no iss or aud": "deny",
+    "not a jwt": {
+     "status": 400,
+     "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+    }
+   }
+  },
+  {
+   "condition": "request.auth.token.keys().size() > 3",
+   "reads": {
+    "none": "deny",
+    "owner": "allow",
+    "full": "allow",
+    "sub only": "deny",
+    "user_id only": "deny",
+    "no sub or user_id": "allow",
+    "sub and user_id differ": "allow",
+    "expired": "allow",
+    "other project": "allow",
+    "no iss or aud": "allow",
+    "not a jwt": {
+     "status": 400,
+     "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+    }
+   }
+  }
+ ]
+}
