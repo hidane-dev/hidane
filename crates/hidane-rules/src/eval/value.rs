@@ -27,6 +27,11 @@ pub(crate) enum Val {
     Duration(i128),
     LatLng(f64, f64),
     Path(Rc<[String]>),
+    /// What a list knows of a field its query filters on (`super::constraint`).
+    Constraint(Rc<[super::constraint::Simple]>),
+    /// What the official emulator cannot evaluate, such as a collection group's `request.path`:
+    /// reading it from its map is undecided.
+    Unknown,
 }
 
 /// The keys `a.diff(b)` sorts out: in `a` only, in `b` only, in both with other values, in
@@ -51,8 +56,19 @@ pub(crate) const MAX_SECONDS: i64 = 253_402_300_799;
 const MAX_DURATION_SECONDS: i128 = 315_576_000_000;
 
 impl Error {
+    /// An error without a message: a comparison with a `constraint` that its filters do not
+    /// imply. A denial shows it as `evaluation error at L5:22` (the condition's start).
+    pub fn undecided() -> Self {
+        Self(String::new())
+    }
+
     pub fn null() -> Self {
         Self("Null value error.".to_owned())
+    }
+
+    /// Indexing a path that holds a list's unknown document ID (`paths::UNKNOWN_ID`).
+    pub fn unbound_template() -> Self {
+        Self("Variable  is not bound in path template.".to_owned())
     }
 
     pub fn property(name: &str) -> Self {
@@ -208,15 +224,16 @@ impl Val {
             Self::Duration(_) => "duration",
             Self::LatLng(..) => "latlng",
             Self::Path(_) => "path",
+            Self::Constraint(_) => "constraint",
+            Self::Unknown => "unknown",
         }
     }
 
-    /// `value is type`. A set is never `set` (as measured), and nothing is a `constraint` or a
-    /// `vector`.
+    /// `value is type`. A set is never `set` (as measured), and nothing is a `vector`.
     pub fn is(&self, type_name: &str) -> bool {
         match type_name {
             "number" => matches!(self, Self::Int(_) | Self::Float(_)),
-            "set" | "constraint" | "vector" => false,
+            "set" | "vector" => false,
             name => self.type_name() == name,
         }
     }
@@ -477,6 +494,21 @@ pub(crate) fn utf16_slice(s: &str, from: usize, to: usize) -> String {
 /// Java's `String.compareTo`: UTF-16 code unit order.
 pub(crate) fn utf16_cmp(a: &str, b: &str) -> std::cmp::Ordering {
     a.encode_utf16().cmp(b.encode_utf16())
+}
+
+/// Whether a path holds a list's unknown parts (`crate::paths::UNKNOWN_ID`, `UNKNOWN_RUN`).
+pub(crate) fn has_unknown(segments: &[String]) -> bool {
+    segments
+        .iter()
+        .any(|s| s == crate::paths::UNKNOWN_ID || s == crate::paths::UNKNOWN_RUN)
+}
+
+/// A map's value as read: [`Val::Unknown`] is undecided.
+pub(crate) fn read(v: Option<&Val>) -> Option<R> {
+    v.map(|v| match v {
+        Val::Unknown => Err(Error::undecided()),
+        v => Ok(v.clone()),
+    })
 }
 
 #[cfg(test)]

@@ -43,10 +43,11 @@ Known official-emulator bug #6252 is not reproduced (see [parity-exceptions.md](
 
 ### `list` implication (common to all options)
 
-- v0.2 ships a conservative subset (`==` `!=` `<` `<=` `>` `>=` `in` `or` `array-contains`
-  `array-contains-any` combined with `resource.data.<field>` / `resource.id` / `request.auth.*`).
-  Undecidable expressions are **denied** with a logged reason
-- The subset is widened by measuring the official emulator
+- Planned: a conservative subset (`==` `!=` `<` `<=` `>` `>=` `in` `or` `array-contains`
+  `array-contains-any` combined with `resource.data.<field>` / `resource.id` / `request.auth.*`),
+  undecidable expressions **denied**, widened by measuring the official emulator
+- Outcome (#66): measuring showed the official emulator's own model, small enough to reproduce
+  whole, so hidane implements it instead of a subset (see below)
 
 ## Spike results (#61)
 
@@ -146,6 +147,28 @@ cel-spec's conformance tests stay in use: the cases the official emulator agrees
 CEL part, and the ones it rejects or evaluates differently are kept as Rules expectations.
 Golden results come from the official emulator (`tools/oracle/rules_conditions.py`) and, later,
 the production Rules API `projects:test`.
+
+## `list` as the official emulator decides it (#66)
+
+Measured with [`tools/oracle/rules_list.py`](../../tools/oracle/rules_list.py) (the official
+emulator's `debug()` output shows its representation):
+
+- The query's filter is split into the ways a document may satisfy it: each `or` branch and each
+  value of an `in` or `array-contains-any`. Every way must be allowed; the first way denied
+  gives the denial.
+- In each way `resource` is `{data: …}` with only the fields the filter names. A field with one
+  `==` (or `in`, `is null`, `is nan`) holds that value, and the condition evaluates as usual
+  (`resource.data.n + 1 == 2` works). Any other field holds a `constraint`: its filters as
+  comparator and value pairs (`GT 0`, `NEQ 3`, `LIST_CONTAINS 'a'`).
+- A comparison with a constraint is true when one of its filters alone implies it, else an
+  error without a message (`evaluation error at L5:22`), never false. So `n >= 1 && n <= 1` does
+  not imply `n == 1`, and a float in a filter does not compare with an int in the rule.
+  `x in c` and `c.hasAny(list)` read `LIST_CONTAINS`; `c is constraint` is true.
+- A way with `__name__ ==` (or one name of `__name__ in`) is decided on that document as stored,
+  ignoring the rest of the filter. Ordering, cursors and limits constrain nothing.
+- The list is checked on the collection's path and an unknown document ID (a wildcard there is
+  unbound); a collection group adds an unknown run of segments before its collection ID, which
+  only a recursive wildcard takes, and its `request.path` cannot be read.
 
 ## Consequences
 

@@ -163,14 +163,13 @@ fn denials_name_the_method() {
             denied("No matching allow statements")
         );
     }
-    // A list is decided by #66; until then it is allowed.
     assert_eq!(
         decide(
             "match /c/{d} {\n  allow list: if false;\n}",
             Method::List,
             "c"
         ),
-        Decision::Allow
+        denied("\nfalse for 'list' @ L5")
     );
 }
 

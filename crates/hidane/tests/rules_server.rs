@@ -1,5 +1,5 @@
 //! Security Rules end to end, against the official emulator's recordings: the cases of
-//! `tools/oracle/rules_{request,writes,lookups,auth,denials}.py` (`fixtures/rules_*.json`),
+//! `tools/oracle/rules_{request,writes,lookups,list,auth,denials}.py` (`fixtures/rules_*.json`),
 //! each a list of REST calls, are replayed in order against a fresh hidane. Every answer's
 //! status must match, and a denial must say what the official emulator's does, as
 //! `common::rules::same_denial` compares them.
@@ -131,47 +131,24 @@ async fn replay(fixture: &str, skip: &[&str]) {
     );
 }
 
-/// Lists and queries that the official emulator denies: hidane allows every list until it
-/// decides them from the query's constraints (#66).
-const LISTS: &[&str] = &[
-    "list: false",
-    "list: request.method == 'get'",
-    "list: request.method == 'create'",
-    "list: request.method == 'update'",
-    "list: request.method == 'delete'",
-    "list: resource.data.n == 1",
-    "list: resource == null",
-    "list: request.query.limit == null",
-    "list: request.query.orderBy == null",
-    "query: false",
-    "query: request.method == 'get'",
-    "query: request.method == 'create'",
-    "query: request.method == 'update'",
-    "query: request.method == 'delete'",
-    "query: request.query.orderBy == 'n'",
-    "query: request.query.orderBy == ['n']",
-    "query: request.query.orderBy[0] == 'n'",
-    "query: 21 distinct exists",
-    "query: 21 distinct exists, with a filter",
-    "aggregation, denied",
-    "listDocuments, denied",
-    "list denied",
-    "query denied",
-];
-
 #[tokio::test]
 async fn request_and_resource() {
-    replay(include_str!("fixtures/rules_request.json"), LISTS).await;
+    replay(include_str!("fixtures/rules_request.json"), &[]).await;
 }
 
 #[tokio::test]
 async fn writes_are_checked_as_create_update_or_delete() {
-    replay(include_str!("fixtures/rules_writes.json"), LISTS).await;
+    replay(include_str!("fixtures/rules_writes.json"), &[]).await;
 }
 
 #[tokio::test]
 async fn lookups_and_their_limits() {
-    replay(include_str!("fixtures/rules_lookups.json"), LISTS).await;
+    replay(include_str!("fixtures/rules_lookups.json"), &[]).await;
+}
+
+#[tokio::test]
+async fn lists_are_decided_by_their_filters() {
+    replay(include_str!("fixtures/rules_list.json"), &[]).await;
 }
 
 #[tokio::test]
@@ -182,9 +159,5 @@ async fn request_auth_from_tokens() {
 #[tokio::test]
 async fn denials() {
     // `:ruleCoverage` is not served yet.
-    replay(
-        include_str!("fixtures/rules_denials.json"),
-        &[LISTS, &["coverage"]].concat(),
-    )
-    .await;
+    replay(include_str!("fixtures/rules_denials.json"), &["coverage"]).await;
 }
