@@ -1,0 +1,829 @@
+[
+ {
+  "operation": "get",
+  "method": "get",
+  "condition": "true",
+  "outcome": "allow"
+ },
+ {
+  "operation": "get",
+  "method": "get",
+  "condition": "false",
+  "outcome": "deny"
+ },
+ {
+  "operation": "get",
+  "method": "get",
+  "condition": "request.method == 'get'",
+  "outcome": "allow"
+ },
+ {
+  "operation": "get",
+  "method": "get",
+  "condition": "request.method == 'list'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "get",
+  "method": "get",
+  "condition": "request.method == 'create'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "get",
+  "method": "get",
+  "condition": "request.method == 'update'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "get",
+  "method": "get",
+  "condition": "request.method == 'delete'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "get",
+  "method": "get",
+  "condition": "request.auth == null",
+  "outcome": "allow"
+ },
+ {
+  "operation": "get",
+  "method": "get",
+  "condition": "request.path == /databases/$(database)/documents/c/d",
+  "outcome": "allow"
+ },
+ {
+  "operation": "get",
+  "method": "get",
+  "condition": "resource.data.n == 1",
+  "outcome": "allow"
+ },
+ {
+  "operation": "get",
+  "method": "get",
+  "condition": "resource.id == 'd'",
+  "outcome": "allow"
+ },
+ {
+  "operation": "get",
+  "method": "get",
+  "condition": "resource.__name__ == /databases/$(database)/documents/c/d",
+  "outcome": "allow"
+ },
+ {
+  "operation": "get",
+  "method": "get",
+  "condition": "request.resource == null",
+  "outcome": "deny"
+ },
+ {
+  "operation": "get",
+  "method": "get",
+  "condition": "request.query == null",
+  "outcome": "deny"
+ },
+ {
+  "operation": "get",
+  "method": "get",
+  "condition": "request.time is timestamp",
+  "outcome": "allow"
+ },
+ {
+  "operation": "get",
+  "method": "get",
+  "condition": "database == '(default)'",
+  "outcome": "allow"
+ },
+ {
+  "operation": "get missing",
+  "method": "get",
+  "condition": "true",
+  "outcome": 404,
+  "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/request\\/databases\\/(default)\\/documents\\/c\\/missing) not found.\",\"status\":\"NOT_FOUND\"}}"
+ },
+ {
+  "operation": "get missing",
+  "method": "get",
+  "condition": "false",
+  "outcome": "deny"
+ },
+ {
+  "operation": "get missing",
+  "method": "get",
+  "condition": "request.method == 'get'",
+  "outcome": 404,
+  "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/request\\/databases\\/(default)\\/documents\\/c\\/missing) not found.\",\"status\":\"NOT_FOUND\"}}"
+ },
+ {
+  "operation": "get missing",
+  "method": "get",
+  "condition": "request.method == 'list'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "get missing",
+  "method": "get",
+  "condition": "request.method == 'create'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "get missing",
+  "method": "get",
+  "condition": "request.method == 'update'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "get missing",
+  "method": "get",
+  "condition": "request.method == 'delete'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "get missing",
+  "method": "get",
+  "condition": "request.auth == null",
+  "outcome": 404,
+  "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/request\\/databases\\/(default)\\/documents\\/c\\/missing) not found.\",\"status\":\"NOT_FOUND\"}}"
+ },
+ {
+  "operation": "get missing",
+  "method": "get",
+  "condition": "resource == null",
+  "outcome": 404,
+  "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/request\\/databases\\/(default)\\/documents\\/c\\/missing) not found.\",\"status\":\"NOT_FOUND\"}}"
+ },
+ {
+  "operation": "get missing",
+  "method": "get",
+  "condition": "request.path == /databases/$(database)/documents/c/missing",
+  "outcome": 404,
+  "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/request\\/databases\\/(default)\\/documents\\/c\\/missing) not found.\",\"status\":\"NOT_FOUND\"}}"
+ },
+ {
+  "operation": "list",
+  "method": "list",
+  "condition": "true",
+  "outcome": "allow"
+ },
+ {
+  "operation": "list",
+  "method": "list",
+  "condition": "false",
+  "outcome": "deny"
+ },
+ {
+  "operation": "list",
+  "method": "list",
+  "condition": "request.method == 'get'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "list",
+  "method": "list",
+  "condition": "request.method == 'list'",
+  "outcome": "allow"
+ },
+ {
+  "operation": "list",
+  "method": "list",
+  "condition": "request.method == 'create'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "list",
+  "method": "list",
+  "condition": "request.method == 'update'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "list",
+  "method": "list",
+  "condition": "request.method == 'delete'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "list",
+  "method": "list",
+  "condition": "request.auth == null",
+  "outcome": "allow"
+ },
+ {
+  "operation": "list",
+  "method": "list",
+  "condition": "request.path == /databases/$(database)/documents/c",
+  "outcome": "allow"
+ },
+ {
+  "operation": "list",
+  "method": "list",
+  "condition": "resource.data.n == 1",
+  "outcome": "deny"
+ },
+ {
+  "operation": "list",
+  "method": "list",
+  "condition": "resource == null",
+  "outcome": "deny"
+ },
+ {
+  "operation": "list",
+  "method": "list",
+  "condition": "request.query.limit == 2",
+  "outcome": "allow"
+ },
+ {
+  "operation": "list",
+  "method": "list",
+  "condition": "request.query.limit == null",
+  "outcome": "deny"
+ },
+ {
+  "operation": "list",
+  "method": "list",
+  "condition": "request.query.offset == 0",
+  "outcome": "allow"
+ },
+ {
+  "operation": "list",
+  "method": "list",
+  "condition": "request.query.orderBy == null",
+  "outcome": "deny"
+ },
+ {
+  "operation": "list",
+  "method": "list",
+  "condition": "request.time is timestamp",
+  "outcome": "allow"
+ },
+ {
+  "operation": "query",
+  "method": "list",
+  "condition": "true",
+  "outcome": "allow"
+ },
+ {
+  "operation": "query",
+  "method": "list",
+  "condition": "false",
+  "outcome": "deny"
+ },
+ {
+  "operation": "query",
+  "method": "list",
+  "condition": "request.method == 'get'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "query",
+  "method": "list",
+  "condition": "request.method == 'list'",
+  "outcome": "allow"
+ },
+ {
+  "operation": "query",
+  "method": "list",
+  "condition": "request.method == 'create'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "query",
+  "method": "list",
+  "condition": "request.method == 'update'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "query",
+  "method": "list",
+  "condition": "request.method == 'delete'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "query",
+  "method": "list",
+  "condition": "request.auth == null",
+  "outcome": "allow"
+ },
+ {
+  "operation": "query",
+  "method": "list",
+  "condition": "request.path == /databases/$(database)/documents/c",
+  "outcome": "allow"
+ },
+ {
+  "operation": "query",
+  "method": "list",
+  "condition": "request.query.limit == 3",
+  "outcome": "allow"
+ },
+ {
+  "operation": "query",
+  "method": "list",
+  "condition": "request.query.offset == 1",
+  "outcome": "allow"
+ },
+ {
+  "operation": "query",
+  "method": "list",
+  "condition": "request.query.orderBy == 'n'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "query",
+  "method": "list",
+  "condition": "request.query.orderBy == ['n']",
+  "outcome": "deny"
+ },
+ {
+  "operation": "query",
+  "method": "list",
+  "condition": "request.query.orderBy[0] == 'n'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "query",
+  "method": "list",
+  "condition": "resource.data.n == 1",
+  "outcome": "allow"
+ },
+ {
+  "operation": "create",
+  "method": "create",
+  "condition": "true",
+  "outcome": "allow"
+ },
+ {
+  "operation": "create",
+  "method": "create",
+  "condition": "false",
+  "outcome": "deny"
+ },
+ {
+  "operation": "create",
+  "method": "create",
+  "condition": "request.method == 'get'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "create",
+  "method": "create",
+  "condition": "request.method == 'list'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "create",
+  "method": "create",
+  "condition": "request.method == 'create'",
+  "outcome": "allow"
+ },
+ {
+  "operation": "create",
+  "method": "create",
+  "condition": "request.method == 'update'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "create",
+  "method": "create",
+  "condition": "request.method == 'delete'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "create",
+  "method": "create",
+  "condition": "request.auth == null",
+  "outcome": "allow"
+ },
+ {
+  "operation": "create",
+  "method": "create",
+  "condition": "resource == null",
+  "outcome": "allow"
+ },
+ {
+  "operation": "create",
+  "method": "create",
+  "condition": "request.resource.data.n == 2",
+  "outcome": "allow"
+ },
+ {
+  "operation": "create",
+  "method": "create",
+  "condition": "request.resource.data.keys().hasOnly(['n', 's'])",
+  "outcome": "allow"
+ },
+ {
+  "operation": "create",
+  "method": "create",
+  "condition": "request.resource.id == 'new'",
+  "outcome": "allow"
+ },
+ {
+  "operation": "create",
+  "method": "create",
+  "condition": "request.resource.__name__ == /databases/$(database)/documents/c/new",
+  "outcome": "allow"
+ },
+ {
+  "operation": "create",
+  "method": "create",
+  "condition": "request.path == /databases/$(database)/documents/c/new",
+  "outcome": "allow"
+ },
+ {
+  "operation": "update with a mask",
+  "method": "update",
+  "condition": "true",
+  "outcome": "allow"
+ },
+ {
+  "operation": "update with a mask",
+  "method": "update",
+  "condition": "false",
+  "outcome": "deny"
+ },
+ {
+  "operation": "update with a mask",
+  "method": "update",
+  "condition": "request.method == 'get'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "update with a mask",
+  "method": "update",
+  "condition": "request.method == 'list'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "update with a mask",
+  "method": "update",
+  "condition": "request.method == 'create'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "update with a mask",
+  "method": "update",
+  "condition": "request.method == 'update'",
+  "outcome": "allow"
+ },
+ {
+  "operation": "update with a mask",
+  "method": "update",
+  "condition": "request.method == 'delete'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "update with a mask",
+  "method": "update",
+  "condition": "request.auth == null",
+  "outcome": "allow"
+ },
+ {
+  "operation": "update with a mask",
+  "method": "update",
+  "condition": "resource.data.n == 1",
+  "outcome": "allow"
+ },
+ {
+  "operation": "update with a mask",
+  "method": "update",
+  "condition": "request.resource.data.n == 2",
+  "outcome": "allow"
+ },
+ {
+  "operation": "update with a mask",
+  "method": "update",
+  "condition": "request.resource.data.m == 5",
+  "outcome": "allow"
+ },
+ {
+  "operation": "update with a mask",
+  "method": "update",
+  "condition": "request.resource.data.diff(resource.data).affectedKeys().hasOnly(['n'])",
+  "outcome": "allow"
+ },
+ {
+  "operation": "update with a mask",
+  "method": "update",
+  "condition": "request.resource.id == 'u'",
+  "outcome": "allow"
+ },
+ {
+  "operation": "set over an existing document",
+  "method": "update",
+  "condition": "true",
+  "outcome": "allow"
+ },
+ {
+  "operation": "set over an existing document",
+  "method": "update",
+  "condition": "false",
+  "outcome": "deny"
+ },
+ {
+  "operation": "set over an existing document",
+  "method": "update",
+  "condition": "request.method == 'get'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "set over an existing document",
+  "method": "update",
+  "condition": "request.method == 'list'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "set over an existing document",
+  "method": "update",
+  "condition": "request.method == 'create'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "set over an existing document",
+  "method": "update",
+  "condition": "request.method == 'update'",
+  "outcome": "allow"
+ },
+ {
+  "operation": "set over an existing document",
+  "method": "update",
+  "condition": "request.method == 'delete'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "set over an existing document",
+  "method": "update",
+  "condition": "request.auth == null",
+  "outcome": "allow"
+ },
+ {
+  "operation": "set over an existing document",
+  "method": "update",
+  "condition": "resource.data.n == 1",
+  "outcome": "allow"
+ },
+ {
+  "operation": "set over an existing document",
+  "method": "update",
+  "condition": "request.resource.data.n == 3",
+  "outcome": "allow"
+ },
+ {
+  "operation": "set over an existing document",
+  "method": "update",
+  "condition": "!('m' in request.resource.data)",
+  "outcome": "allow"
+ },
+ {
+  "operation": "set over an existing document",
+  "method": "update",
+  "condition": "request.resource.data.keys().hasOnly(['n'])",
+  "outcome": "allow"
+ },
+ {
+  "operation": "transform",
+  "method": "update",
+  "condition": "true",
+  "outcome": "allow"
+ },
+ {
+  "operation": "transform",
+  "method": "update",
+  "condition": "false",
+  "outcome": "deny"
+ },
+ {
+  "operation": "transform",
+  "method": "update",
+  "condition": "request.method == 'get'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "transform",
+  "method": "update",
+  "condition": "request.method == 'list'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "transform",
+  "method": "update",
+  "condition": "request.method == 'create'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "transform",
+  "method": "update",
+  "condition": "request.method == 'update'",
+  "outcome": "allow"
+ },
+ {
+  "operation": "transform",
+  "method": "update",
+  "condition": "request.method == 'delete'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "transform",
+  "method": "update",
+  "condition": "request.auth == null",
+  "outcome": "allow"
+ },
+ {
+  "operation": "transform",
+  "method": "update",
+  "condition": "request.resource.data.n == 2",
+  "outcome": "allow"
+ },
+ {
+  "operation": "transform",
+  "method": "update",
+  "condition": "request.resource.data.ts == request.time",
+  "outcome": "allow"
+ },
+ {
+  "operation": "transform",
+  "method": "update",
+  "condition": "request.resource.data.ts is timestamp",
+  "outcome": "allow"
+ },
+ {
+  "operation": "update with a server timestamp",
+  "method": "update",
+  "condition": "true",
+  "outcome": "allow"
+ },
+ {
+  "operation": "update with a server timestamp",
+  "method": "update",
+  "condition": "false",
+  "outcome": "deny"
+ },
+ {
+  "operation": "update with a server timestamp",
+  "method": "update",
+  "condition": "request.method == 'get'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "update with a server timestamp",
+  "method": "update",
+  "condition": "request.method == 'list'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "update with a server timestamp",
+  "method": "update",
+  "condition": "request.method == 'create'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "update with a server timestamp",
+  "method": "update",
+  "condition": "request.method == 'update'",
+  "outcome": "allow"
+ },
+ {
+  "operation": "update with a server timestamp",
+  "method": "update",
+  "condition": "request.method == 'delete'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "update with a server timestamp",
+  "method": "update",
+  "condition": "request.auth == null",
+  "outcome": "allow"
+ },
+ {
+  "operation": "update with a server timestamp",
+  "method": "update",
+  "condition": "request.resource.data.ts == request.time",
+  "outcome": "allow"
+ },
+ {
+  "operation": "update with a server timestamp",
+  "method": "update",
+  "condition": "request.resource.data.n == 2",
+  "outcome": "allow"
+ },
+ {
+  "operation": "delete",
+  "method": "delete",
+  "condition": "true",
+  "outcome": "allow"
+ },
+ {
+  "operation": "delete",
+  "method": "delete",
+  "condition": "false",
+  "outcome": "deny"
+ },
+ {
+  "operation": "delete",
+  "method": "delete",
+  "condition": "request.method == 'get'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "delete",
+  "method": "delete",
+  "condition": "request.method == 'list'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "delete",
+  "method": "delete",
+  "condition": "request.method == 'create'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "delete",
+  "method": "delete",
+  "condition": "request.method == 'update'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "delete",
+  "method": "delete",
+  "condition": "request.method == 'delete'",
+  "outcome": "allow"
+ },
+ {
+  "operation": "delete",
+  "method": "delete",
+  "condition": "request.auth == null",
+  "outcome": "allow"
+ },
+ {
+  "operation": "delete",
+  "method": "delete",
+  "condition": "resource.data.n == 1",
+  "outcome": "allow"
+ },
+ {
+  "operation": "delete",
+  "method": "delete",
+  "condition": "request.resource == null",
+  "outcome": "allow"
+ },
+ {
+  "operation": "delete",
+  "method": "delete",
+  "condition": "request.path == /databases/$(database)/documents/c/del",
+  "outcome": "allow"
+ },
+ {
+  "operation": "delete missing",
+  "method": "delete",
+  "condition": "true",
+  "outcome": "allow"
+ },
+ {
+  "operation": "delete missing",
+  "method": "delete",
+  "condition": "false",
+  "outcome": "deny"
+ },
+ {
+  "operation": "delete missing",
+  "method": "delete",
+  "condition": "request.method == 'get'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "delete missing",
+  "method": "delete",
+  "condition": "request.method == 'list'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "delete missing",
+  "method": "delete",
+  "condition": "request.method == 'create'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "delete missing",
+  "method": "delete",
+  "condition": "request.method == 'update'",
+  "outcome": "deny"
+ },
+ {
+  "operation": "delete missing",
+  "method": "delete",
+  "condition": "request.method == 'delete'",
+  "outcome": "allow"
+ },
+ {
+  "operation": "delete missing",
+  "method": "delete",
+  "condition": "request.auth == null",
+  "outcome": "allow"
+ },
+ {
+  "operation": "delete missing",
+  "method": "delete",
+  "condition": "resource == null",
+  "outcome": "allow"
+ }
+]
