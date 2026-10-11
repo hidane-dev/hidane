@@ -19,5 +19,5 @@ options and a tentative placeholder. Decisions are made in Phase 1 through the l
 | [0002](0002-storage-engine.md) | Storage engine (in-memory / redb / SQLite) | Accepted |
 | [0003](0003-grpc-stack.md) | gRPC stack (tonic) and sharing one port with REST / WebChannel | Accepted |
 | [0004](0004-webchannel-phase.md) | Why WebChannel is scheduled for v0.3 | Draft |
-| [0005](0005-rules-engine.md) | Security Rules evaluator approach | Draft |
+| [0005](0005-rules-engine.md) | Security Rules evaluator approach (hand-written, no cel-rust) | Accepted |
 | [0006](0006-launch-under-firebase-tools.md) | Launching under firebase-tools: a scoped `java` shim (`hidane exec`), a firebase-tools change later | Accepted |
