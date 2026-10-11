@@ -55,14 +55,18 @@ The macOS binaries are not signed or notarized yet. Archives fetched with `curl`
    | Job | Publishes |
    |---|---|
    | `crates.io` | `hidane-proto`, `hidane-core`, then `hidane`; `cargo install` and `cargo binstall` then work |
-   | `npm` | the five `@hidane-dev/<platform>` packages, then `hidane` (`packaging/npm/assemble.mjs`), with provenance |
+   | `npm` | **stages** the five `@hidane-dev/<platform>` packages, then `hidane` (`packaging/npm/assemble.mjs`, `stage.sh`), with provenance. Approve them on npmjs.com with 2FA, the platform packages first |
    | `pub.dev` | `packaging/pub` |
    | `ghcr.io/hidane-dev/hidane` | the image for linux/amd64 and linux/arm64, tagged `<version>`, `<major>.<minor>` and `latest` |
    | `Homebrew tap` | `Formula/hidane.rb` in hidane-dev/homebrew-tap, or the formula in the job summary when `HOMEBREW_TAP_TOKEN` is not set |
 
    crates.io, npm and pub.dev are reached through trusted publishing: each job gets a
-   short-lived token for this workflow, and no registry token is stored in the repository. A
-   failed job can be re-run; the crates.io and npm jobs skip versions that are already published.
+   short-lived token for this workflow, and no registry token is stored in the repository. npm
+   is staged rather than published: each version waits on npmjs.com until a maintainer approves
+   it with 2FA (from the package's staged versions, or `npm stage list` / `npm stage approve`).
+   A failed job can be re-run; the crates.io and npm jobs skip versions that are already published
+   (or staged). Re-running a job uses the workflow as it was at the tag; `mise run npm:stage
+   v<version>` stages a release's npm packages by hand.
 5. Deploy hidane.dev (`mise run site:deploy`, `bun run deploy` in `website/`), whose `install.sh`
    installs the latest release.
 
@@ -85,7 +89,8 @@ it can be configured. The registries and the GitHub settings below are set up on
    ```
 
    Then, for `hidane` and each `@hidane-dev/<platform>` package: *Settings → Trusted publishing →
-   GitHub Actions*, repository `hidane-dev/hidane`, workflow `release.yml`.
+   GitHub Actions*, repository `hidane-dev/hidane`, workflow `release.yml`, allowed actions
+   `npm stage publish` only (direct `npm publish` stays off).
 3. **crates.io**: publish `hidane-proto` and `hidane-core` once with an API token, at any version
    before the first release (a release candidate): `mise run crates:bootstrap` (`cargo publish -p
    hidane-proto`, then `-p hidane-core`). Then, for `hidane`,

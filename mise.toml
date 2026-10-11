@@ -26,6 +26,17 @@ done
 rm -rf "$out"
 '''
 
+[tasks."npm:stage"]
+description = "Stage a release's npm packages from its GitHub Release, for approval on npmjs.com (the release workflow does this itself; this repeats it by hand)"
+usage = 'arg "<tag>" help="The release tag, such as v0.1.0"'
+run = '''
+out=$(mktemp -d)
+gh release download "$usage_tag" --repo hidane-dev/hidane --pattern 'hidane-*' --dir "$out/dist"
+node packaging/npm/assemble.mjs "${usage_tag#v}" "$out/dist" "$out/npm"
+sh packaging/npm/stage.sh "${usage_tag#v}" "$out/npm"
+rm -rf "$out"
+'''
+
 [tasks."crates:bootstrap"]
 description = "Publish hidane-proto and hidane-core to crates.io once, at the current version, so trusted publishing can be configured for them"
 run = '''
