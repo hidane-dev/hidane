@@ -200,7 +200,6 @@ impl Store for SeededStore {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
 
     use hidane_core::store::MemoryStore;
     use hidane_proto::google::firestore::v1::{Value, value::ValueType};
@@ -211,7 +210,7 @@ mod tests {
         ExportedDocument {
             database_id: database_id.to_owned(),
             path: ResourcePath::parse(path).unwrap(),
-            fields: BTreeMap::from([(
+            fields: hidane_core::field_path::Fields::from([(
                 "n".to_owned(),
                 Value {
                     value_type: Some(ValueType::IntegerValue(n)),

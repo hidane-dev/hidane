@@ -17,6 +17,7 @@
 
 pub mod export;
 pub mod field_path;
+pub mod hash_order;
 pub mod key;
 pub mod normalize;
 pub mod order;

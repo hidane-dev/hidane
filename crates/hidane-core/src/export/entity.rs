@@ -16,8 +16,6 @@
 //! official emulator imports it so. It is decoded with an empty project
 //! ([`ExportedDocument::fields_in`] fills it in); references anywhere else keep theirs.
 
-use std::collections::BTreeMap;
-
 use super::{
     ExportedDocument,
     wire::{Field, Malformed, Reader, Writer},
@@ -33,6 +31,7 @@ use hidane_proto::google::{
     firestore::v1::{ArrayValue, MapValue, Value, value::ValueType},
     r#type::LatLng,
 };
+use hidane_proto::ordered::Fields;
 
 const DEFAULT_DATABASE: &str = "(default)";
 const VECTOR_PROPERTY: &str = "__vector__";
@@ -80,12 +79,7 @@ const ENTITY_PROTO: u64 = 19;
 const EMPTY_LIST: u64 = 24;
 
 /// Encodes the document at `path` of `projects/{project}/databases/{database_id}`.
-pub fn encode(
-    project: &str,
-    database_id: &str,
-    path: &ResourcePath,
-    fields: &BTreeMap<String, Value>,
-) -> Vec<u8> {
+pub fn encode(project: &str, database_id: &str, path: &ResourcePath, fields: &Fields) -> Vec<u8> {
     let segments: Vec<&str> = path.segments().collect();
     let mut w = Writer::default();
     w.message(KEY, |key| {
@@ -129,7 +123,7 @@ fn array(value: &Value) -> Option<&[Value]> {
     }
 }
 
-fn properties(w: &mut Writer, fields: &BTreeMap<String, Value>) {
+fn properties(w: &mut Writer, fields: &Fields) {
     for (name, value) in fields {
         if array(value).is_some_and(<[Value]>::is_empty) {
             w.message(PROPERTY, |p| {
@@ -237,7 +231,7 @@ fn nested(map: &MapValue) -> Vec<u8> {
 pub fn decode(bytes: &[u8]) -> Result<ExportedDocument, Malformed> {
     let mut database_id = DEFAULT_DATABASE.to_owned();
     let mut segments = None;
-    let mut fields = BTreeMap::new();
+    let mut fields = Fields::new();
     for field in Reader::new(bytes) {
         let (number, value) = field?;
         match number {
@@ -318,7 +312,7 @@ enum Relative {
 }
 
 fn decode_property(
-    fields: &mut BTreeMap<String, Value>,
+    fields: &mut Fields,
     field: Field<'_>,
     relative: Relative,
 ) -> Result<(), Malformed> {
@@ -448,7 +442,7 @@ fn decode_reference(field: Field<'_>, relative: Relative) -> Result<String, Malf
 
 /// A nested entity: a map, or a vector when its properties are `__vector__`.
 fn decode_nested(bytes: &[u8]) -> Result<Value, Malformed> {
-    let mut fields = BTreeMap::new();
+    let mut fields = Fields::new();
     for field in Reader::new(bytes) {
         let (number, field) = field?;
         if number == PROPERTY || number == RAW_PROPERTY {
@@ -460,7 +454,7 @@ fn decode_nested(bytes: &[u8]) -> Result<Value, Malformed> {
             Some(ValueType::ArrayValue(_)) => elements,
             _ => array_value(vec![elements]),
         };
-        fields = BTreeMap::from([
+        fields = Fields::from_iter([
             (
                 VECTOR_TYPE_KEY.to_owned(),
                 Value {

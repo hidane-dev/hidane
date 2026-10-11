@@ -4,11 +4,12 @@
 //! segment matches `[a-zA-Z_][a-zA-Z_0-9]*`; any other segment is wrapped in backticks, where
 //! `` \` `` and `\\` are escapes.
 
-use std::{collections::BTreeMap, fmt};
+use std::fmt;
 
 use hidane_proto::google::firestore::v1::{MapValue, Value, value::ValueType};
+pub use hidane_proto::ordered::Fields;
 
-pub type Fields = BTreeMap<String, Value>;
+use crate::hash_order::hash_order;
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FieldPath(Vec<String>);
@@ -159,25 +160,130 @@ pub fn delete(fields: &mut Fields, path: &FieldPath) {
     current.remove(last);
 }
 
-/// Keeps only the fields named by `paths` (a read mask).
+/// Masked paths as a tree of segments. Each level lists its names in the order they first
+/// appear in the mask.
+#[derive(Default)]
+struct MaskTree {
+    /// The mask names this exact path: its whole value is taken.
+    whole: bool,
+    children: Vec<(String, MaskTree)>,
+}
+
+impl MaskTree {
+    fn new(paths: &[FieldPath]) -> Self {
+        let mut root = Self::default();
+        for path in paths {
+            let mut node = &mut root;
+            for segment in path.segments() {
+                let at = match node.children.iter().position(|(name, _)| name == segment) {
+                    Some(at) => at,
+                    None => {
+                        node.children.push((segment.clone(), Self::default()));
+                        node.children.len() - 1
+                    }
+                };
+                node = &mut node.children[at].1;
+            }
+            node.whole = true;
+        }
+        root
+    }
+
+    /// The names of this level in the order the official emulator visits them: the order of
+    /// a Java `HashMap` that received them in mask order.
+    fn ordered(&self) -> impl Iterator<Item = &(String, MaskTree)> {
+        let names: Vec<&str> = self
+            .children
+            .iter()
+            .map(|(name, _)| name.as_str())
+            .collect();
+        hash_order(&names).into_iter().map(|i| &self.children[i])
+    }
+}
+
+/// `entries` in the order of a Java `HashMap` that received them in turn.
+fn in_hash_order<T>(mut entries: Vec<(String, T)>) -> impl Iterator<Item = (String, T)> {
+    let order = hash_order(&entries.iter().map(|(name, _)| name).collect::<Vec<_>>());
+    let mut taken: Vec<Option<(String, T)>> = entries.drain(..).map(Some).collect();
+    order.into_iter().filter_map(move |i| taken[i].take())
+}
+
+fn map_fields(value: &Value) -> Option<&Fields> {
+    match &value.value_type {
+        Some(ValueType::MapValue(map)) => Some(&map.fields),
+        _ => None,
+    }
+}
+
+fn map_of(fields: Fields) -> Value {
+    Value {
+        value_type: Some(ValueType::MapValue(MapValue { fields })),
+    }
+}
+
+/// Keeps only the fields named by `paths` (a read mask). As on the official emulator, each map
+/// lists what it returns in the order of a Java `HashMap`: the masked names are visited in the
+/// order of one, and the values found are put into another (#108).
 pub fn project(fields: &Fields, paths: &[FieldPath]) -> Fields {
-    let mut out = Fields::new();
-    for path in paths {
-        if let Some(value) = get(fields, path) {
-            set(&mut out, path, value.clone());
+    project_level(fields, &MaskTree::new(paths))
+}
+
+fn project_level(fields: &Fields, mask: &MaskTree) -> Fields {
+    let mut found = Vec::new();
+    for (name, below) in mask.ordered() {
+        let Some(value) = fields.get(name) else {
+            continue;
+        };
+        if below.whole {
+            found.push((name.clone(), value.clone()));
+        } else if let Some(map) = map_fields(value) {
+            let inner = project_level(map, below);
+            if !inner.is_empty() {
+                found.push((name.clone(), map_of(inner)));
+            }
         }
     }
-    out
+    in_hash_order(found).collect()
 }
 
 /// Applies an update mask: every masked path takes its value from `input`, or is deleted when
 /// `input` has no value there. Fields outside the mask are untouched, including fields of
 /// `input` that the mask does not name.
+///
+/// Where fields land follows the official emulator (#108): at each level, the masked names are
+/// visited in the order of a Java `HashMap`, those whose value changes are put into another
+/// one, and in that map's order each is removed and, unless deleted, added again at the end.
+/// A map changed inside moves the same way; fields that keep their value stay where they are.
 pub fn apply_mask(existing: &mut Fields, input: &Fields, mask: &[FieldPath]) {
-    for path in mask {
-        match get(input, path) {
-            Some(value) => set(existing, path, value.clone()),
-            None => delete(existing, path),
+    merge_level(existing, Some(input), &MaskTree::new(mask));
+}
+
+fn merge_level(existing: &mut Fields, input: Option<&Fields>, mask: &MaskTree) {
+    let mut changes = Vec::new();
+    for (name, below) in mask.ordered() {
+        let old = existing.get(name);
+        let given = input.and_then(|fields| fields.get(name));
+        let new = if below.whole {
+            given.cloned()
+        } else {
+            let mut inner = old.and_then(map_fields).cloned().unwrap_or_default();
+            merge_level(&mut inner, given.and_then(map_fields), below);
+            match old {
+                // A map, or something the masked paths below turn into one.
+                Some(old) if map_fields(old).is_some() || !inner.is_empty() => Some(map_of(inner)),
+                Some(old) => Some(old.clone()),
+                None if inner.is_empty() => None,
+                None => Some(map_of(inner)),
+            }
+        };
+        if new.as_ref() != old {
+            changes.push((name.clone(), new));
+        }
+    }
+    for (name, new) in in_hash_order(changes) {
+        existing.remove(&name);
+        if let Some(value) = new {
+            existing.insert(name, value);
         }
     }
 }
@@ -303,6 +409,142 @@ mod tests {
             ),
             fields(&[("b", map(&[("x", int(1))])), ("c", int(3))])
         );
+    }
+
+    /// The names of `fields`, nested maps as `name{...}`, in the order they are held.
+    fn layout(fields: &Fields) -> String {
+        fields
+            .iter()
+            .map(|(name, value)| match &value.value_type {
+                Some(ValueType::MapValue(map)) => format!("{name}{{{}}}", layout(&map.fields)),
+                _ => name.clone(),
+            })
+            .collect::<Vec<_>>()
+            .join(",")
+    }
+
+    // The cases below are recorded from the official emulator in
+    // crates/hidane/tests/fixtures/field_order.json (#108).
+
+    #[test]
+    fn masked_fields_that_change_move_to_the_end_in_hash_order() {
+        let base = || {
+            fields(&[
+                ("zeta", int(1)),
+                ("alpha", int(2)),
+                ("mid", map(&[("z", int(3)), ("a", int(4))])),
+            ])
+        };
+        let mut doc = base();
+        apply_mask(
+            &mut doc,
+            &fields(&[("beta", int(9)), ("alpha", int(10))]),
+            &[fp("beta"), fp("alpha")],
+        );
+        assert_eq!(layout(&doc), "zeta,mid{z,a},alpha,beta");
+
+        // alpha keeps its value, so it stays.
+        let mut doc = base();
+        apply_mask(
+            &mut doc,
+            &fields(&[
+                ("deep", map(&[("x", map(&[("y", int(1))]))])),
+                ("alpha", int(2)),
+            ]),
+            &[fp("deep.x.y"), fp("alpha")],
+        );
+        assert_eq!(layout(&doc), "zeta,alpha,mid{z,a},deep{x{y}}");
+    }
+
+    #[test]
+    fn a_map_changed_inside_moves_to_the_end() {
+        let base = || {
+            fields(&[
+                ("mid", map(&[("z", int(3)), ("a", int(4))])),
+                ("zeta", int(1)),
+                ("alpha", int(2)),
+            ])
+        };
+        let mut doc = base();
+        apply_mask(
+            &mut doc,
+            &fields(&[("mid", map(&[("b", int(5))]))]),
+            &[fp("mid.b")],
+        );
+        assert_eq!(layout(&doc), "zeta,alpha,mid{z,a,b}");
+
+        let mut doc = base();
+        apply_mask(&mut doc, &Fields::new(), &[fp("mid.z")]);
+        assert_eq!(layout(&doc), "zeta,alpha,mid{a}");
+
+        let mut doc = fields(&[
+            ("p", map(&[("x", int(1)), ("y", int(2))])),
+            ("alpha", int(1)),
+            ("zeta", int(2)),
+            ("mid", int(3)),
+        ]);
+        apply_mask(
+            &mut doc,
+            &fields(&[("alpha", int(9))]),
+            &[fp("p.y"), fp("alpha")],
+        );
+        assert_eq!(layout(&doc), "zeta,mid,p{x},alpha");
+    }
+
+    #[test]
+    fn the_changed_fields_have_a_hash_map_of_their_own() {
+        let present = [
+            "str", "int", "dbl", "zeta", "alpha", "a", "b", "c", "x1", "x2", "x3",
+        ];
+        let doc_with = |extra: &[(&str, Value)]| {
+            let mut doc = fields(&[("keep", int(0))]);
+            for (n, name) in present.iter().enumerate() {
+                doc.insert((*name).to_owned(), int(n as i64));
+            }
+            doc.extend(extra.iter().map(|(k, v)| ((*k).to_owned(), v.clone())));
+            doc
+        };
+        let input: Fields = present
+            .iter()
+            .enumerate()
+            .map(|(n, name)| ((*name).to_owned(), int(n as i64 + 100)))
+            .collect();
+        let mask: Vec<FieldPath> = present
+            .iter()
+            .chain(&["gone1", "gone2"])
+            .map(|p| fp(p))
+            .collect();
+
+        // Thirteen masked names, eleven changes: the changes fit 16 buckets.
+        let mut doc = doc_with(&[]);
+        apply_mask(&mut doc, &input, &mask);
+        assert_eq!(layout(&doc), "keep,zeta,str,a,b,c,alpha,x1,x2,x3,int,dbl");
+
+        // Deleting two fields makes thirteen changes: 32 buckets.
+        let mut doc = doc_with(&[("gone1", int(1)), ("gone2", int(2))]);
+        apply_mask(&mut doc, &input, &mask);
+        assert_eq!(layout(&doc), "keep,zeta,a,b,c,int,dbl,str,alpha,x1,x2,x3");
+    }
+
+    #[test]
+    fn read_masks_return_fields_in_hash_order() {
+        let doc = fields(&[
+            ("str", int(1)),
+            ("mid", map(&[("z", int(1)), ("a", int(2))])),
+            ("zeta", int(3)),
+            ("alpha", int(4)),
+            ("a", int(5)),
+        ]);
+        let masked = |mask: &[&str]| {
+            layout(&project(
+                &doc,
+                &mask.iter().map(|p| fp(p)).collect::<Vec<_>>(),
+            ))
+        };
+        assert_eq!(masked(&["a", "alpha", "zeta"]), "zeta,a,alpha");
+        assert_eq!(masked(&["mid.a", "mid.z", "str"]), "str,mid{a,z}");
+        // A masked map keeps its own order.
+        assert_eq!(masked(&["mid", "str"]), "str,mid{z,a}");
     }
 
     #[test]

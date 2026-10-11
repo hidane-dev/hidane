@@ -3,7 +3,7 @@
 //! one recorded case over gRPC: status codes always match; messages match where hidane uses
 //! the official wording (docs/parity-exceptions.md lists the exceptions).
 
-use std::{collections::BTreeMap, net::SocketAddr};
+use std::net::SocketAddr;
 
 use hidane_proto::google::firestore::v1::{
     ArrayValue, BatchGetDocumentsRequest, BatchWriteRequest, CommitRequest, CreateDocumentRequest,
@@ -85,7 +85,7 @@ fn map(entries: &[(&str, Value)]) -> Value {
     }
 }
 
-fn fields(entries: &[(&str, Value)]) -> BTreeMap<String, Value> {
+fn fields(entries: &[(&str, Value)]) -> hidane_proto::ordered::Fields {
     entries
         .iter()
         .map(|(k, v)| ((*k).to_owned(), v.clone()))

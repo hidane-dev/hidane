@@ -17,6 +17,7 @@
 pub mod cli;
 pub mod export;
 mod firestore;
+mod ordered_json;
 mod rest;
 mod webchannel;
 

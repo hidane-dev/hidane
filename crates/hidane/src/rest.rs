@@ -29,6 +29,8 @@ use serde_json::{Map, Value as Json};
 use tokio_stream::StreamExt;
 use tonic::{Code, Status, codegen::BoxStream};
 
+use crate::ordered_json;
+
 use crate::FirestoreService;
 
 const INVALID_PAYLOAD: &str = "Payload isn't valid for request.";
@@ -36,10 +38,13 @@ const INVALID_PAYLOAD: &str = "Payload isn't valid for request.";
 /// The largest body the official emulator's REST layer reads; one byte more is `413`.
 const MAX_BODY: usize = 16 * 1024 * 1024;
 
+/// The descriptors JSON goes through: the ordered ones, where document fields and map values
+/// are lists of entries, so their order survives (`ordered_json`, #108).
 pub(crate) fn pool() -> &'static DescriptorPool {
     static POOL: OnceLock<DescriptorPool> = OnceLock::new();
     POOL.get_or_init(|| {
-        DescriptorPool::decode(hidane_proto::FILE_DESCRIPTOR_SET).expect("embedded descriptors")
+        DescriptorPool::decode(hidane_proto::ORDERED_FILE_DESCRIPTOR_SET)
+            .expect("embedded descriptors")
     })
 }
 
@@ -452,7 +457,9 @@ fn finish<T: Message + Default>(
     for (field, value) in path {
         map.insert((*field).to_owned(), Json::String(value.clone()));
     }
-    let message = DynamicMessage::deserialize(desc, json.clone()).map_err(|_| invalid())?;
+    let mut json = json.clone();
+    ordered_json::objects_to_entries(&mut json, &desc);
+    let message = DynamicMessage::deserialize(desc, json).map_err(|_| invalid())?;
     let message: T = message.transcode_to().map_err(|_| invalid())?;
     let mut request = tonic::Request::new(message);
     if let Some(authorization) = &call.authorization
@@ -683,7 +690,11 @@ fn print_message(message: &DynamicMessage, indent: usize, out: &mut String) {
             " ".repeat(indent + 2),
             json_string(field.json_name())
         );
-        print_value(&value, &field.kind(), indent + 2, &mut entry);
+        if ordered_json::is_ordered(&field) {
+            print_ordered(&value, indent + 2, &mut entry);
+        } else {
+            print_value(&value, &field.kind(), indent + 2, &mut entry);
+        }
         entries.push(entry);
     }
     if entries.is_empty() {
@@ -745,6 +756,40 @@ fn print_value(value: &Value, kind: &Kind, indent: usize, out: &mut String) {
                 let _ = write!(out, "{{\n{}\n{}}}", printed.join(",\n"), " ".repeat(indent));
             }
         }
+    }
+}
+
+/// An ordered map (a list of `key` / `value` entries) as the object it is, in its order.
+fn print_ordered(entries: &Value, indent: usize, out: &mut String) {
+    let Value::List(entries) = entries else {
+        return;
+    };
+    let printed: Vec<String> = entries
+        .iter()
+        .filter_map(Value::as_message)
+        .map(|entry| {
+            let key = entry
+                .get_field_by_name("key")
+                .and_then(|key| key.as_str().map(str::to_owned))
+                .unwrap_or_default();
+            let mut printed = format!("{}{}: ", " ".repeat(indent + 2), json_string(&key));
+            let field = entry
+                .descriptor()
+                .get_field_by_name("value")
+                .expect("entry value");
+            print_value(
+                &entry.get_field(&field),
+                &field.kind(),
+                indent + 2,
+                &mut printed,
+            );
+            printed
+        })
+        .collect();
+    if printed.is_empty() {
+        let _ = write!(out, "{{\n{}}}", " ".repeat(indent));
+    } else {
+        let _ = write!(out, "{{\n{}\n{}}}", printed.join(",\n"), " ".repeat(indent));
     }
 }
 

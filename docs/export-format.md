@@ -191,7 +191,8 @@ documents as its own, and the reverse; with firebase-tools 15.33.0,
 `hidane exec -- firebase emulators:exec --export-on-exit … --import …` round-trips through either
 emulator. Differences, all without effect on what is imported:
 
-- Entities are written in document name order, fields in name order (#108).
+- Entities are written in document name order. Their fields are in the document's order, empty
+  arrays first, as the official emulator writes them (#108).
 - A seed holding documents of another database leaves them out. The official emulator keeps them
   in the seeded database, where no read finds them, and writes them into that database's exports.
 - `--export-on-exit` prints a warning that it exports nothing.

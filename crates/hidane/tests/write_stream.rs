@@ -58,7 +58,7 @@ fn int(n: i64) -> Value {
 }
 
 fn write(documents: &str, w: &Json) -> Write {
-    let mut fields = std::collections::BTreeMap::new();
+    let mut fields = hidane_proto::ordered::Fields::new();
     if let Some(n) = w["n"].as_i64() {
         fields.insert("n".to_owned(), int(n));
     }

@@ -169,7 +169,7 @@ impl Context {
         } else if let Some(name) = w["verify"].as_str() {
             Operation::Verify(self.name(name))
         } else {
-            let mut fields = std::collections::BTreeMap::new();
+            let mut fields = hidane_proto::ordered::Fields::new();
             if let Some(n) = w["n"].as_i64() {
                 fields.insert(
                     "n".to_owned(),

@@ -223,10 +223,11 @@ fn compare_vectors(a: &MapValue, b: &MapValue) -> Ordering {
 }
 
 fn compare_maps(a: &MapValue, b: &MapValue) -> Ordering {
-    // `fields` is a BTreeMap, so both iterate in UTF-8 key order.
+    // Maps compare in UTF-8 key order, whatever order their fields are held in.
     a.fields
-        .iter()
-        .zip(&b.fields)
+        .sorted()
+        .into_iter()
+        .zip(b.fields.sorted())
         .map(|((ka, va), (kb, vb))| ka.cmp(kb).then_with(|| compare(va, vb)))
         .find(|o| o.is_ne())
         .unwrap_or_else(|| a.fields.len().cmp(&b.fields.len()))

@@ -149,7 +149,11 @@ fn any_value() -> impl Strategy<Value = Value> {
                 inner,
                 0..4
             )
-            .prop_map(|fields| wrap(ValueType::MapValue(MapValue { fields }))),
+            .prop_map(|fields| {
+                wrap(ValueType::MapValue(MapValue {
+                    fields: fields.into_iter().collect(),
+                }))
+            }),
         ]
     })
 }

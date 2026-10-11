@@ -16,9 +16,10 @@
 
 mod memory;
 
-use std::{collections::BTreeMap, fmt, ops::ControlFlow, sync::Arc};
+use std::{fmt, ops::ControlFlow, sync::Arc};
 
-use hidane_proto::google::firestore::v1::{MapValue, Value};
+use hidane_proto::google::firestore::v1::{ArrayValue, MapValue, Value, value::ValueType};
+use hidane_proto::ordered::Fields;
 use prost::Message as _;
 use prost_types::Timestamp;
 
@@ -65,7 +66,7 @@ pub struct StoredDocument {
 impl StoredDocument {
     pub fn new(
         path: Arc<ResourcePath>,
-        fields: BTreeMap<String, Value>,
+        fields: Fields,
         create_time: Timestamp,
         update_time: Timestamp,
     ) -> Self {
@@ -78,7 +79,7 @@ impl StoredDocument {
     }
 
     /// The document's fields, decoded.
-    pub fn fields(&self) -> BTreeMap<String, Value> {
+    pub fn fields(&self) -> Fields {
         MapValue::decode(&*self.encoded_fields)
             .expect("fields were encoded by StoredDocument::new")
             .fields
@@ -90,13 +91,40 @@ impl StoredDocument {
     }
 
     /// Whether the document holds exactly `fields`, bit for bit: unlike `==` on the decoded
-    /// fields, a NaN equals itself and `-0.0` differs from `0.0`.
-    pub fn has_fields(&self, fields: &BTreeMap<String, Value>) -> bool {
-        let fields = MapValue {
-            fields: fields.clone(),
+    /// fields, a NaN equals itself and `-0.0` differs from `0.0`. The order of the fields does
+    /// not matter.
+    pub fn has_fields(&self, fields: &Fields) -> bool {
+        let canonical = |fields: &Fields| {
+            MapValue {
+                fields: canonical(fields),
+            }
+            .encode_to_vec()
         };
-        fields.encoded_len() == self.encoded_fields.len()
-            && *fields.encode_to_vec() == *self.encoded_fields
+        fields.len() == self.fields().len() && canonical(fields) == canonical(&self.fields())
+    }
+}
+
+/// `fields` with every map, nested ones included, in UTF-8 key order.
+fn canonical(fields: &Fields) -> Fields {
+    fields
+        .sorted()
+        .into_iter()
+        .map(|(key, value)| (key.clone(), canonical_value(value)))
+        .collect()
+}
+
+fn canonical_value(value: &Value) -> Value {
+    let value_type = match &value.value_type {
+        Some(ValueType::MapValue(map)) => ValueType::MapValue(MapValue {
+            fields: canonical(&map.fields),
+        }),
+        Some(ValueType::ArrayValue(array)) => ValueType::ArrayValue(ArrayValue {
+            values: array.values.iter().map(canonical_value).collect(),
+        }),
+        _ => return value.clone(),
+    };
+    Value {
+        value_type: Some(value_type),
     }
 }
 
@@ -149,7 +177,7 @@ pub trait WriteBatch {
     fn get(&self, path: &ResourcePath) -> Option<Arc<StoredDocument>>;
 
     /// Replaces the document's fields. Keeps `create_time` if the document exists.
-    fn set(&mut self, path: &ResourcePath, fields: BTreeMap<String, Value>);
+    fn set(&mut self, path: &ResourcePath, fields: Fields);
 
     /// Deletes the document. Deleting a missing document is not an error.
     fn delete(&mut self, path: &ResourcePath);

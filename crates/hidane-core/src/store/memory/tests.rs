@@ -1,5 +1,4 @@
 use std::{
-    collections::BTreeMap,
     ops::ControlFlow,
     sync::{
         Arc,
@@ -8,7 +7,10 @@ use std::{
     time::Duration,
 };
 
-use hidane_proto::google::firestore::v1::{Value, value::ValueType};
+use hidane_proto::{
+    google::firestore::v1::{Value, value::ValueType},
+    ordered::Fields,
+};
 
 use super::MemoryStore;
 use crate::{
@@ -28,7 +30,7 @@ fn int(i: i64) -> Value {
     }
 }
 
-fn fields(n: i64) -> BTreeMap<String, Value> {
+fn fields(n: i64) -> Fields {
     [("n".to_owned(), int(n))].into()
 }
 
