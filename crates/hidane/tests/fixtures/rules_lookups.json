@@ -1,0 +1,208 @@
+[
+ {
+  "name": "get: 10 distinct exists",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9);\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "get: 11 distinct exists",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10);\n    }\n  }\n}\n",
+  "status": 403,
+  "message": "\nevaluation error at L5:22 for 'get' @ L5, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'get' @ L5"
+ },
+ {
+  "name": "get: 20 distinct exists",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19);\n    }\n  }\n}\n",
+  "status": 403,
+  "message": "\nevaluation error at L5:22 for 'get' @ L5, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'get' @ L5"
+ },
+ {
+  "name": "get: 21 distinct exists",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19) && !exists(/databases/$(database)/documents/missing/m20);\n    }\n  }\n}\n",
+  "status": 403,
+  "message": "\nevaluation error at L5:22 for 'get' @ L5, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'get' @ L5"
+ },
+ {
+  "name": "get: 15 exists of one document",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0);\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "query: 10 distinct exists",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9);\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "query: 11 distinct exists",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10);\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "single write: 10 distinct exists",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9);\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "single write: 11 distinct exists",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10);\n    }\n  }\n}\n",
+  "status": 403,
+  "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'update' @ L6"
+ },
+ {
+  "name": "single write: 20 distinct exists",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19);\n    }\n  }\n}\n",
+  "status": 403,
+  "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'update' @ L6"
+ },
+ {
+  "name": "single write: 21 distinct exists",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19) && !exists(/databases/$(database)/documents/missing/m20);\n    }\n  }\n}\n",
+  "status": 403,
+  "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'update' @ L6"
+ },
+ {
+  "name": "batch of two writes: 10 distinct exists in each",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9);\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "batch of two writes: 11 distinct exists in each",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10);\n    }\n  }\n}\n",
+  "status": 403,
+  "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'update' @ L6"
+ },
+ {
+  "name": "batch of two writes: 20 distinct exists in each",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19);\n    }\n  }\n}\n",
+  "status": 403,
+  "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'update' @ L6"
+ },
+ {
+  "name": "batch of two writes: 21 distinct exists in each",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19) && !exists(/databases/$(database)/documents/missing/m20);\n    }\n  }\n}\n",
+  "status": 403,
+  "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'update' @ L6"
+ },
+ {
+  "name": "batch of two writes: 6 exists of the write's own documents in each",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3')) && !exists(/databases/$(database)/documents/missing/$(d + '_4')) && !exists(/databases/$(database)/documents/missing/$(d + '_5'));\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "batch of two writes: 10 exists of the write's own documents in each",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3')) && !exists(/databases/$(database)/documents/missing/$(d + '_4')) && !exists(/databases/$(database)/documents/missing/$(d + '_5')) && !exists(/databases/$(database)/documents/missing/$(d + '_6')) && !exists(/databases/$(database)/documents/missing/$(d + '_7')) && !exists(/databases/$(database)/documents/missing/$(d + '_8')) && !exists(/databases/$(database)/documents/missing/$(d + '_9'));\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "batch of two writes: 11 exists of the write's own documents in each",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3')) && !exists(/databases/$(database)/documents/missing/$(d + '_4')) && !exists(/databases/$(database)/documents/missing/$(d + '_5')) && !exists(/databases/$(database)/documents/missing/$(d + '_6')) && !exists(/databases/$(database)/documents/missing/$(d + '_7')) && !exists(/databases/$(database)/documents/missing/$(d + '_8')) && !exists(/databases/$(database)/documents/missing/$(d + '_9')) && !exists(/databases/$(database)/documents/missing/$(d + '_10'));\n    }\n  }\n}\n",
+  "status": 403,
+  "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"w1_10\"\n  }\n}\n]. for 'update' @ L6"
+ },
+ {
+  "name": "batch of four writes: 4 exists of the write's own documents in each",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3'));\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "batch of four writes: 5 exists of the write's own documents in each",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3')) && !exists(/databases/$(database)/documents/missing/$(d + '_4'));\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "batch of four writes: 6 exists of the write's own documents in each",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3')) && !exists(/databases/$(database)/documents/missing/$(d + '_4')) && !exists(/databases/$(database)/documents/missing/$(d + '_5'));\n    }\n  }\n}\n",
+  "status": 403,
+  "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, false for 'update' @ L6, false for 'update' @ L6, false for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"w2_2\"\n  }\n}\n]. for 'update' @ L6"
+ },
+ {
+  "name": "batch of four writes: 7 exists of the write's own documents in each",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3')) && !exists(/databases/$(database)/documents/missing/$(d + '_4')) && !exists(/databases/$(database)/documents/missing/$(d + '_5')) && !exists(/databases/$(database)/documents/missing/$(d + '_6'));\n    }\n  }\n}\n",
+  "status": 403,
+  "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, false for 'update' @ L6, false for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"w3_6\"\n  }\n}\n]. for 'update' @ L6"
+ },
+ {
+  "name": "query: 11 distinct exists, with a filter",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10);\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "query: 21 distinct exists, with a filter",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19) && !exists(/databases/$(database)/documents/missing/m20);\n    }\n  }\n}\n",
+  "status": 403,
+  "message": "\nevaluation error at L5:22 for 'list' @ L5, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m20\"\n  }\n}\n]. for 'list' @ L5"
+ },
+ {
+  "name": "query: 21 distinct exists",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19) && !exists(/databases/$(database)/documents/missing/m20);\n    }\n  }\n}\n",
+  "status": 403,
+  "message": "\nevaluation error at L5:22 for 'list' @ L5, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m20\"\n  }\n}\n]. for 'list' @ L5"
+ },
+ {
+  "name": "get of an existing document",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if get(/databases/$(database)/documents/other/o).data.n == 1;\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "get of a missing document",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if get(/databases/$(database)/documents/missing/x).data.n == 1;\n    }\n  }\n}\n",
+  "status": 403,
+  "message": "\nevaluation error at L5:22 for 'get' @ L5, Null value error. for 'get' @ L5"
+ },
+ {
+  "name": "get of a missing document, absorbed",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if get(/databases/$(database)/documents/missing/x).data.n == 1 || true;\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "exists of an existing document",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if exists(/databases/$(database)/documents/other/o);\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "get with a variable",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if get(/databases/$(database)/documents/other/$(d)).data.n == 1;\n    }\n  }\n}\n",
+  "status": 404,
+  "message": "Document (projects/lookups/databases/(default)/documents/c/o) not found."
+ },
+ {
+  "name": "get in a function",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function n(id) {\n      return get(/databases/$(database)/documents/other/$(id)).data.n;\n    }\n    match /c/{d} {\n      allow read: if n('o') == 1;\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "getAfter sees the write",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if getAfter(/databases/$(database)/documents/c/$(d)).data.n == 2;\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "get sees the state before",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if get(/databases/$(database)/documents/c/$(d)).data.n == 1;\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "existsAfter of another write in the batch",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if d != 'a' || existsAfter(/databases/$(database)/documents/c/b);\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "existsAfter of a document the batch deletes",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if d != 'a' || !existsAfter(/databases/$(database)/documents/other/o);\n    }\n    match /other/{o} {\n      allow write: if true;\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "get of a document the batch deletes",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if d != 'a' || get(/databases/$(database)/documents/other/o).data.n == 1;\n    }\n    match /other/{o} {\n      allow write: if true;\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "getAfter in a transaction-less single write of another document",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if getAfter(/databases/$(database)/documents/other/o).data.n == 1;\n    }\n  }\n}\n",
+  "status": 200
+ },
+ {
+  "name": "getAfter on a read",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if getAfter(/databases/$(database)/documents/other/o).data.n == 1;\n    }\n  }\n}\n",
+  "status": 200
+ }
+]
