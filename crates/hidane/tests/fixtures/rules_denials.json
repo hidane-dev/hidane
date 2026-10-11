@@ -1,141 +1,661 @@
-{
- "results": [
-  {
-   "name": "false",
-   "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if false;\n    }\n  }\n}\n",
-   "request": {
+[
+ {
+  "name": "false",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-0/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~denials-0, path=/c/d]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-0:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
     "method": "GET",
     "path": "/v1/projects/denials-0/databases/(default)/documents/c/d",
-    "body": null
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'get' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "false, two lines",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-1/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~denials-1, path=/c/d]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
    },
-   "status": 403,
-   "contentType": "application/json",
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nfalse for 'get' @ L5\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "false, two lines",
-   "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if\n        false;\n    }\n  }\n}\n",
-   "request": {
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-1:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if\n        false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
     "method": "GET",
     "path": "/v1/projects/denials-1/databases/(default)/documents/c/d",
-    "body": null
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'get' @ L6",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "error",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-2/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~denials-2, path=/c/d]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
    },
-   "status": 403,
-   "contentType": "application/json",
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nfalse for 'get' @ L6\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "error",
-   "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if int('a') == 1;\n    }\n  }\n}\n",
-   "request": {
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-2:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if int('a') == 1;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
     "method": "GET",
     "path": "/v1/projects/denials-2/databases/(default)/documents/c/d",
-    "body": null
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nType conversion error. Argument: [a], From type: [string], To type: [int]. for 'get' @ L5, Type conversion error. Argument: [a], From type: [string], To type: [int]. for 'get' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "error in a function",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-3/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~denials-3, path=/c/d]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
    },
-   "status": 403,
-   "contentType": "application/json",
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nType conversion error. Argument: [a], From type: [string], To type: [int]. for 'get' @ L5, Type conversion error. Argument: [a], From type: [string], To type: [int]. for 'get' @ L5\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "error in a function",
-   "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f() {\n      return int('a') == 1;\n    }\n    match /c/{d} {\n      allow read: if f();\n    }\n  }\n}\n",
-   "request": {
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-3:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f() {\n      return int('a') == 1;\n    }\n    match /c/{d} {\n      allow read: if f();\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
     "method": "GET",
     "path": "/v1/projects/denials-3/databases/(default)/documents/c/d",
-    "body": null
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nType conversion error. Argument: [a], From type: [string], To type: [int]. for 'get' @ L8, Type conversion error. Argument: [a], From type: [string], To type: [int]. for 'get' @ L8",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing field",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-4/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~denials-4, path=/c/d]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
    },
-   "status": 403,
-   "contentType": "application/json",
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nType conversion error. Argument: [a], From type: [string], To type: [int]. for 'get' @ L8, Type conversion error. Argument: [a], From type: [string], To type: [int]. for 'get' @ L8\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "missing field",
-   "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if resource.data.missing == 1;\n    }\n  }\n}\n",
-   "request": {
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-4:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if resource.data.missing == 1;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
     "method": "GET",
     "path": "/v1/projects/denials-4/databases/(default)/documents/c/d",
-    "body": null
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nevaluation error at L5:22 for 'get' @ L5, Property missing is undefined on object. for 'get' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "no allow for the method",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-5/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~denials-5, path=/c/d]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
    },
-   "status": 403,
-   "contentType": "application/json",
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nevaluation error at L5:22 for 'get' @ L5, Property missing is undefined on object. for 'get' @ L5\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "no allow for the method",
-   "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n",
-   "request": {
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-5:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
     "method": "GET",
     "path": "/v1/projects/denials-5/databases/(default)/documents/c/d",
-    "body": null
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "no matching path",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-6/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~denials-6, path=/c/d]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
    },
-   "status": 403,
-   "contentType": "application/json",
-   "response": "{\"error\":{\"code\":403,\"message\":\"No matching allow statements\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "no matching path",
-   "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /x/{d} {\n      allow read: if true;\n    }\n  }\n}\n",
-   "request": {
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-6:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /x/{d} {\n      allow read: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
     "method": "GET",
     "path": "/v1/projects/denials-6/databases/(default)/documents/c/d",
-    "body": null
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "two allows, both false",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-7/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~denials-7, path=/c/d]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
    },
-   "status": 403,
-   "contentType": "application/json",
-   "response": "{\"error\":{\"code\":403,\"message\":\"No matching allow statements\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "two allows, both false",
-   "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if false;\n      allow get: if 1 == 2;\n    }\n  }\n}\n",
-   "request": {
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-7:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if false;\n      allow get: if 1 == 2;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
     "method": "GET",
     "path": "/v1/projects/denials-7/databases/(default)/documents/c/d",
-    "body": null
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'get' @ L5, false for 'get' @ L6",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "two matches, both false",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-8/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~denials-8, path=/c/d]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
    },
-   "status": 403,
-   "contentType": "application/json",
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nfalse for 'get' @ L5, false for 'get' @ L6\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "two matches, both false",
-   "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if false;\n    }\n    match /{p=**} {\n      allow read: if false;\n    }\n  }\n}\n",
-   "request": {
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-8:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if false;\n    }\n    match /{p=**} {\n      allow read: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
     "method": "GET",
     "path": "/v1/projects/denials-8/databases/(default)/documents/c/d",
-    "body": null
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'get' @ L5, false for 'get' @ L8",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "allow without condition elsewhere",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-9/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~denials-9, path=/c/d]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
    },
-   "status": 403,
-   "contentType": "application/json",
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nfalse for 'get' @ L5, false for 'get' @ L8\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "allow without condition elsewhere",
-   "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if false;\n    }\n    match /x/{d} {\n      allow read;\n    }\n  }\n}\n",
-   "request": {
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-9:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if false;\n    }\n    match /x/{d} {\n      allow read;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
     "method": "GET",
     "path": "/v1/projects/denials-9/databases/(default)/documents/c/d",
-    "body": null
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'get' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "list denied",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-10/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~denials-10, path=/c/d]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
    },
-   "status": 403,
-   "contentType": "application/json",
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nfalse for 'get' @ L5\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "list denied",
-   "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow list: if false;\n    }\n  }\n}\n",
-   "request": {
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-10:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow list: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
     "method": "GET",
     "path": "/v1/projects/denials-10/databases/(default)/documents/c",
-    "body": null
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'list' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "query denied",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-11/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~denials-11, path=/c/d]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
    },
-   "status": 403,
-   "contentType": "application/json",
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nfalse for 'list' @ L5\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "query denied",
-   "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow list: if resource.data.n == 1;\n    }\n  }\n}\n",
-   "request": {
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-11:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow list: if resource.data.n == 1;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
     "method": "POST",
     "path": "/v1/projects/denials-11/databases/(default)/documents:runQuery",
     "body": {
@@ -146,16 +666,60 @@
        }
       ]
      }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nProperty n is undefined on object. for 'list' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "create denied",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-12/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~denials-12, path=/c/d]",
+      "status": "ALREADY_EXISTS"
+     }
     }
    },
-   "status": 403,
-   "contentType": "application/json",
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nProperty n is undefined on object. for 'list' @ L5\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "create denied",
-   "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if false;\n    }\n  }\n}\n",
-   "request": {
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-12:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
     "method": "POST",
     "path": "/v1/projects/denials-12/databases/(default)/documents/c?documentId=new",
     "body": {
@@ -164,16 +728,60 @@
        "integerValue": "1"
       }
      }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'create' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "update denied",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-13/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~denials-13, path=/c/d]",
+      "status": "ALREADY_EXISTS"
+     }
     }
    },
-   "status": 403,
-   "contentType": "application/json",
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nfalse for 'create' @ L5\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "update denied",
-   "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if false;\n    }\n  }\n}\n",
-   "request": {
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-13:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
     "method": "PATCH",
     "path": "/v1/projects/denials-13/databases/(default)/documents/c/d?updateMask.fieldPaths=n",
     "body": {
@@ -182,28 +790,116 @@
        "integerValue": "2"
       }
      }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'update' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "delete denied",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-14/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~denials-14, path=/c/d]",
+      "status": "ALREADY_EXISTS"
+     }
     }
    },
-   "status": 403,
-   "contentType": "application/json",
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nfalse for 'update' @ L5\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "delete denied",
-   "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if false;\n    }\n  }\n}\n",
-   "request": {
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-14:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
     "method": "DELETE",
     "path": "/v1/projects/denials-14/databases/(default)/documents/c/d",
-    "body": null
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'delete' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "write denied",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-15/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~denials-15, path=/c/d]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
    },
-   "status": 403,
-   "contentType": "application/json",
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nfalse for 'delete' @ L5\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "write denied",
-   "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if false;\n    }\n  }\n}\n",
-   "request": {
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-15:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
     "method": "PATCH",
     "path": "/v1/projects/denials-15/databases/(default)/documents/c/d?updateMask.fieldPaths=n",
     "body": {
@@ -212,16 +908,60 @@
        "integerValue": "2"
       }
      }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'create' @ L5, false for 'update' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "batch, second write denied",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/denials-16/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~denials-16, path=/c/d]",
+      "status": "ALREADY_EXISTS"
+     }
     }
    },
-   "status": 403,
-   "contentType": "application/json",
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nfalse for 'create' @ L5, false for 'update' @ L5\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "batch, second write denied",
-   "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if d == 'a';\n    }\n  }\n}\n",
-   "request": {
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/denials-16:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if d == 'a';\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
     "method": "POST",
     "path": "/v1/projects/denials-16/databases/(default)/documents:commit",
     "body": {
@@ -247,23 +987,47 @@
        }
       }
      ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'create' @ L5, false for 'update' @ L5, false for 'create' @ L5, false for 'update' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "coverage",
+  "steps": [
+   {
+    "method": "GET",
+    "path": "/emulator/v1/projects/denials-0:ruleCoverage",
+    "body": null,
+    "auth": null,
+    "status": 200,
+    "response": {
+     "rules": {
+      "files": [
+       {
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if false;\n    }\n  }\n}\n",
+        "name": "firestore.rules"
+       }
+      ]
+     }
     }
    },
-   "status": 403,
-   "contentType": "application/json",
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nfalse for 'create' @ L5, false for 'update' @ L5, false for 'create' @ L5, false for 'update' @ L5\",\"status\":\"PERMISSION_DENIED\"}}"
-  }
- ],
- "coverage": {
-  ":ruleCoverage": {
-   "status": 200,
-   "contentType": "application/json",
-   "response": "{\n  \"rules\": {\n    \"files\": [{\n      \"content\": \"rules_version = '2';\\nservice cloud.firestore {\\n  match /databases/{database}/documents {\\n    match /c/{d} {\\n      allow read: if false;\\n    }\\n  }\\n}\\n\",\n      \"name\": \"firestore.rules\"\n    }]\n  }\n}\n"
-  },
-  ":ruleCoverage/html": {
-   "status": 404,
-   "contentType": null,
-   "response": "Not Found\n"
-  }
+   {
+    "method": "GET",
+    "path": "/emulator/v1/projects/denials-0:ruleCoverage/html",
+    "body": null,
+    "auth": null,
+    "status": 404,
+    "response": "Not Found\n"
+   }
+  ]
  }
-}
+]

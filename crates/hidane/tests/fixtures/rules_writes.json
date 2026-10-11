@@ -1,741 +1,7281 @@
-{
- "writes": [
-  {
-   "document": "exists",
-   "write": "set",
-   "rules": "create only",
-   "status": 403,
-   "message": "\nfalse for 'create' @ L5"
-  },
-  {
-   "document": "exists",
-   "write": "set",
-   "rules": "update only",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "exists",
-   "write": "set",
-   "rules": "delete only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "set",
-   "rules": "write",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "exists",
-   "write": "set",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "set with a mask",
-   "rules": "create only",
-   "status": 403,
-   "message": "\nfalse for 'create' @ L5"
-  },
-  {
-   "document": "exists",
-   "write": "set with a mask",
-   "rules": "update only",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "exists",
-   "write": "set with a mask",
-   "rules": "delete only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "set with a mask",
-   "rules": "write",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "exists",
-   "write": "set with a mask",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "set with exists=true",
-   "rules": "create only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "set with exists=true",
-   "rules": "update only",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "exists",
-   "write": "set with exists=true",
-   "rules": "delete only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "set with exists=true",
-   "rules": "write",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "exists",
-   "write": "set with exists=true",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "set with exists=false",
-   "rules": "create only",
-   "status": 409,
-   "message": "entity already exists: EntityRef[partitionRef=dev~writes, path=/c/w]"
-  },
-  {
-   "document": "exists",
-   "write": "set with exists=false",
-   "rules": "update only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "set with exists=false",
-   "rules": "delete only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "set with exists=false",
-   "rules": "write",
-   "status": 409,
-   "message": "entity already exists: EntityRef[partitionRef=dev~writes, path=/c/w]"
-  },
-  {
-   "document": "exists",
-   "write": "set with exists=false",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "transform",
-   "rules": "create only",
-   "status": 403,
-   "message": "\nfalse for 'create' @ L5"
-  },
-  {
-   "document": "exists",
-   "write": "transform",
-   "rules": "update only",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "exists",
-   "write": "transform",
-   "rules": "delete only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "transform",
-   "rules": "write",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "exists",
-   "write": "transform",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "delete",
-   "rules": "create only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "delete",
-   "rules": "update only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "delete",
-   "rules": "delete only",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "exists",
-   "write": "delete",
-   "rules": "write",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "exists",
-   "write": "delete",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "REST create",
-   "rules": "create only",
-   "status": 409,
-   "message": "entity already exists: EntityRef[partitionRef=dev~writes, path=/c/w]"
-  },
-  {
-   "document": "exists",
-   "write": "REST create",
-   "rules": "update only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "REST create",
-   "rules": "delete only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "REST create",
-   "rules": "write",
-   "status": 409,
-   "message": "entity already exists: EntityRef[partitionRef=dev~writes, path=/c/w]"
-  },
-  {
-   "document": "exists",
-   "write": "REST create",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "REST patch",
-   "rules": "create only",
-   "status": 403,
-   "message": "\nfalse for 'create' @ L5"
-  },
-  {
-   "document": "exists",
-   "write": "REST patch",
-   "rules": "update only",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "exists",
-   "write": "REST patch",
-   "rules": "delete only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "REST patch",
-   "rules": "write",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "exists",
-   "write": "REST patch",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "REST patch with a mask",
-   "rules": "create only",
-   "status": 403,
-   "message": "\nfalse for 'create' @ L5"
-  },
-  {
-   "document": "exists",
-   "write": "REST patch with a mask",
-   "rules": "update only",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "exists",
-   "write": "REST patch with a mask",
-   "rules": "delete only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "REST patch with a mask",
-   "rules": "write",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "exists",
-   "write": "REST patch with a mask",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "REST delete",
-   "rules": "create only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "REST delete",
-   "rules": "update only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "exists",
-   "write": "REST delete",
-   "rules": "delete only",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "exists",
-   "write": "REST delete",
-   "rules": "write",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "exists",
-   "write": "REST delete",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "set",
-   "rules": "create only",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "missing",
-   "write": "set",
-   "rules": "update only",
-   "status": 403,
-   "message": "\nfalse for 'update' @ L5"
-  },
-  {
-   "document": "missing",
-   "write": "set",
-   "rules": "delete only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "set",
-   "rules": "write",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "missing",
-   "write": "set",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "set with a mask",
-   "rules": "create only",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "missing",
-   "write": "set with a mask",
-   "rules": "update only",
-   "status": 403,
-   "message": "\nfalse for 'update' @ L5"
-  },
-  {
-   "document": "missing",
-   "write": "set with a mask",
-   "rules": "delete only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "set with a mask",
-   "rules": "write",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "missing",
-   "write": "set with a mask",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "set with exists=true",
-   "rules": "create only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "set with exists=true",
-   "rules": "update only",
-   "status": 404,
-   "message": "no entity to update: app: \"dev~writes\"\npath <\n  Element {\n    type: \"c\"\n    name: \"w\"\n  }\n>\n"
-  },
-  {
-   "document": "missing",
-   "write": "set with exists=true",
-   "rules": "delete only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "set with exists=true",
-   "rules": "write",
-   "status": 404,
-   "message": "no entity to update: app: \"dev~writes\"\npath <\n  Element {\n    type: \"c\"\n    name: \"w\"\n  }\n>\n"
-  },
-  {
-   "document": "missing",
-   "write": "set with exists=true",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "set with exists=false",
-   "rules": "create only",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "missing",
-   "write": "set with exists=false",
-   "rules": "update only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "set with exists=false",
-   "rules": "delete only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "set with exists=false",
-   "rules": "write",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "missing",
-   "write": "set with exists=false",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "transform",
-   "rules": "create only",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "missing",
-   "write": "transform",
-   "rules": "update only",
-   "status": 403,
-   "message": "\nfalse for 'update' @ L5"
-  },
-  {
-   "document": "missing",
-   "write": "transform",
-   "rules": "delete only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "transform",
-   "rules": "write",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "missing",
-   "write": "transform",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "delete",
-   "rules": "create only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "delete",
-   "rules": "update only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "delete",
-   "rules": "delete only",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "missing",
-   "write": "delete",
-   "rules": "write",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "missing",
-   "write": "delete",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "REST create",
-   "rules": "create only",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "missing",
-   "write": "REST create",
-   "rules": "update only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "REST create",
-   "rules": "delete only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "REST create",
-   "rules": "write",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "missing",
-   "write": "REST create",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "REST patch",
-   "rules": "create only",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "missing",
-   "write": "REST patch",
-   "rules": "update only",
-   "status": 403,
-   "message": "\nfalse for 'update' @ L5"
-  },
-  {
-   "document": "missing",
-   "write": "REST patch",
-   "rules": "delete only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "REST patch",
-   "rules": "write",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "missing",
-   "write": "REST patch",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "REST patch with a mask",
-   "rules": "create only",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "missing",
-   "write": "REST patch with a mask",
-   "rules": "update only",
-   "status": 403,
-   "message": "\nfalse for 'update' @ L5"
-  },
-  {
-   "document": "missing",
-   "write": "REST patch with a mask",
-   "rules": "delete only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "REST patch with a mask",
-   "rules": "write",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "missing",
-   "write": "REST patch with a mask",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "REST delete",
-   "rules": "create only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "REST delete",
-   "rules": "update only",
-   "status": 403,
-   "message": "No matching allow statements"
-  },
-  {
-   "document": "missing",
-   "write": "REST delete",
-   "rules": "delete only",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "missing",
-   "write": "REST delete",
-   "rules": "write",
-   "status": 200,
-   "message": null
-  },
-  {
-   "document": "missing",
-   "write": "REST delete",
-   "rules": "none",
-   "status": 403,
-   "message": "No matching allow statements"
-  }
- ],
- "reads": [
-  {
-   "name": "batchGet, second denied",
-   "status": 403,
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nfalse for 'get' @ L5, false for 'get' @ L5\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "batchGet, missing document allowed",
-   "status": 403,
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nfalse for 'get' @ L5, false for 'get' @ L5\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "get in a transaction, denied",
-   "status": 403,
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nfalse for 'get' @ L5\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "aggregation, denied",
-   "status": 403,
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nProperty n is undefined on object. for 'list' @ L6\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "aggregation, allowed by its filter",
-   "status": 200,
-   "response": "[\n{\n  \"result\": {\n    \"aggregateFields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      }\n    }\n  },\n  \"readTime\": \"2026-10-11T12:00:00.857263Z\",\n  \"done\": true\n}\n]\n"
-  },
-  {
-   "name": "listDocuments, denied",
-   "status": 403,
-   "response": "{\"error\":{\"code\":403,\"message\":\"\\nProperty n is undefined on object. for 'list' @ L6\",\"status\":\"PERMISSION_DENIED\"}}"
-  },
-  {
-   "name": "listCollectionIds",
-   "status": 403,
-   "response": "{\"error\":{\"code\":403,\"message\":\"Metadata operations require admin authentication.\",\"status\":\"PERMISSION_DENIED\"}}"
-  }
- ]
-}
+[
+ {
+  "name": "existing document, set, create only",
+  "document": "exists",
+  "write": "set",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.650970Z",
+     "updateTime": "2026-10-11T14:07:50.650970Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'create' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set, update only",
+  "document": "exists",
+  "write": "set",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.656853Z",
+     "updateTime": "2026-10-11T14:07:50.656853Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T14:07:50.659735Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:07:50.659735Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set, delete only",
+  "document": "exists",
+  "write": "set",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.661856Z",
+     "updateTime": "2026-10-11T14:07:50.661856Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set, write",
+  "document": "exists",
+  "write": "set",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.667104Z",
+     "updateTime": "2026-10-11T14:07:50.667104Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T14:07:50.670407Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:07:50.670407Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set, none",
+  "document": "exists",
+  "write": "set",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.672359Z",
+     "updateTime": "2026-10-11T14:07:50.672359Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set with a mask, create only",
+  "document": "exists",
+  "write": "set with a mask",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.678696Z",
+     "updateTime": "2026-10-11T14:07:50.678696Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "n"
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'create' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set with a mask, update only",
+  "document": "exists",
+  "write": "set with a mask",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.684141Z",
+     "updateTime": "2026-10-11T14:07:50.684141Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "n"
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T14:07:50.687841Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:07:50.687841Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set with a mask, delete only",
+  "document": "exists",
+  "write": "set with a mask",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.690263Z",
+     "updateTime": "2026-10-11T14:07:50.690263Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "n"
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set with a mask, write",
+  "document": "exists",
+  "write": "set with a mask",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.696729Z",
+     "updateTime": "2026-10-11T14:07:50.696729Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "n"
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T14:07:50.700739Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:07:50.700739Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set with a mask, none",
+  "document": "exists",
+  "write": "set with a mask",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.703315Z",
+     "updateTime": "2026-10-11T14:07:50.703315Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "n"
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set with exists=true, create only",
+  "document": "exists",
+  "write": "set with exists=true",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.710108Z",
+     "updateTime": "2026-10-11T14:07:50.710108Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": true
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set with exists=true, update only",
+  "document": "exists",
+  "write": "set with exists=true",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.715759Z",
+     "updateTime": "2026-10-11T14:07:50.715759Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": true
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T14:07:50.719097Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:07:50.719097Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set with exists=true, delete only",
+  "document": "exists",
+  "write": "set with exists=true",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.720723Z",
+     "updateTime": "2026-10-11T14:07:50.720723Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": true
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set with exists=true, write",
+  "document": "exists",
+  "write": "set with exists=true",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.725495Z",
+     "updateTime": "2026-10-11T14:07:50.725495Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": true
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T14:07:50.728207Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:07:50.728207Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set with exists=true, none",
+  "document": "exists",
+  "write": "set with exists=true",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.729859Z",
+     "updateTime": "2026-10-11T14:07:50.729859Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": true
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set with exists=false, create only",
+  "document": "exists",
+  "write": "set with exists=false",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.734425Z",
+     "updateTime": "2026-10-11T14:07:50.734425Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": false
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~writes, path=/c/w]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set with exists=false, update only",
+  "document": "exists",
+  "write": "set with exists=false",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.739558Z",
+     "updateTime": "2026-10-11T14:07:50.739558Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": false
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set with exists=false, delete only",
+  "document": "exists",
+  "write": "set with exists=false",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.744373Z",
+     "updateTime": "2026-10-11T14:07:50.744373Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": false
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set with exists=false, write",
+  "document": "exists",
+  "write": "set with exists=false",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.750357Z",
+     "updateTime": "2026-10-11T14:07:50.750357Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": false
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~writes, path=/c/w]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, set with exists=false, none",
+  "document": "exists",
+  "write": "set with exists=false",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.755497Z",
+     "updateTime": "2026-10-11T14:07:50.755497Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": false
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, transform, create only",
+  "document": "exists",
+  "write": "transform",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.760161Z",
+     "updateTime": "2026-10-11T14:07:50.760161Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "transform": {
+        "document": "projects/writes/databases/(default)/documents/c/w",
+        "fieldTransforms": [
+         {
+          "fieldPath": "n",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'create' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, transform, update only",
+  "document": "exists",
+  "write": "transform",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.765562Z",
+     "updateTime": "2026-10-11T14:07:50.765562Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "transform": {
+        "document": "projects/writes/databases/(default)/documents/c/w",
+        "fieldTransforms": [
+         {
+          "fieldPath": "n",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T14:07:50.768713Z",
+       "transformResults": [
+        {
+         "integerValue": "2"
+        }
+       ]
+      }
+     ],
+     "commitTime": "2026-10-11T14:07:50.768713Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, transform, delete only",
+  "document": "exists",
+  "write": "transform",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.770535Z",
+     "updateTime": "2026-10-11T14:07:50.770535Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "transform": {
+        "document": "projects/writes/databases/(default)/documents/c/w",
+        "fieldTransforms": [
+         {
+          "fieldPath": "n",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, transform, write",
+  "document": "exists",
+  "write": "transform",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.774860Z",
+     "updateTime": "2026-10-11T14:07:50.774860Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "transform": {
+        "document": "projects/writes/databases/(default)/documents/c/w",
+        "fieldTransforms": [
+         {
+          "fieldPath": "n",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T14:07:50.777592Z",
+       "transformResults": [
+        {
+         "integerValue": "2"
+        }
+       ]
+      }
+     ],
+     "commitTime": "2026-10-11T14:07:50.777592Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, transform, none",
+  "document": "exists",
+  "write": "transform",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.779356Z",
+     "updateTime": "2026-10-11T14:07:50.779356Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "transform": {
+        "document": "projects/writes/databases/(default)/documents/c/w",
+        "fieldTransforms": [
+         {
+          "fieldPath": "n",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, delete, create only",
+  "document": "exists",
+  "write": "delete",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.785117Z",
+     "updateTime": "2026-10-11T14:07:50.785117Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "delete": "projects/writes/databases/(default)/documents/c/w"
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, delete, update only",
+  "document": "exists",
+  "write": "delete",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.790515Z",
+     "updateTime": "2026-10-11T14:07:50.790515Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "delete": "projects/writes/databases/(default)/documents/c/w"
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, delete, delete only",
+  "document": "exists",
+  "write": "delete",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.796377Z",
+     "updateTime": "2026-10-11T14:07:50.796377Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "delete": "projects/writes/databases/(default)/documents/c/w"
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {}
+     ],
+     "commitTime": "2026-10-11T14:07:50.799996Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, delete, write",
+  "document": "exists",
+  "write": "delete",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.802247Z",
+     "updateTime": "2026-10-11T14:07:50.802247Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "delete": "projects/writes/databases/(default)/documents/c/w"
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {}
+     ],
+     "commitTime": "2026-10-11T14:07:50.805374Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, delete, none",
+  "document": "exists",
+  "write": "delete",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.807887Z",
+     "updateTime": "2026-10-11T14:07:50.807887Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "delete": "projects/writes/databases/(default)/documents/c/w"
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST create, create only",
+  "document": "exists",
+  "write": "REST create",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.814374Z",
+     "updateTime": "2026-10-11T14:07:50.814374Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~writes, path=/c/w]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST create, update only",
+  "document": "exists",
+  "write": "REST create",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.824296Z",
+     "updateTime": "2026-10-11T14:07:50.824296Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST create, delete only",
+  "document": "exists",
+  "write": "REST create",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.829988Z",
+     "updateTime": "2026-10-11T14:07:50.829988Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST create, write",
+  "document": "exists",
+  "write": "REST create",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.834369Z",
+     "updateTime": "2026-10-11T14:07:50.834369Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~writes, path=/c/w]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST create, none",
+  "document": "exists",
+  "write": "REST create",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.839181Z",
+     "updateTime": "2026-10-11T14:07:50.839181Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST patch, create only",
+  "document": "exists",
+  "write": "REST patch",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.844153Z",
+     "updateTime": "2026-10-11T14:07:50.844153Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'create' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST patch, update only",
+  "document": "exists",
+  "write": "REST patch",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.849304Z",
+     "updateTime": "2026-10-11T14:07:50.849304Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.849304Z",
+     "updateTime": "2026-10-11T14:07:50.852333Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST patch, delete only",
+  "document": "exists",
+  "write": "REST patch",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.853964Z",
+     "updateTime": "2026-10-11T14:07:50.853964Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST patch, write",
+  "document": "exists",
+  "write": "REST patch",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.858243Z",
+     "updateTime": "2026-10-11T14:07:50.858243Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.858243Z",
+     "updateTime": "2026-10-11T14:07:50.861035Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST patch, none",
+  "document": "exists",
+  "write": "REST patch",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.863011Z",
+     "updateTime": "2026-10-11T14:07:50.863011Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST patch with a mask, create only",
+  "document": "exists",
+  "write": "REST patch with a mask",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.867886Z",
+     "updateTime": "2026-10-11T14:07:50.867886Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w?updateMask.fieldPaths=n",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'create' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST patch with a mask, update only",
+  "document": "exists",
+  "write": "REST patch with a mask",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.872709Z",
+     "updateTime": "2026-10-11T14:07:50.872709Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w?updateMask.fieldPaths=n",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.872709Z",
+     "updateTime": "2026-10-11T14:07:50.875250Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST patch with a mask, delete only",
+  "document": "exists",
+  "write": "REST patch with a mask",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.876816Z",
+     "updateTime": "2026-10-11T14:07:50.876816Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w?updateMask.fieldPaths=n",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST patch with a mask, write",
+  "document": "exists",
+  "write": "REST patch with a mask",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.882363Z",
+     "updateTime": "2026-10-11T14:07:50.882363Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w?updateMask.fieldPaths=n",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.882363Z",
+     "updateTime": "2026-10-11T14:07:50.885434Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST patch with a mask, none",
+  "document": "exists",
+  "write": "REST patch with a mask",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.887315Z",
+     "updateTime": "2026-10-11T14:07:50.887315Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w?updateMask.fieldPaths=n",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST delete, create only",
+  "document": "exists",
+  "write": "REST delete",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.891938Z",
+     "updateTime": "2026-10-11T14:07:50.891938Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST delete, update only",
+  "document": "exists",
+  "write": "REST delete",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.896472Z",
+     "updateTime": "2026-10-11T14:07:50.896472Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST delete, delete only",
+  "document": "exists",
+  "write": "REST delete",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.901284Z",
+     "updateTime": "2026-10-11T14:07:50.901284Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": null,
+    "status": 200,
+    "response": {}
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST delete, write",
+  "document": "exists",
+  "write": "REST delete",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.906031Z",
+     "updateTime": "2026-10-11T14:07:50.906031Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": null,
+    "status": 200,
+    "response": {}
+   }
+  ]
+ },
+ {
+  "name": "existing document, REST delete, none",
+  "document": "exists",
+  "write": "REST delete",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:07:50.911391Z",
+     "updateTime": "2026-10-11T14:07:50.911391Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set, create only",
+  "document": "missing",
+  "write": "set",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T14:07:50.918068Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:07:50.918068Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set, update only",
+  "document": "missing",
+  "write": "set",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'update' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set, delete only",
+  "document": "missing",
+  "write": "set",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set, write",
+  "document": "missing",
+  "write": "set",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T14:07:50.928658Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:07:50.928658Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set, none",
+  "document": "missing",
+  "write": "set",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set with a mask, create only",
+  "document": "missing",
+  "write": "set with a mask",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "n"
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T14:07:50.935806Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:07:50.935806Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set with a mask, update only",
+  "document": "missing",
+  "write": "set with a mask",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "n"
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'update' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set with a mask, delete only",
+  "document": "missing",
+  "write": "set with a mask",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "n"
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set with a mask, write",
+  "document": "missing",
+  "write": "set with a mask",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "n"
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T14:07:50.948661Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:07:50.948661Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set with a mask, none",
+  "document": "missing",
+  "write": "set with a mask",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "n"
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set with exists=true, create only",
+  "document": "missing",
+  "write": "set with exists=true",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": true
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set with exists=true, update only",
+  "document": "missing",
+  "write": "set with exists=true",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": true
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 404,
+    "response": {
+     "error": {
+      "code": 404,
+      "message": "no entity to update: app: \"dev~writes\"\npath <\n  Element {\n    type: \"c\"\n    name: \"w\"\n  }\n>\n",
+      "status": "NOT_FOUND"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set with exists=true, delete only",
+  "document": "missing",
+  "write": "set with exists=true",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": true
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set with exists=true, write",
+  "document": "missing",
+  "write": "set with exists=true",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": true
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 404,
+    "response": {
+     "error": {
+      "code": 404,
+      "message": "no entity to update: app: \"dev~writes\"\npath <\n  Element {\n    type: \"c\"\n    name: \"w\"\n  }\n>\n",
+      "status": "NOT_FOUND"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set with exists=true, none",
+  "document": "missing",
+  "write": "set with exists=true",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": true
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set with exists=false, create only",
+  "document": "missing",
+  "write": "set with exists=false",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": false
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T14:07:50.975447Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:07:50.975447Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set with exists=false, update only",
+  "document": "missing",
+  "write": "set with exists=false",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": false
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set with exists=false, delete only",
+  "document": "missing",
+  "write": "set with exists=false",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": false
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set with exists=false, write",
+  "document": "missing",
+  "write": "set with exists=false",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": false
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T14:07:50.986877Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:07:50.986877Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, set with exists=false, none",
+  "document": "missing",
+  "write": "set with exists=false",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/writes/databases/(default)/documents/c/w",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "currentDocument": {
+        "exists": false
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, transform, create only",
+  "document": "missing",
+  "write": "transform",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "transform": {
+        "document": "projects/writes/databases/(default)/documents/c/w",
+        "fieldTransforms": [
+         {
+          "fieldPath": "n",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T14:07:50.995554Z",
+       "transformResults": [
+        {
+         "integerValue": "1"
+        }
+       ]
+      }
+     ],
+     "commitTime": "2026-10-11T14:07:50.995554Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, transform, update only",
+  "document": "missing",
+  "write": "transform",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "transform": {
+        "document": "projects/writes/databases/(default)/documents/c/w",
+        "fieldTransforms": [
+         {
+          "fieldPath": "n",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'update' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, transform, delete only",
+  "document": "missing",
+  "write": "transform",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "transform": {
+        "document": "projects/writes/databases/(default)/documents/c/w",
+        "fieldTransforms": [
+         {
+          "fieldPath": "n",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, transform, write",
+  "document": "missing",
+  "write": "transform",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "transform": {
+        "document": "projects/writes/databases/(default)/documents/c/w",
+        "fieldTransforms": [
+         {
+          "fieldPath": "n",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T14:07:51.006654Z",
+       "transformResults": [
+        {
+         "integerValue": "1"
+        }
+       ]
+      }
+     ],
+     "commitTime": "2026-10-11T14:07:51.006654Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, transform, none",
+  "document": "missing",
+  "write": "transform",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "transform": {
+        "document": "projects/writes/databases/(default)/documents/c/w",
+        "fieldTransforms": [
+         {
+          "fieldPath": "n",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, delete, create only",
+  "document": "missing",
+  "write": "delete",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "delete": "projects/writes/databases/(default)/documents/c/w"
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, delete, update only",
+  "document": "missing",
+  "write": "delete",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "delete": "projects/writes/databases/(default)/documents/c/w"
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, delete, delete only",
+  "document": "missing",
+  "write": "delete",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "delete": "projects/writes/databases/(default)/documents/c/w"
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {}
+     ],
+     "commitTime": "2026-10-11T14:07:51.022490Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, delete, write",
+  "document": "missing",
+  "write": "delete",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "delete": "projects/writes/databases/(default)/documents/c/w"
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {}
+     ],
+     "commitTime": "2026-10-11T14:07:51.026848Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, delete, none",
+  "document": "missing",
+  "write": "delete",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "delete": "projects/writes/databases/(default)/documents/c/w"
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST create, create only",
+  "document": "missing",
+  "write": "REST create",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     },
+     "createTime": "2026-10-11T14:07:51.034843Z",
+     "updateTime": "2026-10-11T14:07:51.034843Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST create, update only",
+  "document": "missing",
+  "write": "REST create",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST create, delete only",
+  "document": "missing",
+  "write": "REST create",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST create, write",
+  "document": "missing",
+  "write": "REST create",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     },
+     "createTime": "2026-10-11T14:07:51.044636Z",
+     "updateTime": "2026-10-11T14:07:51.044636Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST create, none",
+  "document": "missing",
+  "write": "REST create",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST patch, create only",
+  "document": "missing",
+  "write": "REST patch",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     },
+     "createTime": "2026-10-11T14:07:51.052743Z",
+     "updateTime": "2026-10-11T14:07:51.052743Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST patch, update only",
+  "document": "missing",
+  "write": "REST patch",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'update' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST patch, delete only",
+  "document": "missing",
+  "write": "REST patch",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST patch, write",
+  "document": "missing",
+  "write": "REST patch",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     },
+     "createTime": "2026-10-11T14:07:51.064022Z",
+     "updateTime": "2026-10-11T14:07:51.064022Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST patch, none",
+  "document": "missing",
+  "write": "REST patch",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST patch with a mask, create only",
+  "document": "missing",
+  "write": "REST patch with a mask",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w?updateMask.fieldPaths=n",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     },
+     "createTime": "2026-10-11T14:07:51.072364Z",
+     "updateTime": "2026-10-11T14:07:51.072364Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST patch with a mask, update only",
+  "document": "missing",
+  "write": "REST patch with a mask",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w?updateMask.fieldPaths=n",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'update' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST patch with a mask, delete only",
+  "document": "missing",
+  "write": "REST patch with a mask",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w?updateMask.fieldPaths=n",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST patch with a mask, write",
+  "document": "missing",
+  "write": "REST patch with a mask",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w?updateMask.fieldPaths=n",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "name": "projects/writes/databases/(default)/documents/c/w",
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     },
+     "createTime": "2026-10-11T14:07:51.083711Z",
+     "updateTime": "2026-10-11T14:07:51.083711Z"
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST patch with a mask, none",
+  "document": "missing",
+  "write": "REST patch with a mask",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PATCH",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w?updateMask.fieldPaths=n",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST delete, create only",
+  "document": "missing",
+  "write": "REST delete",
+  "rules": "create only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow create: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST delete, update only",
+  "document": "missing",
+  "write": "REST delete",
+  "rules": "update only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow update: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST delete, delete only",
+  "document": "missing",
+  "write": "REST delete",
+  "rules": "delete only",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow delete: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": null,
+    "status": 200,
+    "response": {}
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST delete, write",
+  "document": "missing",
+  "write": "REST delete",
+  "rules": "write",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": null,
+    "status": 200,
+    "response": {}
+   }
+  ]
+ },
+ {
+  "name": "missing document, REST delete, none",
+  "document": "missing",
+  "write": "REST delete",
+  "rules": "none",
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if false;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/writes/databases/(default)/documents/c/w",
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "No matching allow statements",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "seed for the reads",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=a",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~writes, path=/c/a]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents/c?documentId=b",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 409,
+    "response": {
+     "error": {
+      "code": 409,
+      "message": "entity already exists: EntityRef[partitionRef=dev~writes, path=/c/b]",
+      "status": "ALREADY_EXISTS"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "batchGet, second denied",
+  "steps": [
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if d == 'a';\n      allow list: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:batchGet",
+    "body": {
+     "documents": [
+      "projects/writes/databases/(default)/documents/c/a",
+      "projects/writes/databases/(default)/documents/c/b"
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'get' @ L5, false for 'get' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "batchGet, missing document",
+  "steps": [
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if d == 'a';\n      allow list: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:batchGet",
+    "body": {
+     "documents": [
+      "projects/writes/databases/(default)/documents/c/a",
+      "projects/writes/databases/(default)/documents/c/zz"
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'get' @ L5, false for 'get' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "get in a transaction, denied",
+  "steps": [
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if d == 'a';\n      allow list: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:batchGet",
+    "body": {
+     "documents": [
+      "projects/writes/databases/(default)/documents/c/b"
+     ],
+     "newTransaction": {}
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nfalse for 'get' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "aggregation, denied",
+  "steps": [
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if true;\n      allow list: if resource.data.n == 1;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:runAggregationQuery",
+    "body": {
+     "structuredAggregationQuery": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ]
+      },
+      "aggregations": [
+       {
+        "alias": "n",
+        "count": {}
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nProperty n is undefined on object. for 'list' @ L6",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "aggregation, allowed by its filter",
+  "steps": [
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if true;\n      allow list: if resource.data.n == 1;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:runAggregationQuery",
+    "body": {
+     "structuredAggregationQuery": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "n"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      "aggregations": [
+       {
+        "alias": "n",
+        "count": {}
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "2026-10-11T14:07:51.120314Z",
+      "done": true
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "name": "listDocuments, denied",
+  "steps": [
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if true;\n      allow list: if resource.data.n == 1;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "GET",
+    "path": "/v1/projects/writes/databases/(default)/documents/c",
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nProperty n is undefined on object. for 'list' @ L6",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ },
+ {
+  "name": "listCollectionIds",
+  "steps": [
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/writes:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if true;\n      allow list: if resource.data.n == 1;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/writes/databases/(default)/documents:listCollectionIds",
+    "body": {},
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "Metadata operations require admin authentication.",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
+ }
+]

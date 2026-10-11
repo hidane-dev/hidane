@@ -14,48 +14,31 @@ whether it was allowed. Each probe is one fact (`request.method == 'get'`,
 Stdlib only.
 """
 
-import json
 import sys
-import urllib.error
-import urllib.request
+from pathlib import Path
 
-HOST = sys.argv[1]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from steps import OWNER, call, case, dump, rules  # noqa: E402
+
 PROJECT = "request"
 DB = f"projects/{PROJECT}/databases/(default)"
 BASE = f"{DB}/documents"
 I = lambda n: {"integerValue": str(n)}
 
 
-def call(method, path, body=None, owner=False):
-    headers = {"Content-Type": "application/json"}
-    if owner:
-        headers["Authorization"] = "Bearer owner"
-    req = urllib.request.Request(f"http://{HOST}{path}", method=method,
-                                 data=None if body is None else json.dumps(body).encode(), headers=headers)
-    try:
-        with urllib.request.urlopen(req, timeout=30) as res:
-            return res.status, res.read().decode()
-    except urllib.error.HTTPError as err:
-        return err.code, err.read().decode()
-
-
 def load(method, condition):
     others = [m for m in ("get", "list", "create", "update", "delete") if m != method]
-    content = (
-        "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
-        "    match /{document=**} {\n"
-        f"      allow {', '.join(others)}: if true;\n"
-        f"      allow {method}: if {condition};\n"
-        "    }\n  }\n}\n")
-    status, body = call("PUT", f"/emulator/v1/projects/{PROJECT}:securityRules",
-                        {"rules": {"files": [{"name": "firestore.rules", "content": content}]}})
-    return status, body
+    rules(PROJECT, "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
+          "    match /{document=**} {\n"
+          f"      allow {', '.join(others)}: if true;\n"
+          f"      allow {method}: if {condition};\n"
+          "    }\n  }\n}\n")
 
 
 def seed(doc, fields):
     parent, id_ = doc.rsplit("/", 1)
-    call("DELETE", f"/v1/{BASE}/{doc}", owner=True)
-    status, _ = call("POST", f"/v1/{BASE}/{parent}?documentId={id_}", {"fields": fields}, owner=True)
+    call("DELETE", f"/v1/{BASE}/{doc}", auth=OWNER)
+    status, _ = call("POST", f"/v1/{BASE}/{parent}?documentId={id_}", {"fields": fields}, auth=OWNER)
     assert status == 200, (doc, status)
 
 
@@ -69,7 +52,7 @@ OPERATIONS = [
         "request.path == /databases/$(database)/documents/c/d", "resource.data.n == 1", "resource.id == 'd'",
         "resource.__name__ == /databases/$(database)/documents/c/d", "request.resource == null",
         "request.query == null", "request.time is timestamp", "database == '(default)'"]),
-    ("get missing", "get", lambda: call("DELETE", f"/v1/{BASE}/c/missing", owner=True),
+    ("get missing", "get", lambda: call("DELETE", f"/v1/{BASE}/c/missing", auth=OWNER),
      lambda: call("GET", f"/v1/{BASE}/c/missing"), ["resource == null", "request.path == /databases/$(database)/documents/c/missing"]),
     ("list", "list", lambda: seed("c/d", {"n": I(1)}), lambda: call("GET", f"/v1/{BASE}/c?pageSize=2"), [
         "request.path == /databases/$(database)/documents/c", "resource.data.n == 1", "resource == null",
@@ -82,7 +65,7 @@ OPERATIONS = [
         "request.path == /databases/$(database)/documents/c", "request.query.limit == 3", "request.query.offset == 1",
         "request.query.orderBy == 'n'", "request.query.orderBy == ['n']", "request.query.orderBy[0] == 'n'",
         "resource.data.n == 1"]),
-    ("create", "create", lambda: call("DELETE", f"/v1/{BASE}/c/new", owner=True),
+    ("create", "create", lambda: call("DELETE", f"/v1/{BASE}/c/new", auth=OWNER),
      lambda: call("POST", f"/v1/{BASE}/c?documentId=new", {"fields": {"n": I(2), "s": {"stringValue": "x"}}}), [
         "resource == null", "request.resource.data.n == 2", "request.resource.data.keys().hasOnly(['n', 's'])",
         "request.resource.id == 'new'", "request.resource.__name__ == /databases/$(database)/documents/c/new",
@@ -106,30 +89,18 @@ OPERATIONS = [
         "request.resource.data.ts == request.time", "request.resource.data.n == 2"]),
     ("delete", "delete", lambda: seed("c/del", {"n": I(1)}), commit({"delete": f"{BASE}/c/del"}), [
         "resource.data.n == 1", "request.resource == null", "request.path == /databases/$(database)/documents/c/del"]),
-    ("delete missing", "delete", lambda: call("DELETE", f"/v1/{BASE}/c/gone", owner=True), commit({"delete": f"{BASE}/c/gone"}), [
+    ("delete missing", "delete", lambda: call("DELETE", f"/v1/{BASE}/c/gone", auth=OWNER), commit({"delete": f"{BASE}/c/gone"}), [
         "resource == null"]),
 ]
 
 COMMON = ["true", "false", "request.method == 'get'", "request.method == 'list'", "request.method == 'create'",
           "request.method == 'update'", "request.method == 'delete'", "request.auth == null"]
 
-results = []
 for name, method, setup, run, probes in OPERATIONS:
     for probe in COMMON + probes:
+        case(f"{name}: {probe}", operation=name, method=method, condition=probe)
         setup()
-        status, body = load(method, probe)
-        entry = {"operation": name, "method": method, "condition": probe}
-        if status != 200:
-            entry["compile"] = body
-        else:
-            issues = json.loads(body).get("issues", [])
-            if issues:
-                entry["issues"] = [i["description"] for i in issues]
-            status, body = run()
-            entry["outcome"] = "allow" if status == 200 else ("deny" if status == 403 else status)
-            if status not in (200, 403):
-                entry["body"] = body[:300]
-        results.append(entry)
+        load(method, probe)
+        run()
 
-json.dump(results, sys.stdout, indent=1)
-print()
+dump()

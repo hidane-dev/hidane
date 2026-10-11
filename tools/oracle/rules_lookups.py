@@ -12,38 +12,21 @@ limits (and whether repeated calls to one document count once); `getAfter` / `ex
 which state a write sees. Documents are written as the owner. Stdlib only.
 """
 
-import json
 import sys
-import urllib.error
-import urllib.request
+from pathlib import Path
 
-HOST = sys.argv[1]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from steps import OWNER, call, case, dump, rules  # noqa: E402
+
 PROJECT = "lookups"
 BASE = f"projects/{PROJECT}/databases/(default)/documents"
 I = lambda n: {"integerValue": str(n)}
 P = "/databases/$(database)/documents"
 
 
-def call(method, path, body=None, owner=False):
-    headers = {"Content-Type": "application/json"}
-    if owner:
-        headers["Authorization"] = "Bearer owner"
-    req = urllib.request.Request(f"http://{HOST}{path}", method=method,
-                                 data=None if body is None else json.dumps(body).encode(), headers=headers)
-    try:
-        with urllib.request.urlopen(req, timeout=30) as res:
-            return res.status, res.read().decode()
-    except urllib.error.HTTPError as err:
-        return err.code, err.read().decode()
-
-
 def load(body):
-    content = ("rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
-               + "\n".join("    " + line for line in body.split("\n")) + "\n  }\n}\n")
-    status, text = call("PUT", f"/emulator/v1/projects/{PROJECT}:securityRules",
-                        {"rules": {"files": [{"name": "firestore.rules", "content": content}]}})
-    assert status == 200, text
-    return content
+    rules(PROJECT, "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
+          + "\n".join("    " + line for line in body.split("\n")) + "\n  }\n}\n")
 
 
 def none_exist(n, distinct=True):
@@ -118,24 +101,16 @@ CASES += [
 
 def reset():
     for doc in ("c/d", "other/o", "c/after"):
-        call("DELETE", f"/v1/{BASE}/{doc}", owner=True)
-    call("POST", f"/v1/{BASE}/c?documentId=d", {"fields": {"n": I(1)}}, owner=True)
-    call("POST", f"/v1/{BASE}/other?documentId=o", {"fields": {"n": I(1)}}, owner=True)
-    call("POST", f"/v1/{BASE}/c?documentId=after", {"fields": {"n": I(1)}}, owner=True)
+        call("DELETE", f"/v1/{BASE}/{doc}", auth=OWNER)
+    call("POST", f"/v1/{BASE}/c?documentId=d", {"fields": {"n": I(1)}}, auth=OWNER)
+    call("POST", f"/v1/{BASE}/other?documentId=o", {"fields": {"n": I(1)}}, auth=OWNER)
+    call("POST", f"/v1/{BASE}/c?documentId=after", {"fields": {"n": I(1)}}, auth=OWNER)
 
 
-results = []
 for name, body, (method, path, payload) in CASES:
+    case(name)
     reset()
-    content = load(body)
-    status, text = call(method, path, payload)
-    entry = {"name": name, "rules": content, "status": status}
-    if status != 200:
-        try:
-            entry["message"] = json.loads(text)["error"]["message"]
-        except (ValueError, KeyError):
-            entry["message"] = text[:300]
-    results.append(entry)
+    load(body)
+    call(method, path, payload)
 
-json.dump(results, sys.stdout, indent=1)
-print()
+dump()

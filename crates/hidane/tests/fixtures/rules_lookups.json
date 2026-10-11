@@ -1,208 +1,5849 @@
 [
  {
   "name": "get: 10 distinct exists",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9);\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.517362Z",
+     "updateTime": "2026-10-11T14:08:09.517362Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.518812Z",
+     "updateTime": "2026-10-11T14:08:09.518812Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.520338Z",
+     "updateTime": "2026-10-11T14:08:09.520338Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "GET",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": null,
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.517362Z",
+     "updateTime": "2026-10-11T14:08:09.517362Z"
+    }
+   }
+  ]
  },
  {
   "name": "get: 11 distinct exists",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10);\n    }\n  }\n}\n",
-  "status": 403,
-  "message": "\nevaluation error at L5:22 for 'get' @ L5, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'get' @ L5"
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.533077Z",
+     "updateTime": "2026-10-11T14:08:09.533077Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.534553Z",
+     "updateTime": "2026-10-11T14:08:09.534553Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.536051Z",
+     "updateTime": "2026-10-11T14:08:09.536051Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "GET",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nevaluation error at L5:22 for 'get' @ L5, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'get' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
  },
  {
   "name": "get: 20 distinct exists",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19);\n    }\n  }\n}\n",
-  "status": 403,
-  "message": "\nevaluation error at L5:22 for 'get' @ L5, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'get' @ L5"
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.548510Z",
+     "updateTime": "2026-10-11T14:08:09.548510Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.549787Z",
+     "updateTime": "2026-10-11T14:08:09.549787Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.551098Z",
+     "updateTime": "2026-10-11T14:08:09.551098Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "GET",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nevaluation error at L5:22 for 'get' @ L5, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'get' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
  },
  {
   "name": "get: 21 distinct exists",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19) && !exists(/databases/$(database)/documents/missing/m20);\n    }\n  }\n}\n",
-  "status": 403,
-  "message": "\nevaluation error at L5:22 for 'get' @ L5, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'get' @ L5"
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.566466Z",
+     "updateTime": "2026-10-11T14:08:09.566466Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.567813Z",
+     "updateTime": "2026-10-11T14:08:09.567813Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.569250Z",
+     "updateTime": "2026-10-11T14:08:09.569250Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19) && !exists(/databases/$(database)/documents/missing/m20);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "GET",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nevaluation error at L5:22 for 'get' @ L5, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'get' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
  },
  {
   "name": "get: 15 exists of one document",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0);\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.583974Z",
+     "updateTime": "2026-10-11T14:08:09.583974Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.585407Z",
+     "updateTime": "2026-10-11T14:08:09.585407Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.586854Z",
+     "updateTime": "2026-10-11T14:08:09.586854Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m0);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "GET",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": null,
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.583974Z",
+     "updateTime": "2026-10-11T14:08:09.583974Z"
+    }
+   }
+  ]
  },
  {
   "name": "query: 10 distinct exists",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9);\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.599827Z",
+     "updateTime": "2026-10-11T14:08:09.599827Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.601372Z",
+     "updateTime": "2026-10-11T14:08:09.601372Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.602813Z",
+     "updateTime": "2026-10-11T14:08:09.602813Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": [
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/a",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:29:48.661963Z",
+       "updateTime": "2026-10-11T11:29:48.661963Z"
+      },
+      "readTime": "2026-10-11T14:08:09.608354Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/after",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T14:08:09.602813Z",
+       "updateTime": "2026-10-11T14:08:09.602813Z"
+      },
+      "readTime": "2026-10-11T14:08:09.608354Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/b",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:29:48.661963Z",
+       "updateTime": "2026-10-11T11:29:48.661963Z"
+      },
+      "readTime": "2026-10-11T14:08:09.608354Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/d",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T14:08:09.599827Z",
+       "updateTime": "2026-10-11T14:08:09.599827Z"
+      },
+      "readTime": "2026-10-11T14:08:09.608354Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/w0",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:30:26.894546Z",
+       "updateTime": "2026-10-11T11:30:26.894546Z"
+      },
+      "readTime": "2026-10-11T14:08:09.608354Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/w1",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:29:48.291052Z",
+       "updateTime": "2026-10-11T11:29:48.291052Z"
+      },
+      "readTime": "2026-10-11T14:08:09.608354Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/w2",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:29:48.379852Z",
+       "updateTime": "2026-10-11T11:29:48.379852Z"
+      },
+      "readTime": "2026-10-11T14:08:09.608354Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/w3",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:30:26.894546Z",
+       "updateTime": "2026-10-11T11:30:26.894546Z"
+      },
+      "readTime": "2026-10-11T14:08:09.608354Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/x",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:30:27.173587Z",
+       "updateTime": "2026-10-11T11:30:27.173587Z"
+      },
+      "readTime": "2026-10-11T14:08:09.608354Z",
+      "done": true
+     }
+    ]
+   }
+  ]
  },
  {
   "name": "query: 11 distinct exists",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10);\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.615863Z",
+     "updateTime": "2026-10-11T14:08:09.615863Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.617170Z",
+     "updateTime": "2026-10-11T14:08:09.617170Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.618685Z",
+     "updateTime": "2026-10-11T14:08:09.618685Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": [
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/a",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:29:48.661963Z",
+       "updateTime": "2026-10-11T11:29:48.661963Z"
+      },
+      "readTime": "2026-10-11T14:08:09.624458Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/after",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T14:08:09.618685Z",
+       "updateTime": "2026-10-11T14:08:09.618685Z"
+      },
+      "readTime": "2026-10-11T14:08:09.624458Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/b",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:29:48.661963Z",
+       "updateTime": "2026-10-11T11:29:48.661963Z"
+      },
+      "readTime": "2026-10-11T14:08:09.624458Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/d",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T14:08:09.615863Z",
+       "updateTime": "2026-10-11T14:08:09.615863Z"
+      },
+      "readTime": "2026-10-11T14:08:09.624458Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/w0",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:30:26.894546Z",
+       "updateTime": "2026-10-11T11:30:26.894546Z"
+      },
+      "readTime": "2026-10-11T14:08:09.624458Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/w1",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:29:48.291052Z",
+       "updateTime": "2026-10-11T11:29:48.291052Z"
+      },
+      "readTime": "2026-10-11T14:08:09.624458Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/w2",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:29:48.379852Z",
+       "updateTime": "2026-10-11T11:29:48.379852Z"
+      },
+      "readTime": "2026-10-11T14:08:09.624458Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/w3",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:30:26.894546Z",
+       "updateTime": "2026-10-11T11:30:26.894546Z"
+      },
+      "readTime": "2026-10-11T14:08:09.624458Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/x",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:30:27.173587Z",
+       "updateTime": "2026-10-11T11:30:27.173587Z"
+      },
+      "readTime": "2026-10-11T14:08:09.624458Z",
+      "done": true
+     }
+    ]
+   }
+  ]
  },
  {
   "name": "single write: 10 distinct exists",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9);\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.631208Z",
+     "updateTime": "2026-10-11T14:08:09.631208Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.632739Z",
+     "updateTime": "2026-10-11T14:08:09.632739Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.633928Z",
+     "updateTime": "2026-10-11T14:08:09.633928Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w1",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T11:29:48.291052Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:08:09.640387Z"
+    }
+   }
+  ]
  },
  {
   "name": "single write: 11 distinct exists",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10);\n    }\n  }\n}\n",
-  "status": 403,
-  "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'update' @ L6"
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.645287Z",
+     "updateTime": "2026-10-11T14:08:09.645287Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.646706Z",
+     "updateTime": "2026-10-11T14:08:09.646706Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.648191Z",
+     "updateTime": "2026-10-11T14:08:09.648191Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w1",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'update' @ L6",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
  },
  {
   "name": "single write: 20 distinct exists",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19);\n    }\n  }\n}\n",
-  "status": 403,
-  "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'update' @ L6"
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.661207Z",
+     "updateTime": "2026-10-11T14:08:09.661207Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.662572Z",
+     "updateTime": "2026-10-11T14:08:09.662572Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.664134Z",
+     "updateTime": "2026-10-11T14:08:09.664134Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w1",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'update' @ L6",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
  },
  {
   "name": "single write: 21 distinct exists",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19) && !exists(/databases/$(database)/documents/missing/m20);\n    }\n  }\n}\n",
-  "status": 403,
-  "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'update' @ L6"
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.696921Z",
+     "updateTime": "2026-10-11T14:08:09.696921Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.698344Z",
+     "updateTime": "2026-10-11T14:08:09.698344Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.699738Z",
+     "updateTime": "2026-10-11T14:08:09.699738Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19) && !exists(/databases/$(database)/documents/missing/m20);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w1",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'update' @ L6",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
  },
  {
   "name": "batch of two writes: 10 distinct exists in each",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9);\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.715635Z",
+     "updateTime": "2026-10-11T14:08:09.715635Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.716920Z",
+     "updateTime": "2026-10-11T14:08:09.716920Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.718282Z",
+     "updateTime": "2026-10-11T14:08:09.718282Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w1",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w2",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T11:29:48.291052Z"
+      },
+      {
+       "updateTime": "2026-10-11T11:29:48.379852Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:08:09.726085Z"
+    }
+   }
+  ]
  },
  {
   "name": "batch of two writes: 11 distinct exists in each",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10);\n    }\n  }\n}\n",
-  "status": 403,
-  "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'update' @ L6"
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.731417Z",
+     "updateTime": "2026-10-11T14:08:09.731417Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.732806Z",
+     "updateTime": "2026-10-11T14:08:09.732806Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.733969Z",
+     "updateTime": "2026-10-11T14:08:09.733969Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w1",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w2",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'update' @ L6",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
  },
  {
   "name": "batch of two writes: 20 distinct exists in each",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19);\n    }\n  }\n}\n",
-  "status": 403,
-  "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'update' @ L6"
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.746711Z",
+     "updateTime": "2026-10-11T14:08:09.746711Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.748001Z",
+     "updateTime": "2026-10-11T14:08:09.748001Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.749330Z",
+     "updateTime": "2026-10-11T14:08:09.749330Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w1",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w2",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'update' @ L6",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
  },
  {
   "name": "batch of two writes: 21 distinct exists in each",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19) && !exists(/databases/$(database)/documents/missing/m20);\n    }\n  }\n}\n",
-  "status": 403,
-  "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'update' @ L6"
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.765120Z",
+     "updateTime": "2026-10-11T14:08:09.765120Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.766328Z",
+     "updateTime": "2026-10-11T14:08:09.766328Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.767568Z",
+     "updateTime": "2026-10-11T14:08:09.767568Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19) && !exists(/databases/$(database)/documents/missing/m20);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w1",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w2",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m10\"\n  }\n}\n]. for 'update' @ L6",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
  },
  {
   "name": "batch of two writes: 6 exists of the write's own documents in each",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3')) && !exists(/databases/$(database)/documents/missing/$(d + '_4')) && !exists(/databases/$(database)/documents/missing/$(d + '_5'));\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.783348Z",
+     "updateTime": "2026-10-11T14:08:09.783348Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.784606Z",
+     "updateTime": "2026-10-11T14:08:09.784606Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.785885Z",
+     "updateTime": "2026-10-11T14:08:09.785885Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3')) && !exists(/databases/$(database)/documents/missing/$(d + '_4')) && !exists(/databases/$(database)/documents/missing/$(d + '_5'));\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w1",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w2",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T11:29:48.291052Z"
+      },
+      {
+       "updateTime": "2026-10-11T11:29:48.379852Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:08:09.793754Z"
+    }
+   }
+  ]
  },
  {
   "name": "batch of two writes: 10 exists of the write's own documents in each",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3')) && !exists(/databases/$(database)/documents/missing/$(d + '_4')) && !exists(/databases/$(database)/documents/missing/$(d + '_5')) && !exists(/databases/$(database)/documents/missing/$(d + '_6')) && !exists(/databases/$(database)/documents/missing/$(d + '_7')) && !exists(/databases/$(database)/documents/missing/$(d + '_8')) && !exists(/databases/$(database)/documents/missing/$(d + '_9'));\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.798899Z",
+     "updateTime": "2026-10-11T14:08:09.798899Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.800322Z",
+     "updateTime": "2026-10-11T14:08:09.800322Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.801703Z",
+     "updateTime": "2026-10-11T14:08:09.801703Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3')) && !exists(/databases/$(database)/documents/missing/$(d + '_4')) && !exists(/databases/$(database)/documents/missing/$(d + '_5')) && !exists(/databases/$(database)/documents/missing/$(d + '_6')) && !exists(/databases/$(database)/documents/missing/$(d + '_7')) && !exists(/databases/$(database)/documents/missing/$(d + '_8')) && !exists(/databases/$(database)/documents/missing/$(d + '_9'));\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w1",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w2",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T11:29:48.291052Z"
+      },
+      {
+       "updateTime": "2026-10-11T11:29:48.379852Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:08:09.810440Z"
+    }
+   }
+  ]
  },
  {
   "name": "batch of two writes: 11 exists of the write's own documents in each",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3')) && !exists(/databases/$(database)/documents/missing/$(d + '_4')) && !exists(/databases/$(database)/documents/missing/$(d + '_5')) && !exists(/databases/$(database)/documents/missing/$(d + '_6')) && !exists(/databases/$(database)/documents/missing/$(d + '_7')) && !exists(/databases/$(database)/documents/missing/$(d + '_8')) && !exists(/databases/$(database)/documents/missing/$(d + '_9')) && !exists(/databases/$(database)/documents/missing/$(d + '_10'));\n    }\n  }\n}\n",
-  "status": 403,
-  "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"w1_10\"\n  }\n}\n]. for 'update' @ L6"
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.815611Z",
+     "updateTime": "2026-10-11T14:08:09.815611Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.817098Z",
+     "updateTime": "2026-10-11T14:08:09.817098Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.818826Z",
+     "updateTime": "2026-10-11T14:08:09.818826Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3')) && !exists(/databases/$(database)/documents/missing/$(d + '_4')) && !exists(/databases/$(database)/documents/missing/$(d + '_5')) && !exists(/databases/$(database)/documents/missing/$(d + '_6')) && !exists(/databases/$(database)/documents/missing/$(d + '_7')) && !exists(/databases/$(database)/documents/missing/$(d + '_8')) && !exists(/databases/$(database)/documents/missing/$(d + '_9')) && !exists(/databases/$(database)/documents/missing/$(d + '_10'));\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w1",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w2",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"w1_10\"\n  }\n}\n]. for 'update' @ L6",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
  },
  {
   "name": "batch of four writes: 4 exists of the write's own documents in each",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3'));\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.833093Z",
+     "updateTime": "2026-10-11T14:08:09.833093Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.834355Z",
+     "updateTime": "2026-10-11T14:08:09.834355Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.835362Z",
+     "updateTime": "2026-10-11T14:08:09.835362Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3'));\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w0",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w1",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w2",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w3",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T11:30:26.894546Z"
+      },
+      {
+       "updateTime": "2026-10-11T11:29:48.291052Z"
+      },
+      {
+       "updateTime": "2026-10-11T11:29:48.379852Z"
+      },
+      {
+       "updateTime": "2026-10-11T11:30:26.894546Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:08:09.841899Z"
+    }
+   }
+  ]
  },
  {
   "name": "batch of four writes: 5 exists of the write's own documents in each",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3')) && !exists(/databases/$(database)/documents/missing/$(d + '_4'));\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.845894Z",
+     "updateTime": "2026-10-11T14:08:09.845894Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.846967Z",
+     "updateTime": "2026-10-11T14:08:09.846967Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.848032Z",
+     "updateTime": "2026-10-11T14:08:09.848032Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3')) && !exists(/databases/$(database)/documents/missing/$(d + '_4'));\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w0",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w1",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w2",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w3",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T11:30:26.894546Z"
+      },
+      {
+       "updateTime": "2026-10-11T11:29:48.291052Z"
+      },
+      {
+       "updateTime": "2026-10-11T11:29:48.379852Z"
+      },
+      {
+       "updateTime": "2026-10-11T11:30:26.894546Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:08:09.855187Z"
+    }
+   }
+  ]
  },
  {
   "name": "batch of four writes: 6 exists of the write's own documents in each",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3')) && !exists(/databases/$(database)/documents/missing/$(d + '_4')) && !exists(/databases/$(database)/documents/missing/$(d + '_5'));\n    }\n  }\n}\n",
-  "status": 403,
-  "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, false for 'update' @ L6, false for 'update' @ L6, false for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"w2_2\"\n  }\n}\n]. for 'update' @ L6"
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.859522Z",
+     "updateTime": "2026-10-11T14:08:09.859522Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.860775Z",
+     "updateTime": "2026-10-11T14:08:09.860775Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.861733Z",
+     "updateTime": "2026-10-11T14:08:09.861733Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3')) && !exists(/databases/$(database)/documents/missing/$(d + '_4')) && !exists(/databases/$(database)/documents/missing/$(d + '_5'));\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w0",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w1",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w2",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w3",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, false for 'update' @ L6, false for 'update' @ L6, false for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"w2_2\"\n  }\n}\n]. for 'update' @ L6",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
  },
  {
   "name": "batch of four writes: 7 exists of the write's own documents in each",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3')) && !exists(/databases/$(database)/documents/missing/$(d + '_4')) && !exists(/databases/$(database)/documents/missing/$(d + '_5')) && !exists(/databases/$(database)/documents/missing/$(d + '_6'));\n    }\n  }\n}\n",
-  "status": 403,
-  "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, false for 'update' @ L6, false for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"w3_6\"\n  }\n}\n]. for 'update' @ L6"
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.874470Z",
+     "updateTime": "2026-10-11T14:08:09.874470Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.875459Z",
+     "updateTime": "2026-10-11T14:08:09.875459Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.876536Z",
+     "updateTime": "2026-10-11T14:08:09.876536Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if !exists(/databases/$(database)/documents/missing/$(d + '_0')) && !exists(/databases/$(database)/documents/missing/$(d + '_1')) && !exists(/databases/$(database)/documents/missing/$(d + '_2')) && !exists(/databases/$(database)/documents/missing/$(d + '_3')) && !exists(/databases/$(database)/documents/missing/$(d + '_4')) && !exists(/databases/$(database)/documents/missing/$(d + '_5')) && !exists(/databases/$(database)/documents/missing/$(d + '_6'));\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w0",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w1",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w2",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/w3",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nevaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, evaluation error at L6:23 for 'create' @ L6, evaluation error at L6:23 for 'update' @ L6, false for 'update' @ L6, false for 'update' @ L6, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"w3_6\"\n  }\n}\n]. for 'update' @ L6",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
  },
  {
   "name": "query: 11 distinct exists, with a filter",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10);\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.888654Z",
+     "updateTime": "2026-10-11T14:08:09.888654Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.889553Z",
+     "updateTime": "2026-10-11T14:08:09.889553Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.890387Z",
+     "updateTime": "2026-10-11T14:08:09.890387Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "where": {
+       "fieldFilter": {
+        "field": {
+         "fieldPath": "n"
+        },
+        "op": "EQUAL",
+        "value": {
+         "integerValue": "1"
+        }
+       }
+      }
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": [
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/a",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:29:48.661963Z",
+       "updateTime": "2026-10-11T11:29:48.661963Z"
+      },
+      "readTime": "2026-10-11T14:08:09.894912Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/after",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T14:08:09.890387Z",
+       "updateTime": "2026-10-11T14:08:09.890387Z"
+      },
+      "readTime": "2026-10-11T14:08:09.894912Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/b",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:29:48.661963Z",
+       "updateTime": "2026-10-11T11:29:48.661963Z"
+      },
+      "readTime": "2026-10-11T14:08:09.894912Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/d",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T14:08:09.888654Z",
+       "updateTime": "2026-10-11T14:08:09.888654Z"
+      },
+      "readTime": "2026-10-11T14:08:09.894912Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/w0",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:30:26.894546Z",
+       "updateTime": "2026-10-11T11:30:26.894546Z"
+      },
+      "readTime": "2026-10-11T14:08:09.894912Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/w1",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:29:48.291052Z",
+       "updateTime": "2026-10-11T11:29:48.291052Z"
+      },
+      "readTime": "2026-10-11T14:08:09.894912Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/w2",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:29:48.379852Z",
+       "updateTime": "2026-10-11T11:29:48.379852Z"
+      },
+      "readTime": "2026-10-11T14:08:09.894912Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/w3",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:30:26.894546Z",
+       "updateTime": "2026-10-11T11:30:26.894546Z"
+      },
+      "readTime": "2026-10-11T14:08:09.894912Z"
+     },
+     {
+      "document": {
+       "name": "projects/lookups/databases/(default)/documents/c/x",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       },
+       "createTime": "2026-10-11T11:30:27.173587Z",
+       "updateTime": "2026-10-11T11:30:27.173587Z"
+      },
+      "readTime": "2026-10-11T14:08:09.894912Z",
+      "done": true
+     }
+    ]
+   }
+  ]
  },
  {
   "name": "query: 21 distinct exists, with a filter",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19) && !exists(/databases/$(database)/documents/missing/m20);\n    }\n  }\n}\n",
-  "status": 403,
-  "message": "\nevaluation error at L5:22 for 'list' @ L5, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m20\"\n  }\n}\n]. for 'list' @ L5"
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.900092Z",
+     "updateTime": "2026-10-11T14:08:09.900092Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.901083Z",
+     "updateTime": "2026-10-11T14:08:09.901083Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.901925Z",
+     "updateTime": "2026-10-11T14:08:09.901925Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19) && !exists(/databases/$(database)/documents/missing/m20);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "where": {
+       "fieldFilter": {
+        "field": {
+         "fieldPath": "n"
+        },
+        "op": "EQUAL",
+        "value": {
+         "integerValue": "1"
+        }
+       }
+      }
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nevaluation error at L5:22 for 'list' @ L5, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m20\"\n  }\n}\n]. for 'list' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
  },
  {
   "name": "query: 21 distinct exists",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19) && !exists(/databases/$(database)/documents/missing/m20);\n    }\n  }\n}\n",
-  "status": 403,
-  "message": "\nevaluation error at L5:22 for 'list' @ L5, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m20\"\n  }\n}\n]. for 'list' @ L5"
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.914937Z",
+     "updateTime": "2026-10-11T14:08:09.914937Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.916100Z",
+     "updateTime": "2026-10-11T14:08:09.916100Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.917059Z",
+     "updateTime": "2026-10-11T14:08:09.917059Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if !exists(/databases/$(database)/documents/missing/m0) && !exists(/databases/$(database)/documents/missing/m1) && !exists(/databases/$(database)/documents/missing/m2) && !exists(/databases/$(database)/documents/missing/m3) && !exists(/databases/$(database)/documents/missing/m4) && !exists(/databases/$(database)/documents/missing/m5) && !exists(/databases/$(database)/documents/missing/m6) && !exists(/databases/$(database)/documents/missing/m7) && !exists(/databases/$(database)/documents/missing/m8) && !exists(/databases/$(database)/documents/missing/m9) && !exists(/databases/$(database)/documents/missing/m10) && !exists(/databases/$(database)/documents/missing/m11) && !exists(/databases/$(database)/documents/missing/m12) && !exists(/databases/$(database)/documents/missing/m13) && !exists(/databases/$(database)/documents/missing/m14) && !exists(/databases/$(database)/documents/missing/m15) && !exists(/databases/$(database)/documents/missing/m16) && !exists(/databases/$(database)/documents/missing/m17) && !exists(/databases/$(database)/documents/missing/m18) && !exists(/databases/$(database)/documents/missing/m19) && !exists(/databases/$(database)/documents/missing/m20);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nevaluation error at L5:22 for 'list' @ L5, Service call error. Function: [exists], Argument: [path_value {\n  segments {\n    simple: \"databases\"\n  }\n  segments {\n    simple: \"(default)\"\n  }\n  segments {\n    simple: \"documents\"\n  }\n  segments {\n    simple: \"missing\"\n  }\n  segments {\n    simple: \"m20\"\n  }\n}\n]. for 'list' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
  },
  {
   "name": "get of an existing document",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if get(/databases/$(database)/documents/other/o).data.n == 1;\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.929888Z",
+     "updateTime": "2026-10-11T14:08:09.929888Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.931319Z",
+     "updateTime": "2026-10-11T14:08:09.931319Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.932281Z",
+     "updateTime": "2026-10-11T14:08:09.932281Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if get(/databases/$(database)/documents/other/o).data.n == 1;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "GET",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": null,
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.929888Z",
+     "updateTime": "2026-10-11T14:08:09.929888Z"
+    }
+   }
+  ]
  },
  {
   "name": "get of a missing document",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if get(/databases/$(database)/documents/missing/x).data.n == 1;\n    }\n  }\n}\n",
-  "status": 403,
-  "message": "\nevaluation error at L5:22 for 'get' @ L5, Null value error. for 'get' @ L5"
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.939500Z",
+     "updateTime": "2026-10-11T14:08:09.939500Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.940658Z",
+     "updateTime": "2026-10-11T14:08:09.940658Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.942055Z",
+     "updateTime": "2026-10-11T14:08:09.942055Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if get(/databases/$(database)/documents/missing/x).data.n == 1;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "GET",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": null,
+    "status": 403,
+    "response": {
+     "error": {
+      "code": 403,
+      "message": "\nevaluation error at L5:22 for 'get' @ L5, Null value error. for 'get' @ L5",
+      "status": "PERMISSION_DENIED"
+     }
+    }
+   }
+  ]
  },
  {
   "name": "get of a missing document, absorbed",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if get(/databases/$(database)/documents/missing/x).data.n == 1 || true;\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.950586Z",
+     "updateTime": "2026-10-11T14:08:09.950586Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.951982Z",
+     "updateTime": "2026-10-11T14:08:09.951982Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.953853Z",
+     "updateTime": "2026-10-11T14:08:09.953853Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if get(/databases/$(database)/documents/missing/x).data.n == 1 || true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "GET",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": null,
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.950586Z",
+     "updateTime": "2026-10-11T14:08:09.950586Z"
+    }
+   }
+  ]
  },
  {
   "name": "exists of an existing document",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if exists(/databases/$(database)/documents/other/o);\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.960397Z",
+     "updateTime": "2026-10-11T14:08:09.960397Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.961233Z",
+     "updateTime": "2026-10-11T14:08:09.961233Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.962007Z",
+     "updateTime": "2026-10-11T14:08:09.962007Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if exists(/databases/$(database)/documents/other/o);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "GET",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": null,
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.960397Z",
+     "updateTime": "2026-10-11T14:08:09.960397Z"
+    }
+   }
+  ]
  },
  {
   "name": "get with a variable",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if get(/databases/$(database)/documents/other/$(d)).data.n == 1;\n    }\n  }\n}\n",
-  "status": 404,
-  "message": "Document (projects/lookups/databases/(default)/documents/c/o) not found."
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.967978Z",
+     "updateTime": "2026-10-11T14:08:09.967978Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.968771Z",
+     "updateTime": "2026-10-11T14:08:09.968771Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.969408Z",
+     "updateTime": "2026-10-11T14:08:09.969408Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if get(/databases/$(database)/documents/other/$(d)).data.n == 1;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "GET",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/o",
+    "body": null,
+    "auth": null,
+    "status": 404,
+    "response": {
+     "error": {
+      "code": 404,
+      "message": "Document (projects/lookups/databases/(default)/documents/c/o) not found.",
+      "status": "NOT_FOUND"
+     }
+    }
+   }
+  ]
  },
  {
   "name": "get in a function",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function n(id) {\n      return get(/databases/$(database)/documents/other/$(id)).data.n;\n    }\n    match /c/{d} {\n      allow read: if n('o') == 1;\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.975567Z",
+     "updateTime": "2026-10-11T14:08:09.975567Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.976486Z",
+     "updateTime": "2026-10-11T14:08:09.976486Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.977120Z",
+     "updateTime": "2026-10-11T14:08:09.977120Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function n(id) {\n      return get(/databases/$(database)/documents/other/$(id)).data.n;\n    }\n    match /c/{d} {\n      allow read: if n('o') == 1;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "GET",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": null,
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.975567Z",
+     "updateTime": "2026-10-11T14:08:09.975567Z"
+    }
+   }
+  ]
  },
  {
   "name": "getAfter sees the write",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if getAfter(/databases/$(database)/documents/c/$(d)).data.n == 2;\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.984076Z",
+     "updateTime": "2026-10-11T14:08:09.984076Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.984848Z",
+     "updateTime": "2026-10-11T14:08:09.984848Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.985503Z",
+     "updateTime": "2026-10-11T14:08:09.985503Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if getAfter(/databases/$(database)/documents/c/$(d)).data.n == 2;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/after",
+        "fields": {
+         "n": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T14:08:09.989080Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:08:09.989080Z"
+    }
+   }
+  ]
  },
  {
   "name": "get sees the state before",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if get(/databases/$(database)/documents/c/$(d)).data.n == 1;\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.993037Z",
+     "updateTime": "2026-10-11T14:08:09.993037Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.993993Z",
+     "updateTime": "2026-10-11T14:08:09.993993Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:09.994882Z",
+     "updateTime": "2026-10-11T14:08:09.994882Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if get(/databases/$(database)/documents/c/$(d)).data.n == 1;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/after",
+        "fields": {
+         "n": {
+          "integerValue": "3"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T14:08:09.998608Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:08:09.998608Z"
+    }
+   }
+  ]
  },
  {
   "name": "existsAfter of another write in the batch",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if d != 'a' || existsAfter(/databases/$(database)/documents/c/b);\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:10.003100Z",
+     "updateTime": "2026-10-11T14:08:10.003100Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:10.004457Z",
+     "updateTime": "2026-10-11T14:08:10.004457Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:10.005892Z",
+     "updateTime": "2026-10-11T14:08:10.005892Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if d != 'a' || existsAfter(/databases/$(database)/documents/c/b);\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/a",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/b",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T11:29:48.661963Z"
+      },
+      {
+       "updateTime": "2026-10-11T11:29:48.661963Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:08:10.010850Z"
+    }
+   }
+  ]
  },
  {
   "name": "existsAfter of a document the batch deletes",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if d != 'a' || !existsAfter(/databases/$(database)/documents/other/o);\n    }\n    match /other/{o} {\n      allow write: if true;\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:10.016940Z",
+     "updateTime": "2026-10-11T14:08:10.016940Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:10.018268Z",
+     "updateTime": "2026-10-11T14:08:10.018268Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:10.019600Z",
+     "updateTime": "2026-10-11T14:08:10.019600Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if d != 'a' || !existsAfter(/databases/$(database)/documents/other/o);\n    }\n    match /other/{o} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/a",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "delete": "projects/lookups/databases/(default)/documents/other/o"
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T11:29:48.661963Z"
+      },
+      {}
+     ],
+     "commitTime": "2026-10-11T14:08:10.031631Z"
+    }
+   }
+  ]
  },
  {
   "name": "get of a document the batch deletes",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if d != 'a' || get(/databases/$(database)/documents/other/o).data.n == 1;\n    }\n    match /other/{o} {\n      allow write: if true;\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:10.036854Z",
+     "updateTime": "2026-10-11T14:08:10.036854Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:10.037876Z",
+     "updateTime": "2026-10-11T14:08:10.037876Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:10.038902Z",
+     "updateTime": "2026-10-11T14:08:10.038902Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if d != 'a' || get(/databases/$(database)/documents/other/o).data.n == 1;\n    }\n    match /other/{o} {\n      allow write: if true;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/a",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "delete": "projects/lookups/databases/(default)/documents/other/o"
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T11:29:48.661963Z"
+      },
+      {}
+     ],
+     "commitTime": "2026-10-11T14:08:10.043355Z"
+    }
+   }
+  ]
  },
  {
   "name": "getAfter in a transaction-less single write of another document",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if getAfter(/databases/$(database)/documents/other/o).data.n == 1;\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:10.049587Z",
+     "updateTime": "2026-10-11T14:08:10.049587Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:10.051043Z",
+     "updateTime": "2026-10-11T14:08:10.051043Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:10.052269Z",
+     "updateTime": "2026-10-11T14:08:10.052269Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if true;\n      allow write: if getAfter(/databases/$(database)/documents/other/o).data.n == 1;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/lookups/databases/(default)/documents/c/x",
+        "fields": {
+         "n": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     ]
+    },
+    "auth": null,
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-11T11:30:27.173587Z"
+      }
+     ],
+     "commitTime": "2026-10-11T14:08:10.057599Z"
+    }
+   }
+  ]
  },
  {
   "name": "getAfter on a read",
-  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if getAfter(/databases/$(database)/documents/other/o).data.n == 1;\n    }\n  }\n}\n",
-  "status": 200
+  "steps": [
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other/o",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "DELETE",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/after",
+    "body": null,
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=d",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:10.062187Z",
+     "updateTime": "2026-10-11T14:08:10.062187Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/other?documentId=o",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/other/o",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:10.063327Z",
+     "updateTime": "2026-10-11T14:08:10.063327Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c?documentId=after",
+    "body": {
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "auth": "Bearer owner",
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/after",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:10.064370Z",
+     "updateTime": "2026-10-11T14:08:10.064370Z"
+    }
+   },
+   {
+    "method": "PUT",
+    "path": "/emulator/v1/projects/lookups:securityRules",
+    "body": {
+     "rules": {
+      "files": [
+       {
+        "name": "firestore.rules",
+        "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if getAfter(/databases/$(database)/documents/other/o).data.n == 1;\n    }\n  }\n}\n"
+       }
+      ]
+     }
+    },
+    "auth": null,
+    "status": 200,
+    "response": {}
+   },
+   {
+    "method": "GET",
+    "path": "/v1/projects/lookups/databases/(default)/documents/c/d",
+    "body": null,
+    "auth": null,
+    "status": 200,
+    "response": {
+     "name": "projects/lookups/databases/(default)/documents/c/d",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-11T14:08:10.062187Z",
+     "updateTime": "2026-10-11T14:08:10.062187Z"
+    }
+   }
+  ]
  }
 ]

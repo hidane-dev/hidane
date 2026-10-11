@@ -12,26 +12,13 @@ At the end the coverage report of the last project is fetched (`GET :ruleCoverag
 are written as the owner. Stdlib only.
 """
 
-import json
 import sys
-import urllib.error
-import urllib.request
+from pathlib import Path
 
-HOST = sys.argv[1]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from steps import OWNER, call, case, dump, rules  # noqa: E402
+
 I = lambda n: {"integerValue": str(n)}
-
-
-def call(method, path, body=None, owner=False):
-    headers = {"Content-Type": "application/json"}
-    if owner:
-        headers["Authorization"] = "Bearer owner"
-    req = urllib.request.Request(f"http://{HOST}{path}", method=method,
-                                 data=None if body is None else json.dumps(body).encode(), headers=headers)
-    try:
-        with urllib.request.urlopen(req, timeout=30) as res:
-            return res.status, res.headers.get("content-type"), res.read().decode()
-    except urllib.error.HTTPError as err:
-        return err.code, err.headers.get("content-type"), err.read().decode()
 
 
 def ruleset(body):
@@ -73,24 +60,17 @@ CASES = [
     ("batch, second write denied", "match /c/{d} {\n  allow write: if d == 'a';\n}", BATCH),
 ]
 
-results = []
 for i, (name, body, op) in enumerate(CASES):
     project = f"denials-{i}"
     base = doc_base(project)
-    call("POST", f"{base}/c?documentId=d", {"fields": {"n": I(1)}}, owner=True)
-    content = ruleset(body)
-    status, _, text = call("PUT", f"/emulator/v1/projects/{project}:securityRules",
-                           {"rules": {"files": [{"name": "firestore.rules", "content": content}]}})
-    assert status == 200, text
+    case(name)
+    call("POST", f"{base}/c?documentId=d", {"fields": {"n": I(1)}}, auth=OWNER)
+    rules(project, ruleset(body))
     method, path, payload = op(base)
-    status, ctype, text = call(method, path, payload)
-    results.append({"name": name, "rules": content, "request": {"method": method, "path": path, "body": payload},
-                    "status": status, "contentType": ctype, "response": text})
+    call(method, path, payload)
 
-coverage = {}
+case("coverage")
 for suffix in (":ruleCoverage", ":ruleCoverage/html"):
-    status, ctype, text = call("GET", f"/emulator/v1/projects/denials-0{suffix}")
-    coverage[suffix] = {"status": status, "contentType": ctype, "response": text[:4000]}
+    call("GET", f"/emulator/v1/projects/denials-0{suffix}")
 
-json.dump({"results": results, "coverage": coverage}, sys.stdout, indent=1, ensure_ascii=False)
-print()
+dump()

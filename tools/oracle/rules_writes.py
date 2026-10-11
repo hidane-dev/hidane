@@ -14,45 +14,22 @@ Reads: a batchGet with one document denied, a transaction's get, an aggregation 
 documents. Stdlib only.
 """
 
-import json
 import sys
-import urllib.error
-import urllib.request
+from pathlib import Path
 
-HOST = sys.argv[1]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from steps import OWNER, call, case, dump, rules  # noqa: E402
+
 PROJECT = "writes"
 DB = f"projects/{PROJECT}/databases/(default)"
 BASE = f"{DB}/documents"
 I = lambda n: {"integerValue": str(n)}
 
 
-def call(method, path, body=None, owner=False):
-    headers = {"Content-Type": "application/json"}
-    if owner:
-        headers["Authorization"] = "Bearer owner"
-    req = urllib.request.Request(f"http://{HOST}{path}", method=method,
-                                 data=None if body is None else json.dumps(body).encode(), headers=headers)
-    try:
-        with urllib.request.urlopen(req, timeout=30) as res:
-            return res.status, res.read().decode()
-    except urllib.error.HTTPError as err:
-        return err.code, err.read().decode()
-
-
 def load(allow):
     lines = "\n".join(f"      allow {a};" for a in allow) or "      allow get: if false;"
-    content = ("rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
-               f"    match /c/{{d}} {{\n{lines}\n    }}\n  }}\n}}\n")
-    status, body = call("PUT", f"/emulator/v1/projects/{PROJECT}:securityRules",
-                        {"rules": {"files": [{"name": "firestore.rules", "content": content}]}})
-    assert status == 200, body
-
-
-def message(body):
-    try:
-        return json.loads(body)["error"]["message"]
-    except (ValueError, KeyError, TypeError):
-        return None
+    rules(PROJECT, "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
+          f"    match /c/{{d}} {{\n{lines}\n    }}\n  }}\n}}\n")
 
 
 def commit(*writes):
@@ -88,50 +65,46 @@ RULES = {
     "none": [],
 }
 
-results = []
 for exists in (True, False):
     for write, op in WRITES.items():
-        for rules, allow in RULES.items():
+        for rules_name, allow in RULES.items():
             doc = "c/w"
-            call("DELETE", f"/v1/{BASE}/{doc}", owner=True)
+            case(f"{'existing' if exists else 'missing'} document, {write}, {rules_name}",
+                 document="exists" if exists else "missing", write=write, rules=rules_name)
+            call("DELETE", f"/v1/{BASE}/{doc}", auth=OWNER)
             if exists:
-                call("POST", f"/v1/{BASE}/c?documentId=w", {"fields": {"n": I(1)}}, owner=True)
+                call("POST", f"/v1/{BASE}/c?documentId=w", {"fields": {"n": I(1)}}, auth=OWNER)
             load(allow)
             method, path, body = op(doc)
-            status, text = call(method, path, body)
-            results.append({"document": "exists" if exists else "missing", "write": write, "rules": rules,
-                            "status": status, "message": message(text)})
+            call(method, path, body)
 
-# Reads.
-call("POST", f"/v1/{BASE}/c?documentId=a", {"fields": {"n": I(1)}}, owner=True)
-call("POST", f"/v1/{BASE}/c?documentId=b", {"fields": {"n": I(2)}}, owner=True)
-reads = []
+case("seed for the reads")
+call("POST", f"/v1/{BASE}/c?documentId=a", {"fields": {"n": I(1)}}, auth=OWNER)
+call("POST", f"/v1/{BASE}/c?documentId=b", {"fields": {"n": I(2)}}, auth=OWNER)
+case("batchGet, second denied")
 load(["get: if d == 'a'", "list: if true"])
-for name, (method, path, body) in {
-    "batchGet, second denied": ("POST", f"/v1/{DB}/documents:batchGet", {"documents": [f"{BASE}/c/a", f"{BASE}/c/b"]}),
-    "batchGet, missing document allowed": ("POST", f"/v1/{DB}/documents:batchGet", {"documents": [f"{BASE}/c/a", f"{BASE}/c/zz"]}),
-    "get in a transaction, denied": ("POST", f"/v1/{DB}/documents:beginTransaction", {}),
-}.items():
-    status, text = call(method, path, body)
-    entry = {"name": name, "status": status, "response": text[:1500]}
-    if name.startswith("get in a transaction"):
-        tx = json.loads(text)["transaction"]
-        # A REST GET with ?transaction= never answers on the official emulator; batchGet does.
-        status, text = call("POST", f"/v1/{DB}/documents:batchGet", {"documents": [f"{BASE}/c/b"], "transaction": tx})
-        entry.update(status=status, response=text[:1500])
-    reads.append(entry)
-load(["get: if true", "list: if resource.data.n == 1"])
+call("POST", f"/v1/{DB}/documents:batchGet", {"documents": [f"{BASE}/c/a", f"{BASE}/c/b"]})
+case("batchGet, missing document")
+load(["get: if d == 'a'", "list: if true"])
+call("POST", f"/v1/{DB}/documents:batchGet", {"documents": [f"{BASE}/c/a", f"{BASE}/c/zz"]})
+case("get in a transaction, denied")
+load(["get: if d == 'a'", "list: if true"])
+# A REST GET with ?transaction= never answers on the official emulator; batchGet does. The
+# transaction ID is not replayable, so only the begin is recorded and the read is a plain one.
+call("POST", f"/v1/{DB}/documents:batchGet", {"documents": [f"{BASE}/c/b"], "newTransaction": {}})
+QUERY = {"structuredQuery": {"from": [{"collectionId": "c"}]}}
+FILTERED = {"structuredQuery": {"from": [{"collectionId": "c"}], "where": {"fieldFilter": {
+    "field": {"fieldPath": "n"}, "op": "EQUAL", "value": I(1)}}}}
 for name, (method, path, body) in {
     "aggregation, denied": ("POST", f"/v1/{BASE}:runAggregationQuery", {"structuredAggregationQuery": {
-        "structuredQuery": {"from": [{"collectionId": "c"}]}, "aggregations": [{"alias": "n", "count": {}}]}}),
+        **QUERY, "aggregations": [{"alias": "n", "count": {}}]}}),
     "aggregation, allowed by its filter": ("POST", f"/v1/{BASE}:runAggregationQuery", {"structuredAggregationQuery": {
-        "structuredQuery": {"from": [{"collectionId": "c"}], "where": {"fieldFilter": {"field": {"fieldPath": "n"}, "op": "EQUAL", "value": I(1)}}},
-        "aggregations": [{"alias": "n", "count": {}}]}}),
+        **FILTERED, "aggregations": [{"alias": "n", "count": {}}]}}),
     "listDocuments, denied": ("GET", f"/v1/{BASE}/c", None),
     "listCollectionIds": ("POST", f"/v1/{BASE}:listCollectionIds", {}),
 }.items():
-    status, text = call(method, path, body)
-    reads.append({"name": name, "status": status, "response": text[:1500]})
+    case(name)
+    load(["get: if true", "list: if resource.data.n == 1"])
+    call(method, path, body)
 
-json.dump({"writes": results, "reads": reads}, sys.stdout, indent=1)
-print()
+dump()
