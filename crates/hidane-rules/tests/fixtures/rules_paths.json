@@ -1,0 +1,1296 @@
+{
+ "documents": [
+  "c/d",
+  "c/x",
+  "x/y",
+  "c/d/e/f",
+  "c/d/e/g",
+  "c/d/x/f",
+  "c/d/e/f/g/h",
+  "a/b/e/f",
+  "e/f"
+ ],
+ "results": [
+  {
+   "version": 1,
+   "match": [
+    "/{document=**}"
+   ],
+   "condition": "true",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "allow",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "allow",
+    "e/f": "allow"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/{document=**}"
+   ],
+   "condition": "document is path",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "allow",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "allow",
+    "e/f": "allow"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/{document=**}"
+   ],
+   "condition": "document is string",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/{document=**}"
+   ],
+   "condition": "document.size() == 2",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+    "Invalid type. Received one of [path]. Expected one of [string, bytes, list, set, map].",
+    "Invalid type. There is no type for variable 'document' that satisfies all clauses."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/{document=**}"
+   ],
+   "condition": "document[0] == 'c'",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/{rest=**}"
+   ],
+   "condition": "true",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/{rest=**}"
+   ],
+   "condition": "rest is path",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/{rest=**}"
+   ],
+   "condition": "rest is string",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/{rest=**}"
+   ],
+   "condition": "rest.size() == 1",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+    "Invalid type. Received one of [path]. Expected one of [string, bytes, list, set, map].",
+    "Invalid type. There is no type for variable 'rest' that satisfies all clauses."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/{rest=**}"
+   ],
+   "condition": "rest[0] == 'd'",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "allow",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/{d}"
+   ],
+   "condition": "true",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/{d}"
+   ],
+   "condition": "d is string",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/{d}"
+   ],
+   "condition": "d == 'd'",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "allow",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/{c}/{d}"
+   ],
+   "condition": "true",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "allow",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "allow"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/{c}/{d}"
+   ],
+   "condition": "c == 'c'",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/{d}/{rest=**}"
+   ],
+   "condition": "true",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/{d}/{rest=**}"
+   ],
+   "condition": "rest.size() == 2",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/{d}/{rest=**}"
+   ],
+   "condition": "rest[0] == 'e'",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/d/{rest=**}"
+   ],
+   "condition": "true",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/d/{rest=**}"
+   ],
+   "condition": "rest.size() == 0",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+    "Invalid type. Received one of [path]. Expected one of [string, bytes, list, set, map].",
+    "Invalid type. There is no type for variable 'rest' that satisfies all clauses."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/{path=**}/e/{f}"
+   ],
+   "condition": "true",
+   "compile": {
+    "status": 400,
+    "message": "Error compiling rules:\nL3:11 Invalid glob match expression. Glob matches are permitted as the last segment in a match declaration path."
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/{path=**}/e/{f}"
+   ],
+   "condition": "path.size() == 2",
+   "compile": {
+    "status": 400,
+    "message": "Error compiling rules:\nL3:11 Invalid glob match expression. Glob matches are permitted as the last segment in a match declaration path."
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/{path=**}/e/{f}"
+   ],
+   "condition": "path.size() == 0",
+   "compile": {
+    "status": 400,
+    "message": "Error compiling rules:\nL3:11 Invalid glob match expression. Glob matches are permitted as the last segment in a match declaration path."
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/{path=**}/e/{f}"
+   ],
+   "condition": "path[0] == 'c'",
+   "compile": {
+    "status": 400,
+    "message": "Error compiling rules:\nL3:11 Invalid glob match expression. Glob matches are permitted as the last segment in a match declaration path."
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/{rest=**}/f"
+   ],
+   "condition": "true",
+   "compile": {
+    "status": 400,
+    "message": "Error compiling rules:\nL3:13 Invalid glob match expression. Glob matches are permitted as the last segment in a match declaration path."
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/{rest=**}/f"
+   ],
+   "condition": "rest.size() == 3",
+   "compile": {
+    "status": 400,
+    "message": "Error compiling rules:\nL3:13 Invalid glob match expression. Glob matches are permitted as the last segment in a match declaration path."
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/{d}",
+    "/{rest=**}"
+   ],
+   "condition": "true",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/{d}",
+    "/{rest=**}"
+   ],
+   "condition": "rest.size() == 0",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+    "Invalid type. Received one of [path]. Expected one of [string, bytes, list, set, map].",
+    "Invalid type. There is no type for variable 'rest' that satisfies all clauses."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/{d}",
+    "/{rest=**}"
+   ],
+   "condition": "rest.size() == 2",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+    "Invalid type. Received one of [path]. Expected one of [string, bytes, list, set, map].",
+    "Invalid type. There is no type for variable 'rest' that satisfies all clauses."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/{d}",
+    "/e/{f}"
+   ],
+   "condition": "true",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/c/{d}",
+    "/e/{f}"
+   ],
+   "condition": "d == 'd' && f == 'f'",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/{a}/{b}",
+    "/{rest=**}"
+   ],
+   "condition": "true",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2])."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "allow",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 1,
+   "match": [
+    "/{a}/{b}",
+    "/{rest=**}"
+   ],
+   "condition": "rest.size() == 2",
+   "issues": [
+    "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+    "Invalid type. Received one of [path]. Expected one of [string, bytes, list, set, map].",
+    "Invalid type. There is no type for variable 'rest' that satisfies all clauses."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/{document=**}"
+   ],
+   "condition": "true",
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "allow",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "allow",
+    "e/f": "allow"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/{document=**}"
+   ],
+   "condition": "document is path",
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "allow",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "allow",
+    "e/f": "allow"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/{document=**}"
+   ],
+   "condition": "document is string",
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/{document=**}"
+   ],
+   "condition": "document.size() == 2",
+   "issues": [
+    "Invalid type. Received one of [path]. Expected one of [string, bytes, list, set, map].",
+    "Invalid type. There is no type for variable 'document' that satisfies all clauses."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/{document=**}"
+   ],
+   "condition": "document[0] == 'c'",
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/{rest=**}"
+   ],
+   "condition": "true",
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/{rest=**}"
+   ],
+   "condition": "rest is path",
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/{rest=**}"
+   ],
+   "condition": "rest is string",
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/{rest=**}"
+   ],
+   "condition": "rest.size() == 1",
+   "issues": [
+    "Invalid type. Received one of [path]. Expected one of [string, bytes, list, set, map].",
+    "Invalid type. There is no type for variable 'rest' that satisfies all clauses."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/{rest=**}"
+   ],
+   "condition": "rest[0] == 'd'",
+   "reads": {
+    "c/d": "allow",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/{d}"
+   ],
+   "condition": "true",
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/{d}"
+   ],
+   "condition": "d is string",
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/{d}"
+   ],
+   "condition": "d == 'd'",
+   "reads": {
+    "c/d": "allow",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/{c}/{d}"
+   ],
+   "condition": "true",
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "allow",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "allow"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/{c}/{d}"
+   ],
+   "condition": "c == 'c'",
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/{d}/{rest=**}"
+   ],
+   "condition": "true",
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/{d}/{rest=**}"
+   ],
+   "condition": "rest.size() == 2",
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/{d}/{rest=**}"
+   ],
+   "condition": "rest[0] == 'e'",
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/d/{rest=**}"
+   ],
+   "condition": "true",
+   "reads": {
+    "c/d": "allow",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/d/{rest=**}"
+   ],
+   "condition": "rest.size() == 0",
+   "issues": [
+    "Invalid type. Received one of [path]. Expected one of [string, bytes, list, set, map].",
+    "Invalid type. There is no type for variable 'rest' that satisfies all clauses."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/{path=**}/e/{f}"
+   ],
+   "condition": "true",
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "allow",
+    "e/f": "allow"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/{path=**}/e/{f}"
+   ],
+   "condition": "path.size() == 2",
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/{path=**}/e/{f}"
+   ],
+   "condition": "path.size() == 0",
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/{path=**}/e/{f}"
+   ],
+   "condition": "path[0] == 'c'",
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/{rest=**}/f"
+   ],
+   "condition": "true",
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/{rest=**}/f"
+   ],
+   "condition": "rest.size() == 3",
+   "issues": [
+    "Invalid type. Received one of [path]. Expected one of [string, bytes, list, set, map].",
+    "Invalid type. There is no type for variable 'rest' that satisfies all clauses."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/{d}",
+    "/{rest=**}"
+   ],
+   "condition": "true",
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/{d}",
+    "/{rest=**}"
+   ],
+   "condition": "rest.size() == 0",
+   "issues": [
+    "Invalid type. Received one of [path]. Expected one of [string, bytes, list, set, map].",
+    "Invalid type. There is no type for variable 'rest' that satisfies all clauses."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/{d}",
+    "/{rest=**}"
+   ],
+   "condition": "rest.size() == 2",
+   "issues": [
+    "Invalid type. Received one of [path]. Expected one of [string, bytes, list, set, map].",
+    "Invalid type. There is no type for variable 'rest' that satisfies all clauses."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/{d}",
+    "/e/{f}"
+   ],
+   "condition": "true",
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/c/{d}",
+    "/e/{f}"
+   ],
+   "condition": "d == 'd' && f == 'f'",
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/{a}/{b}",
+    "/{rest=**}"
+   ],
+   "condition": "true",
+   "reads": {
+    "c/d": "allow",
+    "c/x": "allow",
+    "x/y": "allow",
+    "c/d/e/f": "allow",
+    "c/d/e/g": "allow",
+    "c/d/x/f": "allow",
+    "c/d/e/f/g/h": "allow",
+    "a/b/e/f": "allow",
+    "e/f": "allow"
+   }
+  },
+  {
+   "version": 2,
+   "match": [
+    "/{a}/{b}",
+    "/{rest=**}"
+   ],
+   "condition": "rest.size() == 2",
+   "issues": [
+    "Invalid type. Received one of [path]. Expected one of [string, bytes, list, set, map].",
+    "Invalid type. There is no type for variable 'rest' that satisfies all clauses."
+   ],
+   "reads": {
+    "c/d": "deny",
+    "c/x": "deny",
+    "x/y": "deny",
+    "c/d/e/f": "deny",
+    "c/d/e/g": "deny",
+    "c/d/x/f": "deny",
+    "c/d/e/f/g/h": "deny",
+    "a/b/e/f": "deny",
+    "e/f": "deny"
+   }
+  }
+ ]
+}
