@@ -76,6 +76,15 @@ async fn run(args: Vec<OsString>) -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
+    // `--rules`: the official emulator says nothing about the file; hidane prints what the
+    // compiler found. A file that does not compile is not loaded and does not stop the start.
+    let rules = cli.rules.as_deref().and_then(|path| {
+        let (lines, ruleset) = hidane::rules::load(path);
+        for line in lines {
+            eprintln!("{line}");
+        }
+        ruleset
+    });
 
     let listeners = match hidane::bind(&cli.host, cli.port).await {
         Ok(listeners) => listeners,
@@ -111,6 +120,9 @@ async fn run(args: Vec<OsString>) -> ExitCode {
         .with_enterprise_edition(cli.database_edition == cli::DatabaseEdition::Enterprise);
     if let Some(documents) = seed {
         admin = admin.with_seed(documents);
+    }
+    if let Some(ruleset) = rules {
+        admin.rules().set_default(ruleset);
     }
     let (code_tx, code_rx) = tokio::sync::oneshot::channel();
     let shutdown = {

@@ -130,6 +130,14 @@ fn starts_with_the_firebase_tools_arguments_and_stops_on_sigint_with_130() {
         stderr.contains("WARNING: Security Rules are not evaluated yet"),
         "{stderr}"
     );
+    // The rules file is compiled at startup and what the compiler found is printed.
+    assert!(
+        stderr.contains(&format!(
+            "ERROR: {}:1:21: mismatched input '<EOF>' expecting {{'function', 'import', 'service'}}",
+            rules.display()
+        )),
+        "{stderr}"
+    );
     let _ = std::fs::remove_file(rules);
 }
 

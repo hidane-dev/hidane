@@ -1,0 +1,3588 @@
+[
+ {
+  "name": "docs firestore/security/get-started #1",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n",
+  "source": "https://firebase.google.com/docs/firestore/security/get-started",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL3:9 Missing 'match' keyword before path.\nL4:1 Unexpected '<EOF>'.\nL4:1 mismatched input '<EOF>' expecting {'{', '/', PATH_SEGMENT}",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/security/get-started #2",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /<some_path>/ {\n      allow read, write: if <some_condition>;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/get-started",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL3:11 Forward slash '/' found where identifier or binding expected.\nL3:11 Missing 'match' keyword before path.\nL3:12 Unexpected '<'.\nL3:12 mismatched input '<' expecting {'{', '/', PATH_SEGMENT}\nL3:23 Forward slash '/' found where identifier or binding expected.\nL3:23 Missing 'match' keyword before path.\nL4:7 missing '}' at 'allow'\nL4:29 Missing conditional expression after 'if'.\nL4:29 Unexpected '<'.\nL7:1 Unexpected '}'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/security/get-started #3",
+  "content": "// Allow read/write access on all documents to any user signed in to the application\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if request.auth != null;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/get-started",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/get-started #4",
+  "content": "// Deny read/write access to all users under any conditions\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if false;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/get-started",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/get-started #5",
+  "content": "// Allow read/write access to all users under any conditions\n// Warning: **NEVER** use this rule set in production; it allows\n// anyone to overwrite your entire database.\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if true;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/get-started",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-structure #1",
+  "content": "service cloud.firestore {\n  // The {database} wildcard allows the rules to reference any database,\n  // but these rules are only active on databases where they are explicitly deployed.\n  match /databases/{database}/documents {\n    // ...\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-structure",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL6:3 The 'match' body must contain at least one declaration.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-structure #2",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n\n    // Match any document in the 'cities' collection\n    match /cities/{city} {\n      allow read: if <condition>;\n      allow write: if <condition>;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-structure",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL6:22 Missing conditional expression after 'if'.\nL6:22 Unexpected '<'.\nL7:23 Missing conditional expression after 'if'.\nL7:23 Unexpected '<'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-structure #3",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // A read rule can be divided into get and list rules\n\n    match /cities/{city} {\n      // Applies to single document read requests\n      allow get: if <condition>;\n\n      // Applies to queries and collection read requests\n      allow list: if <condition>;\n    }\n    // A write rule can be divided into create, update, and delete rules\n    match /cities/{city} {\n      // Applies to writes to nonexistent documents\n      allow create: if <condition>;\n\n      // Applies to writes to existing documents\n      allow update: if <condition>;\n\n      // Applies to delete operations\n      allow delete: if <condition>;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-structure",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL7:21 Missing conditional expression after 'if'.\nL7:21 Unexpected '<'.\nL10:22 Missing conditional expression after 'if'.\nL10:22 Unexpected '<'.\nL15:24 Missing conditional expression after 'if'.\nL15:24 Unexpected '<'.\nL18:24 Missing conditional expression after 'if'.\nL18:24 Unexpected '<'.\nL21:24 Missing conditional expression after 'if'.\nL21:24 Unexpected '<'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-structure #4",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /cities/{city} {\n      allow read, write: if <condition>;\n\n        // Explicitly define rules for the 'landmarks' subcollection\n        match /landmarks/{landmark} {\n          allow read, write: if <condition>;\n        }\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-structure",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:29 Missing conditional expression after 'if'.\nL4:29 Unexpected '<'.\nL7:1 token recognition error at: ' '\nL7:3 token recognition error at: ' '\nL7:5 token recognition error at: ' '\nL7:7 token recognition error at: ' '\nL8:1 token recognition error at: ' '\nL8:3 token recognition error at: ' '\nL8:5 token recognition error at: ' '\nL8:7 token recognition error at: ' '\nL8:9 token recognition error at: ' '\nL8:33 Missing conditional expression after 'if'.\nL8:33 Unexpected '<'.\nL9:1 token recognition error at: ' '\nL9:3 token recognition error at: ' '\nL9:5 token recognition error at: ' '\nL10:1 token recognition error at: ' '\nL10:3 token recognition error at: ' '\nL11:1 token recognition error at: ' '",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-structure #5",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /cities/{city} {\n      match /landmarks/{landmark} {\n        allow read, write: if <condition>;\n      }\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-structure",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:31 Missing conditional expression after 'if'.\nL5:31 Unexpected '<'.\nL6:1 token recognition error at: ' '\nL6:3 token recognition error at: ' '\nL6:5 token recognition error at: ' '\nL7:1 token recognition error at: ' '\nL7:3 token recognition error at: ' '\nL8:1 token recognition error at: ' '",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-structure #6",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /cities/{city}/landmarks/{landmark} {\n      allow read, write: if <condition>;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-structure",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:29 Missing conditional expression after 'if'.\nL4:29 Unexpected '<'.\nL5:1 token recognition error at: ' '\nL5:3 token recognition error at: ' '\nL6:1 token recognition error at: ' '",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-structure #7",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Matches any document in the cities collection as well as any document\n    // in a subcollection.\n    match /cities/{document=**} {\n      allow read, write: if <condition>;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-structure",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL6:29 Missing conditional expression after 'if'.\nL6:29 Unexpected '<'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-structure #8",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n match /databases/{database}/documents {\n   // Matches any document in the cities collection as well as any document\n   // in a subcollection.\n   match /cities/{city}/{document=**} {\n     allow read, write: if <condition>;\n   }\n }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-structure",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL7:28 Missing conditional expression after 'if'.\nL7:28 Unexpected '<'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-structure #9",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n match /databases/{database}/documents {\n   // Matches any document in the songs collection group\n   match /{path=**}/songs/{song} {\n     allow read, write: if <condition>;\n   }\n }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-structure",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL6:28 Missing conditional expression after 'if'.\nL6:28 Unexpected '<'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-structure #10",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Matches any document in the 'cities' collection.\n    match /cities/{city} {\n      allow read, write: if false;\n    }\n\n    // Matches any document in the 'cities' collection or subcollections.\n    match /cities/{document=**} {\n      allow read, write: if true;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-structure",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-conditions #1",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Allow the user to access documents in the \"cities\" collection\n    // only if they are authenticated.\n    match /cities/{city} {\n      allow read, write: if request.auth != null;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-conditions",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-conditions #2",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Make sure the uid of the requesting user matches name of the user\n    // document. The wildcard expression {userId} makes the userId variable\n    // available in rules.\n    match /users/{userId} {\n      allow read, update, delete: if request.auth != null && request.auth.uid == userId;\n      allow create: if request.auth != null;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-conditions",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-conditions #3",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Allow the user to read data if the document has the 'visibility'\n    // field set to 'public'\n    match /cities/{city} {\n      allow read: if resource.data.visibility == 'public';\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-conditions",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-conditions #4",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Make sure all cities have a positive population and\n    // the name is not changed\n    match /cities/{city} {\n      allow update: if request.resource.data.population > 0\n                    && request.resource.data.name == resource.data.name;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-conditions",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-conditions #5",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /cities/{city} {\n      // Make sure a 'users' document exists for the requesting user before\n      // allowing any writes to the 'cities' collection\n      allow create: if request.auth != null && exists(/databases/$(database)/documents/users/$(request.auth.uid));\n\n      // Allow the user to delete cities if their user document has the\n      // 'admin' field set to 'true'\n      allow delete: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.admin == true;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-conditions",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-conditions #6",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // True if the user is signed in or the requested data is 'public'\n    function signedInOrPublic() {\n      return request.auth.uid != null || resource.data.visibility == 'public';\n    }\n\n    match /cities/{city} {\n      allow read, write: if signedInOrPublic();\n    }\n\n    match /users/{user} {\n      allow read, write: if signedInOrPublic();\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-conditions",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-query #1",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /stories/{storyid} {\n      // Only the authenticated user who authored the document can read or write\n      allow read, write: if request.auth != null && request.auth.uid == resource.data.author;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-query",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-query #2",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /stories/{storyid} {\n      // Anyone can read a published story; only story authors can read unpublished stories\n      allow read: if resource.data.published == true || (request.auth != null && request.auth.uid == resource.data.author);\n      // Only story authors can write\n      allow write: if request.auth != null && request.auth.uid == resource.data.author;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-query",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-query #3",
+  "content": "service cloud.firestore {\n\n  match /databases/{database}/documents {\n\n    match /stories/{storyid} {\n\n      // Returns `true` if the requested story is 'published'\n      // or the user authored the story\n      function authorOrPublished() {\n        return resource.data.published == true || request.auth.uid == resource.data.author;\n      }\n\n      // Deny any query not limited to 10 or fewer documents\n      // Anyone can query published stories\n      // Authors can query their unpublished stories\n      allow list: if request.query.limit <= 10 &&\n                     authorOrPublished();\n\n      // Anyone can retrieve a published story\n      // Only a story's author can retrieve an unpublished story\n      allow get: if authorOrPublished();\n\n      // Only a story's author can write to a story\n      allow write: if request.auth.uid == resource.data.author;\n    }\n\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-query",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-query #4",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /forums/{forumid}/posts/{post} {\n      // Only authenticated users can read\n      allow read: if request.auth != null;\n      // Only the post author can write\n      allow write: if request.auth != null && request.auth.uid == resource.data.author;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-query",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-query #5",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n\n  match /databases/{database}/documents {\n    // Authenticated users can query the posts collection group\n    // Applies to collection queries, collection group queries, and\n    // single document retrievals\n    match /{path=**}/posts/{post} {\n      allow read: if request.auth != null;\n    }\n    match /forums/{forumid}/posts/{postid} {\n      // Only a post's author can write to a post\n      allow write: if request.auth != null && request.auth.uid == resource.data.author;\n\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-query",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "docs firestore/security/rules-query #6",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n\n  match /databases/{database}/documents {\n\n    // Returns `true` if the requested post is 'published'\n    // or the user authored the post\n    function authorOrPublished() {\n      return resource.data.published == true || request.auth.uid == resource.data.author;\n    }\n\n    match /{path=**}/posts/{post} {\n\n      // Anyone can query published posts\n      // Authors can query their unpublished posts\n      allow list: if authorOrPublished();\n\n      // Anyone can retrieve a published post\n      // Authors can retrieve an unpublished post\n      allow get: if authorOrPublished();\n    }\n\n    match /forums/{forumid}/posts/{postid} {\n      // Only a post's author can write to a post\n      allow write: if request.auth.uid == resource.data.author;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-query",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "docs firestore/security/rules-query #7",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n\n  match /databases/{database}/documents {\n\n    match /{path=**}/transactions/{transaction} {\n      // Authenticated users can retrieve only their own transactions\n      allow read: if resource.data.user == request.auth.uid;\n    }\n\n    match /users/{userid}/exchange/{exchangeid}/transactions/{transaction} {\n      // Authenticated users can write to their own transactions subcollections\n      // Writes must populate the user field with the correct auth id\n      allow write: if userid == request.auth.uid && request.data.user == request.auth.uid\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-query",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "docs firestore/security/rules-fields #1",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Allow any logged in user to view the public employee data\n    match /employees/{emp_id} {\n      allow read: if request.resource.auth != null\n      // Allow only users with the custom auth claim of \"Finance\" to view\n      // the employee's financial data\n      match /private/finances {\n        allow read: if request.resource.auth &&\n          request.resource.auth.token.role == 'Finance'\n      }\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-fields",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-fields #2",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Allow the user to create a document only if that document contains a name\n    // location, and city field\n    match /restaurant/{restId} {\n      allow create: if request.resource.data.keys().hasAll(['name', 'location', 'city']);\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-fields",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-fields #3",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Allow the user to create a document only if that document does *not*\n    // contain an average_score or rating_count field.\n    match /restaurant/{restId} {\n      allow create: if (!request.resource.data.keys().hasAny(\n        ['average_score', 'rating_count']));\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-fields",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-fields #4",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Allow the user to create a document only if that document doesn't contain\n    // any fields besides the ones listed below.\n    match /restaurant/{restId} {\n      allow create: if (request.resource.data.keys().hasOnly(\n        ['name', 'location', 'city', 'address', 'hours', 'cuisine']));\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-fields",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-fields #5",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Allow the user to create a document only if that document has a name,\n    // location, and city field, and optionally address, hours, or cuisine field\n    match /restaurant/{restId} {\n      allow create: if (request.resource.data.keys().hasAll(['name', 'location', 'city'])) &&\n       (request.resource.data.keys().hasOnly(\n           ['name', 'location', 'city', 'address', 'hours', 'cuisine']));\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-fields",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-fields #6",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    function verifyFields(required, optional) {\n      let allAllowedFields = required.concat(optional);\n      return request.resource.data.keys().hasAll(required) &&\n        request.resource.data.keys().hasOnly(allAllowedFields);\n    }\n    match /restaurant/{restId} {\n      allow create: if verifyFields(['name', 'location', 'city'],\n        ['address', 'hours', 'cuisine']);\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-fields",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL0:0 Ruleset uses old version (version [1]). Please update to the latest version (version [2]).\nL4:11 Let bindings are not allowed in rules_version=\"1\";",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-fields #7",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /restaurant/{restId} {\n      // Allow the client to update a document only if that document doesn't\n      // change the average_score or rating_count fields\n      allow update: if (!request.resource.data.diff(resource.data).affectedKeys()\n        .hasAny(['average_score', 'rating_count']));\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-fields",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-fields #8",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /restaurant/{restId} {\n    // Allow a client to update only these 6 fields in a document\n      allow update: if (request.resource.data.diff(resource.data).affectedKeys()\n        .hasOnly(['name', 'location', 'city', 'address', 'hours', 'cuisine']));\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-fields",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-fields #9",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /restaurant/{restId} {\n      // Restaurant rules go here...\n      match /review/{reviewId} {\n        allow create: if (request.resource.data.score is int &&\n          request.resource.data.headline is string &&\n          request.resource.data.content is string &&\n          request.resource.data.author_name is string &&\n          request.resource.data.review_date is timestamp\n        );\n      }\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-fields",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-fields #10",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n  match /orders/{orderId} {\n    allow create: if request.resource.data.tags is list &&\n      request.resource.data.tags[0] is string &&\n      request.resource.data.product is map &&\n      request.resource.data.product.name is string &&\n      request.resource.data.product.quantity is int\n      }\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-fields",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL12:1 Unexpected '}'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/security/rules-fields #11",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n\n  function reviewFieldsAreValidTypes(docData) {\n     return docData.score is int &&\n          docData.headline is string &&\n          docData.content is string &&\n          docData.author_name is string &&\n          docData.review_date is timestamp;\n  }\n\n   match /restaurant/{restId} {\n      // Restaurant rules go here...\n      match /review/{reviewId} {\n        allow create: if reviewFieldsAreValidTypes(request.resource.data) &&\n          // Other rules may go here\n        allow update: if reviewFieldsAreValidTypes(request.resource.data) &&\n          // Other rules may go here\n      }\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/rules-fields",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL17:9 Unexpected 'allow'.\nL17:21 Unexpected ':'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/security/insecure-rules #1",
+  "content": "// Allow read/write access to all users under any conditions\n// Warning: **NEVER** use this rule set in production; it allows\n// anyone to overwrite your entire database.\n\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if true;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/insecure-rules",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/insecure-rules #2",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Allow only authenticated content owners access\n    match /some_collection/{document} {\n      // Allow reads and deletion if the current user owns the existing document\n      allow read, delete: if request.auth.uid == resource.data.author_uid;\n      // Allow creation if the current user owns the new document\n      allow create: if request.auth.uid == request.resource.data.author_uid;\n      // Allow updates by the owner, and prevent change of ownership\n      allow update: if request.auth.uid == request.resource.data.author_uid\n                    && request.auth.uid == resource.data.author_uid;\n\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/insecure-rules",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/insecure-rules #3",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Allow public read access, but only content owners can write\n    match /some_collection/{document} {\n      // Allow public reads\n      allow read: if true\n      // Allow creation if the current user owns the new document\n      allow create: if request.auth.uid == request.resource.data.author_uid;\n      // Allow updates by the owner, and prevent change of ownership\n      allow update: if request.auth.uid == request.resource.data.author_uid\n                    && request.auth.uid == resource.data.author_uid;\n      // Allow deletion if the current user owns the existing document\n      allow delete: if request.auth.uid == resource.data.author_uid;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/insecure-rules",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/insecure-rules #4",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /some_collection/{document} {\n      allow read, write: if request.auth != null;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/insecure-rules",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/insecure-rules #5",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Assign roles to all users and refine access based on user roles\n    match /some_collection/{document} {\n     allow read: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == \"Reader\"\n     allow write: if request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == \"Writer\"\n\n     // Note: Checking for roles in your database using `get` (as in the code\n     // above) or `exists` carry standard charges for read operations.\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/insecure-rules",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/insecure-rules #6",
+  "content": "// Give each user in your database a particular attribute\n// and set it to true/false\n// Then, use that attribute to grant access to subsets of data\n// For example, an \"admin\" attribute set\n// to \"true\" grants write access to data\n\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /collection/{document} {\n      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.admin == true;\n      allow read: true;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/insecure-rules",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL11:19 Missing 'if' before conditional expression.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/security/insecure-rules #7",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Allow public read access, but only content owners can write\n    match /some_collection/{document} {\n      allow read: if true\n      allow write: if request.auth.uid == request.resource.data.author_uid\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/insecure-rules",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/insecure-rules #8",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Allow access based on email domain\n    match /some_collection/{document} {\n     allow read: if request.auth != null\n                 && request.auth.email.endsWith('@example.com')\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/insecure-rules",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 6,
+      "column": 40,
+      "currentOffset": 230,
+      "endOffset": 237
+     },
+     "description": "Invalid function name: endsWith.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs firestore/security/insecure-rules #9",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Allow access based on email domain\n    match /some_collection/{document} {\n     allow read: if request.auth != null\n                 && request.auth.email_verified\n                 && request.auth.email.endsWith('@example.com')\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/firestore/security/insecure-rules",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 7,
+      "column": 40,
+      "currentOffset": 278,
+      "endOffset": 285
+     },
+     "description": "Invalid function name: endsWith.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs rules/rules-language #1",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n...\n}\n",
+  "source": "https://firebase.google.com/docs/rules/rules-language",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL3:1 Unexpected '.'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs rules/rules-language #2",
+  "content": "service cloud.firestore {\n // Your 'match' blocks with their corresponding 'allow' statements and\n // optional 'function' declarations are contained here\n}\n",
+  "source": "https://firebase.google.com/docs/rules/rules-language",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:1 The 'service' body must contain at least one declaration.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs rules/rules-language #3",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Shared across multiple collections: keep at root scope\n    function isSignedIn() {\n      return request.auth != null;\n    }\n\n    match /orders/{orderId} {\n      // Specific to orders: define inside the match block\n      function isValidOrder() {\n        return request.resource.data.total > 0;\n      }\n\n      allow create: if isSignedIn() && isValidOrder();\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/rules/rules-language",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs rules/basics #1",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if false;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/rules/basics",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs rules/basics #2",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Allow only authenticated content owners access\n    match /some_collection/{userId}/{document} {\n      allow read, write: if request.auth != null && request.auth.uid == userId\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/rules/basics",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs rules/basics #3",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // For attribute-based access control, Check a boolean `admin` attribute\n    allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.admin == true;\n    allow read: true;\n\n    // Alterntatively, for role-based access, assign specific roles to users\n    match /some_collection/{document} {\n     allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == \"Reader\"\n     allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == \"Writer\"\n   }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/rules/basics",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:17 Missing 'if' before conditional expression.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs rules/basics #4",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // For attribute-based access control, check for an administrator claim\n    allow write: if request.auth.token.admin == true;\n    allow read: true;\n\n    // Alterntatively, for role-based access, assign specific roles to users\n    match /some_collection/{document} {\n     allow read: if request.auth.token.reader == \"true\";\n     allow write: if request.auth.token.writer == \"true\";\n   }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/rules/basics",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:17 Missing 'if' before conditional expression.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs rules/basics #5",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // For tenant-based access control, check for a tenantID\n    allow write: if request.auth.token.firebase.tenant == 'tenant2-m6tyz';\n    allow read: true;\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/rules/basics",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:17 Missing 'if' before conditional expression.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/solutions/role-based-access #1",
+  "content": "service cloud.firestore {\n   match /databases/{database}/documents {\n     match /stories/{story} {\n         // TODO: Story rules go here...\n\n         match /comments/{comment} {\n            // TODO: Comment rules go here...\n         }\n     }\n   }\n}step1-invalid.rules\n",
+  "source": "https://firebase.google.com/docs/firestore/solutions/role-based-access",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL8:10 The 'match' body must contain at least one declaration.\nL11:2 Unexpected 'step1'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/solutions/role-based-access #2",
+  "content": "service cloud.firestore {\n   match /databases/{database}/documents {\n     match /stories/{story} {\n        function isSignedIn() {\n          return request.auth != null;\n        }\n\n        function getRole(rsc) {\n          // Read from the \"roles\" map in the resource (rsc).\n          return rsc.data.roles[request.auth.uid];\n        }\n\n        function isOneOfRoles(rsc, array) {\n          // Determine if the user is one of an array of roles\n          return isSignedIn() && (getRole(rsc) in array);\n        }\n\n        function isValidNewStory() {\n          // Valid if story does not exist and the new story has the correct owner.\n          return resource == null && isOneOfRoles(request.resource, ['owner']);\n        }\n\n        // Owners can read, write, and delete stories\n        allow write: if isValidNewStory() || isOneOfRoles(resource, ['owner']);\n\n         match /comments/{comment} {\n            // ...\n         }\n     }\n   }\n}step2.rules\n",
+  "source": "https://firebase.google.com/docs/firestore/solutions/role-based-access",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL28:10 The 'match' body must contain at least one declaration.\nL31:2 Unexpected 'step2'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/solutions/role-based-access #3",
+  "content": "service cloud.firestore {\n   match /databases/{database}/documents {\n     match /stories/{story} {\n        function isSignedIn() {\n          return request.auth != null;\n        }\n\n        function getRole(rsc) {\n          return rsc.data.roles[request.auth.uid];\n        }\n\n        function isOneOfRoles(rsc, array) {\n          return isSignedIn() && (getRole(rsc) in array);\n        }\n\n        function isValidNewStory() {\n          return resource == null\n            && request.resource.data.roles[request.auth.uid] == 'owner';\n        }\n\n        allow write: if isValidNewStory() || isOneOfRoles(resource, ['owner']);\n\n        // Any role can read stories.\n        allow read: if isOneOfRoles(resource, ['owner', 'writer', 'commenter', 'reader']);\n\n        match /comments/{comment} {\n          // Any role can read comments.\n          allow read: if isOneOfRoles(get(/databases/$(database)/documents/stories/$(story)),\n                                      ['owner', 'writer', 'commenter', 'reader']);\n        }\n     }\n   }\n}step3.rules\n",
+  "source": "https://firebase.google.com/docs/firestore/solutions/role-based-access",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL33:2 Unexpected 'step3'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/solutions/role-based-access #4",
+  "content": "service cloud.firestore {\n   match /databases/{database}/documents {\n     match /stories/{story} {\n        function isSignedIn() {\n          return request.auth != null;\n        }\n\n        function getRole(rsc) {\n          return rsc.data.roles[request.auth.uid];\n        }\n\n        function isOneOfRoles(rsc, array) {\n          return isSignedIn() && (getRole(rsc) in array);\n        }\n\n        function isValidNewStory() {\n          return resource == null\n            && request.resource.data.roles[request.auth.uid] == 'owner';\n        }\n\n        allow write: if isValidNewStory() || isOneOfRoles(resource, ['owner'])\n        allow read: if isOneOfRoles(resource, ['owner', 'writer', 'commenter', 'reader']);\n\n        match /comments/{comment} {\n          allow read: if isOneOfRoles(get(/databases/$(database)/documents/stories/$(story)),\n                                      ['owner', 'writer', 'commenter', 'reader']);\n\n          // Owners, writers, and commenters can create comments. The\n          // user id in the comment document must match the requesting\n          // user's id.\n          //\n          // Note: we have to use get() here to retrieve the story\n          // document so that we can check the user's role.\n          allow create: if isOneOfRoles(get(/databases/$(database)/documents/stories/$(story)),\n                                        ['owner', 'writer', 'commenter'])\n                        && request.resource.data.user == request.auth.uid;\n        }\n     }\n   }\n}\nstep4.rules\n",
+  "source": "https://firebase.google.com/docs/firestore/solutions/role-based-access",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL41:1 Unexpected 'step4'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs firestore/solutions/role-based-access #5",
+  "content": "service cloud.firestore {\n   match /databases/{database}/documents {\n     match /stories/{story} {\n        function isSignedIn() {\n          return request.auth != null;\n        }\n\n        function getRole(rsc) {\n          return rsc.data.roles[request.auth.uid];\n        }\n\n        function isOneOfRoles(rsc, array) {\n          return isSignedIn() && (getRole(rsc) in array);\n        }\n\n        function isValidNewStory() {\n          return request.resource.data.roles[request.auth.uid] == 'owner';\n        }\n\n        function onlyContentChanged() {\n          // Ensure that title and roles are unchanged and that no new\n          // fields are added to the document.\n          return request.resource.data.title == resource.data.title\n            && request.resource.data.roles == resource.data.roles\n            && request.resource.data.keys() == resource.data.keys();\n        }\n\n        // Split writing into creation, deletion, and updating. Only an\n        // owner can create or delete a story but a writer can update\n        // story content.\n        allow create: if isValidNewStory();\n        allow delete: if isOneOfRoles(resource, ['owner']);\n        allow update: if isOneOfRoles(resource, ['owner'])\n                      || (isOneOfRoles(resource, ['writer']) && onlyContentChanged());\n        allow read: if isOneOfRoles(resource, ['owner', 'writer', 'commenter', 'reader']);\n\n        match /comments/{comment} {\n          allow read: if isOneOfRoles(get(/databases/$(database)/documents/stories/$(story)),\n                                      ['owner', 'writer', 'commenter', 'reader']);\n          allow create: if isOneOfRoles(get(/databases/$(database)/documents/stories/$(story)),\n                                        ['owner', 'writer', 'commenter'])\n                        && request.resource.data.user == request.auth.uid;\n        }\n     }\n   }\n}\nstep5.rules\n",
+  "source": "https://firebase.google.com/docs/firestore/solutions/role-based-access",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL47:1 Unexpected 'step5'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs rules/rules-and-auth #1",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Make sure the uid of the requesting user matches name of the user\n    // document. The wildcard expression {userId} makes the userId variable\n    // available in rules.\n    match /users/{userId} {\n      allow read, write: if request.auth != null && request.auth.uid == userId;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/rules/rules-and-auth",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs rules/rules-and-auth #2",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents/some_collection: {\n    // Remember that, in Cloud Firestore, reads embedded in your rules are billed operations\n    write: if request.auth != null && get(/databases/(database)/documents/users/$(request.auth.uid)).data.admin == true;\n    read: if request.auth != null;\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/rules/rules-and-auth",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL2:9 Missing 'match' keyword before path.\nL4:5 Unexpected 'write'.\nL4:5 mismatched input 'write' expecting {'{', '/', PATH_SEGMENT}\nL4:43 Missing 'match' keyword before path.\nL4:80 Forward slash '/' found where identifier or binding expected.\nL4:81 mismatched input '$' expecting {'{', '/', PATH_SEGMENT}\nL7:1 Unexpected '}'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs rules/rules-and-auth #3",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // For attribute-based access control, check for an admin claim\n    allow write: if request.auth.token.admin == true;\n    allow read: true;\n\n    // Alterntatively, for role-based access, assign specific roles to users\n    match /some_collection/{document} {\n     allow read: if request.auth.token.reader == \"true\";\n     allow write: if request.auth.token.writer == \"true\";\n   }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/rules/rules-and-auth",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:17 Missing 'if' before conditional expression.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "docs rules/insecure-rules #1",
+  "content": "// Allow read/write access to all users under any conditions\n// Warning: **NEVER** use this ruleset in production; it allows\n// anyone to overwrite your entire database.\n\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if true;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/rules/insecure-rules",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs rules/insecure-rules #2",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /some_collection/{document} {\n      allow read, write: if request.auth.uid != null;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/rules/insecure-rules",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs rules/insecure-rules #3",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    // Assign roles to all users and refine access based on user roles\n    match /some_collection/{document} {\n     allow read: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == \"Reader\"\n     allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == \"Writer\"\n\n     // Note: Checking for roles in your database using `get` (as in the code\n     // above) or `exists` carry standard charges for read operations.\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/rules/insecure-rules",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "docs rules/insecure-rules #4",
+  "content": "// Give each user in your database a particular attribute\n// and set it to true/false\n// Then, use that attribute to grant access to subsets of data\n// For example, an \"administrator\" attribute set\n// to \"true\" grants write access to data\n\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /some_collection/{document} {\n      allow write: if get(/databases/$(database)/documents/users/$(request.auth.uid)).data.admin == true;\n      allow read: true;\n    }\n  }\n}\n",
+  "source": "https://firebase.google.com/docs/rules/insecure-rules",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL11:19 Missing 'if' before conditional expression.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "quickstart-testing cs-walkthrough",
+  "content": "\nrules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if true;\n      // allow read, write: if false;\n    }\n    // Items available to add to the cart\n    match /items/{itemID} {\n      allow read; // Users can read items\n      // Never do this in production\n      allow create; // Client app creates seed data to create a smooth codelab\n    }\n  }\n}\n",
+  "source": "https://github.com/firebase/quickstart-testing/blob/master/cs-walkthrough/firestore.rules",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "quickstart-testing manual-emulator-testing",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /messages/{message} {\n      // Note: these are extremely basic rules but these rules are NOT secure enough\n      // for a production chat app.\n      allow read: if request.auth.token.email != null;\n      allow write: if request.resource.data.keys().hasOnly(['text', 'time'])\n    }\n  }\n}\n",
+  "source": "https://github.com/firebase/quickstart-testing/blob/master/manual-emulator-testing/firestore.rules",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "quickstart-testing unit-test-security-rules",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /users/{userId} {\n      allow read;\n      allow create: if request.auth.uid == userId && request.resource.data.createdAt == request.time;\n    }\n    match /rooms/{roomId} {\n      allow read;\n      // If you create a room, you must set yourself as the owner.\n      allow create: if request.resource.data.owner == request.auth.uid;\n      // Only the room owner is allowed to modify it, and owner mustn't be able to assign his room to other user.\n      allow update: if resource.data.owner == request.auth.uid && request.resource.data.owner == request.auth.uid;\n    }\n  }\n}\n",
+  "source": "https://github.com/firebase/quickstart-testing/blob/master/unit-test-security-rules/firestore.rules",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "version 2",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "no version",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "version 1",
+  "content": "rules_version = '1';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "version 3",
+  "content": "rules_version = '3';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL1:1 Unsupported rules version 3.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "version in double quotes",
+  "content": "rules_version = \"2\";\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "version as a number",
+  "content": "rules_version = 2;\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL1:17 mismatched input '2' expecting STRING",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "version without semicolon",
+  "content": "rules_version = '2'\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "storage service",
+  "content": "rules_version = '2';\nservice firebase.storage {\n  match /b/{bucket}/o {\n    allow read: if true;\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "unknown service",
+  "content": "rules_version = '2';\nservice foo.bar {\n  match /x {\n    allow read: if true;\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 2,
+      "column": 9,
+      "currentOffset": 29,
+      "endOffset": 35
+     },
+     "description": "Invalid service name: foo.bar.",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 4,
+      "column": 11,
+      "currentOffset": 62,
+      "endOffset": 65
+     },
+     "description": "Invalid method name: read.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "two services",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\nservice cloud.firestore {\n  match /x/{y} {\n    allow read;\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL9:9 Duplicate service name declaration.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "empty file",
+  "content": "",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL0:0 Rules content empty. Compilation aborted.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "only a version",
+  "content": "rules_version = '2';\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL2:1 mismatched input '<EOF>' expecting {'function', 'import', 'service'}",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "empty service",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL3:1 The 'service' body must contain at least one declaration.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "empty documents match",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:3 The 'match' body must contain at least one declaration.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "trailing text",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\ngarbage\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL9:1 Unexpected 'garbage'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "missing semicolon",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "missing closing brace",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL9:1 Unexpected '<EOF>'.\nL9:1 missing '}' at '<EOF>'",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "extra closing brace",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL9:1 Unexpected '}'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "allow without condition",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "allow without if",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:19 Missing 'if' before conditional expression.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "allow with empty condition",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if ;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:22 Missing conditional expression after 'if'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "allow without colon",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read if true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:18 Missing ':' before 'if' condition.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "all methods",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow get, list, create, update, delete: if true;\n      allow read, write: if false;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "unknown method",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow foo: if true;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 13,
+      "currentOffset": 128,
+      "endOffset": 130
+     },
+     "description": "Invalid method name: foo.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "repeated method",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, read: if true;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "allow outside a match",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  allow read: if true;\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL3:3 Unexpected 'allow'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "two errors",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow foo: if true &&;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:28 mismatched input ';' expecting {'--', '++', '{', '[', '(', '-', '!', '/', 'false', 'null', 'true', PATH_SEGMENT, IDENTIFIER, NUM_INT, NUM_FLOAT, UNPAIRED_DOUBLE_QUOTE, UNPAIRED_SINGLE_QUOTE, STRING, BYTES}",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "match without slash",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match {document=**} {\n      allow read;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:11 Unexpected '{'.\nL4:25 Unexpected '{'.\nL7:3 Unexpected '}'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "path keyword missing",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    /foo/{bar} {\n      allow read;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:5 Missing 'match' keyword before path.\nL5:7 missing '}' at 'allow'\nL8:1 Unexpected '}'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "recursive wildcard in the middle v2",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /a/{rest=**}/b {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "recursive wildcard in the middle v1",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /a/{rest=**}/b {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL3:13 Invalid glob match expression. Glob matches are permitted as the last segment in a match declaration path.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "two recursive wildcards",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{a=**}/{b=**} {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:18 Invalid glob match expression. Only one glob match is permitted in a match declaration path.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "single wildcard with equals",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{a=*} {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "duplicate wildcard names",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{a}/{a} {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:17 Variable a already exists in the PathTemplate.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "wildcard shadowing",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /a/{x} {\n      match /b/{x} {\n        allow read: if x != null;\n      }\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 6,
+      "column": 26,
+      "currentOffset": 154,
+      "endOffset": 155
+     },
+     "description": "The sub-expressions are not comparable, so this comparison will always return true.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "literal segments",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /users/alice/posts/{post} {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "segment with dash and dot",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /a-b/c.d/{e} {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "empty segment",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /a//b {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:11 Missing 'match' keyword before path.\nL5:7 Unexpected 'allow'.\nL5:7 mismatched input 'allow' expecting {'{', '/', PATH_SEGMENT}\nL8:1 Unexpected '}'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "trailing slash",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /a/ {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:13 Forward slash '/' found where identifier or binding expected.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "function",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function isOwner(uid) {\n      return request.auth.uid == uid;\n    }\n    match /users/{uid} {\n      allow read: if isOwner(uid);\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "function with let",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f() {\n      let x = 1;\n      let y = x + 1;\n      return y == 2;\n    }\n    match /{d=**} {\n      allow read: if f();\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "let in version 1",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    function f() {\n      let x = 1;\n      return x == 1;\n    }\n    match /{d=**} {\n      allow read: if f();\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL0:0 Ruleset uses old version (version [1]). Please update to the latest version (version [2]).\nL4:11 Let bindings are not allowed in rules_version=\"1\";",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "let after return",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f() {\n      return true;\n      let x = 1;\n    }\n    match /{d=**} {\n      allow read: if f();\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL6:7 mismatched input 'let' expecting '}'\nL12:1 Unexpected '}'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "function without return",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f() {\n      true;\n    }\n    match /{d=**} {\n      allow read: if f();\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:7 Unexpected 'true'.\nL11:1 Unexpected '}'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "function with two returns",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f() {\n      return true;\n      return false;\n    }\n    match /{d=**} {\n      allow read: if f();\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL6:7 mismatched input 'return' expecting '}'\nL12:1 Unexpected '}'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "unused function",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f() {\n      return true;\n    }\n    match /{d=**} {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 4,
+      "column": 14,
+      "currentOffset": 102,
+      "endOffset": 102
+     },
+     "description": "Unused function: f.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "unknown function",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if foo();\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 22,
+      "currentOffset": 137,
+      "endOffset": 139
+     },
+     "description": "Invalid function name: foo.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "unknown function with arguments",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if foo(1, 'a') == true;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 22,
+      "currentOffset": 137,
+      "endOffset": 139
+     },
+     "description": "Invalid function name: foo.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "unknown variable",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if foo == 1;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 22,
+      "currentOffset": 137,
+      "endOffset": 139
+     },
+     "description": "Invalid variable name: foo.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "unknown member",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if request.foo == 1;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "wrong number of arguments",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f(a) {\n      return a;\n    }\n    match /{d=**} {\n      allow read: if f();\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 8,
+      "column": 22,
+      "currentOffset": 172,
+      "endOffset": 172
+     },
+     "description": "Incorrect number of arguments supplied to function: f.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "duplicate function",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f() {\n      return true;\n    }\n    function f() {\n      return false;\n    }\n    match /{d=**} {\n      allow read: if f();\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL7:14 Function f is already defined.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "recursive function",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f(n) {\n      return n == 0 || f(n - 1);\n    }\n    match /{d=**} {\n      allow read: if f(3);\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:14 Recursive call is not allowed.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "function named like a builtin",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function get(x) {\n      return true;\n    }\n    match /{d=**} {\n      allow read: if get(1);\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 4,
+      "column": 18,
+      "currentOffset": 106,
+      "endOffset": 106
+     },
+     "description": "Unused variable: x.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "function at service level",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  function f() {\n    return true;\n  }\n  match /databases/{database}/documents {\n    match /{d=**} {\n      allow read: if f();\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "function in a nested match",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /a/{b} {\n      function g() {\n        return b == 'x';\n      }\n      allow read: if g();\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "function using a wildcard of an enclosing match",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f() {\n      return database != null;\n    }\n    match /{d=**} {\n      allow read: if f();\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 23,
+      "currentOffset": 130,
+      "endOffset": 131
+     },
+     "description": "The sub-expressions are not comparable, so this comparison will always return true.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "invalid regex",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if 'a'.matches('(');\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:34 Invalid regular expression pattern. Pattern: (.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "regex not literal",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if 'a'.matches('(' + '');\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "block comment",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    /* a\n       block */\n    match /{d=**} {\n      allow read: if true; // trailing\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "comment at the end without newline",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n// end",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "crlf line endings",
+  "content": "rules_version = '2';\r\nservice cloud.firestore {\r\n  match /databases/{database}/documents {\r\n    match /{document=**} {\r\n      allow read: if true;\r\n    }\r\n  }\r\n}\r\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "tabs",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n\tmatch /{document=**} {\n\t  allow read: if true;\n\t}\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "unicode in a string",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if '日本語' != '';\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "unicode before an error",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if '日本語' &&;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:30 mismatched input ';' expecting {'--', '++', '{', '[', '(', '-', '!', '/', 'false', 'null', 'true', PATH_SEGMENT, IDENTIFIER, NUM_INT, NUM_FLOAT, UNPAIRED_DOUBLE_QUOTE, UNPAIRED_SINGLE_QUOTE, STRING, BYTES}",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "unicode identifier",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if 日本 == 1;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:25 Missing conditional expression after 'if'.\nL5:25 Unexpected '=='.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "decrement token",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if --1 == -1;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:24 Increment (++) and decrement (--) operators are not supported.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "chained equality",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if 1 == 1 == true;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "is with types",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if 1 is int && 1.0 is float && 'a' is string && true is bool && [] is list && {} is map && null == null;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "is with an unknown type",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if 1 is foo;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:30 An unsupported type identifier was used with the 'is' operator. Received foo. Expected one of bool,bytes,constraint,duration,float,int,latlng,list,vector,set,number,map,string,timestamp,path,map_diff",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "path literal",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if exists(/databases/$(database)/documents/users/$(request.auth.uid));\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "get with data",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if get(/databases/$(database)/documents/users/x).data.admin == true;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "namespaced functions",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if math.abs(-1) == 1 && duration.value(1, 's') > duration.value(0, 's') && timestamp.date(2020, 1, 1) < request.time && latlng.value(1, 2) != null && hashing.sha256('a') != null;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 158,
+      "currentOffset": 273,
+      "endOffset": 274
+     },
+     "description": "The sub-expressions are not comparable, so this comparison will always return true.",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 189,
+      "currentOffset": 304,
+      "endOffset": 305
+     },
+     "description": "The sub-expressions are not comparable, so this comparison will always return true.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "diff and affectedKeys",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['a']);\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "ternary",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if request.auth == null ? false : true;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "map literal",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if {'a': 1}['a'] == 1;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "long condition",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if resource.data.f0 == 0 || resource.data.f1 == 1 || resource.data.f2 == 2 || resource.data.f3 == 3 || resource.data.f4 == 4 || resource.data.f5 == 5 || resource.data.f6 == 6 || resource.data.f7 == 7 || resource.data.f8 == 8 || resource.data.f9 == 9 || resource.data.f10 == 10 || resource.data.f11 == 11 || resource.data.f12 == 12 || resource.data.f13 == 13 || resource.data.f14 == 14 || resource.data.f15 == 15 || resource.data.f16 == 16 || resource.data.f17 == 17 || resource.data.f18 == 18 || resource.data.f19 == 19 || resource.data.f20 == 20 || resource.data.f21 == 21 || resource.data.f22 == 22 || resource.data.f23 == 23 || resource.data.f24 == 24 || resource.data.f25 == 25 || resource.data.f26 == 26 || resource.data.f27 == 27 || resource.data.f28 == 28 || resource.data.f29 == 29 || resource.data.f30 == 30 || resource.data.f31 == 31 || resource.data.f32 == 32 || resource.data.f33 == 33 || resource.data.f34 == 34 || resource.data.f35 == 35 || resource.data.f36 == 36 || resource.data.f37 == 37 || resource.data.f38 == 38 || resource.data.f39 == 39 || resource.data.f40 == 40 || resource.data.f41 == 41 || resource.data.f42 == 42 || resource.data.f43 == 43 || resource.data.f44 == 44 || resource.data.f45 == 45 || resource.data.f46 == 46 || resource.data.f47 == 47 || resource.data.f48 == 48 || resource.data.f49 == 49 || resource.data.f50 == 50 || resource.data.f51 == 51 || resource.data.f52 == 52 || resource.data.f53 == 53 || resource.data.f54 == 54 || resource.data.f55 == 55 || resource.data.f56 == 56 || resource.data.f57 == 57 || resource.data.f58 == 58 || resource.data.f59 == 59;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "deeply nested parentheses",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if ((((((((((((((((((((((((((((((((((((((((true))))))))))))))))))))))))))))))))))))))));\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "warning and error",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f() {\n      return true;\n    }\n    match /{d=**} {\n      allow read: if true &&;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL8:29 mismatched input ';' expecting {'--', '++', '{', '[', '(', '-', '!', '/', 'false', 'null', 'true', PATH_SEGMENT, IDENTIFIER, NUM_INT, NUM_FLOAT, UNPAIRED_DOUBLE_QUOTE, UNPAIRED_SINGLE_QUOTE, STRING, BYTES}",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "indirect recursion",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f() {\n      return g();\n    }\n    function g() {\n      return f();\n    }\n    match /{d=**} {\n      allow read: if f();\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:14 Detected a call cycle between [f,g] functions.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "call cycle of three, unused",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  function h() { return f(); }\n  function f() { return g(); }\n  function g() { return h(); }\n  match /a {\n    allow read;\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL3:12 Detected a call cycle between [h,f,g] functions.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "unused recursive function",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f() {\n      return f();\n    }\n    match /{d=**} {\n      allow read;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:14 Recursive call is not allowed.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "duplicate parameter",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f(a, a) {\n      return a == 1;\n    }\n    match /{d=**} {\n      allow read: if f(1, 2);\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:19 Variable a is already defined.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "duplicate let",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f() {\n      let a = 1;\n      let a = 2;\n      return a == 2;\n    }\n    match /{d=**} {\n      allow read: if f();\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:11 Unused variable: a.\nL6:11 The identifier [a] is already bound in the current scope.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "let shadowing a parameter",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f(a) {\n      let a = 2;\n      return a == 2;\n    }\n    match /{d=**} {\n      allow read: if f(1);\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:16 Unused variable: a.\nL5:11 The identifier [a] is already bound in the current scope.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "unused let",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f() {\n      let a = 2;\n      return true;\n    }\n    match /{d=**} {\n      allow read: if f();\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 11,
+      "currentOffset": 118,
+      "endOffset": 118
+     },
+     "description": "Unused variable: a.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "let before its use",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f() {\n      let a = b;\n      let b = 1;\n      return a == 1;\n    }\n    match /{d=**} {\n      allow read: if f();\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 15,
+      "currentOffset": 122,
+      "endOffset": 122
+     },
+     "description": "Invalid variable name: b.",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 6,
+      "column": 11,
+      "currentOffset": 135,
+      "endOffset": 135
+     },
+     "description": "Unused variable: b.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "function in a sibling match",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /a/{x} {\n      function g() { return x == 'a'; }\n      allow read: if g();\n    }\n    match /b/{y} {\n      allow read: if g();\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 9,
+      "column": 22,
+      "currentOffset": 220,
+      "endOffset": 220
+     },
+     "description": "Invalid function name: g.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "same function name nested",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  function g() { return true; }\n  match /databases/{database}/documents {\n    function g() { return false; }\n    match /b/{y} {\n      allow read: if g();\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 3,
+      "column": 12,
+      "currentOffset": 58,
+      "endOffset": 58
+     },
+     "description": "Unused function: g.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "service function using a wildcard",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  function f() { return database == 'a'; }\n  match /databases/{database}/documents {\n    match /b/{y} {\n      allow read: if f();\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 3,
+      "column": 25,
+      "currentOffset": 71,
+      "endOffset": 78
+     },
+     "description": "Invalid variable name: database.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "top-level function",
+  "content": "rules_version = '2';\nfunction f() { return true; }\nservice cloud.firestore {\n  match /a {\n    allow read: if f();\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "function without a body",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  function f() {\n  }\n  match /a { allow read: if f(); }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:3 Missing 'function' body",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "function without a name",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  function () {\n    return true;\n  }\n  match /a { allow read; }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL3:12 Missing 'function' id",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "function without parameters",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  function f {\n    return true;\n  }\n  match /a { allow read: if f(); }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL3:14 Missing 'function' signature",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "function with only a let",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  function f() {\n    let x = 1;\n  }\n  match /a { allow read: if f(); }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:3 Unexpected '}'.\nL5:3 mismatched input '}' expecting {'&&', '.', '==', '>', '>=', '[', '<', '<=', '-', '%', '!=', '||', '+', ';', '/', '*', '?', 'in', 'is'}",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "let without a semicolon",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f() {\n      let x = 1\n      return x == 1;\n    }\n    match /{d=**} {\n      allow read: if f();\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL6:7 missing ';' at 'return'",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "arities",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if get() == null && exists(/a, /b) && int(1, 2) == 1 && 'a'.matches() && math.abs() == 1;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 22,
+      "currentOffset": 137,
+      "endOffset": 139
+     },
+     "description": "Incorrect number of arguments supplied to function: get.",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 39,
+      "currentOffset": 154,
+      "endOffset": 159
+     },
+     "description": "Incorrect number of arguments supplied to function: exists.",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 57,
+      "currentOffset": 172,
+      "endOffset": 174
+     },
+     "description": "Incorrect number of arguments supplied to function: int.",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 79,
+      "currentOffset": 194,
+      "endOffset": 200
+     },
+     "description": "Incorrect number of arguments supplied to function: matches.",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 97,
+      "currentOffset": 212,
+      "endOffset": 214
+     },
+     "description": "Incorrect number of arguments supplied to function: math.abs.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "namespaced unknown function",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if math.foo(1) == 1 && hashing.nope('a') == null;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 27,
+      "currentOffset": 142,
+      "endOffset": 144
+     },
+     "description": "Invalid function name: math.foo.",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 50,
+      "currentOffset": 165,
+      "endOffset": 168
+     },
+     "description": "Invalid function name: hashing.nope.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "package as a variable",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if math == 1 && duration.x == 1;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:22 math is a package and cannot be used as variable name.\nL5:35 duration is a package and cannot be used as variable name.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "reserved words",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if {'if': 1}.if == 1 && request.while == 1 && request.function.size() == 1;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "reserved word as a method",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if request.x.while() == 1;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:37 Unexpected '('.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "reserved word as a variable",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if var == 1;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:22 Missing conditional expression after 'if'.\nL5:22 Unexpected 'var'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "allow without methods",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /a {\n      allow : if true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:13 Expected at least one 'operation' after 'allow'.\nL5:13 Unexpected ':'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "allow with a trailing comma",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /a {\n      allow read, : if true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:17 Unexpected ','.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "allow without a comma",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /a {\n      allow read write: if true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:18 Unexpected 'write'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "allow with only a colon",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /a {\n      allow read: ;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:19 Unexpected ';'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "path without match keyword",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    /a {}\n    match /b {\n      allow read;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:5 Missing 'match' keyword before path.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "match path then semicolon",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /a ;\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:11 Missing 'match' keyword before path.\nL4:14 Unexpected ';'.\nL4:14 mismatched input ';' expecting {'{', '/', PATH_SEGMENT}",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "match path then brace",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /a }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:11 Missing 'match' keyword before path.\nL4:14 Unexpected '}'.\nL4:14 missing '{' at '}'",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "match with an unexpected body",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /a {\n      write: if true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:11 Missing 'match' keyword before path.\nL5:7 Unexpected 'write'.\nL5:7 mismatched input 'write' expecting {'{', '/', PATH_SEGMENT}\nL8:1 Unexpected '}'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "match with one stray word",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /a {\n      foo\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:11 Missing 'match' keyword before path.\nL5:7 Unexpected 'foo'.\nL5:7 Unexpected 'foo'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "empty nested match",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /a {\n      match /b {\n      }\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL6:7 The 'match' body must contain at least one declaration.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "v1 glob with children",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /{a=**} {\n      match /b {\n        allow read;\n      }\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 3,
+      "column": 5,
+      "currentOffset": 72,
+      "endOffset": 76
+     },
+     "description": "Glob(**) resource rules should not have child resource rules.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "v2 glob in parent and child",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /x/{a=**} {\n      match /y/{b=**} {\n        allow read;\n      }\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:7 Invalid glob match expression. Only one glob match is permitted in a match declaration path.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "v1 two globs",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /{a=**}/{b=**} {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL3:11 Invalid glob match expression. Glob matches are permitted as the last segment in a match declaration path.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "wildcard repeated in a child",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /x/{a} {\n      match /y/{a}/{a} {\n        allow read;\n      }\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:21 Variable a already exists in the PathTemplate.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "errors of several stages",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{a}/{a} {\n      allow read: true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:17 Variable a already exists in the PathTemplate.\nL5:19 Missing 'if' before conditional expression.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "version 0",
+  "content": "rules_version = '0';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL1:1 Unsupported rules version 0.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "version without equals",
+  "content": "rules_version \"2\";\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL1:15 missing '=' at '\"2\"'",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "import",
+  "content": "rules_version = '2';\nimport \"x.rules\";\nservice cloud.firestore {\n  match /a {\n    allow read;\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL2:1 Import statements are not allowed.\nL2:1 Module \"x.rules\" is not part of the standard library.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "unknown service name",
+  "content": "rules_version = '2';\nservice cloud {\n  match /a {\n    allow read, foo;\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 2,
+      "column": 9,
+      "currentOffset": 29,
+      "endOffset": 33
+     },
+     "description": "Invalid service name: cloud.",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 4,
+      "column": 11,
+      "currentOffset": 60,
+      "endOffset": 63
+     },
+     "description": "Invalid method name: read.",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 4,
+      "column": 17,
+      "currentOffset": 66,
+      "endOffset": 68
+     },
+     "description": "Invalid method name: foo.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "storage methods",
+  "content": "rules_version = '2';\nservice firebase.storage {\n  match /b/{bucket}/o {\n    allow read, write, get, list, create, update, delete, foo: if true;\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 4,
+      "column": 59,
+      "currentOffset": 130,
+      "endOffset": 132
+     },
+     "description": "Invalid method name: foo.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "service after service",
+  "content": "rules_version = '2';\nservice firebase.storage {\n  match /b/{bucket}/o {\n    allow read: if foo();\n  }\n}\nservice cloud.firestore {\n  match /a {\n    allow read: if bar();\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 4,
+      "column": 20,
+      "currentOffset": 91,
+      "endOffset": 93
+     },
+     "description": "Invalid function name: foo.",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 9,
+      "column": 20,
+      "currentOffset": 162,
+      "endOffset": 164
+     },
+     "description": "Invalid function name: bar.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "non-breaking space",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:1 token recognition error at: ' '",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "non-breaking space after an error",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true &&;\n    }\n  }\n}\n \n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:29 mismatched input ';' expecting {'--', '++', '{', '[', '(', '-', '!', '/', 'false', 'null', 'true', PATH_SEGMENT, IDENTIFIER, NUM_INT, NUM_FLOAT, UNPAIRED_DOUBLE_QUOTE, UNPAIRED_SINGLE_QUOTE, STRING, BYTES}\nL9:1 token recognition error at: ' '",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "characters that start no token",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true # ~;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:27 token recognition error at: '#'\nL5:29 token recognition error at: '~'",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "at sign",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if @;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:22 Missing conditional expression after 'if'.\nL5:22 Unexpected '@'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "identifiers with dollars",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if $b == 1 && a$ == 1;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 22,
+      "currentOffset": 137,
+      "endOffset": 138
+     },
+     "description": "Invalid variable name: $b.",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 33,
+      "currentOffset": 148,
+      "endOffset": 149
+     },
+     "description": "Invalid variable name: a$.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "float with a trailing dot",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if 1. == 1.0;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "exponent",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if 1e3 == 1000;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:23 Unexpected 'e3'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "division without spaces",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if 4/2 == 2;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:23 Missing 'match' keyword before path.\nL5:26 mismatched input '==' expecting {'{', '/', PATH_SEGMENT}",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "path segment characters",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if /a+b/c:d/e@f/(g)/h%20i/-j/.k == /a;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "unclosed string",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if 'abc;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL6:5 Missing a closing '",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "unclosed string in parentheses",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if ('abc;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL6:5 Unexpected '}'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "unclosed parenthesis",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if (true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:27 Unexpected ';'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "missing operand in a call",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if f(,);\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:24 Unexpected ','.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "missing map value",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if {'a': };\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:28 Unexpected '}'.\nL5:29 Unexpected ';'.\nL8:1 Unexpected '}'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "missing ternary colon",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true ? 'a' 'b';\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:33 missing ':' at ''b''",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "decrement twice",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if ----1 == 1;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:24 Increment (++) and decrement (--) operators are not supported.\nL5:24 Unexpected '--'.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "emoji before a warning",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if '😀' != '' && foo();\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 35,
+      "currentOffset": 150,
+      "endOffset": 152
+     },
+     "description": "Invalid function name: foo.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "regular expressions",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if 'a'.split('(') == [] && 'a'.replace('(', 'b') == 'a' && 'a'.matches('a**') && 'a'.matches('a*?') && 'a'.matches('(?P<n>a)');\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:32 Invalid regular expression pattern. Pattern: (.\nL5:90 Invalid regular expression pattern. Pattern: a**.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "parentheses 98 deep",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((true))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "parentheses 99 deep",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if (((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((true)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))));\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:121 Expression is too complex to evaluate safely.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "negations 99 deep",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:121 Expression is too complex to evaluate safely.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "lists 99 deep",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if [[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]] == [];\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:120 Expression is too complex to evaluate safely.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "maps 98 deep",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': {'a': 1}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}} != null;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:605 Expression is too complex to evaluate safely.\nL5:610 Expression is too complex to evaluate safely.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "operators 99 long",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true && true;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:22 Expression is too complex to evaluate safely.\nL5:30 Expression is too complex to evaluate safely.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "minus 99 deep",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if -(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(-(1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))) == 1;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:218 Expression is too complex to evaluate safely.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "conditionals 99 deep",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true ? true : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false : false;\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:708 Expression is too complex to evaluate safely.\nL5:715 Expression is too complex to evaluate safely.\nL5:722 Expression is too complex to evaluate safely.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "members 600 long",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if request.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a.a == 1;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "too complex with a warning",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if (((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((true))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))) && foo();\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:120 Expression is too complex to evaluate safely.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "matches 12 deep",
+  "content": "rules_version = '2';\nservice cloud.firestore {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nallow read: if foo();\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL14:1 Maximum allowed resource rule depth of 10 is reached.\nL15:16 Invalid function name: foo.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "matches 64 deep",
+  "content": "rules_version = '2';\nservice cloud.firestore {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nmatch /a {\nallow read: if math == 1;\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL66:1 Rule hierarchy is too complex to evaluate safely.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "path 101 long",
+  "content": "rules_version = '2';\nservice cloud.firestore {\nmatch /a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a/a {\nallow read;\n}\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL3:1 Maximum allowed path length of 100 is reached.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "21 path variables",
+  "content": "rules_version = '2';\nservice cloud.firestore {\nmatch /{a0}/{a1}/{a2}/{a3}/{a4}/{a5}/{a6}/{a7}/{a8}/{a9}/{a10}/{a11}/{a12}/{a13}/{a14} {\nmatch /{b0}/{b1}/{b2}/{b3}/{b4}/{b5} {\nallow read;\n}\n}\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:1 Maximum allowed amount of 20 match field variables is reached.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "8 parameters",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f(a, b, c, d, e, f, g, h) {\n      return true;\n    }\n    match /x {\n      allow read: if f(1, 2, 3, 4, 5, 6, 7, 8) && foo();\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:14 Maximum allowed function arguments of 7 for function f is reached.\nL4:16 Unused variable: a.\nL4:19 Unused variable: b.\nL4:22 Unused variable: c.\nL4:25 Unused variable: d.\nL4:28 Unused variable: e.\nL4:31 Unused variable: f.\nL4:34 Unused variable: g.\nL4:37 Unused variable: h.\nL8:51 Invalid function name: foo.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "12 lets",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f() {\n      let x0 = 1;\n      let x1 = 1;\n      let x2 = 1;\n      let x3 = 1;\n      let x4 = 1;\n      let x5 = 1;\n      let x6 = 1;\n      let x7 = 1;\n      let x8 = 1;\n      let x9 = 1;\n      let x10 = 1;\n      let x11 = 1;\n      return x0 == x1;\n    }\n    match /x {\n      allow read: if f();\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL17:14 Maximum allowed variable count of 10 for a given function has been reached.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "calls 22 deep",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function f0() { return f1(); }\n    function f1() { return f2(); }\n    function f2() { return f3(); }\n    function f3() { return f4(); }\n    function f4() { return f5(); }\n    function f5() { return f6(); }\n    function f6() { return f7(); }\n    function f7() { return f8(); }\n    function f8() { return f9(); }\n    function f9() { return f10(); }\n    function f10() { return f11(); }\n    function f11() { return f12(); }\n    function f12() { return f13(); }\n    function f13() { return f14(); }\n    function f14() { return f15(); }\n    function f15() { return f16(); }\n    function f16() { return f17(); }\n    function f17() { return f18(); }\n    function f18() { return f19(); }\n    function f19() { return f20(); }\n    function f20() { return f21(); }\n    function f21() { return f22(); }\n    function f22() { return true; }\n    match /a {\n      allow read: if f0();\n    }\n  }\n}\n",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL25:14 Maximum allowed call depth of 20 is reached for [f0->f1->f2->f3->f4->f5->f6->f7->f8->f9->f10->f11->f12->f13->f14->f15->f16->f17->f18->f19->f20] call stack.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "comparisons with null",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if hashing.crc32('a') != null && request.path.bind({}) != null && math.floor(1.5) != null && vector([1.0]) != null && get(/a/b) != null;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 41,
+      "currentOffset": 156,
+      "endOffset": 157
+     },
+     "description": "The sub-expressions are not comparable, so this comparison will always return true.",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 74,
+      "currentOffset": 189,
+      "endOffset": 190
+     },
+     "description": "The sub-expressions are not comparable, so this comparison will always return true.",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 101,
+      "currentOffset": 216,
+      "endOffset": 217
+     },
+     "description": "The sub-expressions are not comparable, so this comparison will always return true.",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 126,
+      "currentOffset": 241,
+      "endOffset": 242
+     },
+     "description": "The sub-expressions are not comparable, so this comparison will always return true.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "recursive wildcard alone",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{w=**} {\n      allow read: if w == 'a' && w == /a/b && w == null;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 24,
+      "currentOffset": 132,
+      "endOffset": 133
+     },
+     "description": "The sub-expressions are not comparable, so this comparison will always return false.",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 49,
+      "currentOffset": 157,
+      "endOffset": 158
+     },
+     "description": "The sub-expressions are not comparable, so this comparison will always return false.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "recursive wildcard after a wildcard",
+  "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{v}/{w=**} {\n      allow read: if w == 'a' && w == /a/b && w == null && v == 'a';\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 5,
+      "column": 49,
+      "currentOffset": 161,
+      "endOffset": 162
+     },
+     "description": "The sub-expressions are not comparable, so this comparison will always return false.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "recursive wildcard in version 1",
+  "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /{w=**} {\n      allow read: if w == 'a' && w == /a/b;\n    }\n  }\n}\n",
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "firestore.rules",
+      "line": 4,
+      "column": 24,
+      "currentOffset": 111,
+      "endOffset": 112
+     },
+     "description": "The sub-expressions are not comparable, so this comparison will always return false.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "two files",
+  "request": {
+   "rules": {
+    "files": [
+     {
+      "name": "a.rules",
+      "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n"
+     },
+     {
+      "name": "b.rules",
+      "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n"
+     }
+    ]
+   }
+  },
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "file without a name",
+  "request": {
+   "rules": {
+    "files": [
+     {
+      "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if foo();\n    }\n  }\n}\n"
+     }
+    ]
+   }
+  },
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "line": 5,
+      "column": 22,
+      "currentOffset": 137,
+      "endOffset": 139
+     },
+     "description": "Invalid function name: foo.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "other file name",
+  "request": {
+   "rules": {
+    "files": [
+     {
+      "name": "/abs/path/security.rules",
+      "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if foo();\n    }\n  }\n}\n"
+     }
+    ]
+   }
+  },
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "/abs/path/security.rules",
+      "line": 5,
+      "column": 22,
+      "currentOffset": 137,
+      "endOffset": 139
+     },
+     "description": "Invalid function name: foo.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "no files",
+  "request": {
+   "rules": {
+    "files": []
+   }
+  },
+  "status": 500,
+  "response": {
+   "error": {
+    "code": 500,
+    "status": "UNKNOWN"
+   }
+  }
+ },
+ {
+  "name": "no rules",
+  "request": {},
+  "status": 500,
+  "response": {
+   "error": {
+    "code": 500,
+    "status": "UNKNOWN"
+   }
+  }
+ },
+ {
+  "name": "unknown field",
+  "request": {
+   "rules": {
+    "files": [
+     {
+      "name": "a",
+      "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n"
+     }
+    ]
+   },
+   "x": 1
+  },
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Payload isn't valid for request.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "second file with a syntax error",
+  "request": {
+   "rules": {
+    "files": [
+     {
+      "name": "a.rules",
+      "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n"
+     },
+     {
+      "name": "b.rules",
+      "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true &&;\n    }\n  }\n}\n"
+     }
+    ]
+   }
+  },
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:29 mismatched input ';' expecting {'--', '++', '{', '[', '(', '-', '!', '/', 'false', 'null', 'true', PATH_SEGMENT, IDENTIFIER, NUM_INT, NUM_FLOAT, UNPAIRED_DOUBLE_QUOTE, UNPAIRED_SINGLE_QUOTE, STRING, BYTES}",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "syntax errors in two files",
+  "request": {
+   "rules": {
+    "files": [
+     {
+      "name": "a.rules",
+      "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if false ||;\n    }\n  }\n}\n"
+     },
+     {
+      "name": "b.rules",
+      "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true &&;\n    }\n  }\n}\n"
+     }
+    ]
+   }
+  },
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL5:30 mismatched input ';' expecting {'--', '++', '{', '[', '(', '-', '!', '/', 'false', 'null', 'true', PATH_SEGMENT, IDENTIFIER, NUM_INT, NUM_FLOAT, UNPAIRED_DOUBLE_QUOTE, UNPAIRED_SINGLE_QUOTE, STRING, BYTES}\nL5:29 mismatched input ';' expecting {'--', '++', '{', '[', '(', '-', '!', '/', 'false', 'null', 'true', PATH_SEGMENT, IDENTIFIER, NUM_INT, NUM_FLOAT, UNPAIRED_DOUBLE_QUOTE, UNPAIRED_SINGLE_QUOTE, STRING, BYTES}",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "warnings in two files",
+  "request": {
+   "rules": {
+    "files": [
+     {
+      "name": "a.rules",
+      "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if foo();\n    }\n  }\n}\n"
+     },
+     {
+      "name": "b.rules",
+      "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if bar();\n    }\n  }\n}\n"
+     }
+    ]
+   }
+  },
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "a.rules",
+      "line": 5,
+      "column": 22,
+      "currentOffset": 137,
+      "endOffset": 139
+     },
+     "description": "Invalid function name: foo.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "second file with a glob error",
+  "request": {
+   "rules": {
+    "files": [
+     {
+      "name": "a.rules",
+      "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if foo();\n    }\n  }\n}\n"
+     },
+     {
+      "name": "b.rules",
+      "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{a=**}/{b=**} {\n      allow read: if true;\n    }\n  }\n}\n"
+     }
+    ]
+   }
+  },
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL4:18 Invalid glob match expression. Only one glob match is permitted in a match declaration path.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "second file empty",
+  "request": {
+   "rules": {
+    "files": [
+     {
+      "name": "a.rules",
+      "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n"
+     },
+     {
+      "name": "b.rules",
+      "content": ""
+     }
+    ]
+   }
+  },
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL0:0 Rules content empty. Compilation aborted.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "file without content",
+  "request": {
+   "rules": {
+    "files": [
+     {
+      "name": "a.rules"
+     }
+    ]
+   }
+  },
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Error compiling rules:\nL0:0 Rules content empty. Compilation aborted.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "file with a fingerprint",
+  "request": {
+   "rules": {
+    "files": [
+     {
+      "name": "a.rules",
+      "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n",
+      "fingerprint": "AAAA"
+     }
+    ]
+   }
+  },
+  "status": 200,
+  "response": {}
+ },
+ {
+  "name": "file with an unknown field",
+  "request": {
+   "rules": {
+    "files": [
+     {
+      "name": "a.rules",
+      "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n",
+      "x": 1
+     }
+    ]
+   }
+  },
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Payload isn't valid for request.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ },
+ {
+  "name": "file name as a number",
+  "request": {
+   "rules": {
+    "files": [
+     {
+      "name": 1,
+      "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if foo();\n    }\n  }\n}\n"
+     }
+    ]
+   }
+  },
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "1",
+      "line": 5,
+      "column": 22,
+      "currentOffset": 137,
+      "endOffset": 139
+     },
+     "description": "Invalid function name: foo.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "file name with special characters",
+  "request": {
+   "rules": {
+    "files": [
+     {
+      "name": "a<b>&='é /\u0001\"\\",
+      "content": "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if foo();\n    }\n  }\n}\n"
+     }
+    ]
+   }
+  },
+  "status": 200,
+  "response": {
+   "issues": [
+    {
+     "sourcePosition": {
+      "fileName": "a<b>&='é /\u0001\"\\"
+     },
+     "description": "Ruleset uses old version (version [1]). Please update to the latest version (version [2]).",
+     "severity": "WARNING"
+    },
+    {
+     "sourcePosition": {
+      "fileName": "a<b>&='é /\u0001\"\\",
+      "line": 4,
+      "column": 22,
+      "currentOffset": 116,
+      "endOffset": 118
+     },
+     "description": "Invalid function name: foo.",
+     "severity": "WARNING"
+    }
+   ]
+  }
+ },
+ {
+  "name": "body that is not JSON",
+  "raw": "not json",
+  "status": 400,
+  "response": {
+   "error": {
+    "code": 400,
+    "message": "Payload isn't valid for request.",
+    "status": "INVALID_ARGUMENT"
+   }
+  }
+ }
+]

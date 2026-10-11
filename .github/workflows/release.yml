@@ -198,7 +198,7 @@ jobs:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
         run: |
           version="${GITHUB_REF_NAME#v}"
-          for crate in hidane-proto hidane-core hidane; do
+          for crate in hidane-proto hidane-core hidane-rules hidane; do
             status=$(curl -s -o /dev/null -w '%{http_code}' -H "User-Agent: hidane-release (github.com/hidane-dev/hidane)" \
               "https://crates.io/api/v1/crates/$crate/$version")
             if [[ "$status" == 200 ]]; then

@@ -19,6 +19,7 @@ pub mod export;
 mod firestore;
 mod ordered_json;
 mod rest;
+pub mod rules;
 mod webchannel;
 
 use std::{
@@ -65,8 +66,8 @@ use firestore::{
 /// firebase-tools waits 4 s after SIGINT before giving up on the process.
 pub const SHUTDOWN_GRACE: Duration = Duration::from_secs(2);
 
-/// The emulator's state shared by every protocol: the store, the open transactions and the
-/// shutdown flag.
+/// The emulator's state shared by every protocol: the store, the open transactions, the
+/// Security Rules and the shutdown flag.
 ///
 /// The shutdown request is a sticky flag rather than a one-shot notification, so every waiter
 /// sees it, including one that starts waiting after the request arrived.
@@ -79,6 +80,7 @@ pub struct Admin {
     enterprise: bool,
     channels: Arc<webchannel::Channels>,
     seeder: Option<Arc<Seeder>>,
+    rules: Arc<rules::Rules>,
 }
 
 impl Default for Admin {
@@ -108,7 +110,13 @@ impl Admin {
             enterprise: false,
             channels: Arc::default(),
             seeder: None,
+            rules: Arc::default(),
         }
+    }
+
+    /// The compiled Security Rules, per project.
+    pub fn rules(&self) -> &rules::Rules {
+        &self.rules
     }
 
     /// `--seed_from_export`: every database starts with the documents of `documents` whose
@@ -279,10 +287,13 @@ async fn channel_post(
 /// The largest WebChannel POST read (as REST bodies).
 const MAX_CHANNEL_BODY: usize = 16 * 1024 * 1024;
 
-/// Export and import (`/emulator/v1/projects/{p}:export`, `:import`), REST (`/v1/…`,
-/// `/v1beta1/…`), or 404.
+/// Security Rules (`/emulator/v1/projects/{p}:securityRules`), export and import
+/// (`/emulator/v1/projects/{p}:export`, `:import`), REST (`/v1/…`, `/v1beta1/…`), or 404.
 async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -> Response {
     let (parts, body) = request.into_parts();
+    if let Some(project) = rules::route(parts.uri.path()) {
+        return rules::handle(&admin.rules, project, &parts.method, &parts.headers, body).await;
+    }
     if let Some(verb) = export::route(parts.uri.path()) {
         return export::handle(admin.firestore(), verb, &parts.method, &parts.headers, body).await;
     }

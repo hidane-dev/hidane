@@ -395,6 +395,7 @@ dependencies = [
  "clap",
  "hidane-core",
  "hidane-proto",
+ "hidane-rules",
  "http-body-util",
  "hyper",
  "hyper-util",
@@ -434,6 +435,13 @@ dependencies = [
  "tonic",
  "tonic-prost",
  "tonic-prost-build",
+]
+
+[[package]]
+name = "hidane-rules"
+version = "0.1.0"
+dependencies = [
+ "regex",
 ]
 
 [[package]]

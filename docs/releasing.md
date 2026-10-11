@@ -40,7 +40,7 @@ The macOS binaries are not signed or notarized yet. Archives fetched with `curl`
 ## Cutting a release
 
 1. Set the version everywhere it is written and merge it: `version` in the workspace
-   `Cargo.toml` and the `=` pins of `hidane-core` and `hidane-proto` under
+   `Cargo.toml` and the `=` pins of `hidane-core`, `hidane-proto` and `hidane-rules` under
    `[workspace.dependencies]`; `version` in `packaging/pub/pubspec.yaml` and `hidaneVersion` in
    `packaging/pub/lib/hidane.dart`, with a `packaging/pub/CHANGELOG.md` entry.
    `mise run release:check` (`node packaging/check-versions.mjs`) checks that they agree, and CI
@@ -54,7 +54,7 @@ The macOS binaries are not signed or notarized yet. Archives fetched with `curl`
 
    | Job | Publishes |
    |---|---|
-   | `crates.io` | `hidane-proto`, `hidane-core`, then `hidane`; `cargo install` and `cargo binstall` then work |
+   | `crates.io` | `hidane-proto`, `hidane-core`, `hidane-rules`, then `hidane`; `cargo install` and `cargo binstall` then work |
    | `npm` | **stages** the five `@hidane-dev/<platform>` packages, then `hidane` (`packaging/npm/assemble.mjs`, `stage.sh`), with provenance. Approve them on npmjs.com with 2FA, the platform packages first |
    | `pub.dev` | `packaging/pub` |
    | `ghcr.io/hidane-dev/hidane` | the image for linux/amd64 and linux/arm64, tagged `<version>`, `<major>.<minor>` and `latest` |
@@ -91,10 +91,11 @@ it can be configured. The registries and the GitHub settings below are set up on
    Then, for `hidane` and each `@hidane-dev/<platform>` package: *Settings → Trusted publishing →
    GitHub Actions*, repository `hidane-dev/hidane`, workflow `release.yml`, allowed actions
    `npm stage publish` only (direct `npm publish` stays off).
-3. **crates.io**: publish `hidane-proto` and `hidane-core` once with an API token, at any version
-   before the first release (a release candidate): `mise run crates:bootstrap` (`cargo publish -p
-   hidane-proto`, then `-p hidane-core`). Then, for `hidane`,
-   `hidane-core` and `hidane-proto`: *Settings → Trusted Publishing*, repository
+3. **crates.io**: publish `hidane-proto`, `hidane-core` and `hidane-rules` once with an API token,
+   at any version before the first release that contains them (a release candidate):
+   `mise run crates:bootstrap` (`cargo publish -p hidane-proto`, then `-p hidane-core`, then
+   `-p hidane-rules`; versions already on crates.io are skipped). Then, for `hidane`,
+   `hidane-core`, `hidane-proto` and `hidane-rules`: *Settings → Trusted Publishing*, repository
    `hidane-dev/hidane`, workflow `release.yml`.
 4. **pub.dev**: for `hidane`, *Admin → Automated publishing → Enable publishing from GitHub
    Actions*, repository `hidane-dev/hidane`, tag pattern `v{{version}}`.
