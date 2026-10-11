@@ -384,7 +384,7 @@ impl Channels {
         // The header is read when the stream opens, as for gRPC; a bad one is the stream's
         // error.
         match auth::from_header(authorization.as_deref()) {
-            Ok(_) => start(&service, kind, &session),
+            Ok(caller) => start(&service, kind, &session, caller),
             Err(status) => {
                 session.push(&error_json(&status));
             }
@@ -462,7 +462,7 @@ impl Channels {
 }
 
 /// Runs `kind`'s stream for `session`, its answers queued as numbered messages.
-fn start(service: &FirestoreService, kind: Kind, session: &Arc<Session>) {
+fn start(service: &FirestoreService, kind: Kind, session: &Arc<Session>, caller: auth::Caller) {
     match kind {
         Kind::Listen => {
             let (requests, rx) = mpsc::channel(64);
@@ -471,7 +471,7 @@ fn start(service: &FirestoreService, kind: Kind, session: &Arc<Session>) {
             let service = service.clone();
             tokio::spawn(async move {
                 let mut rx = ReceiverStream::new(rx);
-                if let Err(status) = service.serve_listen(&mut rx, &responses).await {
+                if let Err(status) = service.serve_listen(&mut rx, &responses, &caller).await {
                     let _ = responses.send(Err(status)).await;
                 }
             });
@@ -484,7 +484,10 @@ fn start(service: &FirestoreService, kind: Kind, session: &Arc<Session>) {
             let service = service.clone();
             tokio::spawn(async move {
                 let mut rx = ReceiverStream::new(rx);
-                if let Err(status) = service.serve_write_stream(&mut rx, &responses).await {
+                if let Err(status) = service
+                    .serve_write_stream(&mut rx, &responses, &caller)
+                    .await
+                {
                     let _ = responses.send(Err(status)).await;
                 }
             });

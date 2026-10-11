@@ -16,6 +16,7 @@ pub(crate) mod auth;
 pub(crate) mod changes;
 mod clear;
 mod export;
+mod guard;
 mod listen;
 mod names;
 mod query;
@@ -26,7 +27,7 @@ mod write_stream;
 mod writes;
 
 use std::{
-    collections::HashSet,
+    collections::{HashMap, HashSet},
     hash::{BuildHasher, Hasher},
     ops::ControlFlow,
     sync::{
@@ -90,6 +91,8 @@ pub struct FirestoreService {
     enterprise: bool,
     /// `--seed_from_export`, forgotten on `POST /reset`.
     seeder: Option<Arc<seed::Seeder>>,
+    /// The Security Rules of each project (`:securityRules`, `--rules`).
+    rules: Option<Arc<crate::rules::Rules>>,
 }
 
 impl FirestoreService {
@@ -107,6 +110,37 @@ impl FirestoreService {
         self
     }
 
+    pub(crate) fn with_rules(mut self, rules: Arc<crate::rules::Rules>) -> Self {
+        self.rules = Some(rules);
+        self
+    }
+
+    /// Security Rules on a query: a `list` of its collection.
+    fn check_list(
+        &self,
+        caller: &auth::Caller,
+        database: &str,
+        query: &Query,
+    ) -> Result<(), Status> {
+        let Some(guard) = self.guard(caller, database) else {
+            return Ok(());
+        };
+        let (collection, view) = query.rules_view();
+        let at = self.store.latest_read_time(database);
+        guard
+            .list(&collection, view, &|path| {
+                self.store.get(database, path, at)
+            })
+            .map_err(guard::denied)
+    }
+
+    /// The checks of a request by `caller` on `database`, if any apply (`guard`).
+    fn guard(&self, caller: &auth::Caller, database: &str) -> Option<guard::Guard> {
+        let project = database.strip_prefix("projects/")?.split('/').next()?;
+        let ruleset = self.rules.as_ref()?.get(project);
+        guard::Guard::new(ruleset, caller, database)
+    }
+
     pub(crate) fn with_state(
         store: Arc<dyn Store>,
         transactions: Arc<Transactions>,
@@ -118,6 +152,7 @@ impl FirestoreService {
             changes,
             enterprise: false,
             seeder: None,
+            rules: None,
         }
     }
 
@@ -140,24 +175,76 @@ impl FirestoreService {
         Ok(at)
     }
 
-    /// Runs `writes` as one atomic commit; the first failing write aborts it.
+    /// Runs `writes` as one atomic commit; the first failing write aborts it. With `guard`,
+    /// Security Rules check every write once all are applied (`guard`); a denied one aborts it.
     fn commit_writes(
         &self,
         database: &str,
         writes: &[Write],
+        guard: Option<&guard::Guard>,
     ) -> Result<(ReadTime, Vec<WriteResult>), Status> {
         let mut results = Vec::with_capacity(writes.len());
         let mut failure = None;
         let outcome = self.store.commit(database, &mut |batch| {
             results.clear();
+            let mut checked = Vec::new();
+            let mut before = guard::Before {
+                touched: HashMap::new(),
+            };
             for write in writes {
+                let view = guard.and_then(|_| writes::rules_method(&*batch, write));
+                if let Some((_, path, existing)) = &view {
+                    before
+                        .touched
+                        .entry(path.clone())
+                        .or_insert_with(|| existing.clone());
+                }
                 match writes::apply(batch, database, write) {
-                    Ok(result) => results.push(result),
+                    Ok(result) => {
+                        results.push(result);
+                        if let Some((method, path, existing)) = view {
+                            let after = batch.get(&path);
+                            checked.push(guard::CheckedWrite {
+                                method,
+                                path,
+                                before: existing,
+                                after,
+                            });
+                        }
+                    }
                     Err(status) => {
+                        // The rules come before the precondition: check the write as if it
+                        // had none, and deny it if they do.
+                        if let (Some(guard), Some((method, path, existing)), true) =
+                            (guard, view, is_precondition(&status))
+                        {
+                            let mut unconditional = write.clone();
+                            unconditional.current_document = None;
+                            if writes::apply(batch, database, &unconditional).is_ok() {
+                                let after = batch.get(&path);
+                                checked.push(guard::CheckedWrite {
+                                    method,
+                                    path,
+                                    before: existing,
+                                    after,
+                                });
+                                if let Err(message) = check_writes(guard, &checked, &before, batch)
+                                {
+                                    failure = Some(guard::denied(message));
+                                    return Err(StoreError::Aborted(String::new()));
+                                }
+                            }
+                        }
                         failure = Some(status);
                         return Err(StoreError::Aborted(String::new()));
                     }
                 }
+            }
+            if let Some(guard) = guard
+                && let Err(message) = check_writes(guard, &checked, &before, batch)
+            {
+                failure = Some(guard::denied(message));
+                return Err(StoreError::Aborted(String::new()));
             }
             Ok(())
         });
@@ -180,6 +267,7 @@ impl FirestoreService {
         database: &str,
         transaction: Option<&[u8]>,
         writes: &[Write],
+        guard: Option<&guard::Guard>,
     ) -> Result<Option<(ReadTime, Vec<WriteResult>)>, Status> {
         // Invalid writes fail before waiting for any lock, as on the official emulator.
         writes::check_verifies(writes)?;
@@ -192,7 +280,7 @@ impl FirestoreService {
                 if writes.is_empty() {
                     return Ok(None);
                 }
-                self.commit_writes(database, writes).map(Some)
+                self.commit_writes(database, writes, guard).map(Some)
             })
             .await
     }
@@ -278,6 +366,31 @@ impl FirestoreService {
     }
 }
 
+/// Whether a write failed on its precondition (checked after the rules).
+fn is_precondition(status: &Status) -> bool {
+    matches!(
+        status.code(),
+        tonic::Code::NotFound | tonic::Code::AlreadyExists | tonic::Code::FailedPrecondition
+    )
+}
+
+/// Checks the writes of a commit: `get()` reads each document as it was before the commit,
+/// `getAfter()` as the batch leaves it.
+fn check_writes(
+    guard: &guard::Guard,
+    checked: &[guard::CheckedWrite],
+    before: &guard::Before,
+    batch: &dyn hidane_core::store::WriteBatch,
+) -> Result<(), String> {
+    let time = guard::timestamp(&batch.commit_time().to_timestamp());
+    guard.writes(
+        checked,
+        time,
+        &|path| before.get(path, |p| batch.get(p)),
+        &|path| batch.get(path),
+    )
+}
+
 #[async_trait]
 impl Firestore for FirestoreService {
     async fn get_document(
@@ -286,7 +399,7 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<Document>, Status> {
         let (metadata, _, req) = request.into_parts();
         let name = names::document(&req.name)?;
-        auth::caller(&metadata)?;
+        let caller = auth::caller(&metadata)?;
         let at = match &req.consistency_selector {
             Some(get_document_request::ConsistencySelector::Transaction(transaction)) => self
                 .read_in(
@@ -301,7 +414,15 @@ impl Firestore for FirestoreService {
             None => self.read_time(&name.database, None)?,
         };
         let mask = parse_mask(req.mask.as_ref())?;
-        match self.store.get(&name.database, &name.path, at) {
+        let stored = self.store.get(&name.database, &name.path, at);
+        if let Some(guard) = self.guard(&caller, &name.database) {
+            guard
+                .get(&name.path, stored.as_deref(), &|path| {
+                    self.store.get(&name.database, path, at)
+                })
+                .map_err(guard::denied)?;
+        }
+        match stored {
             Some(doc) => Ok(Response::new(to_document(
                 &name.database,
                 &doc,
@@ -357,6 +478,21 @@ impl Firestore for FirestoreService {
         }
         if req.show_missing && !caller.is_admin() {
             return Err(Status::permission_denied(METADATA_ADMIN));
+        }
+        // A list of the collection, with `pageSize` as its limit.
+        if let Some(guard) = self.guard(&caller, &parent.database) {
+            let collection = parent.path.child(req.collection_id.clone());
+            let view = hidane_rules::eval::Query {
+                limit: (req.page_size > 0).then_some(i64::from(req.page_size)),
+                offset: Some(0),
+                order_by: Vec::new(),
+            };
+            let at = self.store.latest_read_time(&parent.database);
+            guard
+                .list(&collection, view, &|path| {
+                    self.store.get(&parent.database, path, at)
+                })
+                .map_err(guard::denied)?;
         }
         let at = match &req.consistency_selector {
             Some(list_documents_request::ConsistencySelector::Transaction(transaction)) => self
@@ -478,7 +614,7 @@ impl Firestore for FirestoreService {
             names::document_id(&req.document_id)?;
             req.document_id.clone()
         };
-        auth::caller(&metadata)?;
+        let caller = auth::caller(&metadata)?;
         if req.collection_id.is_empty() {
             return Err(Status::invalid_argument(
                 "collectionId is the empty string.",
@@ -497,8 +633,9 @@ impl Firestore for FirestoreService {
             }),
             ..Write::default()
         };
+        let guard = self.guard(&caller, &parent.database);
         let (commit_time, _) = self
-            .write(&parent.database, None, &[write])
+            .write(&parent.database, None, &[write], guard.as_ref())
             .await?
             .expect("one write");
         let mask = parse_mask(req.mask.as_ref())?;
@@ -518,15 +655,16 @@ impl Firestore for FirestoreService {
         // No document is a document without a name, as on the official emulator.
         let document = req.document.unwrap_or_default();
         let name = names::document(&document.name)?;
-        auth::caller(&metadata)?;
+        let caller = auth::caller(&metadata)?;
         let write = Write {
             operation: Some(Operation::Update(document)),
             update_mask: req.update_mask,
             current_document: req.current_document,
             ..Write::default()
         };
+        let guard = self.guard(&caller, &name.database);
         let (commit_time, _) = self
-            .write(&name.database, None, &[write])
+            .write(&name.database, None, &[write], guard.as_ref())
             .await?
             .expect("one write");
         let mask = parse_mask(req.mask.as_ref())?;
@@ -544,13 +682,15 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<()>, Status> {
         let (metadata, _, req) = request.into_parts();
         let name = names::document(&req.name)?;
-        auth::caller(&metadata)?;
+        let caller = auth::caller(&metadata)?;
         let write = Write {
             operation: Some(Operation::Delete(req.name)),
             current_document: req.current_document,
             ..Write::default()
         };
-        self.write(&name.database, None, &[write]).await?;
+        let guard = self.guard(&caller, &name.database);
+        self.write(&name.database, None, &[write], guard.as_ref())
+            .await?;
         Ok(Response::new(()))
     }
 
@@ -560,7 +700,7 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<BoxStream<BatchGetDocumentsResponse>>, Status> {
         let (metadata, _, req) = request.into_parts();
         let database = names::database(&req.database)?;
-        auth::caller(&metadata)?;
+        let caller = auth::caller(&metadata)?;
         let paths = req
             .documents
             .iter()
@@ -597,6 +737,23 @@ impl Firestore for FirestoreService {
             }
             None => self.read_time(&database, None)?,
         };
+        // One denied document denies the whole call, missing documents included.
+        if let Some(guard) = self.guard(&caller, &database) {
+            let denials: Vec<String> = paths
+                .iter()
+                .filter_map(|path| {
+                    let stored = self.store.get(&database, path, at);
+                    guard
+                        .get(path, stored.as_deref(), &|p| {
+                            self.store.get(&database, p, at)
+                        })
+                        .err()
+                })
+                .collect();
+            if !denials.is_empty() {
+                return Err(guard::denied(guard::join(&denials)));
+            }
+        }
         // Answers come back in request order, all with the same read time.
         for (name, path) in req.documents.iter().zip(&paths) {
             let result = match self.store.get(&database, path, at) {
@@ -622,11 +779,19 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<CommitResponse>, Status> {
         let (metadata, _, req) = request.into_parts();
         let database = names::database(&req.database)?;
-        auth::caller(&metadata)?;
+        let caller = auth::caller(&metadata)?;
         let transaction = (!req.transaction.is_empty()).then_some(req.transaction.as_slice());
         // The official emulator answers an empty commit with an empty response (no commit time).
         Ok(Response::new(
-            match self.write(&database, transaction, &req.writes).await? {
+            match self
+                .write(
+                    &database,
+                    transaction,
+                    &req.writes,
+                    self.guard(&caller, &database).as_ref(),
+                )
+                .await?
+            {
                 Some((commit_time, write_results)) => CommitResponse {
                     write_results,
                     commit_time: Some(commit_time.to_timestamp()),
@@ -642,7 +807,7 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<BoxStream<RunQueryResponse>>, Status> {
         let (metadata, _, req) = request.into_parts();
         let parent = names::parent(&req.parent)?;
-        auth::caller(&metadata)?;
+        let caller = auth::caller(&metadata)?;
         let database = parent.database;
         // `explain_options` is ignored, as on the official emulator: the same results, no
         // explain metrics.
@@ -653,6 +818,7 @@ impl Firestore for FirestoreService {
             None => &default,
         };
         let query = Query::parse(parent.path, structured)?;
+        self.check_list(&caller, &database, &query)?;
         let consistency = match &req.consistency_selector {
             Some(run_query_request::ConsistencySelector::Transaction(t)) => {
                 Consistency::Transaction(t)
@@ -721,7 +887,7 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<BoxStream<RunAggregationQueryResponse>>, Status> {
         let (metadata, _, req) = request.into_parts();
         let parent = names::parent(&req.parent)?;
-        auth::caller(&metadata)?;
+        let caller = auth::caller(&metadata)?;
         let database = parent.database;
         // `explain_options` is ignored, as on the official emulator: the same results, no
         // explain metrics.
@@ -737,6 +903,7 @@ impl Firestore for FirestoreService {
             None => (&default, &[][..]),
         };
         let mut query = Query::parse(parent.path, structured)?;
+        self.check_list(&caller, &database, &query)?;
         let aggregations = Aggregations::parse(aggregations)?;
         query.require(aggregations.fields());
         let consistency = match &req.consistency_selector {
@@ -777,12 +944,15 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<Streaming<WriteRequest>>,
     ) -> Result<Response<BoxStream<WriteResponse>>, Status> {
-        auth::caller(request.metadata())?;
+        let caller = auth::caller(request.metadata())?;
         let mut requests = request.into_inner();
         let (responses, receiver) = mpsc::channel(16);
         let service = self.clone();
         tokio::spawn(async move {
-            if let Err(status) = service.serve_write_stream(&mut requests, &responses).await {
+            if let Err(status) = service
+                .serve_write_stream(&mut requests, &responses, &caller)
+                .await
+            {
                 let _ = responses.send(Err(status)).await;
             }
         });
@@ -793,12 +963,15 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<Streaming<ListenRequest>>,
     ) -> Result<Response<BoxStream<ListenResponse>>, Status> {
-        auth::caller(request.metadata())?;
+        let caller = auth::caller(request.metadata())?;
         let mut requests = request.into_inner();
         let (responses, receiver) = mpsc::channel(256);
         let service = self.clone();
         tokio::spawn(async move {
-            if let Err(status) = service.serve_listen(&mut requests, &responses).await {
+            if let Err(status) = service
+                .serve_listen(&mut requests, &responses, &caller)
+                .await
+            {
                 let _ = responses.send(Err(status)).await;
             }
         });
@@ -891,7 +1064,12 @@ impl Firestore for FirestoreService {
         let mut status = Vec::with_capacity(req.writes.len());
         for write in &req.writes {
             match self
-                .write(&database, None, std::slice::from_ref(write))
+                .write(
+                    &database,
+                    None,
+                    std::slice::from_ref(write),
+                    self.guard(&caller, &database).as_ref(),
+                )
                 .await
             {
                 Ok(outcome) => {

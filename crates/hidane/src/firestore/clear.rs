@@ -73,7 +73,7 @@ impl FirestoreService {
                         ..Write::default()
                     })
                     .collect();
-                self.commit_writes(database, &writes).map(|_| ())
+                self.commit_writes(database, &writes, None).map(|_| ())
             })
             .await
     }

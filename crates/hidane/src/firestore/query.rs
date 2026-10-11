@@ -414,6 +414,35 @@ impl Query {
 
     /// The collection ID a transaction locks for this query: the official emulator locks
     /// every collection with that ID, whatever its parent.
+    /// What Security Rules see of the query: the collection it lists, and `request.query`
+    /// (`tools/oracle/rules_list.py`: `offset` is 0 without one, `orderBy` maps fields to
+    /// `ASC` / `DESC`). A collection group lists its collection ID under the parent; #66
+    /// decides how such a list matches.
+    pub fn rules_view(&self) -> (ResourcePath, hidane_rules::eval::Query) {
+        let collection = match &self.source {
+            Source::Collection(id) | Source::Group(id) => self.parent.child(id.clone()),
+            Source::Children | Source::Descendants => self.parent.clone(),
+        };
+        let order_by = self
+            .orders
+            .iter()
+            .map(|order| {
+                let field = match &order.field {
+                    Field::Name => "__name__".to_owned(),
+                    Field::Path(path) => path.to_string(),
+                };
+                let direction = if order.descending { "DESC" } else { "ASC" };
+                (field, direction.to_owned())
+            })
+            .collect();
+        let query = hidane_rules::eval::Query {
+            limit: self.limit.map(|n| i64::try_from(n).unwrap_or(i64::MAX)),
+            offset: Some(i64::try_from(self.offset).unwrap_or(i64::MAX)),
+            order_by,
+        };
+        (collection, query)
+    }
+
     pub fn collection_id(&self) -> Option<&str> {
         match &self.source {
             Source::Collection(id) | Source::Group(id) => Some(id),
