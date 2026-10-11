@@ -99,6 +99,7 @@ impl Admin {
         )
         .with_enterprise_edition(self.enterprise)
         .with_seeder(self.seeder.clone())
+        .with_rules(Arc::clone(&self.rules))
     }
 
     pub fn new(store: Arc<dyn Store>) -> Self {

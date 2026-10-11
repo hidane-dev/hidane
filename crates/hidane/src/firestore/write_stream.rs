@@ -32,6 +32,7 @@ impl FirestoreService {
         &self,
         requests: &mut (impl Stream<Item = Result<WriteRequest, Status>> + Unpin + Send),
         responses: &Responses,
+        caller: &super::auth::Caller,
     ) -> Result<(), Status> {
         let Some(first) = requests.next().await.transpose()? else {
             return Ok(());
@@ -97,7 +98,12 @@ impl FirestoreService {
                 return Ok(());
             }
             let (commit_time, write_results) = self
-                .write(&database, None, &request.writes)
+                .write(
+                    &database,
+                    None,
+                    &request.writes,
+                    self.guard(caller, &database).as_ref(),
+                )
                 .await?
                 .expect("a batch with writes commits");
             let response = WriteResponse {

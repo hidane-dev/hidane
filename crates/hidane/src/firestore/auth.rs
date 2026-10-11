@@ -18,7 +18,7 @@ use tonic::{Status, metadata::MetadataMap};
 /// A token's claims, kept for `request.auth` in Security Rules (#9).
 pub(crate) type Claims = Map<String, Value>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) enum Caller {
     /// No header.
     Anonymous,

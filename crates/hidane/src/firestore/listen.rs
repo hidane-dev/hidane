@@ -68,6 +68,8 @@ struct Gone;
 
 struct Listener<'a> {
     service: &'a FirestoreService,
+    /// Who opened the stream, for Security Rules (`guard`).
+    caller: &'a super::auth::Caller,
     responses: &'a Responses,
     database: Option<String>,
     feed: Option<broadcast::Receiver<Event>>,
@@ -87,9 +89,11 @@ impl FirestoreService {
         &self,
         requests: &mut (impl Stream<Item = Result<ListenRequest, Status>> + Unpin + Send),
         responses: &Responses,
+        caller: &super::auth::Caller,
     ) -> Result<(), Status> {
         let mut listener = Listener {
             service: self,
+            caller,
             responses,
             database: None,
             feed: None,
@@ -226,6 +230,10 @@ impl Listener<'_> {
 
         self.target_change(TargetChangeType::Add, vec![id], None, None)
             .await?;
+        // A target Security Rules deny is removed right after it is added, with the denial.
+        if let Some(message) = self.denial(&watch, &database, at) {
+            return self.remove_denied(id, message).await;
+        }
         let mut watched = WatchedTarget {
             watch,
             members: HashMap::new(),
@@ -264,6 +272,42 @@ impl Listener<'_> {
             .await?;
         self.as_of = at;
         self.snapshot(at).await
+    }
+
+    /// What Security Rules say against `watch` at `at`, if they deny it: a query is a `list`,
+    /// documents are each a `get`, and one denied document denies the target.
+    fn denial(&self, watch: &Watch, database: &str, at: ReadTime) -> Option<String> {
+        let guard = self.service.guard(self.caller, database)?;
+        let store = self.service.store.as_ref();
+        let lookup = |path: &ResourcePath| store.get(database, path, at);
+        match watch {
+            Watch::Query(query) => {
+                let (collection, view) = query.rules_view();
+                guard.list(&collection, view, &lookup).err()
+            }
+            Watch::Documents(paths) => {
+                let denials: Vec<String> = paths
+                    .iter()
+                    .filter_map(|path| {
+                        let stored = store.get(database, path, at);
+                        guard.get(path, stored.as_deref(), &lookup).err()
+                    })
+                    .collect();
+                (!denials.is_empty()).then(|| super::guard::join(&denials))
+            }
+        }
+    }
+
+    /// Removes target `id` with a `PERMISSION_DENIED` cause.
+    async fn remove_denied(&mut self, id: i32, message: String) -> Outcome<()> {
+        self.targets.remove(&id);
+        let cause = rpc::Status {
+            code: tonic::Code::PermissionDenied as i32,
+            message,
+            details: Vec::new(),
+        };
+        self.target_change(TargetChangeType::Remove, vec![id], None, Some(cause))
+            .await
     }
 
     /// Applies, without the closing `NO_CHANGE`, every received commit up to `at`; newer
@@ -564,6 +608,15 @@ impl Listener<'_> {
         let ids: Vec<i32> = self.targets.keys().copied().collect();
         for id in ids {
             let mut watched = self.targets.remove(&id).expect("listed above");
+            // Rules on a listened document are checked again when it changes; a denied
+            // target is removed (a query's are decided by the query alone).
+            if let Watch::Documents(paths) = &watched.watch
+                && changes.iter().any(|c| paths.contains(&c.path))
+                && let Some(message) = self.denial(&watched.watch, &database, at)
+            {
+                self.remove_denied(id, message).await?;
+                continue;
+            }
             let result = self
                 .apply_to(id, &mut watched, &database, &changes, at)
                 .await;

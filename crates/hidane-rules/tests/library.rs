@@ -106,6 +106,7 @@ fn batch(result: &Json) -> bool {
             (true, None) => Method::Create,
         };
         let request = Request {
+            upsert: false,
             method,
             path: document_path(&format!("c/{id}")),
             auth: None,
@@ -155,6 +156,7 @@ fn evaluation_matches_the_official_emulator() {
             None => Err(compiled.error_message()),
             Some(ruleset) => {
                 let request = Request {
+                    upsert: false,
                     method: Method::Get,
                     path: document_path("rooms/r1"),
                     auth: None,

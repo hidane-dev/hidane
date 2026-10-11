@@ -1,8 +1,9 @@
 //! What a denial says, for the cases of `tools/oracle/rules_denials.py` that need no server:
 //! `false for 'get' @ L5` with the line of the condition, the error instead of `false`, one
 //! entry per statement in source order joined by `, `, and `No matching allow statements` when
-//! none applies. The official emulator lists the entries again after an error; hidane lists
-//! them once. Writes checked as two methods, batches and queries are left to the server's tests.
+//! none applies; for a write without a precondition, the statements of both `create` and
+//! `update`. The official emulator lists the entries again after an error; hidane lists them
+//! once. Batches and queries are left to the server's tests.
 
 mod common;
 
@@ -34,6 +35,11 @@ impl Documents for Store {
 
 /// The decision for `method` on `path` under the ruleset of `rules_denials.py` around `body`.
 fn decide(body: &str, method: Method, path: &str) -> Decision {
+    decide_as(body, method, path, false)
+}
+
+/// The same for a write that may be an upsert.
+fn decide_as(body: &str, method: Method, path: &str, upsert: bool) -> Decision {
     let indented: Vec<String> = body.lines().map(|l| format!("    {l}")).collect();
     let content = format!(
         "rules_version = '2';\nservice cloud.firestore {{\n  match /databases/{{database}}/documents {{\n{}\n  }}\n}}\n",
@@ -55,6 +61,7 @@ fn decide(body: &str, method: Method, path: &str) -> Decision {
         _ => None,
     };
     let request = Request {
+        upsert,
         method,
         path,
         auth: None,
@@ -164,5 +171,58 @@ fn denials_name_the_method() {
             "c"
         ),
         Decision::Allow
+    );
+}
+
+/// A write without a precondition is an update if the document exists, else a create; a
+/// denial lists the statements of both, `create`'s first, the other method's as `false` or its
+/// condition's error (`rules_writes.py`, `rules_denials.py`).
+#[test]
+fn upserts_list_both_methods() {
+    let update = |body: &str| decide_as(body, Method::Update, "c/d", true);
+    let create = |body: &str| decide_as(body, Method::Create, "c/new", true);
+    assert_eq!(
+        update("match /c/{d} {\n  allow write: if false;\n}"),
+        denied("\nfalse for 'create' @ L5, false for 'update' @ L5")
+    );
+    assert_eq!(
+        create("match /c/{d} {\n  allow write: if false;\n}"),
+        denied("\nfalse for 'create' @ L5, false for 'update' @ L5")
+    );
+    assert_eq!(
+        update("match /c/{d} {\n  allow update: if false;\n  allow create: if true;\n}"),
+        denied("\nfalse for 'create' @ L6, false for 'update' @ L5")
+    );
+    assert_eq!(
+        create("match /c/{d} {\n  allow update: if true;\n  allow create: if false;\n}"),
+        denied("\nfalse for 'create' @ L6, false for 'update' @ L5")
+    );
+    assert_eq!(
+        update("match /c/{d} {\n  allow create: if true;\n}"),
+        denied("\nfalse for 'create' @ L5")
+    );
+    assert_eq!(
+        update("match /c/{d} {\n  allow create: if int('a') == 1;\n}"),
+        denied(
+            "\nType conversion error. Argument: [a], From type: [string], To type: [int]. \
+             for 'create' @ L5"
+        )
+    );
+    assert_eq!(
+        update("match /c/{d} {\n  allow delete: if true;\n}"),
+        denied("No matching allow statements")
+    );
+    assert_eq!(
+        update("match /c/{d} {\n  allow update: if true;\n  allow create: if false;\n}"),
+        Decision::Allow
+    );
+    // With a precondition, only the method it chose.
+    assert_eq!(
+        decide(
+            "match /c/{d} {\n  allow create: if true;\n}",
+            Method::Update,
+            "c/d"
+        ),
+        denied("No matching allow statements")
     );
 }

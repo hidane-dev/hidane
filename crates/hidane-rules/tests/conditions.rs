@@ -72,6 +72,7 @@ fn conditions_decide_as_on_the_official_emulator() {
             None => ("compile".to_owned(), None),
             Some(ruleset) => {
                 let request = Request {
+                    upsert: false,
                     method: Method::Get,
                     path: document_path("rooms/r1"),
                     auth: None,

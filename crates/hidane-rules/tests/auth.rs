@@ -20,6 +20,7 @@ fn decide(condition: &str, auth: Option<Auth>) -> Decision {
     .ruleset
     .expect("compiles");
     let request = Request {
+        upsert: false,
         method: Method::Get,
         path: document_path("c/d"),
         auth,
