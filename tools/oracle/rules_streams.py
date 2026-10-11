@@ -36,7 +36,9 @@ def rest(method, path, body=None, owner=False):
 
 
 def stream(rpc, database, messages, wait=2.0, during=None):
-    """Sends `messages` (then waits), runs `during` meanwhile, returns what grpcurl printed."""
+    """Sends `messages` (then waits), runs `during` meanwhile; returns the messages grpcurl
+    printed, in order, and the status the stream ended with (`None` for OK). grpcurl sends the
+    last message only when its input closes, so a write's answer comes after the wait."""
     proc = subprocess.Popen(
         ["grpcurl", "-plaintext", "-import-path", PROTOS, "-proto", "google/firestore/v1/firestore.proto",
          "-H", f"google-cloud-resource-prefix: {database}", "-d", "@", HOST, f"google.firestore.v1.Firestore/{rpc}"],
@@ -53,7 +55,29 @@ def stream(rpc, database, messages, wait=2.0, during=None):
         proc.wait(timeout=5)
     except subprocess.TimeoutExpired:
         proc.kill()
-    return proc.stdout.read()
+    return parse(proc.stdout.read())
+
+
+def parse(output):
+    """grpcurl prints each message as JSON, and a status that is not OK as
+    `ERROR:\n  Code: PermissionDenied\n  Message: …`."""
+    decoder = json.JSONDecoder()
+    received, at = [], 0
+    while True:
+        while at < len(output) and output[at].isspace():
+            at += 1
+        if at == len(output) or output[at] != "{":
+            break
+        message, at = decoder.raw_decode(output, at)
+        received.append(message)
+    rest = output[at:]
+    status = None
+    if rest.startswith("ERROR:"):
+        code = rest.split("Code: ", 1)[1].split("\n", 1)[0]
+        status = {"code": code, "message": rest.split("Message: ", 1)[1].rstrip("\n") if "Message: " in rest else ""}
+    else:
+        assert not rest.strip(), rest
+    return received, status
 
 
 def project(name, rules, documents):
@@ -65,13 +89,29 @@ def project(name, rules, documents):
     assert status == 200
     for doc, n in documents:
         parent, id_ = doc.rsplit("/", 1)
+        rest("DELETE", f"/v1/{database}/documents/{doc}", owner=True)
         rest("POST", f"/v1/{database}/documents/{parent}?documentId={id_}", {"fields": {"n": {"integerValue": str(n)}}}, owner=True)
-    return database, content
+    return database, content, documents
 
 
 results = []
-db, rules = project("streams-a", "match /c/{d} {\n  allow get: if d == 'a';\n  allow list: if false;\n  allow write: if d == 'a';\n}",
-                    [("c/a", 1), ("c/b", 1)])
+
+
+def record(name, setup, rpc, messages, during=None, **kwargs):
+    """`setup`: what `project` returned. `during`: a REST call (method, path, body) made as the
+    owner while the stream is open."""
+    database, rules, documents = setup
+    received, status = stream(rpc, database, messages,
+                              during=during and (lambda: rest(*during, owner=True)), **kwargs)
+    results.append({"name": name, "rules": rules, "database": database,
+                    "documents": [{"path": d, "n": n} for d, n in documents], "rpc": rpc, "requests": messages,
+                    "during": during and {"method": during[0], "path": during[1], "body": during[2]},
+                    "responses": received, "status": status})
+
+
+setup = project("streams-a", "match /c/{d} {\n  allow get: if d == 'a';\n  allow list: if false;\n  allow write: if d == 'a';\n}",
+                [("c/a", 1), ("c/b", 1)])
+db = setup[0]
 doc = lambda d: f"{db}/documents/{d}"
 for name, target in {
     "listen: allowed document": {"documents": {"documents": [doc("c/a")]}, "targetId": 1},
@@ -79,14 +119,15 @@ for name, target in {
     "listen: one denied of two": {"documents": {"documents": [doc("c/a"), doc("c/b")]}, "targetId": 3},
     "listen: denied query": {"query": {"parent": f"{db}/documents", "structuredQuery": {"from": [{"collectionId": "c"}]}}, "targetId": 4},
 }.items():
-    results.append({"name": name, "rules": rules, "output": stream("Listen", db, [{"database": db, "addTarget": target}])})
-results.append({"name": "write: denied", "rules": rules, "output": stream("Write", db, [
-    {"database": db}, {"streamToken": "", "writes": [{"update": {"name": doc("c/x"), "fields": {"n": {"integerValue": "2"}}}}]}])})
+    record(name, setup, "Listen", [{"database": db, "addTarget": target}])
+record("write: denied", setup, "Write", [
+    {"database": db}, {"streamToken": "", "writes": [{"update": {"name": doc("c/x"), "fields": {"n": {"integerValue": "2"}}}}]}])
 
-db, rules = project("streams-b", "match /c/{d} {\n  allow get: if resource.data.n == 1;\n}", [("c/a", 1)])
-results.append({"name": "listen: a write makes the document denied", "rules": rules, "output": stream(
-    "Listen", db, [{"database": db, "addTarget": {"documents": {"documents": [f"{db}/documents/c/a"]}, "targetId": 1}}],
-    wait=3, during=lambda: rest("PATCH", f"/v1/{db}/documents/c/a", {"fields": {"n": {"integerValue": "2"}}}, owner=True))})
+setup = project("streams-b", "match /c/{d} {\n  allow get: if resource.data.n == 1;\n}", [("c/a", 1)])
+db = setup[0]
+record("listen: a write makes the document denied", setup, "Listen",
+       [{"database": db, "addTarget": {"documents": {"documents": [f"{db}/documents/c/a"]}, "targetId": 1}}],
+       during=("PATCH", f"/v1/{db}/documents/c/a", {"fields": {"n": {"integerValue": "2"}}}), wait=3)
 
 json.dump(results, sys.stdout, indent=1)
 print()

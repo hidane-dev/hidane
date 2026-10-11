@@ -6,6 +6,8 @@
 //! on `resource` and on lookups (firebase-tools #6252, `docs/parity-exceptions.md`). hidane
 //! evaluates each condition once.
 
+mod common;
+
 use std::net::SocketAddr;
 
 use serde_json::Value as Json;
@@ -76,36 +78,12 @@ fn message(response: &Json) -> Option<&str> {
     response.pointer("/error/message").and_then(Json::as_str)
 }
 
-/// A denial's reasons: `\nfalse for 'get' @ L5, <error> for 'get' @ L6`, each ending in a line
-/// number (an error's own text may hold `, `).
-fn reasons(message: &str) -> Vec<&str> {
-    let mut rest = message.strip_prefix('\n').unwrap_or(message);
-    let mut reasons = Vec::new();
-    let mut scanned = 0;
-    while let Some(at) = rest[scanned..].find(" @ L").map(|i| scanned + i + 4) {
-        let end = at + rest[at..].bytes().take_while(u8::is_ascii_digit).count();
-        match rest[end..].strip_prefix(", ") {
-            Some(next) if end > at => {
-                reasons.push(&rest[..end]);
-                rest = next;
-                scanned = 0;
-            }
-            _ => scanned = end,
-        }
-    }
-    reasons.push(rest);
-    reasons
-}
-
-/// Whether hidane's error message says what the official emulator's does.
-fn same_message(hidane: Option<&str>, official: Option<&str>) -> bool {
+/// Whether hidane's error message says what the official emulator's does: denials as
+/// [`common::rules::same_denial`] decides; other errors only by status.
+fn same_message(hidane: Option<&str>, official: Option<&str>, status: u16) -> bool {
     match (hidane, official) {
-        (Some(hidane), Some(official)) if official.starts_with('\n') => {
-            let official = reasons(official);
-            hidane.starts_with('\n') && reasons(hidane).iter().all(|r| official.contains(r))
-        }
-        (hidane, Some("No matching allow statements")) => {
-            hidane == Some("No matching allow statements")
+        (Some(hidane), Some(official)) if status == 403 => {
+            common::rules::same_denial(hidane, official)
         }
         _ => true,
     }
@@ -136,7 +114,7 @@ async fn replay(fixture: &str, skip: &[&str], statuses_only: &[&str]) {
             .await;
             let same = status == step["status"]
                 && (statuses_only.contains(&name)
-                    || same_message(message(&response), message(&step["response"])));
+                    || same_message(message(&response), message(&step["response"]), status));
             if !same {
                 differences.push(format!(
                     "{name}, step {i}: {} {}\n  official: {} {}\n  hidane:   {status} {}",
