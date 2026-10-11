@@ -1,6 +1,6 @@
 [package]
 name = "hidane-rules"
-description = "Firestore Security Rules for hidane: lexer, parser and compile-time checks"
+description = "Firestore Security Rules for hidane: compiler and evaluator"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -14,7 +14,9 @@ include = ["/src", "/README.md", "/LICENSE-MIT", "/LICENSE-APACHE"]
 
 [dependencies]
 indexmap.workspace = true
+md-5.workspace = true
 regex.workspace = true
+sha2.workspace = true
 
 [lints]
 workspace = true
