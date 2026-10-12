@@ -66,7 +66,7 @@ compared with the official emulator's (`results/`):
 | Go (`cloud.google.com/go/firestore`), Python and Java (`google-cloud-firestore`) | gRPC | verified: documents, queries, aggregations, vector search, transactions, listeners |
 | iOS, Android, Flutter (Android, iOS, macOS, Windows), C++ / Unity | gRPC | same transport, not verified yet |
 | Security Rules | every transport | enforced: `allow` conditions, `get` / `exists`, `list` decided from the query's filter, mock tokens, denial messages, `:ruleCoverage`, `debug()`; each recorded from the official emulator and replayed ([`docs/parity-exceptions.md`](docs/parity-exceptions.md) lists the differences) |
-| `firebase emulators:start` / `emulators:exec` | `hidane exec -- firebase …` | verified with firebase-tools 15.33.0, no Java installed; with the Functions emulator, Firestore-triggered functions load, but their events are not delivered yet (#70) |
+| `firebase emulators:start` / `emulators:exec` | `hidane exec -- firebase …` | verified with firebase-tools 15.33.0, no Java installed; with the Functions emulator, Firestore-triggered functions, v1 and v2 (`withAuthContext` too), fire on the same writes with the same data as with the official emulator ([`docs/parity-exceptions.md`](docs/parity-exceptions.md) lists the differences) |
 | Emulator UI | REST and the emulator's endpoints | verified: browse, create and delete documents, Clear all data, and the request monitor (the Requests tab) |
 | Export / import (`--import`, `--export-on-exit`, `emulators:export`) | the official format | verified: hidane and the official emulator read each other's exports, byte for byte the same files ([`docs/export-format.md`](docs/export-format.md)) |
 

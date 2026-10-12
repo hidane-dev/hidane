@@ -10,7 +10,7 @@ and WebChannel, enforces Security Rules, and runs under firebase-tools
 (`hidane exec -- firebase emulators:start`), with imports and exports. Each
 feature is built issue by issue: the official emulator's behaviour is recorded
 first (`tools/oracle/`), then implemented and replayed by the test suite. The
-Functions triggers (#70) are next.
+Functions triggers (#70) are the v0.4 milestone.
 `packaging/` holds what the release workflow turns into the npm and pub.dev
 packages, the Homebrew formula and the container image.
 

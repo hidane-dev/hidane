@@ -104,6 +104,7 @@ impl Admin {
         .with_enterprise_edition(self.enterprise)
         .with_seeder(self.seeder.clone())
         .with_rules(Arc::clone(&self.rules))
+        .with_triggers(Arc::clone(&self.triggers))
     }
 
     pub fn new(store: Arc<dyn Store>) -> Self {
@@ -125,7 +126,8 @@ impl Admin {
         &self.rules
     }
 
-    /// The Firestore triggers the Functions emulator registered.
+    /// The Firestore triggers the Functions emulator registered, and where their events go
+    /// (`--functions_emulator`).
     pub fn triggers(&self) -> &triggers::Triggers {
         &self.triggers
     }

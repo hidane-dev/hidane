@@ -29,7 +29,7 @@ clap.workspace = true
 hidane-core.workspace = true
 hidane-proto.workspace = true
 hidane-rules.workspace = true
-hyper.workspace = true
+hyper = { workspace = true, features = ["client", "http1"] }
 hyper-util.workspace = true
 percent-encoding.workspace = true
 prost.workspace = true

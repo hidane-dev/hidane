@@ -218,18 +218,12 @@ fn status_line(port: u16, method: &str, path: &str, body: &str) -> String {
     response.lines().next().unwrap_or_default().to_owned()
 }
 
-/// What firebase-tools' Functions emulator sends for a v1 and a v2 Firestore trigger (#185),
-/// twice: each is accepted, and stderr says once that events are not delivered yet (#70).
+/// What firebase-tools' Functions emulator sends for a v1 and a v2 Firestore trigger (#185):
+/// each is accepted, silently. Without `--functions_emulator`, each event a write would send
+/// is a `WARNING` on standard error, worded as the official emulator's (#70).
 #[test]
-fn trigger_registrations_warn_once_that_events_are_not_delivered() {
-    let mut child = spawn(&[
-        "--host",
-        "127.0.0.1",
-        "--port",
-        "0",
-        "--functions_emulator",
-        "127.0.0.1:5001",
-    ]);
+fn trigger_events_without_a_functions_emulator_are_warnings() {
+    let mut child = spawn(&["--host", "127.0.0.1", "--port", "0"]);
     let port = port_from(&wait_for_banner(&mut child));
     let v1 = r#"{"eventTrigger":{"eventType":"providers/cloud.firestore/eventTypes/document.create","resource":"projects/demo-hidane/databases/(default)/documents/items/{id}","service":"firestore.googleapis.com"}}"#;
     let v2 = r#"{"eventType":"google.cloud.firestore.document.v1.created","database":"(default)","namespace":"(default)","document":{"value":"items/{id}","matchType":"PATH_PATTERN"}}"#;
@@ -243,14 +237,32 @@ fn trigger_registrations_warn_once_that_events_are_not_delivered() {
         assert_eq!(status_line(port, "PUT", &v1_path, v1), "HTTP/1.1 200 OK");
         assert_eq!(status_line(port, "POST", &v2_path, v2), "HTTP/1.1 200 OK");
     }
+    let document = "/v1/projects/demo-hidane/databases/(default)/documents/items/a";
+    assert_eq!(
+        status_line(port, "PATCH", document, r#"{"fields":{}}"#),
+        "HTTP/1.1 200 OK"
+    );
     signal(&child, "-INT");
     wait_with_timeout(&mut child, Duration::from_secs(4));
     let stderr = stderr_of(&mut child);
-    assert_eq!(
-        stderr
-            .matches("WARNING: Firestore triggers are accepted, but events are not delivered to the Functions emulator yet (https://github.com/hidane-dev/hidane/issues/70)")
-            .count(),
-        1,
-        "{stderr}"
-    );
+    let warnings: Vec<&str> = stderr
+        .lines()
+        .filter(|line| line.starts_with("WARNING: "))
+        .collect();
+    let v1 = |g| {
+        format!(
+            "WARNING: Failed to publish v1 event for trigger \
+             projects/demo-hidane/triggers/us-central1-v1created-{g} because Functions Emulator \
+             host/port is not configured."
+        )
+    };
+    let v2 = |g| {
+        format!(
+            "WARNING: Failed to publish v2 event for trigger \
+             projects/demo-hidane/eventarcTriggers/us-central1-v2created-{g} because Functions \
+             Emulator host/port is not configured."
+        )
+    };
+    // In the order of the official emulator's map of each version's triggers.
+    assert_eq!(warnings, [v1(0), v1(1), v2(1), v2(0)], "{stderr}");
 }

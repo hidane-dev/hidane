@@ -114,7 +114,33 @@ recordings ([parity.md](parity.md)).
 | P1 | firebase-js-sdk browser integration tests (Playwright) run against hidane (done: #74, `tools/js-sdk-browser/`) |
 | prerequisite | Listen / Write core designed transport-agnostic from v0.1 (ADR 0004) |
 
-## 5. Backlog
+## 5. v0.4 — functions
+
+**Goal**: Firestore-triggered Cloud Functions fire under `firebase emulators:start` with the
+Functions emulator, as they do with the official emulator.
+
+The Functions emulator registers its triggers (accepted since v0.2.3, #185), and every commit
+sends an event to each trigger that watches a document it changed (#70), recorded from the
+official emulator by `tools/oracle/function_events.py` and replayed by
+`crates/hidane/tests/function_events.rs`: v1 JSON events, v2 CloudEvents with `ce-*` headers and
+a `DocumentEventData` in protobuf (`withAuthContext` too), path patterns, named databases, batches,
+transactions, the Write stream, deleted paths and cleared databases, one event at a time in the
+background, the official emulator's order and `WARNING`s. Without `--functions_emulator`, each
+event is a `WARNING`. End to end, v1 and v2 functions receive the same data under `hidane exec`
+as with the official emulator (`results/functions-triggers-*.json`).
+
+| Priority | Item | Status |
+|---|---|---|
+| P1 | v1 events (`providers/cloud.firestore/eventTypes/document.*`): JSON, the documents before and after | Done (#70) |
+| P1 | v2 events (`google.cloud.firestore.document.v1.*`, `withAuthContext`): binary CloudEvents, `application/protobuf` in base64 | Done (#70) |
+| P1 | Matching: v1 resources, v2 `EXACT` and `PATH_PATTERN` documents, databases | Done (#70) |
+| P1 | Delivery: asynchronous and in order, the official emulator's timeouts and `WARNING`s | Done (#70) |
+
+Parity exceptions (#70): `ce-source` names the project once, a write that changes nothing and
+the delete of a missing document send no v2 event, `POST /reset` keeps the triggers, and a v2
+trigger without a database watches `(default)` ([parity-exceptions.md](parity-exceptions.md)).
+
+## 6. Backlog
 
 - Enterprise edition pipelines (`ExecutePipeline`, #80)
 - Datastore mode (`--database-mode datastore-mode`), `--index_file` / `--require_indexes` (#81)
@@ -124,13 +150,13 @@ recordings ([parity.md](parity.md)).
 
 The distribution channels and the license decision listed here before shipped in v0.1.0.
 
-## 6. Out of scope
+## 7. Out of scope
 
 - Realtime Database, Cloud Storage and Auth emulators (no maintained RTDB-compatible server has existed since 2021; a separate project's problem)
 - Production use. hidane is a local-development and CI emulator and must not be exposed without authentication (`SECURITY.md`)
 - Decompiling or reusing the official jar. Clean-room only: public protos, public docs, black-box observation
 
-## 7. Biggest risks (as of Phase 0)
+## 8. Biggest risks (as of Phase 0)
 
 1. **No Web support until v0.3.** Browser development is the most common local-development case and a gRPC-only v0.1 does nothing for it. Mitigation: pull REST unary into v0.1, keep the Listen / Write core transport-agnostic, and revisit the WebChannel timing in ADR 0004.
 2. **No supported replacement hook in firebase-tools.** The `java` shim works but is an awkward distribution story; an upstream PR may or may not be accepted.

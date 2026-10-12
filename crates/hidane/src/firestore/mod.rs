@@ -41,7 +41,7 @@ use hidane_core::{
     field_path::{FieldPath, Fields, project},
     key,
     path::ResourcePath,
-    store::{ListItem, ListOptions, ReadTime, Store, StoreError, StoredDocument},
+    store::{Change, ListItem, ListOptions, ReadTime, Store, StoreError, StoredDocument},
 };
 use hidane_proto::google::{
     firestore::v1::{
@@ -94,6 +94,8 @@ pub struct FirestoreService {
     seeder: Option<Arc<seed::Seeder>>,
     /// The Security Rules of each database (`:securityRules`, `--rules`).
     rules: Option<Arc<crate::rules::Rules>>,
+    /// The Functions emulator's Firestore triggers, which commits send events to.
+    triggers: Option<Arc<crate::triggers::Triggers>>,
 }
 
 impl FirestoreService {
@@ -109,6 +111,39 @@ impl FirestoreService {
     pub(crate) fn with_seeder(mut self, seeder: Option<Arc<seed::Seeder>>) -> Self {
         self.seeder = seeder;
         self
+    }
+
+    pub(crate) fn with_triggers(mut self, triggers: Arc<crate::triggers::Triggers>) -> Self {
+        self.triggers = Some(triggers);
+        self
+    }
+
+    /// Sends the events of a commit to `database` at `at` (`changes`, in the order `writes`
+    /// name their documents) to the triggers that watch them. Callers hold the database's
+    /// commit lock.
+    fn send_events(&self, database: &str, at: ReadTime, changes: &[Change], writes: &[Write]) {
+        let Some(triggers) = self.triggers.as_ref().filter(|t| t.watches(database)) else {
+            return;
+        };
+        let mut order: HashMap<&str, usize> = HashMap::new();
+        for (i, write) in writes.iter().enumerate() {
+            if let Some(name) = writes::target(write) {
+                order.entry(name).or_insert(i);
+            }
+        }
+        let mut ordered: Vec<(usize, &Change)> = changes
+            .iter()
+            .map(|change| {
+                let name = Name::document_name(database, &change.path);
+                (
+                    order.get(name.as_str()).copied().unwrap_or(usize::MAX),
+                    change,
+                )
+            })
+            .collect();
+        ordered.sort_by_key(|(i, _)| *i);
+        let ordered: Vec<&Change> = ordered.into_iter().map(|(_, change)| change).collect();
+        triggers.committed(database, at, &ordered);
     }
 
     pub(crate) fn with_rules(mut self, rules: Arc<crate::rules::Rules>) -> Self {
@@ -161,6 +196,7 @@ impl FirestoreService {
             enterprise: false,
             seeder: None,
             rules: None,
+            triggers: None,
         }
     }
 
@@ -262,7 +298,8 @@ impl FirestoreService {
             Ok(commit) => {
                 let commit_time = commit.commit_time;
                 // Called with the database's commit lock held, so listeners see commits in
-                // order (see `changes`).
+                // order (see `changes`), and so do triggers.
+                self.send_events(database, commit_time, &commit.changes, writes);
                 self.changes.publish(database, commit);
                 Ok((commit_time, results))
             }
