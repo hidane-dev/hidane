@@ -35,18 +35,24 @@ pub(crate) enum Val {
 }
 
 /// The keys `a.diff(b)` sorts out: in `a` only, in `b` only, in both with other values, in
-/// both with equal values.
+/// both with equal values; and every key with its status in the order the official emulator
+/// shows them, `b`'s keys first.
 #[derive(Debug)]
 pub(crate) struct MapDiff {
     pub added: Vec<String>,
     pub removed: Vec<String>,
     pub changed: Vec<String>,
     pub unchanged: Vec<String>,
+    pub statuses: Vec<(String, super::trace::KeyStatus)>,
 }
 
-/// An evaluation error, with the official emulator's text.
+/// An evaluation error, with the official emulator's text and, once known, the byte offset of
+/// the token the coverage report points it at (`super::interp`).
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub(crate) struct Error(pub String);
+pub(crate) struct Error {
+    pub message: String,
+    pub at: Option<usize>,
+}
 
 pub(crate) type R = Result<Val, Error>;
 
@@ -56,86 +62,102 @@ pub(crate) const MAX_SECONDS: i64 = 253_402_300_799;
 const MAX_DURATION_SECONDS: i128 = 315_576_000_000;
 
 impl Error {
+    pub fn new(message: impl Into<String>) -> Self {
+        Self {
+            message: message.into(),
+            at: None,
+        }
+    }
+
+    /// The error, placed at the token starting at byte `at` unless it already has a place. An
+    /// error without a message has none.
+    pub fn at(mut self, at: usize) -> Self {
+        if self.at.is_none() && !self.message.is_empty() {
+            self.at = Some(at);
+        }
+        self
+    }
+
     /// An error without a message: a comparison with a `constraint` that its filters do not
     /// imply. A denial shows it as `evaluation error at L5:22` (the condition's start).
     pub fn undecided() -> Self {
-        Self(String::new())
+        Self::new(String::new())
     }
 
     pub fn null() -> Self {
-        Self("Null value error.".to_owned())
+        Self::new("Null value error.".to_owned())
     }
 
     /// Indexing a path that holds a list's unknown document ID (`paths::UNKNOWN_ID`).
     pub fn unbound_template() -> Self {
-        Self("Variable  is not bound in path template.".to_owned())
+        Self::new("Variable  is not bound in path template.".to_owned())
     }
 
     pub fn property(name: &str) -> Self {
-        Self(format!("Property {name} is undefined on object."))
+        Self::new(format!("Property {name} is undefined on object."))
     }
 
     pub fn type_error(received: &str, expected: &str) -> Self {
-        Self(format!(
+        Self::new(format!(
             "Type error. Received: [{received}] Expected: [{expected}]."
         ))
     }
 
     pub fn unsupported(received: &str, expected: &[String]) -> Self {
-        Self(format!(
+        Self::new(format!(
             "Unsupported operation error. Received: {received}. Expected: {}.",
             expected.join(", ")
         ))
     }
 
     pub fn not_found(name: &str) -> Self {
-        Self(format!("Function not found error: Name: [{name}]."))
+        Self::new(format!("Function not found error: Name: [{name}]."))
     }
 
     pub fn arity(received: usize, expected: &[String]) -> Self {
-        Self(format!(
+        Self::new(format!(
             "Incorrect number of arguments. Received: {received}. Expected: {}.",
             expected.join(", ")
         ))
     }
 
     pub fn index(index: i64, size: usize) -> Self {
-        Self(format!(
+        Self::new(format!(
             "Index out of bound error. Index: [{index}] , size: [{size}]."
         ))
     }
 
     pub fn range(from: i64, to: i64) -> Self {
-        Self(format!(
+        Self::new(format!(
             "Illegal range error. From index: [{from}] , To index: [{to}]."
         ))
     }
 
     pub fn overflow() -> Self {
-        Self(
+        Self::new(
             "Integer value is out of the [-9223372036854775808, 9223372036854775807] range."
                 .to_owned(),
         )
     }
 
     pub fn divide_by_zero() -> Self {
-        Self("Divide by zero error.".to_owned())
+        Self::new("Divide by zero error.".to_owned())
     }
 
     pub fn conversion(argument: &str, from: &str, to: &str) -> Self {
-        Self(format!(
+        Self::new(format!(
             "Type conversion error. Argument: [{argument}], From type: [{from}], To type: [{to}]."
         ))
     }
 
     pub fn regex(pattern: &str) -> Self {
-        Self(format!(
+        Self::new(format!(
             "Invalid regular expression pattern. Pattern: {pattern}."
         ))
     }
 
     pub fn timestamp() -> Self {
-        Self(
+        Self::new(
             "Timestamp is not valid. Seconds must be in range [-62,135,596,800, \
              +253,402,300,799]. Nanos must be in range [0, +999,999,999]."
                 .to_owned(),
@@ -143,7 +165,7 @@ impl Error {
     }
 
     pub fn duration() -> Self {
-        Self(
+        Self::new(
             "Duration is not valid. Seconds must be in range [-315,576,000,000, \
              +315,576,000,000]. Nanos must be in range [-999,999,999, +999,999,999]. Nanos must \
              have the same sign as seconds."
@@ -161,7 +183,7 @@ impl Error {
             argument.push_str("\"\n  }\n");
         }
         argument.push_str("}\n");
-        Self(format!(
+        Self::new(format!(
             "Service call error. Function: [{function}], Argument: [{argument}]."
         ))
     }
@@ -576,7 +598,7 @@ mod tests {
     fn service_errors_print_the_path_as_text() {
         let path: Vec<String> = ["databases", "a\"b", "é"].map(String::from).to_vec();
         assert_eq!(
-            Error::service("get", &path).0,
+            Error::service("get", &path).message,
             "Service call error. Function: [get], Argument: [path_value {\n  segments {\n    \
              simple: \"databases\"\n  }\n  segments {\n    simple: \"a\\\"b\"\n  }\n  segments {\n    \
              simple: \"\\303\\251\"\n  }\n}\n]."

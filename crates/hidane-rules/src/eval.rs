@@ -15,19 +15,27 @@
 //!   but not inside lists and maps. Sets and map diffs compare numbers by value at any depth.
 //! - Strings are Java strings: sizes, indexes and slices count UTF-16 code units, `lower()` and
 //!   `upper()` change ASCII letters only, and regular expressions are RE2.
-//! - The arguments of a function are evaluated before the call, but an error in one only
-//!   matters if the function uses it; a `let` is evaluated when first used.
+//! - The arguments of a function, then its `let`s in order, are evaluated before its result,
+//!   but an error in one only matters if the function uses it.
 //!
 //! Each condition is evaluated once, so a denial lists each statement once; the official
 //! emulator evaluates again after an error and lists everything twice
 //! (`docs/parity-exceptions.md`).
+//!
+//! [`authorize_traced`] also reports what the official emulator logs and counts for its
+//! coverage report ([`Trace`]): each `debug()` value, and what each expression evaluated to.
 
 mod constraint;
 mod interp;
 mod library;
 mod list;
 mod time;
+mod trace;
 mod value;
+
+pub use constraint::Comparator;
+pub use trace::{KeyStatus, Observed, Outcome, Segment, Trace};
+pub(crate) use trace::{NodeKey, Traced, observe};
 
 use std::rc::Rc;
 
@@ -66,7 +74,7 @@ pub enum Value {
 /// order; where rules list keys in another order, the evaluator sorts.
 pub type Map = IndexMap<String, Value>;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Timestamp {
     pub seconds: i64,
     pub nanos: i32,
@@ -282,11 +290,34 @@ pub fn authorize(
     documents: &dyn Documents,
     budget: &mut Budget,
 ) -> Decision {
+    authorize_traced(
+        ruleset,
+        request,
+        resource,
+        documents,
+        budget,
+        &mut Trace::new(),
+    )
+}
+
+/// [`authorize`], reporting into `trace` what the conditions evaluated.
+///
+/// An upsert evaluates the statements of both methods, whichever applies, as the official
+/// emulator does: `create`'s until one allows, then `update`'s until one allows
+/// (`tools/oracle/rules_coverage.py`). Only those of the method that applies decide.
+pub fn authorize_traced(
+    ruleset: &Ruleset,
+    request: &Request,
+    resource: Option<&Document>,
+    documents: &dyn Documents,
+    budget: &mut Budget,
+    trace: &mut Trace,
+) -> Decision {
     let Some(service) = ruleset.service("cloud.firestore") else {
         return no_match();
     };
     if request.method == Method::List {
-        return list::authorize(ruleset, service, request, documents, budget);
+        return list::authorize(ruleset, service, request, documents, budget, trace);
     }
     let path: Vec<&str> = request.path.iter().map(String::as_str).collect();
     let coverings = crate::paths::covering(ruleset.version, service, &path);
@@ -309,26 +340,41 @@ pub fn authorize(
         target: &request.path,
         documents,
     };
-    let Err(mut entries) = context.decide(&applying, request.method, budget) else {
+    let Some((other, others)) = others else {
+        return match context.decide(&applying, request.method, budget, trace) {
+            Ok(()) => Decision::Allow,
+            Err(entries) => denied(&entries),
+        };
+    };
+    // `create`'s statements come first: before the decision when `update` applies.
+    let early = (other == Method::Create).then(|| {
+        let mut scratch = budget.clone();
+        let listed = context.listed(&others, other, &mut scratch, trace, true);
+        (listed, scratch)
+    });
+    let decided = context.decide(&applying, request.method, budget, trace);
+    let (listed, mut scratch) = match early {
+        Some(((listed, evaluated), scratch)) => (Some((listed, evaluated)), scratch),
+        None => (None, budget.clone()),
+    };
+    let Err(entries) = decided else {
+        if other == Method::Update {
+            context.listed(&others, other, &mut scratch, trace, true);
+        }
         return Decision::Allow;
     };
-    if let Some((other, statements)) = others {
-        let mut scratch = budget.clone();
-        let listed = statements.into_iter().map(|(allow, covering)| {
-            let Some(condition) = &allow.condition else {
-                return entry("false", other, allow.span.line);
-            };
-            let text = context
-                .evaluate(covering, condition, &mut scratch)
-                .err()
-                .unwrap_or_else(|| "false".to_owned());
-            entry(&text, other, condition.span.line)
-        });
-        entries = match other {
-            Method::Create => listed.chain(entries).collect(),
-            _ => entries.into_iter().chain(listed).collect(),
-        };
-    }
+    let listed = match listed {
+        Some((mut listed, evaluated)) => {
+            let rest = &others[evaluated..];
+            listed.extend(context.listed(rest, other, &mut scratch, trace, false).0);
+            listed
+        }
+        None => context.listed(&others, other, &mut scratch, trace, false).0,
+    };
+    let entries: Vec<String> = match other {
+        Method::Create => listed.into_iter().chain(entries).collect(),
+        _ => entries.into_iter().chain(listed).collect(),
+    };
     denied(&entries)
 }
 
@@ -385,13 +431,14 @@ impl Context<'_> {
         statements: &[(&ast::Allow, &Covering<'_>)],
         method: Method,
         budget: &mut Budget,
+        trace: &mut Trace,
     ) -> Result<(), Vec<String>> {
         let mut entries = Vec::with_capacity(statements.len());
         for (allow, covering) in statements {
             let Some(condition) = &allow.condition else {
                 return Ok(());
             };
-            let text = match self.evaluate(covering, condition, budget) {
+            let text = match self.evaluate(covering, condition, budget, trace) {
                 Ok(true) => return Ok(()),
                 Ok(false) => "false".to_owned(),
                 Err(e) => e,
@@ -401,12 +448,43 @@ impl Context<'_> {
         Err(entries)
     }
 
+    /// The entries of the statements of an upsert's method that does not apply: each `false`,
+    /// or its condition's error. With `until_allowed`, stops after one that would allow.
+    /// Returns the entries and how many statements were evaluated.
+    fn listed(
+        &self,
+        statements: &[(&ast::Allow, &Covering<'_>)],
+        method: Method,
+        budget: &mut Budget,
+        trace: &mut Trace,
+        until_allowed: bool,
+    ) -> (Vec<String>, usize) {
+        let mut entries = Vec::with_capacity(statements.len());
+        for (i, (allow, covering)) in statements.iter().enumerate() {
+            let (result, line) = match &allow.condition {
+                Some(condition) => (
+                    self.evaluate(covering, condition, budget, trace),
+                    condition.span.line,
+                ),
+                None => (Ok(true), allow.span.line),
+            };
+            let allowed = result == Ok(true);
+            let text = result.err().unwrap_or_else(|| "false".to_owned());
+            entries.push(entry(&text, method, line));
+            if until_allowed && allowed {
+                return (entries, i + 1);
+            }
+        }
+        (entries, statements.len())
+    }
+
     /// The condition of a statement at the end of `covering`: true, false or the error's text.
     fn evaluate(
         &self,
         covering: &Covering<'_>,
         condition: &ast::Expr,
         budget: &mut Budget,
+        trace: &mut Trace,
     ) -> Result<bool, String> {
         let mut interp = Interp::new(
             levels(self.ruleset, self.service, covering),
@@ -415,20 +493,22 @@ impl Context<'_> {
             self.target,
             self.documents,
             budget,
+            trace,
+            &self.ruleset.parens,
         );
         let frame = Frame::condition(covering.chain.len() + 1);
         interp
             .eval(condition, frame.scope())
             .and_then(interp::boolean)
             .map_err(|e| {
-                if e.0.is_empty() {
+                if e.message.is_empty() {
                     // Undecided: the official emulator names the condition's start.
                     format!(
                         "evaluation error at L{}:{}",
                         condition.span.line, condition.span.column
                     )
                 } else {
-                    e.0
+                    e.message
                 }
             })
     }

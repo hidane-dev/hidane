@@ -3,6 +3,8 @@
 //! Every node keeps its [`Span`]. A ruleset only exists when its file compiled, so nothing in
 //! it is an error placeholder.
 
+use std::collections::HashMap;
+
 /// Where a node is: byte offsets into its file (end exclusive) and the line and column
 /// (1-based, in code points) of its start, as the official emulator prints them
 /// (`evaluation error at L5:22`).
@@ -29,6 +31,10 @@ pub struct Ruleset {
     /// Functions declared at the top level, outside any service.
     pub functions: Vec<Function>,
     pub services: Vec<Service>,
+    /// The outermost opening parenthesis around each parenthesized expression, by the
+    /// expression's byte range. The AST leaves parentheses out; the coverage report and the
+    /// positions of evaluation errors count an expression from its parenthesis.
+    pub parens: HashMap<(usize, usize), Span>,
 }
 
 impl Ruleset {
@@ -162,6 +168,8 @@ pub struct Function {
 pub struct Let {
     pub name: Ident,
     pub value: Expr,
+    /// The `let` keyword.
+    pub span: Span,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -234,6 +242,8 @@ pub enum ExprKind {
     /// `condition ? then : otherwise`.
     Ternary {
         condition: Box<Expr>,
+        /// The `?` token.
+        question: Span,
         then: Box<Expr>,
         otherwise: Box<Expr>,
     },

@@ -945,7 +945,7 @@ impl Parser<'_> {
 
     /// `let name = value;`.
     fn let_binding(&mut self) -> Let {
-        self.bump();
+        let span = Self::span_of(self.bump());
         let name = if self.la(1) == Tok::Ident {
             self.ident()
         } else {
@@ -968,7 +968,7 @@ impl Parser<'_> {
             self.missing_operand(EXPRESSION_START)
         };
         let _ = self.expect(Tok::Semi, |t| matches!(t, Tok::Let | Tok::Return));
-        Let { name, value }
+        Let { name, value, span }
     }
 
     // ----- expressions
@@ -1019,7 +1019,7 @@ impl Parser<'_> {
         if self.abort || self.la(1) != Tok::Question {
             return condition;
         }
-        self.bump();
+        let question = Self::span_of(self.bump());
         // Unlike CEL, the branch may itself be a conditional without parentheses.
         let then = self.expression();
         if self.la(1) == Tok::Colon {
@@ -1042,6 +1042,7 @@ impl Parser<'_> {
         Expr {
             kind: ExprKind::Ternary {
                 condition: Box::new(condition),
+                question,
                 then: Box::new(then),
                 otherwise: Box::new(otherwise),
             },
@@ -1759,6 +1760,7 @@ mod tests {
                 condition,
                 then,
                 otherwise,
+                ..
             } => {
                 format!(
                     "({} ? {} : {})",

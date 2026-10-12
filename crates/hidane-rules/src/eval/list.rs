@@ -20,7 +20,7 @@ use std::rc::Rc;
 use indexmap::IndexMap;
 
 use super::{
-    Budget, Context, Decision, Documents, Filter, FilterOp, Method, Request, Value,
+    Budget, Context, Decision, Documents, Filter, FilterOp, Method, Request, Trace, Value,
     constraint::{Comparator, Simple},
     denied, no_match, request_value, statements,
     value::{self, Val},
@@ -56,6 +56,7 @@ pub(super) fn authorize(
     request: &Request,
     documents: &dyn Documents,
     budget: &mut Budget,
+    trace: &mut Trace,
 ) -> Decision {
     let query = request.query.clone().unwrap_or_default();
     let Some(ways) = ways(query.filter.as_ref()) else {
@@ -73,7 +74,7 @@ pub(super) fn authorize(
                     ..request.clone()
                 };
                 decide(
-                    ruleset, service, &shown, &parts, resource, documents, budget,
+                    ruleset, service, &shown, &parts, resource, documents, budget, trace,
                 )
             }
             Way::Fields(fields) => {
@@ -90,7 +91,7 @@ pub(super) fn authorize(
                 resource.insert("data".to_owned(), data(&fields));
                 let resource = Val::Map(Rc::new(resource));
                 decide(
-                    ruleset, service, request, &parts, resource, documents, budget,
+                    ruleset, service, request, &parts, resource, documents, budget, trace,
                 )
             }
         };
@@ -105,6 +106,7 @@ pub(super) fn authorize(
 }
 
 /// One way, decided by the statements covering `parts`: `Err(None)` when none does.
+#[allow(clippy::too_many_arguments)]
 fn decide(
     ruleset: &Ruleset,
     service: &ast::Service,
@@ -113,6 +115,7 @@ fn decide(
     resource: Val,
     documents: &dyn Documents,
     budget: &mut Budget,
+    trace: &mut Trace,
 ) -> Result<(), Option<Vec<String>>> {
     let coverings = covering_parts(ruleset.version, service, parts);
     let applying = statements(&coverings, Method::List);
@@ -135,7 +138,7 @@ fn decide(
         documents,
     };
     context
-        .decide(&applying, Method::List, budget)
+        .decide(&applying, Method::List, budget, trace)
         .map_err(Some)
 }
 

@@ -7,11 +7,15 @@ use indexmap::IndexMap;
 use super::{
     Budget, Documents, constraint,
     library::{self, to_string},
+    trace::{NodeKey, Trace, observe},
     value::{
         Error, R, Val, contains, eq, loose_eq, read, resource, strict_eq, utf16_cmp, utf16_len,
     },
 };
-use crate::ast::{BinaryOp, Callee, Expr, ExprKind, Function, PathPart, UnaryOp};
+use crate::{
+    ast::{BinaryOp, Callee, Expr, ExprKind, Function, PathPart, Span, UnaryOp},
+    coverage,
+};
 
 /// Where names resolve: level 0 is the top of the file, 1 the service, then each `match` from
 /// the outermost to the one whose `allow` is evaluated.
@@ -31,6 +35,10 @@ pub(crate) struct Interp<'a> {
     target: &'a [String],
     documents: &'a dyn Documents,
     budget: &'a mut Budget,
+    /// What `debug()` received and, when traced, what each expression evaluated to.
+    trace: &'a mut Trace,
+    /// The ruleset's parenthesized expressions (`Ruleset::parens`).
+    parens: &'a HashMap<(usize, usize), Span>,
     /// Documents looked up by this evaluation, before (`false`) or after (`true`) the writes.
     cache: HashMap<(bool, Vec<String>), Option<Val>>,
     /// Compiled patterns, by whether they must match the whole string and their text.
@@ -47,7 +55,7 @@ pub(crate) struct Frame<'a> {
 
 struct Local<'a> {
     name: &'a str,
-    /// A `let`'s expression, evaluated when first used.
+    /// A `let`'s expression, evaluated in order before the function's result.
     expr: Option<&'a Expr>,
     value: OnceCell<R>,
 }
@@ -85,6 +93,7 @@ impl<'a> Frame<'a> {
 }
 
 impl<'a> Interp<'a> {
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         levels: Vec<Level<'a>>,
         request: Val,
@@ -92,6 +101,8 @@ impl<'a> Interp<'a> {
         target: &'a [String],
         documents: &'a dyn Documents,
         budget: &'a mut Budget,
+        trace: &'a mut Trace,
+        parens: &'a HashMap<(usize, usize), Span>,
     ) -> Self {
         Self {
             levels,
@@ -100,6 +111,8 @@ impl<'a> Interp<'a> {
             target,
             documents,
             budget,
+            trace,
+            parens,
             cache: HashMap::new(),
             regexes: HashMap::new(),
             depth: 0,
@@ -137,7 +150,39 @@ impl<'a> Interp<'a> {
         };
         let result = step(self, e, s);
         self.depth -= 1;
+        if result.is_err() || self.trace.tracing() {
+            return self.finish(e, result);
+        }
         result
+    }
+
+    /// Places an error `e` raised that its step did not place (a member, an index, a method
+    /// that does not exist, `in`, a variable) at its first token, and traces the result.
+    #[inline(never)]
+    fn finish(&mut self, e: &Expr, result: R) -> R {
+        let result = result.map_err(|err| err.at(self.start(e)));
+        if self.trace.tracing() && coverage::is_node(e) {
+            self.trace.record(NodeKey::of(e), &result);
+        }
+        result
+    }
+
+    /// Where the coverage report starts `e`: its first token, or the outermost parenthesis
+    /// before it.
+    fn start(&self, e: &Expr) -> usize {
+        coverage::start(self.parens, e).start
+    }
+
+    /// Reports `e` and every expression in it as not evaluated.
+    fn skip(&mut self, e: &Expr) {
+        if self.trace.tracing() {
+            coverage::walk(e, &mut |node| self.trace.skip(NodeKey::of(node)));
+        }
+    }
+
+    /// `debug(value)`.
+    pub fn debug(&mut self, value: &Val) {
+        self.trace.debug.push(observe(value));
     }
 
     fn variable_of(&mut self, e: &'a Expr, s: Scope<'_, 'a>) -> R {
@@ -181,7 +226,9 @@ impl<'a> Interp<'a> {
         for (k, v) in entries {
             let key = match self.eval(k, s)? {
                 Val::Str(key) => key,
-                other => return Err(Error::type_error(other.type_name(), "string")),
+                other => {
+                    return Err(Error::type_error(other.type_name(), "string").at(self.start(k)));
+                }
             };
             let value = self.eval(v, s)?;
             out.insert(key.to_string(), value);
@@ -220,7 +267,7 @@ impl<'a> Interp<'a> {
         let ExprKind::Unary { op, operand } = &e.kind else {
             unreachable!()
         };
-        match op {
+        let result = match op {
             UnaryOp::Not => match self.eval(operand, s)? {
                 Val::Bool(b) => Ok(Val::Bool(!b)),
                 other => Err(not(&other)),
@@ -235,19 +282,28 @@ impl<'a> Interp<'a> {
                 }
                 negate(self.eval(operand, s)?)
             }
-        }
+        };
+        // At the operator.
+        result.map_err(|err| err.at(e.span.start))
     }
 
     fn binary(&mut self, e: &'a Expr, s: Scope<'_, 'a>) -> R {
         let ExprKind::Binary {
-            op, left, right, ..
+            op,
+            op_span,
+            left,
+            right,
         } = &e.kind
         else {
             unreachable!()
         };
         let l = self.eval(left, s)?;
         let r = self.eval(right, s)?;
-        binary(*op, &l, &r)
+        // At the operator, but `in` at the expression's start.
+        binary(*op, &l, &r).map_err(|err| match op {
+            BinaryOp::In => err,
+            _ => err.at(op_span.start),
+        })
     }
 
     fn is(&mut self, e: &'a Expr, s: Scope<'_, 'a>) -> R {
@@ -261,6 +317,7 @@ impl<'a> Interp<'a> {
     fn ternary(&mut self, e: &'a Expr, s: Scope<'_, 'a>) -> R {
         let ExprKind::Ternary {
             condition,
+            question,
             then,
             otherwise,
         } = &e.kind
@@ -268,18 +325,29 @@ impl<'a> Interp<'a> {
             unreachable!()
         };
         match self.eval(condition, s)? {
-            Val::Bool(true) => self.eval(then, s),
-            Val::Bool(false) => self.eval(otherwise, s),
-            other => Err(Error::type_error(other.type_name(), "bool")),
+            Val::Bool(true) => {
+                let result = self.eval(then, s);
+                self.skip(otherwise);
+                result
+            }
+            Val::Bool(false) => {
+                self.skip(then);
+                self.eval(otherwise, s)
+            }
+            other => Err(Error::type_error(other.type_name(), "bool").at(question.start)),
         }
     }
 
     /// `&&` and `||` absorb an error when the other side decides, as CEL does: `false && error`
     /// and `error && false` are false, `true || error` and `error || true` are true. A value
-    /// that is not a bool is an error like any other.
+    /// that is not a bool is an error like any other: on the left at the operator, on the right
+    /// at the expression's start.
     fn logical(&mut self, e: &'a Expr, s: Scope<'_, 'a>) -> R {
         let ExprKind::Binary {
-            op, left, right, ..
+            op,
+            op_span,
+            left,
+            right,
         } = &e.kind
         else {
             unreachable!()
@@ -287,9 +355,12 @@ impl<'a> Interp<'a> {
         let and = *op == BinaryOp::And;
         // `and` is the value that leaves the result to the other side.
         let error = match self.eval(left, s) {
-            Ok(Val::Bool(l)) if l != and => return Ok(Val::Bool(l)),
+            Ok(Val::Bool(l)) if l != and => {
+                self.skip(right);
+                return Ok(Val::Bool(l));
+            }
             Ok(Val::Bool(_)) => return self.eval(right, s).and_then(boolean).map(Val::Bool),
-            Ok(other) => not_bool(&other),
+            Ok(other) => not_bool(&other).at(op_span.start),
             Err(e) => e,
         };
         match self.eval(right, s) {
@@ -341,37 +412,42 @@ impl<'a> Interp<'a> {
         })
     }
 
+    /// A call. Its errors are at the function's name, but a method the value does not have is
+    /// at the expression's start.
     fn call(&mut self, callee: &'a Callee, args: &'a [Expr], s: Scope<'_, 'a>) -> R {
         match callee {
             // A function that does not exist fails before its arguments are evaluated.
             Callee::Global(name) => {
+                let at = |err: Error| err.at(name.span.start);
                 if let Some((f, level)) = self.function(s.frame.level, &name.name) {
-                    return self.call_function(f, level, args, s);
+                    return self.call_function(f, level, args, s).map_err(at);
                 }
                 if !library::is_global(&name.name) {
-                    return Err(Error::not_found(&name.name));
+                    return Err(at(Error::not_found(&name.name)));
                 }
                 let args = self.args(args, s)?;
-                library::global(self, &name.name, args)
+                library::global(self, &name.name, args).map_err(at)
             }
             Callee::Namespaced { namespace, name } => {
+                let at = |err: Error| err.at(name.span.start);
                 let full = format!("{}.{}", namespace.name, name.name);
                 if !library::is_namespaced(&full) {
-                    return Err(Error::not_found(&full));
+                    return Err(at(Error::not_found(&full)));
                 }
                 let args = self.args(args, s)?;
-                library::namespaced(&full, args)
+                library::namespaced(&full, args).map_err(at)
             }
             Callee::Method { receiver, name } => {
+                let at = |err: Error| err.at(name.span.start);
                 let receiver = self.eval(receiver, s)?;
                 if let Val::Null = receiver {
-                    return Err(Error::null());
+                    return Err(at(Error::null()));
                 }
                 if !library::has_method(receiver.type_name(), &name.name) {
                     return Err(Error::not_found(&name.name));
                 }
                 let args = self.args(args, s)?;
-                library::method(self, &receiver, &name.name, args)
+                library::method(self, &receiver, &name.name, args).map_err(at)
             }
         }
     }
@@ -380,8 +456,9 @@ impl<'a> Interp<'a> {
         args.iter().map(|a| self.eval(a, s)).collect()
     }
 
-    /// A call of a function of the ruleset. Its arguments are evaluated first, but an error in
-    /// one only counts if the function uses it; its `let`s are evaluated when first used.
+    /// A call of a function of the ruleset. Its arguments, then its `let`s in order, are
+    /// evaluated before its result (the official emulator logs a `debug()` in a `let` that is
+    /// not used), but an error in one only counts if the function uses it.
     fn call_function(
         &mut self,
         f: &'a Function,
@@ -397,7 +474,7 @@ impl<'a> Interp<'a> {
             ));
         }
         if self.calls >= MAX_CALL_DEPTH {
-            return Err(Error(format!(
+            return Err(Error::new(format!(
                 "Maximum allowed call depth of {MAX_CALL_DEPTH} is reached."
             )));
         }
@@ -418,8 +495,26 @@ impl<'a> Interp<'a> {
         }
         let frame = Frame { level, locals };
         self.calls += 1;
+        for (i, local) in frame.locals.iter().enumerate().skip(f.params.len()) {
+            if let Some(expr) = local.expr
+                && local.value.get().is_none()
+            {
+                let v = self.eval(
+                    expr,
+                    Scope {
+                        frame: &frame,
+                        visible: i,
+                    },
+                );
+                let _ = local.value.set(v);
+            }
+        }
         let result = self.eval(&f.result, frame.scope());
         self.calls -= 1;
+        // The body from each `let` on, in the coverage report, has the function's result.
+        for l in &f.lets {
+            self.trace.record(NodeKey::Body(l.span.start), &result);
+        }
         result
     }
 
@@ -432,7 +527,7 @@ impl<'a> Interp<'a> {
                 PathPart::Segment(text) => segments.push(url_decode(text)),
                 PathPart::Expr(e) => match self.eval(e, s)? {
                     Val::Path(p) => segments.extend(p.iter().cloned()),
-                    v => segments.push(to_string(&v)?),
+                    v => segments.push(to_string(&v).map_err(|err| err.at(self.start(e)))?),
                 },
             }
         }
@@ -499,7 +594,7 @@ impl<'a> Interp<'a> {
 
 #[cold]
 fn too_complex() -> Error {
-    Error("Expression is too complex to evaluate safely.".to_owned())
+    Error::new("Expression is too complex to evaluate safely.".to_owned())
 }
 
 /// A literal: null, a bool, a number, a string or bytes.

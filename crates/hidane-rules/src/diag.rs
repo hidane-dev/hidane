@@ -12,7 +12,7 @@ pub enum Severity {
 /// Where an issue is, as the official emulator reports it: line and column are 1-based, the
 /// offsets count code points from the start of the file, and `end_offset` is the last code
 /// point of the span (inclusive).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Position {
     pub line: u32,
     pub column: u32,
