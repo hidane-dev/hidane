@@ -1152,7 +1152,7 @@ impl Parser<'_> {
 
     /// `value is type`. An unknown type is the grammar's error, reported at the token after it.
     fn is(&mut self, value: Expr) -> Expr {
-        self.bump();
+        let keyword = Self::span_of(self.bump());
         let type_token = self.token(1);
         let type_name = match self.la(1) {
             Tok::Ident => {
@@ -1184,6 +1184,7 @@ impl Parser<'_> {
         Expr {
             kind: ExprKind::Is {
                 value: Box::new(value),
+                keyword,
                 type_name: Ident {
                     name: type_name,
                     span: Self::span_of(type_token),
@@ -1753,7 +1754,9 @@ mod tests {
             } => {
                 format!("({} {op:?} {})", shape(left), shape(right))
             }
-            ExprKind::Is { value, type_name } => {
+            ExprKind::Is {
+                value, type_name, ..
+            } => {
                 format!("({} is {})", shape(value), type_name.name)
             }
             ExprKind::Ternary {

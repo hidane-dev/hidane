@@ -97,7 +97,7 @@ It is the parity target, and it is not CEL:
 |---|---|
 | 130 of the 578 cel-spec cases do not compile, all for lexical reasons: no exponents or hex in numbers; no raw or triple-quoted strings; no `\a` `\v` `\?` `` \` `` `\e` `\X` `\U` escapes; no raw control characters in a string; `--` is a token | `cel/…` with `outcome: compile` |
 | A function or method that does not exist (CEL's `size(x)`, `startsWith`, `endsWith`, `contains`, `bool()`, any unknown `f()`) compiles with a warning, `Invalid function name: f.`, and fails when evaluated. An unused function is a warning too | `cel/…` with `outcome: error`; `:securityRules` answers `200` with `issues[]` |
-| Types are checked when the condition runs, not before. `'1' == 1` and `null == false` are false; `[1] + [2]`, `true < false`, `7 in {}` and a map literal with int keys are errors; `false && 32` is false. The one static check found: a regex literal that does not compile is a compile error | `rules/…`, `cel/…`, `heldout/…` |
+| Types are checked when the condition runs, not before. `'1' == 1` and `null == false` are false; `[1] + [2]`, `true < false`, `7 in {}` and a map literal with int keys are errors; `false && 32` is false. The one static check that fails a compilation: a regex literal that does not compile. The compiler's type checker only warns (#60) | `rules/…`, `cel/…`, `heldout/…` |
 | 6 cel-spec cases evaluate differently: `matches` is a full match, and `[1] == [1.0]` is false although `1 == 1.0` is true. `1 in [1.0]` is false too, and `int()` of an out-of-range double has no range error | `cel/string/matches/…`, `rules/…` |
 | Rules adds `is`, path literals with `$( )`, slices `[i:j]`, string indexing and mixed int / float arithmetic | `rules/…` |
 | Errors are absorbed the CEL way, whatever they come from: `error \|\| true` and `true \|\| error` allow, `error && false` and `false && error` are false, `error \|\| false` denies. Missing fields, a null `request.auth`, `request.path[10]`, `int('abc')`, division by zero and integer overflow all behave so | `heldout/…` (error absorption), `rules/…` (missing fields and errors) |
@@ -175,8 +175,13 @@ emulator's `debug()` output shows its representation):
 - #59 (parser and diagnostics) follows the spike's lexer and parser: Rules lexical rules as
   measured, byte offsets on every node, `--` / `++` tokens, path literals, `is`, slices
 - #60 (types and built-ins) checks types when a condition runs. At compile time it reports
-  regex literals that do not compile (an error) and unknown or unused functions (warnings), as
-  the official emulator does
+  regex literals that do not compile (an error), and unknown or unused functions and the
+  official type checker's findings (warnings), as the official emulator does: each expression
+  has the types of what it is (an operator's or a function's results, a wildcard's), each
+  operand, receiver and argument is expected to have some types, parameters and `let`s take the
+  types their uses expect, and each call of a ruleset function checks its arguments against
+  them. Measured with [`tools/oracle/rules_warnings.py`](../../tools/oracle/rules_warnings.py)
+  (`crates/hidane-rules/src/check.rs` describes the rules)
 - #62: errors are absorbed the CEL way, as on the official emulator, and every condition is
   evaluated once (#6252 is not reproduced)
 - `spikes/rules-eval/cases/` and `results/rules-conditions-official-v1.22.0.json` become fixtures

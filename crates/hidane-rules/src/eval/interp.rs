@@ -330,7 +330,10 @@ impl<'a> Interp<'a> {
     }
 
     fn is(&mut self, e: &'a Expr, s: Scope<'_, 'a>) -> R {
-        let ExprKind::Is { value, type_name } = &e.kind else {
+        let ExprKind::Is {
+            value, type_name, ..
+        } = &e.kind
+        else {
             unreachable!()
         };
         let v = self.eval(value, s)?;

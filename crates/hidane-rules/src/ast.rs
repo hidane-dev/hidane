@@ -237,6 +237,8 @@ pub enum ExprKind {
     /// `value is type`.
     Is {
         value: Box<Expr>,
+        /// The `is` token.
+        keyword: Span,
         type_name: Ident,
     },
     /// `condition ? then : otherwise`.
