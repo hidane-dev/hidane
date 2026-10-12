@@ -16,9 +16,9 @@ commit has another problem. Each case reads the document back.
 
 firebase-js-sdk's transaction tests send such commits (a delete then an update of one document
 must fail with `invalid-argument`). The Write stream answers the same (checked with a web SDK
-batch in Node). Of two problems in one commit, a value the official emulator refuses (a nested
-array) is reported after the sequence; hidane checks a write's values with its names, so it
-reports the value first. Stdlib only.
+batch in Node). Of two problems in one commit, the official emulator reports a nested array or a
+transform path that does not parse in another order than hidane (#202), so no case here has
+one. Stdlib only.
 """
 
 import json

@@ -49,9 +49,9 @@ emulator again, start the jar with an English locale (see `tools/oracle/README.m
 - **`cleanup.ts`.** Without it the suite is not green against either emulator, and its failures
   depend on timing. Some tests leave their Firestore instances running (they were written against
   production, where it costs nothing), and one loses track of an instance it starts. Against an
-  emulator, each running instance holds two of the six HTTP/1.1 connections Chromium opens to
-  one host and port (its Listen and Write streams), so after three of them every test that needs
-  a new connection waits until it times out. Run unchanged against the official emulator, the
-  suite had failed tests in 9 of its first 15 files when it was stopped after 54 minutes. The
-  setup file terminates, after each test, every Firestore instance the test created; it changes
-  no test.
+  emulator, each running instance holds two of the six HTTP/1.1 connections Chromium opens to one
+  host and port (its Listen and Write streams), so after three of them every test that needs a new
+  connection waits until it times out. Run unchanged against the official emulator, 108 of the
+  first 977 tests had failed, nearly all by timing out, when the run was stopped after 47 minutes;
+  `database.test.ts` alone fails three tests on either emulator. The setup file terminates, after
+  each test, every Firestore instance the test created; it changes no test.
