@@ -1,3 +1,7 @@
+## 0.2.2
+
+- Downloads hidane 0.2.2.
+
 ## 0.2.1
 
 - Downloads hidane 0.2.1.
