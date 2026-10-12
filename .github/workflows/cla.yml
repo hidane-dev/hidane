@@ -1,0 +1,54 @@
+name: CLA
+
+# Every author of a pull request's commits must have agreed to the hidane Individual CLA, or be a
+# Designated Contributor under a Corporate CLA (docs/cla/README.md). `.github/cla/check.sh` sets
+# the `cla` commit status on the pull request's head, which the main branch requires, keeps one
+# comment on the pull request up to date, and records agreements on the `cla-signatures` branch.
+#
+# It runs in the base repository (`pull_request_target`, so that pull requests from forks get a
+# token that can set the status), reads only the pull request's metadata through the API, and
+# never checks out or runs the pull request's code: the script and the agreement come from the
+# default branch.
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+  issue_comment:
+    types: [created]
+
+permissions: {}
+
+concurrency:
+  group: cla-${{ github.event.pull_request.number || github.event.issue.number }}
+
+jobs:
+  check:
+    name: CLA agreement
+    if: >-
+      github.event_name == 'pull_request_target' ||
+      (github.event.issue.pull_request &&
+        (startsWith(github.event.comment.body, 'I have read the hidane') || github.event.comment.body == 'recheck'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # the cla-signatures branch
+      issues: write # the comment on the pull request
+      pull-requests: write # the comment, when GitHub counts it as a pull request comment
+      statuses: write # the cla status
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: |
+            .github/cla
+            docs/cla
+      - name: Check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number || github.event.issue.number }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENTER_LOGIN: ${{ github.event.comment.user.login }}
+          COMMENTER_ID: ${{ github.event.comment.user.id }}
+          COMMENT_URL: ${{ github.event.comment.html_url }}
+        run: bash .github/cla/check.sh

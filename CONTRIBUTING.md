@@ -64,11 +64,33 @@ docs: describe import/export directory layout
 - Leave `packaging/` and the release workflow alone unless the issue is about
   distribution.
 
-## DCO / CLA
+## Contributor License Agreement
 
-No Developer Certificate of Origin sign-off and no Contributor License
-Agreement are required. By contributing you agree that your contribution is
-licensed under the project license below.
+Contributions are accepted under the hidane Contributor License Agreement
+(CLA). **You keep the copyright in your contribution.** The CLA gives the
+project a license to use, modify, distribute, sublicense and relicense it,
+including under terms other than `MIT OR Apache-2.0` (for example a commercial
+edition), and lets the project pass those rights on if it moves to a company
+or a new owner. Your contribution as you submitted it stays licensed under
+`MIT OR Apache-2.0`, and the patent license is like Apache-2.0's. Why the
+project asks for this, what each side keeps and how agreements are recorded:
+[docs/cla](docs/cla/README.md).
+
+- **Individual CLA** ([text](docs/cla/individual.md)): for what you contribute
+  on your own behalf. On your first pull request the `cla` check fails and a
+  comment asks each author of its commits to agree, by posting
+  `I have read the hidane Individual CLA 1.0 and I agree to it.` on the pull
+  request. Once you have agreed, later pull requests pass without asking again.
+- **Corporate CLA** ([text](docs/cla/corporate.md)): for what employees or
+  contractors contribute as part of their work for a company. The company
+  signs it once and names the GitHub accounts it covers; open an issue titled
+  "Corporate CLA" to start. If your employer has rights in what you write,
+  check with them before agreeing to the Individual CLA.
+
+A pull request is merged only when the `cla` check passes. Author your commits
+with an email address linked to your GitHub account, so the check can tell who
+wrote them. If a commit has human co-authors (`Co-authored-by:`), each of them
+must have agreed as well.
 
 ## License
 
@@ -78,7 +100,8 @@ or the [MIT License](./LICENSE-MIT), at your option.
 Unless you explicitly state otherwise, any contribution intentionally
 submitted for inclusion in the work by you, as defined in the Apache-2.0
 license, shall be dual licensed as above, without any additional terms or
-conditions.
+conditions. Separately, its author licenses it to the project under the
+[Contributor License Agreement](#contributor-license-agreement).
 
 ## Security issues
 
