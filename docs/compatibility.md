@@ -30,7 +30,11 @@ So with v0.1 (gRPC only) the server-side SDKs, the mobile SDKs and Node-based te
 Browser apps need WebChannel as well as REST, because the Web SDK does almost everything over
 WebChannel. `main` serves both: listeners, writes, queries, batches, long polling and mock tokens
 from Chromium give the same results on hidane as on the official emulator
-(`results/browser-webchannel-*.json`).
+(`results/browser-webchannel-*.json`). Under Security Rules, `@firebase/rules-unit-testing` suites
+pass the same way in Chromium and in Node: the same assertions pass, with the same error codes
+(`results/browser-rules-*.json`, `results/sdk-rules-unit-testing-*.json`). Denial messages give
+the reasons of one evaluation, where the official emulator's also give those of its first pass
+and, for a batch, of the writes checked before the denied one ([parity-exceptions.md](parity-exceptions.md)).
 
 ## How each client finds the emulator
 

@@ -95,6 +95,15 @@ with listeners attached; its transcripts are in `results/sdk-clear-*.json`.
 user, with rules disabled (`Bearer owner` from the web SDK) and through the Admin SDK; its
 transcripts are in `results/sdk-auth-*.json`.
 
+`sdk_rules_unit_testing.mjs` runs a rules-unit-testing suite under Security Rules
+(`initializeTestEnvironment` with a ruleset that reads `request.auth` and its claims,
+`resource.data`, `request.resource.data` and a `get()` lookup, and a list rule): `assertSucceeds` /
+`assertFails` for a signed-in user, a signed-out user and `withSecurityRulesDisabled`, on gets,
+lists, listeners, creates, updates, deletes, batches and transactions, then `clearFirestore()`.
+It prints which assertions passed with each error's code and message, and the versions of
+`firebase` and `@firebase/rules-unit-testing` (`npm i firebase @firebase/rules-unit-testing`); its
+transcripts are in `results/sdk-rules-unit-testing-*.json`.
+
 `sdk_export_import.mjs` writes documents of every kind through the Admin SDK under
 `firebase emulators:exec --export-on-exit` and reads them back under `--import`. Writing with one
 emulator and reading with the other shows that each reads the other's exports; its transcripts
@@ -109,7 +118,11 @@ with `GOAWAY`; its output is in `results/keepalive-*.txt`.
 
 `webchannel/page.js` runs firebase-js-sdk scenarios in a browser (listeners, writes, queries,
 batches, long polling, mock tokens, a refused write); its transcripts are in
-`results/browser-webchannel-*.json`. `webchannel/tap.py` records the wire between a browser and an
+`results/browser-webchannel-*.json`. `webchannel/rules_page.js` runs the steps of
+`sdk_rules_unit_testing.mjs` in a browser (it imports them; its header says how to bundle it), where
+the contexts' tokens travel in the handshake's `headers` field, a denied write ends the Write
+stream and a denied listener's target is removed with a cause; its transcripts are in
+`results/browser-rules-*.json`. `webchannel/tap.py` records the wire between a browser and an
 emulator, which is how `docs/webchannel.md` was written.
 
 `sdk_rest.mjs` drives the REST surface through the web SDK's Lite build (`firebase/firestore/lite`);
