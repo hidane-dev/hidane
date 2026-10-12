@@ -15,6 +15,10 @@
 //!   `PERMISSION_DENIED`. Every write of a commit is checked after all of them were applied,
 //!   so `getAfter()` sees the whole batch; one denied write denies the commit.
 //! - A denial is `PERMISSION_DENIED` with the evaluator's message.
+//! - `request` holds every key the official emulator's does (`hidane_rules::eval::Request`):
+//!   `inTransaction` for every write and for a read of documents in a transaction begun before
+//!   it, `writeFields` and `transforms` from the write, and for a `CreateDocument` without a
+//!   document ID, `autoId`, decided on the collection's path.
 //!
 //! Each decision is counted in the ruleset's coverage report, and the values of its `debug()`
 //! calls are printed (`crate::rules`).

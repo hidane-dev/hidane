@@ -10,7 +10,8 @@
 //!
 //! Both leave out the time each request was made, `request.time`: `debug()`'s lines for it,
 //! and in a coverage report its value in each value of `request`, whose values that then
-//! become equal count as one.
+//! become equal count as one. A transaction the official emulator began is named by hidane's
+//! ID for it in the steps after.
 //!
 //! A case marked `differs` is one where hidane intentionally does not do what the official
 //! emulator does (`docs/parity-exceptions.md`): only its statuses are compared.
