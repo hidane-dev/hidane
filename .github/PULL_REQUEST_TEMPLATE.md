@@ -20,7 +20,7 @@ emulator? Pick one and explain. -->
 ## Checklist
 
 - [ ] An issue was opened and discussed before this PR
-- [ ] Every author of these commits has agreed to the [CLA](https://github.com/hidane-dev/hidane/blob/main/docs/cla/README.md) (the `cla` check asks on the first PR)
+- [ ] Every author of these commits, co-authors in `Co-authored-by:` trailers included, has agreed to the [CLA](https://github.com/hidane-dev/hidane/blob/main/docs/cla/README.md) (the `cla` check asks on the first PR)
 - [ ] Commit messages follow Conventional Commits
 - [ ] Tests added or updated where it makes sense
 - [ ] Documentation updated where it makes sense

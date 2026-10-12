@@ -162,6 +162,21 @@ YutaUra/firestore-emulator, whose public work helped us map the landscape, and t
 projects whose approach to parity testing we follow: [dynoxide](https://github.com/nubo-db/dynoxide)
 and [zerobrew](https://github.com/zerobrewhq/zerobrew).
 
+## Supporting hidane
+
+hidane is free and open source, and stays that way: everything it needs to work as a Firestore
+emulator (the wire protocols, Security Rules, imports and exports, compatibility with
+firebase-tools, the SDKs and the Emulator UI, and every parity fix) is in this repository under
+`MIT OR Apache-2.0`.
+
+If hidane saves your team time in local development or CI, sponsorship helps pay for the
+compatibility work, performance work and long-term maintenance it needs, and companies that rely
+on it are welcome as corporate sponsors. Organizations interested in priority support, migration
+help or long-term compatibility support can contact the maintainers too; paid support is not
+offered yet. Sponsorship supports the project; it does not decide what gets built, which is
+discussed in the open. To get in touch, start a
+[discussion](https://github.com/hidane-dev/hidane/discussions).
+
 ## License
 
 Licensed under either of

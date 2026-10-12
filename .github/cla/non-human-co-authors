@@ -1,0 +1,4 @@
+# Email addresses of co-authors that are not people, such as an AI coding assistant, named in
+# `Co-authored-by:` trailers. They need no agreement; every other co-author does. Only the
+# maintainers change this list, on the main branch (docs/cla/README.md).
+noreply@anthropic.com
