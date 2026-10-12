@@ -39,7 +39,7 @@ mod trace;
 mod value;
 
 pub use constraint::Comparator;
-pub use trace::{KeyStatus, Observed, Outcome, Segment, Trace};
+pub use trace::{Evaluation, KeyStatus, Observed, Outcome, Segment, Trace, Verdict};
 pub(crate) use trace::{NodeKey, Traced, hash_val, observe, shows};
 pub use value::java_double;
 
@@ -351,7 +351,7 @@ pub fn authorize_traced(
     trace: &mut Trace,
 ) -> Decision {
     let Some(service) = ruleset.service("cloud.firestore") else {
-        return no_match();
+        return unmatched(request, resource.map_or(Val::Null, value::resource), trace);
     };
     if request.method == Method::List {
         return list::authorize(ruleset, service, request, documents, budget, trace);
@@ -369,7 +369,7 @@ pub fn authorize_traced(
     let applying = statements(&coverings, request.method);
     let others = other.map(|other| (other, statements(&coverings, other)));
     if applying.is_empty() && others.as_ref().is_none_or(|(_, s)| s.is_empty()) {
-        return no_match();
+        return unmatched(request, resource.map_or(Val::Null, value::resource), trace);
     }
 
     // The statements of each method see `request.method` as theirs.
@@ -420,6 +420,14 @@ fn no_match() -> Decision {
     Decision::Deny("No matching allow statements".to_owned())
 }
 
+/// The denial of a request no statement applies to, reported as an evaluation of none.
+fn unmatched(request: &Request, resource: Val, trace: &mut Trace) -> Decision {
+    if trace.evaluations.is_some() {
+        trace.evaluating(request.method, &request_value(request, request.method), &resource);
+    }
+    no_match()
+}
+
 /// A denial listing `entries`.
 fn denied(entries: &[String]) -> Decision {
     Decision::Deny(format!("\n{}", entries.join(", ")))
@@ -445,6 +453,15 @@ fn statements<'c, 'a>(
     }
     statements.sort_by_key(|(allow, _)| allow.span.start);
     statements
+}
+
+/// What a statement's condition came to.
+fn verdict(result: &Result<bool, String>) -> Verdict {
+    match result {
+        Ok(true) => Verdict::Allow,
+        Ok(false) => Verdict::False,
+        Err(_) => Verdict::Error,
+    }
 }
 
 fn entry(text: &str, method: Method, line: u32) -> String {
@@ -488,15 +505,18 @@ impl Context<'_> {
     ) -> Vec<String> {
         let mut entries = Vec::with_capacity(statements.len());
         let mut marks = Vec::with_capacity(statements.len());
+        let at = trace.evaluating(method, &self.request, &self.resource);
         for (allow, covering) in statements {
             marks.push(trace.mark());
-            let (text, line) = match &allow.condition {
+            let (result, line) = match &allow.condition {
                 Some(condition) => (
-                    self.evaluate(covering, condition, budget, trace).err(),
+                    self.evaluate(covering, condition, budget, trace),
                     condition.span.line,
                 ),
-                None => (None, allow.span.line),
+                None => (Ok(true), allow.span.line),
             };
+            trace.verdict(at, line, verdict(&result));
+            let text = result.err();
             entries.push(entry(text.as_deref().unwrap_or("false"), method, line));
         }
         trace.repeat(&marks);
@@ -515,6 +535,7 @@ impl Context<'_> {
         let mut entries = Vec::with_capacity(statements.len());
         let mut marks = Vec::with_capacity(statements.len());
         let mut allowed: Vec<*const ast::Match> = Vec::new();
+        let at = trace.evaluating(method, &self.request, &self.resource);
         for (allow, covering) in statements {
             let target = std::ptr::from_ref(covering.target());
             if allowed.contains(&target) {
@@ -522,10 +543,13 @@ impl Context<'_> {
             }
             marks.push(trace.mark());
             let Some(condition) = &allow.condition else {
+                trace.verdict(at, allow.span.line, Verdict::Allow);
                 allowed.push(target);
                 continue;
             };
-            let text = match self.evaluate(covering, condition, budget, trace) {
+            let result = self.evaluate(covering, condition, budget, trace);
+            trace.verdict(at, condition.span.line, verdict(&result));
+            let text = match result {
                 Ok(true) => {
                     allowed.push(target);
                     continue;

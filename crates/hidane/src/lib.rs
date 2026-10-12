@@ -21,6 +21,7 @@ mod ordered_json;
 mod rest;
 pub mod rules;
 mod webchannel;
+mod websocket;
 
 use std::{
     future::Future,
@@ -61,6 +62,7 @@ use firestore::{
     seed::{SeededStore, Seeder},
     transactions::Transactions,
 };
+pub use websocket::serve_websocket;
 
 /// How long open connections (e.g. Listen streams) get to finish after a shutdown signal.
 /// firebase-tools waits 4 s after SIGINT before giving up on the process.
