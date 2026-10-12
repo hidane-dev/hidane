@@ -459,7 +459,7 @@ fn finish<T: Message + Default>(
     }
     let mut json = json.clone();
     ordered_json::objects_to_entries(&mut json, &desc);
-    let message = DynamicMessage::deserialize(desc, json).map_err(|_| invalid())?;
+    let message = read_json(desc, json).ok_or_else(invalid)?;
     let message: T = message.transcode_to().map_err(|_| invalid())?;
     let mut request = tonic::Request::new(message);
     if let Some(authorization) = &call.authorization
@@ -468,6 +468,33 @@ fn finish<T: Message + Default>(
         request.metadata_mut().insert("authorization", value);
     }
     Ok(request)
+}
+
+/// A message read from ProtoJSON as the official emulator reads it, for REST and WebChannel.
+/// protobuf-java's `JsonFormat` reads a double through `BigDecimal`, which has no negative
+/// zero, so `-0.0`, `-0` and `"-0"` (the web SDK's spelling of -0) are read as `0.0`; gRPC
+/// keeps `-0.0`, and the store keeps what it is given (`tools/oracle/negative_zero.py`). A
+/// literal that only rounds to zero, such as `-1e-400`, is `-0.0` on the official emulator and
+/// `0.0` here (docs/parity-exceptions.md).
+pub(crate) fn read_json(desc: MessageDescriptor, json: Json) -> Option<DynamicMessage> {
+    fn positive_zeros(message: &mut DynamicMessage) {
+        for (_, value) in message.fields_mut() {
+            positive_zero(value);
+        }
+    }
+    fn positive_zero(value: &mut Value) {
+        match value {
+            Value::F64(f) if *f == 0.0 => *f = 0.0,
+            Value::F32(f) if *f == 0.0 => *f = 0.0,
+            Value::Message(message) => positive_zeros(message),
+            Value::List(values) => values.iter_mut().for_each(positive_zero),
+            Value::Map(entries) => entries.values_mut().for_each(positive_zero),
+            _ => {}
+        }
+    }
+    let mut message = DynamicMessage::deserialize(desc, json).ok()?;
+    positive_zeros(&mut message);
+    Some(message)
 }
 
 /// Sets `key` (`mask.fieldPaths`, `currentDocument.exists`, …) from a query parameter, as JSON
@@ -848,8 +875,7 @@ fn civil_from_days(days: i64) -> (i64, i64, i64) {
 
 /// A double as Java's `Double.toString` prints it (what the official emulator's JSON shows):
 /// plain with at least one fractional digit between 10^-3 and 10^7, otherwise
-/// `d.dddE±n`; `NaN` and the infinities as strings. Negative zero prints as `0.0`, as on the
-/// official emulator.
+/// `d.dddE±n`; `NaN` and the infinities as strings. Negative zero prints as `-0.0`.
 fn java_double(f: f64) -> String {
     if f.is_nan() {
         return json_string("NaN");
@@ -858,7 +884,7 @@ fn java_double(f: f64) -> String {
         return json_string(if f > 0.0 { "Infinity" } else { "-Infinity" });
     }
     if f == 0.0 {
-        return "0.0".to_owned();
+        return if f.is_sign_negative() { "-0.0" } else { "0.0" }.to_owned();
     }
     let magnitude = f.abs();
     if (1e-3..1e7).contains(&magnitude) {
@@ -899,7 +925,8 @@ mod tests {
             (-1.5e-10, "-1.5E-10"),
             (100.0, "100.0"),
             (1e16, "1.0E16"),
-            (-0.0, "0.0"),
+            (0.0, "0.0"),
+            (-0.0, "-0.0"),
             (1.5, "1.5"),
             (-2.0, "-2.0"),
         ] {
@@ -924,5 +951,38 @@ mod tests {
         );
         assert_eq!(timestamp(-1, 0), "1969-12-31T23:59:59Z");
         assert_eq!(timestamp(951_782_400, 0), "2000-02-29T00:00:00Z");
+    }
+
+    #[test]
+    fn json_has_no_negative_zero() {
+        use hidane_proto::google::{firestore::v1, r#type::LatLng};
+
+        for zero in [
+            serde_json::json!(-0.0),
+            serde_json::json!("-0"),
+            serde_json::json!("-0.0"),
+            serde_json::json!("-0e0"),
+        ] {
+            let json = serde_json::json!({"arrayValue": {"values": [{"doubleValue": zero}]}});
+            let value: v1::Value = read_json(descriptor("Value"), json)
+                .unwrap()
+                .transcode_to()
+                .unwrap();
+            let Some(v1::value::ValueType::ArrayValue(array)) = value.value_type else {
+                panic!("{value:?}")
+            };
+            let Some(v1::value::ValueType::DoubleValue(d)) = array.values[0].value_type else {
+                panic!("{array:?}")
+            };
+            assert!(d == 0.0 && d.is_sign_positive(), "{zero}");
+
+            let json = serde_json::json!({"latitude": zero, "longitude": -1.5});
+            let point: LatLng = read_json(descriptor("google.type.LatLng"), json)
+                .unwrap()
+                .transcode_to()
+                .unwrap();
+            assert!(point.latitude.is_sign_positive(), "{zero}");
+            assert!((point.longitude + 1.5).abs() < f64::EPSILON);
+        }
     }
 }

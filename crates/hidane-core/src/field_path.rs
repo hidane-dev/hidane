@@ -9,7 +9,7 @@ use std::fmt;
 use hidane_proto::google::firestore::v1::{MapValue, Value, value::ValueType};
 pub use hidane_proto::ordered::Fields;
 
-use crate::hash_order::hash_order;
+use crate::{hash_order::hash_order, store::identical};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FieldPath(Vec<String>);
@@ -305,7 +305,12 @@ fn merge_level(existing: &mut Fields, input: Option<&Fields>, mask: &MaskTree) {
                 None => Some(map_of(inner)),
             }
         };
-        if new.as_ref() != old {
+        // Bit for bit: `-0.0` over `0.0` is a change, NaN over NaN is not.
+        let changed = match (&new, old) {
+            (Some(new), Some(old)) => !identical(new, old),
+            (new, old) => new.is_some() || old.is_some(),
+        };
+        if changed {
             changes.push((name.clone(), new));
         }
     }

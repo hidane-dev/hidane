@@ -87,21 +87,11 @@ fn sorted_records(data: &[u8]) -> Vec<Vec<u8>> {
     records
 }
 
-/// What a stored document holds: timestamps to the microsecond; an export also writes `-0.0`
-/// as `0.0`.
+/// What a stored document holds: timestamps to the microsecond.
 fn stored(json: &Json) -> Fields {
-    fn zero(value: &mut Value) {
-        match &mut value.value_type {
-            Some(ValueType::DoubleValue(d)) if *d == 0.0 => *d = 0.0,
-            Some(ValueType::ArrayValue(a)) => a.values.iter_mut().for_each(zero),
-            Some(ValueType::MapValue(m)) => m.fields.values_mut().for_each(zero),
-            _ => {}
-        }
-    }
     let mut fields = common::protojson::fields(json);
     for value in fields.values_mut() {
         normalize_value(value);
-        zero(value);
     }
     fields
 }

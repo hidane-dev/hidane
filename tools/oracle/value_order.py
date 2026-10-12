@@ -9,6 +9,8 @@ Values: every case is written to two collections as field `v`. In collection A d
 follow the case index, in collection B they run backwards. Both are read back with
 `orderBy v ASCENDING`. Equal values are ordered by document name, so a pair of neighbours that
 swaps between A and B is a tie; a pair that keeps its order is strictly ordered.
+Values are written over REST, whose JSON has no negative zero: the case "double -0.0" is
+stored as `0.0`. `negative_zero.py` writes `-0.0` over gRPC and orders it.
 
 Paths: one document per path, read back with a collection-group query on `items` ordered by
 `__name__`.
