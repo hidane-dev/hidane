@@ -3,19 +3,24 @@
 //! (`tools/oracle/rules_list.py`):
 //!
 //! - The filter is taken apart into the ways a document may satisfy it: `or`s, and each value
-//!   of an `in` or an `array-contains-any`, give one way each. Every way must be allowed, by
-//!   the `allow list` statements of the matches covering the collection's path and an unknown
-//!   document ID; the first way denied gives the denial.
-//! - In each way, `resource` is `{data: …}` holding only the fields the filter names. A field
-//!   with one filter, `==` (or `in`, `is null`, `is nan`), holds that value; any other holds a
-//!   `constraint` (`super::constraint`). `resource.data.x` for another field is undefined, and
-//!   a wildcard that took the document ID is unbound. Ordering, cursors and limits constrain
-//!   nothing.
+//!   of an `in` or an `array-contains-any`, give one way each. A way with the same filters as
+//!   one before it (in any order, `n == null` and `n > NaN` alike) is left out. Every way must
+//!   be allowed, by the `allow list` statements of the matches covering the collection's path
+//!   and an unknown document ID; the first way denied gives the denial.
+//! - In each way, `resource` is `{data: …}` holding only the fields the filter names. Each
+//!   filter of a field gives comparators and values (`simples`, which shows those of null and
+//!   NaN), each kept once. A field left with one `EQ` (`==`, `in`, `is null`, `is nan`, or
+//!   `== 1` twice) holds that value, and any other a `constraint` of them
+//!   (`super::constraint`). `resource.data.x` for another field is undefined, and a wildcard
+//!   that took the document ID is unbound. Ordering, cursors and limits constrain nothing.
 //! - A way with `__name__ ==` (or one name of a `__name__ in`) is decided on that document as
 //!   stored (null if there is none), whatever else the filter says, with its path as
 //!   `request.path`; other comparisons with the name constrain nothing.
 
-use std::rc::Rc;
+use std::{
+    hash::{DefaultHasher, Hash, Hasher},
+    rc::Rc,
+};
 
 use indexmap::IndexMap;
 
@@ -23,6 +28,7 @@ use super::{
     Budget, Context, Decision, Documents, Filter, FilterOp, Method, Request, Trace, Value,
     constraint::{Comparator, Simple},
     denied, no_match, request_value, statements,
+    trace::hash_val,
     value::{self, Val},
 };
 use crate::{
@@ -152,17 +158,61 @@ fn decide(
         .map_err(Some)
 }
 
-/// The ways a document may satisfy `filter`, or `None` if there are too many.
+/// The ways a document may satisfy `filter`, each once, or `None` if there are too many.
 fn ways(filter: Option<&Filter>) -> Option<Vec<Way>> {
     let conjunctions = match filter {
         Some(filter) => dnf(filter)?,
         None => vec![Vec::new()],
     };
-    let mut ways: Vec<Way> = conjunctions.into_iter().map(way).collect();
+    let mut ways: Vec<Way> = Vec::with_capacity(conjunctions.len());
+    let mut seen: Vec<Vec<Filtered>> = Vec::with_capacity(conjunctions.len());
+    for atoms in conjunctions {
+        if let Some(filtered) = signature(&atoms) {
+            if seen.iter().any(|other| same_signature(other, &filtered)) {
+                continue;
+            }
+            seen.push(filtered);
+        }
+        ways.push(way(atoms));
+    }
     if ways.is_empty() {
         ways.push(Way::Fields(Vec::new()));
     }
     Some(ways)
+}
+
+/// A field and the constraint filters one filter of a way makes, with a hash of both.
+type Filtered = (u64, Vec<String>, Vec<Simple>);
+
+/// A way of fields as the official emulator tells ways apart: each of its filters as the
+/// constraint filters it makes (`== null` and `> NaN` are one), in any order. `None` for a way
+/// with a name.
+fn signature(atoms: &[Atom]) -> Option<Vec<Filtered>> {
+    let mut filtered = Vec::with_capacity(atoms.len());
+    for atom in atoms {
+        let Atom::Field(field, op, value) = atom else {
+            return None;
+        };
+        let simple = simples(*op, value);
+        let mut hasher = DefaultHasher::new();
+        field.hash(&mut hasher);
+        for s in &simple {
+            s.comparator.hash(&mut hasher);
+            hash_val(&s.value, &mut hasher);
+        }
+        filtered.push((hasher.finish(), field.clone(), simple));
+    }
+    filtered.sort_unstable_by_key(|(hash, ..)| *hash);
+    Some(filtered)
+}
+
+/// Whether two signatures have the same filters. Filters whose hashes collide may be sorted
+/// apart, which only keeps a way that repeats.
+fn same_signature(a: &[Filtered], b: &[Filtered]) -> bool {
+    a.len() == b.len()
+        && a.iter().zip(b).all(|((h, f, s), (i, g, t))| {
+            h == i && f == g && s.len() == t.len() && s.iter().zip(t).all(|(x, y)| x.same(y))
+        })
 }
 
 fn way(atoms: Vec<Atom>) -> Way {
@@ -260,44 +310,73 @@ fn data(fields: &Fields) -> Val {
     freeze(root)
 }
 
-/// What a field's filters tell of it: its value, or a constraint.
+/// What a field's filters tell of it: its value when they are one `EQ`, or a constraint of
+/// them, each once.
 fn known(filters: &[(FilterOp, Value)]) -> Val {
-    if let [(op, value)] = filters {
-        match op {
-            FilterOp::Eq => return Val::from(value),
-            FilterOp::IsNull => return Val::Null,
-            FilterOp::IsNan => return Val::Float(f64::NAN),
-            _ => {}
+    let mut simple: Vec<Simple> = Vec::with_capacity(filters.len());
+    for (op, value) in filters {
+        for s in simples(*op, value) {
+            if !simple.iter().any(|seen| seen.same(&s)) {
+                simple.push(s);
+            }
         }
     }
-    let mut simple = Vec::with_capacity(filters.len());
-    for (op, value) in filters {
-        let one = |comparator, value: &Value| Simple {
-            comparator,
-            value: Val::from(value),
-        };
-        match op {
-            FilterOp::Eq => simple.push(one(Comparator::Eq, value)),
-            FilterOp::Ne => simple.push(one(Comparator::Neq, value)),
-            FilterOp::Lt => simple.push(one(Comparator::Lt, value)),
-            FilterOp::Le => simple.push(one(Comparator::Lte, value)),
-            FilterOp::Gt => simple.push(one(Comparator::Gt, value)),
-            FilterOp::Ge => simple.push(one(Comparator::Gte, value)),
-            FilterOp::ArrayContains => simple.push(one(Comparator::ListContains, value)),
-            FilterOp::NotIn => {
-                if let Value::List(values) = value {
-                    simple.extend(values.iter().map(|v| one(Comparator::Neq, v)));
-                }
-            }
-            FilterOp::IsNull => simple.push(one(Comparator::Eq, &Value::Null)),
-            FilterOp::IsNotNull => simple.push(one(Comparator::Neq, &Value::Null)),
-            FilterOp::IsNan => simple.push(one(Comparator::Eq, &Value::Float(f64::NAN))),
-            FilterOp::IsNotNan => simple.push(one(Comparator::Neq, &Value::Float(f64::NAN))),
-            // Taken apart into ways.
-            FilterOp::In | FilterOp::ArrayContainsAny => {}
-        }
+    if let [
+        Simple {
+            comparator: Comparator::Eq,
+            value,
+        },
+    ] = simple.as_slice()
+    {
+        return value.clone();
     }
     Val::Constraint(Rc::from(simple))
+}
+
+/// The filters of a constraint one filter of the query makes. A comparison with null or NaN
+/// matches nothing (`n > null`, `n == NaN`, `n in [null]`), and is `EQ true, EQ false`, which
+/// no value satisfies; `!= NaN` matches every value but null, and is `NEQ null`; `not-in` is
+/// each of its values' `!=`, and `array-contains` null or NaN is `LIST_CONTAINS []`. The unary
+/// filters are `EQ null`, `NEQ null`, `EQ NaN` and `NEQ NaN`.
+fn simples(op: FilterOp, value: &Value) -> Vec<Simple> {
+    let one = |comparator, value| Simple { comparator, value };
+    let nan = matches!(value, Value::Float(f) if f.is_nan());
+    let null_or_nan = nan || *value == Value::Null;
+    let comparator = match op {
+        FilterOp::IsNull => return vec![one(Comparator::Eq, Val::Null)],
+        FilterOp::IsNotNull => return vec![one(Comparator::Neq, Val::Null)],
+        FilterOp::IsNan => return vec![one(Comparator::Eq, Val::Float(f64::NAN))],
+        FilterOp::IsNotNan => return vec![one(Comparator::Neq, Val::Float(f64::NAN))],
+        FilterOp::NotIn => {
+            let Value::List(values) = value else {
+                return Vec::new();
+            };
+            return values
+                .iter()
+                .flat_map(|v| simples(FilterOp::Ne, v))
+                .collect();
+        }
+        FilterOp::Ne if nan => return vec![one(Comparator::Neq, Val::Null)],
+        FilterOp::ArrayContains if null_or_nan => {
+            return vec![one(Comparator::ListContains, Val::list(Vec::new()))];
+        }
+        _ if null_or_nan => {
+            return vec![
+                one(Comparator::Eq, Val::Bool(true)),
+                one(Comparator::Eq, Val::Bool(false)),
+            ];
+        }
+        FilterOp::Eq => Comparator::Eq,
+        FilterOp::Ne => Comparator::Neq,
+        FilterOp::Lt => Comparator::Lt,
+        FilterOp::Le => Comparator::Lte,
+        FilterOp::Gt => Comparator::Gt,
+        FilterOp::Ge => Comparator::Gte,
+        FilterOp::ArrayContains => Comparator::ListContains,
+        // Taken apart into ways.
+        FilterOp::In | FilterOp::ArrayContainsAny => return Vec::new(),
+    };
+    vec![one(comparator, Val::from(value))]
 }
 
 enum Node {

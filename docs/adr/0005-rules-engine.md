@@ -154,16 +154,33 @@ Measured with [`tools/oracle/rules_list.py`](../../tools/oracle/rules_list.py) (
 emulator's `debug()` output shows its representation):
 
 - The query's filter is split into the ways a document may satisfy it: each `or` branch and each
-  value of an `in` or `array-contains-any`. Every way must be allowed; the first way denied
-  gives the denial.
-- In each way `resource` is `{data: …}` with only the fields the filter names. A field with one
-  `==` (or `in`, `is null`, `is nan`) holds that value, and the condition evaluates as usual
-  (`resource.data.n + 1 == 2` works). Any other field holds a `constraint`: its filters as
-  comparator and value pairs (`GT 0`, `NEQ 3`, `LIST_CONTAINS 'a'`).
+  value of an `in` or `array-contains-any`. A way with the same filters as an earlier one, in
+  any order, is evaluated once. Every way must be allowed; the first way denied gives the
+  denial.
+- In each way `resource` is `{data: …}` with only the fields the filter names. Each filter of a
+  field gives comparator and value pairs (`GT 0`, `NEQ 3`, `LIST_CONTAINS 'a'`), each kept once.
+  A field left with one `EQ` (one `==`, `in`, `is null` or `is nan`, or `== 1` twice) holds that
+  value, and the condition evaluates as usual (`resource.data.n + 1 == 2` works). Any other
+  field holds a `constraint` of the pairs.
+- Null and NaN (#167): `is not null` is `NEQ null` and `is not nan` `NEQ NaN`. A field filter
+  that compares with null or NaN matches no document (`n != null`, `n == NaN`, `n > null`,
+  `in [null]`), and is `EQ true, EQ false`, a pair no value satisfies; `!= NaN` matches every
+  value but null and is `NEQ null`; `not-in` gives each value's pair, and `array-contains` null
+  or NaN is `LIST_CONTAINS []`. The coverage report and `debug()` show these pairs.
 - A comparison with a constraint is true when one of its filters alone implies it, else an
   error without a message (`evaluation error at L5:22`), never false. So `n >= 1 && n <= 1` does
-  not imply `n == 1`, and a float in a filter does not compare with an int in the rule.
-  `x in c` and `c.hasAny(list)` read `LIST_CONTAINS`; `c is constraint` is true.
+  not imply `n == 1`, and a float in a filter does not compare with an int in the rule (but an
+  `EQ` of a float implies `!=` any int). `!= null` always holds; `false` is less than `true`.
+  NaN compares as in IEEE 754: `EQ NaN` lets nothing through and implies every comparison with a
+  number, and any other number implies `!= NaN`. `<`, `<=`, `>` and `>=` with a bool, null, a
+  list, a map, a set, a latlng or a path are a type error. `x in c` and `c.hasAny(list)` read
+  `LIST_CONTAINS`; `c is constraint` is true.
+- What follows for decisions: a filter that matches nothing implies `== true` and `== false`
+  (through `EQ true, EQ false`), so the official emulator allows its query under conditions
+  such as `resource.data.n == true`; the query returns no document. `is nan` next to another
+  filter of the same field (`n is nan && n != 'a'`) implies any comparison with a number,
+  although the query returns the documents whose field is NaN, which `resource.data.n > 0`
+  would deny one by one. hidane decides both as the official emulator does.
 - A way with `__name__ ==` (or one name of `__name__ in`) is decided on that document as stored,
   ignoring the rest of the filter. Ordering, cursors and limits constrain nothing.
 - The list is checked on the collection's path and an unknown document ID (a wildcard there is

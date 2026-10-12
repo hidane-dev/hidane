@@ -45,6 +45,11 @@ pub(crate) struct Interp<'a> {
     regexes: HashMap<(bool, String), Option<Rc<regex::Regex>>>,
     depth: usize,
     calls: usize,
+    /// Whether the expression evaluated next is the object of a member, an index or a method,
+    /// whose own errors are placed inside its outermost parentheses (`Interp::finish`). Set right
+    /// before its `eval`, which takes it, rather than through a function of its own: a chain of
+    /// members nests as deep as the compiler allows, and every frame counts.
+    object: bool,
 }
 
 /// The parameters and `let`s of a function call (none for an `allow` condition).
@@ -117,12 +122,14 @@ impl<'a> Interp<'a> {
             regexes: HashMap::new(),
             depth: 0,
             calls: 0,
+            object: false,
         }
     }
 
     /// Evaluates `e`. Each level of nesting goes through here and one small function for its
     /// kind of expression, which keeps the stack a recursion uses small.
     pub fn eval(&mut self, e: &'a Expr, s: Scope<'_, 'a>) -> R {
+        let object = std::mem::take(&mut self.object);
         if self.depth >= MAX_DEPTH {
             return Err(too_complex());
         }
@@ -151,16 +158,25 @@ impl<'a> Interp<'a> {
         let result = step(self, e, s);
         self.depth -= 1;
         if result.is_err() || self.trace.tracing() {
-            return self.finish(e, result);
+            return self.finish(e, result, object);
         }
         result
     }
 
     /// Places an error `e` raised that its step did not place (a member, an index, a method
-    /// that does not exist, `in`, a variable) at its first token, and traces the result.
+    /// that does not exist, `in`, a variable) at its first token, and traces the result. The
+    /// first token of the `object` of a member, an index or a method is inside its outermost
+    /// parentheses, which are the outer expression's: `(x.missing).y` fails at `x`.
     #[inline(never)]
-    fn finish(&mut self, e: &Expr, result: R) -> R {
-        let result = result.map_err(|err| err.at(self.start(e)));
+    fn finish(&mut self, e: &Expr, result: R, object: bool) -> R {
+        let result = result.map_err(|err| {
+            let at = if object {
+                coverage::start_inside(self.parens, e).start
+            } else {
+                self.start(e)
+            };
+            err.at(at)
+        });
         if self.trace.tracing() && coverage::is_node(e) {
             self.trace.record(NodeKey::of(e), &result);
         }
@@ -249,23 +265,31 @@ impl<'a> Interp<'a> {
         let ExprKind::Member { object, field } = &e.kind else {
             unreachable!()
         };
+        self.object = true;
         let object = self.eval(object, s)?;
         member(&object, &field.name)
     }
 
+    /// An index, its index evaluated first; the object's error comes first.
     fn index(&mut self, e: &'a Expr, s: Scope<'_, 'a>) -> R {
         let ExprKind::Index { object, index } = &e.kind else {
             unreachable!()
         };
-        let [object, index] = self.fixed([object, index], s)?;
-        library::index(&object, &index)
+        let index = self.eval(index, s);
+        self.object = true;
+        let object = self.eval(object, s)?;
+        library::index(&object, &index?)
     }
 
+    /// A slice, its bounds evaluated first, the last first; the object's error comes first.
     fn slice(&mut self, e: &'a Expr, s: Scope<'_, 'a>) -> R {
         let ExprKind::Slice { object, start, end } = &e.kind else {
             unreachable!()
         };
-        let [object, start, end] = self.fixed([object, start, end], s)?;
+        let bounds = self.fixed([start, end], s);
+        self.object = true;
+        let object = self.eval(object, s)?;
+        let [start, end] = bounds?;
         library::slice(&object, &start, &end)
     }
 
@@ -468,6 +492,7 @@ impl<'a> Interp<'a> {
             Callee::Method { receiver, name } => {
                 let at = |err: Error| err.at(name.span.start);
                 let values: Vec<R> = args.iter().rev().map(|a| self.eval(a, s)).collect();
+                self.object = true;
                 let receiver = self.eval(receiver, s)?;
                 if let Val::Null = receiver {
                     return Err(at(Error::null()));

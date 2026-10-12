@@ -165,6 +165,163 @@ fn a_constraint_implies_what_one_of_its_filters_implies() {
 }
 
 #[test]
+fn filters_with_null_and_nan() {
+    let n = |op, v| field("n", op, v);
+    let unary = |op| field("n", op, Value::Null);
+    let nan = || Value::Float(f64::NAN);
+    // A comparison with null or NaN matches nothing: `EQ true, EQ false`, of which `EQ true`
+    // implies `== true` and `EQ false` `== false`.
+    for nothing in [
+        n(FilterOp::Ne, Value::Null),
+        n(FilterOp::Eq, Value::Null),
+        n(FilterOp::Gt, Value::Null),
+        n(FilterOp::Eq, nan()),
+        n(FilterOp::In, Value::List(vec![Value::Null])),
+        n(FilterOp::NotIn, Value::List(vec![Value::Null])),
+    ] {
+        for allowed in [
+            "resource.data.n == true && resource.data.n == false",
+            "resource.data.n != true",
+            "resource.data.n is constraint",
+        ] {
+            assert_eq!(
+                list(allowed, nothing.clone()),
+                Decision::Allow,
+                "{allowed}: {nothing:?}"
+            );
+        }
+        for undecided in ["resource.data.n == null", "resource.data.n != 1"] {
+            assert_eq!(
+                list(undecided, nothing.clone()),
+                denied(UNDECIDED),
+                "{undecided}: {nothing:?}"
+            );
+        }
+    }
+    // `!= NaN` matches every value but null, as `is not null` does.
+    for not_null in [n(FilterOp::Ne, nan()), unary(FilterOp::IsNotNull)] {
+        assert_eq!(
+            list("resource.data.n != null", not_null.clone()),
+            Decision::Allow
+        );
+        assert_eq!(
+            list("resource.data.n != float('NaN')", not_null),
+            denied(UNDECIDED)
+        );
+    }
+    // No number is NaN: every filter with another number implies `!= NaN`.
+    assert_eq!(
+        list("resource.data.n != float('NaN')", unary(FilterOp::IsNotNan)),
+        Decision::Allow
+    );
+    assert_eq!(
+        list(
+            "resource.data.n != float('NaN')",
+            n(FilterOp::Ne, Value::Int(1))
+        ),
+        Decision::Allow
+    );
+    assert_eq!(
+        list(
+            "resource.data.n > float('NaN')",
+            n(FilterOp::Gt, Value::Int(0))
+        ),
+        denied(UNDECIDED)
+    );
+    // `EQ NaN` lets nothing through: it implies any comparison with a number.
+    let nan_and = Filter::And(vec![
+        unary(FilterOp::IsNan),
+        n(FilterOp::Ne, Value::String("a".into())),
+    ]);
+    for allowed in [
+        "resource.data.n == 1",
+        "resource.data.n < 0",
+        "resource.data.n == float('NaN')",
+    ] {
+        assert_eq!(list(allowed, nan_and.clone()), Decision::Allow, "{allowed}");
+    }
+    assert_eq!(list("resource.data.n == 'b'", nan_and), denied(UNDECIDED));
+    // `array-contains` null or NaN is `LIST_CONTAINS []`.
+    let contains_null = field("tags", FilterOp::ArrayContains, Value::Null);
+    assert_eq!(
+        list("[] in resource.data.tags", contains_null.clone()),
+        Decision::Allow
+    );
+    assert_eq!(
+        list("null in resource.data.tags", contains_null),
+        denied(UNDECIDED)
+    );
+}
+
+#[test]
+fn filters_that_repeat_count_once() {
+    let n = |op, v| field("n", op, v);
+    let twice = |filter: Filter| Filter::And(vec![filter.clone(), filter]);
+    // One `EQ` left: the value.
+    assert_eq!(
+        list(
+            "resource.data.n is int",
+            twice(n(FilterOp::Eq, Value::Int(1)))
+        ),
+        Decision::Allow
+    );
+    assert_eq!(
+        list(
+            "resource.data.n == null",
+            twice(field("n", FilterOp::IsNull, Value::Null))
+        ),
+        Decision::Allow
+    );
+    // `1` and `1.0` are two filters; a float in an `EQ` is not equal to an int.
+    let one_and_one_point_zero = Filter::And(vec![
+        n(FilterOp::Eq, Value::Int(1)),
+        n(FilterOp::Eq, Value::Float(1.0)),
+    ]);
+    assert_eq!(
+        list(
+            "resource.data.n is constraint",
+            one_and_one_point_zero.clone()
+        ),
+        Decision::Allow
+    );
+    assert_eq!(
+        list("resource.data.n != 1", one_and_one_point_zero),
+        Decision::Allow
+    );
+}
+
+#[test]
+fn comparisons_with_true_false_and_values_without_an_order() {
+    let true_and_below_five = Filter::And(vec![
+        field("n", FilterOp::Eq, Value::Bool(true)),
+        field("n", FilterOp::Lt, Value::Int(5)),
+    ]);
+    assert_eq!(
+        list("resource.data.n != false", true_and_below_five.clone()),
+        Decision::Allow
+    );
+    assert_eq!(
+        list("resource.data.n != true", true_and_below_five.clone()),
+        denied(UNDECIDED)
+    );
+    for (condition, received) in [
+        ("resource.data.n >= true", "bool"),
+        ("null < resource.data.n", "null"),
+        ("resource.data.n <= [1]", "list"),
+        ("resource.data.n > latlng.value(0, 0)", "latlng"),
+    ] {
+        assert_eq!(
+            list(condition, true_and_below_five.clone()),
+            denied(&format!(
+                "\nType error. Received: [{received}] Expected: \
+                 [timestamp,duration,float,int,string,bytes]. for 'list' @ L5"
+            )),
+            "{condition}"
+        );
+    }
+}
+
+#[test]
 fn array_membership() {
     let contains = || field("tags", FilterOp::ArrayContains, Value::String("a".into()));
     assert_eq!(

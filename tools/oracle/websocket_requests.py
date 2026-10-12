@@ -18,7 +18,8 @@ and frames of other clients. The cases:
 - the handshake, and answers to requests that are not one;
 - reads, lists, queries, writes, batches, transactions and Listen targets, allowed, denied and
   failing, with and without a token, by the owner (not recorded), and in a database without
-  rules (the open rules are recorded);
+  rules (the open rules are recorded); a list records each way of its filter once, and a field
+  it does not pin down as a constraint (a filter with null as `EQ true, EQ false`);
 - values of every type in `request.resource`, ruleset files and release keys;
 - the backlog of a client that connects late (the last 50 records), after `PUT
   :securityRules` and `POST /reset` (neither clears it), with several clients at once;
@@ -285,6 +286,9 @@ match /{path=**}/g/{d} {
     rest("POST", f"{docs(p)}:runQuery", q(where={"compositeFilter": {"op": "OR", "filters": [
         field("n", "EQUAL", I(1)), field("n", "EQUAL", I(2))]}}))
     rest("POST", f"{docs(p)}:runQuery", q(where=field("n", "IN", {"arrayValue": {"values": [I(1), I(2)]}})))
+    # A field filter with null (`EQ true, EQ false`), and a way that repeats (one record).
+    rest("POST", f"{docs(p)}:runQuery", q(where=field("n", "NOT_EQUAL", {"nullValue": None})))
+    rest("POST", f"{docs(p)}:runQuery", q(where=field("n", "IN", {"arrayValue": {"values": [I(1), I(1)]}})))
     rest("POST", f"{docs(p)}:runQuery", q(where=field("__name__", "EQUAL", {"referenceValue": name(p, "k/a")})))
     rest("POST", f"{docs(p)}:runQuery", {"structuredQuery": {"from": [{"collectionId": "e"}]}})
     rest("POST", f"{docs(p)}:runQuery", {"structuredQuery": {"from": [{"collectionId": "g", "allDescendants": True}],
