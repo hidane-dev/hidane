@@ -5,11 +5,14 @@
 //! bindings of `firestore.proto`, under `/v1/` and `/v1beta1/`. JSON is ProtoJSON, read with
 //! prost-reflect from the embedded descriptors and written in the format of the official
 //! emulator (protobuf-java's `JsonFormat`): two-space indentation, `[{` … `}, {` … `}]` for
-//! repeated messages, doubles as Java prints them, and server streams as a JSON array with one
-//! message per element. Errors are one line, with `/` escaped. Unknown query parameters (such as
-//! `key`) are ignored, the content type is not checked, and an empty body is `{}`, all as on the
-//! official emulator; a body that is not valid for the request answers 400 "Payload isn't valid
-//! for request.".
+//! repeated messages, doubles as Java prints them, strings escaped as [`json_string`] does, and
+//! server streams as a JSON array with one message per element. Errors are one line, escaped
+//! by another writer ([`error`]). Unknown query parameters (such as `key`) are ignored, the
+//! content type is not checked, and an empty body is `{}`, all as on the official emulator; a
+//! body that is not valid for the request answers 400 "Payload isn't valid for request.".
+//!
+//! WebChannel prints its messages with the same printer, in a compact layout that also escapes
+//! characters for HTML ([`Layout::WebChannel`]).
 
 use std::{fmt::Write as _, sync::OnceLock};
 
@@ -182,7 +185,7 @@ async fn dispatch(service: &FirestoreService, call: Call) -> Option<Response> {
     };
     let root = call.path.is_empty();
     let unary = |response: Result<Vec<u8>, Status>, name: &str| match response {
-        Ok(bytes) => json_response(&print_top(&descriptor(name), &bytes)),
+        Ok(bytes) => json_response(&print_top(&descriptor(name), &bytes, Layout::Rest)),
         Err(status) => error(&status),
     };
     Some(match (&call.method, call.verb.as_deref()) {
@@ -596,7 +599,7 @@ async fn collect<T: Message + 'static>(
     let desc = descriptor(name);
     let mut elements = Vec::new();
     while let Some(item) = stream.next().await {
-        elements.push(print_top(&desc, &item?.encode_to_vec()));
+        elements.push(print_top(&desc, &item?.encode_to_vec(), Layout::Rest));
     }
     Ok(elements)
 }
@@ -609,24 +612,10 @@ fn json_response(body: &str) -> Response {
         .into_response()
 }
 
-/// The official emulator's error body: one line, with `/` escaped as Java's JSON writer does.
+/// The official emulator's error body: one line, its message escaped as [`error_escaped`] does.
 pub fn error(status: &Status) -> Response {
     let (http, name) = http_status(status.code());
-    let mut message = String::new();
-    for c in status.message().chars() {
-        match c {
-            '"' => message.push_str("\\\""),
-            '\\' => message.push_str("\\\\"),
-            '/' => message.push_str("\\/"),
-            '\n' => message.push_str("\\n"),
-            '\r' => message.push_str("\\r"),
-            '\t' => message.push_str("\\t"),
-            c if u32::from(c) < 0x20 || c == '\u{2028}' || c == '\u{2029}' => {
-                let _ = write!(message, "\\u{:04x}", u32::from(c));
-            }
-            c => message.push(c),
-        }
-    }
+    let message = error_escaped(status.message());
     // An empty message is left out, as protobuf-java's JsonFormat leaves out empty strings.
     let message = if message.is_empty() {
         String::new()
@@ -638,6 +627,31 @@ pub fn error(status: &Status) -> Response {
         http.as_u16()
     );
     (http, [(header::CONTENT_TYPE, "application/json")], body).into_response()
+}
+
+/// An error message as the official emulator's REST errors escape it, with a writer other
+/// than [`json_string`]'s (`tests/fixtures/json_escapes.json`): `"`, `\` and `/` with a
+/// backslash; `\b`, `\t`, `\n`, `\f` and `\r`; the other characters of U+0000–U+001F,
+/// U+007F–U+009F and U+2000–U+20FF as `\u` and four uppercase hex digits. Without the quotes.
+fn error_escaped(message: &str) -> String {
+    let mut out = String::with_capacity(message.len());
+    for c in message.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '/' => out.push_str("\\/"),
+            '\u{8}' => out.push_str("\\b"),
+            '\t' => out.push_str("\\t"),
+            '\n' => out.push_str("\\n"),
+            '\u{c}' => out.push_str("\\f"),
+            '\r' => out.push_str("\\r"),
+            '\0'..='\u{1f}' | '\u{7f}'..='\u{9f}' | '\u{2000}'..='\u{20ff}' => {
+                let _ = write!(out, "\\u{:04X}", u32::from(c));
+            }
+            c => out.push(c),
+        }
+    }
+    out
 }
 
 /// The HTTP mapping of gRPC status codes (`google.rpc.Code`).
@@ -665,15 +679,57 @@ pub(crate) fn http_status(code: Code) -> (StatusCode, &'static str) {
 
 // --- printing, in protobuf-java JsonFormat's layout --------------------------------------------
 
+/// How a message is printed: as the official emulator prints it over REST or over WebChannel.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(crate) enum Layout {
+    /// Two-space indentation, `, ` between the elements of a list, strings escaped as
+    /// [`json_string`] does.
+    Rest,
+    /// No whitespace, and strings (not bytes) escaped as [`html_safe_json_string`] does.
+    WebChannel,
+}
+
+impl Layout {
+    fn string(self, s: &str) -> String {
+        match self {
+            Self::Rest => json_string(s),
+            Self::WebChannel => html_safe_json_string(s),
+        }
+    }
+
+    /// The start of an object's entry, in an object at `indent`.
+    fn key(self, key: &str, indent: usize) -> String {
+        match self {
+            Self::Rest => format!("{}{}: ", " ".repeat(indent + 2), self.string(key)),
+            Self::WebChannel => format!("{}:", self.string(key)),
+        }
+    }
+
+    fn object(self, entries: &[String], indent: usize, out: &mut String) {
+        let _ = match self {
+            Self::Rest if entries.is_empty() => write!(out, "{{\n{}}}", " ".repeat(indent)),
+            Self::Rest => write!(out, "{{\n{}\n{}}}", entries.join(",\n"), " ".repeat(indent)),
+            Self::WebChannel => write!(out, "{{{}}}", entries.join(",")),
+        };
+    }
+
+    fn separator(self) -> &'static str {
+        match self {
+            Self::Rest => ", ",
+            Self::WebChannel => ",",
+        }
+    }
+}
+
 /// `bytes` (an encoded `desc`) as the official emulator prints it.
-fn print_top(desc: &MessageDescriptor, bytes: &[u8]) -> String {
+pub(crate) fn print_top(desc: &MessageDescriptor, bytes: &[u8], layout: Layout) -> String {
     let message = DynamicMessage::decode(desc.clone(), bytes).expect("our own encoding");
     let mut out = String::new();
-    print_message(&message, 0, &mut out);
+    print_message(&message, 0, layout, &mut out);
     out
 }
 
-fn print_message(message: &DynamicMessage, indent: usize, out: &mut String) {
+fn print_message(message: &DynamicMessage, indent: usize, layout: Layout, out: &mut String) {
     let desc = message.descriptor();
     match desc.full_name() {
         "google.protobuf.Timestamp" => {
@@ -699,6 +755,7 @@ fn print_message(message: &DynamicMessage, indent: usize, out: &mut String) {
                         .expect("wrapper")
                         .kind(),
                     indent,
+                    layout,
                     out,
                 );
                 return;
@@ -712,26 +769,18 @@ fn print_message(message: &DynamicMessage, indent: usize, out: &mut String) {
             continue;
         }
         let value = message.get_field(&field);
-        let mut entry = format!(
-            "{}{}: ",
-            " ".repeat(indent + 2),
-            json_string(field.json_name())
-        );
+        let mut entry = layout.key(field.json_name(), indent);
         if ordered_json::is_ordered(&field) {
-            print_ordered(&value, indent + 2, &mut entry);
+            print_ordered(&value, indent + 2, layout, &mut entry);
         } else {
-            print_value(&value, &field.kind(), indent + 2, &mut entry);
+            print_value(&value, &field.kind(), indent + 2, layout, &mut entry);
         }
         entries.push(entry);
     }
-    if entries.is_empty() {
-        let _ = write!(out, "{{\n{}}}", " ".repeat(indent));
-    } else {
-        let _ = write!(out, "{{\n{}\n{}}}", entries.join(",\n"), " ".repeat(indent));
-    }
+    layout.object(&entries, indent, out);
 }
 
-fn print_value(value: &Value, kind: &Kind, indent: usize, out: &mut String) {
+fn print_value(value: &Value, kind: &Kind, indent: usize, layout: Layout, out: &mut String) {
     match value {
         Value::Bool(b) => out.push_str(if *b { "true" } else { "false" }),
         Value::I32(n) => out.push_str(&n.to_string()),
@@ -740,7 +789,8 @@ fn print_value(value: &Value, kind: &Kind, indent: usize, out: &mut String) {
         Value::U64(n) => out.push_str(&json_string(&n.to_string())),
         Value::F32(f) => out.push_str(&java_double(f64::from(*f))),
         Value::F64(f) => out.push_str(&java_double(*f)),
-        Value::String(s) => out.push_str(&json_string(s)),
+        Value::String(s) => out.push_str(&layout.string(s)),
+        // Base64's `=` stays as is over WebChannel too.
         Value::Bytes(b) => out.push_str(&json_string(&STANDARD.encode(b))),
         Value::EnumNumber(n) => match kind {
             Kind::Enum(e) if e.full_name() == "google.protobuf.NullValue" => out.push_str("null"),
@@ -750,14 +800,14 @@ fn print_value(value: &Value, kind: &Kind, indent: usize, out: &mut String) {
             },
             _ => out.push_str(&n.to_string()),
         },
-        Value::Message(m) => print_message(m, indent, out),
+        Value::Message(m) => print_message(m, indent, layout, out),
         Value::List(items) => {
             out.push('[');
             for (i, item) in items.iter().enumerate() {
                 if i > 0 {
-                    out.push_str(", ");
+                    out.push_str(layout.separator());
                 }
-                print_value(item, kind, indent, out);
+                print_value(item, kind, indent, layout, out);
             }
             out.push(']');
         }
@@ -771,23 +821,18 @@ fn print_value(value: &Value, kind: &Kind, indent: usize, out: &mut String) {
             let printed: Vec<String> = keys
                 .into_iter()
                 .map(|key| {
-                    let mut entry =
-                        format!("{}{}: ", " ".repeat(indent + 2), json_string(&map_key(key)));
-                    print_value(&entries[key], &value_kind, indent + 2, &mut entry);
+                    let mut entry = layout.key(&map_key(key), indent);
+                    print_value(&entries[key], &value_kind, indent + 2, layout, &mut entry);
                     entry
                 })
                 .collect();
-            if printed.is_empty() {
-                let _ = write!(out, "{{\n{}}}", " ".repeat(indent));
-            } else {
-                let _ = write!(out, "{{\n{}\n{}}}", printed.join(",\n"), " ".repeat(indent));
-            }
+            layout.object(&printed, indent, out);
         }
     }
 }
 
 /// An ordered map (a list of `key` / `value` entries) as the object it is, in its order.
-fn print_ordered(entries: &Value, indent: usize, out: &mut String) {
+fn print_ordered(entries: &Value, indent: usize, layout: Layout, out: &mut String) {
     let Value::List(entries) = entries else {
         return;
     };
@@ -799,7 +844,7 @@ fn print_ordered(entries: &Value, indent: usize, out: &mut String) {
                 .get_field_by_name("key")
                 .and_then(|key| key.as_str().map(str::to_owned))
                 .unwrap_or_default();
-            let mut printed = format!("{}{}: ", " ".repeat(indent + 2), json_string(&key));
+            let mut printed = layout.key(&key, indent);
             let field = entry
                 .descriptor()
                 .get_field_by_name("value")
@@ -808,16 +853,13 @@ fn print_ordered(entries: &Value, indent: usize, out: &mut String) {
                 &entry.get_field(&field),
                 &field.kind(),
                 indent + 2,
+                layout,
                 &mut printed,
             );
             printed
         })
         .collect();
-    if printed.is_empty() {
-        let _ = write!(out, "{{\n{}}}", " ".repeat(indent));
-    } else {
-        let _ = write!(out, "{{\n{}\n{}}}", printed.join(",\n"), " ".repeat(indent));
-    }
+    layout.object(&printed, indent, out);
 }
 
 fn map_key(key: &MapKey) -> String {
@@ -831,8 +873,43 @@ fn map_key(key: &MapKey) -> String {
     }
 }
 
-fn json_string(s: &str) -> String {
-    serde_json::to_string(s).expect("strings serialize")
+/// A JSON string as protobuf-java's JsonFormat writes it in the official emulator's REST
+/// answers (`tests/fixtures/json_escapes.json`): `"` and `\` with a backslash; `\b`, `\t`,
+/// `\n`, `\f` and `\r`; the other characters below U+0020, U+2028 and U+2029 as `\u` and four
+/// lowercase hex digits; everything else, `/` included, as is.
+pub(crate) fn json_string(s: &str) -> String {
+    escaped(s, false)
+}
+
+/// A JSON string as the official emulator's WebChannel writes strings: as [`json_string`], and
+/// `<`, `>`, `&`, `=` and `'` as `\u003c`, `\u003e`, `\u0026`, `\u003d` and `\u0027`.
+fn html_safe_json_string(s: &str) -> String {
+    escaped(s, true)
+}
+
+fn escaped(s: &str, html_safe: bool) -> String {
+    let mut out = String::with_capacity(s.len() + 2);
+    out.push('"');
+    for c in s.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\u{8}' => out.push_str("\\b"),
+            '\t' => out.push_str("\\t"),
+            '\n' => out.push_str("\\n"),
+            '\u{c}' => out.push_str("\\f"),
+            '\r' => out.push_str("\\r"),
+            '\0'..='\u{1f}' | '\u{2028}' | '\u{2029}' => {
+                let _ = write!(out, "\\u{:04x}", u32::from(c));
+            }
+            '<' | '>' | '&' | '=' | '\'' if html_safe => {
+                let _ = write!(out, "\\u{:04x}", u32::from(c));
+            }
+            c => out.push(c),
+        }
+    }
+    out.push('"');
+    out
 }
 
 /// RFC 3339 in UTC with 0, 3, 6 or 9 fractional digits, as ProtoJSON prints timestamps.
@@ -951,6 +1028,48 @@ mod tests {
         );
         assert_eq!(timestamp(-1, 0), "1969-12-31T23:59:59Z");
         assert_eq!(timestamp(951_782_400, 0), "2000-02-29T00:00:00Z");
+    }
+
+    #[test]
+    fn strings_escape_as_the_official_emulator_does() {
+        let text = "a\u{1}\u{8}\u{b}\u{c}\"\\/<>&='\u{7f}\u{85}\u{a0}\u{200b}\u{2028}\u{2029}\
+                    \u{20ac}\u{2100}\u{feff}\u{1f600}";
+        let untouched = "\u{20ac}\u{2100}\u{feff}\u{1f600}";
+        // REST bodies.
+        assert_eq!(
+            json_string(text),
+            [
+                r#""a\u0001\b\u000b\f\"\\/<>&='"#,
+                "\u{7f}\u{85}\u{a0}\u{200b}",
+                r"\u2028\u2029",
+                untouched,
+                "\""
+            ]
+            .concat()
+        );
+        // WebChannel messages.
+        assert_eq!(
+            html_safe_json_string(text),
+            [
+                r#""a\u0001\b\u000b\f\"\\/\u003c\u003e\u0026\u003d\u0027"#,
+                "\u{7f}\u{85}\u{a0}\u{200b}",
+                r"\u2028\u2029",
+                untouched,
+                "\""
+            ]
+            .concat()
+        );
+        // REST errors.
+        assert_eq!(
+            error_escaped(text),
+            [
+                r#"a\u0001\b\u000B\f\"\\\/<>&='\u007F\u0085"#,
+                "\u{a0}",
+                r"\u200B\u2028\u2029\u20AC",
+                "\u{2100}\u{feff}\u{1f600}"
+            ]
+            .concat()
+        );
     }
 
     #[test]

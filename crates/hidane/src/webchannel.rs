@@ -34,7 +34,7 @@ use axum::{
 };
 use base64::{Engine as _, engine::general_purpose::URL_SAFE};
 use hidane_proto::google::firestore::v1::{ListenRequest, WriteRequest};
-use prost_reflect::{DynamicMessage, MessageDescriptor};
+use prost_reflect::MessageDescriptor;
 use tokio::{
     sync::{mpsc, watch},
     time::{Instant, sleep_until},
@@ -218,19 +218,24 @@ fn parse<T: prost::Message + Default>(json: &str, name: &str) -> Result<T, ()> {
         .ok_or(())
 }
 
-/// ProtoJSON of a response, compact, with document fields and map values in their order.
+/// ProtoJSON of a response as the official emulator writes it: compact, with document fields
+/// and map values in their order, and strings escaped for HTML as well
+/// (`tests/fixtures/json_escapes.json`).
 fn to_json<T: prost::Message>(message: &T, descriptor: &MessageDescriptor) -> String {
-    let dynamic = DynamicMessage::decode(descriptor.clone(), message.encode_to_vec().as_slice())
-        .expect("a message of its own type");
-    let mut json = serde_json::to_value(&dynamic).expect("ProtoJSON");
-    ordered_json::entries_to_objects(&mut json, descriptor);
-    json.to_string()
+    rest::print_top(
+        descriptor,
+        &message.encode_to_vec(),
+        rest::Layout::WebChannel,
+    )
 }
 
+/// A stream's error, its message escaped as in REST bodies (not for HTML).
 fn error_json(status: &Status) -> String {
     let (_, name) = rest::http_status(status.code());
-    serde_json::json!({"error": {"message": format!("{name}: {}", status.message()), "status": name}})
-        .to_string()
+    format!(
+        "{{\"error\":{{\"message\":{},\"status\":\"{name}\"}}}}",
+        rest::json_string(&format!("{name}: {}", status.message()))
+    )
 }
 
 /// A chunk of the WebChannel wire: the length in UTF-16 code units, a newline, the JSON.

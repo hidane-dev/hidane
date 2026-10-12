@@ -4,7 +4,8 @@
 //! REST and WebChannel go through `DynamicMessage`, whose maps do not keep an order. They use
 //! the ordered descriptors instead (`hidane_proto::ORDERED_FILE_DESCRIPTOR_SET`), where these
 //! three maps are lists of `{key, value}` entries; this module turns the JSON objects of those
-//! maps into such lists on the way in and back into objects on the way out, in order.
+//! maps into such lists on the way in. On the way out, `rest`'s printer writes the lists as
+//! objects, in order.
 
 use prost_reflect::{FieldDescriptor, Kind, MessageDescriptor};
 use serde_json::{Map, Value as Json};
@@ -105,34 +106,6 @@ fn objects_to_entries_in(map: &mut Json, value_desc: &MessageDescriptor) {
     *map = Json::Array(entries);
 }
 
-/// Turns the lists of entries in `json` (a `desc` message, as `DynamicMessage` wrote it with
-/// the ordered descriptors) back into objects, in order.
-pub(crate) fn entries_to_objects(json: &mut Json, desc: &MessageDescriptor) {
-    walk(json, desc, &entries_to_objects_in);
-}
-
-fn entries_to_objects_in(map: &mut Json, value_desc: &MessageDescriptor) {
-    let Json::Array(entries) = map else {
-        return;
-    };
-    let mut object = Map::new();
-    for entry in std::mem::take(entries) {
-        let Json::Object(mut entry) = entry else {
-            continue;
-        };
-        let key = match entry.remove("key") {
-            Some(Json::String(key)) => key,
-            _ => String::new(),
-        };
-        let mut value = entry
-            .remove("value")
-            .unwrap_or_else(|| Json::Object(Map::new()));
-        walk(&mut value, value_desc, &entries_to_objects_in);
-        object.insert(key, value);
-    }
-    *map = Json::Object(object);
-}
-
 #[cfg(test)]
 mod tests {
     use hidane_proto::google::firestore::v1::Document;
@@ -141,7 +114,7 @@ mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::rest::descriptor;
+    use crate::rest::{Layout, descriptor, print_top};
 
     #[test]
     fn json_keeps_the_order_both_ways() {
@@ -170,11 +143,9 @@ mod tests {
             ["zeta", "alpha", "mid"]
         );
 
-        let dynamic =
-            DynamicMessage::decode(desc.clone(), document.encode_to_vec().as_slice()).unwrap();
-        let mut back = serde_json::to_value(&dynamic).unwrap();
-        entries_to_objects(&mut back, &desc);
-        // serde_json keeps object order (preserve_order), so the text shows it.
-        assert_eq!(back.to_string(), json.to_string());
+        // WebChannel's layout prints these as serde_json does, which keeps object order
+        // (preserve_order).
+        let back = print_top(&desc, &document.encode_to_vec(), Layout::WebChannel);
+        assert_eq!(back, json.to_string());
     }
 }

@@ -1,0 +1,637 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/json_escapes.py",
+ "text": "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀",
+ "rest": [
+  {
+   "name": "commit the characters in a field name, a map key, a string, a document ID and a collection ID",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/c/a",
+       "fields": {
+        "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀": {
+         "integerValue": "1"
+        },
+        "b": {
+         "bytesValue": "+/8="
+        },
+        "m": {
+         "mapValue": {
+          "fields": {
+           "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀": {
+            "integerValue": "2"
+           }
+          }
+         }
+        },
+        "r": {
+         "referenceValue": "projects/{project}/databases/(default)/documents/i/\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀"
+        },
+        "s": {
+         "stringValue": "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/i/\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀",
+       "fields": {
+        "s": {
+         "stringValue": "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/k\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "PATCH answers with the document",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/p",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "s": {
+      "stringValue": "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀"
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/c/p\",\n  \"fields\": {\n    \"s\": {\n      \"stringValue\": \"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "get the document",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/a",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/c/a\",\n  \"fields\": {\n    \"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\": {\n      \"integerValue\": \"1\"\n    },\n    \"b\": {\n      \"bytesValue\": \"+/8=\"\n    },\n    \"m\": {\n      \"mapValue\": {\n        \"fields\": {\n          \"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\": {\n            \"integerValue\": \"2\"\n          }\n        }\n      }\n    },\n    \"r\": {\n      \"referenceValue\": \"projects/{project}/databases/(default)/documents/i/\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\"\n    },\n    \"s\": {\n      \"stringValue\": \"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "get the document with the characters in its ID",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/i/%00%01%02%03%04%05%06%07%08%09%0A%0B%0C%0D%0E%0F%10%11%12%13%14%15%16%17%18%19%1A%1B%1C%1D%1E%1F%22%5C%3C%3E%26%3D%27~%7F%C2%80%C2%85%C2%9F%C2%A0%C2%AD%D8%9C%E1%A0%8E%E1%BF%BF%E2%80%80%E2%80%8B%E2%80%8C%E2%80%8D%E2%80%8E%E2%80%8F%E2%80%A7%E2%80%A8%E2%80%A9%E2%80%AA%E2%80%AE%E2%81%9F%E2%81%A0%E2%81%A4%E2%82%AC%E2%83%BF%E2%84%80%E3%80%80%EF%BB%BF%EF%BF%B9%EF%BF%BD%EF%BF%BF%F0%9F%98%80",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/i/\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\",\n  \"fields\": {\n    \"s\": {\n      \"stringValue\": \"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "list it",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/i",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/i/\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\",\n    \"fields\": {\n      \"s\": {\n        \"stringValue\": \"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "batchGet it and a missing one",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/{project}/databases/(default)/documents/i/\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀",
+     "projects/{project}/databases/(default)/documents/i/\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀x"
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"found\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/i/\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\",\n    \"fields\": {\n      \"s\": {\n        \"stringValue\": \"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"missing\": \"projects/{project}/databases/(default)/documents/i/\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀x\",\n  \"readTime\": \"<time>\"\n}\n]\n"
+   }
+  },
+  {
+   "name": "runQuery",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "c"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/c/a\",\n    \"fields\": {\n      \"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\": {\n        \"integerValue\": \"1\"\n      },\n      \"b\": {\n        \"bytesValue\": \"+/8=\"\n      },\n      \"m\": {\n        \"mapValue\": {\n          \"fields\": {\n            \"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\": {\n              \"integerValue\": \"2\"\n            }\n          }\n        }\n      },\n      \"r\": {\n        \"referenceValue\": \"projects/{project}/databases/(default)/documents/i/\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\"\n      },\n      \"s\": {\n        \"stringValue\": \"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/c/p\",\n    \"fields\": {\n      \"s\": {\n        \"stringValue\": \"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "runQuery over the document with the characters in its ID",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "i"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/i/\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\",\n    \"fields\": {\n      \"s\": {\n        \"stringValue\": \"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "runAggregationQuery with the characters as an alias",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runAggregationQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredAggregationQuery": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "i"
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "count": {},
+       "alias": "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"result\": {\n    \"aggregateFields\": {\n      \"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\": {\n        \"integerValue\": \"1\"\n      }\n    }\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "listCollectionIds",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:listCollectionIds",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"collectionIds\": [\"c\", \"i\", \"k\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\"]\n}\n"
+   }
+  },
+  {
+   "name": "an error that repeats a document name",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/i/%00%01%02%03%04%05%06%07%08%09%0A%0B%0C%0D%0E%0F%10%11%12%13%14%15%16%17%18%19%1A%1B%1C%1D%1E%1F%22%5C%3C%3E%26%3D%27~%7F%C2%80%C2%85%C2%9F%C2%A0%C2%AD%D8%9C%E1%A0%8E%E1%BF%BF%E2%80%80%E2%80%8B%E2%80%8C%E2%80%8D%E2%80%8E%E2%80%8F%E2%80%A7%E2%80%A8%E2%80%A9%E2%80%AA%E2%80%AE%E2%81%9F%E2%81%A0%E2%81%A4%E2%82%AC%E2%83%BF%E2%84%80%E3%80%80%EF%BB%BF%EF%BF%B9%EF%BF%BD%EF%BF%BF%F0%9F%98%80x",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/i\\/\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000B\\f\\r\\u000E\\u000F\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001A\\u001B\\u001C\\u001D\\u001E\\u001F\\\"\\\\<>&='~\\u007F\\u0080\\u0085\\u009F ­؜᠎῿\\u2000\\u200B\\u200C\\u200D\\u200E\\u200F\\u2027\\u2028\\u2029\\u202A\\u202E\\u205F\\u2060\\u2064\\u20AC\\u20FF℀　﻿￹�￿😀x) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "an error that repeats a field name",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/c/r",
+       "fields": {
+        "__\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀__": {
+         "integerValue": "1"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"field name __\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000B\\f\\r\\u000E\\u000F\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001A\\u001B\\u001C\\u001D\\u001E\\u001F\\\"\\\\\\/<>&='~\\u007F\\u0080\\u0085\\u009F ­؜᠎῿\\u2000\\u200B\\u200C\\u200D\\u200E\\u200F\\u2027\\u2028\\u2029\\u202A\\u202E\\u205F\\u2060\\u2064\\u20AC\\u20FF℀　﻿￹�￿😀__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an error that repeats a collection ID",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "__\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀__"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Collection id \\\"__\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000B\\f\\r\\u000E\\u000F\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001A\\u001B\\u001C\\u001D\\u001E\\u001F\\\"\\\\<>&='~\\u007F\\u0080\\u0085\\u009F ­؜᠎῿\\u2000\\u200B\\u200C\\u200D\\u200E\\u200F\\u2027\\u2028\\u2029\\u202A\\u202E\\u205F\\u2060\\u2064\\u20AC\\u20FF℀　﻿￹�￿😀__\\\" is invalid because it is reserved.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  }
+ ],
+ "webchannel": {
+  "database": "projects/json-escapes/databases/(default)",
+  "steps": [
+   {
+    "op": "commit",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/json-escapes/databases/(default)/documents/c/a",
+       "fields": {
+        "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀": {
+         "integerValue": "1"
+        },
+        "b": {
+         "bytesValue": "+/8="
+        },
+        "m": {
+         "mapValue": {
+          "fields": {
+           "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀": {
+            "integerValue": "2"
+           }
+          }
+         }
+        },
+        "r": {
+         "referenceValue": "projects/json-escapes/databases/(default)/documents/i/\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀"
+        },
+        "s": {
+         "stringValue": "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/json-escapes/databases/(default)/documents/i/\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀",
+       "fields": {
+        "s": {
+         "stringValue": "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀"
+        }
+       }
+      }
+     }
+    ],
+    "outcome": {
+     "status": 200
+    }
+   },
+   {
+    "op": "handshake",
+    "session": "listen",
+    "rpc": "Listen",
+    "messages": [
+     {
+      "database": "projects/json-escapes/databases/(default)",
+      "addTarget": {
+       "documents": {
+        "documents": [
+         "projects/json-escapes/databases/(default)/documents/c/a"
+        ]
+       },
+       "targetId": 2
+      }
+     }
+    ],
+    "outcome": {
+     "status": 200,
+     "frame": [
+      [
+       0,
+       [
+        "c",
+        "<sid>",
+        "",
+        8,
+        12,
+        30000
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "op": "open",
+    "session": "listen",
+    "ci": 0,
+    "outcome": {
+     "status": 200
+    }
+   },
+   {
+    "op": "read",
+    "session": "listen",
+    "until": "resumeToken",
+    "outcome": {
+     "texts": [
+      "[{\"targetChange\":{\"targetChangeType\":\"ADD\",\"targetIds\":[2]}}]",
+      "[{\"documentChange\":{\"document\":{\"name\":\"projects/json-escapes/databases/(default)/documents/c/a\",\"fields\":{\"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\/\\u003c\\u003e\\u0026\\u003d\\u0027~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\":{\"integerValue\":\"1\"},\"b\":{\"bytesValue\":\"+/8=\"},\"m\":{\"mapValue\":{\"fields\":{\"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\/\\u003c\\u003e\\u0026\\u003d\\u0027~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\":{\"integerValue\":\"2\"}}}},\"r\":{\"referenceValue\":\"projects/json-escapes/databases/(default)/documents/i/\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\\\u003c\\u003e\\u0026\\u003d\\u0027~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\"},\"s\":{\"stringValue\":\"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\/\\u003c\\u003e\\u0026\\u003d\\u0027~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\"}},\"createTime\":\"<time>\",\"updateTime\":\"<time>\"},\"targetIds\":[2]}}]",
+      "[{\"targetChange\":{\"targetChangeType\":\"CURRENT\",\"targetIds\":[2],\"resumeToken\":\"<resumeToken>\",\"readTime\":\"<time>\"}}]",
+      "[{\"targetChange\":{\"resumeToken\":\"<resumeToken>\",\"readTime\":\"<time>\"}}]"
+     ],
+     "ended": false
+    }
+   },
+   {
+    "op": "forward",
+    "session": "listen",
+    "messages": [
+     {
+      "database": "projects/json-escapes/databases/(default)",
+      "addTarget": {
+       "documents": {
+        "documents": [
+         "projects/json-escapes/databases/(default)/documents/i/\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀"
+        ]
+       },
+       "targetId": 4
+      }
+     }
+    ],
+    "outcome": {
+     "status": 200,
+     "frame": [
+      1,
+      5,
+      7
+     ]
+    }
+   },
+   {
+    "op": "read",
+    "session": "listen",
+    "until": "resumeToken",
+    "outcome": {
+     "texts": [
+      "[{\"targetChange\":{\"targetChangeType\":\"ADD\",\"targetIds\":[4]}}]",
+      "[{\"documentChange\":{\"document\":{\"name\":\"projects/json-escapes/databases/(default)/documents/i/\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\\\u003c\\u003e\\u0026\\u003d\\u0027~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\",\"fields\":{\"s\":{\"stringValue\":\"\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\/\\u003c\\u003e\\u0026\\u003d\\u0027~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀\"}},\"createTime\":\"<time>\",\"updateTime\":\"<time>\"},\"targetIds\":[4]}}]",
+      "[{\"targetChange\":{\"targetChangeType\":\"CURRENT\",\"targetIds\":[4],\"resumeToken\":\"<resumeToken>\",\"readTime\":\"<time>\"}}]",
+      "[{\"targetChange\":{\"resumeToken\":\"<resumeToken>\",\"readTime\":\"<time>\"}}]"
+     ],
+     "ended": false
+    }
+   },
+   {
+    "op": "forward",
+    "session": "listen",
+    "messages": [
+     {
+      "database": "projects/json-escapes/databases/(default)",
+      "addTarget": {
+       "query": {
+        "parent": "projects/json-escapes/databases/(default)/documents",
+        "structuredQuery": {
+         "from": [
+          {
+           "collectionId": "__\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀__"
+          }
+         ]
+        }
+       },
+       "targetId": 6
+      }
+     }
+    ],
+    "outcome": {
+     "status": 200,
+     "frame": [
+      1,
+      9,
+      7
+     ]
+    }
+   },
+   {
+    "op": "read",
+    "session": "listen",
+    "until": "REMOVE",
+    "outcome": {
+     "texts": [
+      "[{\"targetChange\":{\"targetChangeType\":\"REMOVE\",\"targetIds\":[6],\"cause\":{\"code\":3,\"message\":\"Collection id \\\"__\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\\\u003c\\u003e\\u0026\\u003d\\u0027~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀__\\\" is invalid because it is reserved.\"}}}]"
+     ],
+     "ended": false
+    }
+   },
+   {
+    "op": "terminate",
+    "session": "listen",
+    "outcome": {
+     "status": 200,
+     "body": ""
+    }
+   },
+   {
+    "op": "handshake",
+    "session": "write",
+    "rpc": "Write",
+    "messages": [
+     {
+      "database": "projects/json-escapes/databases/(default)"
+     }
+    ],
+    "outcome": {
+     "status": 200,
+     "frame": [
+      [
+       0,
+       [
+        "c",
+        "<sid>",
+        "",
+        8,
+        12,
+        30000
+       ]
+      ]
+     ]
+    }
+   },
+   {
+    "op": "open",
+    "session": "write",
+    "ci": 0,
+    "outcome": {
+     "status": 200
+    }
+   },
+   {
+    "op": "read",
+    "session": "write",
+    "until": "noop",
+    "outcome": {
+     "texts": [
+      "[{\"streamId\":\"<streamId>\",\"streamToken\":\"MA==\"}]"
+     ],
+     "ended": false
+    }
+   },
+   {
+    "op": "forward",
+    "session": "write",
+    "messages": [
+     {
+      "streamToken": "MA==",
+      "writes": [
+       {
+        "update": {
+         "name": "projects/json-escapes/databases/(default)/documents/c/w",
+         "fields": {
+          "s": {
+           "stringValue": "\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀"
+          }
+         }
+        }
+       }
+      ]
+     }
+    ],
+    "outcome": {
+     "status": 200,
+     "frame": [
+      1,
+      2,
+      7
+     ]
+    }
+   },
+   {
+    "op": "read",
+    "session": "write",
+    "until": "writeResults",
+    "outcome": {
+     "texts": [
+      "[{\"streamToken\":\"MQ==\",\"writeResults\":[{\"updateTime\":\"<time>\"}],\"commitTime\":\"<time>\"}]"
+     ],
+     "ended": false
+    }
+   },
+   {
+    "op": "forward",
+    "session": "write",
+    "messages": [
+     {
+      "streamToken": "MQ==",
+      "writes": [
+       {
+        "update": {
+         "name": "projects/json-escapes/databases/(default)/documents/c/r",
+         "fields": {
+          "__\u0000\u0001\u0002\u0003\u0004\u0005\u0006\u0007\b\t\n\u000b\f\r\u000e\u000f\u0010\u0011\u0012\u0013\u0014\u0015\u0016\u0017\u0018\u0019\u001a\u001b\u001c\u001d\u001e\u001f\"\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧  ‪‮ ⁠⁤€⃿℀　﻿￹�￿😀__": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     }
+    ],
+    "outcome": {
+     "status": 200,
+     "frame": [
+      1,
+      3,
+      7
+     ]
+    }
+   },
+   {
+    "op": "read",
+    "session": "write",
+    "until": "error",
+    "outcome": {
+     "texts": [
+      "[{\"error\":{\"message\":\"INVALID_ARGUMENT: field name __\\u0000\\u0001\\u0002\\u0003\\u0004\\u0005\\u0006\\u0007\\b\\t\\n\\u000b\\f\\r\\u000e\\u000f\\u0010\\u0011\\u0012\\u0013\\u0014\\u0015\\u0016\\u0017\\u0018\\u0019\\u001a\\u001b\\u001c\\u001d\\u001e\\u001f\\\"\\\\/<>&='~ ­؜᠎῿ ​‌‍‎‏‧\\u2028\\u2029‪‮ ⁠⁤€⃿℀　﻿￹�￿😀__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}]"
+     ],
+     "ended": false
+    }
+   },
+   {
+    "op": "terminate",
+    "session": "write",
+    "outcome": {
+     "status": 200,
+     "body": ""
+    }
+   }
+  ]
+ }
+}

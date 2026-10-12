@@ -1,6 +1,8 @@
 //! WebChannel, the browser SDK's transport, against the official emulator's recordings
 //! (`fixtures/webchannel.json`, from `tools/oracle/webchannel.py`): handshakes, back channels
-//! (streaming and long polling), the forward channel, errors, terminate and unknown sessions.
+//! (streaming and long polling), the forward channel, errors, terminate and unknown sessions;
+//! and the exact text of messages whose strings need escaping (the `webchannel` steps of
+//! `fixtures/json_escapes.json`, from `tools/oracle/json_escapes.py`).
 //!
 //! Long-polling reads are compared on their first data and whether the response ended: where
 //! the official emulator puts its `noop`s there depends on timing.
@@ -54,9 +56,20 @@ struct Frames {
     body: Incoming,
     buffer: Vec<u8>,
     ended: bool,
+    /// The exact JSON text of the last frame read.
+    text: String,
 }
 
 impl Frames {
+    fn new(body: Incoming) -> Self {
+        Self {
+            body,
+            buffer: Vec::new(),
+            ended: false,
+            text: String::new(),
+        }
+    }
+
     fn parse(&mut self) -> Option<Json> {
         let newline = self.buffer.iter().position(|&b| b == b'\n')?;
         let length: usize = std::str::from_utf8(&self.buffer[..newline])
@@ -81,6 +94,7 @@ impl Frames {
                 return None;
             }
             let json: Json = serde_json::from_str(&text[..end]).unwrap();
+            self.text = text[..end].to_owned();
             (json, newline + 1 + end)
         };
         self.buffer.drain(..consumed);
@@ -184,16 +198,104 @@ fn long_poll_view(outcome: &Json) -> Json {
     json!({"first": first, "ended": outcome["ended"]})
 }
 
+/// The entries of a frame, `[[id,[message]],…]`, as the exact text of each `[message]`.
+fn payloads(frame: &str) -> Vec<&str> {
+    let (mut out, mut depth, mut start) = (Vec::new(), 0, 0);
+    let (mut in_string, mut escaped) = (false, false);
+    for (i, c) in frame.char_indices() {
+        if in_string {
+            match c {
+                _ if escaped => escaped = false,
+                '\\' => escaped = true,
+                '"' => in_string = false,
+                _ => {}
+            }
+            continue;
+        }
+        match c {
+            '"' => in_string = true,
+            '[' => {
+                depth += 1;
+                if depth == 3 {
+                    start = i;
+                }
+            }
+            ']' => {
+                if depth == 3 {
+                    out.push(&frame[start..=i]);
+                }
+                depth -= 1;
+            }
+            _ => {}
+        }
+    }
+    out
+}
+
+/// `tools/oracle/json_escapes.py`'s placeholders in a message's text: server times, resume
+/// tokens and stream IDs.
+fn mask_text(text: &str) -> String {
+    let mut text = text.to_owned();
+    for key in [
+        "createTime",
+        "updateTime",
+        "readTime",
+        "commitTime",
+        "resumeToken",
+        "streamId",
+    ] {
+        let marker = format!("\"{key}\":\"");
+        let mask = if key.ends_with("Time") {
+            "<time>".to_owned()
+        } else {
+            format!("<{key}>")
+        };
+        let mut out = String::new();
+        let mut rest = text.as_str();
+        while let Some(at) = rest.find(&marker) {
+            out.push_str(&rest[..at + marker.len()]);
+            rest = &rest[at + marker.len()..];
+            out.push_str(&mask);
+            rest = &rest[rest.find('"').unwrap()..];
+        }
+        out.push_str(rest);
+        text = out;
+    }
+    text
+}
+
 #[tokio::test]
 async fn webchannel_like_the_official_emulator() {
     let fixture: Json = serde_json::from_str(include_str!("fixtures/webchannel.json")).unwrap();
+    let differences = replay(DATABASE, fixture["steps"].as_array().unwrap()).await;
+    assert!(differences.is_empty(), "{}", differences.join("\n"));
+}
+
+/// Messages and stream errors whose strings are escaped as the official emulator escapes
+/// them, compared as text (`fixtures/json_escapes.json`, from `tools/oracle/json_escapes.py`,
+/// #191).
+#[tokio::test]
+async fn strings_escape_like_the_official_emulator() {
+    let fixture: Json = serde_json::from_str(include_str!("fixtures/json_escapes.json")).unwrap();
+    let webchannel = &fixture["webchannel"];
+    let differences = replay(
+        webchannel["database"].as_str().unwrap(),
+        webchannel["steps"].as_array().unwrap(),
+    )
+    .await;
+    assert!(differences.is_empty(), "{}", differences.join("\n"));
+}
+
+/// Takes `steps` in order against a fresh hidane, on `database`; the steps that differ. A read
+/// whose recorded outcome has `texts` is compared on the exact text of its messages.
+async fn replay(database: &str, steps: &[Json]) -> Vec<String> {
     let addr = start().await;
     let client: HttpClient = Client::builder(TokioExecutor::new()).build_http();
     let base = format!("http://{addr}");
     let path = |rpc: &str| format!("{base}/google.firestore.v1.Firestore/{rpc}/channel");
     let mut sessions: HashMap<String, Session> = HashMap::new();
     let mut differences = Vec::new();
-    for step in fixture["steps"].as_array().unwrap() {
+    for step in steps {
         let name = step["session"].as_str().unwrap_or_default().to_owned();
         let messages = step["messages"].as_array().cloned().unwrap_or_default();
         let (actual, expected) = match step["op"].as_str().unwrap() {
@@ -204,7 +306,7 @@ async fn webchannel_like_the_official_emulator() {
                     path(&rpc),
                     query(&[
                         ("VER", "8".into()),
-                        ("database", DATABASE.into()),
+                        ("database", database.into()),
                         ("RID", "1000".into()),
                         ("CVER", "22".into()),
                         ("X-HTTP-Session-Id", "gsessionid".into()),
@@ -223,11 +325,7 @@ async fn webchannel_like_the_official_emulator() {
                 )
                 .await;
                 let status = response.status().as_u16();
-                let mut frames = Frames {
-                    body: response.into_body(),
-                    buffer: Vec::new(),
-                    ended: false,
-                };
+                let mut frames = Frames::new(response.into_body());
                 let mut frame = frames.next().await.unwrap();
                 let sid = frame[0][1][1].as_str().unwrap().to_owned();
                 frame[0][1][1] = json!("<sid>");
@@ -258,7 +356,7 @@ async fn webchannel_like_the_official_emulator() {
                     path(&s.rpc),
                     query(&[
                         ("VER", "8".into()),
-                        ("database", DATABASE.into()),
+                        ("database", database.into()),
                         ("RID", "rpc".into()),
                         ("SID", s.sid.clone()),
                         ("AID", s.aid.to_string()),
@@ -270,23 +368,25 @@ async fn webchannel_like_the_official_emulator() {
                 );
                 let response = send(&client, "GET", url, None).await;
                 let status = response.status().as_u16();
-                s.frames = Some(Frames {
-                    body: response.into_body(),
-                    buffer: Vec::new(),
-                    ended: false,
-                });
+                s.frames = Some(Frames::new(response.into_body()));
                 (json!({"status": status}), step["outcome"].clone())
             }
             "read" => {
                 let s = sessions.get_mut(&name).unwrap();
                 let until = step["until"].as_str().unwrap();
                 let frames = s.frames.as_mut().unwrap();
-                let mut read = Vec::new();
+                let (mut read, mut texts) = (Vec::new(), Vec::new());
                 while let Some(frame) = frames.next().await {
                     for entry in frame.as_array().unwrap() {
                         s.aid = entry[0].as_u64().unwrap();
                         read.push(mask(entry));
                     }
+                    texts.extend(
+                        payloads(&frames.text)
+                            .into_iter()
+                            .filter(|payload| *payload != r#"["noop"]"#)
+                            .map(mask_text),
+                    );
                     let last = frame.to_string();
                     let done = match until {
                         "end" => false,
@@ -297,7 +397,11 @@ async fn webchannel_like_the_official_emulator() {
                         break;
                     }
                 }
-                let actual = json!({"messages": read, "ended": frames.ended});
+                let actual = if step["outcome"].get("texts").is_some() {
+                    json!({"texts": texts, "ended": frames.ended})
+                } else {
+                    json!({"messages": read, "ended": frames.ended})
+                };
                 if s.long_poll {
                     (long_poll_view(&actual), long_poll_view(&step["outcome"]))
                 } else {
@@ -311,7 +415,7 @@ async fn webchannel_like_the_official_emulator() {
                     path(&s.rpc),
                     query(&[
                         ("VER", "8".into()),
-                        ("database", DATABASE.into()),
+                        ("database", database.into()),
                         ("SID", s.sid.clone()),
                         ("RID", s.rid.to_string()),
                         ("AID", s.aid.to_string()),
@@ -330,11 +434,7 @@ async fn webchannel_like_the_official_emulator() {
                 )
                 .await;
                 let status = response.status().as_u16();
-                let mut frames = Frames {
-                    body: response.into_body(),
-                    buffer: Vec::new(),
-                    ended: false,
-                };
+                let mut frames = Frames::new(response.into_body());
                 let frame = frames.next().await;
                 tokio::time::sleep(Duration::from_millis(300)).await;
                 (
@@ -349,7 +449,7 @@ async fn webchannel_like_the_official_emulator() {
                     path(&s.rpc),
                     query(&[
                         ("VER", "8".into()),
-                        ("database", DATABASE.into()),
+                        ("database", database.into()),
                         ("SID", s.sid.clone()),
                         ("RID", s.rid.to_string()),
                         ("TYPE", "terminate".into()),
@@ -374,7 +474,7 @@ async fn webchannel_like_the_official_emulator() {
                 let rpc = step["rpc"].as_str().unwrap();
                 let mut params = vec![
                     ("VER", "8".to_owned()),
-                    ("database", DATABASE.to_owned()),
+                    ("database", database.to_owned()),
                     ("SID", "no-such-session".to_owned()),
                     ("RID", "5".to_owned()),
                     ("AID", "0".to_owned()),
@@ -411,7 +511,7 @@ async fn webchannel_like_the_official_emulator() {
                 let body = json!({"writes": step["writes"]}).to_string();
                 let request = hyper::Request::builder()
                     .method("POST")
-                    .uri(format!("{base}/v1/{DATABASE}/documents:commit"))
+                    .uri(format!("{base}/v1/{database}/documents:commit"))
                     .header("content-type", "application/json")
                     .header("authorization", "Bearer owner")
                     .body(Full::new(Bytes::from(body)))
@@ -431,7 +531,7 @@ async fn webchannel_like_the_official_emulator() {
             ));
         }
     }
-    assert!(differences.is_empty(), "{}", differences.join("\n"));
+    differences
 }
 
 /// A handshake for a Listen session on `c/a`; its session ID.
@@ -456,11 +556,7 @@ async fn listen_session(client: &HttpClient, base: &str) -> String {
         )),
     )
     .await;
-    let mut frames = Frames {
-        body: response.into_body(),
-        buffer: Vec::new(),
-        ended: false,
-    };
+    let mut frames = Frames::new(response.into_body());
     frames.next().await.unwrap()[0][1][1]
         .as_str()
         .unwrap()
@@ -481,11 +577,7 @@ async fn back_channel(client: &HttpClient, base: &str, sid: &str, aid: u64) -> F
         ])
     );
     let response = send(client, "GET", url, None).await;
-    Frames {
-        body: response.into_body(),
-        buffer: Vec::new(),
-        ended: false,
-    }
+    Frames::new(response.into_body())
 }
 
 /// Ids and payloads of a frame.
