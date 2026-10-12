@@ -72,7 +72,7 @@ project a license to use, modify, distribute, sublicense and relicense it,
 including under terms other than `MIT OR Apache-2.0` (for example a commercial
 edition), and lets the project pass those rights on if it moves to a company
 or a new owner. Your contribution as you submitted it stays licensed under
-`MIT OR Apache-2.0`. The patent license is the one Apache-2.0 has. Why the
+`MIT OR Apache-2.0`, and the patent license is like Apache-2.0's. Why the
 project asks for this, what each side keeps and how agreements are recorded:
 [docs/cla](docs/cla/README.md).
 
@@ -100,8 +100,8 @@ or the [MIT License](./LICENSE-MIT), at your option.
 Unless you explicitly state otherwise, any contribution intentionally
 submitted for inclusion in the work by you, as defined in the Apache-2.0
 license, shall be dual licensed as above, without any additional terms or
-conditions, and is also licensed to the project under the
-[Contributor License Agreement](#contributor-license-agreement) you agreed to.
+conditions. Separately, its author licenses it to the project under the
+[Contributor License Agreement](#contributor-license-agreement).
 
 ## Security issues
 
