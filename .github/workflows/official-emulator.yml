@@ -1,0 +1,182 @@
+name: Official emulator
+
+# Checks the recordings of the official Cloud Firestore emulator that hidane's tests replay
+# against the emulator itself (tools/oracle/README.md):
+#
+# - drift: re-records a few recordings that take seconds and come out the same on every run,
+#   each against a freshly started official emulator (.github/actions/official-emulator), and
+#   fails when one differs from the committed fixture. Run by hand with another version and its
+#   SHA-256, it shows what a new emulator answers differently; each recording is uploaded.
+# - newer: fails when firebase-tools' latest release pins another Firestore emulator than the one
+#   the fixtures were recorded from (.github/actions/official-emulator/pinned.sh), and says what
+#   to do.
+#
+# It runs weekly, by hand, and for changes to the action or this file.
+
+on:
+  schedule:
+    - cron: "23 4 * * 1"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Official emulator version to record against (empty for the pinned one)
+        required: false
+        default: ""
+      sha256:
+        description: Its jar's SHA-256 (expectedChecksumSHA256), with a version
+        required: false
+        default: ""
+  pull_request:
+    paths:
+      - ".github/actions/official-emulator/**"
+      - ".github/workflows/official-emulator.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  jar:
+    name: fetch the jar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/actions/official-emulator
+      # Fills the cache once, so the drift jobs do not each download the jar.
+      - uses: ./.github/actions/official-emulator
+        with:
+          version: ${{ inputs.version }}
+          sha256: ${{ inputs.sha256 }}
+          start: "false"
+
+  drift:
+    name: re-record ${{ matrix.recorder }}
+    needs: jar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        # Python standard library only, request and answer (no streams, no waits), with the
+        # server times and IDs the emulator chooses masked or absent. Not rules_eval.py: under
+        # Java 21 its batches of lookups ("batches/a document the batch writes, before" and the
+        # next case) are allowed on some runs and denied on others.
+        include:
+          - recorder: value_order
+            fixture: crates/hidane-core/tests/fixtures/value_order.json
+          - recorder: queries
+            fixture: crates/hidane/tests/fixtures/queries.json
+          - recorder: aggregations
+            fixture: crates/hidane/tests/fixtures/aggregations.json
+          - recorder: rest
+            fixture: crates/hidane/tests/fixtures/rest.json
+          - recorder: limits
+            fixture: crates/hidane/tests/fixtures/limits.json
+          - recorder: rules_paths
+            fixture: crates/hidane-rules/tests/fixtures/rules_paths.json
+    env:
+      RECORDER: ${{ matrix.recorder }}
+      FIXTURE: ${{ matrix.fixture }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Start the official emulator
+        id: emulator
+        uses: ./.github/actions/official-emulator
+        with:
+          version: ${{ inputs.version }}
+          sha256: ${{ inputs.sha256 }}
+          port: "8080"
+      - name: Record
+        env:
+          ADDRESS: ${{ steps.emulator.outputs.address }}
+        run: python3 -I "tools/oracle/$RECORDER.py" "$ADDRESS" > "$RUNNER_TEMP/$RECORDER.json"
+      - name: Stop the official emulator
+        if: ${{ always() && steps.emulator.outputs.pid != '' }}
+        env:
+          ADDRESS: ${{ steps.emulator.outputs.address }}
+          PID: ${{ steps.emulator.outputs.pid }}
+        run: |
+          curl --fail --silent --show-error --request POST "http://$ADDRESS/shutdown" || kill "$PID" || true
+          timeout 30 tail --pid="$PID" -f /dev/null
+      - name: Compare with the committed fixture
+        env:
+          VERSION: ${{ steps.emulator.outputs.version }}
+        run: |
+          if cmp -s "$FIXTURE" "$RUNNER_TEMP/$RECORDER.json"; then
+            echo "\`$RECORDER.py\` against v$VERSION recorded \`$FIXTURE\` byte for byte." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          diff -u "$FIXTURE" "$RUNNER_TEMP/$RECORDER.json" | head -n 300 || true
+          echo "\`$RECORDER.py\` against v$VERSION recorded something else than \`$FIXTURE\`: see the log and the uploaded recording." >> "$GITHUB_STEP_SUMMARY"
+          echo "::error file=$FIXTURE,title=Recording differs::$RECORDER.py against the official emulator v$VERSION does not record $FIXTURE as committed"
+          exit 1
+      # The recording and the emulator's output.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: official-${{ matrix.recorder }}
+          path: |
+            ${{ runner.temp }}/${{ matrix.recorder }}.json
+            ${{ steps.emulator.outputs.log }}
+          if-no-files-found: ignore
+
+  newer:
+    name: newer official emulator
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/actions/official-emulator
+      - name: Compare with firebase-tools' latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          . .github/actions/official-emulator/pinned.sh
+          tag=$(gh api repos/firebase/firebase-tools/releases/latest --jq .tag_name)
+          info=$(gh api "repos/firebase/firebase-tools/contents/src/emulator/downloadableEmulatorInfo.json?ref=$tag" \
+            -H "Accept: application/vnd.github.raw")
+          version=$(jq -r .firestore.version <<< "$info")
+          sha256=$(jq -r .firestore.expectedChecksumSHA256 <<< "$info")
+          url=$(jq -r .firestore.remoteUrl <<< "$info")
+          release="[firebase-tools $tag](https://github.com/firebase/firebase-tools/releases/tag/$tag)"
+          if [[ "$version" == "$PINNED_VERSION" && "$sha256" == "$PINNED_SHA256" ]]; then
+            echo "$release, the latest release, pins cloud-firestore-emulator v$version (SHA-256 \`$sha256\`), the one the fixtures were recorded from." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          if [[ "$version" == "$PINNED_VERSION" ]]; then
+            what="v$version with another jar"
+          elif [[ "$(printf '%s\n' "$PINNED_VERSION" "$version" | sort -V | tail -n 1)" == "$version" ]]; then
+            what="v$version, newer than v$PINNED_VERSION"
+          else
+            what="v$version, older than v$PINNED_VERSION"
+          fi
+          {
+            echo "## $release pins another Firestore emulator"
+            echo
+            echo "It pins cloud-firestore-emulator $what. The fixtures were recorded from the one in pinned.sh:"
+            echo
+            echo "| | Version | SHA-256 |"
+            echo "|---|---|---|"
+            echo "| firebase-tools $tag | $version | \`$sha256\` |"
+            echo "| pinned.sh | $PINNED_VERSION | \`$PINNED_SHA256\` |"
+            echo
+            echo "Its jar is at $url."
+            if [[ "$url" != "https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v$version.jar" ]]; then
+              echo "That is not the URL .github/actions/official-emulator derives from the version: change it there first."
+            fi
+            echo
+            echo "1. Run this workflow by hand with version \`$version\` and SHA-256 \`$sha256\`: each drift job records against that jar, fails if its recording differs from the fixture, and uploads it."
+            echo "2. To move to it, re-record every fixture against it (tools/oracle/README.md) with the \`oracle\` field the scripts write updated, change hidane where its answers changed, set .github/actions/official-emulator/pinned.sh, and update the version where the docs and results/ name v$PINNED_VERSION."
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::error title=Another official emulator::firebase-tools $tag pins cloud-firestore-emulator $what; the job summary says what to do"
+          exit 1

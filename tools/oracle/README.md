@@ -158,3 +158,51 @@ its transcripts are in `results/sdk-rest-*.json`.
 `ABORTED`, lock waits), and `sdk_web_transactions.mjs` for the web SDK (`npm i firebase`), whose
 transactions use preconditions and `verify` writes instead. Their transcripts are in
 `results/sdk-transactions-*.json` and `results/sdk-web-transactions-*.json`.
+
+## The official emulator in CI
+
+CI replays the fixtures without Java. To run the official emulator on a runner, the composite
+action `.github/actions/official-emulator` downloads its jar from the URL firebase-tools uses
+(`https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v<version>.jar`),
+checks the jar's SHA-256, caches it with `actions/cache` (outside the workspace, so it is never
+committed), sets up Temurin 21 with `actions/setup-java` (leaving `JAVA_HOME` and `PATH` as they
+were), starts the emulator with `-Duser.language=en -Duser.country=US` and waits until `GET /`
+answers, for two minutes at most. Without a `version` it runs the one in
+`.github/actions/official-emulator/pinned.sh`, which the fixtures were recorded from:
+
+```yaml
+- id: emulator
+  uses: ./.github/actions/official-emulator
+  with:
+    port: "8080" # also host, args (more emulator flags), java-options, timeout
+- env:
+    ADDRESS: ${{ steps.emulator.outputs.address }}
+  run: |
+    python3 -I tools/oracle/value_order.py "$ADDRESS" > "$RUNNER_TEMP/value_order.json"
+    curl -X POST "http://$ADDRESS/shutdown"
+```
+
+Its outputs are the emulator's `address`, `pid`, `log` and `startup-seconds`, the `jar` and the
+`java` it runs with. Stop the emulator with `POST /shutdown` (or its `pid`) before starting
+another on the same port; the runner ends it with the job otherwise. `start: "false"` only
+fetches the jar and sets up Java. Another release runs with `version` and `sha256` together, as
+firebase-tools' `src/emulator/downloadableEmulatorInfo.json` gives them (`firestore`).
+
+The Official emulator workflow (`.github/workflows/official-emulator.yml`) uses the action
+weekly, by hand, and on pull requests that change the action or the workflow:
+
+- **drift** re-records `value_order`, `queries`, `aggregations`, `rest`, `limits` and
+  `rules_paths`, each against a freshly started emulator, and fails when a recording differs from
+  the committed fixture by a byte. They cover values, queries, aggregations, the REST surface,
+  document limits and rules paths, take seconds, need nothing beyond the Python standard library,
+  and come out the same on every run: they wait on no stream, and the server times and IDs the
+  emulator chooses are masked or absent in what they record. (`rules_eval.py` does not: under
+  Java 21 two of its batch lookup cases are allowed on some runs and denied on others.) Each
+  recording and the emulator's output are uploaded. Run by hand with a `version` and `sha256`, it
+  records against that release instead and shows which answers it changes; the recordings'
+  `oracle` field still names the pinned version, since the scripts write it.
+- **newer** reads which Firestore emulator firebase-tools' latest release pins and fails when it
+  is not the one in `pinned.sh`. Its job summary says what to do: run the workflow by hand with
+  the new version and SHA-256 to see which recordings change, then re-record every fixture
+  against the new jar, update the `oracle` field the scripts write and `pinned.sh`, and change
+  hidane where the answers changed.

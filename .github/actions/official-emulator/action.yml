@@ -1,0 +1,154 @@
+name: Official Cloud Firestore emulator
+description: >-
+  Fetches the official Cloud Firestore emulator jar from the URL firebase-tools downloads it from,
+  checks its SHA-256, caches it, sets up Temurin and starts the emulator in the background under
+  an English locale, then waits until it answers `GET /`. Stop it with `POST /shutdown` on its
+  address (or by its pid); the runner ends it with the job otherwise. The jar stays outside the
+  workspace and is never committed (tools/oracle/README.md).
+
+inputs:
+  version:
+    description: >-
+      The emulator's version, as firebase-tools' src/emulator/downloadableEmulatorInfo.json names
+      it ("firestore", "version"). Empty for the one in pinned.sh, which hidane's fixtures were
+      recorded from.
+    required: false
+    default: ""
+  sha256:
+    description: >-
+      The SHA-256 of that version's jar ("expectedChecksumSHA256" there); a jar with another one
+      is refused. Required with `version`.
+    required: false
+    default: ""
+  host:
+    description: The address the emulator binds to (`--host`).
+    required: false
+    default: 127.0.0.1
+  port:
+    description: The port it listens on (`--port`).
+    required: false
+    default: "8080"
+  args:
+    description: >-
+      More emulator flags, split on whitespace, for example `--websocket_port 8081` or
+      `--rules firestore.rules`.
+    required: false
+    default: ""
+  java-options:
+    description: More JVM options, before `-jar`, split on whitespace, for example `-Xmx1g`.
+    required: false
+    default: ""
+  java-version:
+    description: The Temurin version to run it with.
+    required: false
+    default: "21"
+  timeout:
+    description: How many seconds to wait for the emulator to answer before failing.
+    required: false
+    default: "120"
+  start:
+    description: >-
+      `false` to fetch the jar and set up Java without starting the emulator (the `jar` and
+      `java` outputs are set, the others are not).
+    required: false
+    default: "true"
+
+outputs:
+  version:
+    description: The emulator's version.
+    value: ${{ steps.resolve.outputs.version }}
+  jar:
+    description: The jar's path.
+    value: ${{ steps.resolve.outputs.jar }}
+  java:
+    description: The `java` it runs with (the action leaves JAVA_HOME and PATH as they were).
+    value: ${{ steps.java.outputs.path }}/bin/java
+  pid:
+    description: The emulator's process ID.
+    value: ${{ steps.start.outputs.pid }}
+  address:
+    description: Its host and port as clients reach them (`127.0.0.1:8080`), for the oracle scripts or FIRESTORE_EMULATOR_HOST.
+    value: ${{ steps.start.outputs.address }}
+  log:
+    description: The file its standard output and error go to.
+    value: ${{ steps.resolve.outputs.log }}
+  startup-seconds:
+    description: Seconds from starting `java` to the first answer to `GET /`.
+    value: ${{ steps.start.outputs.startup-seconds }}
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve the version
+      id: resolve
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        SHA256: ${{ inputs.sha256 }}
+        PORT: ${{ inputs.port }}
+      run: |
+        . "$GITHUB_ACTION_PATH/pinned.sh"
+        if [[ -z "$VERSION" && -z "$SHA256" ]]; then
+          VERSION=$PINNED_VERSION
+          SHA256=$PINNED_SHA256
+        fi
+        if [[ ! "$VERSION" =~ ^[0-9]+(\.[0-9]+)*$ || ! "$SHA256" =~ ^[0-9a-f]{64}$ ]]; then
+          echo "::error title=Official emulator::Give a version (1.22.0) with its jar's SHA-256 (64 hexadecimal digits in lowercase), or neither"
+          exit 1
+        fi
+        {
+          echo "version=$VERSION"
+          echo "sha256=$SHA256"
+          echo "url=https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v$VERSION.jar"
+          # Where firebase-tools keeps it too, outside the workspace.
+          echo "jar=$HOME/.cache/firebase/emulators/cloud-firestore-emulator-v$VERSION.jar"
+          echo "key=official-firestore-emulator-v$VERSION-$SHA256"
+          echo "log=$RUNNER_TEMP/official-emulator-$PORT.log"
+        } >> "$GITHUB_OUTPUT"
+
+    - name: Restore the jar from the cache
+      id: cache
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.resolve.outputs.jar }}
+        key: ${{ steps.resolve.outputs.key }}
+
+    - name: Download and check the jar
+      shell: bash
+      env:
+        URL: ${{ steps.resolve.outputs.url }}
+        JAR: ${{ steps.resolve.outputs.jar }}
+        SHA256: ${{ steps.resolve.outputs.sha256 }}
+      run: bash "$GITHUB_ACTION_PATH/fetch.sh"
+
+    - name: Cache the jar
+      if: steps.cache.outputs.cache-hit != 'true'
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+      with:
+        path: ${{ steps.resolve.outputs.jar }}
+        key: ${{ steps.resolve.outputs.key }}
+
+    - name: Set up Java
+      id: java
+      uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+      with:
+        distribution: temurin
+        java-version: ${{ inputs.java-version }}
+        set-default: false
+        overwrite-settings: false
+
+    - name: Start the emulator
+      id: start
+      if: inputs.start == 'true'
+      shell: bash
+      env:
+        JAVA: ${{ steps.java.outputs.path }}/bin/java
+        JAR: ${{ steps.resolve.outputs.jar }}
+        VERSION: ${{ steps.resolve.outputs.version }}
+        HOST: ${{ inputs.host }}
+        PORT: ${{ inputs.port }}
+        JAVA_OPTIONS: ${{ inputs.java-options }}
+        ARGS: ${{ inputs.args }}
+        TIMEOUT: ${{ inputs.timeout }}
+        LOG: ${{ steps.resolve.outputs.log }}
+      run: bash "$GITHUB_ACTION_PATH/start.sh"
