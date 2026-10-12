@@ -59,8 +59,9 @@ compared with the official emulator's (`results/`):
 | firebase-js-sdk in Node | gRPC | verified: writes, transactions, listeners, offline and resume |
 | firebase-js-sdk Lite | REST | verified |
 | firebase-js-sdk in the browser | WebChannel and REST | verified in Chromium: listeners, writes, queries, long polling, mock tokens ([`docs/webchannel.md`](docs/webchannel.md)) |
+| Flutter Web (`cloud_firestore`) | WebChannel and REST, through firebase-js-sdk | verified in Chromium: reads, writes, transforms, queries, aggregations, `snapshots()`, batches, transactions |
 | `@firebase/rules-unit-testing` | the above | verified under Security Rules, in Node and in Chromium: `assertSucceeds` / `assertFails` for signed-in, signed-out and rules-disabled contexts (gets, lists, listeners, writes, batches, transactions), `clearFirestore()` |
-| Go, Python, Java, iOS, Android, Flutter (all platforms), C++ / Unity | gRPC or WebChannel | same transports, not verified yet |
+| Go, Python, Java, iOS, Android, Flutter (Android, iOS, macOS, Windows), C++ / Unity | gRPC | same transport, not verified yet |
 | Security Rules | every transport | enforced: `allow` conditions, `get` / `exists`, `list` decided from the query's filter, mock tokens, denial messages, `:ruleCoverage`, `debug()`; each recorded from the official emulator and replayed ([`docs/parity-exceptions.md`](docs/parity-exceptions.md) lists the differences) |
 | `firebase emulators:start` / `emulators:exec` | `hidane exec -- firebase …` | verified with firebase-tools 15.33.0, no Java installed; with the Functions emulator, Firestore-triggered functions load, but their events are not delivered yet (#70) |
 | Emulator UI | REST and the emulator's endpoints | verified: browse, create and delete documents, Clear all data, and the request monitor (the Requests tab) |

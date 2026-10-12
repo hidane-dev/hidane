@@ -23,7 +23,7 @@ verified yet.
 | firebase-js-sdk imported **in Node** | gRPC (`@grpc/grpc-js`) | verified |
 | firebase-js-sdk **Lite** (`firebase/firestore/lite`, any platform) | REST (`fetch`) only | verified |
 | firebase-js-sdk **in the browser** | **WebChannel** for Listen and Write (this includes `getDoc`, `getDocs`, `setDoc`, `updateDoc`, `deleteDoc`, `writeBatch`), REST for `runTransaction`, aggregate queries and pipelines | verified in Chromium ([webchannel.md](webchannel.md)) |
-| FlutterFire `cloud_firestore_web` | Same as firebase-js-sdk in the browser | not verified (#75) |
+| FlutterFire `cloud_firestore_web` | Same as firebase-js-sdk in the browser (`firebase_core_web` loads it from `www.gstatic.com/firebasejs/`) | verified in Chromium |
 | Emulator UI, `curl`, `firebase-tools` itself | REST and emulator-specific HTTP endpoints | REST and the emulator's endpoints served; Emulator UI v1.15.0 verified (browse, create and delete documents, Clear all data), its request monitor (the Requests tab) since v0.2.1, from the WebSocket feed on `--websocket_port` (#69); `firebase emulators:start` / `emulators:exec` launch hidane through `hidane exec` ([ADR 0006](adr/0006-launch-under-firebase-tools.md)), with the Functions emulator's Firestore triggers accepted (#185; their events are not delivered yet, #70); `--import`, `--export-on-exit` and `emulators:export` read and write the official emulator's format, and each emulator reads the other's exports ([export-format.md](export-format.md)) |
 
 So with v0.1 (gRPC only) the server-side SDKs, the mobile SDKs and Node-based test suites work.
@@ -35,6 +35,11 @@ pass the same way in Chromium and in Node: the same assertions pass, with the sa
 (`results/browser-rules-*.json`, `results/sdk-rules-unit-testing-*.json`). Denial messages give
 the reasons of one evaluation, where the official emulator's also give those of its first pass
 and, for a batch, of the writes checked before the denied one ([parity-exceptions.md](parity-exceptions.md)).
+A Flutter Web app (`cloud_firestore` 6.10.0, which loads firebase-js-sdk 12.19.0) gets the same
+results from both in Chromium: reads and writes of every value type, transforms, queries,
+aggregations, `snapshots()` of a query and of a document, a batch, transactions
+(`results/flutter-web-*.json`). Only the wording of `NOT_FOUND` for an update of a missing
+document differs, as it does for every client ([parity-exceptions.md](parity-exceptions.md)).
 
 ## How each client finds the emulator
 
