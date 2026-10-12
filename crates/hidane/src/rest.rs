@@ -972,13 +972,14 @@ fn java_double(f: f64) -> String {
             format!("{plain}.0")
         }
     } else {
-        let scientific = format!("{f:e}");
+        let mut scientific = format!("{f:e}");
+        // Java prints at least two digits: when the shortest decimal has one, the two-digit
+        // decimal closest to the value, which differs for a few subnormals (`4.9E-324`, where
+        // the shortest is `5e-324`).
+        if !scientific.contains('.') {
+            scientific = format!("{f:.1e}");
+        }
         let (mantissa, exponent) = scientific.split_once('e').expect("exponent");
-        let mantissa = if mantissa.contains('.') {
-            mantissa.to_owned()
-        } else {
-            format!("{mantissa}.0")
-        };
         format!("{mantissa}E{exponent}")
     }
 }
@@ -1006,6 +1007,12 @@ mod tests {
             (-0.0, "-0.0"),
             (1.5, "1.5"),
             (-2.0, "-2.0"),
+            (1e300, "1.0E300"),
+            // Recorded in tests/fixtures/function_events.json (Double.MIN_VALUE).
+            (5e-324, "4.9E-324"),
+            (-5e-324, "-4.9E-324"),
+            (1e-323, "9.9E-324"),
+            (2e-323, "2.0E-323"),
         ] {
             assert_eq!(java_double(value), java, "{value}");
         }

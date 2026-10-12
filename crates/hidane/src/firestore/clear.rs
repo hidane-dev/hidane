@@ -4,24 +4,54 @@
 //!
 //! Unlike the official emulator, which tells attached listeners nothing on a reset, every clear
 //! reaches them: a cleared database as a `Cleared` event, a deleted path as an ordinary commit.
+//!
+//! The Functions emulator's triggers hear of a cleared database and of a deleted path, as
+//! deletes of each document, but not of a reset, as on the official emulator
+//! (`tests/fixtures/function_events.json`).
 
-use std::ops::ControlFlow;
+use std::{ops::ControlFlow, sync::Arc};
 
-use hidane_core::path::ResourcePath;
+use hidane_core::{path::ResourcePath, store::Change};
 use hidane_proto::google::firestore::v1::{Write, write::Operation};
 use tonic::Status;
 
 use super::{FirestoreService, auth, names, names::Name};
 
 impl FirestoreService {
-    /// Drops every document of `database` and tells its listeners.
+    /// Drops every document of `database` and tells its listeners and triggers.
     pub(crate) async fn clear_database(&self, database: &str) {
+        self.clear(database, true).await;
+    }
+
+    /// Drops every document of `database` and tells its listeners, and with `events` its
+    /// triggers.
+    async fn clear(&self, database: &str, events: bool) {
         // No target, so no lock to wait for; the database's lock orders the clear among
         // commits for the change feed.
         let _ = self
             .transactions
             .commit(database, None, &[], || {
+                let triggers = self
+                    .triggers
+                    .as_ref()
+                    .filter(|triggers| events && triggers.watches(database));
+                let mut gone = Vec::new();
+                if triggers.is_some() {
+                    let at = self.store.latest_read_time(database);
+                    self.store
+                        .scan_descendants(database, &ResourcePath::root(), at, &mut |doc| {
+                            gone.push(Change {
+                                path: Arc::clone(&doc.path),
+                                before: Some(Arc::clone(doc)),
+                                after: None,
+                            });
+                            ControlFlow::Continue(())
+                        });
+                }
                 let at = self.store.clear_database(database);
+                if let Some(triggers) = triggers {
+                    triggers.committed(database, at, &gone.iter().collect::<Vec<_>>());
+                }
                 self.changes.publish_cleared(database, at);
                 Ok::<(), Status>(())
             })
@@ -32,7 +62,7 @@ impl FirestoreService {
     /// every database is seeded again on its next access.
     pub(crate) async fn reset(&self) {
         for database in self.store.database_names() {
-            self.clear_database(&database).await;
+            self.clear(&database, false).await;
         }
         if let Some(seeder) = &self.seeder {
             seeder.forget();

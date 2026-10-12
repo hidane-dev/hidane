@@ -313,9 +313,8 @@ impl Cli {
                     .into(),
             );
         }
-        // `--functions_emulator` needs no warning: firebase-tools passes it whenever the
-        // Functions emulator runs, and `triggers` warns once a Firestore trigger is registered
-        // that its events are not delivered yet (#70).
+        // `--functions_emulator` is where `triggers` sends events (#70); without it, each
+        // event is a warning, as on the official emulator.
         if self.webchannel_port.is_some() {
             warnings.push(format!(
                 "WebChannel is served on the main port; --webchannel_port is ignored ({ISSUES}/10)"

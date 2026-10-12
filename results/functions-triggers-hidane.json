@@ -1,0 +1,967 @@
+[
+ {
+  "trigger": "v1create",
+  "params": {
+   "id": "a"
+  },
+  "eventType": "google.firestore.document.create",
+  "resource": {
+   "service": "firestore.googleapis.com",
+   "name": "projects/demo-functions/databases/(default)/documents/items/a"
+  },
+  "after": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 1,
+    "s": "x"
+   }
+  }
+ },
+ {
+  "trigger": "v1create",
+  "params": {
+   "id": "b"
+  },
+  "eventType": "google.firestore.document.create",
+  "resource": {
+   "service": "firestore.googleapis.com",
+   "name": "projects/demo-functions/databases/(default)/documents/items/b"
+  },
+  "after": {
+   "path": "items/b",
+   "exists": true,
+   "data": {
+    "n": 1
+   }
+  }
+ },
+ {
+  "trigger": "v1create",
+  "params": {
+   "id": "c"
+  },
+  "eventType": "google.firestore.document.create",
+  "resource": {
+   "service": "firestore.googleapis.com",
+   "name": "projects/demo-functions/databases/(default)/documents/items/c"
+  },
+  "after": {
+   "path": "items/c",
+   "exists": true,
+   "data": {
+    "n": 5
+   }
+  }
+ },
+ {
+  "trigger": "v1delete",
+  "params": {
+   "id": "a"
+  },
+  "eventType": "google.firestore.document.delete",
+  "resource": {
+   "service": "firestore.googleapis.com",
+   "name": "projects/demo-functions/databases/(default)/documents/items/a"
+  },
+  "before": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "m": 3,
+    "n": 2,
+    "s": "x"
+   }
+  }
+ },
+ {
+  "trigger": "v1update",
+  "params": {
+   "id": "a"
+  },
+  "eventType": "google.firestore.document.update",
+  "resource": {
+   "service": "firestore.googleapis.com",
+   "name": "projects/demo-functions/databases/(default)/documents/items/a"
+  },
+  "before": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 1,
+    "s": "x"
+   }
+  },
+  "after": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 2,
+    "s": "x"
+   }
+  }
+ },
+ {
+  "trigger": "v1update",
+  "params": {
+   "id": "a"
+  },
+  "eventType": "google.firestore.document.update",
+  "resource": {
+   "service": "firestore.googleapis.com",
+   "name": "projects/demo-functions/databases/(default)/documents/items/a"
+  },
+  "before": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 2,
+    "s": "x"
+   }
+  },
+  "after": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "m": 3,
+    "n": 2,
+    "s": "x"
+   }
+  }
+ },
+ {
+  "trigger": "v1update",
+  "params": {
+   "id": "b"
+  },
+  "eventType": "google.firestore.document.update",
+  "resource": {
+   "service": "firestore.googleapis.com",
+   "name": "projects/demo-functions/databases/(default)/documents/items/b"
+  },
+  "before": {
+   "path": "items/b",
+   "exists": true,
+   "data": {
+    "n": 1
+   }
+  },
+  "after": {
+   "path": "items/b",
+   "exists": true,
+   "data": {
+    "n": 2
+   }
+  }
+ },
+ {
+  "trigger": "v1write",
+  "params": {
+   "id": "a"
+  },
+  "eventType": "google.firestore.document.write",
+  "resource": {
+   "service": "firestore.googleapis.com",
+   "name": "projects/demo-functions/databases/(default)/documents/items/a"
+  },
+  "before": {
+   "path": "items/a",
+   "exists": false,
+   "data": null
+  },
+  "after": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 1,
+    "s": "x"
+   }
+  }
+ },
+ {
+  "trigger": "v1write",
+  "params": {
+   "id": "a"
+  },
+  "eventType": "google.firestore.document.write",
+  "resource": {
+   "service": "firestore.googleapis.com",
+   "name": "projects/demo-functions/databases/(default)/documents/items/a"
+  },
+  "before": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "m": 3,
+    "n": 2,
+    "s": "x"
+   }
+  },
+  "after": {
+   "path": "items/a",
+   "exists": false,
+   "data": null
+  }
+ },
+ {
+  "trigger": "v1write",
+  "params": {
+   "id": "a"
+  },
+  "eventType": "google.firestore.document.write",
+  "resource": {
+   "service": "firestore.googleapis.com",
+   "name": "projects/demo-functions/databases/(default)/documents/items/a"
+  },
+  "before": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 1,
+    "s": "x"
+   }
+  },
+  "after": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 2,
+    "s": "x"
+   }
+  }
+ },
+ {
+  "trigger": "v1write",
+  "params": {
+   "id": "a"
+  },
+  "eventType": "google.firestore.document.write",
+  "resource": {
+   "service": "firestore.googleapis.com",
+   "name": "projects/demo-functions/databases/(default)/documents/items/a"
+  },
+  "before": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 2,
+    "s": "x"
+   }
+  },
+  "after": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "m": 3,
+    "n": 2,
+    "s": "x"
+   }
+  }
+ },
+ {
+  "trigger": "v1write",
+  "params": {
+   "id": "b"
+  },
+  "eventType": "google.firestore.document.write",
+  "resource": {
+   "service": "firestore.googleapis.com",
+   "name": "projects/demo-functions/databases/(default)/documents/items/b"
+  },
+  "before": {
+   "path": "items/b",
+   "exists": false,
+   "data": null
+  },
+  "after": {
+   "path": "items/b",
+   "exists": true,
+   "data": {
+    "n": 1
+   }
+  }
+ },
+ {
+  "trigger": "v1write",
+  "params": {
+   "id": "b"
+  },
+  "eventType": "google.firestore.document.write",
+  "resource": {
+   "service": "firestore.googleapis.com",
+   "name": "projects/demo-functions/databases/(default)/documents/items/b"
+  },
+  "before": {
+   "path": "items/b",
+   "exists": true,
+   "data": {
+    "n": 1
+   }
+  },
+  "after": {
+   "path": "items/b",
+   "exists": true,
+   "data": {
+    "n": 2
+   }
+  }
+ },
+ {
+  "trigger": "v1write",
+  "params": {
+   "id": "c"
+  },
+  "eventType": "google.firestore.document.write",
+  "resource": {
+   "service": "firestore.googleapis.com",
+   "name": "projects/demo-functions/databases/(default)/documents/items/c"
+  },
+  "before": {
+   "path": "items/c",
+   "exists": false,
+   "data": null
+  },
+  "after": {
+   "path": "items/c",
+   "exists": true,
+   "data": {
+    "n": 5
+   }
+  }
+ },
+ {
+  "trigger": "v2created",
+  "params": {
+   "id": "a"
+  },
+  "type": "google.cloud.firestore.document.v1.created",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/a",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/a",
+  "location": "us-central1",
+  "snapshot": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 1,
+    "s": "x"
+   }
+  }
+ },
+ {
+  "trigger": "v2created",
+  "params": {
+   "id": "b"
+  },
+  "type": "google.cloud.firestore.document.v1.created",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/b",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/b",
+  "location": "us-central1",
+  "snapshot": {
+   "path": "items/b",
+   "exists": true,
+   "data": {
+    "n": 1
+   }
+  }
+ },
+ {
+  "trigger": "v2created",
+  "params": {
+   "id": "c"
+  },
+  "type": "google.cloud.firestore.document.v1.created",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/c",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/c",
+  "location": "us-central1",
+  "snapshot": {
+   "path": "items/c",
+   "exists": true,
+   "data": {
+    "n": 5
+   }
+  }
+ },
+ {
+  "trigger": "v2deleted",
+  "params": {
+   "id": "a"
+  },
+  "type": "google.cloud.firestore.document.v1.deleted",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/a",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/a",
+  "location": "us-central1",
+  "snapshot": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "m": 3,
+    "n": 2,
+    "s": "x"
+   }
+  }
+ },
+ {
+  "trigger": "v2named",
+  "params": {
+   "id": "a"
+  },
+  "type": "google.cloud.firestore.document.v1.written",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/named-db",
+  "subject": "documents/items/a",
+  "project": "demo-functions",
+  "database": "named-db",
+  "namespace": "(default)",
+  "document": "items/a",
+  "location": "us-central1",
+  "before": {
+   "path": "items/a",
+   "exists": false,
+   "data": null
+  },
+  "after": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 1
+   }
+  }
+ },
+ {
+  "trigger": "v2nested",
+  "params": {
+   "id": "b",
+   "sub": "x"
+  },
+  "type": "google.cloud.firestore.document.v1.written",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/b/sub/x",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/b/sub/x",
+  "location": "us-central1",
+  "before": {
+   "path": "items/b/sub/x",
+   "exists": false,
+   "data": null
+  },
+  "after": {
+   "path": "items/b/sub/x",
+   "exists": true,
+   "data": {
+    "n": 1
+   }
+  }
+ },
+ {
+  "trigger": "v2updated",
+  "params": {
+   "id": "a"
+  },
+  "type": "google.cloud.firestore.document.v1.updated",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/a",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/a",
+  "location": "us-central1",
+  "before": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 1,
+    "s": "x"
+   }
+  },
+  "after": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 2,
+    "s": "x"
+   }
+  }
+ },
+ {
+  "trigger": "v2updated",
+  "params": {
+   "id": "a"
+  },
+  "type": "google.cloud.firestore.document.v1.updated",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/a",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/a",
+  "location": "us-central1",
+  "before": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 2,
+    "s": "x"
+   }
+  },
+  "after": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "m": 3,
+    "n": 2,
+    "s": "x"
+   }
+  }
+ },
+ {
+  "trigger": "v2updated",
+  "params": {
+   "id": "b"
+  },
+  "type": "google.cloud.firestore.document.v1.updated",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/b",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/b",
+  "location": "us-central1",
+  "before": {
+   "path": "items/b",
+   "exists": true,
+   "data": {
+    "n": 1
+   }
+  },
+  "after": {
+   "path": "items/b",
+   "exists": true,
+   "data": {
+    "n": 2
+   }
+  }
+ },
+ {
+  "trigger": "v2written",
+  "params": {
+   "id": "a"
+  },
+  "type": "google.cloud.firestore.document.v1.written",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/a",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/a",
+  "location": "us-central1",
+  "before": {
+   "path": "items/a",
+   "exists": false,
+   "data": null
+  },
+  "after": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 1,
+    "s": "x"
+   }
+  }
+ },
+ {
+  "trigger": "v2written",
+  "params": {
+   "id": "a"
+  },
+  "type": "google.cloud.firestore.document.v1.written",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/a",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/a",
+  "location": "us-central1",
+  "before": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "m": 3,
+    "n": 2,
+    "s": "x"
+   }
+  },
+  "after": {
+   "path": "items/a",
+   "exists": false,
+   "data": null
+  }
+ },
+ {
+  "trigger": "v2written",
+  "params": {
+   "id": "a"
+  },
+  "type": "google.cloud.firestore.document.v1.written",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/a",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/a",
+  "location": "us-central1",
+  "before": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 1,
+    "s": "x"
+   }
+  },
+  "after": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 2,
+    "s": "x"
+   }
+  }
+ },
+ {
+  "trigger": "v2written",
+  "params": {
+   "id": "a"
+  },
+  "type": "google.cloud.firestore.document.v1.written",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/a",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/a",
+  "location": "us-central1",
+  "before": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 2,
+    "s": "x"
+   }
+  },
+  "after": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "m": 3,
+    "n": 2,
+    "s": "x"
+   }
+  }
+ },
+ {
+  "trigger": "v2written",
+  "params": {
+   "id": "b"
+  },
+  "type": "google.cloud.firestore.document.v1.written",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/b",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/b",
+  "location": "us-central1",
+  "before": {
+   "path": "items/b",
+   "exists": false,
+   "data": null
+  },
+  "after": {
+   "path": "items/b",
+   "exists": true,
+   "data": {
+    "n": 1
+   }
+  }
+ },
+ {
+  "trigger": "v2written",
+  "params": {
+   "id": "b"
+  },
+  "type": "google.cloud.firestore.document.v1.written",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/b",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/b",
+  "location": "us-central1",
+  "before": {
+   "path": "items/b",
+   "exists": true,
+   "data": {
+    "n": 1
+   }
+  },
+  "after": {
+   "path": "items/b",
+   "exists": true,
+   "data": {
+    "n": 2
+   }
+  }
+ },
+ {
+  "trigger": "v2written",
+  "params": {
+   "id": "c"
+  },
+  "type": "google.cloud.firestore.document.v1.written",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/c",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/c",
+  "location": "us-central1",
+  "before": {
+   "path": "items/c",
+   "exists": false,
+   "data": null
+  },
+  "after": {
+   "path": "items/c",
+   "exists": true,
+   "data": {
+    "n": 5
+   }
+  }
+ },
+ {
+  "trigger": "v2writtenAuth",
+  "params": {
+   "id": "a"
+  },
+  "type": "google.cloud.firestore.document.v1.written.withAuthContext",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/a",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/a",
+  "location": "us-central1",
+  "authType": "unknown",
+  "authId": "fake-auth-id@gmail.com",
+  "before": {
+   "path": "items/a",
+   "exists": false,
+   "data": null
+  },
+  "after": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 1,
+    "s": "x"
+   }
+  }
+ },
+ {
+  "trigger": "v2writtenAuth",
+  "params": {
+   "id": "a"
+  },
+  "type": "google.cloud.firestore.document.v1.written.withAuthContext",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/a",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/a",
+  "location": "us-central1",
+  "authType": "unknown",
+  "authId": "fake-auth-id@gmail.com",
+  "before": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "m": 3,
+    "n": 2,
+    "s": "x"
+   }
+  },
+  "after": {
+   "path": "items/a",
+   "exists": false,
+   "data": null
+  }
+ },
+ {
+  "trigger": "v2writtenAuth",
+  "params": {
+   "id": "a"
+  },
+  "type": "google.cloud.firestore.document.v1.written.withAuthContext",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/a",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/a",
+  "location": "us-central1",
+  "authType": "unknown",
+  "authId": "fake-auth-id@gmail.com",
+  "before": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 1,
+    "s": "x"
+   }
+  },
+  "after": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 2,
+    "s": "x"
+   }
+  }
+ },
+ {
+  "trigger": "v2writtenAuth",
+  "params": {
+   "id": "a"
+  },
+  "type": "google.cloud.firestore.document.v1.written.withAuthContext",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/a",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/a",
+  "location": "us-central1",
+  "authType": "unknown",
+  "authId": "fake-auth-id@gmail.com",
+  "before": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "n": 2,
+    "s": "x"
+   }
+  },
+  "after": {
+   "path": "items/a",
+   "exists": true,
+   "data": {
+    "m": 3,
+    "n": 2,
+    "s": "x"
+   }
+  }
+ },
+ {
+  "trigger": "v2writtenAuth",
+  "params": {
+   "id": "b"
+  },
+  "type": "google.cloud.firestore.document.v1.written.withAuthContext",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/b",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/b",
+  "location": "us-central1",
+  "authType": "unknown",
+  "authId": "fake-auth-id@gmail.com",
+  "before": {
+   "path": "items/b",
+   "exists": false,
+   "data": null
+  },
+  "after": {
+   "path": "items/b",
+   "exists": true,
+   "data": {
+    "n": 1
+   }
+  }
+ },
+ {
+  "trigger": "v2writtenAuth",
+  "params": {
+   "id": "b"
+  },
+  "type": "google.cloud.firestore.document.v1.written.withAuthContext",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/b",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/b",
+  "location": "us-central1",
+  "authType": "unknown",
+  "authId": "fake-auth-id@gmail.com",
+  "before": {
+   "path": "items/b",
+   "exists": true,
+   "data": {
+    "n": 1
+   }
+  },
+  "after": {
+   "path": "items/b",
+   "exists": true,
+   "data": {
+    "n": 2
+   }
+  }
+ },
+ {
+  "trigger": "v2writtenAuth",
+  "params": {
+   "id": "c"
+  },
+  "type": "google.cloud.firestore.document.v1.written.withAuthContext",
+  "source": "//firestore.googleapis.com/projects/demo-functions/databases/(default)",
+  "subject": "documents/items/c",
+  "project": "demo-functions",
+  "database": "(default)",
+  "namespace": "(default)",
+  "document": "items/c",
+  "location": "us-central1",
+  "authType": "unknown",
+  "authId": "fake-auth-id@gmail.com",
+  "before": {
+   "path": "items/c",
+   "exists": false,
+   "data": null
+  },
+  "after": {
+   "path": "items/c",
+   "exists": true,
+   "data": {
+    "n": 5
+   }
+  }
+ }
+]

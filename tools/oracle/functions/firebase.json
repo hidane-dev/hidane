@@ -1,0 +1,13 @@
+{
+  "functions": { "source": "functions" },
+  "emulators": {
+    "firestore": { "host": "127.0.0.1", "port": 8210, "websocketPort": 8211 },
+    "functions": { "host": "127.0.0.1", "port": 8212 },
+    "hub": { "host": "127.0.0.1", "port": 8213 },
+    "logging": { "host": "127.0.0.1", "port": 8214 },
+    "eventarc": { "host": "127.0.0.1", "port": 8215 },
+    "tasks": { "host": "127.0.0.1", "port": 8216 },
+    "ui": { "enabled": false },
+    "singleProjectMode": true
+  }
+}

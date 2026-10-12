@@ -193,6 +193,32 @@ def document_writes(f):
     return each(DOCUMENT_WRITES_CHECKED, GRPC, FULL)
 
 
+def function_events(f):
+    """Each step. A step whose v2 events the test compares with the official `ce-source`
+    corrected, whose events the official emulator sends for writes that change nothing, which
+    follows `POST /reset`, or which the official emulator fails for a v2 trigger without a
+    database (keep in step with crates/hidane/tests/function_events.rs) is intentionally
+    different; the events of a deleted path or a cleared database are compared in any order."""
+    answers = []
+    for run in f["runs"]:
+        for case in run["cases"]:
+            after_reset = False
+            for step in case["steps"]:
+                transport = GRPC if step["kind"] == "grpc" else REST
+                v2 = [d for d in step["deliveries"]
+                      if any(name.lower() == "ce-type" for name, _ in d["headers"])]
+                failed = case["name"] == "a v2 trigger without a database" and step["status"] == 500
+                if v2 or after_reset or failed:
+                    level = DIFFERS
+                elif step.get("method") == "DELETE" and step["path"].startswith("/emulator/v1/"):
+                    level = PART
+                else:
+                    level = FULL
+                after_reset |= step.get("path") == "/reset"
+                answers.append((transport, level))
+    return answers
+
+
 def export_import(f):
     once = [key for key in ("big", "import_over", "production") if key in f]
     whole = once + list(f["imported"]) + f["requests"] + f["seeding"]
@@ -524,6 +550,20 @@ RECORDINGS = {
         counted="each registration, in both runs",
         compares="in full: status, content type and body",
         count=lambda f: [a for run in f["runs"] for a in each(run["cases"], REST, FULL)]),
+    f"{H}/fixtures/function_events.json": dict(
+        area="admin",
+        tests=[f"{H}/function_events.rs::events_reach_the_functions_emulator_as_on_the_official_emulator"],
+        counted="each step of each case (registrations and writes over REST, gRPC and the Write "
+                "stream), in the three runs: with a Functions emulator, without, and with one "
+                "that does not listen",
+        compares="in full: the status, every request the Functions emulator received (method, "
+                 "path, content type and `ce-*` headers, the v1 body byte for byte and the v2 "
+                 "body decoded, times and IDs as labels), and every `WARNING` about events. "
+                 "Intentionally different: steps with v2 events (`ce-source` names the project "
+                 "once), events for writes that change nothing, after `POST /reset`, and a v2 "
+                 "trigger without a database; in part (in any order): a deleted path or a "
+                 "cleared database",
+        count=function_events),
     f"{H}/fixtures/grpc_settings.json": dict(
         area="values",
         tests=[f"{H}/grpc_settings.rs::v1beta1_is_v1_under_another_name",
@@ -660,6 +700,8 @@ for _name in ("rules_coverage", "rules_coverage_flag", "rules_request_fields", "
 SDK_DIFFERENCES = {
     "browser-rules": ("results/README.md", "the same 13 denial messages differ in the same way"),
     "flutter-web": ("results/README.md", "Identical except the message of the three `NOT_FOUND`"),
+    "functions-triggers": ("docs/parity-exceptions.md",
+                           "A write that changes nothing sends v2 `updated` and `written` events"),
     "sdk-clear": ("results/README.md", "reaches the web SDK in one snapshot on hidane and two"),
     "sdk-documents": ("docs/parity-exceptions.md",
                       "Precondition failures print the emulator's internal Datastore key"),
@@ -698,6 +740,10 @@ TRANSCRIPTS = {
                           }),
     "flutter-web": dict(area="webchannel", client="Flutter Web (cloud_firestore) in Chromium",
                         transport="WebChannel, REST"),
+    "functions-triggers": dict(area="admin",
+                               client="firebase-tools Functions emulator (firebase-functions v1 "
+                                      "and v2), Admin SDK",
+                               transport="CLI, gRPC"),
     # Each test's outcome; `emulator` names the emulator the suite ran against.
     "js-sdk-browser": dict(area="webchannel", client="firebase-js-sdk browser suite in Chromium",
                            transport="WebChannel, REST", ignore=("emulator",),

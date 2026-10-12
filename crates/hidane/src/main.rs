@@ -140,6 +140,9 @@ async fn run(args: Vec<OsString>) -> ExitCode {
     if let (Some(path), Some((content, ruleset))) = (cli.rules.as_deref(), rules) {
         admin.rules().set_default(path, content, ruleset);
     }
+    admin
+        .triggers()
+        .set_functions_emulator(cli.functions_emulator.clone());
     let feed = websocket.map(|listeners| {
         let monitor = hidane::rules::monitor::Monitor::new();
         admin

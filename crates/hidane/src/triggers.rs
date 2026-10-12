@@ -27,17 +27,19 @@
 //!   document value. Nothing else is checked: the project and the database need not exist, the
 //!   resource of a v1 trigger is not read, and registering a key again replaces its trigger.
 //!
-//! Registered triggers are kept per project and key ([`Triggers::registered`]), also across
-//! `POST /reset`: the Functions emulator registers each trigger once, when its functions load.
-//! Their events are not delivered to the Functions emulator yet (#70); the first registration
-//! says so on standard error.
+//! Registered triggers are kept per project, in the order they were first registered
+//! ([`Triggers::registered`]), also across `POST /reset`: the Functions emulator registers each
+//! trigger once, when its functions load. (The official emulator forgets them on a reset, and
+//! sends no event afterwards: docs/parity-exceptions.md.) Each commit then sends an event to
+//! every trigger that matches a document it changed (`events`), one at a time, in the
+//! background (`delivery`).
+
+mod delivery;
+mod events;
 
 use std::{
     collections::BTreeMap,
-    sync::{
-        Mutex,
-        atomic::{AtomicBool, Ordering},
-    },
+    sync::{Arc, RwLock},
 };
 
 use axum::{
@@ -49,7 +51,11 @@ use percent_encoding::percent_decode_str;
 use serde_json::{Map, Value as Json};
 use tonic::Status;
 
-use crate::{cli::ISSUES, firestore::auth, rest, rules::json_string};
+use crate::{firestore::auth, rest, rules::json_string};
+
+/// Where the `WARNING`s about events go: one record at a time, its lines joined by line breaks,
+/// without the `WARNING: ` that standard error shows before the first.
+pub type Log = Arc<dyn Fn(&str) + Send + Sync>;
 
 /// The largest body read (as REST bodies).
 const MAX_BODY: usize = 16 * 1024 * 1024;
@@ -126,51 +132,69 @@ pub enum Trigger {
     V2(EventarcTrigger),
 }
 
-/// The triggers registered, by project and key, v1 and v2 apart.
+/// The triggers of each project, v1 and v2 apart, each in the order its key was first
+/// registered.
+#[derive(Default)]
+struct Registry {
+    v1: BTreeMap<String, Vec<(String, EventTrigger)>>,
+    v2: BTreeMap<String, Vec<(String, EventarcTrigger)>>,
+}
+
+/// Puts `trigger` under `key`, in the place of an earlier trigger of the same key if any.
+fn put<T>(list: &mut Vec<(String, T)>, key: &str, trigger: T) {
+    match list.iter_mut().find(|(k, _)| k == key) {
+        Some((_, old)) => *old = trigger,
+        None => list.push((key.to_owned(), trigger)),
+    }
+}
+
+/// The triggers registered, and where their events go.
 #[derive(Default)]
 pub struct Triggers {
-    v1: Mutex<BTreeMap<(String, String), EventTrigger>>,
-    v2: Mutex<BTreeMap<(String, String), EventarcTrigger>>,
-    warned: AtomicBool,
+    registry: RwLock<Registry>,
+    delivery: delivery::Delivery,
 }
 
 impl Triggers {
-    /// The triggers of `project`, by key, v1 first.
+    /// The triggers of `project`, v1 first, each in the order its key was first registered.
     pub fn registered(&self, project: &str) -> Vec<(String, Trigger)> {
-        let v1 = self.v1.lock().unwrap_or_else(|e| e.into_inner());
-        let v2 = self.v2.lock().unwrap_or_else(|e| e.into_inner());
-        v1.iter()
-            .filter(|((p, _), _)| p == project)
-            .map(|((_, key), trigger)| (key.clone(), Trigger::V1(trigger.clone())))
-            .chain(
-                v2.iter()
-                    .filter(|((p, _), _)| p == project)
-                    .map(|((_, key), trigger)| (key.clone(), Trigger::V2(trigger.clone()))),
-            )
+        let registry = self.registry.read().unwrap_or_else(|e| e.into_inner());
+        let v1 = registry.v1.get(project).into_iter().flatten();
+        let v2 = registry.v2.get(project).into_iter().flatten();
+        v1.map(|(key, trigger)| (key.clone(), Trigger::V1(trigger.clone())))
+            .chain(v2.map(|(key, trigger)| (key.clone(), Trigger::V2(trigger.clone()))))
             .collect()
     }
 
+    /// `--functions_emulator`: the host and port of the Functions emulator, where events go.
+    /// Without one, each event is a `WARNING`, as on the official emulator.
+    pub fn set_functions_emulator(&self, host: Option<String>) {
+        self.delivery.set_host(host);
+    }
+
+    /// Sends the `WARNING`s about events to `log` instead of standard error.
+    pub fn set_log(&self, log: Log) {
+        self.delivery.set_log(log);
+    }
+
+    /// Resolves once every event sent so far has been answered, or has failed.
+    pub async fn delivered(&self) {
+        self.delivery.idle().await;
+    }
+
     fn register(&self, project: &str, key: &str, trigger: Trigger) {
-        let id = (project.to_owned(), key.to_owned());
+        let mut registry = self.registry.write().unwrap_or_else(|e| e.into_inner());
         match trigger {
-            Trigger::V1(trigger) => {
-                self.v1
-                    .lock()
-                    .unwrap_or_else(|e| e.into_inner())
-                    .insert(id, trigger);
-            }
-            Trigger::V2(trigger) => {
-                self.v2
-                    .lock()
-                    .unwrap_or_else(|e| e.into_inner())
-                    .insert(id, trigger);
-            }
-        }
-        if !self.warned.swap(true, Ordering::Relaxed) {
-            eprintln!(
-                "WARNING: Firestore triggers are accepted, but events are not delivered to the \
-                 Functions emulator yet ({ISSUES}/70)"
-            );
+            Trigger::V1(trigger) => put(
+                registry.v1.entry(project.to_owned()).or_default(),
+                key,
+                trigger,
+            ),
+            Trigger::V2(trigger) => put(
+                registry.v2.entry(project.to_owned()).or_default(),
+                key,
+                trigger,
+            ),
         }
     }
 }
