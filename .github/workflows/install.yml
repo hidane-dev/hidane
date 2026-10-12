@@ -6,8 +6,10 @@ name: Install
 #
 # It runs when the Release workflow finishes a tag's run (that workflow publishes the release
 # with its own token, which starts no `release` event), for a release published by hand, weekly,
-# and by hand. A run right after a release can find a channel still on the previous version:
-# npm waits for a maintainer's approval, and the Homebrew formula may be committed by hand.
+# and by hand. Right after a release, three channels can still serve the previous version: npm
+# waits for a maintainer to approve the staged versions, the Homebrew formula may be committed by
+# hand, and pub.dev lists a new version a few minutes late. Their jobs wait until the channel
+# serves the release (`*-ready`, up to three hours, then the run fails) and only then install.
 
 on:
   workflow_run:
@@ -50,6 +52,59 @@ jobs:
         run: |
           tag=$(gh release view --repo hidane-dev/hidane --json tagName --jq .tagName)
           echo "version=${tag#v}" | tee -a "$GITHUB_OUTPUT"
+
+  # One runner per channel polls it, so the installs below do not start until it serves the
+  # release. Weekly and manual runs find it served and go straight on.
+  npm-ready:
+    name: npm serves the release
+    needs: latest
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      VERSION: ${{ needs.latest.outputs.version }}
+    steps:
+      - name: Wait for the approved versions
+        run: |
+          served() {
+            for package in hidane @hidane-dev/darwin-arm64 @hidane-dev/darwin-x64 @hidane-dev/linux-arm64 @hidane-dev/linux-x64 @hidane-dev/win32-x64; do
+              latest=$(curl -fsS "https://registry.npmjs.org/${package/\//%2f}" | jq -r '."dist-tags".latest') || return 1
+              [[ "$latest" == "$VERSION" ]] || { echo "$package is at $latest"; return 1; }
+            done
+          }
+          until served; do sleep 60; done
+
+  homebrew-ready:
+    name: Homebrew serves the release
+    needs: latest
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      VERSION: ${{ needs.latest.outputs.version }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Wait for the formula
+        run: |
+          served() {
+            gh api repos/hidane-dev/homebrew-tap/contents/Formula/hidane.rb --jq .content |
+              base64 -d | grep -Fq "version \"$VERSION\""
+          }
+          until served; do echo "Formula/hidane.rb is not at $VERSION yet"; sleep 60; done
+
+  pub-ready:
+    name: pub.dev serves the release
+    needs: latest
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    env:
+      VERSION: ${{ needs.latest.outputs.version }}
+    steps:
+      - name: Wait for the listing
+        run: |
+          served() {
+            latest=$(curl -fsS https://pub.dev/api/packages/hidane | jq -r .latest.version) || return 1
+            [[ "$latest" == "$VERSION" ]] || { echo "pub.dev lists $latest"; return 1; }
+          }
+          until served; do sleep 60; done
 
   script:
     name: curl | sh (${{ matrix.os }})
@@ -116,7 +171,7 @@ jobs:
 
   homebrew:
     name: Homebrew (${{ matrix.os }})
-    needs: latest
+    needs: [latest, homebrew-ready]
     strategy:
       fail-fast: false
       matrix:
@@ -197,7 +252,7 @@ jobs:
 
   npm:
     name: npm (${{ matrix.os }})
-    needs: latest
+    needs: [latest, npm-ready]
     strategy:
       fail-fast: false
       matrix:
@@ -225,7 +280,7 @@ jobs:
 
   pub:
     name: pub.dev (${{ matrix.os }})
-    needs: latest
+    needs: [latest, pub-ready]
     strategy:
       fail-fast: false
       matrix:
