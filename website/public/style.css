@@ -119,8 +119,9 @@ html[lang="ja"] .lede-lg { max-width: 38em; font-size: 17px; line-height: 1.85; 
 .parity-table td { color: var(--muted); }
 .parity-table .num { text-align: right; }
 .parity-table td.num { font-family: var(--font-mono); font-size: 14px; font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--text); }
-.parity-table td.ns { text-align: right; font-size: 13px; white-space: nowrap; color: var(--dim); }
-html[lang="ja"] .parity-table td.sdk { white-space: nowrap; }
+.parity-table .nw { white-space: nowrap; }
+.parity-table .sdk-part { display: block; }
+html[lang="ja"] .parity-table .sdk-part { white-space: nowrap; }
 html[lang="ja"] .parity-table thead th { word-break: keep-all; }
 .parity-table tfoot th, .parity-table tfoot td { border-bottom: 0; }
 .parity-table .parity-sub { display: none; }
@@ -129,15 +130,14 @@ html[lang="ja"] .parity-table thead th { word-break: keep-all; }
   .parity-table th, .parity-table td { padding: 10px 12px 10px 0; }
   .parity-table thead th { font-size: 12px; }
   .parity-table td.num { font-size: 13px; }
-  .parity-table td.ns { font-size: 12px; }
   .parity-table .parity-tr { display: none; }
   .parity-table .parity-sub { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; color: var(--muted); }
 }
 @container (max-width: 360px) {
+  .parity-table { font-size: 12px; }
   .parity-table th, .parity-table td { padding-right: 6px; }
   .parity-table td.num { font-size: 12px; }
-  .parity-table td.ns, .parity-table .parity-sub { font-size: 11px; }
-  html[lang="ja"] .parity-table td.sdk { white-space: normal; }
+  .parity-table .parity-sub { font-size: 11px; }
 }
 
 /* roadmap */

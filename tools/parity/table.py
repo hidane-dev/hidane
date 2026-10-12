@@ -6,11 +6,12 @@ Usage (from the repository root):
 
 Reads every fixture the oracle scripts recorded (`crates/*/tests/fixtures/*.json`, and the
 recordings in `results/` that a test replays) and counts, per recording, the official answers
-its test replays against hidane: their area, the transport the replay uses, how the recording
-marks their comparison, and the oracle version its header states. Reads the SDK transcript pairs
-in `results/` (`<name>-official-v<version>.json` and `<name>-hidane.json`) and says whether each
-pair is equal as JSON, and counts the intentional differences in `docs/parity-exceptions.md`.
-Writes, between `<!-- parity:start -->` and `<!-- parity:end -->`:
+its test replays against hidane: their area, the transport the replay uses, how the test compares
+each one, and the oracle version the recording states. Reads the SDK transcript pairs in
+`results/` (`<name>-official-v<version>.json` and `<name>-hidane.json`), says whether each pair
+is equal as JSON and, where it is not, whether the documentation explains the difference, and
+counts the intentional differences in `docs/parity-exceptions.md`. Writes, between
+`<!-- parity:start -->` and `<!-- parity:end -->`:
 
 - `docs/parity.md`: the tables, per area and transport, per recording and per transcript;
 - the Parity section of `website/public/index.html` and `website/public/ja/index.html`;
@@ -19,10 +20,11 @@ and `website/public/badge/parity.json`, a shields.io endpoint.
 
 Every recording and every transcript needs an entry in RECORDINGS or TRANSCRIPTS below: a new
 fixture or `results/` file fails the script until it has one. A recording's `count` returns one
-`(transport, compared)` pair per answer its test replays. `compared` is what the recording says:
-a `compare` mark (`exact`, `status`, `codes`, `none`), a `differs` mark, or nothing (UNSTATED);
-in a format with `compare` marks, an answer without one is compared in full. Where a recording
-does not say, the table says "not stated" rather than reading the test. Stdlib only.
+`(transport, level)` pair per answer its test replays, the level being how that test compares the
+answer (LEVELS). The levels come from reading the test, which the entry names (`tests`, checked
+to exist); where the recording itself marks an answer (`compare`, `differs`), the mark decides.
+The allow-lists the tests keep (cases compared on their first line only, known differences) and
+the cases they skip are read from the tests' sources. Stdlib only.
 """
 
 import json
@@ -58,61 +60,114 @@ GRPC, REST, WEBCHANNEL, WEBSOCKET, CLI, IN_PROCESS = (
 TRANSPORTS = [GRPC, REST, WEBCHANNEL, WEBSOCKET, CLI, IN_PROCESS]
 TRANSPORT_JA = {IN_PROCESS: "プロセス内"}
 
-# How a recording marks an answer's comparison.
-EXACT, STATUS, CODES, NONE, DIFFERS, UNSTATED = (
-    "exact", "status", "codes", "none", "differs", "unstated")
-COMPARED = [
-    (EXACT, "exact"),
+# How a test compares an answer, from most to least (docs/parity.md says what each means).
+FULL, REASONS, PART, STATUS, CODES, NONE, DIFFERS, UNSTATED = (
+    "full", "reasons", "part", "status", "codes", "none", "differs", "unstated")
+LEVELS = [
+    (FULL, "in full"),
+    (REASONS, "decision and reasons"),
+    (PART, "in part"),
     (STATUS, "status only"),
     (CODES, "without messages"),
     (NONE, "not compared"),
     (DIFFERS, "intentionally different"),
     (UNSTATED, "not stated"),
 ]
-COMPARE_MARKS = {"exact": EXACT, "status": STATUS, "codes": CODES, "none": NONE}
+# A recording's own `compare` marks; a step without one is compared in full.
+COMPARE_MARKS = {"exact": FULL, "status": STATUS, "codes": CODES, "none": NONE}
 
 
 class Stop(Exception):
     """A problem the person running the script has to fix."""
 
 
+def source(rel):
+    return (ROOT / rel).read_text(encoding="utf-8")
+
+
+def rust_strings(rel, name):
+    """The string literals of `const <name>` in a test, or of the `&[…]` after the call that
+    names `<name>` (a fixture); for a list of pairs, the first of each pair."""
+    text = source(rel)
+    match = (re.search(rf"const {re.escape(name)}: &\[(\(&str, &str\)|&str)\] = &\[(.*?)\];",
+                       text, re.S)
+             or re.search(rf"{re.escape(name)}\"\), &\[(.*?)\]\)", text, re.S))
+    if not match:
+        raise Stop(f"{rel}: no {name} list found; update tools/parity/table.py.")
+    pairs = match.lastindex == 2 and match.group(1).startswith("(")
+    # A literal may hold escapes, a backslash before a line break among them.
+    strings = re.findall(r'"((?:[^"\\]|\\[\s\S])*)"', match.group(match.lastindex))
+    return set(strings[::2] if pairs else strings)
+
+
 def compare_mark(item):
-    """A step's `compare` mark; in a format that has them, no mark means compared in full."""
     mark = item.get("compare", "exact")
     if mark not in COMPARE_MARKS:
         raise Stop(f"unknown compare mark {mark!r}: add it to COMPARE_MARKS")
     return COMPARE_MARKS[mark]
 
 
-def each(items, transport, compared=UNSTATED):
-    return [(transport, compared)] * len(items)
+def each(items, transport, level):
+    return [(transport, level)] * len(items)
 
 
-def steps_of(cases, transport):
-    """Cases of REST calls (`tools/oracle/steps.py` and the like): one answer per step; a case
-    marked `differs` is an intentional difference."""
-    answers = []
-    for case in cases:
-        compared = DIFFERS if "differs" in case else UNSTATED
-        answers += each(case["steps"], transport, compared)
-    return answers
+def denial(step):
+    """A Security Rules denial: a 403 with the official message."""
+    return step.get("status") == 403 and bool(((step.get("response") or {}).get("error") or {})
+                                               .get("message"))
+
+
+H = "crates/hidane/tests"
+HR = "crates/hidane-rules/tests"
 
 
 def value_order(f):
     values = [value for group in f["values"]["groups"] for value in group]
-    return each(values, IN_PROCESS) + each(f["paths"]["order"], IN_PROCESS)
+    return each(values, IN_PROCESS, FULL) + each(f["paths"]["order"], IN_PROCESS, FULL)
+
+
+def rules_eval(f):
+    known = rust_strings(f"{HR}/library.rs", "KNOWN")
+    answers = []
+    for result in f["results"]:
+        outcome = result["outcome"]
+        if result["name"] in known:
+            level = DIFFERS
+        elif result["name"].startswith("batches/"):
+            level = FULL if outcome == "allow" else PART  # a denied batch: the decision only
+        else:
+            level = {"allow": FULL, "deny": REASONS, "compile": FULL}.get(outcome, DIFFERS)
+        answers.append((IN_PROCESS, level))
+    return answers
 
 
 def rules_paths(f):
-    # paths.rs compares the reads recorded under `allow read: if true`, and checks that the
-    # paths the official compiler refused are refused; the other conditions go to warnings.rs.
     answers = []
     for result in f["results"]:
         if result["condition"] != "true":
-            continue
-        refused = "compile" in result
-        answers += [(IN_PROCESS, UNSTATED)] if refused else each(result["reads"], IN_PROCESS)
+            continue  # the other conditions are compiled by warnings.rs
+        if "compile" in result:
+            answers.append((IN_PROCESS, PART))  # refused, its message is not compared here
+        else:
+            answers += each(result["reads"], IN_PROCESS, FULL)
     return answers
+
+
+def rules_warnings(f):
+    rel = f"{HR}/warnings.rs"
+    differs = rust_strings(rel, "FIRST_LINE_ONLY") | rust_strings(rel, "KNOWN")
+    return [(IN_PROCESS, DIFFERS if case["name"] in differs else FULL) for case in f["results"]]
+
+
+def rules_conditions(f):
+    known = rust_strings(f"{HR}/conditions.rs", "KNOWN")
+    levels = {"allow": FULL, "false": REASONS, "error": REASONS, "compile": PART}
+    return [(IN_PROCESS, DIFFERS if r["name"] in known else levels[r["outcome"]])
+            for r in f["results"]]
+
+
+def aggregations(f):
+    return [(GRPC, FULL if case["outcome"]["status"] != "OK" else PART) for case in f["cases"]]
 
 
 # The recorded messages crates/hidane/tests/documents.rs checks hidane's against (calls of
@@ -135,37 +190,53 @@ def document_writes(f):
         if step >= len(steps) or not (steps[step].get("response") or {}).get("error"):
             raise Stop(f"document_writes.json has no recorded error at {name!r}, step {step}: "
                        "update DOCUMENT_WRITES_CHECKED from crates/hidane/tests/documents.rs")
-    return each(DOCUMENT_WRITES_CHECKED, GRPC)
+    return each(DOCUMENT_WRITES_CHECKED, GRPC, FULL)
 
 
 def export_import(f):
-    # Each export (its files), the large record, each import target, the import over existing
-    # documents, the production-shaped import, the endpoints' answers and the seeding steps go
-    # over REST; the start-up cases start the process with flags.
     once = [key for key in ("big", "import_over", "production") if key in f]
-    over_rest = list(f["exports"]) + once + list(f["imported"]) + f["requests"] + f["seeding"]
-    return each(over_rest, REST) + each(f["startup"], CLI)
+    whole = once + list(f["imported"]) + f["requests"] + f["seeding"]
+    return (each(f["exports"], REST, PART) + each(whole, REST, FULL)
+            + each(f["startup"], CLI, FULL))
+
+
+def field_order(f):
+    answers = []
+    for case in f:
+        for step in case["steps"]:
+            if step["status"] != 200:
+                answers.append((REST, FULL))  # the status and the message
+            elif "commitTime" in (step["response"] or {}):
+                answers.append((REST, STATUS))  # its commit time names the commit later
+            else:
+                answers.append((REST, PART))  # the fields' order and the commit of updateTime
+    return answers
 
 
 def grpc_settings(f):
-    # grpc_settings.rs sends gRPC commits up to 20 MB (larger ones are slow to send twice) and
-    # does not replay the reflection listing (docs/parity-exceptions.md).
     sizes = [case for case in f["grpc_sizes"] if case["megabytes"] <= 20]
-    return each(f["v1beta1"], GRPC) + each(sizes, GRPC) + each(f["rest_sizes"], REST)
+    return (each(f["v1beta1"], GRPC, FULL) + each(sizes, GRPC, FULL)
+            + each(f["rest_sizes"], REST, FULL))
 
 
 def negative_zero(f):
     answers = []
     for step in f["steps"]:
+        level = DIFFERS if "-1e-400" in step["name"] else FULL
         if "grpc" in step:
-            answers.append((GRPC, UNSTATED))
+            answers.append((GRPC, level))
         elif "webchannel" in step:
-            answers.append((WEBCHANNEL, UNSTATED))
+            answers.append((WEBCHANNEL, level))
         elif any(key in step for key in ("rest", "rules", "export")):
-            answers.append((REST, UNSTATED))
+            answers.append((REST, level))
         else:
             raise Stop(f"negative_zero.json: no transport for step {step.get('name')!r}")
     return answers
+
+
+def queries(f):
+    # queries.rs leaves out the `findNearest` cases (find_nearest.json covers them).
+    return [(GRPC, FULL) for case in f["cases"] if "findNearest" not in case["query"]]
 
 
 def rest(cases):
@@ -173,13 +244,51 @@ def rest(cases):
     return [(REST, compare_mark(case)) for case in cases]
 
 
-def rules_streams(f):
-    # The responses of each stream, and the error that ended it where there was one.
+def rules_server(name):
+    """rules_server.rs's replay: every status, and a denial's reasons."""
+    def count(f):
+        skip = rust_strings(f"{H}/rules_server.rs", f"fixtures/{name}")
+        return [(REST, REASONS if denial(step) else STATUS)
+                for case in f if case["name"] not in skip for step in case["steps"]]
+    return count
+
+
+def rules_coverage(f):
+    """rules_coverage.rs's replay: every status, what `debug()` printed, a denial's reasons,
+    and the body of the rules and coverage reports; a case marked `differs`, its statuses."""
     answers = []
     for case in f:
-        answers += each(case["responses"], GRPC)
+        for step in case["steps"]:
+            if "differs" in case:
+                level = DIFFERS
+            elif "raw" in step and step["status"] == 200:
+                # The coverage page is hidane's own around the same data (parity exceptions).
+                level = DIFFERS if ":ruleCoverage.html" in step["path"] else FULL
+            elif denial(step):
+                level = REASONS
+            else:
+                level = PART if step.get("log") else STATUS
+            answers.append((REST, level))
+    return answers
+
+
+def rules_compile(f):
+    rel = f"{H}/rules_compile.rs"
+    differs = rust_strings(rel, "CRASHES") | rust_strings(rel, "FIRST_LINE_ONLY")
+    return [(REST, DIFFERS if case["name"] in differs else FULL) for case in f]
+
+
+def rules_streams(f):
+    answers = []
+    for case in f:
+        for response in case["responses"]:
+            if "targetChange" in response:
+                cause = response["targetChange"].get("cause", {}).get("message")
+                answers.append((GRPC, REASONS if cause else FULL))
+            else:
+                answers.append((GRPC, PART))  # a document's name and targets, a write's count
         if case.get("status") is not None:
-            answers.append((GRPC, UNSTATED))
+            answers.append((GRPC, REASONS))  # the code, and the denial's reasons
     return answers
 
 
@@ -195,15 +304,57 @@ def transactions(f):
     return answers
 
 
+def transforms(f):
+    answers = []
+    for case in f["cases"]:
+        for step in case["steps"]:
+            # A read back: its fields. A commit: its transform results, or its error.
+            answers.append((GRPC, PART if step["method"] == "GET" else FULL))
+    return answers
+
+
 def webchannel(steps):
-    """Steps in the format of `tools/oracle/webchannel.py`'s fixture; `commit` goes over REST."""
-    return [(REST if step["op"] == "commit" else WEBCHANNEL, UNSTATED)
-            for step in steps if "outcome" in step]
+    """Steps in the format of `tools/oracle/webchannel.py`'s fixture; `commit` goes over REST,
+    and a long-polling read is compared on its first data and whether it ended."""
+    long_poll, answers = set(), []
+    for step in steps:
+        if step["op"] == "open":
+            (long_poll.add if step.get("ci") == 1 else long_poll.discard)(step.get("session"))
+        if "outcome" not in step:
+            continue
+        if step["op"] == "commit":
+            answers.append((REST, FULL))
+        elif step["op"] == "read" and step.get("session") in long_poll:
+            answers.append((WEBCHANNEL, PART))
+        else:
+            answers.append((WEBCHANNEL, FULL))
+    return answers
+
+
+def first_pass(record):
+    """A request monitor record (or a backlog of them) of the official emulator's first pass,
+    which shows `resource` undefined where hidane's shows the stored document."""
+    if isinstance(record, list):
+        return any(first_pass(r) for r in record)
+    if not isinstance(record, dict):
+        return False
+    context = record.get("rulesContext") or {}
+    undefined = {"undefined": {}}
+    request = (context.get("request") or {}).get("mapValue", {}).get("fields", {})
+    return context.get("resource") == undefined or request.get("resource") == undefined
 
 
 def websocket_requests(f):
-    return [(WEBSOCKET, DIFFERS if "differs" in step else UNSTATED)
-            for case in f for step in case["steps"]]
+    answers = []
+    for case in f:
+        for step in case["steps"]:
+            if "differs" in step:
+                level = DIFFERS
+            else:
+                records = step.get("records", []) + step.get("frames", [])
+                level = PART if any(first_pass(r) for r in records) else FULL
+            answers.append((WEBSOCKET, level))
+    return answers
 
 
 def write_stream(f):
@@ -211,143 +362,245 @@ def write_stream(f):
             for scenario in f["scenarios"] for step in scenario["steps"] if "outcome" in step]
 
 
-H = "crates/hidane/tests"
-HR = "crates/hidane-rules/tests"
 OVER_REST = "recorded over REST"
 
-# Every recording a test replays: path -> area, the test, what one answer is, how to count.
+# Every recording a test replays: path -> area, the tests that replay it, what one answer is,
+# what the tests compare, and how to count.
 RECORDINGS = {
     "crates/hidane-core/tests/fixtures/value_order.json": dict(
-        area="values", test="crates/hidane-core/tests/official_order.rs",
+        area="values",
+        tests=["crates/hidane-core/tests/official_order.rs::values_within_a_group_are_equal",
+               "crates/hidane-core/tests/official_order.rs::groups_are_strictly_ascending",
+               "crates/hidane-core/tests/official_order.rs::"
+               "document_names_sort_like_a_collection_group_query"],
         counted="each value placed in the official order, and each document name; " + OVER_REST,
+        compares="in full: each value's place and its ties, the names' order",
         count=value_order),
     f"{HR}/fixtures/rules_eval.json": dict(
-        area="rules", test=f"{HR}/library.rs",
+        area="rules", tests=[f"{HR}/library.rs::evaluation_matches_the_official_emulator"],
         counted="each condition or ruleset decided; " + OVER_REST,
-        count=lambda f: each(f["results"], IN_PROCESS)),
+        compares="an allow and a compile error in full; a denial as decision and reasons (the "
+                 "entries of one evaluation where the official emulator lists two); a denied "
+                 "batch on its decision only (in part); the official 500s, which hidane answers "
+                 "with an evaluation error, as intentionally different",
+        count=rules_eval),
     f"{HR}/fixtures/rules_paths.json": dict(
-        area="rules", test=f"{HR}/paths.rs",
+        area="rules",
+        tests=[f"{HR}/paths.rs::matches_cover_the_documents_the_official_emulator_allows"],
         counted="each read under `allow read: if true`, and each `match` path refused; "
                 + OVER_REST,
+        compares="each read's decision in full; a refused path on the refusal only (in part; "
+                 "`rules_warnings.json` holds the message)",
         count=rules_paths),
     f"{HR}/fixtures/rules_warnings.json": dict(
-        area="rules", test=f"{HR}/warnings.rs",
+        area="rules", tests=[f"{HR}/warnings.rs::warnings_are_the_official_emulators"],
         counted="each ruleset compiled, its `issues[]` or error; " + OVER_REST,
-        count=lambda f: each(f["results"], IN_PROCESS)),
+        compares="in full: every issue with its position and severity, or the error message; "
+                 "the cases the test lists in `FIRST_LINE_ONLY` (the first line) and `KNOWN` "
+                 "as intentionally different",
+        count=rules_warnings),
     "results/rules-conditions-official-v1.22.0.json": dict(
-        area="rules", test=f"{HR}/conditions.rs",
+        area="rules",
+        tests=[f"{HR}/conditions.rs::conditions_decide_as_on_the_official_emulator"],
         counted="each condition decided; " + OVER_REST,
-        count=lambda f: each(f["results"], IN_PROCESS)),
+        compares="an allow in full; a denial (`false` or an error) as decision and reasons; a "
+                 "ruleset that does not compile on the refusal only (in part; "
+                 "`rules_warnings.json` holds the message)",
+        count=rules_conditions),
     f"{H}/fixtures/aggregations.json": dict(
-        area="queries", test=f"{H}/aggregations.rs",
+        area="queries",
+        tests=[f"{H}/aggregations.rs::aggregations_answer_like_the_official_emulator"],
         counted="each query; " + OVER_REST,
-        count=lambda f: each(f["cases"], GRPC)),
+        compares="an error in full (status and message); results in part: every aggregate value "
+                 "with its type, not `done`, which gRPC does not carry",
+        count=aggregations),
     f"{H}/fixtures/auth.json": dict(
-        area="admin", test=f"{H}/auth.rs", counted="each case",
-        count=lambda f: (each(f["classify"], REST) + each(f["grpc"], GRPC)
-                         + each(f["rest"], REST))),
+        area="admin", tests=[f"{H}/auth.rs::authorization_is_read_like_the_official_emulator"],
+        counted="each case",
+        compares="in full: the outcome as the recording summarises it (status or code and "
+                 "message)",
+        count=lambda f: (each(f["classify"], REST, FULL) + each(f["grpc"], GRPC, FULL)
+                         + each(f["rest"], REST, FULL))),
     f"{H}/fixtures/cors.json": dict(
-        area="rest", test=f"{H}/cors.rs", counted="each request",
-        count=lambda f: each(f["cases"], REST)),
+        area="rest", tests=[f"{H}/cors.rs::cors_answers_like_the_official_emulator"],
+        counted="each request",
+        compares="in full: status, every header but `date`, `content-length` and `connection`, "
+                 "and the body",
+        count=lambda f: each(f["cases"], REST, FULL)),
     f"{H}/fixtures/document_writes.json": dict(
-        area="documents", test=f"{H}/documents.rs",
-        counted="each recorded message the test checks hidane's against (it replays no case "
+        area="documents",
+        tests=[f"{H}/documents.rs::reads_and_their_errors", f"{H}/documents.rs::preconditions",
+               f"{H}/documents.rs::invalid_writes_use_the_official_messages",
+               f"{H}/documents.rs::listing_documents_and_collections",
+               f"{H}/documents.rs::batch_write_reports_each_write"],
+        counted="each recorded message the tests check hidane's against (they replay no case "
                 "as a whole); " + OVER_REST,
+        compares="in full: the code and the message (a stored version's timestamps masked)",
         count=document_writes),
     f"{H}/fixtures/export_import.json": dict(
-        area="export", test=f"{H}/export_import.rs",
+        area="export",
+        tests=[f"{H}/export_import.rs::exports_match_the_official_files",
+               f"{H}/export_import.rs::imports_write_what_the_official_emulator_writes",
+               f"{H}/export_import.rs::production_shaped_exports_import_like_the_official_emulator",
+               f"{H}/export_import.rs::the_endpoints_answer_like_the_official_emulator",
+               f"{H}/export_import.rs::databases_are_seeded_like_the_official_emulator",
+               f"{H}/export_import.rs::start_up_like_the_official_emulator"],
         counted="each export, import, endpoint answer, seeding step and start-up",
+        compares="an export in part: its files, metadata byte for byte and every record, in "
+                 "name order (an intentional difference) and without times; the rest in full: "
+                 "imported documents, the endpoints' status, content type and body, seeding, "
+                 "exit codes and messages",
         count=export_import),
     f"{H}/fixtures/field_order.json": dict(
-        area="documents", test=f"{H}/field_order.rs", counted="each call",
-        count=lambda f: steps_of(f, REST)),
+        area="documents", tests=[f"{H}/field_order.rs::fields_come_back_in_the_official_order"],
+        counted="each call",
+        compares="an error in full (status and message); a commit on its status; a read in "
+                 "part: the order of every field, nested ones included, and which commit its "
+                 "`updateTime` names, not the values",
+        count=lambda f: field_order(f)),
     f"{H}/fixtures/find_nearest.json": dict(
-        area="queries", test=f"{H}/find_nearest.rs", counted="each query, aggregation and write",
-        count=lambda f: each(f["queries"] + f["aggregations"] + f["writes"], REST)),
+        area="queries", tests=[f"{H}/find_nearest.rs::find_nearest_like_the_official_emulator"],
+        counted="each query, aggregation and write",
+        compares="in full: the documents' names and fields but the vector (as the recording "
+                 "keeps them), the aggregate values, or the status and message",
+        count=lambda f: each(f["queries"] + f["aggregations"] + f["writes"], REST, FULL)),
     f"{H}/fixtures/function_triggers.json": dict(
-        area="admin", test=f"{H}/function_triggers.rs", counted="each registration, in both runs",
-        count=lambda f: [answer for run in f["runs"] for answer in each(run["cases"], REST)]),
+        area="admin",
+        tests=[f"{H}/function_triggers.rs::registrations_answer_like_the_official_emulator"],
+        counted="each registration, in both runs",
+        compares="in full: status, content type and body",
+        count=lambda f: [a for run in f["runs"] for a in each(run["cases"], REST, FULL)]),
     f"{H}/fixtures/grpc_settings.json": dict(
-        area="values", test=f"{H}/grpc_settings.rs",
+        area="values",
+        tests=[f"{H}/grpc_settings.rs::v1beta1_is_v1_under_another_name",
+               f"{H}/grpc_settings.rs::large_grpc_requests_pass",
+               f"{H}/grpc_settings.rs::rest_bodies_up_to_16_mib"],
         counted="each v1beta1 call, gRPC size up to 20 MB and REST size (not the larger gRPC "
                 "sizes nor the reflection listing)",
+        compares="in full: the outcome as the recording summarises it",
         count=grpc_settings),
     f"{H}/fixtures/limits.json": dict(
-        area="values", test=f"{H}/limits.rs", counted="each commit",
-        count=lambda f: each(f["cases"], REST)),
+        area="values", tests=[f"{H}/limits.rs::limits_like_the_official_emulator"],
+        counted="each commit", compares="in full: status and message",
+        count=lambda f: each(f["cases"], REST, FULL)),
     f"{H}/fixtures/list_documents.json": dict(
-        area="documents", test=f"{H}/list_documents.rs", counted="each case (a paged case is one)",
-        count=lambda f: each(f["grpc"], GRPC) + each(f["rest"], REST)),
+        area="documents",
+        tests=[f"{H}/list_documents.rs::list_documents_like_the_official_emulator"],
+        counted="each case (a paged case is one)",
+        compares="in full: the names of every page, or the code and message",
+        count=lambda f: each(f["grpc"], GRPC, FULL) + each(f["rest"], REST, FULL)),
     f"{H}/fixtures/negative_zero.json": dict(
-        area="values", test=f"{H}/negative_zero.rs", counted="each step",
+        area="values",
+        tests=[f"{H}/negative_zero.rs::every_recorded_step_gives_the_official_answer"],
+        counted="each step",
+        compares="in full: the answer as the recording summarises it, each double spelled out; "
+                 "the steps that write `-1e-400` as intentionally different",
         count=negative_zero),
     f"{H}/fixtures/queries.json": dict(
-        area="queries", test=f"{H}/queries.rs", counted="each query; " + OVER_REST,
-        count=lambda f: each(f["cases"], GRPC)),
+        area="queries", tests=[f"{H}/queries.rs::queries_answer_like_the_official_emulator"],
+        counted="each query but the `findNearest` one; " + OVER_REST,
+        compares="in full: each response's document, `skippedResults` and `done`, the fields of "
+                 "projected documents, or the status and message",
+        count=queries),
     f"{H}/fixtures/json_escapes.json": dict(
-        area="values", test=[f"{H}/rest.rs", f"{H}/webchannel.rs"],
+        area="values",
+        tests=[f"{H}/rest.rs::strings_escape_like_the_official_emulator",
+               f"{H}/webchannel.rs::strings_escape_like_the_official_emulator"],
         counted="each REST request and each WebChannel step",
+        compares="in full: REST as `rest.json` (its `compare` marks), WebChannel messages as "
+                 "their exact JSON text",
         count=lambda f: rest(f["rest"]) + webchannel(f["webchannel"]["steps"])),
     f"{H}/fixtures/rest.json": dict(
-        area="rest", test=f"{H}/rest.rs", counted="each request",
+        area="rest", tests=[f"{H}/rest.rs::rest_answers_like_the_official_emulator"],
+        counted="each request",
+        compares="as each case's `compare` marks it: `exact` in full (status, content type and "
+                 "body byte for byte, server times, IDs and tokens masked), `status` on its "
+                 "status and content type",
         count=lambda f: rest(f["cases"])),
-    f"{H}/fixtures/rules_auth.json": dict(
-        area="rules", test=f"{H}/rules_server.rs", counted="each call",
-        count=lambda f: steps_of(f, REST)),
     f"{H}/fixtures/rules_compile.json": dict(
-        area="rules", test=f"{H}/rules_compile.rs", counted="each ruleset loaded",
-        count=lambda f: each(f, REST)),
-    f"{H}/fixtures/rules_coverage.json": dict(
-        area="rules", test=f"{H}/rules_coverage.rs", counted="each call",
-        count=lambda f: steps_of(f, REST)),
-    f"{H}/fixtures/rules_coverage_flag.json": dict(
-        area="rules", test=f"{H}/rules_coverage.rs", counted="each call",
-        count=lambda f: steps_of(f, REST)),
-    f"{H}/fixtures/rules_denials.json": dict(
-        area="rules", test=f"{H}/rules_server.rs", counted="each call",
-        count=lambda f: steps_of(f, REST)),
-    f"{H}/fixtures/rules_list.json": dict(
-        area="rules", test=f"{H}/rules_server.rs", counted="each call",
-        count=lambda f: steps_of(f, REST)),
-    f"{H}/fixtures/rules_lookups.json": dict(
-        area="rules", test=f"{H}/rules_server.rs", counted="each call",
-        count=lambda f: steps_of(f, REST)),
-    f"{H}/fixtures/rules_request.json": dict(
-        area="rules", test=f"{H}/rules_server.rs", counted="each call",
-        count=lambda f: steps_of(f, REST)),
-    f"{H}/fixtures/rules_request_fields.json": dict(
-        area="rules", test=f"{H}/rules_coverage.rs", counted="each call",
-        count=lambda f: steps_of(f, REST)),
+        area="rules", tests=[f"{H}/rules_compile.rs::compiles_like_the_official_emulator"],
+        counted="each ruleset loaded",
+        compares="in full: status and body byte for byte; the cases the test lists in `CRASHES` "
+                 "and `FIRST_LINE_ONLY` as intentionally different",
+        count=rules_compile),
     f"{H}/fixtures/rules_streams.json": dict(
-        area="rules", test=f"{H}/rules_streams.rs",
+        area="rules", tests=[f"{H}/rules_streams.rs::streams_under_rules"],
         counted="each stream response, and each error that ended a stream",
+        compares="a target change in full (type, targets, resume tokens and times masked); a "
+                 "denied target's cause and an error that ended the stream as decision and "
+                 "reasons; a document change in part (its name and targets, not its fields) and "
+                 "a write response in part (its number of results)",
         count=rules_streams),
-    f"{H}/fixtures/rules_verify.json": dict(
-        area="rules", test=f"{H}/rules_coverage.rs", counted="each call",
-        count=lambda f: steps_of(f, REST)),
-    f"{H}/fixtures/rules_writes.json": dict(
-        area="rules", test=f"{H}/rules_server.rs", counted="each call",
-        count=lambda f: steps_of(f, REST)),
     f"{H}/fixtures/transactions.json": dict(
-        area="transactions", test=f"{H}/transactions.rs",
+        area="transactions", tests=[f"{H}/transactions.rs::replay"],
         counted="each step with an outcome, except those of the scenario marked `slow`",
+        compares="as each step's `compare` marks it; without a mark in full (status, message, "
+                 "elapsed time to 0.5 s and the result, not transaction IDs)",
         count=transactions),
     f"{H}/fixtures/transforms.json": dict(
-        area="documents", test=f"{H}/transforms.rs", counted="each call; " + OVER_REST,
-        count=lambda f: steps_of(f["cases"], GRPC)),
+        area="documents",
+        tests=[f"{H}/transforms.rs::every_recorded_case_gives_the_official_answer"],
+        counted="each call; " + OVER_REST,
+        compares="a commit in full (its transform results, server times as the request time, "
+                 "or the code and message); a read in part (the document's fields)",
+        count=transforms),
     f"{H}/fixtures/unsupported.json": dict(
-        area="queries", test=f"{H}/unsupported.rs", counted="each call",
-        count=lambda f: each(f["grpc"], GRPC) + each(f["rest"], REST)),
+        area="queries",
+        tests=[f"{H}/unsupported.rs::ignored_and_refused_like_the_official_emulator"],
+        counted="each call", compares="in full: the outcome as the recording summarises it",
+        count=lambda f: each(f["grpc"], GRPC, FULL) + each(f["rest"], REST, FULL)),
     f"{H}/fixtures/webchannel.json": dict(
-        area="webchannel", test=f"{H}/webchannel.rs", counted="each step",
+        area="webchannel", tests=[f"{H}/webchannel.rs::webchannel_like_the_official_emulator"],
+        counted="each step",
+        compares="in full: status, frames and messages (session IDs, times and tokens masked); a "
+                 "long-polling read in part (its first data and whether it ended: where the "
+                 "`noop`s fall depends on timing)",
         count=lambda f: webchannel(f["steps"])),
     f"{H}/fixtures/websocket_requests.json": dict(
-        area="rules", test=f"{H}/websocket_requests.rs",
+        area="rules",
+        tests=[f"{H}/websocket_requests.rs::records_as_the_official_emulator_sends_them"],
         counted="each step: the request monitor's records of a call, or a WebSocket exchange",
+        compares="in full: every record field for field (times, request IDs and the release "
+                 "key's number masked, a list filter's fields in any order); in part where an "
+                 "official record shows `resource` undefined (its first pass), which accepts "
+                 "hidane's stored document; a step marked `differs` (method and path only) as "
+                 "intentionally different",
         count=websocket_requests),
     f"{H}/fixtures/write_stream.json": dict(
-        area="streams", test=f"{H}/write_stream.rs", counted="each step with an outcome",
+        area="streams", tests=[f"{H}/write_stream.rs::replay"],
+        counted="each step with an outcome",
+        compares="as each step's `compare` marks it; without a mark in full (the response's "
+                 "token, write results and commit time as the recording summarises them, the "
+                 "error, the elapsed time)",
         count=write_stream),
+}
+for _name in ("rules_auth", "rules_denials", "rules_list", "rules_lookups", "rules_request",
+              "rules_writes"):
+    RECORDINGS[f"{H}/fixtures/{_name}.json"] = dict(
+        area="rules", tests=[f"{H}/rules_server.rs::replay"], counted="each call",
+        compares="a denial as decision and reasons (`same_denial`: hidane's reasons are among "
+                 "the official ones); every other answer on its status",
+        count=rules_server(f"{_name}.json"))
+for _name in ("rules_coverage", "rules_coverage_flag", "rules_request_fields", "rules_verify"):
+    RECORDINGS[f"{H}/fixtures/{_name}.json"] = dict(
+        area="rules", tests=[f"{H}/rules_coverage.rs::replay"], counted="each call",
+        compares="every status and what `debug()` printed (without `request.time`); the rules "
+                 "and coverage reports in full (byte for byte, without `request.time`); a denial "
+                 "as decision and reasons (`same_denial`); a call that printed in part, the "
+                 "others on their status; the coverage page and the cases marked `differs` as "
+                 "intentionally different",
+        count=rules_coverage)
+
+# Where the documentation explains why a transcript pair differs: (file, a phrase it holds).
+SDK_DIFFERENCES = {
+    "browser-rules": ("results/README.md", "the same 13 denial messages differ in the same way"),
+    "flutter-web": ("results/README.md", "Identical except the message of the three `NOT_FOUND`"),
+    "sdk-clear": ("results/README.md", "reaches the web SDK in one snapshot on hidane and two"),
+    "sdk-documents": ("docs/parity-exceptions.md",
+                      "Precondition failures print the emulator's internal Datastore key"),
+    "sdk-listen": ("results/README.md", "a batch reaches the web SDK's limit query as two"),
+    "sdk-listen-resume": ("results/README.md", "the official emulator gets there in three"),
+    "sdk-rules-unit-testing": ("results/README.md", "13 denial messages differ"),
 }
 
 # SDK transcripts in results/: name -> area, the client, its transport, and other transcripts
@@ -389,6 +642,8 @@ IGNORED = {
     "results/issues-firebase-tools-metadata.json": "metadata of firebase-tools issues",
 }
 
+IDENTICAL, DOCUMENTED, UNEXPLAINED = "identical", "documented", "unexplained"
+
 
 def load(rel):
     with open(ROOT / rel, encoding="utf-8") as f:
@@ -403,21 +658,31 @@ def oracle_version(rel, fixture):
     return f"v{match.group(1)}" if match else None
 
 
+def check_tests(rel, tests):
+    for test in tests:
+        path, _, function = test.partition("::")
+        if not (ROOT / path).is_file() or not re.search(
+                rf"\bfn {re.escape(function.split('::')[-1])}\b", source(path)):
+            raise Stop(f"{rel}: its test {test} was not found; update RECORDINGS.")
+
+
 def recordings():
     found = {p.relative_to(ROOT).as_posix() for p in ROOT.glob("crates/*/tests/fixtures/*.json")}
     unknown = sorted(found - set(RECORDINGS))
     if unknown:
-        raise Stop(f"{', '.join(unknown)}: not in RECORDINGS. Add each with its area, the test "
-                   "that replays it and how to count its answers, then run the script.")
+        raise Stop(f"{', '.join(unknown)}: not in RECORDINGS. Add each with its area, the tests "
+                   "that replay it, what they compare and how to count its answers, then run "
+                   "the script.")
     missing = sorted(rel for rel in RECORDINGS if not (ROOT / rel).is_file())
     if missing:
         raise Stop(f"{', '.join(missing)}: in RECORDINGS but not found; remove the entries.")
     rows = []
     for rel, entry in RECORDINGS.items():
+        check_tests(rel, entry["tests"])
         fixture = load(rel)
         try:
             answers = Counter(entry["count"](fixture))
-        except (KeyError, TypeError) as err:
+        except (KeyError, TypeError, AttributeError) as err:
             raise Stop(f"{rel}: its format changed ({err!r}); update its count in RECORDINGS.")
         if not answers:
             raise Stop(f"{rel}: no answers counted; check its count in RECORDINGS.")
@@ -427,6 +692,16 @@ def recordings():
 
 def normalized(rel):
     return json.dumps(load(rel), sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def explained(name):
+    """Where the documentation explains a pair's difference, checked to say so; or None."""
+    if name not in SDK_DIFFERENCES:
+        return None
+    rel, phrase = SDK_DIFFERENCES[name]
+    if phrase not in source(rel):
+        raise Stop(f"SDK_DIFFERENCES[{name!r}]: {rel} no longer says {phrase!r}.")
+    return rel
 
 
 def transcripts():
@@ -446,9 +721,19 @@ def transcripts():
             if rel not in files:
                 raise Stop(f"TRANSCRIPTS[{name!r}]: {rel} not found.")
             accounted.add(rel)
+            where = None
+            if normalized(official[0]) == normalized(rel):
+                result = IDENTICAL
+            else:
+                where = explained(name)
+                result = DOCUMENTED if where else UNEXPLAINED
             rows.append(dict(entry, name=name, official=official[0], other=rel, what=what,
-                             identical=normalized(official[0]) == normalized(rel)))
+                             result=result, where=where))
         accounted.add(official[0])
+        if name in SDK_DIFFERENCES and all(row["result"] == IDENTICAL
+                                           for row in rows if row["name"] == name):
+            raise Stop(f"{name}: the transcripts are identical now; remove it from "
+                       "SDK_DIFFERENCES.")
     unknown = sorted(files - accounted)
     if unknown:
         raise Stop(f"{', '.join(unknown)}: not in the mapping. Add a transcript pair to "
@@ -458,8 +743,8 @@ def transcripts():
 
 def intentional_differences():
     """The rows of the table under "## Intentional differences" in docs/parity-exceptions.md."""
-    text = (ROOT / "docs/parity-exceptions.md").read_text(encoding="utf-8")
-    match = re.search(r"^## Intentional differences.*?$(.*?)(?=^## |\Z)", text, re.M | re.S)
+    match = re.search(r"^## Intentional differences.*?$(.*?)(?=^## |\Z)",
+                      source("docs/parity-exceptions.md"), re.M | re.S)
     if not match:
         raise Stop("docs/parity-exceptions.md: no \"## Intentional differences\" section.")
     rows = [line for line in match.group(1).splitlines() if line.startswith("|")]
@@ -472,17 +757,19 @@ def n(number):
     return f"{number:,}"
 
 
+def total(counter, level=None):
+    return sum(count for (_, lv), count in counter.items() if level is None or lv == level)
+
+
 def summary(answers):
-    """`53 exact, 4 status only`: the comparisons of some answers, in COMPARED order."""
-    totals = Counter()
-    for (_, compared), count in answers.items():
-        totals[compared] += count
-    return ", ".join(f"{n(totals[key])} {label}" for key, label in COMPARED if totals[key])
+    """`53 in full, 4 status only`: how some answers are compared, in LEVELS order."""
+    return ", ".join(f"{n(total(answers, key))} {label}"
+                     for key, label in LEVELS if total(answers, key))
 
 
 def transports_of(answers, lang="en"):
     used = {transport for transport, _ in answers}
-    return ", ".join(TRANSPORT_JA.get(t, t) if lang == "ja" else t for t in TRANSPORTS if t in used)
+    return [TRANSPORT_JA.get(t, t) if lang == "ja" else t for t in TRANSPORTS if t in used]
 
 
 def by_area(rows, pairs):
@@ -492,18 +779,35 @@ def by_area(rows, pairs):
         for row in rows:
             if row["area"] == key:
                 answers.update(row["answers"])
-        same = [pair["identical"] for pair in pairs if pair["area"] == key]
-        if answers or same:
-            areas[key] = dict(answers=answers, pairs=len(same), identical=sum(same))
+        results = Counter(pair["result"] for pair in pairs if pair["area"] == key)
+        if answers or results:
+            areas[key] = dict(answers=answers, results=results)
     return areas
-
-
-def total(counter, compared=None):
-    return sum(count for (_, c), count in counter.items() if compared is None or c == compared)
 
 
 def link(rel, base="../"):
     return f"[`{Path(rel).name}`]({base}{rel})"
+
+
+def test_links(tests):
+    """`[`rest.rs`](…) `replay`` for each file, with its functions."""
+    by_file = {}
+    for test in tests:
+        path, _, function = test.partition("::")
+        by_file.setdefault(path, []).append(f"`{function}`")
+    return "; ".join(f"{link(path)} {', '.join(functions)}" for path, functions in by_file.items())
+
+
+def sdk_summary(results, ja=False):
+    labels = ({IDENTICAL: "一致 {}", DOCUMENTED: "既知の差 {}", UNEXPLAINED: "説明なし {}"} if ja
+              else {IDENTICAL: "{} identical", DOCUMENTED: "{} documented difference{}",
+                    UNEXPLAINED: "{} unexplained"})
+    parts = []
+    for key in (IDENTICAL, DOCUMENTED, UNEXPLAINED):
+        if results[key]:
+            plural = "" if results[key] == 1 else "s"
+            parts.append(labels[key].format(results[key], plural))
+    return parts
 
 
 def markdown(rows, pairs, exceptions):
@@ -512,15 +816,15 @@ def markdown(rows, pairs, exceptions):
         everything.update(row["answers"])
     versions = Counter(row["oracle"] for row in rows if row["oracle"])
     stated = sum(versions.values())
-    identical = sum(pair["identical"] for pair in pairs)
+    results = Counter(pair["result"] for pair in pairs)
     out = [START, "<!-- Generated by tools/parity/table.py; edit the script, not this. -->", ""]
     out.append(
         f"**{n(total(everything))} recorded answers** in {len(rows)} recordings, replayed against "
         f"hidane by `cargo test`: {summary(everything)}. Oracle: "
         + ", ".join(f"{v} ({count} recordings)" for v, count in sorted(versions.items()))
         + f"; {len(rows) - stated} recordings do not state a version. SDK transcripts: "
-        f"{identical} of {len(pairs)} identical. Intentional differences: {exceptions} "
-        "([parity-exceptions.md](parity-exceptions.md)).")
+        f"{len(pairs)} comparisons, {', '.join(sdk_summary(results))}. Intentional differences: "
+        f"{exceptions} ([parity-exceptions.md](parity-exceptions.md)).")
     out += ["", "### By area and transport", "",
             "| Area | Transport | Recorded answers | Compared |", "|---|---|--:|---|"]
     for key, area in by_area(rows, pairs).items():
@@ -534,21 +838,25 @@ def markdown(rows, pairs, exceptions):
             first = False
     out.append(f"| **Total** | | **{n(total(everything))}** | {summary(everything)} |")
     out += ["", "### By recording", "",
-            "| Recording | Area | Transports | Counted | Answers | Compared | Oracle "
-            "| Replayed by |",
-            "|---|---|---|---|--:|---|---|---|"]
+            "| Recording | Area | Transports | Answers | Compared | Oracle |",
+            "|---|---|---|--:|---|---|"]
     for row in rows:
-        tested = [row["test"]] if isinstance(row["test"], str) else row["test"]
-        tests = ", ".join(link(test) for test in tested)
         out.append(
             f"| {link(row['path'])} | {AREA_NAME['en'][row['area']]} | "
-            f"{transports_of(row['answers'])} | {row['counted']} | {n(total(row['answers']))} | "
-            f"{summary(row['answers'])} | {row['oracle'] or 'not stated'} | {tests} |")
+            f"{', '.join(transports_of(row['answers']))} | {n(total(row['answers']))} | "
+            f"{summary(row['answers'])} | {row['oracle'] or 'not stated'} |")
+    out += ["", "### What each test counts and compares", ""]
+    for row in rows:
+        out.append(f"- {link(row['path'])}, replayed by {test_links(row['tests'])}. Counted: "
+                   f"{row['counted']}. Compared: {row['compares']}.")
     out += ["", "### SDK transcripts", "",
             "| Transcript | Area | Client | Transport | Compared with the official one | Result |",
             "|---|---|---|---|---|---|"]
     for pair in pairs:
-        result = "identical" if pair["identical"] else "differs"
+        if pair["result"] == DOCUMENTED:
+            result = f"documented difference ({link(pair['where'])})"
+        else:
+            result = pair["result"]
         out.append(
             f"| {link(pair['official'])} | {AREA_NAME['en'][pair['area']]} | {pair['client']} | "
             f"{pair['transport']} | {link(pair['other'])} ({pair['what']}) | {result} |")
@@ -561,38 +869,38 @@ def html(rows, pairs, exceptions, lang):
     everything = Counter()
     for row in rows:
         everything.update(row["answers"])
-    identical = sum(pair["identical"] for pair in pairs)
-    docs = f"{REPO}/blob/main/docs/parity.md"
+    results = Counter(pair["result"] for pair in pairs)
+    docs = f"<a href=\"{REPO}/blob/main/docs/parity.md\">docs/parity.md</a>"
     readme = f"<a href=\"{REPO}/blob/main/results/README.md\">results/README.md</a>"
     exceptions_link = (f"<a href=\"{REPO}/blob/main/docs/parity-exceptions.md\">"
                        "parity exceptions</a>")
 
-    def exact(answers):
-        """The cell of "compared exactly": a count, or "not stated" where nothing says."""
-        count = total(answers, EXACT)
-        if count or not total(answers, UNSTATED):
-            return f"<td class=\"num\">{n(count)}</td>"
-        return f"<td class=\"ns\">{'記載なし' if ja else 'not stated'}</td>"
+    def nowrap(parts, sep):
+        return sep.join(f"<span class=\"nw\">{part}</span>" for part in parts)
 
-    def sdk(same, of):
-        if not of:
-            text = "—"
-        else:
-            text = f"{same}/{of} 組が一致" if ja else f"{same} of {of} identical"
-        return f"<td class=\"sdk\">{text}</td>"
+    def transports(answers):
+        return nowrap(transports_of(answers, lang), ", ") or "—"
+
+    def sdk(counts):
+        # One line per kind of result (style.css).
+        parts = "".join(f"<span class=\"sdk-part\">{part}</span>"
+                        for part in sdk_summary(counts, ja))
+        return f"<td class=\"sdk\">{parts or '—'}</td>"
 
     if ja:
         intro = (f"<p class=\"fine\">現時点で、公式エミュレータの応答 {n(total(everything))} 件を "
                  f"{len(rows)} の記録に収め、CI がそのすべてを hidane に対して再生しています。"
                  "SDK の記録も両方のエミュレータで突き合わせています"
-                 f"（<a href=\"{REPO}/tree/main/results\">results</a>）。数え方は "
-                 f"<a href=\"{docs}\">docs/parity.md</a>（英語）にあります。</p>")
+                 f"（<a href=\"{REPO}/tree/main/results\">results</a>）。数え方は {docs}"
+                 "（英語）にあります。</p>")
         head = ["領域", "トランスポート", "記録した<wbr>応答", "全体を比較", "SDK の記録"]
         foot = "合計"
-        notes = ("<p class=\"fine\">全体を比較: 記録が応答の全体を比べると示している応答の数です。"
-                 "示していない記録は「記載なし」とし、その比べ方は再生するテストに書かれています。"
-                 "SDK の記録: 同じ手順を SDK から両方のエミュレータに対して実行した記録の組で、"
-                 f"一致した組の数を示します。一致しない組の違いは {readme} に説明があります。"
+        notes = ("<p class=\"fine\">全体を比較: 記録が保持する応答の全体（ステータス、メッセージや"
+                 "本文、値）を、実行ごとに変わる値（時刻や ID など）だけを除いて比べている応答の数"
+                 "です。そのほかは Security Rules の判定と理由、応答の一部、またはステータスで"
+                 f"比べています。内訳と比べ方はテストごとに {docs} にあります。"
+                 "SDK の記録: 同じ手順を SDK から両方のエミュレータに対して実行した記録の組です。"
+                 f"既知の差は、{readme} または parity exceptions に理由が書かれている差です。"
                  f"意図的に公式と違える点（{exceptions} 件）は {exceptions_link}（英語）に"
                  "一覧があります。</p>")
     else:
@@ -600,16 +908,19 @@ def html(rows, pairs, exceptions, lang):
                  f"emulator in {len(rows)} recordings, each replayed against hidane in CI, and SDK "
                  "transcripts from both emulators compared side by side "
                  f"(<a href=\"{REPO}/tree/main/results\">results</a>). How they are counted: "
-                 f"<a href=\"{docs}\">docs/parity.md</a>.</p>")
-        head = ["Area", "Transports", "Recorded answers", "Compared exactly", "SDK transcripts"]
+                 f"{docs}.</p>")
+        head = ["Area", "Transports", "Recorded answers", "Compared in full", "SDK transcripts"]
         foot = "Total"
-        notes = ("<p class=\"fine\">Compared exactly: answers whose recording marks them as "
-                 "compared in full; “not stated” where a recording does not say, and the test that "
-                 "replays it does. SDK transcripts: the same steps run through an SDK against both "
-                 f"emulators; {readme} describes each difference. Known, intentional differences "
+        notes = ("<p class=\"fine\">Compared in full: answers whose test compares everything the "
+                 "recording keeps (status, message or body, values), masking only what changes "
+                 "from run to run, such as times and IDs. The others are compared on the "
+                 "Security Rules decision and its reasons, in part, or on their status; "
+                 f"{docs} breaks them down, test by test. SDK transcripts: the same steps run "
+                 "through an SDK against both emulators; a documented difference is one "
+                 f"{readme} or the parity exceptions explain. Known, intentional differences "
                  f"({exceptions}) are listed in {exceptions_link}.</p>")
-    # On a narrow screen the transports go under the area's name (style.css).
     num = ' class="num"'
+    # On a narrow screen the transports go under the area's name (style.css).
     classes = {1: ' class="parity-tr"', 2: num, 3: num}
     out = [START, intro, "<div class=\"parity-scroll\">", "<table class=\"parity-table\">",
            "<thead>",
@@ -618,15 +929,15 @@ def html(rows, pairs, exceptions, lang):
            "</thead>", "<tbody>"]
     for key, area in by_area(rows, pairs).items():
         name = AREA_NAME[lang][key].replace("&", "&amp;")
-        transports = transports_of(area["answers"], lang) or "—"
-        out.append(f"<tr><th scope=\"row\">{name}<span class=\"parity-sub\">{transports}</span>"
-                   f"</th><td class=\"parity-tr\">{transports}</td>"
-                   f"<td{num}>{n(total(area['answers']))}</td>{exact(area['answers'])}"
-                   f"{sdk(area['identical'], area['pairs'])}</tr>")
+        used = transports(area["answers"])
+        out.append(f"<tr><th scope=\"row\">{name}<span class=\"parity-sub\">{used}</span></th>"
+                   f"<td class=\"parity-tr\">{used}</td>"
+                   f"<td{num}>{n(total(area['answers']))}</td>"
+                   f"<td{num}>{n(total(area['answers'], FULL))}</td>{sdk(area['results'])}</tr>")
     out += ["</tbody>", "<tfoot>",
             f"<tr><th scope=\"row\">{foot}</th><td class=\"parity-tr\"></td>"
-            f"<td{num}>{n(total(everything))}</td>{exact(everything)}"
-            f"{sdk(identical, len(pairs))}</tr>",
+            f"<td{num}>{n(total(everything))}</td><td{num}>{n(total(everything, FULL))}</td>"
+            f"{sdk(results)}</tr>",
             "</tfoot>", "</table>", "</div>", notes, END]
     return "\n".join(out)
 
@@ -639,7 +950,7 @@ def badge(rows):
 
 
 def between_markers(rel, block):
-    text = (ROOT / rel).read_text(encoding="utf-8")
+    text = source(rel)
     if text.count(START) != 1 or text.count(END) != 1 or text.index(START) > text.index(END):
         raise Stop(f"{rel}: expected one {START} before one {END}.")
     return text[:text.index(START)] + block + text[text.index(END) + len(END):]

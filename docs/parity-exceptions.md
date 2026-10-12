@@ -103,6 +103,9 @@ hidane's side is #45.
 
 The parity table, [parity.md](parity.md), is generated from the recorded fixtures by
 `tools/parity/table.py`: per area and transport, how many official answers the tests replay and
-how each recording marks their comparison. Where a recording marks an answer as compared in part
-(status only, without messages, not compared, or `differs`), hidane intentionally answers
-differently, and a row of the first table above says why. The table counts these rows too.
+how each test compares them (in full, decision and reasons, in part, status only). An answer
+that a recording marks (`differs`, a `compare` of `status`, `codes` or `none`) or a test lists
+(`KNOWN`, `FIRST_LINE_ONLY`, `CRASHES`) as different is one where hidane intentionally answers
+differently, and a row of the first table above says why; a Security Rules denial compared on
+its decision and reasons follows from evaluating conditions once. The table counts these rows
+too.

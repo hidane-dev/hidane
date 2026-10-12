@@ -16,137 +16,193 @@ and fails when they are stale: after recording or adding a fixture, run
 How to read them:
 
 - **Recorded answers**: answers of the official emulator that a test compares with hidane's,
-  counted as the "Counted" column says for each recording: the answer to a call, a stream's
+  counted as the list at the end says for each recording: the answer to a call, a stream's
   response, a Security Rules decision, a compiled ruleset, a value's place in an order. Answers a
   fixture holds but no test replays are not counted.
-- **Compared**, as the recording marks each answer:
-  - *exact*: the whole recorded answer, after the oracle script's normalisation of what changes
-    from run to run (project IDs, times, transaction IDs, page tokens, generated document IDs).
-    `rest.json` marks every case; `transactions.json` and `write_stream.json` mark the steps
-    compared in part, and a step without a mark is compared in full.
-  - *status only*, *without messages* (`compare: "codes"`, everything but the messages) and
-    *not compared* (replayed, its answer not checked): steps where hidane intentionally answers
-    differently, as [parity-exceptions.md](parity-exceptions.md) lists.
-  - *intentionally different*: a case or step marked `differs`, where hidane does not do what
-    the official emulator does ([parity-exceptions.md](parity-exceptions.md)); its test
-    compares it in part, such as its statuses only.
-  - *not stated*: the recording does not mark how its answers are compared. The test that
-    replays it says so in its header comment (statuses, messages, bodies, field order, …); the
-    table does not read the tests.
+- **Compared**: how the test that replays a recording compares each answer. The script encodes
+  what each test asserts, and the list at the end names the test functions and says what they
+  compare; where a recording marks an answer itself (`compare`, `differs`), the mark decides, and
+  the lists a test keeps (`KNOWN`, `FIRST_LINE_ONLY`, `CRASHES`, the cases it skips) are read
+  from its source.
+  - *in full*: everything the recording keeps of the answer (status, message or body, values),
+    masking only what changes from run to run: project IDs, times, transaction IDs, page and
+    resume tokens, generated document IDs. Some recordings keep a summary rather than the whole
+    message (document names, whether a field is present, counts); "in full" is then the whole
+    summary.
+  - *decision and reasons*: a Security Rules decision and, for a denial, its reasons as
+    `same_denial` (`crates/hidane/tests/common/rules.rs`) accepts them: each of hidane's reasons
+    must be one of the official emulator's. The official emulator evaluates a condition in two
+    passes and lists the reasons of both; hidane evaluates once
+    ([parity-exceptions.md](parity-exceptions.md)), so its denial lists a subset. The rest of a
+    denial's body is not compared.
+  - *in part*: some of the answer, as the list says: the values without the rest of the
+    message, the order of fields without their values, a decision without its message, a
+    request monitor record whose `resource` the official emulator left undefined.
+  - *status only*: the status (or the gRPC code); a successful answer's body is not compared.
+    Most are Security Rules calls whose decision is the status, and the calls that set up a
+    case (loading rules, writing documents as the owner).
+  - *without messages* and *not compared*: steps of `transactions.json` marked `codes` and
+    `none`, where hidane intentionally answers differently.
+  - *intentionally different*: answers where hidane does not do what the official emulator does,
+    marked `differs` in the recording or listed by the test; the test compares them in part (or
+    checks hidane's own answer), and [parity-exceptions.md](parity-exceptions.md) says why.
+  - *not stated*: for a recording whose test nobody has read yet; none at present.
 - **Transport**: how the replay reaches hidane: gRPC, REST, WebChannel, WebSocket (the Emulator
   UI's request monitor), CLI (starting the process with flags), or in-process (the test calls
   hidane's crates directly, as for value ordering and the Security Rules engine). Where a
-  recording was made over another transport, the "Counted" column says so.
+  recording was made over another transport, the list says so.
 - **Oracle**: the version of the official emulator a recording names (its `oracle` header, or
   its file name in `results/`); "not stated" where it names none.
 - **SDK transcripts**: `tools/oracle/sdk_*.mjs` and `tools/oracle/webchannel/*.js` run the same
   steps through an SDK against both emulators and print a transcript, kept in `results/` as
   `<name>-official-v<version>.json` and `<name>-hidane.json` (for export and import, also each
   emulator reading the other's export). A pair is *identical* when the two files hold the same
-  JSON (keys sorted); otherwise it *differs*, as [`results/README.md`](../results/README.md)
-  describes. Transcripts are recorded by hand, not in CI; the script compares the committed
-  files.
+  JSON (keys sorted). Otherwise it is a *documented difference* when
+  [`results/README.md`](../results/README.md) or [parity-exceptions.md](parity-exceptions.md)
+  explains it (the script checks that the cited file still says so), and *unexplained* if not.
+  Transcripts are recorded by hand, not in CI; the script compares the committed files.
 - **Intentional differences**: the rows of the first table of
   [parity-exceptions.md](parity-exceptions.md).
 
 <!-- parity:start -->
 <!-- Generated by tools/parity/table.py; edit the script, not this. -->
 
-**15,092 recorded answers** in 38 recordings, replayed against hidane by `cargo test`: 286 exact, 8 status only, 1 without messages, 1 not compared, 25 intentionally different, 14,771 not stated. Oracle: v1.22.0 (20 recordings); 18 recordings do not state a version. SDK transcripts: 12 of 19 identical. Intentional differences: 60 ([parity-exceptions.md](parity-exceptions.md)).
+**15,091 recorded answers** in 38 recordings, replayed against hidane by `cargo test`: 7,150 in full, 3,912 decision and reasons, 640 in part, 3,334 status only, 1 without messages, 1 not compared, 53 intentionally different. Oracle: v1.22.0 (20 recordings); 18 recordings do not state a version. SDK transcripts: 19 comparisons, 12 identical, 7 documented differences. Intentional differences: 60 ([parity-exceptions.md](parity-exceptions.md)).
 
 ### By area and transport
 
 | Area | Transport | Recorded answers | Compared |
 |---|---|--:|---|
-| Documents & writes | gRPC | 77 | 77 not stated |
-|  | REST | 156 | 156 not stated |
-| Queries & aggregations | gRPC | 329 | 329 not stated |
-|  | REST | 91 | 91 not stated |
-| Transactions | gRPC | 176 | 171 exact, 3 status only, 1 without messages, 1 not compared |
-|  | REST | 1 | 1 exact |
-| Listen & Write streams | gRPC | 49 | 48 exact, 1 status only |
-| REST | REST | 79 | 53 exact, 4 status only, 22 not stated |
-| WebChannel | REST | 2 | 2 not stated |
-|  | WebChannel | 32 | 32 not stated |
-| Security Rules | gRPC | 23 | 23 not stated |
-|  | REST | 6,487 | 11 intentionally different, 6,476 not stated |
-|  | WebSocket | 149 | 14 intentionally different, 135 not stated |
-|  | in-process | 6,605 | 6,605 not stated |
-| Export & import | REST | 64 | 64 not stated |
-|  | CLI | 6 | 6 not stated |
-| Auth & admin endpoints | gRPC | 70 | 70 not stated |
-|  | REST | 418 | 418 not stated |
-| Values & limits | gRPC | 87 | 87 not stated |
-|  | REST | 70 | 13 exact, 57 not stated |
-|  | WebChannel | 18 | 18 not stated |
-|  | in-process | 103 | 103 not stated |
-| **Total** | | **15,092** | 286 exact, 8 status only, 1 without messages, 1 not compared, 25 intentionally different, 14,771 not stated |
+| Documents & writes | gRPC | 77 | 64 in full, 13 in part |
+|  | REST | 156 | 12 in full, 79 in part, 65 status only |
+| Queries & aggregations | gRPC | 328 | 287 in full, 41 in part |
+|  | REST | 91 | 91 in full |
+| Transactions | gRPC | 176 | 171 in full, 3 status only, 1 without messages, 1 not compared |
+|  | REST | 1 | 1 in full |
+| Listen & Write streams | gRPC | 49 | 48 in full, 1 status only |
+| REST | REST | 79 | 75 in full, 4 status only |
+| WebChannel | REST | 2 | 2 in full |
+|  | WebChannel | 32 | 29 in full, 3 in part |
+| Security Rules | gRPC | 23 | 9 in full, 7 decision and reasons, 7 in part |
+|  | REST | 6,487 | 329 in full, 2,748 decision and reasons, 133 in part, 3,261 status only, 16 intentionally different |
+|  | WebSocket | 149 | 45 in full, 90 in part, 14 intentionally different |
+|  | in-process | 6,605 | 5,158 in full, 1,157 decision and reasons, 271 in part, 19 intentionally different |
+| Export & import | REST | 64 | 61 in full, 3 in part |
+|  | CLI | 6 | 6 in full |
+| Auth & admin endpoints | gRPC | 70 | 70 in full |
+|  | REST | 418 | 418 in full |
+| Values & limits | gRPC | 87 | 85 in full, 2 intentionally different |
+|  | REST | 70 | 68 in full, 2 intentionally different |
+|  | WebChannel | 18 | 18 in full |
+|  | in-process | 103 | 103 in full |
+| **Total** | | **15,091** | 7,150 in full, 3,912 decision and reasons, 640 in part, 3,334 status only, 1 without messages, 1 not compared, 53 intentionally different |
 
 ### By recording
 
-| Recording | Area | Transports | Counted | Answers | Compared | Oracle | Replayed by |
-|---|---|---|---|--:|---|---|---|
-| [`document_writes.json`](../crates/hidane/tests/fixtures/document_writes.json) | Documents & writes | gRPC | each recorded message the test checks hidane's against (it replays no case as a whole); recorded over REST | 16 | 16 not stated | v1.22.0 | [`documents.rs`](../crates/hidane/tests/documents.rs) |
-| [`field_order.json`](../crates/hidane/tests/fixtures/field_order.json) | Documents & writes | REST | each call | 145 | 145 not stated | not stated | [`field_order.rs`](../crates/hidane/tests/field_order.rs) |
-| [`list_documents.json`](../crates/hidane/tests/fixtures/list_documents.json) | Documents & writes | gRPC, REST | each case (a paged case is one) | 35 | 35 not stated | v1.22.0 | [`list_documents.rs`](../crates/hidane/tests/list_documents.rs) |
-| [`transforms.json`](../crates/hidane/tests/fixtures/transforms.json) | Documents & writes | gRPC | each call; recorded over REST | 37 | 37 not stated | v1.22.0 | [`transforms.rs`](../crates/hidane/tests/transforms.rs) |
-| [`aggregations.json`](../crates/hidane/tests/fixtures/aggregations.json) | Queries & aggregations | gRPC | each query; recorded over REST | 52 | 52 not stated | v1.22.0 | [`aggregations.rs`](../crates/hidane/tests/aggregations.rs) |
-| [`find_nearest.json`](../crates/hidane/tests/fixtures/find_nearest.json) | Queries & aggregations | REST | each query, aggregation and write | 87 | 87 not stated | v1.22.0 | [`find_nearest.rs`](../crates/hidane/tests/find_nearest.rs) |
-| [`queries.json`](../crates/hidane/tests/fixtures/queries.json) | Queries & aggregations | gRPC | each query; recorded over REST | 267 | 267 not stated | v1.22.0 | [`queries.rs`](../crates/hidane/tests/queries.rs) |
-| [`unsupported.json`](../crates/hidane/tests/fixtures/unsupported.json) | Queries & aggregations | gRPC, REST | each call | 14 | 14 not stated | v1.22.0 | [`unsupported.rs`](../crates/hidane/tests/unsupported.rs) |
-| [`transactions.json`](../crates/hidane/tests/fixtures/transactions.json) | Transactions | gRPC, REST | each step with an outcome, except those of the scenario marked `slow` | 177 | 172 exact, 3 status only, 1 without messages, 1 not compared | v1.22.0 | [`transactions.rs`](../crates/hidane/tests/transactions.rs) |
-| [`write_stream.json`](../crates/hidane/tests/fixtures/write_stream.json) | Listen & Write streams | gRPC | each step with an outcome | 49 | 48 exact, 1 status only | v1.22.0 | [`write_stream.rs`](../crates/hidane/tests/write_stream.rs) |
-| [`cors.json`](../crates/hidane/tests/fixtures/cors.json) | REST | REST | each request | 22 | 22 not stated | v1.22.0 | [`cors.rs`](../crates/hidane/tests/cors.rs) |
-| [`rest.json`](../crates/hidane/tests/fixtures/rest.json) | REST | REST | each request | 57 | 53 exact, 4 status only | v1.22.0 | [`rest.rs`](../crates/hidane/tests/rest.rs) |
-| [`webchannel.json`](../crates/hidane/tests/fixtures/webchannel.json) | WebChannel | REST, WebChannel | each step | 34 | 34 not stated | v1.22.0 | [`webchannel.rs`](../crates/hidane/tests/webchannel.rs) |
-| [`rules_eval.json`](../crates/hidane-rules/tests/fixtures/rules_eval.json) | Security Rules | in-process | each condition or ruleset decided; recorded over REST | 1,278 | 1,278 not stated | not stated | [`library.rs`](../crates/hidane-rules/tests/library.rs) |
-| [`rules_paths.json`](../crates/hidane-rules/tests/fixtures/rules_paths.json) | Security Rules | in-process | each read under `allow read: if true`, and each `match` path refused; recorded over REST | 182 | 182 not stated | not stated | [`paths.rs`](../crates/hidane-rules/tests/paths.rs) |
-| [`rules_warnings.json`](../crates/hidane-rules/tests/fixtures/rules_warnings.json) | Security Rules | in-process | each ruleset compiled, its `issues[]` or error; recorded over REST | 3,694 | 3,694 not stated | not stated | [`warnings.rs`](../crates/hidane-rules/tests/warnings.rs) |
-| [`rules_auth.json`](../crates/hidane/tests/fixtures/rules_auth.json) | Security Rules | REST | each call | 247 | 247 not stated | not stated | [`rules_server.rs`](../crates/hidane/tests/rules_server.rs) |
-| [`rules_compile.json`](../crates/hidane/tests/fixtures/rules_compile.json) | Security Rules | REST | each ruleset loaded | 250 | 250 not stated | not stated | [`rules_compile.rs`](../crates/hidane/tests/rules_compile.rs) |
-| [`rules_coverage.json`](../crates/hidane/tests/fixtures/rules_coverage.json) | Security Rules | REST | each call | 250 | 7 intentionally different, 243 not stated | not stated | [`rules_coverage.rs`](../crates/hidane/tests/rules_coverage.rs) |
-| [`rules_coverage_flag.json`](../crates/hidane/tests/fixtures/rules_coverage_flag.json) | Security Rules | REST | each call | 17 | 17 not stated | not stated | [`rules_coverage.rs`](../crates/hidane/tests/rules_coverage.rs) |
-| [`rules_denials.json`](../crates/hidane/tests/fixtures/rules_denials.json) | Security Rules | REST | each call | 65 | 65 not stated | not stated | [`rules_server.rs`](../crates/hidane/tests/rules_server.rs) |
-| [`rules_list.json`](../crates/hidane/tests/fixtures/rules_list.json) | Security Rules | REST | each call | 3,451 | 3,451 not stated | not stated | [`rules_server.rs`](../crates/hidane/tests/rules_server.rs) |
-| [`rules_lookups.json`](../crates/hidane/tests/fixtures/rules_lookups.json) | Security Rules | REST | each call | 304 | 304 not stated | not stated | [`rules_server.rs`](../crates/hidane/tests/rules_server.rs) |
-| [`rules_request.json`](../crates/hidane/tests/fixtures/rules_request.json) | Security Rules | REST | each call | 1,018 | 1,018 not stated | not stated | [`rules_server.rs`](../crates/hidane/tests/rules_server.rs) |
-| [`rules_request_fields.json`](../crates/hidane/tests/fixtures/rules_request_fields.json) | Security Rules | REST | each call | 182 | 182 not stated | not stated | [`rules_coverage.rs`](../crates/hidane/tests/rules_coverage.rs) |
-| [`rules_streams.json`](../crates/hidane/tests/fixtures/rules_streams.json) | Security Rules | gRPC | each stream response, and each error that ended a stream | 23 | 23 not stated | not stated | [`rules_streams.rs`](../crates/hidane/tests/rules_streams.rs) |
-| [`rules_verify.json`](../crates/hidane/tests/fixtures/rules_verify.json) | Security Rules | REST | each call | 337 | 4 intentionally different, 333 not stated | not stated | [`rules_coverage.rs`](../crates/hidane/tests/rules_coverage.rs) |
-| [`rules_writes.json`](../crates/hidane/tests/fixtures/rules_writes.json) | Security Rules | REST | each call | 366 | 366 not stated | not stated | [`rules_server.rs`](../crates/hidane/tests/rules_server.rs) |
-| [`websocket_requests.json`](../crates/hidane/tests/fixtures/websocket_requests.json) | Security Rules | WebSocket | each step: the request monitor's records of a call, or a WebSocket exchange | 149 | 14 intentionally different, 135 not stated | not stated | [`websocket_requests.rs`](../crates/hidane/tests/websocket_requests.rs) |
-| [`rules-conditions-official-v1.22.0.json`](../results/rules-conditions-official-v1.22.0.json) | Security Rules | in-process | each condition decided; recorded over REST | 1,451 | 1,451 not stated | v1.22.0 | [`conditions.rs`](../crates/hidane-rules/tests/conditions.rs) |
-| [`export_import.json`](../crates/hidane/tests/fixtures/export_import.json) | Export & import | REST, CLI | each export, import, endpoint answer, seeding step and start-up | 70 | 70 not stated | not stated | [`export_import.rs`](../crates/hidane/tests/export_import.rs) |
-| [`auth.json`](../crates/hidane/tests/fixtures/auth.json) | Auth & admin endpoints | gRPC, REST | each case | 146 | 146 not stated | v1.22.0 | [`auth.rs`](../crates/hidane/tests/auth.rs) |
-| [`function_triggers.json`](../crates/hidane/tests/fixtures/function_triggers.json) | Auth & admin endpoints | REST | each registration, in both runs | 342 | 342 not stated | v1.22.0 | [`function_triggers.rs`](../crates/hidane/tests/function_triggers.rs) |
-| [`value_order.json`](../crates/hidane-core/tests/fixtures/value_order.json) | Values & limits | in-process | each value placed in the official order, and each document name; recorded over REST | 103 | 103 not stated | v1.22.0 | [`official_order.rs`](../crates/hidane-core/tests/official_order.rs) |
-| [`grpc_settings.json`](../crates/hidane/tests/fixtures/grpc_settings.json) | Values & limits | gRPC, REST | each v1beta1 call, gRPC size up to 20 MB and REST size (not the larger gRPC sizes nor the reflection listing) | 11 | 11 not stated | v1.22.0 | [`grpc_settings.rs`](../crates/hidane/tests/grpc_settings.rs) |
-| [`json_escapes.json`](../crates/hidane/tests/fixtures/json_escapes.json) | Values & limits | REST, WebChannel | each REST request and each WebChannel step | 30 | 13 exact, 17 not stated | v1.22.0 | [`rest.rs`](../crates/hidane/tests/rest.rs), [`webchannel.rs`](../crates/hidane/tests/webchannel.rs) |
-| [`limits.json`](../crates/hidane/tests/fixtures/limits.json) | Values & limits | REST | each commit | 37 | 37 not stated | v1.22.0 | [`limits.rs`](../crates/hidane/tests/limits.rs) |
-| [`negative_zero.json`](../crates/hidane/tests/fixtures/negative_zero.json) | Values & limits | gRPC, REST, WebChannel | each step | 97 | 97 not stated | v1.22.0 | [`negative_zero.rs`](../crates/hidane/tests/negative_zero.rs) |
+| Recording | Area | Transports | Answers | Compared | Oracle |
+|---|---|---|--:|---|---|
+| [`document_writes.json`](../crates/hidane/tests/fixtures/document_writes.json) | Documents & writes | gRPC | 16 | 16 in full | v1.22.0 |
+| [`field_order.json`](../crates/hidane/tests/fixtures/field_order.json) | Documents & writes | REST | 145 | 1 in full, 79 in part, 65 status only | not stated |
+| [`list_documents.json`](../crates/hidane/tests/fixtures/list_documents.json) | Documents & writes | gRPC, REST | 35 | 35 in full | v1.22.0 |
+| [`transforms.json`](../crates/hidane/tests/fixtures/transforms.json) | Documents & writes | gRPC | 37 | 24 in full, 13 in part | v1.22.0 |
+| [`aggregations.json`](../crates/hidane/tests/fixtures/aggregations.json) | Queries & aggregations | gRPC | 52 | 11 in full, 41 in part | v1.22.0 |
+| [`find_nearest.json`](../crates/hidane/tests/fixtures/find_nearest.json) | Queries & aggregations | REST | 87 | 87 in full | v1.22.0 |
+| [`queries.json`](../crates/hidane/tests/fixtures/queries.json) | Queries & aggregations | gRPC | 266 | 266 in full | v1.22.0 |
+| [`unsupported.json`](../crates/hidane/tests/fixtures/unsupported.json) | Queries & aggregations | gRPC, REST | 14 | 14 in full | v1.22.0 |
+| [`transactions.json`](../crates/hidane/tests/fixtures/transactions.json) | Transactions | gRPC, REST | 177 | 172 in full, 3 status only, 1 without messages, 1 not compared | v1.22.0 |
+| [`write_stream.json`](../crates/hidane/tests/fixtures/write_stream.json) | Listen & Write streams | gRPC | 49 | 48 in full, 1 status only | v1.22.0 |
+| [`cors.json`](../crates/hidane/tests/fixtures/cors.json) | REST | REST | 22 | 22 in full | v1.22.0 |
+| [`rest.json`](../crates/hidane/tests/fixtures/rest.json) | REST | REST | 57 | 53 in full, 4 status only | v1.22.0 |
+| [`webchannel.json`](../crates/hidane/tests/fixtures/webchannel.json) | WebChannel | REST, WebChannel | 34 | 31 in full, 3 in part | v1.22.0 |
+| [`rules_eval.json`](../crates/hidane-rules/tests/fixtures/rules_eval.json) | Security Rules | in-process | 1,278 | 384 in full, 889 decision and reasons, 2 in part, 3 intentionally different | not stated |
+| [`rules_paths.json`](../crates/hidane-rules/tests/fixtures/rules_paths.json) | Security Rules | in-process | 182 | 180 in full, 2 in part | not stated |
+| [`rules_warnings.json`](../crates/hidane-rules/tests/fixtures/rules_warnings.json) | Security Rules | in-process | 3,694 | 3,678 in full, 16 intentionally different | not stated |
+| [`rules_auth.json`](../crates/hidane/tests/fixtures/rules_auth.json) | Security Rules | REST | 247 | 88 decision and reasons, 159 status only | not stated |
+| [`rules_compile.json`](../crates/hidane/tests/fixtures/rules_compile.json) | Security Rules | REST | 250 | 248 in full, 2 intentionally different | not stated |
+| [`rules_coverage.json`](../crates/hidane/tests/fixtures/rules_coverage.json) | Security Rules | REST | 250 | 35 in full, 4 decision and reasons, 75 in part, 126 status only, 10 intentionally different | not stated |
+| [`rules_coverage_flag.json`](../crates/hidane/tests/fixtures/rules_coverage_flag.json) | Security Rules | REST | 17 | 9 in full, 2 decision and reasons, 4 in part, 2 status only | not stated |
+| [`rules_denials.json`](../crates/hidane/tests/fixtures/rules_denials.json) | Security Rules | REST | 65 | 21 decision and reasons, 44 status only | not stated |
+| [`rules_list.json`](../crates/hidane/tests/fixtures/rules_list.json) | Security Rules | REST | 3,451 | 2,395 decision and reasons, 1,056 status only | not stated |
+| [`rules_lookups.json`](../crates/hidane/tests/fixtures/rules_lookups.json) | Security Rules | REST | 304 | 15 decision and reasons, 289 status only | not stated |
+| [`rules_request.json`](../crates/hidane/tests/fixtures/rules_request.json) | Security Rules | REST | 1,018 | 118 decision and reasons, 900 status only | not stated |
+| [`rules_request_fields.json`](../crates/hidane/tests/fixtures/rules_request_fields.json) | Security Rules | REST | 182 | 37 in full, 50 in part, 95 status only | not stated |
+| [`rules_streams.json`](../crates/hidane/tests/fixtures/rules_streams.json) | Security Rules | gRPC | 23 | 9 in full, 7 decision and reasons, 7 in part | not stated |
+| [`rules_verify.json`](../crates/hidane/tests/fixtures/rules_verify.json) | Security Rules | REST | 337 | 39 decision and reasons, 4 in part, 290 status only, 4 intentionally different | not stated |
+| [`rules_writes.json`](../crates/hidane/tests/fixtures/rules_writes.json) | Security Rules | REST | 366 | 66 decision and reasons, 300 status only | not stated |
+| [`websocket_requests.json`](../crates/hidane/tests/fixtures/websocket_requests.json) | Security Rules | WebSocket | 149 | 45 in full, 90 in part, 14 intentionally different | not stated |
+| [`rules-conditions-official-v1.22.0.json`](../results/rules-conditions-official-v1.22.0.json) | Security Rules | in-process | 1,451 | 916 in full, 268 decision and reasons, 267 in part | v1.22.0 |
+| [`export_import.json`](../crates/hidane/tests/fixtures/export_import.json) | Export & import | REST, CLI | 70 | 67 in full, 3 in part | not stated |
+| [`auth.json`](../crates/hidane/tests/fixtures/auth.json) | Auth & admin endpoints | gRPC, REST | 146 | 146 in full | v1.22.0 |
+| [`function_triggers.json`](../crates/hidane/tests/fixtures/function_triggers.json) | Auth & admin endpoints | REST | 342 | 342 in full | v1.22.0 |
+| [`value_order.json`](../crates/hidane-core/tests/fixtures/value_order.json) | Values & limits | in-process | 103 | 103 in full | v1.22.0 |
+| [`grpc_settings.json`](../crates/hidane/tests/fixtures/grpc_settings.json) | Values & limits | gRPC, REST | 11 | 11 in full | v1.22.0 |
+| [`json_escapes.json`](../crates/hidane/tests/fixtures/json_escapes.json) | Values & limits | REST, WebChannel | 30 | 30 in full | v1.22.0 |
+| [`limits.json`](../crates/hidane/tests/fixtures/limits.json) | Values & limits | REST | 37 | 37 in full | v1.22.0 |
+| [`negative_zero.json`](../crates/hidane/tests/fixtures/negative_zero.json) | Values & limits | gRPC, REST, WebChannel | 97 | 93 in full, 4 intentionally different | v1.22.0 |
+
+### What each test counts and compares
+
+- [`document_writes.json`](../crates/hidane/tests/fixtures/document_writes.json), replayed by [`documents.rs`](../crates/hidane/tests/documents.rs) `reads_and_their_errors`, `preconditions`, `invalid_writes_use_the_official_messages`, `listing_documents_and_collections`, `batch_write_reports_each_write`. Counted: each recorded message the tests check hidane's against (they replay no case as a whole); recorded over REST. Compared: in full: the code and the message (a stored version's timestamps masked).
+- [`field_order.json`](../crates/hidane/tests/fixtures/field_order.json), replayed by [`field_order.rs`](../crates/hidane/tests/field_order.rs) `fields_come_back_in_the_official_order`. Counted: each call. Compared: an error in full (status and message); a commit on its status; a read in part: the order of every field, nested ones included, and which commit its `updateTime` names, not the values.
+- [`list_documents.json`](../crates/hidane/tests/fixtures/list_documents.json), replayed by [`list_documents.rs`](../crates/hidane/tests/list_documents.rs) `list_documents_like_the_official_emulator`. Counted: each case (a paged case is one). Compared: in full: the names of every page, or the code and message.
+- [`transforms.json`](../crates/hidane/tests/fixtures/transforms.json), replayed by [`transforms.rs`](../crates/hidane/tests/transforms.rs) `every_recorded_case_gives_the_official_answer`. Counted: each call; recorded over REST. Compared: a commit in full (its transform results, server times as the request time, or the code and message); a read in part (the document's fields).
+- [`aggregations.json`](../crates/hidane/tests/fixtures/aggregations.json), replayed by [`aggregations.rs`](../crates/hidane/tests/aggregations.rs) `aggregations_answer_like_the_official_emulator`. Counted: each query; recorded over REST. Compared: an error in full (status and message); results in part: every aggregate value with its type, not `done`, which gRPC does not carry.
+- [`find_nearest.json`](../crates/hidane/tests/fixtures/find_nearest.json), replayed by [`find_nearest.rs`](../crates/hidane/tests/find_nearest.rs) `find_nearest_like_the_official_emulator`. Counted: each query, aggregation and write. Compared: in full: the documents' names and fields but the vector (as the recording keeps them), the aggregate values, or the status and message.
+- [`queries.json`](../crates/hidane/tests/fixtures/queries.json), replayed by [`queries.rs`](../crates/hidane/tests/queries.rs) `queries_answer_like_the_official_emulator`. Counted: each query but the `findNearest` one; recorded over REST. Compared: in full: each response's document, `skippedResults` and `done`, the fields of projected documents, or the status and message.
+- [`unsupported.json`](../crates/hidane/tests/fixtures/unsupported.json), replayed by [`unsupported.rs`](../crates/hidane/tests/unsupported.rs) `ignored_and_refused_like_the_official_emulator`. Counted: each call. Compared: in full: the outcome as the recording summarises it.
+- [`transactions.json`](../crates/hidane/tests/fixtures/transactions.json), replayed by [`transactions.rs`](../crates/hidane/tests/transactions.rs) `replay`. Counted: each step with an outcome, except those of the scenario marked `slow`. Compared: as each step's `compare` marks it; without a mark in full (status, message, elapsed time to 0.5 s and the result, not transaction IDs).
+- [`write_stream.json`](../crates/hidane/tests/fixtures/write_stream.json), replayed by [`write_stream.rs`](../crates/hidane/tests/write_stream.rs) `replay`. Counted: each step with an outcome. Compared: as each step's `compare` marks it; without a mark in full (the response's token, write results and commit time as the recording summarises them, the error, the elapsed time).
+- [`cors.json`](../crates/hidane/tests/fixtures/cors.json), replayed by [`cors.rs`](../crates/hidane/tests/cors.rs) `cors_answers_like_the_official_emulator`. Counted: each request. Compared: in full: status, every header but `date`, `content-length` and `connection`, and the body.
+- [`rest.json`](../crates/hidane/tests/fixtures/rest.json), replayed by [`rest.rs`](../crates/hidane/tests/rest.rs) `rest_answers_like_the_official_emulator`. Counted: each request. Compared: as each case's `compare` marks it: `exact` in full (status, content type and body byte for byte, server times, IDs and tokens masked), `status` on its status and content type.
+- [`webchannel.json`](../crates/hidane/tests/fixtures/webchannel.json), replayed by [`webchannel.rs`](../crates/hidane/tests/webchannel.rs) `webchannel_like_the_official_emulator`. Counted: each step. Compared: in full: status, frames and messages (session IDs, times and tokens masked); a long-polling read in part (its first data and whether it ended: where the `noop`s fall depends on timing).
+- [`rules_eval.json`](../crates/hidane-rules/tests/fixtures/rules_eval.json), replayed by [`library.rs`](../crates/hidane-rules/tests/library.rs) `evaluation_matches_the_official_emulator`. Counted: each condition or ruleset decided; recorded over REST. Compared: an allow and a compile error in full; a denial as decision and reasons (the entries of one evaluation where the official emulator lists two); a denied batch on its decision only (in part); the official 500s, which hidane answers with an evaluation error, as intentionally different.
+- [`rules_paths.json`](../crates/hidane-rules/tests/fixtures/rules_paths.json), replayed by [`paths.rs`](../crates/hidane-rules/tests/paths.rs) `matches_cover_the_documents_the_official_emulator_allows`. Counted: each read under `allow read: if true`, and each `match` path refused; recorded over REST. Compared: each read's decision in full; a refused path on the refusal only (in part; `rules_warnings.json` holds the message).
+- [`rules_warnings.json`](../crates/hidane-rules/tests/fixtures/rules_warnings.json), replayed by [`warnings.rs`](../crates/hidane-rules/tests/warnings.rs) `warnings_are_the_official_emulators`. Counted: each ruleset compiled, its `issues[]` or error; recorded over REST. Compared: in full: every issue with its position and severity, or the error message; the cases the test lists in `FIRST_LINE_ONLY` (the first line) and `KNOWN` as intentionally different.
+- [`rules_auth.json`](../crates/hidane/tests/fixtures/rules_auth.json), replayed by [`rules_server.rs`](../crates/hidane/tests/rules_server.rs) `replay`. Counted: each call. Compared: a denial as decision and reasons (`same_denial`: hidane's reasons are among the official ones); every other answer on its status.
+- [`rules_compile.json`](../crates/hidane/tests/fixtures/rules_compile.json), replayed by [`rules_compile.rs`](../crates/hidane/tests/rules_compile.rs) `compiles_like_the_official_emulator`. Counted: each ruleset loaded. Compared: in full: status and body byte for byte; the cases the test lists in `CRASHES` and `FIRST_LINE_ONLY` as intentionally different.
+- [`rules_coverage.json`](../crates/hidane/tests/fixtures/rules_coverage.json), replayed by [`rules_coverage.rs`](../crates/hidane/tests/rules_coverage.rs) `replay`. Counted: each call. Compared: every status and what `debug()` printed (without `request.time`); the rules and coverage reports in full (byte for byte, without `request.time`); a denial as decision and reasons (`same_denial`); a call that printed in part, the others on their status; the coverage page and the cases marked `differs` as intentionally different.
+- [`rules_coverage_flag.json`](../crates/hidane/tests/fixtures/rules_coverage_flag.json), replayed by [`rules_coverage.rs`](../crates/hidane/tests/rules_coverage.rs) `replay`. Counted: each call. Compared: every status and what `debug()` printed (without `request.time`); the rules and coverage reports in full (byte for byte, without `request.time`); a denial as decision and reasons (`same_denial`); a call that printed in part, the others on their status; the coverage page and the cases marked `differs` as intentionally different.
+- [`rules_denials.json`](../crates/hidane/tests/fixtures/rules_denials.json), replayed by [`rules_server.rs`](../crates/hidane/tests/rules_server.rs) `replay`. Counted: each call. Compared: a denial as decision and reasons (`same_denial`: hidane's reasons are among the official ones); every other answer on its status.
+- [`rules_list.json`](../crates/hidane/tests/fixtures/rules_list.json), replayed by [`rules_server.rs`](../crates/hidane/tests/rules_server.rs) `replay`. Counted: each call. Compared: a denial as decision and reasons (`same_denial`: hidane's reasons are among the official ones); every other answer on its status.
+- [`rules_lookups.json`](../crates/hidane/tests/fixtures/rules_lookups.json), replayed by [`rules_server.rs`](../crates/hidane/tests/rules_server.rs) `replay`. Counted: each call. Compared: a denial as decision and reasons (`same_denial`: hidane's reasons are among the official ones); every other answer on its status.
+- [`rules_request.json`](../crates/hidane/tests/fixtures/rules_request.json), replayed by [`rules_server.rs`](../crates/hidane/tests/rules_server.rs) `replay`. Counted: each call. Compared: a denial as decision and reasons (`same_denial`: hidane's reasons are among the official ones); every other answer on its status.
+- [`rules_request_fields.json`](../crates/hidane/tests/fixtures/rules_request_fields.json), replayed by [`rules_coverage.rs`](../crates/hidane/tests/rules_coverage.rs) `replay`. Counted: each call. Compared: every status and what `debug()` printed (without `request.time`); the rules and coverage reports in full (byte for byte, without `request.time`); a denial as decision and reasons (`same_denial`); a call that printed in part, the others on their status; the coverage page and the cases marked `differs` as intentionally different.
+- [`rules_streams.json`](../crates/hidane/tests/fixtures/rules_streams.json), replayed by [`rules_streams.rs`](../crates/hidane/tests/rules_streams.rs) `streams_under_rules`. Counted: each stream response, and each error that ended a stream. Compared: a target change in full (type, targets, resume tokens and times masked); a denied target's cause and an error that ended the stream as decision and reasons; a document change in part (its name and targets, not its fields) and a write response in part (its number of results).
+- [`rules_verify.json`](../crates/hidane/tests/fixtures/rules_verify.json), replayed by [`rules_coverage.rs`](../crates/hidane/tests/rules_coverage.rs) `replay`. Counted: each call. Compared: every status and what `debug()` printed (without `request.time`); the rules and coverage reports in full (byte for byte, without `request.time`); a denial as decision and reasons (`same_denial`); a call that printed in part, the others on their status; the coverage page and the cases marked `differs` as intentionally different.
+- [`rules_writes.json`](../crates/hidane/tests/fixtures/rules_writes.json), replayed by [`rules_server.rs`](../crates/hidane/tests/rules_server.rs) `replay`. Counted: each call. Compared: a denial as decision and reasons (`same_denial`: hidane's reasons are among the official ones); every other answer on its status.
+- [`websocket_requests.json`](../crates/hidane/tests/fixtures/websocket_requests.json), replayed by [`websocket_requests.rs`](../crates/hidane/tests/websocket_requests.rs) `records_as_the_official_emulator_sends_them`. Counted: each step: the request monitor's records of a call, or a WebSocket exchange. Compared: in full: every record field for field (times, request IDs and the release key's number masked, a list filter's fields in any order); in part where an official record shows `resource` undefined (its first pass), which accepts hidane's stored document; a step marked `differs` (method and path only) as intentionally different.
+- [`rules-conditions-official-v1.22.0.json`](../results/rules-conditions-official-v1.22.0.json), replayed by [`conditions.rs`](../crates/hidane-rules/tests/conditions.rs) `conditions_decide_as_on_the_official_emulator`. Counted: each condition decided; recorded over REST. Compared: an allow in full; a denial (`false` or an error) as decision and reasons; a ruleset that does not compile on the refusal only (in part; `rules_warnings.json` holds the message).
+- [`export_import.json`](../crates/hidane/tests/fixtures/export_import.json), replayed by [`export_import.rs`](../crates/hidane/tests/export_import.rs) `exports_match_the_official_files`, `imports_write_what_the_official_emulator_writes`, `production_shaped_exports_import_like_the_official_emulator`, `the_endpoints_answer_like_the_official_emulator`, `databases_are_seeded_like_the_official_emulator`, `start_up_like_the_official_emulator`. Counted: each export, import, endpoint answer, seeding step and start-up. Compared: an export in part: its files, metadata byte for byte and every record, in name order (an intentional difference) and without times; the rest in full: imported documents, the endpoints' status, content type and body, seeding, exit codes and messages.
+- [`auth.json`](../crates/hidane/tests/fixtures/auth.json), replayed by [`auth.rs`](../crates/hidane/tests/auth.rs) `authorization_is_read_like_the_official_emulator`. Counted: each case. Compared: in full: the outcome as the recording summarises it (status or code and message).
+- [`function_triggers.json`](../crates/hidane/tests/fixtures/function_triggers.json), replayed by [`function_triggers.rs`](../crates/hidane/tests/function_triggers.rs) `registrations_answer_like_the_official_emulator`. Counted: each registration, in both runs. Compared: in full: status, content type and body.
+- [`value_order.json`](../crates/hidane-core/tests/fixtures/value_order.json), replayed by [`official_order.rs`](../crates/hidane-core/tests/official_order.rs) `values_within_a_group_are_equal`, `groups_are_strictly_ascending`, `document_names_sort_like_a_collection_group_query`. Counted: each value placed in the official order, and each document name; recorded over REST. Compared: in full: each value's place and its ties, the names' order.
+- [`grpc_settings.json`](../crates/hidane/tests/fixtures/grpc_settings.json), replayed by [`grpc_settings.rs`](../crates/hidane/tests/grpc_settings.rs) `v1beta1_is_v1_under_another_name`, `large_grpc_requests_pass`, `rest_bodies_up_to_16_mib`. Counted: each v1beta1 call, gRPC size up to 20 MB and REST size (not the larger gRPC sizes nor the reflection listing). Compared: in full: the outcome as the recording summarises it.
+- [`json_escapes.json`](../crates/hidane/tests/fixtures/json_escapes.json), replayed by [`rest.rs`](../crates/hidane/tests/rest.rs) `strings_escape_like_the_official_emulator`; [`webchannel.rs`](../crates/hidane/tests/webchannel.rs) `strings_escape_like_the_official_emulator`. Counted: each REST request and each WebChannel step. Compared: in full: REST as `rest.json` (its `compare` marks), WebChannel messages as their exact JSON text.
+- [`limits.json`](../crates/hidane/tests/fixtures/limits.json), replayed by [`limits.rs`](../crates/hidane/tests/limits.rs) `limits_like_the_official_emulator`. Counted: each commit. Compared: in full: status and message.
+- [`negative_zero.json`](../crates/hidane/tests/fixtures/negative_zero.json), replayed by [`negative_zero.rs`](../crates/hidane/tests/negative_zero.rs) `every_recorded_step_gives_the_official_answer`. Counted: each step. Compared: in full: the answer as the recording summarises it, each double spelled out; the steps that write `-1e-400` as intentionally different.
 
 ### SDK transcripts
 
 | Transcript | Area | Client | Transport | Compared with the official one | Result |
 |---|---|---|---|---|---|
-| [`sdk-documents-official-v1.22.0.json`](../results/sdk-documents-official-v1.22.0.json) | Documents & writes | Admin SDK | gRPC | [`sdk-documents-hidane.json`](../results/sdk-documents-hidane.json) (hidane) | differs |
+| [`sdk-documents-official-v1.22.0.json`](../results/sdk-documents-official-v1.22.0.json) | Documents & writes | Admin SDK | gRPC | [`sdk-documents-hidane.json`](../results/sdk-documents-hidane.json) (hidane) | documented difference ([`parity-exceptions.md`](../docs/parity-exceptions.md)) |
 | [`sdk-aggregations-official-v1.22.0.json`](../results/sdk-aggregations-official-v1.22.0.json) | Queries & aggregations | Admin SDK | gRPC | [`sdk-aggregations-hidane.json`](../results/sdk-aggregations-hidane.json) (hidane) | identical |
 | [`sdk-find-nearest-official-v1.22.0.json`](../results/sdk-find-nearest-official-v1.22.0.json) | Queries & aggregations | Admin SDK, web SDK | gRPC | [`sdk-find-nearest-hidane.json`](../results/sdk-find-nearest-hidane.json) (hidane) | identical |
 | [`sdk-queries-official-v1.22.0.json`](../results/sdk-queries-official-v1.22.0.json) | Queries & aggregations | Admin SDK | gRPC | [`sdk-queries-hidane.json`](../results/sdk-queries-hidane.json) (hidane) | identical |
 | [`sdk-transactions-official-v1.22.0.json`](../results/sdk-transactions-official-v1.22.0.json) | Transactions | Admin SDK | gRPC | [`sdk-transactions-hidane.json`](../results/sdk-transactions-hidane.json) (hidane) | identical |
 | [`sdk-web-transactions-official-v1.22.0.json`](../results/sdk-web-transactions-official-v1.22.0.json) | Transactions | web SDK in Node | gRPC | [`sdk-web-transactions-hidane.json`](../results/sdk-web-transactions-hidane.json) (hidane) | identical |
-| [`sdk-listen-official-v1.22.0.json`](../results/sdk-listen-official-v1.22.0.json) | Listen & Write streams | Admin SDK, web SDK | gRPC | [`sdk-listen-hidane.json`](../results/sdk-listen-hidane.json) (hidane) | differs |
-| [`sdk-listen-resume-official-v1.22.0.json`](../results/sdk-listen-resume-official-v1.22.0.json) | Listen & Write streams | web SDK, Admin SDK | gRPC | [`sdk-listen-resume-hidane.json`](../results/sdk-listen-resume-hidane.json) (hidane) | differs |
+| [`sdk-listen-official-v1.22.0.json`](../results/sdk-listen-official-v1.22.0.json) | Listen & Write streams | Admin SDK, web SDK | gRPC | [`sdk-listen-hidane.json`](../results/sdk-listen-hidane.json) (hidane) | documented difference ([`README.md`](../results/README.md)) |
+| [`sdk-listen-resume-official-v1.22.0.json`](../results/sdk-listen-resume-official-v1.22.0.json) | Listen & Write streams | web SDK, Admin SDK | gRPC | [`sdk-listen-resume-hidane.json`](../results/sdk-listen-resume-hidane.json) (hidane) | documented difference ([`README.md`](../results/README.md)) |
 | [`sdk-web-writes-official-v1.22.0.json`](../results/sdk-web-writes-official-v1.22.0.json) | Listen & Write streams | web SDK in Node | gRPC | [`sdk-web-writes-hidane.json`](../results/sdk-web-writes-hidane.json) (hidane) | identical |
 | [`sdk-rest-official-v1.22.0.json`](../results/sdk-rest-official-v1.22.0.json) | REST | web SDK Lite | REST | [`sdk-rest-hidane.json`](../results/sdk-rest-hidane.json) (hidane) | identical |
 | [`browser-webchannel-official-v1.22.0.json`](../results/browser-webchannel-official-v1.22.0.json) | WebChannel | firebase in Chromium | WebChannel | [`browser-webchannel-hidane.json`](../results/browser-webchannel-hidane.json) (hidane) | identical |
-| [`flutter-web-official-v1.22.0.json`](../results/flutter-web-official-v1.22.0.json) | WebChannel | Flutter Web (cloud_firestore) in Chromium | WebChannel, REST | [`flutter-web-hidane.json`](../results/flutter-web-hidane.json) (hidane) | differs |
-| [`browser-rules-official-v1.22.0.json`](../results/browser-rules-official-v1.22.0.json) | Security Rules | firebase + rules-unit-testing in Chromium | WebChannel, REST | [`browser-rules-hidane.json`](../results/browser-rules-hidane.json) (hidane) | differs |
-| [`sdk-rules-unit-testing-official-v1.22.0.json`](../results/sdk-rules-unit-testing-official-v1.22.0.json) | Security Rules | firebase + rules-unit-testing in Node | gRPC | [`sdk-rules-unit-testing-hidane.json`](../results/sdk-rules-unit-testing-hidane.json) (hidane) | differs |
+| [`flutter-web-official-v1.22.0.json`](../results/flutter-web-official-v1.22.0.json) | WebChannel | Flutter Web (cloud_firestore) in Chromium | WebChannel, REST | [`flutter-web-hidane.json`](../results/flutter-web-hidane.json) (hidane) | documented difference ([`README.md`](../results/README.md)) |
+| [`browser-rules-official-v1.22.0.json`](../results/browser-rules-official-v1.22.0.json) | Security Rules | firebase + rules-unit-testing in Chromium | WebChannel, REST | [`browser-rules-hidane.json`](../results/browser-rules-hidane.json) (hidane) | documented difference ([`README.md`](../results/README.md)) |
+| [`sdk-rules-unit-testing-official-v1.22.0.json`](../results/sdk-rules-unit-testing-official-v1.22.0.json) | Security Rules | firebase + rules-unit-testing in Node | gRPC | [`sdk-rules-unit-testing-hidane.json`](../results/sdk-rules-unit-testing-hidane.json) (hidane) | documented difference ([`README.md`](../results/README.md)) |
 | [`export-import-official-v1.22.0.json`](../results/export-import-official-v1.22.0.json) | Export & import | firebase-tools + Admin SDK | CLI, gRPC | [`export-import-hidane-to-official.json`](../results/export-import-hidane-to-official.json) (exported by hidane, read by the official emulator) | identical |
 | [`export-import-official-v1.22.0.json`](../results/export-import-official-v1.22.0.json) | Export & import | firebase-tools + Admin SDK | CLI, gRPC | [`export-import-hidane.json`](../results/export-import-hidane.json) (hidane) | identical |
 | [`export-import-official-v1.22.0.json`](../results/export-import-official-v1.22.0.json) | Export & import | firebase-tools + Admin SDK | CLI, gRPC | [`export-import-official-to-hidane.json`](../results/export-import-official-to-hidane.json) (exported by the official emulator, read by hidane) | identical |
 | [`sdk-auth-official-v1.22.0.json`](../results/sdk-auth-official-v1.22.0.json) | Auth & admin endpoints | rules-unit-testing, web SDK, Admin SDK | gRPC | [`sdk-auth-hidane.json`](../results/sdk-auth-hidane.json) (hidane) | identical |
-| [`sdk-clear-official-v1.22.0.json`](../results/sdk-clear-official-v1.22.0.json) | Auth & admin endpoints | rules-unit-testing, web SDK, Admin SDK | gRPC, REST | [`sdk-clear-hidane.json`](../results/sdk-clear-hidane.json) (hidane) | differs |
+| [`sdk-clear-official-v1.22.0.json`](../results/sdk-clear-official-v1.22.0.json) | Auth & admin endpoints | rules-unit-testing, web SDK, Admin SDK | gRPC, REST | [`sdk-clear-hidane.json`](../results/sdk-clear-hidane.json) (hidane) | documented difference ([`README.md`](../results/README.md)) |
 
 <!-- parity:end -->

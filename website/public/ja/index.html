@@ -156,30 +156,30 @@
 <h2 class="h2" id="parity">Parity</h2>
 <p class="lede-lg">hidane は公式エミュレータをオラクルとして扱います。公式の応答を記録し、テストスイートがその記録をすべて hidane に対して再生します。テストの裏付けがない互換性は主張しません。</p>
 <!-- parity:start -->
-<p class="fine">現時点で、公式エミュレータの応答 15,092 件を 38 の記録に収め、CI がそのすべてを hidane に対して再生しています。SDK の記録も両方のエミュレータで突き合わせています（<a href="https://github.com/hidane-dev/hidane/tree/main/results">results</a>）。数え方は <a href="https://github.com/hidane-dev/hidane/blob/main/docs/parity.md">docs/parity.md</a>（英語）にあります。</p>
+<p class="fine">現時点で、公式エミュレータの応答 15,091 件を 38 の記録に収め、CI がそのすべてを hidane に対して再生しています。SDK の記録も両方のエミュレータで突き合わせています（<a href="https://github.com/hidane-dev/hidane/tree/main/results">results</a>）。数え方は <a href="https://github.com/hidane-dev/hidane/blob/main/docs/parity.md">docs/parity.md</a>（英語）にあります。</p>
 <div class="parity-scroll">
 <table class="parity-table">
 <thead>
 <tr><th scope="col">領域</th><th scope="col" class="parity-tr">トランスポート</th><th scope="col" class="num">記録した<wbr>応答</th><th scope="col" class="num">全体を比較</th><th scope="col">SDK の記録</th></tr>
 </thead>
 <tbody>
-<tr><th scope="row">ドキュメントと書き込み<span class="parity-sub">gRPC, REST</span></th><td class="parity-tr">gRPC, REST</td><td class="num">233</td><td class="ns">記載なし</td><td class="sdk">0/1 組が一致</td></tr>
-<tr><th scope="row">クエリと集計<span class="parity-sub">gRPC, REST</span></th><td class="parity-tr">gRPC, REST</td><td class="num">420</td><td class="ns">記載なし</td><td class="sdk">3/3 組が一致</td></tr>
-<tr><th scope="row">トランザクション<span class="parity-sub">gRPC, REST</span></th><td class="parity-tr">gRPC, REST</td><td class="num">177</td><td class="num">172</td><td class="sdk">2/2 組が一致</td></tr>
-<tr><th scope="row">Listen / Write ストリーム<span class="parity-sub">gRPC</span></th><td class="parity-tr">gRPC</td><td class="num">49</td><td class="num">48</td><td class="sdk">1/3 組が一致</td></tr>
-<tr><th scope="row">REST<span class="parity-sub">REST</span></th><td class="parity-tr">REST</td><td class="num">79</td><td class="num">53</td><td class="sdk">1/1 組が一致</td></tr>
-<tr><th scope="row">WebChannel<span class="parity-sub">REST, WebChannel</span></th><td class="parity-tr">REST, WebChannel</td><td class="num">34</td><td class="ns">記載なし</td><td class="sdk">1/2 組が一致</td></tr>
-<tr><th scope="row">Security Rules<span class="parity-sub">gRPC, REST, WebSocket, プロセス内</span></th><td class="parity-tr">gRPC, REST, WebSocket, プロセス内</td><td class="num">13,264</td><td class="ns">記載なし</td><td class="sdk">0/2 組が一致</td></tr>
-<tr><th scope="row">エクスポートとインポート<span class="parity-sub">REST, CLI</span></th><td class="parity-tr">REST, CLI</td><td class="num">70</td><td class="ns">記載なし</td><td class="sdk">3/3 組が一致</td></tr>
-<tr><th scope="row">認証と管理エンドポイント<span class="parity-sub">gRPC, REST</span></th><td class="parity-tr">gRPC, REST</td><td class="num">488</td><td class="ns">記載なし</td><td class="sdk">1/2 組が一致</td></tr>
-<tr><th scope="row">値と上限<span class="parity-sub">gRPC, REST, WebChannel, プロセス内</span></th><td class="parity-tr">gRPC, REST, WebChannel, プロセス内</td><td class="num">278</td><td class="num">13</td><td class="sdk">—</td></tr>
+<tr><th scope="row">ドキュメントと書き込み<span class="parity-sub"><span class="nw">gRPC</span>, <span class="nw">REST</span></span></th><td class="parity-tr"><span class="nw">gRPC</span>, <span class="nw">REST</span></td><td class="num">233</td><td class="num">76</td><td class="sdk"><span class="sdk-part">既知の差 1</span></td></tr>
+<tr><th scope="row">クエリと集計<span class="parity-sub"><span class="nw">gRPC</span>, <span class="nw">REST</span></span></th><td class="parity-tr"><span class="nw">gRPC</span>, <span class="nw">REST</span></td><td class="num">419</td><td class="num">378</td><td class="sdk"><span class="sdk-part">一致 3</span></td></tr>
+<tr><th scope="row">トランザクション<span class="parity-sub"><span class="nw">gRPC</span>, <span class="nw">REST</span></span></th><td class="parity-tr"><span class="nw">gRPC</span>, <span class="nw">REST</span></td><td class="num">177</td><td class="num">172</td><td class="sdk"><span class="sdk-part">一致 2</span></td></tr>
+<tr><th scope="row">Listen / Write ストリーム<span class="parity-sub"><span class="nw">gRPC</span></span></th><td class="parity-tr"><span class="nw">gRPC</span></td><td class="num">49</td><td class="num">48</td><td class="sdk"><span class="sdk-part">一致 1</span><span class="sdk-part">既知の差 2</span></td></tr>
+<tr><th scope="row">REST<span class="parity-sub"><span class="nw">REST</span></span></th><td class="parity-tr"><span class="nw">REST</span></td><td class="num">79</td><td class="num">75</td><td class="sdk"><span class="sdk-part">一致 1</span></td></tr>
+<tr><th scope="row">WebChannel<span class="parity-sub"><span class="nw">REST</span>, <span class="nw">WebChannel</span></span></th><td class="parity-tr"><span class="nw">REST</span>, <span class="nw">WebChannel</span></td><td class="num">34</td><td class="num">31</td><td class="sdk"><span class="sdk-part">一致 1</span><span class="sdk-part">既知の差 1</span></td></tr>
+<tr><th scope="row">Security Rules<span class="parity-sub"><span class="nw">gRPC</span>, <span class="nw">REST</span>, <span class="nw">WebSocket</span>, <span class="nw">プロセス内</span></span></th><td class="parity-tr"><span class="nw">gRPC</span>, <span class="nw">REST</span>, <span class="nw">WebSocket</span>, <span class="nw">プロセス内</span></td><td class="num">13,264</td><td class="num">5,541</td><td class="sdk"><span class="sdk-part">既知の差 2</span></td></tr>
+<tr><th scope="row">エクスポートとインポート<span class="parity-sub"><span class="nw">REST</span>, <span class="nw">CLI</span></span></th><td class="parity-tr"><span class="nw">REST</span>, <span class="nw">CLI</span></td><td class="num">70</td><td class="num">67</td><td class="sdk"><span class="sdk-part">一致 3</span></td></tr>
+<tr><th scope="row">認証と管理エンドポイント<span class="parity-sub"><span class="nw">gRPC</span>, <span class="nw">REST</span></span></th><td class="parity-tr"><span class="nw">gRPC</span>, <span class="nw">REST</span></td><td class="num">488</td><td class="num">488</td><td class="sdk"><span class="sdk-part">一致 1</span><span class="sdk-part">既知の差 1</span></td></tr>
+<tr><th scope="row">値と上限<span class="parity-sub"><span class="nw">gRPC</span>, <span class="nw">REST</span>, <span class="nw">WebChannel</span>, <span class="nw">プロセス内</span></span></th><td class="parity-tr"><span class="nw">gRPC</span>, <span class="nw">REST</span>, <span class="nw">WebChannel</span>, <span class="nw">プロセス内</span></td><td class="num">278</td><td class="num">274</td><td class="sdk">—</td></tr>
 </tbody>
 <tfoot>
-<tr><th scope="row">合計</th><td class="parity-tr"></td><td class="num">15,092</td><td class="num">286</td><td class="sdk">12/19 組が一致</td></tr>
+<tr><th scope="row">合計</th><td class="parity-tr"></td><td class="num">15,091</td><td class="num">7,150</td><td class="sdk"><span class="sdk-part">一致 12</span><span class="sdk-part">既知の差 7</span></td></tr>
 </tfoot>
 </table>
 </div>
-<p class="fine">全体を比較: 記録が応答の全体を比べると示している応答の数です。示していない記録は「記載なし」とし、その比べ方は再生するテストに書かれています。SDK の記録: 同じ手順を SDK から両方のエミュレータに対して実行した記録の組で、一致した組の数を示します。一致しない組の違いは <a href="https://github.com/hidane-dev/hidane/blob/main/results/README.md">results/README.md</a> に説明があります。意図的に公式と違える点（60 件）は <a href="https://github.com/hidane-dev/hidane/blob/main/docs/parity-exceptions.md">parity exceptions</a>（英語）に一覧があります。</p>
+<p class="fine">全体を比較: 記録が保持する応答の全体（ステータス、メッセージや本文、値）を、実行ごとに変わる値（時刻や ID など）だけを除いて比べている応答の数です。そのほかは Security Rules の判定と理由、応答の一部、またはステータスで比べています。内訳と比べ方はテストごとに <a href="https://github.com/hidane-dev/hidane/blob/main/docs/parity.md">docs/parity.md</a> にあります。SDK の記録: 同じ手順を SDK から両方のエミュレータに対して実行した記録の組です。既知の差は、<a href="https://github.com/hidane-dev/hidane/blob/main/results/README.md">results/README.md</a> または parity exceptions に理由が書かれている差です。意図的に公式と違える点（60 件）は <a href="https://github.com/hidane-dev/hidane/blob/main/docs/parity-exceptions.md">parity exceptions</a>（英語）に一覧があります。</p>
 <!-- parity:end -->
 </div>
 </section>

@@ -61,10 +61,12 @@ evaluation errors exist in English only, and under another locale each of them b
 
 `tools/parity/table.py` counts the answers the tests replay from these fixtures and writes the
 parity table ([`docs/parity.md`](../../docs/parity.md)), the Parity section of hidane.dev and its
-badge. When you add a fixture, add it to `RECORDINGS` in that script (its area, the test that
-replays it and how to count its answers) and run `python3 tools/parity/table.py`; a new pair of
-SDK transcripts in `results/` goes in its `TRANSCRIPTS`. CI fails while a fixture or a transcript
-is missing from them, or while the table is stale.
+badge. When you add a fixture, add it to `RECORDINGS` in that script (its area, the test
+functions that replay it, what they compare and how to count its answers, each at the level the
+test compares it) and run `python3 tools/parity/table.py`; a new pair of SDK transcripts in
+`results/` goes in its `TRANSCRIPTS`, and a pair that differs in `SDK_DIFFERENCES` with where the
+documentation explains it. CI fails while a fixture or a transcript is missing from them, or
+while the table is stale.
 
 `sdk_documents.mjs` drives the same operations through `@google-cloud/firestore` (the engine of
 firebase-admin) and prints a transcript without absolute timestamps. Run it from a directory
