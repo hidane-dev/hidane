@@ -16,7 +16,7 @@
 | The browser firebase-js-sdk does reads and writes over **WebChannel** and transactions / aggregations over **REST**; nothing works over gRPC | Web support needs both; v0.1 states "browser: not yet" | [compatibility.md](compatibility.md) |
 | firebase-tools has no supported way to replace the `java` invocation. A `java` shim on `PATH` works end to end (verified) | Launch strategy must be decided | `src/emulator/downloadableEmulators.ts` (v15.33.0) |
 | Listen must emit an empty-`target_ids` `TargetChange` with a monotonically increasing `read_time` per consistent snapshot; `resume_token` design couples to storage | Storage design constraint | `google/firestore/v1/firestore.proto` (Listen docs), js-sdk `remote_store.ts` |
-| Rules `list` evaluation (query constraints vs rule conditions) is unspecified for a closed-source engine | v0.2 ships a conservative subset, deny-by-default | [rules-query docs](https://firebase.google.com/docs/firestore/security/rules-query) |
+| Rules `list` evaluation (query constraints vs rule conditions) is unspecified for a closed-source engine | Planned: a conservative subset, deny-by-default. Measuring showed the official model, now reproduced whole ([ADR 0005](adr/0005-rules-engine.md)) | [rules-query docs](https://firebase.google.com/docs/firestore/security/rules-query) |
 | Known official-emulator divergences: simple-lock transactions, `PartitionQuery` 501, `ExecutePipeline` enterprise-only, #6252, #11241 | A parity-exception list is needed | [parity-exceptions.md](parity-exceptions.md) |
 | Official baseline (under load): 0.74 s to port (2.5 s via CLI), 95 MiB idle, 456 MiB after 1k docs, superlinear writes with a listener | Targets below | [why.md](why.md), `results/` |
 | The jar grants no redistribution rights | CI downloads it each run and verifies SHA256 | jar `FIRESTORE_EMULATOR_LICENSES` |
@@ -70,20 +70,20 @@ Parity exceptions planned for v0.1: the listener-induced write slowdown and the 
 
 **Goal**: evaluate `firestore.rules`; `@firebase/rules-unit-testing` and the Emulator UI request monitor work.
 
-| Priority | Item |
-|---|---|
-| P1 | Grammar (v1 / v2, `let`, operator precedence) and diagnostics (`issues[]` / `Severity`) |
-| P1 | Type system (14 types, 70+ methods) and built-in functions |
-| P1 | `request` / `resource` / `request.query`, `request.resource.data` after FieldValue transforms |
-| P1 | `get` / `exists` / `getAfter` / `existsAfter`, 10 / 20 call limits, cached calls not counted |
-| P1 | `list` implication: conservative subset, deny when undecidable, with a diagnostic log |
-| P1 | Real diagnostics from `:securityRules`, `:ruleCoverage` (JSON), denial message `%s for '%s' @ L%d` |
-| P1 | Mock tokens (`alg: none`) and `Bearer owner` |
-| P2 | WebSocket `/requests` feed for the Emulator UI |
-| P2 | Golden results from the production Rules API `projects:test` |
-| P2 | Event delivery to `--functions_emulator` (v1 and v2 CloudEvents) |
+| Priority | Item | Status (2026-10-12) |
+|---|---|---|
+| P1 | Grammar (v1 / v2, `let`, operator precedence) and diagnostics (`issues[]` / `Severity`) | On main (#59); the type checker's warnings in progress (#60) |
+| P1 | Type system (14 types, 70+ methods) and built-in functions | On main (#60, #62) |
+| P1 | `request` / `resource` / `request.query`, `request.resource.data` after FieldValue transforms | On main (#63, #64) |
+| P1 | `get` / `exists` / `getAfter` / `existsAfter`, 10 / 20 call limits, cached calls not counted | On main (#65) |
+| P1 | `list` implication, measured against the official emulator | On main (#66): the official model, not a subset |
+| P1 | Real diagnostics from `:securityRules`, `:ruleCoverage` (JSON), denial message `%s for '%s' @ L%d` | Denial messages on main; `:ruleCoverage`, `debug()` output and `GET :securityRules` in progress (#67, #155) |
+| P1 | Mock tokens (`alg: none`) and `Bearer owner` | On main (#68) |
+| P2 | WebSocket `/requests` feed for the Emulator UI | |
+| P2 | Golden results from the production Rules API `projects:test` | |
+| P2 | Event delivery to `--functions_emulator` (v1 and v2 CloudEvents) | |
 
-Parity exception: #6252 (first evaluation of rules that use `resource.data` errors) is not reproduced.
+Parity exception: #6252 (the official emulator evaluates conditions in two passes and lists the reasons of both) is not reproduced; hidane evaluates each condition once.
 
 ## 4. v0.3 — webchannel
 
@@ -118,6 +118,6 @@ Parity exception: #6252 (first evaluation of rules that use `resource.data` erro
 
 1. **No Web support until v0.3.** Browser development is the most common local-development case and a gRPC-only v0.1 does nothing for it. Mitigation: pull REST unary into v0.1, keep the Listen / Write core transport-agnostic, and revisit the WebChannel timing in ADR 0004.
 2. **No supported replacement hook in firebase-tools.** The `java` shim works but is an awkward distribution story; an upstream PR may or may not be accepted.
-3. **Rules `list` implication is unspecified.** Parity can only be measured by differential testing, and the evaluation semantics (errors, overflow) are undocumented.
+3. **Rules `list` implication is unspecified.** Parity can only be measured by differential testing, and the evaluation semantics (errors, overflow) are undocumented. Since resolved by measuring: the official model is reproduced (#66, ADR 0005).
 
 Runners-up: the `resume_token` design is hard to change later; the jar cannot be redistributed so CI depends on an external download; the baseline numbers were measured under load.
