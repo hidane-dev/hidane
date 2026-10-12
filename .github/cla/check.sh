@@ -27,16 +27,14 @@ write() {
   fi
 }
 
-# A JSON file of the cla-signatures branch, or $2 when the branch or the file is missing; sets
-# $file_sha to the file's blob, empty when it is missing.
+# A JSON file of the cla-signatures branch as {sha, data}: its blob and content, or an empty sha
+# and $2 when the branch or the file is missing.
 read_record() {
   local response
   if response=$(gh api "repos/$REPO/contents/$1?ref=$branch" 2>/dev/null); then
-    file_sha=$(jq -r .sha <<<"$response")
-    jq -r .content <<<"$response" | base64 -d
+    jq -c '{sha, data: (.content | gsub("\n"; "") | @base64d | fromjson)}' <<<"$response"
   else
-    file_sha=
-    echo "$2"
+    jq -cn --argjson empty "$2" '{sha: "", data: $empty}'
   fi
 }
 
@@ -51,16 +49,17 @@ head=$(jq -r .head.sha <<<"$pr")
 # whose author email is linked to no account cannot be attributed to anyone.
 commits=$(gh api --paginate "repos/$REPO/pulls/$PR/commits" \
   --jq '.[] | {sha: .sha[0:7], login: .author.login, id: .author.id, name: .commit.author.name}' | jq -s .)
-exempt=$(grep -v -e '^#' -e '^[[:space:]]*$' "$exempt_file" | jq -R . | jq -s .)
+exempt=$({ grep -v -e '^#' -e '^[[:space:]]*$' "$exempt_file" || true; } | jq -R . | jq -s .)
 authors=$(jq -c --argjson pr "$pr" --argjson exempt "$exempt" '
   [{login: $pr.user.login, id: $pr.user.id}] + [.[] | select(.id != null) | {login, id}]
   | unique_by(.id)
   | map(select((.login | endswith("[bot]")) or (.login as $l | $exempt | index($l)) | not))' <<<"$commits")
 unlinked=$(jq -c '[.[] | select(.id == null) | {sha, name}]' <<<"$commits")
 
-individual=$(read_record individual.json '{"signatures": []}')
-individual_sha=$file_sha
-corporate=$(read_record corporate.json '{"agreements": []}')
+stored=$(read_record individual.json '{"signatures": []}')
+individual=$(jq -c .data <<<"$stored")
+individual_sha=$(jq -r .sha <<<"$stored")
+corporate=$(read_record corporate.json '{"agreements": []}' | jq -c .data)
 covered() {
   jq -c --argjson individual "$individual" --argjson corporate "$corporate" '
     ([$individual.signatures[].id] + [$corporate.agreements[].designated[] | select(.removed == null) | .id]) as $ids
@@ -100,8 +99,9 @@ EOF
     fi
     # Someone else recorded an agreement at the same time: read the file again.
     [[ $attempt == 3 ]] && exit 1
-    individual=$(read_record individual.json '{"signatures": []}')
-    individual_sha=$file_sha
+    stored=$(read_record individual.json '{"signatures": []}')
+    individual=$(jq -c .data <<<"$stored")
+    individual_sha=$(jq -r .sha <<<"$stored")
   done
   unsigned=$(covered)
 fi
@@ -132,9 +132,15 @@ else
   message="$marker
 Thank you for your pull request. hidane accepts contributions under its [Contributor License Agreement]($readme): you keep the copyright in your contribution, and the project receives a license to use, distribute, sublicense and relicense it."
   if ((missing > 0)); then
+    who=$(jq -r 'map("@" + .login) | join(", ")' <<<"$unsigned")
+    if ((missing == 1)); then
+      ask="$who still needs to agree to the [Individual CLA](https://github.com/$REPO/blob/main/$document), by posting this comment exactly as written:"
+    else
+      ask="$who still need to agree to the [Individual CLA](https://github.com/$REPO/blob/main/$document). Each of them can agree by posting this comment exactly as written:"
+    fi
     message="$message
 
-$(jq -r 'map("@" + .login) | join(", ")' <<<"$unsigned") still need to agree to the [Individual CLA](https://github.com/$REPO/blob/main/$document). Each of them can agree by posting this comment, exactly as written:
+$ask
 
 \`\`\`
 $statement
