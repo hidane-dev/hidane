@@ -75,7 +75,7 @@ contract (`tools/oracle/auth.py`).
 
 Notable consequences for the implementation:
 
-- The JS SDKs never call `BeginTransaction`; transactions are `BatchGetDocuments` plus a `Commit` with preconditions. A document read but not written goes into the commit as a `verify` write (`Write.verify`, field 5), which googleapis' published protos lack; the mobile SDKs do the same.
+- The JS SDKs never call `BeginTransaction`; transactions are `BatchGetDocuments` plus a `Commit` with preconditions. A document read but not written goes into the commit as a `verify` write (`Write.verify`, field 5), which googleapis' published protos lack; the mobile SDKs do the same. Under Security Rules each verify is checked again at the commit, as a `get` of its document (#173).
 - The Admin SDK starts transactions lazily with the `new_transaction` option on the first read.
 - Mobile SDKs run queries through the Listen stream, not `RunQuery`.
 - `PartitionQuery` is only used by the Go / Python / Java clients; the official emulator answers it with 501.

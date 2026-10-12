@@ -77,6 +77,7 @@ fn conditions_decide_as_on_the_official_emulator() {
                     write_fields: None,
                     transforms: None,
                     auto_id: false,
+                    verify: false,
                     method: Method::Get,
                     path: document_path("rooms/r1"),
                     auth: None,

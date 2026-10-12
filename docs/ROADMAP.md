@@ -77,7 +77,7 @@ v0.2.0 (2026-10-12) has the P1 items, and v0.2.1 adds the request monitor (#69) 
 |---|---|---|
 | P1 | Grammar (v1 / v2, `let`, operator precedence) and diagnostics (`issues[]` / `Severity`) | In v0.2.0 (#59, #60): the official type checker's warnings |
 | P1 | Type system (14 types, 70+ methods) and built-in functions | In v0.2.0 (#60, #62) |
-| P1 | `request` / `resource` / `request.query`, `request.resource.data` after FieldValue transforms | In v0.2.0 (#63, #64); in v0.2.1 (#166): every key of the official `request` and `request.query` (`inTransaction`, `fields`, `writeFields`, `transforms`, `readFields`, `autoId`, `kind`, `parent`, …), in its order |
+| P1 | `request` / `resource` / `request.query`, `request.resource.data` after FieldValue transforms | In v0.2.0 (#63, #64); in v0.2.1 (#166): every key of the official `request` and `request.query` (`inTransaction`, `fields`, `writeFields`, `transforms`, `readFields`, `autoId`, `kind`, `parent`, …), in its order; after v0.2.1 (#173): a commit's `verify` writes, checked as a `get` of their document, before the preconditions of the whole commit |
 | P1 | `get` / `exists` / `getAfter` / `existsAfter`, 10 / 20 call limits, cached calls not counted | In v0.2.0 (#65) |
 | P1 | `list` implication, measured against the official emulator | In v0.2.0 (#66): the official model, not a subset |
 | P1 | Real diagnostics from `:securityRules`, `:ruleCoverage` (JSON), denial message `%s for '%s' @ L%d` | In v0.2.0: denial messages, `GET :securityRules` (#155), `:ruleCoverage` as JSON and as a page, and `debug()` output (#67) |

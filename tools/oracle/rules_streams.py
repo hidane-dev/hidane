@@ -7,7 +7,7 @@ Usage (from the repository root), with the jar started under an English locale
 
 Listen: targets for an allowed document, a denied one, both in one target, a denied query, and
 an allowed document that a later write (as the owner) makes denied. Write: a denied write on
-the stream. Each stream runs through grpcurl with the repository's protos (the official
+the stream, and verifies (#173), allowed, denied, and denied after an allowed write. Each stream runs through grpcurl with the repository's protos (the official
 emulator's reflection cannot describe the service); the messages it prints are recorded.
 """
 
@@ -122,6 +122,12 @@ for name, target in {
     record(name, setup, "Listen", [{"database": db, "addTarget": target}])
 record("write: denied", setup, "Write", [
     {"database": db}, {"streamToken": "", "writes": [{"update": {"name": doc("c/x"), "fields": {"n": {"integerValue": "2"}}}}]}])
+verify = lambda d: {"verify": doc(d), "currentDocument": {"exists": True}}
+record("write: an allowed verify", setup, "Write", [{"database": db}, {"streamToken": "", "writes": [verify("c/a")]}])
+record("write: a denied verify", setup, "Write", [{"database": db}, {"streamToken": "", "writes": [verify("c/b")]}])
+record("write: an allowed write and a denied verify", setup, "Write", [
+    {"database": db}, {"streamToken": "", "writes": [
+        {"update": {"name": doc("c/a"), "fields": {"n": {"integerValue": "1"}}}}, verify("c/b")]}])
 
 setup = project("streams-b", "match /c/{d} {\n  allow get: if resource.data.n == 1;\n}", [("c/a", 1)])
 db = setup[0]

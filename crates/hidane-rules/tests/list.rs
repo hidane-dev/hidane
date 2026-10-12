@@ -43,6 +43,7 @@ fn list_in(matched: &str, condition: &str, filter: Option<Filter>, group: bool) 
         write_fields: None,
         transforms: None,
         auto_id: false,
+        verify: false,
         path,
         auth: None,
         time: now(),
