@@ -393,7 +393,7 @@ pub(crate) fn start(parens: &HashMap<(usize, usize), Vec<Span>>, e: &Expr) -> Sp
 
 /// The first token of an expression that is the object of a member, an index or a method: its
 /// outermost parenthesis is the outer expression's.
-fn start_inside(parens: &HashMap<(usize, usize), Vec<Span>>, e: &Expr) -> Span {
+pub(crate) fn start_inside(parens: &HashMap<(usize, usize), Vec<Span>>, e: &Expr) -> Span {
     match parens.get(&(e.span.start, e.span.end)) {
         Some(around) if around.len() > 1 => around[1],
         _ => leftmost(parens, e),

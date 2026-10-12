@@ -9,7 +9,10 @@ Rules are not filters: a query is allowed only if every document it could return
 condition, which the official emulator decides from the query's constraints, not from the data.
 Each case of the table loads one `allow list` condition and runs every query of `QUERIES` with a
 token for `u1` (an unsigned JWT): queries, aggregations and listings. The pairs after it run one
-query under one condition each. Documents are written as the owner. Stdlib only.
+query under one condition each. A second table runs the filters of `NULLS` (null and NaN in
+every kind of filter, alone and next to other filters of the same field, and filters that repeat)
+under the conditions of `NULL_CONDITIONS`, which compare the field with a value of each type.
+Documents are written as the owner. Stdlib only.
 """
 
 import base64
@@ -30,6 +33,9 @@ D = lambda f: {"doubleValue": f}
 S = lambda s: {"stringValue": s}
 A = lambda *v: {"arrayValue": {"values": list(v)}}
 REF = lambda d: {"referenceValue": f"{DOCS}/{d}"}
+B = lambda b: {"booleanValue": b}
+NULL = {"nullValue": None}
+NAN = {"doubleValue": "NaN"}
 
 
 def b64(obj):
@@ -139,6 +145,7 @@ FUNCTIONS = "function f() {\n  return resource.data.n == 1;\n}\nfunction g(v) {\
 MORE = {
     "n > 5": RUN(query(field("n", "GREATER_THAN", I(5)))),
     "n >= 1.5": RUN(query(field("n", "GREATER_THAN_OR_EQUAL", D(1.5)))),
+    "n == 1.5 and n == 2.0": RUN(query(both(field("n", "EQUAL", D(1.5)), field("n", "EQUAL", D(2.0))))),
     "n == 1 and n > 0": RUN(query(both(field("n", "EQUAL", I(1)), field("n", "GREATER_THAN", I(0))))),
     "n > 0 and n > 2": RUN(query(both(field("n", "GREATER_THAN", I(0)), field("n", "GREATER_THAN", I(2))))),
     "n not-in [1, 2]": RUN(query(field("n", "NOT_IN", A(I(1), I(2))))),
@@ -153,7 +160,56 @@ MORE = {
     "__name__ == c/missing": RUN(query(field("__name__", "EQUAL", REF("c/missing")))),
     "__name__ in [c/d1, c/missing]": RUN(query(field("__name__", "IN", A(REF("c/d1"), REF("c/missing"))))),
     "listDocuments pageSize 2": ("GET", f"{BASE}/c?pageSize=2", None),
+    "tags array-contains null": RUN(query(field("tags", "ARRAY_CONTAINS", NULL))),
+    "tags array-contains NaN": RUN(query(field("tags", "ARRAY_CONTAINS", NAN))),
+    "tags array-contains-any [null, 'a']": RUN(query(field("tags", "ARRAY_CONTAINS_ANY", A(NULL, S("a"))))),
 }
+
+# Null and NaN in each kind of filter (a field filter with either matches nothing, but `!= NaN`
+# and `not-in [NaN]`, which match every value but null), alone, next to other filters of the same
+# field, and filters that repeat. `(field)` marks a field filter where the SDKs send a unary one.
+F = lambda op, v: field("n", op, v)
+U = lambda op: unary("n", op)
+NULLS = {
+    "n is null": RUN(query(U("IS_NULL"))),
+    "n is not null": RUN(query(U("IS_NOT_NULL"))),
+    "n is nan": RUN(query(U("IS_NAN"))),
+    "n is not nan": RUN(query(U("IS_NOT_NAN"))),
+    "n == null (field)": RUN(query(F("EQUAL", NULL))),
+    "n != null (field)": RUN(query(F("NOT_EQUAL", NULL))),
+    "n > null": RUN(query(F("GREATER_THAN", NULL))),
+    "n == NaN (field)": RUN(query(F("EQUAL", NAN))),
+    "n != NaN (field)": RUN(query(F("NOT_EQUAL", NAN))),
+    "n <= NaN": RUN(query(F("LESS_THAN_OR_EQUAL", NAN))),
+    "n in [null]": RUN(query(F("IN", A(NULL)))),
+    "n in [NaN, 1]": RUN(query(F("IN", A(NAN, I(1))))),
+    "n not-in [null]": RUN(query(F("NOT_IN", A(NULL)))),
+    "n not-in [1, null]": RUN(query(F("NOT_IN", A(I(1), NULL)))),
+    "n not-in [NaN]": RUN(query(F("NOT_IN", A(NAN)))),
+    "n not-in [1, NaN]": RUN(query(F("NOT_IN", A(I(1), NAN)))),
+    "n is not null and n > 0": RUN(query(both(U("IS_NOT_NULL"), F("GREATER_THAN", I(0))))),
+    "n > 0 and n != null (field)": RUN(query(both(F("GREATER_THAN", I(0)), F("NOT_EQUAL", NULL)))),
+    "n is not nan and n > 0": RUN(query(both(U("IS_NOT_NAN"), F("GREATER_THAN", I(0))))),
+    "n is null and n > 0": RUN(query(both(U("IS_NULL"), F("GREATER_THAN", I(0))))),
+    "n is nan and n > 0": RUN(query(both(U("IS_NAN"), F("GREATER_THAN", I(0))))),
+    "n is nan and n != 'a'": RUN(query(both(U("IS_NAN"), F("NOT_EQUAL", S("a"))))),
+    "n == true and n < 5": RUN(query(both(F("EQUAL", B(True)), F("LESS_THAN", I(5))))),
+    "n == false and n == null (field)": RUN(query(both(F("EQUAL", B(False)), F("EQUAL", NULL)))),
+    "n is nan and n is nan": RUN(query(both(U("IS_NAN"), U("IS_NAN")))),
+    "n is null and n is null": RUN(query(both(U("IS_NULL"), U("IS_NULL")))),
+    "n == 1 and n == 1": RUN(query(both(F("EQUAL", I(1)), F("EQUAL", I(1))))),
+    "n == 1 and n == 1.0": RUN(query(both(F("EQUAL", I(1)), F("EQUAL", D(1.0))))),
+    "n == 1 and n == 2": RUN(query(both(F("EQUAL", I(1)), F("EQUAL", I(2))))),
+    "n > 0 and n > 0": RUN(query(both(F("GREATER_THAN", I(0)), F("GREATER_THAN", I(0))))),
+    "n not-in [1, 1]": RUN(query(F("NOT_IN", A(I(1), I(1))))),
+    "n == 1 and n in [1, 2]": RUN(query(both(F("EQUAL", I(1)), F("IN", A(I(1), I(2)))))),
+    "n in [1, 1]": RUN(query(F("IN", A(I(1), I(1))))),
+}
+NULL_CONDITIONS = [f"{R}.n {c}" for c in [
+    "== true", "== false", "!= true", "!= false", "== null", "!= null", "== 1", "== 1.0", "!= 1", "!= 2",
+    "> 0", "< 10", "== 'a'", "!= 'a'", "== float('NaN')", "!= float('NaN')", "> float('NaN')", ">= true", "> null",
+    "<= [1]", "< latlng.value(0, 0)", "> b'a'", "is bool", "is number", "is constraint", "in [true, false]",
+]] + [f"null < {R}.n", f"!({R}.n == true)", f"{R}.n == true && {R}.n == false", f"math.isNaN({R}.n)"]
 DOC = "/{path=**}/c/{d}"
 PAIRS = [
     (DOC, "n > 5", [f"{R}.n {c}" for c in ["< 3", "== 1", "!= 1", "!= 'a'", "in [1, 2]", "> 6", "> 4", "> 4.0", "> 4.5",
@@ -161,6 +217,7 @@ PAIRS = [
      + [f"!({R}.n < 3)", f"int({R}.n) == 1", f"string({R}.n) == 'x'", f"{R}.n.x == 1", f"[{R}.n] == [1]",
         f"{R}.n in {{'a': 1}}"]),
     (DOC, "n >= 1.5", [f"{R}.n {c}" for c in ["> 1", ">= 1.0", "> 1.4", ">= 1.5", "> 1.5", "!= 1", "!= 1.0", "!= 1.5"]]),
+    (DOC, "n == 1.5 and n == 2.0", [f"{R}.n {c}" for c in ["!= 1", "!= 2", "== 2", "< 3", "!= 1.0", "!= 2.0", "== 2.0", "< 3.0"]]),
     (DOC, "n == 1 and n > 0", [f"{R}.n {c}" for c in ["== 1", "== 1.0", "> 0", "> 0.5", "!= 2", "< 2", ">= 1", "<= 1", "is int"]]),
     (DOC, "n > 0 and n > 2", [f"{R}.n > 0", f"{R}.n > 1", f"{R}.n > 2"]),
     (DOC, "n not-in [1, 2]", [f"{R}.n != 1", f"{R}.n != 2", f"{R}.n != 1.0", f"{R}.n != 3", f"!({R}.n in [1, 2])"]),
@@ -194,6 +251,10 @@ PAIRS = [
     ("/c/{d}", "group: n == 1", ["true"]),
     ("/{path=**}/c/{d}", "group: n == 1", ["debug(path) != null", "d != null", "true", "debug(request.path) != null",
                                            "request.path != null", "request['path'] != null"]),
+    (DOC, "tags array-contains null", [f"{R}.tags != null", f"'a' in {R}.tags", f"[] in {R}.tags", f"null in {R}.tags",
+                                       f"{R}.tags.hasAny([[]])", f"{R}.tags.hasAny([null])", f"{R}.tags == []"]),
+    (DOC, "tags array-contains NaN", [f"[] in {R}.tags", f"float('NaN') in {R}.tags"]),
+    (DOC, "tags array-contains-any [null, 'a']", [f"'a' in {R}.tags", f"[] in {R}.tags", f"'a' in {R}.tags || [] in {R}.tags"]),
 ]
 
 
@@ -210,7 +271,7 @@ def load(condition, match=DOC):
 
 
 def run(name):
-    method, path, body = {**QUERIES, **MORE}[name]
+    method, path, body = {**QUERIES, **MORE, **NULLS}[name]
     call(method, path, body, auth=TOKEN)
     cases[-1]["steps"][-1]["query"] = name
 
@@ -225,6 +286,12 @@ for match, name, conditions in PAIRS:
     for condition in conditions:
         case(f"{name}: {condition}" + ("" if match == DOC else f" (match {match})"))
         load(condition, match)
+        run(name)
+
+for condition in NULL_CONDITIONS:
+    case(f"nulls: {condition}")
+    load(condition)
+    for name in NULLS:
         run(name)
 
 dump()

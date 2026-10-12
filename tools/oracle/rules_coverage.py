@@ -22,10 +22,11 @@ rules or the coverage report keep their body as sent (`raw`). The cases:
   parentheses, literals), what each evaluated to (every type of value, as `debug()` prints it
   too), in which order and how many times, expressions not evaluated (`&&`, `||`, `?:`), errors
   and where they are placed, statements counted once more for each one evaluated after them,
-  upserts (whose `create` and `update` statements are both evaluated), lists (constraints, and
-  the path segments a list does not know) and offsets in code points. The conditions end in a
-  value, not an error, and read no document: the official emulator evaluates a condition again
-  after an error, or when it reads one, and its report counts both passes;
+  upserts (whose `create` and `update` statements are both evaluated), lists (constraints, null
+  and NaN in filters, ways that repeat, and the path segments a list does not know) and offsets
+  in code points. The conditions end in a value, not an error, and read no document: the
+  official emulator evaluates a condition again after an error, or when it reads one, and its
+  report counts both passes;
 - cases marked `differs`, where hidane does not do what the official emulator does
   (`docs/parity-exceptions.md`): the second pass, and a branch of `?:` not taken.
 
@@ -270,6 +271,10 @@ service cloud.firestore {
         f"{T}.n || false", f"{T}.f || {T}.n", f"({T}.n ? 1 : 2) == 1", f"/databases/$({T}.m)/documents == /a/b",
         f"{T}.nul.size() == 1", f"{T}.s.size(1) == 1", f"{T}.m.get('x') == 1", f"{T}.s.split(1) == 1",
         "int('a') == 1", "debug(int('a')) == 1",
+        # The object of a member, an index or a method in parentheses.
+        f"({T}.missing).y == 1", f"((({T}.missing))).y == 1", f"(({T}).missing).y == 1", f"({T}.m).missing.y == 1",
+        f"({T}.missing.x).y == 1", f"({T}.missing)['y'] == 1", f"({T}.missing).size() == 1", f"({T}.l)[5] == 1",
+        f"({T}.missing) == 1", f"({T}.missing.y) == 1", f"[({T}.missing)][0] == 1",
     ]
     fns = ("function t() {\n  return request.auth.token;\n}\nfunction f2() {\n  let z = int('q');\n  return z == 1;\n}\n"
            "function f3(x) {\n  return x.size() == 1;\n}\n")
@@ -324,6 +329,28 @@ service cloud.firestore {
         query(field("IN", {"arrayValue": {"values": [I(1), I(2)]}})), query(field("ARRAY_CONTAINS", I(1))),
         query(field("LESS_THAN_OR_EQUAL", I(1))), query(field("NOT_IN", {"arrayValue": {"values": [I(1), I(2)]}})),
         query(),
+    ])
+
+    null, nan = {"nullValue": None}, {"doubleValue": "NaN"}
+    array = lambda *v: {"arrayValue": {"values": list(v)}}
+    unary = lambda op: {"unaryFilter": {"field": {"fieldPath": "n"}, "op": op}}
+    both = lambda *f, op="AND": {"compositeFilter": {"op": op, "filters": list(f)}}
+    coverage_case("null and NaN filters", "cov-nulls", "\n".join([
+        "match /q/{d} {",
+        "  allow list: if debug(resource.data.n) == true || resource.data.n > true",
+        "    || resource.data.n != float('NaN') || true;",
+        "}",
+    ]), [
+        query(field("NOT_EQUAL", null)), query(unary("IS_NOT_NULL")), query(unary("IS_NOT_NAN")),
+        query(field("NOT_EQUAL", nan)), query(field("IN", array(I(1), null))), query(field("NOT_IN", array(I(1), nan))),
+        query(field("ARRAY_CONTAINS", null)), query(both(unary("IS_NULL"), unary("IS_NULL"))),
+        query(both(field("EQUAL", I(1)), field("EQUAL", I(1)))), query(both(unary("IS_NAN"), field("GREATER_THAN", I(0)))),
+        # Ways that are the same are decided once.
+        query(field("IN", array(I(1), I(1)))), query(field("IN", array(null, nan))),
+        query(both(field("EQUAL", null), field("GREATER_THAN", null), op="OR")),
+        query(both(both(field("GREATER_THAN", I(0)), field("LESS_THAN", I(5))),
+                   both(field("LESS_THAN", I(5)), field("GREATER_THAN", I(0))), op="OR")),
+        query(both(field("EQUAL", I(1)), both(field("EQUAL", I(1)), field("EQUAL", I(1))), op="OR")),
     ])
 
     def group(parent=""):
