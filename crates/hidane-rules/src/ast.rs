@@ -31,10 +31,10 @@ pub struct Ruleset {
     /// Functions declared at the top level, outside any service.
     pub functions: Vec<Function>,
     pub services: Vec<Service>,
-    /// The outermost opening parenthesis around each parenthesized expression, by the
+    /// The opening parentheses around each parenthesized expression, outermost first, by the
     /// expression's byte range. The AST leaves parentheses out; the coverage report and the
-    /// positions of evaluation errors count an expression from its parenthesis.
-    pub parens: HashMap<(usize, usize), Span>,
+    /// positions of evaluation errors count an expression from its parentheses.
+    pub parens: HashMap<(usize, usize), Vec<Span>>,
 }
 
 impl Ruleset {

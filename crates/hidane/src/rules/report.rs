@@ -9,12 +9,12 @@
 //!   field's name (`int_value: \t 2`, `map_value \t {`), then an empty line. Map entries come
 //!   sorted by key.
 
-use std::fmt::Write as _;
+use std::{borrow::Cow, fmt::Write as _};
 
 use base64::{Engine as _, engine::general_purpose::STANDARD};
 use hidane_rules::{
     Position,
-    coverage::Report,
+    coverage::Coverage,
     eval::{Observed, Outcome, Segment, java_double},
 };
 
@@ -132,49 +132,92 @@ pub(crate) fn security_rules(files: &[File]) -> String {
     render(&Json::Object(vec![rules(files)]), false) + "\n"
 }
 
-fn coverage_json(files: &[File], report: &[Report<'_>]) -> Json {
-    let mut fields = vec![rules(files)];
-    if !report.is_empty() {
-        fields.push(("report", Json::Array(report.iter().map(node).collect())));
+/// `{rules: …, report: […]}`. The report is written without recursion: expressions nest
+/// thousands deep.
+fn coverage_json(files: &[File], coverage: Option<&Coverage>, html: bool) -> String {
+    let (key, rules) = rules(files);
+    let mut out = format!("{{\n  {}: ", string(key, html));
+    rules.write(&mut out, 2, html);
+    if let Some(coverage) = coverage.filter(|c| !c.roots().is_empty()) {
+        let _ = write!(out, ",\n  {}: ", string("report", html));
+        expressions(&mut out, coverage, coverage.roots(), 2, html);
     }
-    Json::Object(fields)
+    out.push_str("\n}");
+    out
+}
+
+/// A list of the report's expressions, held by a field at `indent`.
+fn expressions(out: &mut String, coverage: &Coverage, list: &[usize], indent: usize, html: bool) {
+    /// What is left to write: an expression held at an indent, or text.
+    enum Step {
+        Expression(usize, usize),
+        Text(Cow<'static, str>),
+    }
+    /// Schedules `list`, then `close`.
+    fn schedule(steps: &mut Vec<Step>, list: &[usize], indent: usize, close: Cow<'static, str>) {
+        steps.push(Step::Text(close));
+        for (k, &i) in list.iter().enumerate().rev() {
+            steps.push(Step::Expression(i, indent));
+            if k > 0 {
+                steps.push(Step::Text(Cow::Borrowed(", ")));
+            }
+        }
+    }
+    let mut steps = Vec::new();
+    out.push('[');
+    schedule(&mut steps, list, indent, Cow::Borrowed("]"));
+    while let Some(step) = steps.pop() {
+        let (i, indent) = match step {
+            Step::Text(text) => {
+                out.push_str(&text);
+                continue;
+            }
+            Step::Expression(i, indent) => (i, indent),
+        };
+        let expression = coverage.expression(i);
+        let inner = indent + 2;
+        let _ = write!(out, "{{\n{:inner$}{}: ", "", string("sourcePosition", html));
+        position(&expression.position).write(out, inner, html);
+        if !expression.values.is_empty() {
+            let values = expression
+                .values
+                .iter()
+                .map(|(outcome, count)| {
+                    Json::Object(vec![
+                        ("value", self::outcome(outcome)),
+                        ("count", Json::Raw(count.to_string())),
+                    ])
+                })
+                .collect();
+            let _ = write!(out, ",\n{:inner$}{}: ", "", string("values", html));
+            Json::Array(values).write(out, inner, html);
+        }
+        let close = format!("\n{:indent$}}}", "");
+        if expression.children.is_empty() {
+            out.push_str(&close);
+        } else {
+            let _ = write!(out, ",\n{:inner$}{}: [", "", string("children", html));
+            schedule(
+                &mut steps,
+                expression.children,
+                inner,
+                Cow::Owned(format!("]{close}")),
+            );
+        }
+    }
 }
 
 /// The body of `GET :ruleCoverage`.
-pub(crate) fn coverage(files: &[File], report: &[Report<'_>]) -> String {
-    render(&coverage_json(files, report), false) + "\n"
+pub(crate) fn coverage(files: &[File], coverage: Option<&Coverage>) -> String {
+    coverage_json(files, coverage, false) + "\n"
 }
 
 /// The page of `GET :ruleCoverage.html`: the rules with each expression marked, and what it
 /// evaluated to on hover. hidane's own page around the official emulator's data
 /// (`docs/parity-exceptions.md`).
-pub(crate) fn coverage_html(files: &[File], report: &[Report<'_>]) -> String {
-    let data = render(&coverage_json(files, report), true);
+pub(crate) fn coverage_html(files: &[File], coverage: Option<&Coverage>) -> String {
+    let data = coverage_json(files, coverage, true);
     include_str!("coverage.html").replace("/*DATA*/{}", &data)
-}
-
-fn node(report: &Report<'_>) -> Json {
-    let mut fields = vec![("sourcePosition", position(&report.position))];
-    if !report.values.is_empty() {
-        let values = report
-            .values
-            .iter()
-            .map(|(outcome, count)| {
-                Json::Object(vec![
-                    ("value", self::outcome(outcome)),
-                    ("count", Json::Raw(count.to_string())),
-                ])
-            })
-            .collect();
-        fields.push(("values", Json::Array(values)));
-    }
-    if !report.children.is_empty() {
-        fields.push((
-            "children",
-            Json::Array(report.children.iter().map(node).collect()),
-        ));
-    }
-    Json::Object(fields)
 }
 
 fn position(p: &Position) -> Json {

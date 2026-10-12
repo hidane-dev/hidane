@@ -153,11 +153,7 @@ fn compile_here(files: &[SourceFile]) -> Compilation {
         file_name: files[0].name.clone(),
         functions: first.functions,
         services: first.services,
-        parens: first
-            .parens
-            .into_iter()
-            .filter_map(|(range, spans)| Some((range, *spans.first()?)))
-            .collect(),
+        parens: first.parens,
     };
     finish(parsed, Some(ruleset))
 }

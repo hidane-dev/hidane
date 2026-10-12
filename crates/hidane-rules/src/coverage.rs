@@ -29,7 +29,7 @@ use std::{
 };
 
 use crate::{
-    ast::{Body, Callee, Expr, ExprKind, Function, PathPart, Ruleset, Span},
+    ast::{BinaryOp, Body, Callee, Expr, ExprKind, Function, PathPart, Ruleset, Span},
     diag::Position,
     eval::{NodeKey, Outcome, Trace, Traced, observe},
     lexer,
@@ -58,12 +58,21 @@ struct Node {
     seen: HashMap<u64, Vec<usize>>,
 }
 
-/// An expression of the report, with the expressions in it.
-pub struct Report<'a> {
+/// An expression of the report.
+pub struct Expression<'a> {
     pub position: Position,
     /// Each distinct outcome in the order first seen, and how many times it was seen.
     pub values: &'a [(Outcome, u64)],
-    pub children: Vec<Report<'a>>,
+    /// The expressions in it, in order ([`Coverage::expression`]).
+    pub children: &'a [usize],
+}
+
+/// What the report still has to add: an expression (and whether it is the object of a member,
+/// an index or a method, whose report leaves out its outermost parenthesis), or a function's
+/// body from its `i`th `let` on.
+enum Pending<'r> {
+    Expr(&'r Expr, bool),
+    Lets(&'r Function, usize),
 }
 
 impl Coverage {
@@ -108,54 +117,68 @@ impl Coverage {
         }
         for allow in &body.allows {
             if let Some(condition) = allow.condition.as_ref().filter(|c| is_node(c)) {
-                roots.push(self.expr(ruleset, condition));
+                roots.push(self.tree(ruleset, Pending::Expr(condition, false)));
             }
         }
     }
 
     fn function(&mut self, ruleset: &Ruleset, f: &Function) -> Option<usize> {
         if f.lets.is_empty() {
-            return is_node(&f.result).then(|| self.expr(ruleset, &f.result));
+            return is_node(&f.result).then(|| self.tree(ruleset, Pending::Expr(&f.result, false)));
         }
-        Some(self.lets(ruleset, f, 0))
+        Some(self.tree(ruleset, Pending::Lets(f, 0)))
     }
 
-    /// The body of `f` from its `i`th `let` on.
-    fn lets(&mut self, ruleset: &Ruleset, f: &Function, i: usize) -> usize {
-        let binding = &f.lets[i];
-        let mut children = Vec::new();
-        if is_node(&binding.value) {
-            children.push(self.expr(ruleset, &binding.value));
+    /// Adds `root` and everything in it (without recursion: expressions nest thousands deep).
+    fn tree(&mut self, ruleset: &Ruleset, root: Pending<'_>) -> usize {
+        let mut stack: Vec<(Pending<'_>, Option<usize>)> = vec![(root, None)];
+        let mut added = None;
+        while let Some((pending, parent)) = stack.pop() {
+            let mut children = Vec::new();
+            let (key, position) = match pending {
+                Pending::Expr(e, object) => {
+                    children.extend(
+                        parts(e)
+                            .into_iter()
+                            .filter(|(part, _)| is_node(part))
+                            .map(|(part, object)| Pending::Expr(part, object)),
+                    );
+                    let start = if object {
+                        start_inside(&ruleset.parens, e)
+                    } else {
+                        start(&ruleset.parens, e)
+                    };
+                    (NodeKey::of(e), self.position(start, end(e)))
+                }
+                Pending::Lets(f, i) => {
+                    let binding = &f.lets[i];
+                    if is_node(&binding.value) {
+                        children.push(Pending::Expr(&binding.value, false));
+                    }
+                    if i + 1 < f.lets.len() {
+                        children.push(Pending::Lets(f, i + 1));
+                    } else if is_node(&f.result) {
+                        children.push(Pending::Expr(&f.result, false));
+                    }
+                    let position = self.position(binding.span, end(&f.result));
+                    (NodeKey::Body(binding.span.start), position)
+                }
+            };
+            self.nodes.push(Node {
+                position,
+                children: Vec::new(),
+                values: Vec::new(),
+                seen: HashMap::new(),
+            });
+            let index = self.nodes.len() - 1;
+            self.index.insert(key, index);
+            match parent {
+                Some(parent) => self.nodes[parent].children.push(index),
+                None => added = Some(index),
+            }
+            stack.extend(children.into_iter().rev().map(|c| (c, Some(index))));
         }
-        if i + 1 < f.lets.len() {
-            children.push(self.lets(ruleset, f, i + 1));
-        } else if is_node(&f.result) {
-            children.push(self.expr(ruleset, &f.result));
-        }
-        let position = self.position(binding.span, end(&f.result));
-        self.add(NodeKey::Body(binding.span.start), position, children)
-    }
-
-    fn expr(&mut self, ruleset: &Ruleset, e: &Expr) -> usize {
-        let children = parts(e)
-            .into_iter()
-            .filter(|part| is_node(part))
-            .map(|part| self.expr(ruleset, part))
-            .collect();
-        let position = self.position(start(&ruleset.parens, e), end(e));
-        self.add(NodeKey::of(e), position, children)
-    }
-
-    fn add(&mut self, key: NodeKey, position: Position, children: Vec<usize>) -> usize {
-        self.nodes.push(Node {
-            position,
-            children,
-            values: Vec::new(),
-            seen: HashMap::new(),
-        });
-        let i = self.nodes.len() - 1;
-        self.index.insert(key, i);
-        i
+        added.expect("the root was added")
     }
 
     /// From the token of `start` to byte `end` (exclusive).
@@ -204,17 +227,18 @@ impl Coverage {
         }
     }
 
-    /// The report: its roots in order, each with the expressions in it.
-    pub fn report(&self) -> Vec<Report<'_>> {
-        self.roots.iter().map(|&i| self.node(i)).collect()
+    /// The report's expressions at the top, in order ([`Coverage::expression`]).
+    pub fn roots(&self) -> &[usize] {
+        &self.roots
     }
 
-    fn node(&self, i: usize) -> Report<'_> {
+    /// The expression `i` of the report.
+    pub fn expression(&self, i: usize) -> Expression<'_> {
         let node = &self.nodes[i];
-        Report {
+        Expression {
             position: node.position,
             values: &node.values,
-            children: node.children.iter().map(|&c| self.node(c)).collect(),
+            children: &node.children,
         }
     }
 }
@@ -253,34 +277,51 @@ pub(crate) fn is_node(e: &Expr) -> bool {
     )
 }
 
-/// The expressions directly in `e`, in source order.
-fn parts(e: &Expr) -> Vec<&Expr> {
+/// The expressions directly in `e`, in the official emulator's order, each with whether it is
+/// the object of a member, an index or a method.
+fn parts(e: &Expr) -> Vec<(&Expr, bool)> {
     match &e.kind {
-        ExprKind::List(items) => items.iter().collect(),
-        ExprKind::Map(entries) => entries.iter().flat_map(|(k, v)| [k, v]).collect(),
+        ExprKind::List(items) => items.iter().map(|e| (e, false)).collect(),
+        ExprKind::Map(entries) => entries
+            .iter()
+            .flat_map(|(k, v)| [(k, false), (v, false)])
+            .collect(),
         ExprKind::Path(parts) => parts
             .iter()
             .filter_map(|part| match part {
-                PathPart::Expr(e) => Some(e),
+                PathPart::Expr(e) => Some((e, false)),
                 PathPart::Segment(_) => None,
             })
             .collect(),
-        ExprKind::Member { object, .. } => vec![object],
-        ExprKind::Index { object, index } => vec![object, index],
-        ExprKind::Slice { object, start, end } => vec![object, start, end],
-        ExprKind::Call { callee, args } => match callee {
-            Callee::Method { receiver, .. } => std::iter::once(&**receiver).chain(args).collect(),
-            Callee::Global(_) | Callee::Namespaced { .. } => args.iter().collect(),
-        },
-        ExprKind::Unary { operand, .. } => vec![operand],
-        ExprKind::Binary { left, right, .. } => vec![left, right],
-        ExprKind::Is { value, .. } => vec![value],
+        ExprKind::Member { object, .. } => vec![(object, true)],
+        ExprKind::Index { object, index } => vec![(object, true), (index, false)],
+        ExprKind::Slice { object, start, end } => {
+            vec![(object, true), (start, false), (end, false)]
+        }
+        ExprKind::Call { callee, args } => {
+            let mut parts = Vec::with_capacity(args.len() + 1);
+            if let Callee::Method { receiver, .. } = callee {
+                parts.push((&**receiver, true));
+            }
+            parts.extend(args.iter().map(|a| (a, false)));
+            parts
+        }
+        ExprKind::Unary { operand, .. } => vec![(operand, false)],
+        // `x in y` is `y`'s method there.
+        ExprKind::Binary {
+            op: BinaryOp::In,
+            left,
+            right,
+            ..
+        } => vec![(right, false), (left, false)],
+        ExprKind::Binary { left, right, .. } => vec![(left, false), (right, false)],
+        ExprKind::Is { value, .. } => vec![(value, false)],
         ExprKind::Ternary {
             condition,
             then,
             otherwise,
             ..
-        } => vec![condition, then, otherwise],
+        } => vec![(condition, false), (then, false), (otherwise, false)],
         ExprKind::Null
         | ExprKind::Bool(_)
         | ExprKind::Int(_)
@@ -298,18 +339,32 @@ pub(crate) fn walk<'e>(e: &'e Expr, f: &mut dyn FnMut(&'e Expr)) {
     while let Some(e) = stack.pop() {
         if is_node(e) {
             f(e);
-            stack.extend(parts(e));
+            stack.extend(parts(e).into_iter().map(|(part, _)| part));
         }
     }
 }
 
 /// The first token of `e` in the report: the outermost parenthesis around it or around the
 /// expression it starts with, or its own first token.
-pub(crate) fn start(parens: &HashMap<(usize, usize), Span>, mut e: &Expr) -> Span {
+pub(crate) fn start(parens: &HashMap<(usize, usize), Vec<Span>>, e: &Expr) -> Span {
+    match parens.get(&(e.span.start, e.span.end)) {
+        Some(around) if !around.is_empty() => around[0],
+        _ => leftmost(parens, e),
+    }
+}
+
+/// The first token of an expression that is the object of a member, an index or a method: its
+/// outermost parenthesis is the outer expression's.
+fn start_inside(parens: &HashMap<(usize, usize), Vec<Span>>, e: &Expr) -> Span {
+    match parens.get(&(e.span.start, e.span.end)) {
+        Some(around) if around.len() > 1 => around[1],
+        _ => leftmost(parens, e),
+    }
+}
+
+/// The first token of `e` but for parentheses around it: that of the expression it starts with.
+fn leftmost(parens: &HashMap<(usize, usize), Vec<Span>>, mut e: &Expr) -> Span {
     loop {
-        if let Some(paren) = parens.get(&(e.span.start, e.span.end)) {
-            return *paren;
-        }
         e = match &e.kind {
             ExprKind::Binary { left, .. } => left,
             ExprKind::Member { object, .. }
@@ -323,6 +378,11 @@ pub(crate) fn start(parens: &HashMap<(usize, usize), Span>, mut e: &Expr) -> Spa
             ExprKind::Ternary { condition, .. } => condition,
             _ => return e.span,
         };
+        if let Some(around) = parens.get(&(e.span.start, e.span.end))
+            && let Some(outermost) = around.first()
+        {
+            return *outermost;
+        }
     }
 }
 

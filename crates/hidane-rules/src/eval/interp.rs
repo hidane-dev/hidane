@@ -38,7 +38,7 @@ pub(crate) struct Interp<'a> {
     /// What `debug()` received and, when traced, what each expression evaluated to.
     trace: &'a mut Trace,
     /// The ruleset's parenthesized expressions (`Ruleset::parens`).
-    parens: &'a HashMap<(usize, usize), Span>,
+    parens: &'a HashMap<(usize, usize), Vec<Span>>,
     /// Documents looked up by this evaluation, before (`false`) or after (`true`) the writes.
     cache: HashMap<(bool, Vec<String>), Option<Val>>,
     /// Compiled patterns, by whether they must match the whole string and their text.
@@ -102,7 +102,7 @@ impl<'a> Interp<'a> {
         documents: &'a dyn Documents,
         budget: &'a mut Budget,
         trace: &'a mut Trace,
-        parens: &'a HashMap<(usize, usize), Span>,
+        parens: &'a HashMap<(usize, usize), Vec<Span>>,
     ) -> Self {
         Self {
             levels,
@@ -206,15 +206,23 @@ impl<'a> Interp<'a> {
         self.call(callee, args, s)
     }
 
+    /// The operands of an operator, a literal or a call, as the official emulator evaluates
+    /// them: all of them, the last first (as its `debug()` output shows), and the first error in
+    /// order wins.
+    fn operands(&mut self, exprs: &[&'a Expr], s: Scope<'_, 'a>) -> Result<Vec<Val>, Error> {
+        let mut results: Vec<R> = Vec::with_capacity(exprs.len());
+        for e in exprs.iter().rev() {
+            results.push(self.eval(e, s));
+        }
+        results.into_iter().rev().collect()
+    }
+
     fn list(&mut self, e: &'a Expr, s: Scope<'_, 'a>) -> R {
         let ExprKind::List(items) = &e.kind else {
             unreachable!()
         };
-        let mut out = Vec::with_capacity(items.len());
-        for item in items {
-            out.push(self.eval(item, s)?);
-        }
-        Ok(Val::list(out))
+        let items: Vec<&Expr> = items.iter().collect();
+        Ok(Val::list(self.operands(&items, s)?))
     }
 
     /// A map literal: keys must be strings, and a repeated key keeps the last value.
@@ -222,16 +230,17 @@ impl<'a> Interp<'a> {
         let ExprKind::Map(entries) = &e.kind else {
             unreachable!()
         };
+        let parts: Vec<&Expr> = entries.iter().flat_map(|(k, v)| [k, v]).collect();
+        let values = self.operands(&parts, s)?;
         let mut out = IndexMap::with_capacity(entries.len());
-        for (k, v) in entries {
-            let key = match self.eval(k, s)? {
-                Val::Str(key) => key,
-                other => {
-                    return Err(Error::type_error(other.type_name(), "string").at(self.start(k)));
-                }
+        for ((k, _), pair) in entries.iter().zip(values.chunks(2)) {
+            let [key, value] = pair else {
+                unreachable!("a key and a value")
             };
-            let value = self.eval(v, s)?;
-            out.insert(key.to_string(), value);
+            let Val::Str(key) = key else {
+                return Err(Error::type_error(key.type_name(), "string").at(self.start(k)));
+            };
+            out.insert(key.to_string(), value.clone());
         }
         Ok(Val::Map(Rc::new(out)))
     }
@@ -248,8 +257,7 @@ impl<'a> Interp<'a> {
         let ExprKind::Index { object, index } = &e.kind else {
             unreachable!()
         };
-        let object = self.eval(object, s)?;
-        let index = self.eval(index, s)?;
+        let [object, index] = self.fixed([object, index], s)?;
         library::index(&object, &index)
     }
 
@@ -257,10 +265,20 @@ impl<'a> Interp<'a> {
         let ExprKind::Slice { object, start, end } = &e.kind else {
             unreachable!()
         };
-        let object = self.eval(object, s)?;
-        let start = self.eval(start, s)?;
-        let end = self.eval(end, s)?;
+        let [object, start, end] = self.fixed([object, start, end], s)?;
         library::slice(&object, &start, &end)
+    }
+
+    /// [`Interp::operands`] of a fixed number.
+    fn fixed<const N: usize>(
+        &mut self,
+        exprs: [&'a Expr; N],
+        s: Scope<'_, 'a>,
+    ) -> Result<[Val; N], Error> {
+        let values = self.operands(&exprs, s)?;
+        Ok(values
+            .try_into()
+            .unwrap_or_else(|_| unreachable!("one value each")))
     }
 
     fn unary(&mut self, e: &'a Expr, s: Scope<'_, 'a>) -> R {
@@ -297,8 +315,13 @@ impl<'a> Interp<'a> {
         else {
             unreachable!()
         };
-        let l = self.eval(left, s)?;
-        let r = self.eval(right, s)?;
+        // `x in y` is `y`'s method: `y` comes first.
+        let [l, r] = if *op == BinaryOp::In {
+            let [r, l] = self.fixed([right, left], s)?;
+            [l, r]
+        } else {
+            self.fixed([left, right], s)?
+        };
         // At the operator, but `in` at the expression's start.
         binary(*op, &l, &r).map_err(|err| match op {
             BinaryOp::In => err,
@@ -425,7 +448,7 @@ impl<'a> Interp<'a> {
                 if !library::is_global(&name.name) {
                     return Err(at(Error::not_found(&name.name)));
                 }
-                let args = self.args(args, s)?;
+                let args = self.operands(&args.iter().collect::<Vec<_>>(), s)?;
                 library::global(self, &name.name, args).map_err(at)
             }
             Callee::Namespaced { namespace, name } => {
@@ -434,11 +457,14 @@ impl<'a> Interp<'a> {
                 if !library::is_namespaced(&full) {
                     return Err(at(Error::not_found(&full)));
                 }
-                let args = self.args(args, s)?;
+                let args = self.operands(&args.iter().collect::<Vec<_>>(), s)?;
                 library::namespaced(&full, args).map_err(at)
             }
+            // The arguments are evaluated before the receiver, but a null receiver or a method
+            // it does not have fails before their errors count.
             Callee::Method { receiver, name } => {
                 let at = |err: Error| err.at(name.span.start);
+                let values: Vec<R> = args.iter().rev().map(|a| self.eval(a, s)).collect();
                 let receiver = self.eval(receiver, s)?;
                 if let Val::Null = receiver {
                     return Err(at(Error::null()));
@@ -446,19 +472,15 @@ impl<'a> Interp<'a> {
                 if !library::has_method(receiver.type_name(), &name.name) {
                     return Err(Error::not_found(&name.name));
                 }
-                let args = self.args(args, s)?;
+                let args = values.into_iter().rev().collect::<Result<Vec<_>, _>>()?;
                 library::method(self, &receiver, &name.name, args).map_err(at)
             }
         }
     }
 
-    fn args(&mut self, args: &'a [Expr], s: Scope<'_, 'a>) -> Result<Vec<Val>, Error> {
-        args.iter().map(|a| self.eval(a, s)).collect()
-    }
-
-    /// A call of a function of the ruleset. Its arguments, then its `let`s in order, are
-    /// evaluated before its result (the official emulator logs a `debug()` in a `let` that is
-    /// not used), but an error in one only counts if the function uses it.
+    /// A call of a function of the ruleset. Its arguments (the last first), then its `let`s in
+    /// order, are evaluated before its result (the official emulator logs a `debug()` in a `let`
+    /// that is not used), but an error in one only counts if the function uses it.
     fn call_function(
         &mut self,
         f: &'a Function,
@@ -478,12 +500,13 @@ impl<'a> Interp<'a> {
                 "Maximum allowed call depth of {MAX_CALL_DEPTH} is reached."
             )));
         }
+        let mut values: Vec<R> = args.iter().rev().map(|arg| self.eval(arg, s)).collect();
         let mut locals = Vec::with_capacity(args.len() + f.lets.len());
-        for (param, arg) in f.params.iter().zip(args) {
+        for param in &f.params {
             locals.push(Local {
                 name: &param.name,
                 expr: None,
-                value: OnceCell::from(self.eval(arg, s)),
+                value: OnceCell::from(values.pop().expect("one value per parameter")),
             });
         }
         for l in &f.lets {
@@ -521,13 +544,24 @@ impl<'a> Interp<'a> {
     /// A path literal. Literal segments are URL-decoded; `$(…)` adds a path's segments, or one
     /// segment of anything `string()` converts.
     fn path(&mut self, parts: &'a [PathPart], s: Scope<'_, 'a>) -> R {
+        let exprs: Vec<&Expr> = parts
+            .iter()
+            .filter_map(|part| match part {
+                PathPart::Expr(e) => Some(e),
+                PathPart::Segment(_) => None,
+            })
+            .collect();
+        let mut values = self.operands(&exprs, s)?.into_iter().zip(exprs);
         let mut segments = Vec::with_capacity(parts.len());
         for part in parts {
             match part {
                 PathPart::Segment(text) => segments.push(url_decode(text)),
-                PathPart::Expr(e) => match self.eval(e, s)? {
-                    Val::Path(p) => segments.extend(p.iter().cloned()),
-                    v => segments.push(to_string(&v).map_err(|err| err.at(self.start(e)))?),
+                PathPart::Expr(_) => match values.next() {
+                    Some((Val::Path(p), _)) => segments.extend(p.iter().cloned()),
+                    Some((v, e)) => {
+                        segments.push(to_string(&v).map_err(|err| err.at(self.start(e)))?);
+                    }
+                    None => unreachable!("one value per part"),
                 },
             }
         }
@@ -917,7 +951,7 @@ fn re2_to_rust(pattern: &str) -> String {
 
 /// A path literal's segment: `%XX` escapes and `+` for a space, as Java's `URLDecoder` reads
 /// them.
-fn url_decode(text: &str) -> String {
+pub(crate) fn url_decode(text: &str) -> String {
     let bytes = text.as_bytes();
     let mut out = Vec::with_capacity(bytes.len());
     let mut i = 0;

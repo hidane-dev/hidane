@@ -268,7 +268,7 @@ pub(crate) async fn handle(
     if !served {
         return crate::not_found_response();
     }
-    if project.is_empty() {
+    if project.is_empty() && database.is_none() {
         return rest::error(&Status::unknown(""));
     }
     let database = match names::database(&format!(
@@ -295,11 +295,11 @@ pub(crate) async fn handle(
     let coverage = loaded
         .as_ref()
         .map(|l| l.coverage.lock().unwrap_or_else(|e| e.into_inner()));
-    let report = coverage.as_ref().map(|c| c.report()).unwrap_or_default();
+    let coverage = coverage.as_deref();
     let (content_type, body) = match verb {
         Verb::SecurityRules => ("application/json", report::security_rules(&files)),
-        Verb::RuleCoverage => ("application/json", report::coverage(&files, &report)),
-        Verb::RuleCoverageHtml => ("text/html", report::coverage_html(&files, &report)),
+        Verb::RuleCoverage => ("application/json", report::coverage(&files, coverage)),
+        Verb::RuleCoverageHtml => ("text/html", report::coverage_html(&files, coverage)),
     };
     ([(header::CONTENT_TYPE, content_type)], body).into_response()
 }

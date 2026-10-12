@@ -5,7 +5,7 @@ use std::rc::Rc;
 use indexmap::IndexMap;
 
 use super::{
-    interp::{Interp, string_size},
+    interp::{Interp, string_size, url_decode},
     time::{civil_from_days, days_from_civil, days_in_month, parse_rfc3339},
     trace::KeyStatus,
     value::{
@@ -151,13 +151,14 @@ pub(crate) fn global(interp: &mut Interp<'_>, name: &str, args: Vec<Val>) -> R {
     }
 }
 
-/// `path('a/b')`: with or without a leading slash, and no empty segment.
+/// `path('a/b')`: with or without a leading slash, and no empty segment; the segments are
+/// URL-decoded as a path literal's are.
 fn parse_path(s: &str) -> R {
     if s.is_empty() {
         return Err(Error::new("Empty Path Template is not allowed.".to_owned()));
     }
     let body = s.strip_prefix('/').unwrap_or(s);
-    let segments: Vec<String> = body.split('/').map(str::to_owned).collect();
+    let segments: Vec<String> = body.split('/').map(url_decode).collect();
     if segments.iter().any(String::is_empty) {
         return Err(Error::new(format!(
             "Invalid Path Template {s}. Empty segment is not allowed."

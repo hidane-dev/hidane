@@ -160,6 +160,7 @@ impl NodeKey {
 }
 
 /// An expression's value as the evaluator had it.
+#[derive(Clone)]
 pub(crate) enum Traced {
     Value(Val),
     Error(Error),
@@ -213,6 +214,31 @@ impl Trace {
     pub(crate) fn skip(&mut self, key: NodeKey) {
         if let Some(values) = &mut self.values {
             values.push((key, Traced::Skipped));
+        }
+    }
+
+    /// Where the values traced next start.
+    pub(crate) fn mark(&self) -> usize {
+        self.values.as_ref().map_or(0, Vec::len)
+    }
+
+    /// Counts what each statement traced again for each statement evaluated after it: the
+    /// official emulator evaluates the statements of a method as a growing `||` of them, the
+    /// first alone, then the first two, and so on, and counts every evaluation (but runs each
+    /// `debug()` once). `marks` holds where each statement's values start, in order.
+    pub(crate) fn repeat(&mut self, marks: &[usize]) {
+        let Some(values) = &mut self.values else {
+            return;
+        };
+        let end = values.len();
+        for (i, &start) in marks.iter().enumerate() {
+            let stop = marks.get(i + 1).copied().unwrap_or(end);
+            for _ in i + 1..marks.len() {
+                for j in start..stop {
+                    let again = values[j].clone();
+                    values.push(again);
+                }
+            }
         }
     }
 }

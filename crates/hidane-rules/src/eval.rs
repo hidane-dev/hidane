@@ -435,18 +435,26 @@ impl Context<'_> {
         trace: &mut Trace,
     ) -> Result<(), Vec<String>> {
         let mut entries = Vec::with_capacity(statements.len());
+        let mut marks = Vec::with_capacity(statements.len());
+        let mut decision = Err(());
         for (allow, covering) in statements {
+            marks.push(trace.mark());
             let Some(condition) = &allow.condition else {
-                return Ok(());
+                decision = Ok(());
+                break;
             };
             let text = match self.evaluate(covering, condition, budget, trace) {
-                Ok(true) => return Ok(()),
+                Ok(true) => {
+                    decision = Ok(());
+                    break;
+                }
                 Ok(false) => "false".to_owned(),
                 Err(e) => e,
             };
             entries.push(entry(&text, method, condition.span.line));
         }
-        Err(entries)
+        trace.repeat(&marks);
+        decision.map_err(|()| entries)
     }
 
     /// The entries of the statements of an upsert's method that does not apply: each `false`,
@@ -461,7 +469,9 @@ impl Context<'_> {
         until_allowed: bool,
     ) -> (Vec<String>, usize) {
         let mut entries = Vec::with_capacity(statements.len());
-        for (i, (allow, covering)) in statements.iter().enumerate() {
+        let mut marks = Vec::with_capacity(statements.len());
+        for (allow, covering) in statements {
+            marks.push(trace.mark());
             let (result, line) = match &allow.condition {
                 Some(condition) => (
                     self.evaluate(covering, condition, budget, trace),
@@ -473,10 +483,12 @@ impl Context<'_> {
             let text = result.err().unwrap_or_else(|| "false".to_owned());
             entries.push(entry(&text, method, line));
             if until_allowed && allowed {
-                return (entries, i + 1);
+                break;
             }
         }
-        (entries, statements.len())
+        trace.repeat(&marks);
+        let evaluated = entries.len();
+        (entries, evaluated)
     }
 
     /// The condition of a statement at the end of `covering`: true, false or the error's text.
