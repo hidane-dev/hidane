@@ -168,7 +168,7 @@ checks the jar's SHA-256, caches it with `actions/cache` (outside the workspace,
 committed), sets up Temurin 21 with `actions/setup-java` (leaving `JAVA_HOME` and `PATH` as they
 were), starts the emulator with `-Duser.language=en -Duser.country=US` and waits until `GET /`
 answers, for two minutes at most (on `ubuntu-24.04` it answers 1 to 4 seconds after `java`
-starts, and in the drift jobs below its resident memory peaks at about 290 to 360 MiB).
+starts, and in the drift jobs below its resident memory peaks at about 280 to 360 MiB).
 Without a `version` it runs the one in `.github/actions/official-emulator/pinned.sh`, which the
 fixtures were recorded from:
 
