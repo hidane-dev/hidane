@@ -11,12 +11,13 @@ evaluates the same Security Rules, reads and writes the same import / export dir
 under `firebase-tools`. No JDK to install. Starts in milliseconds. Tested for parity against the
 official emulator as the oracle.
 
-> **v0.2.4 enforces Security Rules.** hidane serves the Firestore API over gRPC, REST and
+> **v0.3.0 completes Web support.** hidane serves the Firestore API over gRPC, REST and
 > WebChannel: documents, queries, aggregations, vector search, transactions, listeners, exports
 > and imports, and the emulator's own endpoints, each checked against the official emulator;
 > `firebase-tools` launches it in place of the official one. Since v0.2.0 it evaluates
 > `firestore.rules` as the official emulator does, with its denial messages, `:ruleCoverage` and
-> `debug()` output (v0.1 allowed every request); v0.2.1 feeds the Emulator UI's request monitor.
+> `debug()` output, and feeds the Emulator UI's request monitor. In v0.3.0, firebase-js-sdk's own
+> browser test suite passes on hidane as on the official emulator, and Flutter Web is verified.
 > The plan is in
 > [`docs/ROADMAP.md`](docs/ROADMAP.md), the work in
 > [issues](https://github.com/hidane-dev/hidane/issues).
@@ -54,12 +55,12 @@ Which clients can use hidane depends on the transport their SDK speaks to an emu
 ([`docs/compatibility.md`](docs/compatibility.md)). "Verified" means the client's results were
 compared with the official emulator's (`results/`):
 
-| Client | Transport | In v0.2.4 |
+| Client | Transport | In v0.3.0 |
 |---|---|---|
 | firebase-admin (Node) / `@google-cloud/firestore` | gRPC | verified: documents, queries, aggregations, vector search, transactions, listeners |
 | firebase-js-sdk in Node | gRPC | verified: writes, transactions, listeners, offline and resume |
 | firebase-js-sdk Lite | REST | verified |
-| firebase-js-sdk in the browser | WebChannel and REST | verified in Chromium: listeners, writes, queries, long polling, mock tokens ([`docs/webchannel.md`](docs/webchannel.md)) |
+| firebase-js-sdk in the browser | WebChannel and REST | verified in Chromium: the SDK's own browser suite passes, 1,183 tests, as on the official emulator ([`tools/js-sdk-browser/`](tools/js-sdk-browser/)); listeners, writes, queries, long polling, mock tokens ([`docs/webchannel.md`](docs/webchannel.md)) |
 | Flutter Web (`cloud_firestore`) | WebChannel and REST, through firebase-js-sdk | verified in Chromium: reads, writes, transforms, queries, aggregations, `snapshots()`, batches, transactions |
 | `@firebase/rules-unit-testing` | the above | verified under Security Rules, in Node and in Chromium: `assertSucceeds` / `assertFails` for signed-in, signed-out and rules-disabled contexts (gets, lists, listeners, writes, batches, transactions), `clearFirestore()` |
 | Go, Python, Java, iOS, Android, Flutter (Android, iOS, macOS, Windows), C++ / Unity | gRPC | same transport, not verified yet |
