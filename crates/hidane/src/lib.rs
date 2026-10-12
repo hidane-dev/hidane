@@ -20,6 +20,7 @@ mod firestore;
 mod ordered_json;
 mod rest;
 pub mod rules;
+pub mod triggers;
 mod webchannel;
 mod websocket;
 
@@ -69,7 +70,7 @@ pub use websocket::serve_websocket;
 pub const SHUTDOWN_GRACE: Duration = Duration::from_secs(2);
 
 /// The emulator's state shared by every protocol: the store, the open transactions, the
-/// Security Rules and the shutdown flag.
+/// Security Rules, the Functions emulator's triggers and the shutdown flag.
 ///
 /// The shutdown request is a sticky flag rather than a one-shot notification, so every waiter
 /// sees it, including one that starts waiting after the request arrived.
@@ -83,6 +84,7 @@ pub struct Admin {
     channels: Arc<webchannel::Channels>,
     seeder: Option<Arc<Seeder>>,
     rules: Arc<rules::Rules>,
+    triggers: Arc<triggers::Triggers>,
 }
 
 impl Default for Admin {
@@ -114,12 +116,18 @@ impl Admin {
             channels: Arc::default(),
             seeder: None,
             rules: Arc::default(),
+            triggers: Arc::default(),
         }
     }
 
     /// The Security Rules, per database.
     pub fn rules(&self) -> &rules::Rules {
         &self.rules
+    }
+
+    /// The Firestore triggers the Functions emulator registered.
+    pub fn triggers(&self) -> &triggers::Triggers {
+        &self.triggers
     }
 
     /// `--seed_from_export`: every database starts with the documents of `documents` whose
@@ -291,7 +299,9 @@ async fn channel_post(
 const MAX_CHANNEL_BODY: usize = 16 * 1024 * 1024;
 
 /// Security Rules (`/emulator/v1/projects/{p}:securityRules`, `:ruleCoverage`), export and
-/// import (`/emulator/v1/projects/{p}:export`, `:import`), REST (`/v1/…`, `/v1beta1/…`), or 404.
+/// import (`/emulator/v1/projects/{p}:export`, `:import`), the Functions emulator's trigger
+/// registrations (`/emulator/v1/projects/{p}/triggers/{key}`, `…/eventarcTrigger`), REST
+/// (`/v1/…`, `/v1beta1/…`), or 404.
 async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -> Response {
     let (parts, body) = request.into_parts();
     if let Some(route) = rules::route(parts.uri.path()) {
@@ -307,6 +317,17 @@ async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -
     }
     if let Some(verb) = export::route(parts.uri.path()) {
         return export::handle(admin.firestore(), verb, &parts.method, &parts.headers, body).await;
+    }
+    if let Some(route) = triggers::route(parts.uri.path()) {
+        return triggers::handle(
+            &admin.triggers,
+            route,
+            &parts.method,
+            parts.uri.query(),
+            &parts.headers,
+            body,
+        )
+        .await;
     }
     rest::handle(
         admin.firestore(),
