@@ -1,13 +1,14 @@
 //! Conditions nested as deep as the compiler allows are evaluated within the stack of a server
-//! thread (2 MiB, tokio's default); deeper nesting through function calls is an error, not a
-//! stack overflow.
+//! thread (2 MiB, tokio's default), with every value traced for the coverage report as the
+//! server does; deeper nesting through function calls is an error, not a stack overflow.
 
 mod common;
 
 use common::{Store, document_path, now};
 use hidane_rules::{
     SourceFile, compile,
-    eval::{Budget, Decision, Method, Request, authorize},
+    coverage::Coverage,
+    eval::{Budget, Decision, Method, Request, Trace, authorize_traced},
 };
 
 const STACK: usize = 2 * 1024 * 1024;
@@ -15,7 +16,7 @@ const STACK: usize = 2 * 1024 * 1024;
 fn decide(content: String) -> Decision {
     let ruleset = compile(&[SourceFile {
         name: None,
-        content,
+        content: content.clone(),
     }])
     .ruleset
     .expect("compiles");
@@ -31,13 +32,19 @@ fn decide(content: String) -> Decision {
                 resource: None,
                 query: None,
             };
-            authorize(
+            let mut trace = Trace::with_values();
+            let decision = authorize_traced(
                 &ruleset,
                 &request,
                 None,
                 &Store(Vec::new()),
                 &mut Budget::single(),
-            )
+                &mut trace,
+            );
+            let mut coverage = Coverage::new(&ruleset, &content);
+            coverage.record(&trace);
+            assert!(!coverage.roots().is_empty());
+            decision
         })
         .unwrap()
         .join()

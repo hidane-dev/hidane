@@ -19,8 +19,9 @@ use std::cmp::Ordering;
 use super::value::{Error, R, Val, eq, strict_eq, utf16_cmp};
 use crate::ast::BinaryOp;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum Comparator {
+/// How a filter of a constraint compares.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Comparator {
     Eq,
     Neq,
     Lt,
@@ -28,6 +29,21 @@ pub(crate) enum Comparator {
     Gt,
     Gte,
     ListContains,
+}
+
+impl Comparator {
+    /// The official name: `EQ`, `NEQ`, `LT`, `LTE`, `GT`, `GTE` or `LIST_CONTAINS`.
+    pub fn name(self) -> &'static str {
+        match self {
+            Self::Eq => "EQ",
+            Self::Neq => "NEQ",
+            Self::Lt => "LT",
+            Self::Lte => "LTE",
+            Self::Gt => "GT",
+            Self::Gte => "GTE",
+            Self::ListContains => "LIST_CONTAINS",
+        }
+    }
 }
 
 /// One filter of a constraint.

@@ -235,6 +235,7 @@ fn children(e: &Expr) -> Vec<(&Expr, bool)> {
             condition,
             then,
             otherwise,
+            ..
         } => vec![(condition, true), (then, true), (otherwise, true)],
         ExprKind::Null
         | ExprKind::Bool(_)
@@ -967,6 +968,7 @@ impl<'a> Semantics<'a> {
                 condition,
                 then,
                 otherwise,
+                ..
             } => {
                 self.expr(condition, scope, locals, caller);
                 self.expr(then, scope, locals, caller);

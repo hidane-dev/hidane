@@ -5,8 +5,9 @@ use std::rc::Rc;
 use indexmap::IndexMap;
 
 use super::{
-    interp::{Interp, string_size},
+    interp::{Interp, string_size, url_decode},
     time::{civil_from_days, days_from_civil, days_in_month, parse_rfc3339},
+    trace::KeyStatus,
     value::{
         Error, MapDiff, NANOS, R, Val, contains, java_double, loose_eq, parse_java_double,
         parse_java_long, strict_eq, to_set, utf16_cmp, utf16_slice,
@@ -129,7 +130,9 @@ pub(crate) fn global(interp: &mut Interp<'_>, name: &str, args: Vec<Val>) -> R {
         }
         "debug" => {
             arity(name, &["any"], &args)?;
-            Ok(args.into_iter().next().unwrap_or(Val::Null))
+            let value = args.into_iter().next().unwrap_or(Val::Null);
+            interp.debug(&value);
+            Ok(value)
         }
         "get" | "exists" | "getAfter" | "existsAfter" | "value" => {
             arity(name, &["path"], &args)?;
@@ -148,15 +151,16 @@ pub(crate) fn global(interp: &mut Interp<'_>, name: &str, args: Vec<Val>) -> R {
     }
 }
 
-/// `path('a/b')`: with or without a leading slash, and no empty segment.
+/// `path('a/b')`: with or without a leading slash, and no empty segment; the segments are
+/// URL-decoded as a path literal's are.
 fn parse_path(s: &str) -> R {
     if s.is_empty() {
-        return Err(Error("Empty Path Template is not allowed.".to_owned()));
+        return Err(Error::new("Empty Path Template is not allowed.".to_owned()));
     }
     let body = s.strip_prefix('/').unwrap_or(s);
-    let segments: Vec<String> = body.split('/').map(str::to_owned).collect();
+    let segments: Vec<String> = body.split('/').map(url_decode).collect();
     if segments.iter().any(String::is_empty) {
-        return Err(Error(format!(
+        return Err(Error::new(format!(
             "Invalid Path Template {s}. Empty segment is not allowed."
         )));
     }
@@ -253,13 +257,13 @@ pub(crate) fn namespaced(name: &str, args: Vec<Val>) -> R {
             let p = int_args(name, &["int", "int", "int"], &args)?;
             let (year, month, day) = (p[0], p[1], p[2]);
             if !(1..=9999).contains(&year) {
-                return Err(Error(format!(
+                return Err(Error::new(format!(
                     "Timestamp should be between 0001-01-01T00.00.00Z and \
                      9999-12-31T23.59.59Z. year: {year}."
                 )));
             }
             if !(1..=12).contains(&month) || day < 1 || day > days_in_month(year, month) {
-                return Err(Error(format!(
+                return Err(Error::new(format!(
                     "Date is not valid. year: {year}, month: {month} day: {day}."
                 )));
             }
@@ -287,7 +291,7 @@ pub(crate) fn namespaced(name: &str, args: Vec<Val>) -> R {
                 return Err(mismatch(name, &[&["float", "float"]], &args));
             };
             if !(-90.0..=90.0).contains(&lat) || !(-180.0..=180.0).contains(&lng) {
-                return Err(Error(format!(
+                return Err(Error::new(format!(
                     "Latitude should be in [-90,90] range and longitude should be in [-180,180] \
                      range. latitude: {}, longitude: {}.",
                     java_double(lat),
@@ -496,7 +500,7 @@ pub(crate) fn method(interp: &mut Interp<'_>, receiver: &Val, name: &str, args: 
             } else {
                 // Paths built in rules have no variables to bind.
                 let names: Vec<&str> = bindings.keys().map(String::as_str).collect();
-                Err(Error(format!(
+                Err(Error::new(format!(
                     "Variable(s) {} do not exist in the path template.",
                     names.join(", ")
                 )))
@@ -574,7 +578,7 @@ fn string_method(interp: &mut Interp<'_>, s: &str, name: &str, args: &[Val]) -> 
 
 /// `replace()`, with Java's replacement syntax: `$1`, `${name}` and `\` escapes.
 fn replace_all(re: &regex::Regex, s: &str, replacement: &str) -> Result<String, Error> {
-    let invalid = || Error(format!("Invalid replacement string: {replacement}."));
+    let invalid = || Error::new(format!("Invalid replacement string: {replacement}."));
     let mut out = String::with_capacity(s.len());
     let mut last = 0;
     for caps in re.captures_iter(s) {
@@ -726,6 +730,7 @@ fn map_method(map: &Rc<IndexMap<String, Val>>, name: &str, args: &[Val]) -> R {
                 removed: Vec::new(),
                 changed: Vec::new(),
                 unchanged: Vec::new(),
+                statuses: Vec::with_capacity(map.len() + other.len()),
             };
             for (k, v) in map.iter() {
                 match other.get(k) {
@@ -734,11 +739,19 @@ fn map_method(map: &Rc<IndexMap<String, Val>>, name: &str, args: &[Val]) -> R {
                     Some(_) => diff.changed.push(k.clone()),
                 }
             }
-            diff.removed = other
-                .keys()
-                .filter(|k| !map.contains_key(*k))
-                .cloned()
-                .collect();
+            for (k, w) in other.iter() {
+                let status = match map.get(k) {
+                    None => {
+                        diff.removed.push(k.clone());
+                        KeyStatus::Removed
+                    }
+                    Some(v) if loose_eq(v, w) => KeyStatus::Unchanged,
+                    Some(_) => KeyStatus::Changed,
+                };
+                diff.statuses.push((k.clone(), status));
+            }
+            diff.statuses
+                .extend(diff.added.iter().map(|k| (k.clone(), KeyStatus::Added)));
             Val::MapDiff(Rc::new(diff))
         }
     })

@@ -15,19 +15,33 @@
 //!   but not inside lists and maps. Sets and map diffs compare numbers by value at any depth.
 //! - Strings are Java strings: sizes, indexes and slices count UTF-16 code units, `lower()` and
 //!   `upper()` change ASCII letters only, and regular expressions are RE2.
-//! - The arguments of a function are evaluated before the call, but an error in one only
-//!   matters if the function uses it; a `let` is evaluated when first used.
+//! - The operands of an operator, a call or a list or map literal are all evaluated, the last
+//!   first (as `debug()` shows), and the first error in order wins (for `x in y`, `y`'s; for a
+//!   method, a null receiver or a method it does not have comes before its arguments' errors).
+//! - The arguments of a function (the last first), then its `let`s in order, are evaluated
+//!   before its result, but an error in one only matters if the function uses it.
 //!
 //! Each condition is evaluated once, so a denial lists each statement once; the official
 //! emulator evaluates again after an error and lists everything twice
 //! (`docs/parity-exceptions.md`).
+//!
+//! [`authorize_traced`] also reports what the official emulator logs and counts for its
+//! coverage report (`tools/oracle/rules_coverage.py`, [`Trace`]): each `debug()` value, and
+//! what each expression evaluated to. Which statements it evaluates shows there: those of
+//! every `match` covering the path, each `match`'s until one allows.
 
 mod constraint;
 mod interp;
 mod library;
 mod list;
 mod time;
+mod trace;
 mod value;
+
+pub use constraint::Comparator;
+pub use trace::{KeyStatus, Observed, Outcome, Segment, Trace};
+pub(crate) use trace::{NodeKey, Traced, hash_val, observe, shows};
+pub use value::java_double;
 
 use std::rc::Rc;
 
@@ -38,7 +52,7 @@ use crate::{
     paths::{Binding, Covering},
 };
 use interp::{Frame, Interp, Level};
-use value::Val;
+pub(crate) use value::Val;
 
 /// A value as rules see it. Firestore values convert to these (`timestamp`, `bytes`, `latlng`,
 /// a reference as a `path`, maps and lists); the others only come from rules.
@@ -66,7 +80,7 @@ pub enum Value {
 /// order; where rules list keys in another order, the evaluator sorts.
 pub type Map = IndexMap<String, Value>;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct Timestamp {
     pub seconds: i64,
     pub nanos: i32,
@@ -268,7 +282,7 @@ pub enum Decision {
 /// how recursive wildcards match.
 ///
 /// The `allow` statements of every `match` that covers the path and names the method apply, in
-/// source order; the first whose condition is true allows. A denial lists each one's result:
+/// source order; one whose condition is true allows. A denial lists each one's result:
 /// `false for 'get' @ L5` or the error instead of `false`, with the line of the condition, or
 /// says `No matching allow statements` when none applies. For an upsert the statements of the
 /// other method are listed too, `create`'s first: each is `false`, or its condition's error.
@@ -282,11 +296,34 @@ pub fn authorize(
     documents: &dyn Documents,
     budget: &mut Budget,
 ) -> Decision {
+    authorize_traced(
+        ruleset,
+        request,
+        resource,
+        documents,
+        budget,
+        &mut Trace::new(),
+    )
+}
+
+/// [`authorize`], reporting into `trace` what the conditions evaluated.
+///
+/// An upsert evaluates the statements of both methods, whichever applies, as the official
+/// emulator does: `create`'s, then `update`'s, as [`authorize`] evaluates those of a method
+/// (`tools/oracle/rules_coverage.py`). Only those of the method that applies decide.
+pub fn authorize_traced(
+    ruleset: &Ruleset,
+    request: &Request,
+    resource: Option<&Document>,
+    documents: &dyn Documents,
+    budget: &mut Budget,
+    trace: &mut Trace,
+) -> Decision {
     let Some(service) = ruleset.service("cloud.firestore") else {
         return no_match();
     };
     if request.method == Method::List {
-        return list::authorize(ruleset, service, request, documents, budget);
+        return list::authorize(ruleset, service, request, documents, budget, trace);
     }
     let path: Vec<&str> = request.path.iter().map(String::as_str).collect();
     let coverings = crate::paths::covering(ruleset.version, service, &path);
@@ -309,26 +346,34 @@ pub fn authorize(
         target: &request.path,
         documents,
     };
-    let Err(mut entries) = context.decide(&applying, request.method, budget) else {
+    let Some((other, others)) = others else {
+        return match context.decide(&applying, request.method, budget, trace) {
+            Ok(()) => Decision::Allow,
+            Err(entries) => denied(&entries),
+        };
+    };
+    // `create`'s statements come first: before the decision when `update` applies. The other
+    // method's lookups count against a copy of the budget.
+    if other == Method::Create {
+        context.each(&others, other, &mut budget.clone(), trace);
+    }
+    let decided = context.decide(&applying, request.method, budget, trace);
+    let Err(entries) = decided else {
+        if other == Method::Update {
+            context.each(&others, other, &mut budget.clone(), trace);
+        }
         return Decision::Allow;
     };
-    if let Some((other, statements)) = others {
-        let mut scratch = budget.clone();
-        let listed = statements.into_iter().map(|(allow, covering)| {
-            let Some(condition) = &allow.condition else {
-                return entry("false", other, allow.span.line);
-            };
-            let text = context
-                .evaluate(covering, condition, &mut scratch)
-                .err()
-                .unwrap_or_else(|| "false".to_owned());
-            entry(&text, other, condition.span.line)
-        });
-        entries = match other {
-            Method::Create => listed.chain(entries).collect(),
-            _ => entries.into_iter().chain(listed).collect(),
-        };
-    }
+    // A denial lists every statement of the other method; `create`'s, evaluated already, are
+    // evaluated again without being traced.
+    let listed = match other {
+        Method::Create => context.listed(&others, other, &mut budget.clone(), &mut Trace::new()),
+        _ => context.listed(&others, other, &mut budget.clone(), trace),
+    };
+    let entries: Vec<String> = match other {
+        Method::Create => listed.into_iter().chain(entries).collect(),
+        _ => entries.into_iter().chain(listed).collect(),
+    };
     denied(&entries)
 }
 
@@ -379,26 +424,80 @@ struct Context<'a> {
 }
 
 impl Context<'_> {
-    /// Evaluates `statements` in order until one allows; if none does, each one's entry.
+    /// Evaluates `statements` in order; if none allows, each one's entry. As the official
+    /// emulator does, the statements of a `match` stop at the first that allows, but those of
+    /// every other `match` are evaluated too (`tools/oracle/rules_coverage.py`).
     fn decide(
         &self,
         statements: &[(&ast::Allow, &Covering<'_>)],
         method: Method,
         budget: &mut Budget,
+        trace: &mut Trace,
     ) -> Result<(), Vec<String>> {
+        let (entries, allowed) = self.each(statements, method, budget, trace);
+        if allowed { Ok(()) } else { Err(entries) }
+    }
+
+    /// The statements of an upsert's method that does not apply, for a denial: each one's
+    /// entry, `false` or its condition's error.
+    fn listed(
+        &self,
+        statements: &[(&ast::Allow, &Covering<'_>)],
+        method: Method,
+        budget: &mut Budget,
+        trace: &mut Trace,
+    ) -> Vec<String> {
         let mut entries = Vec::with_capacity(statements.len());
+        let mut marks = Vec::with_capacity(statements.len());
         for (allow, covering) in statements {
-            let Some(condition) = &allow.condition else {
-                return Ok(());
+            marks.push(trace.mark());
+            let (text, line) = match &allow.condition {
+                Some(condition) => (
+                    self.evaluate(covering, condition, budget, trace).err(),
+                    condition.span.line,
+                ),
+                None => (None, allow.span.line),
             };
-            let text = match self.evaluate(covering, condition, budget) {
-                Ok(true) => return Ok(()),
+            entries.push(entry(text.as_deref().unwrap_or("false"), method, line));
+        }
+        trace.repeat(&marks);
+        entries
+    }
+
+    /// Evaluates `statements` but those after one that allowed in the same `match`. Returns the
+    /// entries of those that did not allow, and whether one did.
+    fn each(
+        &self,
+        statements: &[(&ast::Allow, &Covering<'_>)],
+        method: Method,
+        budget: &mut Budget,
+        trace: &mut Trace,
+    ) -> (Vec<String>, bool) {
+        let mut entries = Vec::with_capacity(statements.len());
+        let mut marks = Vec::with_capacity(statements.len());
+        let mut allowed: Vec<*const ast::Match> = Vec::new();
+        for (allow, covering) in statements {
+            let target = std::ptr::from_ref(covering.target());
+            if allowed.contains(&target) {
+                continue;
+            }
+            marks.push(trace.mark());
+            let Some(condition) = &allow.condition else {
+                allowed.push(target);
+                continue;
+            };
+            let text = match self.evaluate(covering, condition, budget, trace) {
+                Ok(true) => {
+                    allowed.push(target);
+                    continue;
+                }
                 Ok(false) => "false".to_owned(),
                 Err(e) => e,
             };
             entries.push(entry(&text, method, condition.span.line));
         }
-        Err(entries)
+        trace.repeat(&marks);
+        (entries, !allowed.is_empty())
     }
 
     /// The condition of a statement at the end of `covering`: true, false or the error's text.
@@ -407,6 +506,7 @@ impl Context<'_> {
         covering: &Covering<'_>,
         condition: &ast::Expr,
         budget: &mut Budget,
+        trace: &mut Trace,
     ) -> Result<bool, String> {
         let mut interp = Interp::new(
             levels(self.ruleset, self.service, covering),
@@ -415,20 +515,22 @@ impl Context<'_> {
             self.target,
             self.documents,
             budget,
+            trace,
+            &self.ruleset.parens,
         );
         let frame = Frame::condition(covering.chain.len() + 1);
         interp
             .eval(condition, frame.scope())
             .and_then(interp::boolean)
             .map_err(|e| {
-                if e.0.is_empty() {
+                if e.message.is_empty() {
                     // Undecided: the official emulator names the condition's start.
                     format!(
                         "evaluation error at L{}:{}",
                         condition.span.line, condition.span.column
                     )
                 } else {
-                    e.0
+                    e.message
                 }
             })
     }

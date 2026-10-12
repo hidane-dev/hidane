@@ -18,7 +18,7 @@ mod clear;
 mod export;
 mod guard;
 mod listen;
-mod names;
+pub(crate) mod names;
 mod query;
 pub(crate) mod seed;
 pub(crate) mod transactions;
@@ -91,7 +91,7 @@ pub struct FirestoreService {
     enterprise: bool,
     /// `--seed_from_export`, forgotten on `POST /reset`.
     seeder: Option<Arc<seed::Seeder>>,
-    /// The Security Rules of each project (`:securityRules`, `--rules`).
+    /// The Security Rules of each database (`:securityRules`, `--rules`).
     rules: Option<Arc<crate::rules::Rules>>,
 }
 
@@ -136,9 +136,11 @@ impl FirestoreService {
 
     /// The checks of a request by `caller` on `database`, if any apply (`guard`).
     fn guard(&self, caller: &auth::Caller, database: &str) -> Option<guard::Guard> {
-        let project = database.strip_prefix("projects/")?.split('/').next()?;
-        let ruleset = self.rules.as_ref()?.get(project);
-        guard::Guard::new(ruleset, caller, database)
+        if matches!(caller, auth::Caller::Admin) {
+            return None;
+        }
+        let rules = self.rules.as_ref()?;
+        guard::Guard::new(rules.get(database)?, Arc::clone(rules), caller, database)
     }
 
     pub(crate) fn with_state(
