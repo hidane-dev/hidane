@@ -213,8 +213,7 @@ fn parse<T: prost::Message + Default>(json: &str, name: &str) -> Result<T, ()> {
         .and_then(Result::ok)
         .ok_or(())?;
     ordered_json::objects_to_entries(&mut json, &desc);
-    DynamicMessage::deserialize(desc, json)
-        .ok()
+    rest::read_json(desc, json)
         .and_then(|message| message.transcode_to().ok())
         .ok_or(())
 }

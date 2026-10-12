@@ -1,0 +1,5136 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/negative_zero.py",
+ "steps": [
+  {
+   "name": "Commit -0.0 everywhere",
+   "project": "nz-writes",
+   "grpc": "Commit",
+   "request": {
+    "database": "projects/nz-writes/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/nz-writes/databases/(default)/documents/c/commit",
+       "fields": {
+        "top": {
+         "doubleValue": -0.0
+        },
+        "pos": {
+         "doubleValue": 0.0
+        },
+        "int": {
+         "integerValue": "0"
+        },
+        "map": {
+         "mapValue": {
+          "fields": {
+           "x": {
+            "doubleValue": -0.0
+           },
+           "y": {
+            "doubleValue": 0.0
+           }
+          }
+         }
+        },
+        "arr": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": -0.0
+           },
+           {
+            "doubleValue": 0.0
+           },
+           {
+            "integerValue": "0"
+           }
+          ]
+         }
+        },
+        "nested": {
+         "mapValue": {
+          "fields": {
+           "arr": {
+            "arrayValue": {
+             "values": [
+              {
+               "doubleValue": -0.0
+              }
+             ]
+            }
+           },
+           "inner": {
+            "mapValue": {
+             "fields": {
+              "z": {
+               "doubleValue": -0.0
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "summary": "commit",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [],
+      "changed": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "GetDocument",
+   "project": "nz-writes",
+   "grpc": "GetDocument",
+   "request": {
+    "name": "projects/nz-writes/databases/(default)/documents/c/commit"
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "c/commit",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "-0.0"
+       },
+       {
+        "double": "0.0"
+       },
+       {
+        "integer": "0"
+       }
+      ]
+     },
+     "int": {
+      "integer": "0"
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "-0.0"
+       },
+       "y": {
+        "double": "0.0"
+       }
+      }
+     },
+     "nested": {
+      "map": {
+       "arr": {
+        "array": [
+         {
+          "double": "-0.0"
+         }
+        ]
+       },
+       "inner": {
+        "map": {
+         "z": {
+          "double": "-0.0"
+         }
+        }
+       }
+      }
+     },
+     "pos": {
+      "double": "0.0"
+     },
+     "top": {
+      "double": "-0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "Commit 0.0",
+   "project": "nz-writes",
+   "grpc": "Commit",
+   "request": {
+    "database": "projects/nz-writes/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/nz-writes/databases/(default)/documents/c/flip",
+       "fields": {
+        "v": {
+         "doubleValue": 0.0
+        }
+       }
+      }
+     }
+    ]
+   },
+   "summary": "commit",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [],
+      "changed": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "Commit 0.0 over 0.0",
+   "project": "nz-writes",
+   "grpc": "Commit",
+   "request": {
+    "database": "projects/nz-writes/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/nz-writes/databases/(default)/documents/c/flip",
+       "fields": {
+        "v": {
+         "doubleValue": 0.0
+        }
+       }
+      }
+     }
+    ]
+   },
+   "summary": "commit",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [],
+      "changed": false
+     }
+    ]
+   }
+  },
+  {
+   "name": "Commit -0.0 over 0.0",
+   "project": "nz-writes",
+   "grpc": "Commit",
+   "request": {
+    "database": "projects/nz-writes/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/nz-writes/databases/(default)/documents/c/flip",
+       "fields": {
+        "v": {
+         "doubleValue": -0.0
+        }
+       }
+      }
+     }
+    ]
+   },
+   "summary": "commit",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [],
+      "changed": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "Commit -0.0 over -0.0",
+   "project": "nz-writes",
+   "grpc": "Commit",
+   "request": {
+    "database": "projects/nz-writes/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/nz-writes/databases/(default)/documents/c/flip",
+       "fields": {
+        "v": {
+         "doubleValue": -0.0
+        }
+       }
+      }
+     }
+    ]
+   },
+   "summary": "commit",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [],
+      "changed": false
+     }
+    ]
+   }
+  },
+  {
+   "name": "Commit -0.0 in a map",
+   "project": "nz-writes",
+   "grpc": "Commit",
+   "request": {
+    "database": "projects/nz-writes/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/nz-writes/databases/(default)/documents/c/nested",
+       "fields": {
+        "m": {
+         "mapValue": {
+          "fields": {
+           "x": {
+            "doubleValue": -0.0
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "summary": "commit",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [],
+      "changed": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "Commit 0.0 in a map over -0.0",
+   "project": "nz-writes",
+   "grpc": "Commit",
+   "request": {
+    "database": "projects/nz-writes/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/nz-writes/databases/(default)/documents/c/nested",
+       "fields": {
+        "m": {
+         "mapValue": {
+          "fields": {
+           "x": {
+            "doubleValue": 0.0
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "summary": "commit",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [],
+      "changed": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "Commit NaN",
+   "project": "nz-writes",
+   "grpc": "Commit",
+   "request": {
+    "database": "projects/nz-writes/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/nz-writes/databases/(default)/documents/n/nan",
+       "fields": {
+        "v": {
+         "doubleValue": "NaN"
+        },
+        "arr": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": "NaN"
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "summary": "commit",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [],
+      "changed": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "Commit NaN over NaN",
+   "project": "nz-writes",
+   "grpc": "Commit",
+   "request": {
+    "database": "projects/nz-writes/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/nz-writes/databases/(default)/documents/n/nan",
+       "fields": {
+        "v": {
+         "doubleValue": "NaN"
+        },
+        "arr": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": "NaN"
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "summary": "commit",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [],
+      "changed": false
+     }
+    ]
+   }
+  },
+  {
+   "name": "CreateDocument",
+   "project": "nz-writes",
+   "grpc": "CreateDocument",
+   "request": {
+    "parent": "projects/nz-writes/databases/(default)/documents",
+    "collectionId": "c",
+    "documentId": "create",
+    "document": {
+     "fields": {
+      "top": {
+       "doubleValue": -0.0
+      },
+      "pos": {
+       "doubleValue": 0.0
+      },
+      "int": {
+       "integerValue": "0"
+      },
+      "map": {
+       "mapValue": {
+        "fields": {
+         "x": {
+          "doubleValue": -0.0
+         },
+         "y": {
+          "doubleValue": 0.0
+         }
+        }
+       }
+      },
+      "arr": {
+       "arrayValue": {
+        "values": [
+         {
+          "doubleValue": -0.0
+         },
+         {
+          "doubleValue": 0.0
+         },
+         {
+          "integerValue": "0"
+         }
+        ]
+       }
+      },
+      "nested": {
+       "mapValue": {
+        "fields": {
+         "arr": {
+          "arrayValue": {
+           "values": [
+            {
+             "doubleValue": -0.0
+            }
+           ]
+          }
+         },
+         "inner": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "doubleValue": -0.0
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "c/create",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "-0.0"
+       },
+       {
+        "double": "0.0"
+       },
+       {
+        "integer": "0"
+       }
+      ]
+     },
+     "int": {
+      "integer": "0"
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "-0.0"
+       },
+       "y": {
+        "double": "0.0"
+       }
+      }
+     },
+     "nested": {
+      "map": {
+       "arr": {
+        "array": [
+         {
+          "double": "-0.0"
+         }
+        ]
+       },
+       "inner": {
+        "map": {
+         "z": {
+          "double": "-0.0"
+         }
+        }
+       }
+      }
+     },
+     "pos": {
+      "double": "0.0"
+     },
+     "top": {
+      "double": "-0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "UpdateDocument",
+   "project": "nz-writes",
+   "grpc": "UpdateDocument",
+   "request": {
+    "document": {
+     "name": "projects/nz-writes/databases/(default)/documents/c/update",
+     "fields": {
+      "top": {
+       "doubleValue": -0.0
+      },
+      "pos": {
+       "doubleValue": 0.0
+      },
+      "int": {
+       "integerValue": "0"
+      },
+      "map": {
+       "mapValue": {
+        "fields": {
+         "x": {
+          "doubleValue": -0.0
+         },
+         "y": {
+          "doubleValue": 0.0
+         }
+        }
+       }
+      },
+      "arr": {
+       "arrayValue": {
+        "values": [
+         {
+          "doubleValue": -0.0
+         },
+         {
+          "doubleValue": 0.0
+         },
+         {
+          "integerValue": "0"
+         }
+        ]
+       }
+      },
+      "nested": {
+       "mapValue": {
+        "fields": {
+         "arr": {
+          "arrayValue": {
+           "values": [
+            {
+             "doubleValue": -0.0
+            }
+           ]
+          }
+         },
+         "inner": {
+          "mapValue": {
+           "fields": {
+            "z": {
+             "doubleValue": -0.0
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "c/update",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "-0.0"
+       },
+       {
+        "double": "0.0"
+       },
+       {
+        "integer": "0"
+       }
+      ]
+     },
+     "int": {
+      "integer": "0"
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "-0.0"
+       },
+       "y": {
+        "double": "0.0"
+       }
+      }
+     },
+     "nested": {
+      "map": {
+       "arr": {
+        "array": [
+         {
+          "double": "-0.0"
+         }
+        ]
+       },
+       "inner": {
+        "map": {
+         "z": {
+          "double": "-0.0"
+         }
+        }
+       }
+      }
+     },
+     "pos": {
+      "double": "0.0"
+     },
+     "top": {
+      "double": "-0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "UpdateDocument with a mask",
+   "project": "nz-writes",
+   "grpc": "UpdateDocument",
+   "request": {
+    "document": {
+     "name": "projects/nz-writes/databases/(default)/documents/c/update",
+     "fields": {
+      "map": {
+       "mapValue": {
+        "fields": {
+         "x": {
+          "doubleValue": 0.0
+         },
+         "y": {
+          "doubleValue": -0.0
+         }
+        }
+       }
+      }
+     }
+    },
+    "updateMask": {
+     "fieldPaths": [
+      "map.y"
+     ]
+    }
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "c/update",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "-0.0"
+       },
+       {
+        "double": "0.0"
+       },
+       {
+        "integer": "0"
+       }
+      ]
+     },
+     "int": {
+      "integer": "0"
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "-0.0"
+       },
+       "y": {
+        "double": "-0.0"
+       }
+      }
+     },
+     "nested": {
+      "map": {
+       "arr": {
+        "array": [
+         {
+          "double": "-0.0"
+         }
+        ]
+       },
+       "inner": {
+        "map": {
+         "z": {
+          "double": "-0.0"
+         }
+        }
+       }
+      }
+     },
+     "pos": {
+      "double": "0.0"
+     },
+     "top": {
+      "double": "-0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "Write stream",
+   "project": "nz-writes",
+   "grpc": "Write",
+   "stream": [
+    {
+     "database": "projects/nz-writes/databases/(default)"
+    },
+    {
+     "streamToken": "",
+     "writes": [
+      {
+       "update": {
+        "name": "projects/nz-writes/databases/(default)/documents/c/stream",
+        "fields": {
+         "top": {
+          "doubleValue": -0.0
+         },
+         "pos": {
+          "doubleValue": 0.0
+         },
+         "int": {
+          "integerValue": "0"
+         },
+         "map": {
+          "mapValue": {
+           "fields": {
+            "x": {
+             "doubleValue": -0.0
+            },
+            "y": {
+             "doubleValue": 0.0
+            }
+           }
+          }
+         },
+         "arr": {
+          "arrayValue": {
+           "values": [
+            {
+             "doubleValue": -0.0
+            },
+            {
+             "doubleValue": 0.0
+            },
+            {
+             "integerValue": "0"
+            }
+           ]
+          }
+         },
+         "nested": {
+          "mapValue": {
+           "fields": {
+            "arr": {
+             "arrayValue": {
+              "values": [
+               {
+                "doubleValue": -0.0
+               }
+              ]
+             }
+            },
+            "inner": {
+             "mapValue": {
+              "fields": {
+               "z": {
+                "doubleValue": -0.0
+               }
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "summary": "write",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "GetDocument after the Write stream",
+   "project": "nz-writes",
+   "grpc": "GetDocument",
+   "request": {
+    "name": "projects/nz-writes/databases/(default)/documents/c/stream"
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "c/stream",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "-0.0"
+       },
+       {
+        "double": "0.0"
+       },
+       {
+        "integer": "0"
+       }
+      ]
+     },
+     "int": {
+      "integer": "0"
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "-0.0"
+       },
+       "y": {
+        "double": "0.0"
+       }
+      }
+     },
+     "nested": {
+      "map": {
+       "arr": {
+        "array": [
+         {
+          "double": "-0.0"
+         }
+        ]
+       },
+       "inner": {
+        "map": {
+         "z": {
+          "double": "-0.0"
+         }
+        }
+       }
+      }
+     },
+     "pos": {
+      "double": "0.0"
+     },
+     "top": {
+      "double": "-0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "BatchGetDocuments",
+   "project": "nz-writes",
+   "grpc": "BatchGetDocuments",
+   "request": {
+    "database": "projects/nz-writes/databases/(default)",
+    "documents": [
+     "projects/nz-writes/databases/(default)/documents/c/commit",
+     "projects/nz-writes/databases/(default)/documents/c/missing"
+    ]
+   },
+   "summary": "batchGet",
+   "outcome": {
+    "found": [
+     {
+      "id": "c/commit",
+      "fields": {
+       "arr": {
+        "array": [
+         {
+          "double": "-0.0"
+         },
+         {
+          "double": "0.0"
+         },
+         {
+          "integer": "0"
+         }
+        ]
+       },
+       "int": {
+        "integer": "0"
+       },
+       "map": {
+        "map": {
+         "x": {
+          "double": "-0.0"
+         },
+         "y": {
+          "double": "0.0"
+         }
+        }
+       },
+       "nested": {
+        "map": {
+         "arr": {
+          "array": [
+           {
+            "double": "-0.0"
+           }
+          ]
+         },
+         "inner": {
+          "map": {
+           "z": {
+            "double": "-0.0"
+           }
+          }
+         }
+        }
+       },
+       "pos": {
+        "double": "0.0"
+       },
+       "top": {
+        "double": "-0.0"
+       }
+      }
+     }
+    ],
+    "missing": [
+     "c/missing"
+    ]
+   }
+  },
+  {
+   "name": "RunQuery",
+   "project": "nz-writes",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-writes/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "c"
+      }
+     ]
+    }
+   },
+   "summary": "queryFields",
+   "outcome": {
+    "documents": [
+     {
+      "id": "c/commit",
+      "fields": {
+       "arr": {
+        "array": [
+         {
+          "double": "-0.0"
+         },
+         {
+          "double": "0.0"
+         },
+         {
+          "integer": "0"
+         }
+        ]
+       },
+       "int": {
+        "integer": "0"
+       },
+       "map": {
+        "map": {
+         "x": {
+          "double": "-0.0"
+         },
+         "y": {
+          "double": "0.0"
+         }
+        }
+       },
+       "nested": {
+        "map": {
+         "arr": {
+          "array": [
+           {
+            "double": "-0.0"
+           }
+          ]
+         },
+         "inner": {
+          "map": {
+           "z": {
+            "double": "-0.0"
+           }
+          }
+         }
+        }
+       },
+       "pos": {
+        "double": "0.0"
+       },
+       "top": {
+        "double": "-0.0"
+       }
+      }
+     },
+     {
+      "id": "c/create",
+      "fields": {
+       "arr": {
+        "array": [
+         {
+          "double": "-0.0"
+         },
+         {
+          "double": "0.0"
+         },
+         {
+          "integer": "0"
+         }
+        ]
+       },
+       "int": {
+        "integer": "0"
+       },
+       "map": {
+        "map": {
+         "x": {
+          "double": "-0.0"
+         },
+         "y": {
+          "double": "0.0"
+         }
+        }
+       },
+       "nested": {
+        "map": {
+         "arr": {
+          "array": [
+           {
+            "double": "-0.0"
+           }
+          ]
+         },
+         "inner": {
+          "map": {
+           "z": {
+            "double": "-0.0"
+           }
+          }
+         }
+        }
+       },
+       "pos": {
+        "double": "0.0"
+       },
+       "top": {
+        "double": "-0.0"
+       }
+      }
+     },
+     {
+      "id": "c/flip",
+      "fields": {
+       "v": {
+        "double": "-0.0"
+       }
+      }
+     },
+     {
+      "id": "c/nested",
+      "fields": {
+       "m": {
+        "map": {
+         "x": {
+          "double": "0.0"
+         }
+        }
+       }
+      }
+     },
+     {
+      "id": "c/stream",
+      "fields": {
+       "arr": {
+        "array": [
+         {
+          "double": "-0.0"
+         },
+         {
+          "double": "0.0"
+         },
+         {
+          "integer": "0"
+         }
+        ]
+       },
+       "int": {
+        "integer": "0"
+       },
+       "map": {
+        "map": {
+         "x": {
+          "double": "-0.0"
+         },
+         "y": {
+          "double": "0.0"
+         }
+        }
+       },
+       "nested": {
+        "map": {
+         "arr": {
+          "array": [
+           {
+            "double": "-0.0"
+           }
+          ]
+         },
+         "inner": {
+          "map": {
+           "z": {
+            "double": "-0.0"
+           }
+          }
+         }
+        }
+       },
+       "pos": {
+        "double": "0.0"
+       },
+       "top": {
+        "double": "-0.0"
+       }
+      }
+     },
+     {
+      "id": "c/update",
+      "fields": {
+       "arr": {
+        "array": [
+         {
+          "double": "-0.0"
+         },
+         {
+          "double": "0.0"
+         },
+         {
+          "integer": "0"
+         }
+        ]
+       },
+       "int": {
+        "integer": "0"
+       },
+       "map": {
+        "map": {
+         "x": {
+          "double": "-0.0"
+         },
+         "y": {
+          "double": "-0.0"
+         }
+        }
+       },
+       "nested": {
+        "map": {
+         "arr": {
+          "array": [
+           {
+            "double": "-0.0"
+           }
+          ]
+         },
+         "inner": {
+          "map": {
+           "z": {
+            "double": "-0.0"
+           }
+          }
+         }
+        }
+       },
+       "pos": {
+        "double": "0.0"
+       },
+       "top": {
+        "double": "-0.0"
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "Listen",
+   "project": "nz-writes",
+   "grpc": "Listen",
+   "stream": [
+    {
+     "database": "projects/nz-writes/databases/(default)",
+     "addTarget": {
+      "documents": {
+       "documents": [
+        "projects/nz-writes/databases/(default)/documents/c/commit"
+       ]
+      },
+      "targetId": 1
+     }
+    }
+   ],
+   "summary": "listen",
+   "outcome": {
+    "documents": [
+     {
+      "id": "c/commit",
+      "fields": {
+       "arr": {
+        "array": [
+         {
+          "double": "-0.0"
+         },
+         {
+          "double": "0.0"
+         },
+         {
+          "integer": "0"
+         }
+        ]
+       },
+       "int": {
+        "integer": "0"
+       },
+       "map": {
+        "map": {
+         "x": {
+          "double": "-0.0"
+         },
+         "y": {
+          "double": "0.0"
+         }
+        }
+       },
+       "nested": {
+        "map": {
+         "arr": {
+          "array": [
+           {
+            "double": "-0.0"
+           }
+          ]
+         },
+         "inner": {
+          "map": {
+           "z": {
+            "double": "-0.0"
+           }
+          }
+         }
+        }
+       },
+       "pos": {
+        "double": "0.0"
+       },
+       "top": {
+        "double": "-0.0"
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "GET",
+   "project": "nz-writes",
+   "rest": "GET",
+   "path": "/c/commit",
+   "summary": "document",
+   "status": 200,
+   "outcome": {
+    "id": "c/commit",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "-0.0"
+       },
+       {
+        "double": "0.0"
+       },
+       {
+        "integer": "0"
+       }
+      ]
+     },
+     "int": {
+      "integer": "0"
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "-0.0"
+       },
+       "y": {
+        "double": "0.0"
+       }
+      }
+     },
+     "nested": {
+      "map": {
+       "arr": {
+        "array": [
+         {
+          "double": "-0.0"
+         }
+        ]
+       },
+       "inner": {
+        "map": {
+         "z": {
+          "double": "-0.0"
+         }
+        }
+       }
+      }
+     },
+     "pos": {
+      "double": "0.0"
+     },
+     "top": {
+      "double": "-0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": ":batchGet",
+   "project": "nz-writes",
+   "rest": "POST",
+   "path": ":batchGet",
+   "body": "{\"documents\": [\"projects/nz-writes/databases/(default)/documents/c/commit\"]}",
+   "summary": "batchGet",
+   "status": 200,
+   "outcome": {
+    "found": [
+     {
+      "id": "c/commit",
+      "fields": {
+       "arr": {
+        "array": [
+         {
+          "double": "-0.0"
+         },
+         {
+          "double": "0.0"
+         },
+         {
+          "integer": "0"
+         }
+        ]
+       },
+       "int": {
+        "integer": "0"
+       },
+       "map": {
+        "map": {
+         "x": {
+          "double": "-0.0"
+         },
+         "y": {
+          "double": "0.0"
+         }
+        }
+       },
+       "nested": {
+        "map": {
+         "arr": {
+          "array": [
+           {
+            "double": "-0.0"
+           }
+          ]
+         },
+         "inner": {
+          "map": {
+           "z": {
+            "double": "-0.0"
+           }
+          }
+         }
+        }
+       },
+       "pos": {
+        "double": "0.0"
+       },
+       "top": {
+        "double": "-0.0"
+       }
+      }
+     }
+    ],
+    "missing": []
+   }
+  },
+  {
+   "name": ":runQuery",
+   "project": "nz-writes",
+   "rest": "POST",
+   "path": ":runQuery",
+   "body": "{\"structuredQuery\": {\"from\": [{\"collectionId\": \"c\"}], \"where\": {\"fieldFilter\": {\"field\": {\"fieldPath\": \"int\"}, \"op\": \"EQUAL\", \"value\": {\"integerValue\": \"0\"}}}}}",
+   "summary": "queryFields",
+   "status": 200,
+   "outcome": {
+    "documents": [
+     {
+      "id": "c/commit",
+      "fields": {
+       "arr": {
+        "array": [
+         {
+          "double": "-0.0"
+         },
+         {
+          "double": "0.0"
+         },
+         {
+          "integer": "0"
+         }
+        ]
+       },
+       "int": {
+        "integer": "0"
+       },
+       "map": {
+        "map": {
+         "x": {
+          "double": "-0.0"
+         },
+         "y": {
+          "double": "0.0"
+         }
+        }
+       },
+       "nested": {
+        "map": {
+         "arr": {
+          "array": [
+           {
+            "double": "-0.0"
+           }
+          ]
+         },
+         "inner": {
+          "map": {
+           "z": {
+            "double": "-0.0"
+           }
+          }
+         }
+        }
+       },
+       "pos": {
+        "double": "0.0"
+       },
+       "top": {
+        "double": "-0.0"
+       }
+      }
+     },
+     {
+      "id": "c/create",
+      "fields": {
+       "arr": {
+        "array": [
+         {
+          "double": "-0.0"
+         },
+         {
+          "double": "0.0"
+         },
+         {
+          "integer": "0"
+         }
+        ]
+       },
+       "int": {
+        "integer": "0"
+       },
+       "map": {
+        "map": {
+         "x": {
+          "double": "-0.0"
+         },
+         "y": {
+          "double": "0.0"
+         }
+        }
+       },
+       "nested": {
+        "map": {
+         "arr": {
+          "array": [
+           {
+            "double": "-0.0"
+           }
+          ]
+         },
+         "inner": {
+          "map": {
+           "z": {
+            "double": "-0.0"
+           }
+          }
+         }
+        }
+       },
+       "pos": {
+        "double": "0.0"
+       },
+       "top": {
+        "double": "-0.0"
+       }
+      }
+     },
+     {
+      "id": "c/stream",
+      "fields": {
+       "arr": {
+        "array": [
+         {
+          "double": "-0.0"
+         },
+         {
+          "double": "0.0"
+         },
+         {
+          "integer": "0"
+         }
+        ]
+       },
+       "int": {
+        "integer": "0"
+       },
+       "map": {
+        "map": {
+         "x": {
+          "double": "-0.0"
+         },
+         "y": {
+          "double": "0.0"
+         }
+        }
+       },
+       "nested": {
+        "map": {
+         "arr": {
+          "array": [
+           {
+            "double": "-0.0"
+           }
+          ]
+         },
+         "inner": {
+          "map": {
+           "z": {
+            "double": "-0.0"
+           }
+          }
+         }
+        }
+       },
+       "pos": {
+        "double": "0.0"
+       },
+       "top": {
+        "double": "-0.0"
+       }
+      }
+     },
+     {
+      "id": "c/update",
+      "fields": {
+       "arr": {
+        "array": [
+         {
+          "double": "-0.0"
+         },
+         {
+          "double": "0.0"
+         },
+         {
+          "integer": "0"
+         }
+        ]
+       },
+       "int": {
+        "integer": "0"
+       },
+       "map": {
+        "map": {
+         "x": {
+          "double": "-0.0"
+         },
+         "y": {
+          "double": "-0.0"
+         }
+        }
+       },
+       "nested": {
+        "map": {
+         "arr": {
+          "array": [
+           {
+            "double": "-0.0"
+           }
+          ]
+         },
+         "inner": {
+          "map": {
+           "z": {
+            "double": "-0.0"
+           }
+          }
+         }
+        }
+       },
+       "pos": {
+        "double": "0.0"
+       },
+       "top": {
+        "double": "-0.0"
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "WebChannel Listen",
+   "project": "nz-writes",
+   "webchannel": "Listen",
+   "messages": [
+    "{\"database\": \"projects/nz-writes/databases/(default)\", \"addTarget\": {\"documents\": {\"documents\": [\"projects/nz-writes/databases/(default)/documents/c/commit\"]}, \"targetId\": 2}}"
+   ],
+   "summary": "listen",
+   "outcome": {
+    "documents": [
+     {
+      "id": "c/commit",
+      "fields": {
+       "arr": {
+        "array": [
+         {
+          "double": "-0.0"
+         },
+         {
+          "double": "0.0"
+         },
+         {
+          "integer": "0"
+         }
+        ]
+       },
+       "int": {
+        "integer": "0"
+       },
+       "map": {
+        "map": {
+         "x": {
+          "double": "-0.0"
+         },
+         "y": {
+          "double": "0.0"
+         }
+        }
+       },
+       "nested": {
+        "map": {
+         "arr": {
+          "array": [
+           {
+            "double": "-0.0"
+           }
+          ]
+         },
+         "inner": {
+          "map": {
+           "z": {
+            "double": "-0.0"
+           }
+          }
+         }
+        }
+       },
+       "pos": {
+        "double": "0.0"
+       },
+       "top": {
+        "double": "-0.0"
+       }
+      }
+     }
+    ]
+   }
+  },
+  {
+   "name": "PATCH -0.0",
+   "project": "nz-writes",
+   "rest": "PATCH",
+   "path": "/r/patch",
+   "body": "{\"fields\": {\"top\": {\"doubleValue\": -0.0}, \"map\": {\"mapValue\": {\"fields\": {\"x\": {\"doubleValue\": -0.0}}}}, \"arr\": {\"arrayValue\": {\"values\": [{\"doubleValue\": -0.0}]}}, \"geo\": {\"geoPointValue\": {\"latitude\": -0.0, \"longitude\": 1.5}}}}",
+   "summary": "document",
+   "status": 200,
+   "outcome": {
+    "id": "r/patch",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "0.0"
+       }
+      ]
+     },
+     "geo": {
+      "geo": [
+       "0.0",
+       "1.5"
+      ]
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "0.0"
+       }
+      }
+     },
+     "top": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "GetDocument after PATCH -0.0",
+   "project": "nz-writes",
+   "grpc": "GetDocument",
+   "request": {
+    "name": "projects/nz-writes/databases/(default)/documents/r/patch"
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "r/patch",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "0.0"
+       }
+      ]
+     },
+     "geo": {
+      "geo": [
+       "0.0",
+       "1.5"
+      ]
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "0.0"
+       }
+      }
+     },
+     "top": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "PATCH -0",
+   "project": "nz-writes",
+   "rest": "PATCH",
+   "path": "/r/patch",
+   "body": "{\"fields\": {\"top\": {\"doubleValue\": -0}, \"map\": {\"mapValue\": {\"fields\": {\"x\": {\"doubleValue\": -0}}}}, \"arr\": {\"arrayValue\": {\"values\": [{\"doubleValue\": -0}]}}, \"geo\": {\"geoPointValue\": {\"latitude\": -0, \"longitude\": 1.5}}}}",
+   "summary": "document",
+   "status": 200,
+   "outcome": {
+    "id": "r/patch",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "0.0"
+       }
+      ]
+     },
+     "geo": {
+      "geo": [
+       "0.0",
+       "1.5"
+      ]
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "0.0"
+       }
+      }
+     },
+     "top": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "GetDocument after PATCH -0",
+   "project": "nz-writes",
+   "grpc": "GetDocument",
+   "request": {
+    "name": "projects/nz-writes/databases/(default)/documents/r/patch"
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "r/patch",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "0.0"
+       }
+      ]
+     },
+     "geo": {
+      "geo": [
+       "0.0",
+       "1.5"
+      ]
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "0.0"
+       }
+      }
+     },
+     "top": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "PATCH -0e0",
+   "project": "nz-writes",
+   "rest": "PATCH",
+   "path": "/r/patch",
+   "body": "{\"fields\": {\"top\": {\"doubleValue\": -0e0}, \"map\": {\"mapValue\": {\"fields\": {\"x\": {\"doubleValue\": -0e0}}}}, \"arr\": {\"arrayValue\": {\"values\": [{\"doubleValue\": -0e0}]}}, \"geo\": {\"geoPointValue\": {\"latitude\": -0e0, \"longitude\": 1.5}}}}",
+   "summary": "document",
+   "status": 200,
+   "outcome": {
+    "id": "r/patch",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "0.0"
+       }
+      ]
+     },
+     "geo": {
+      "geo": [
+       "0.0",
+       "1.5"
+      ]
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "0.0"
+       }
+      }
+     },
+     "top": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "GetDocument after PATCH -0e0",
+   "project": "nz-writes",
+   "grpc": "GetDocument",
+   "request": {
+    "name": "projects/nz-writes/databases/(default)/documents/r/patch"
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "r/patch",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "0.0"
+       }
+      ]
+     },
+     "geo": {
+      "geo": [
+       "0.0",
+       "1.5"
+      ]
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "0.0"
+       }
+      }
+     },
+     "top": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "PATCH \"-0.0\"",
+   "project": "nz-writes",
+   "rest": "PATCH",
+   "path": "/r/patch",
+   "body": "{\"fields\": {\"top\": {\"doubleValue\": \"-0.0\"}, \"map\": {\"mapValue\": {\"fields\": {\"x\": {\"doubleValue\": \"-0.0\"}}}}, \"arr\": {\"arrayValue\": {\"values\": [{\"doubleValue\": \"-0.0\"}]}}, \"geo\": {\"geoPointValue\": {\"latitude\": \"-0.0\", \"longitude\": 1.5}}}}",
+   "summary": "document",
+   "status": 200,
+   "outcome": {
+    "id": "r/patch",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "0.0"
+       }
+      ]
+     },
+     "geo": {
+      "geo": [
+       "0.0",
+       "1.5"
+      ]
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "0.0"
+       }
+      }
+     },
+     "top": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "GetDocument after PATCH \"-0.0\"",
+   "project": "nz-writes",
+   "grpc": "GetDocument",
+   "request": {
+    "name": "projects/nz-writes/databases/(default)/documents/r/patch"
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "r/patch",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "0.0"
+       }
+      ]
+     },
+     "geo": {
+      "geo": [
+       "0.0",
+       "1.5"
+      ]
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "0.0"
+       }
+      }
+     },
+     "top": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "PATCH \"-0\"",
+   "project": "nz-writes",
+   "rest": "PATCH",
+   "path": "/r/patch",
+   "body": "{\"fields\": {\"top\": {\"doubleValue\": \"-0\"}, \"map\": {\"mapValue\": {\"fields\": {\"x\": {\"doubleValue\": \"-0\"}}}}, \"arr\": {\"arrayValue\": {\"values\": [{\"doubleValue\": \"-0\"}]}}, \"geo\": {\"geoPointValue\": {\"latitude\": \"-0\", \"longitude\": 1.5}}}}",
+   "summary": "document",
+   "status": 200,
+   "outcome": {
+    "id": "r/patch",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "0.0"
+       }
+      ]
+     },
+     "geo": {
+      "geo": [
+       "0.0",
+       "1.5"
+      ]
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "0.0"
+       }
+      }
+     },
+     "top": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "GetDocument after PATCH \"-0\"",
+   "project": "nz-writes",
+   "grpc": "GetDocument",
+   "request": {
+    "name": "projects/nz-writes/databases/(default)/documents/r/patch"
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "r/patch",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "0.0"
+       }
+      ]
+     },
+     "geo": {
+      "geo": [
+       "0.0",
+       "1.5"
+      ]
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "0.0"
+       }
+      }
+     },
+     "top": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "PATCH 0.0",
+   "project": "nz-writes",
+   "rest": "PATCH",
+   "path": "/r/patch",
+   "body": "{\"fields\": {\"top\": {\"doubleValue\": 0.0}, \"map\": {\"mapValue\": {\"fields\": {\"x\": {\"doubleValue\": 0.0}}}}, \"arr\": {\"arrayValue\": {\"values\": [{\"doubleValue\": 0.0}]}}, \"geo\": {\"geoPointValue\": {\"latitude\": 0.0, \"longitude\": 1.5}}}}",
+   "summary": "document",
+   "status": 200,
+   "outcome": {
+    "id": "r/patch",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "0.0"
+       }
+      ]
+     },
+     "geo": {
+      "geo": [
+       "0.0",
+       "1.5"
+      ]
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "0.0"
+       }
+      }
+     },
+     "top": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "GetDocument after PATCH 0.0",
+   "project": "nz-writes",
+   "grpc": "GetDocument",
+   "request": {
+    "name": "projects/nz-writes/databases/(default)/documents/r/patch"
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "r/patch",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "0.0"
+       }
+      ]
+     },
+     "geo": {
+      "geo": [
+       "0.0",
+       "1.5"
+      ]
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "0.0"
+       }
+      }
+     },
+     "top": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "PATCH -1e-400",
+   "project": "nz-writes",
+   "rest": "PATCH",
+   "path": "/r/patch",
+   "body": "{\"fields\": {\"top\": {\"doubleValue\": -1e-400}, \"map\": {\"mapValue\": {\"fields\": {\"x\": {\"doubleValue\": -1e-400}}}}, \"arr\": {\"arrayValue\": {\"values\": [{\"doubleValue\": -1e-400}]}}, \"geo\": {\"geoPointValue\": {\"latitude\": -1e-400, \"longitude\": 1.5}}}}",
+   "summary": "document",
+   "status": 200,
+   "outcome": {
+    "id": "r/patch",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "-0.0"
+       }
+      ]
+     },
+     "geo": {
+      "geo": [
+       "-0.0",
+       "1.5"
+      ]
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "-0.0"
+       }
+      }
+     },
+     "top": {
+      "double": "-0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "GetDocument after PATCH -1e-400",
+   "project": "nz-writes",
+   "grpc": "GetDocument",
+   "request": {
+    "name": "projects/nz-writes/databases/(default)/documents/r/patch"
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "r/patch",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "-0.0"
+       }
+      ]
+     },
+     "geo": {
+      "geo": [
+       "0.0",
+       "1.5"
+      ]
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "-0.0"
+       }
+      }
+     },
+     "top": {
+      "double": "-0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "PATCH \"-1e-400\"",
+   "project": "nz-writes",
+   "rest": "PATCH",
+   "path": "/r/patch",
+   "body": "{\"fields\": {\"top\": {\"doubleValue\": \"-1e-400\"}, \"map\": {\"mapValue\": {\"fields\": {\"x\": {\"doubleValue\": \"-1e-400\"}}}}, \"arr\": {\"arrayValue\": {\"values\": [{\"doubleValue\": \"-1e-400\"}]}}, \"geo\": {\"geoPointValue\": {\"latitude\": \"-1e-400\", \"longitude\": 1.5}}}}",
+   "summary": "document",
+   "status": 200,
+   "outcome": {
+    "id": "r/patch",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "-0.0"
+       }
+      ]
+     },
+     "geo": {
+      "geo": [
+       "-0.0",
+       "1.5"
+      ]
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "-0.0"
+       }
+      }
+     },
+     "top": {
+      "double": "-0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "GetDocument after PATCH \"-1e-400\"",
+   "project": "nz-writes",
+   "grpc": "GetDocument",
+   "request": {
+    "name": "projects/nz-writes/databases/(default)/documents/r/patch"
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "r/patch",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "-0.0"
+       }
+      ]
+     },
+     "geo": {
+      "geo": [
+       "0.0",
+       "1.5"
+      ]
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "-0.0"
+       }
+      }
+     },
+     "top": {
+      "double": "-0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "POST (create) -0.0",
+   "project": "nz-writes",
+   "rest": "POST",
+   "path": "/r?documentId=create",
+   "body": "{\"fields\": {\"top\": {\"doubleValue\": -0.0}}}",
+   "summary": "document",
+   "status": 200,
+   "outcome": {
+    "id": "r/create",
+    "fields": {
+     "top": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": ":commit -0.0",
+   "project": "nz-writes",
+   "rest": "POST",
+   "path": ":commit",
+   "body": "{\"writes\": [{\"update\": {\"name\": \"projects/nz-writes/databases/(default)/documents/r/commit\", \"fields\": {\"top\": {\"doubleValue\": -0.0}}}}]}",
+   "summary": "commit",
+   "status": 200,
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [],
+      "changed": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "GetDocument after REST :commit",
+   "project": "nz-writes",
+   "grpc": "GetDocument",
+   "request": {
+    "name": "projects/nz-writes/databases/(default)/documents/r/commit"
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "r/commit",
+    "fields": {
+     "top": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "WebChannel Write",
+   "project": "nz-writes",
+   "webchannel": "Write",
+   "messages": [
+    "{\"database\": \"projects/nz-writes/databases/(default)\"}",
+    "{\"streamToken\": \"MA==\", \"writes\": [{\"update\": {\"name\": \"projects/nz-writes/databases/(default)/documents/w/write\", \"fields\": {\"string\": {\"doubleValue\": \"-0\"}, \"number\": {\"doubleValue\": -0.0}}}}]}"
+   ],
+   "summary": "write",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": []
+     }
+    ]
+   }
+  },
+  {
+   "name": "GetDocument after the WebChannel Write",
+   "project": "nz-writes",
+   "grpc": "GetDocument",
+   "request": {
+    "name": "projects/nz-writes/databases/(default)/documents/w/write"
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "w/write",
+    "fields": {
+     "number": {
+      "double": "0.0"
+     },
+     "string": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "seed",
+   "project": "nz-transforms",
+   "grpc": "Commit",
+   "request": {
+    "database": "projects/nz-transforms/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/nz-transforms/databases/(default)/documents/t/d",
+       "fields": {
+        "inc_nz_nz": {
+         "doubleValue": -0.0
+        },
+        "inc_nz_pz": {
+         "doubleValue": -0.0
+        },
+        "inc_pz_nz": {
+         "doubleValue": 0.0
+        },
+        "inc_iz_nz": {
+         "integerValue": "0"
+        },
+        "inc_nz_iz": {
+         "doubleValue": -0.0
+        },
+        "max_nz_pz": {
+         "doubleValue": -0.0
+        },
+        "max_pz_nz": {
+         "doubleValue": 0.0
+        },
+        "max_nz_iz": {
+         "doubleValue": -0.0
+        },
+        "max_iz_nz": {
+         "integerValue": "0"
+        },
+        "min_nz_pz": {
+         "doubleValue": -0.0
+        },
+        "min_pz_nz": {
+         "doubleValue": 0.0
+        },
+        "min_nz_iz": {
+         "doubleValue": -0.0
+        },
+        "min_iz_nz": {
+         "integerValue": "0"
+        },
+        "union_pz": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 0.0
+           }
+          ]
+         }
+        },
+        "union_nz": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": -0.0
+           }
+          ]
+         }
+        },
+        "union_iz": {
+         "arrayValue": {
+          "values": [
+           {
+            "integerValue": "0"
+           }
+          ]
+         }
+        },
+        "remove_pz": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": -0.0
+           },
+           {
+            "doubleValue": 0.0
+           },
+           {
+            "integerValue": "0"
+           },
+           {
+            "integerValue": "1"
+           }
+          ]
+         }
+        },
+        "remove_nz": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": -0.0
+           },
+           {
+            "doubleValue": 0.0
+           },
+           {
+            "integerValue": "0"
+           },
+           {
+            "integerValue": "1"
+           }
+          ]
+         }
+        },
+        "remove_iz": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": -0.0
+           },
+           {
+            "doubleValue": 0.0
+           },
+           {
+            "integerValue": "0"
+           },
+           {
+            "integerValue": "1"
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "summary": "commit",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [],
+      "changed": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "transforms",
+   "project": "nz-transforms",
+   "grpc": "Commit",
+   "request": {
+    "database": "projects/nz-transforms/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/nz-transforms/databases/(default)/documents/t/d",
+       "fields": {}
+      },
+      "updateMask": {
+       "fieldPaths": []
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "inc_missing",
+        "increment": {
+         "doubleValue": -0.0
+        }
+       },
+       {
+        "fieldPath": "inc_nz_nz",
+        "increment": {
+         "doubleValue": -0.0
+        }
+       },
+       {
+        "fieldPath": "inc_nz_pz",
+        "increment": {
+         "doubleValue": 0.0
+        }
+       },
+       {
+        "fieldPath": "inc_pz_nz",
+        "increment": {
+         "doubleValue": -0.0
+        }
+       },
+       {
+        "fieldPath": "inc_iz_nz",
+        "increment": {
+         "doubleValue": -0.0
+        }
+       },
+       {
+        "fieldPath": "inc_nz_iz",
+        "increment": {
+         "integerValue": "0"
+        }
+       },
+       {
+        "fieldPath": "max_missing",
+        "maximum": {
+         "doubleValue": -0.0
+        }
+       },
+       {
+        "fieldPath": "max_nz_pz",
+        "maximum": {
+         "doubleValue": 0.0
+        }
+       },
+       {
+        "fieldPath": "max_pz_nz",
+        "maximum": {
+         "doubleValue": -0.0
+        }
+       },
+       {
+        "fieldPath": "max_nz_iz",
+        "maximum": {
+         "integerValue": "0"
+        }
+       },
+       {
+        "fieldPath": "max_iz_nz",
+        "maximum": {
+         "doubleValue": -0.0
+        }
+       },
+       {
+        "fieldPath": "min_missing",
+        "minimum": {
+         "doubleValue": -0.0
+        }
+       },
+       {
+        "fieldPath": "min_nz_pz",
+        "minimum": {
+         "doubleValue": 0.0
+        }
+       },
+       {
+        "fieldPath": "min_pz_nz",
+        "minimum": {
+         "doubleValue": -0.0
+        }
+       },
+       {
+        "fieldPath": "min_nz_iz",
+        "minimum": {
+         "integerValue": "0"
+        }
+       },
+       {
+        "fieldPath": "min_iz_nz",
+        "minimum": {
+         "doubleValue": -0.0
+        }
+       },
+       {
+        "fieldPath": "union_missing",
+        "appendMissingElements": {
+         "values": [
+          {
+           "doubleValue": -0.0
+          },
+          {
+           "doubleValue": 0.0
+          },
+          {
+           "integerValue": "0"
+          }
+         ]
+        }
+       },
+       {
+        "fieldPath": "union_pz",
+        "appendMissingElements": {
+         "values": [
+          {
+           "doubleValue": -0.0
+          }
+         ]
+        }
+       },
+       {
+        "fieldPath": "union_nz",
+        "appendMissingElements": {
+         "values": [
+          {
+           "doubleValue": 0.0
+          }
+         ]
+        }
+       },
+       {
+        "fieldPath": "union_iz",
+        "appendMissingElements": {
+         "values": [
+          {
+           "doubleValue": -0.0
+          }
+         ]
+        }
+       },
+       {
+        "fieldPath": "remove_pz",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "doubleValue": 0.0
+          }
+         ]
+        }
+       },
+       {
+        "fieldPath": "remove_nz",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "doubleValue": -0.0
+          }
+         ]
+        }
+       },
+       {
+        "fieldPath": "remove_iz",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "0"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "summary": "commit",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [
+       {
+        "double": "-0.0"
+       },
+       {
+        "double": "-0.0"
+       },
+       {
+        "double": "0.0"
+       },
+       {
+        "double": "0.0"
+       },
+       {
+        "double": "0.0"
+       },
+       {
+        "double": "0.0"
+       },
+       {
+        "double": "-0.0"
+       },
+       {
+        "double": "-0.0"
+       },
+       {
+        "double": "0.0"
+       },
+       {
+        "double": "-0.0"
+       },
+       {
+        "integer": "0"
+       },
+       {
+        "double": "-0.0"
+       },
+       {
+        "double": "-0.0"
+       },
+       {
+        "double": "0.0"
+       },
+       {
+        "double": "-0.0"
+       },
+       {
+        "integer": "0"
+       },
+       {
+        "nullValue": "NULL_VALUE"
+       },
+       {
+        "nullValue": "NULL_VALUE"
+       },
+       {
+        "nullValue": "NULL_VALUE"
+       },
+       {
+        "nullValue": "NULL_VALUE"
+       },
+       {
+        "nullValue": "NULL_VALUE"
+       },
+       {
+        "nullValue": "NULL_VALUE"
+       },
+       {
+        "nullValue": "NULL_VALUE"
+       }
+      ],
+      "changed": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "GetDocument after the transforms",
+   "project": "nz-transforms",
+   "grpc": "GetDocument",
+   "request": {
+    "name": "projects/nz-transforms/databases/(default)/documents/t/d"
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "t/d",
+    "fields": {
+     "inc_iz_nz": {
+      "double": "0.0"
+     },
+     "inc_missing": {
+      "double": "-0.0"
+     },
+     "inc_nz_iz": {
+      "double": "0.0"
+     },
+     "inc_nz_nz": {
+      "double": "-0.0"
+     },
+     "inc_nz_pz": {
+      "double": "0.0"
+     },
+     "inc_pz_nz": {
+      "double": "0.0"
+     },
+     "max_iz_nz": {
+      "integer": "0"
+     },
+     "max_missing": {
+      "double": "-0.0"
+     },
+     "max_nz_iz": {
+      "double": "-0.0"
+     },
+     "max_nz_pz": {
+      "double": "-0.0"
+     },
+     "max_pz_nz": {
+      "double": "0.0"
+     },
+     "min_iz_nz": {
+      "integer": "0"
+     },
+     "min_missing": {
+      "double": "-0.0"
+     },
+     "min_nz_iz": {
+      "double": "-0.0"
+     },
+     "min_nz_pz": {
+      "double": "-0.0"
+     },
+     "min_pz_nz": {
+      "double": "0.0"
+     },
+     "remove_iz": {
+      "array": [
+       {
+        "integer": "1"
+       }
+      ]
+     },
+     "remove_nz": {
+      "array": [
+       {
+        "integer": "1"
+       }
+      ]
+     },
+     "remove_pz": {
+      "array": [
+       {
+        "integer": "1"
+       }
+      ]
+     },
+     "union_iz": {
+      "array": [
+       {
+        "integer": "0"
+       }
+      ]
+     },
+     "union_missing": {
+      "array": [
+       {
+        "double": "-0.0"
+       }
+      ]
+     },
+     "union_nz": {
+      "array": [
+       {
+        "double": "-0.0"
+       }
+      ]
+     },
+     "union_pz": {
+      "array": [
+       {
+        "double": "0.0"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "standalone transform: increment a missing document by -0.0",
+   "project": "nz-transforms",
+   "grpc": "Commit",
+   "request": {
+    "database": "projects/nz-transforms/databases/(default)",
+    "writes": [
+     {
+      "transform": {
+       "document": "projects/nz-transforms/databases/(default)/documents/t/standalone",
+       "fieldTransforms": [
+        {
+         "fieldPath": "v",
+         "increment": {
+          "doubleValue": -0.0
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "summary": "commit",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [
+       {
+        "double": "-0.0"
+       }
+      ],
+      "changed": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "GetDocument after the standalone transform",
+   "project": "nz-transforms",
+   "grpc": "GetDocument",
+   "request": {
+    "name": "projects/nz-transforms/databases/(default)/documents/t/standalone"
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "t/standalone",
+    "fields": {
+     "v": {
+      "double": "-0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "REST :commit: increment and maximum of missing fields by -0.0",
+   "project": "nz-transforms",
+   "rest": "POST",
+   "path": ":commit",
+   "body": "{\"writes\": [{\"update\": {\"name\": \"projects/nz-transforms/databases/(default)/documents/t/rest\", \"fields\": {}}, \"updateTransforms\": [{\"fieldPath\": \"v\", \"increment\": {\"doubleValue\": -0.0}}, {\"fieldPath\": \"w\", \"maximum\": {\"doubleValue\": -0.0}}]}]}",
+   "summary": "commit",
+   "status": 200,
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [
+       {
+        "double": "0.0"
+       },
+       {
+        "double": "0.0"
+       }
+      ],
+      "changed": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "GetDocument after the REST transforms",
+   "project": "nz-transforms",
+   "grpc": "GetDocument",
+   "request": {
+    "name": "projects/nz-transforms/databases/(default)/documents/t/rest"
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "t/rest",
+    "fields": {
+     "v": {
+      "double": "0.0"
+     },
+     "w": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "seed",
+   "project": "nz-queries",
+   "grpc": "Commit",
+   "request": {
+    "database": "projects/nz-queries/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/q/a",
+       "fields": {
+        "v": {
+         "doubleValue": -0.0
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/q/b",
+       "fields": {
+        "v": {
+         "doubleValue": 0.0
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/q/c",
+       "fields": {
+        "v": {
+         "integerValue": "0"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/q/d",
+       "fields": {
+        "v": {
+         "doubleValue": "NaN"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/q/e",
+       "fields": {
+        "v": {
+         "doubleValue": -1.0
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/q/f",
+       "fields": {
+        "v": {
+         "doubleValue": 1.0
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/q/g",
+       "fields": {
+        "v": {
+         "doubleValue": -0.0
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/r/g",
+       "fields": {
+        "v": {
+         "doubleValue": -0.0
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/r/f",
+       "fields": {
+        "v": {
+         "doubleValue": 0.0
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/r/e",
+       "fields": {
+        "v": {
+         "integerValue": "0"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/r/d",
+       "fields": {
+        "v": {
+         "doubleValue": "NaN"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/r/c",
+       "fields": {
+        "v": {
+         "doubleValue": -1.0
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/r/b",
+       "fields": {
+        "v": {
+         "doubleValue": 1.0
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/r/a",
+       "fields": {
+        "v": {
+         "doubleValue": -0.0
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/arrays/a",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": -0.0
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/arrays/b",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 0.0
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/arrays/c",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "integerValue": "0"
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/maps/a",
+       "fields": {
+        "v": {
+         "mapValue": {
+          "fields": {
+           "x": {
+            "doubleValue": -0.0
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/maps/b",
+       "fields": {
+        "v": {
+         "mapValue": {
+          "fields": {
+           "x": {
+            "doubleValue": 0.0
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/maps/c",
+       "fields": {
+        "v": {
+         "mapValue": {
+          "fields": {
+           "x": {
+            "integerValue": "0"
+           }
+          }
+         }
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/agg_nz/a",
+       "fields": {
+        "v": {
+         "doubleValue": -0.0
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/agg_nz2/a",
+       "fields": {
+        "v": {
+         "doubleValue": -0.0
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/agg_nz2/b",
+       "fields": {
+        "v": {
+         "doubleValue": -0.0
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/agg_mixed/a",
+       "fields": {
+        "v": {
+         "doubleValue": -0.0
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/agg_mixed/b",
+       "fields": {
+        "v": {
+         "doubleValue": 0.0
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/agg_int/a",
+       "fields": {
+        "v": {
+         "doubleValue": -0.0
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/nz-queries/databases/(default)/documents/agg_int/b",
+       "fields": {
+        "v": {
+         "integerValue": "0"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "summary": "commit",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     },
+     {
+      "transformResults": [],
+      "changed": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "where v == -0.0",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "EQUAL",
+       "value": {
+        "doubleValue": -0.0
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/a",
+     "q/b",
+     "q/c",
+     "q/g"
+    ]
+   }
+  },
+  {
+   "name": "where v == 0.0",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "EQUAL",
+       "value": {
+        "doubleValue": 0.0
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/a",
+     "q/b",
+     "q/c",
+     "q/g"
+    ]
+   }
+  },
+  {
+   "name": "where v == 0",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "EQUAL",
+       "value": {
+        "integerValue": "0"
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/a",
+     "q/b",
+     "q/c",
+     "q/g"
+    ]
+   }
+  },
+  {
+   "name": "where v != -0.0",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "NOT_EQUAL",
+       "value": {
+        "doubleValue": -0.0
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/d",
+     "q/e",
+     "q/f"
+    ]
+   }
+  },
+  {
+   "name": "where v != 0",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "NOT_EQUAL",
+       "value": {
+        "integerValue": "0"
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/d",
+     "q/e",
+     "q/f"
+    ]
+   }
+  },
+  {
+   "name": "where v < 0.0",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "LESS_THAN",
+       "value": {
+        "doubleValue": 0.0
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/e"
+    ]
+   }
+  },
+  {
+   "name": "where v <= -0.0",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "LESS_THAN_OR_EQUAL",
+       "value": {
+        "doubleValue": -0.0
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/e",
+     "q/a",
+     "q/b",
+     "q/c",
+     "q/g"
+    ]
+   }
+  },
+  {
+   "name": "where v > -0.0",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "GREATER_THAN",
+       "value": {
+        "doubleValue": -0.0
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/f"
+    ]
+   }
+  },
+  {
+   "name": "where v >= 0.0",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "GREATER_THAN_OR_EQUAL",
+       "value": {
+        "doubleValue": 0.0
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/a",
+     "q/b",
+     "q/c",
+     "q/g",
+     "q/f"
+    ]
+   }
+  },
+  {
+   "name": "where v < 0",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "LESS_THAN",
+       "value": {
+        "integerValue": "0"
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/e"
+    ]
+   }
+  },
+  {
+   "name": "where v in [-0.0]",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "IN",
+       "value": {
+        "arrayValue": {
+         "values": [
+          {
+           "doubleValue": -0.0
+          }
+         ]
+        }
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/a",
+     "q/b",
+     "q/c",
+     "q/g"
+    ]
+   }
+  },
+  {
+   "name": "where v not-in [-0.0]",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "NOT_IN",
+       "value": {
+        "arrayValue": {
+         "values": [
+          {
+           "doubleValue": -0.0
+          }
+         ]
+        }
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/d",
+     "q/e",
+     "q/f"
+    ]
+   }
+  },
+  {
+   "name": "where v in [0.0]",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "IN",
+       "value": {
+        "arrayValue": {
+         "values": [
+          {
+           "doubleValue": 0.0
+          }
+         ]
+        }
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/a",
+     "q/b",
+     "q/c",
+     "q/g"
+    ]
+   }
+  },
+  {
+   "name": "where v in [-0.0, 0.0]",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "IN",
+       "value": {
+        "arrayValue": {
+         "values": [
+          {
+           "doubleValue": -0.0
+          },
+          {
+           "doubleValue": 0.0
+          }
+         ]
+        }
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/a",
+     "q/b",
+     "q/c",
+     "q/g"
+    ]
+   }
+  },
+  {
+   "name": "where v not-in [-0.0, 0]",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "NOT_IN",
+       "value": {
+        "arrayValue": {
+         "values": [
+          {
+           "doubleValue": -0.0
+          },
+          {
+           "integerValue": "0"
+          }
+         ]
+        }
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/d",
+     "q/e",
+     "q/f"
+    ]
+   }
+  },
+  {
+   "name": "arrays: where v array-contains -0.0",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "arrays"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "ARRAY_CONTAINS",
+       "value": {
+        "doubleValue": -0.0
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "arrays/a",
+     "arrays/b",
+     "arrays/c"
+    ]
+   }
+  },
+  {
+   "name": "arrays: where v array-contains 0.0",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "arrays"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "ARRAY_CONTAINS",
+       "value": {
+        "doubleValue": 0.0
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "arrays/a",
+     "arrays/b",
+     "arrays/c"
+    ]
+   }
+  },
+  {
+   "name": "arrays: where v array-contains-any [-0.0]",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "arrays"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "ARRAY_CONTAINS_ANY",
+       "value": {
+        "arrayValue": {
+         "values": [
+          {
+           "doubleValue": -0.0
+          }
+         ]
+        }
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "arrays/a",
+     "arrays/b",
+     "arrays/c"
+    ]
+   }
+  },
+  {
+   "name": "arrays: where v == [-0.0]",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "arrays"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "EQUAL",
+       "value": {
+        "arrayValue": {
+         "values": [
+          {
+           "doubleValue": -0.0
+          }
+         ]
+        }
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "arrays/a",
+     "arrays/b",
+     "arrays/c"
+    ]
+   }
+  },
+  {
+   "name": "arrays: where v == [0]",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "arrays"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "EQUAL",
+       "value": {
+        "arrayValue": {
+         "values": [
+          {
+           "integerValue": "0"
+          }
+         ]
+        }
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "arrays/a",
+     "arrays/b",
+     "arrays/c"
+    ]
+   }
+  },
+  {
+   "name": "maps: where v == {x: -0.0}",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "maps"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "EQUAL",
+       "value": {
+        "mapValue": {
+         "fields": {
+          "x": {
+           "doubleValue": -0.0
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "maps/a",
+     "maps/b",
+     "maps/c"
+    ]
+   }
+  },
+  {
+   "name": "maps: where v == {x: 0}",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "maps"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "v"
+       },
+       "op": "EQUAL",
+       "value": {
+        "mapValue": {
+         "fields": {
+          "x": {
+           "integerValue": "0"
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "maps/a",
+     "maps/b",
+     "maps/c"
+    ]
+   }
+  },
+  {
+   "name": "q: order by v",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "v"
+       },
+       "direction": "ASCENDING"
+      }
+     ]
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/d",
+     "q/e",
+     "q/a",
+     "q/b",
+     "q/c",
+     "q/g",
+     "q/f"
+    ]
+   }
+  },
+  {
+   "name": "r: order by v",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "r"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "v"
+       },
+       "direction": "ASCENDING"
+      }
+     ]
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "r/d",
+     "r/c",
+     "r/a",
+     "r/e",
+     "r/f",
+     "r/g",
+     "r/b"
+    ]
+   }
+  },
+  {
+   "name": "q: order by v descending",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "v"
+       },
+       "direction": "DESCENDING"
+      }
+     ]
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/f",
+     "q/g",
+     "q/c",
+     "q/b",
+     "q/a",
+     "q/e",
+     "q/d"
+    ]
+   }
+  },
+  {
+   "name": "q: order by v, startAt -0.0",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "v"
+       },
+       "direction": "ASCENDING"
+      }
+     ],
+     "startAt": {
+      "values": [
+       {
+        "doubleValue": -0.0
+       }
+      ],
+      "before": true
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/a",
+     "q/b",
+     "q/c",
+     "q/g",
+     "q/f"
+    ]
+   }
+  },
+  {
+   "name": "q: order by v, startAfter -0.0",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "v"
+       },
+       "direction": "ASCENDING"
+      }
+     ],
+     "startAt": {
+      "values": [
+       {
+        "doubleValue": -0.0
+       }
+      ]
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/f"
+    ]
+   }
+  },
+  {
+   "name": "q: order by v, startAfter 0.0",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "v"
+       },
+       "direction": "ASCENDING"
+      }
+     ],
+     "startAt": {
+      "values": [
+       {
+        "doubleValue": 0.0
+       }
+      ]
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/f"
+    ]
+   }
+  },
+  {
+   "name": "q: order by v, endBefore 0.0",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "v"
+       },
+       "direction": "ASCENDING"
+      }
+     ],
+     "endAt": {
+      "values": [
+       {
+        "doubleValue": 0.0
+       }
+      ],
+      "before": true
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/d",
+     "q/e"
+    ]
+   }
+  },
+  {
+   "name": "q: order by v, endAt -0.0",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "v"
+       },
+       "direction": "ASCENDING"
+      }
+     ],
+     "endAt": {
+      "values": [
+       {
+        "doubleValue": -0.0
+       }
+      ]
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/d",
+     "q/e",
+     "q/a",
+     "q/b",
+     "q/c",
+     "q/g"
+    ]
+   }
+  },
+  {
+   "name": "q: order by v, startAt -0.0 and name b",
+   "project": "nz-queries",
+   "grpc": "RunQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "q"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "v"
+       },
+       "direction": "ASCENDING"
+      },
+      {
+       "field": {
+        "fieldPath": "__name__"
+       },
+       "direction": "ASCENDING"
+      }
+     ],
+     "startAt": {
+      "values": [
+       {
+        "doubleValue": -0.0
+       },
+       {
+        "referenceValue": "projects/nz-queries/databases/(default)/documents/q/b"
+       }
+      ],
+      "before": true
+     }
+    }
+   },
+   "summary": "query",
+   "outcome": {
+    "documents": [
+     "q/b",
+     "q/c",
+     "q/g",
+     "q/f"
+    ]
+   }
+  },
+  {
+   "name": "sum and avg over agg_nz",
+   "project": "nz-queries",
+   "grpc": "RunAggregationQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredAggregationQuery": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "agg_nz"
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "alias": "sum",
+       "sum": {
+        "field": {
+         "fieldPath": "v"
+        }
+       }
+      },
+      {
+       "alias": "avg",
+       "avg": {
+        "field": {
+         "fieldPath": "v"
+        }
+       }
+      },
+      {
+       "alias": "count",
+       "count": {}
+      }
+     ]
+    }
+   },
+   "summary": "aggregation",
+   "outcome": {
+    "result": {
+     "avg": {
+      "double": "0.0"
+     },
+     "count": {
+      "integer": "1"
+     },
+     "sum": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "sum and avg over agg_nz2",
+   "project": "nz-queries",
+   "grpc": "RunAggregationQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredAggregationQuery": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "agg_nz2"
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "alias": "sum",
+       "sum": {
+        "field": {
+         "fieldPath": "v"
+        }
+       }
+      },
+      {
+       "alias": "avg",
+       "avg": {
+        "field": {
+         "fieldPath": "v"
+        }
+       }
+      },
+      {
+       "alias": "count",
+       "count": {}
+      }
+     ]
+    }
+   },
+   "summary": "aggregation",
+   "outcome": {
+    "result": {
+     "avg": {
+      "double": "0.0"
+     },
+     "count": {
+      "integer": "2"
+     },
+     "sum": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "sum and avg over agg_mixed",
+   "project": "nz-queries",
+   "grpc": "RunAggregationQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredAggregationQuery": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "agg_mixed"
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "alias": "sum",
+       "sum": {
+        "field": {
+         "fieldPath": "v"
+        }
+       }
+      },
+      {
+       "alias": "avg",
+       "avg": {
+        "field": {
+         "fieldPath": "v"
+        }
+       }
+      },
+      {
+       "alias": "count",
+       "count": {}
+      }
+     ]
+    }
+   },
+   "summary": "aggregation",
+   "outcome": {
+    "result": {
+     "avg": {
+      "double": "0.0"
+     },
+     "count": {
+      "integer": "2"
+     },
+     "sum": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "sum and avg over agg_int",
+   "project": "nz-queries",
+   "grpc": "RunAggregationQuery",
+   "request": {
+    "parent": "projects/nz-queries/databases/(default)/documents",
+    "structuredAggregationQuery": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "agg_int"
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "alias": "sum",
+       "sum": {
+        "field": {
+         "fieldPath": "v"
+        }
+       }
+      },
+      {
+       "alias": "avg",
+       "avg": {
+        "field": {
+         "fieldPath": "v"
+        }
+       }
+      },
+      {
+       "alias": "count",
+       "count": {}
+      }
+     ]
+    }
+   },
+   "summary": "aggregation",
+   "outcome": {
+    "result": {
+     "avg": {
+      "double": "0.0"
+     },
+     "count": {
+      "integer": "2"
+     },
+     "sum": {
+      "double": "0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "rules: set",
+   "project": "nz-rules",
+   "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow read: if string(resource.data.v) == '-0.0';\n      allow write: if string(request.resource.data.v) == '-0.0';\n    }\n  }\n}\n",
+   "status": 200
+  },
+  {
+   "name": "rules: Commit -0.0",
+   "project": "nz-rules",
+   "grpc": "Commit",
+   "request": {
+    "database": "projects/nz-rules/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/nz-rules/databases/(default)/documents/c/grpc",
+       "fields": {
+        "v": {
+         "doubleValue": -0.0
+        }
+       }
+      }
+     }
+    ]
+   },
+   "owner": false,
+   "summary": "commit",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [],
+      "changed": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "rules: Commit 0.0",
+   "project": "nz-rules",
+   "grpc": "Commit",
+   "request": {
+    "database": "projects/nz-rules/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/nz-rules/databases/(default)/documents/c/pos",
+       "fields": {
+        "v": {
+         "doubleValue": 0.0
+        }
+       }
+      }
+     }
+    ]
+   },
+   "owner": false,
+   "summary": "commit",
+   "outcome": {
+    "error": "PERMISSION_DENIED"
+   }
+  },
+  {
+   "name": "rules: Commit increment by -0.0",
+   "project": "nz-rules",
+   "grpc": "Commit",
+   "request": {
+    "database": "projects/nz-rules/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/nz-rules/databases/(default)/documents/c/inc",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "v",
+        "increment": {
+         "doubleValue": -0.0
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "owner": false,
+   "summary": "commit",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [
+       {
+        "double": "-0.0"
+       }
+      ],
+      "changed": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "rules: PATCH -0.0",
+   "project": "nz-rules",
+   "rest": "PATCH",
+   "path": "/c/rest",
+   "body": "{\"fields\": {\"v\": {\"doubleValue\": -0.0}}}",
+   "owner": false,
+   "summary": "document",
+   "status": 403,
+   "outcome": {
+    "error": "PERMISSION_DENIED"
+   }
+  },
+  {
+   "name": "rules: GetDocument of the stored -0.0",
+   "project": "nz-rules",
+   "grpc": "GetDocument",
+   "request": {
+    "name": "projects/nz-rules/databases/(default)/documents/c/grpc"
+   },
+   "owner": false,
+   "summary": "document",
+   "outcome": {
+    "id": "c/grpc",
+    "fields": {
+     "v": {
+      "double": "-0.0"
+     }
+    }
+   }
+  },
+  {
+   "name": "rules: Commit 0.0 as the owner",
+   "project": "nz-rules",
+   "grpc": "Commit",
+   "request": {
+    "database": "projects/nz-rules/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/nz-rules/databases/(default)/documents/c/owner",
+       "fields": {
+        "v": {
+         "doubleValue": 0.0
+        }
+       }
+      }
+     }
+    ]
+   },
+   "summary": "commit",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [],
+      "changed": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "rules: GetDocument of the stored 0.0",
+   "project": "nz-rules",
+   "grpc": "GetDocument",
+   "request": {
+    "name": "projects/nz-rules/databases/(default)/documents/c/owner"
+   },
+   "owner": false,
+   "summary": "document",
+   "outcome": {
+    "error": "PERMISSION_DENIED"
+   }
+  },
+  {
+   "name": "export: seed",
+   "project": "nz-export",
+   "grpc": "Commit",
+   "request": {
+    "database": "projects/nz-export/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/nz-export/databases/(default)/documents/c/d",
+       "fields": {
+        "v": {
+         "doubleValue": -0.0
+        },
+        "arr": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": -0.0
+           },
+           {
+            "doubleValue": 0.0
+           }
+          ]
+         }
+        },
+        "map": {
+         "mapValue": {
+          "fields": {
+           "x": {
+            "doubleValue": -0.0
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "summary": "commit",
+   "outcome": {
+    "writeResults": [
+     {
+      "transformResults": [],
+      "changed": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "export, then import into nz-import",
+   "project": "nz-export",
+   "export": "nz-import",
+   "outcome": {
+    "negative_zero_doubles": 3
+   }
+  },
+  {
+   "name": "import: GetDocument",
+   "project": "nz-import",
+   "grpc": "GetDocument",
+   "request": {
+    "name": "projects/nz-import/databases/(default)/documents/c/d"
+   },
+   "summary": "document",
+   "outcome": {
+    "id": "c/d",
+    "fields": {
+     "arr": {
+      "array": [
+       {
+        "double": "-0.0"
+       },
+       {
+        "double": "0.0"
+       }
+      ]
+     },
+     "map": {
+      "map": {
+       "x": {
+        "double": "-0.0"
+       }
+      }
+     },
+     "v": {
+      "double": "-0.0"
+     }
+    }
+   }
+  }
+ ]
+}

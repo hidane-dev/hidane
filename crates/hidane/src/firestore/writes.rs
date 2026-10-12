@@ -289,8 +289,10 @@ fn apply_transforms(
     Ok(results)
 }
 
-/// Stores `fields` unless they equal what is stored: then the document, and its update_time,
-/// stay as they are (observed on the official emulator, also for no-op transforms).
+/// Stores `fields` unless they are what is stored, bit for bit: then the document, and its
+/// update_time, stay as they are (observed on the official emulator, also for no-op
+/// transforms). NaN over NaN is no change; `-0.0` over `0.0` is one
+/// (`tools/oracle/negative_zero.py`).
 fn store(
     batch: &mut dyn WriteBatch,
     path: &ResourcePath,
@@ -303,7 +305,7 @@ fn store(
         normalize_value(value);
     }
     if let Some(existing) = existing
-        && existing.fields() == fields
+        && existing.has_fields(&fields)
     {
         return WriteResult {
             update_time: Some(existing.update_time),

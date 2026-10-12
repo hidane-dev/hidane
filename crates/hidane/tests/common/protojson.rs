@@ -1,4 +1,6 @@
 //! Just enough ProtoJSON → proto to replay the REST requests recorded in the fixtures over gRPC.
+//! Doubles are read as the official emulator reads them over REST: a zero is `0.0`, whatever
+//! its sign (`tools/oracle/negative_zero.py`).
 
 use base64::Engine as _;
 use hidane_proto::google::{
@@ -41,7 +43,7 @@ pub fn value(json: &Json) -> Value {
             Json::String(s) if s == "NaN" => f64::NAN,
             Json::String(s) if s == "Infinity" => f64::INFINITY,
             Json::String(s) if s == "-Infinity" => f64::NEG_INFINITY,
-            other => other.as_f64().unwrap(),
+            other => double(other),
         }),
         "timestampValue" => ValueType::TimestampValue(timestamp(inner.as_str().unwrap())),
         "stringValue" => ValueType::StringValue(inner.as_str().unwrap().to_owned()),
@@ -52,8 +54,8 @@ pub fn value(json: &Json) -> Value {
         ),
         "referenceValue" => ValueType::ReferenceValue(inner.as_str().unwrap().to_owned()),
         "geoPointValue" => ValueType::GeoPointValue(LatLng {
-            latitude: inner["latitude"].as_f64().unwrap_or(0.0),
-            longitude: inner["longitude"].as_f64().unwrap_or(0.0),
+            latitude: inner.get("latitude").map_or(0.0, double),
+            longitude: inner.get("longitude").map_or(0.0, double),
         }),
         "arrayValue" => ValueType::ArrayValue(array(inner)),
         "mapValue" => ValueType::MapValue(MapValue {
@@ -64,6 +66,12 @@ pub fn value(json: &Json) -> Value {
     Value {
         value_type: Some(value_type),
     }
+}
+
+/// A JSON number as REST reads it: `-0.0` is `0.0`.
+fn double(json: &Json) -> f64 {
+    let d = json.as_f64().unwrap();
+    if d == 0.0 { 0.0 } else { d }
 }
 
 fn array(json: &Json) -> ArrayValue {
@@ -178,12 +186,12 @@ pub fn code(status: &str) -> Code {
 }
 
 /// Structural equality for comparing with recorded REST output: integers and doubles stay
-/// distinct, NaN equals NaN, and the sign of zero is ignored (the official REST output prints
-/// -0.0 as 0.0). Timestamps are skipped; tests check them separately.
+/// distinct, NaN equals NaN, and `-0.0` differs from `0.0`. Timestamps are skipped; tests
+/// check them separately.
 pub fn same(a: &Value, b: &Value) -> bool {
     match (&a.value_type, &b.value_type) {
         (Some(ValueType::DoubleValue(x)), Some(ValueType::DoubleValue(y))) => {
-            (x.is_nan() && y.is_nan()) || x == y
+            (x.is_nan() && y.is_nan()) || x.to_bits() == y.to_bits()
         }
         (Some(ValueType::TimestampValue(_)), Some(ValueType::TimestampValue(_))) => true,
         (Some(ValueType::ArrayValue(x)), Some(ValueType::ArrayValue(y))) => {

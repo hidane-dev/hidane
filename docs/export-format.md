@@ -94,7 +94,7 @@ with an empty value. Values:
 | null | | empty |
 | boolean | | 2 |
 | integer | | 1 |
-| double | | 4 (fixed64); `-0.0` is written as `0.0` |
+| double | | 4 (fixed64), bit for bit: `-0.0` stays `-0.0` |
 | timestamp | 7 | 1: microseconds since the epoch |
 | string | | 3 |
 | bytes | 14 | 3 |

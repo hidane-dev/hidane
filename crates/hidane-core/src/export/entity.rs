@@ -9,7 +9,7 @@
 //! - a map is a nested entity without a key, stored as a string of meaning 19; a vector is a
 //!   nested entity whose elements are `multiple` properties named `__vector__`;
 //! - timestamps are microseconds (meaning 7), bytes are strings of meaning 14, geo points are
-//!   points of meaning 9; `-0.0` is written as `0.0`.
+//!   points of meaning 9; a double keeps its bits, `-0.0` included.
 //!
 //! Reading, a reference in a top-level indexed property (as a managed export of a Native mode
 //! database writes most fields) belongs to the importing project, whatever its app says: the
@@ -168,7 +168,7 @@ fn property_value(w: &mut Writer, value: &Value) {
     match &value.value_type {
         Some(ValueType::BooleanValue(b)) => w.uint(BOOLEAN, u64::from(*b)),
         Some(ValueType::IntegerValue(i)) => w.int(INT64, *i),
-        Some(ValueType::DoubleValue(d)) => w.double(DOUBLE, if *d == 0.0 { 0.0 } else { *d }),
+        Some(ValueType::DoubleValue(d)) => w.double(DOUBLE, *d),
         Some(ValueType::TimestampValue(ts)) => w.int(INT64, ReadTime::from_timestamp(ts).0),
         Some(ValueType::StringValue(s)) => w.bytes(STRING, s.as_bytes()),
         Some(ValueType::BytesValue(b)) => w.bytes(STRING, b),

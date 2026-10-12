@@ -91,8 +91,9 @@ impl StoredDocument {
     }
 
     /// Whether the document holds exactly `fields`, bit for bit: unlike `==` on the decoded
-    /// fields, a NaN equals itself and `-0.0` differs from `0.0`. The order of the fields does
-    /// not matter.
+    /// fields, a NaN equals itself and `-0.0` differs from `0.0`, as for the official emulator,
+    /// to which writing either over itself changes nothing (`tools/oracle/negative_zero.py`).
+    /// The order of the fields does not matter.
     pub fn has_fields(&self, fields: &Fields) -> bool {
         let canonical = |fields: &Fields| {
             MapValue {
@@ -102,6 +103,13 @@ impl StoredDocument {
         };
         fields.len() == self.fields().len() && canonical(fields) == canonical(&self.fields())
     }
+}
+
+/// Whether `a` and `b` are the same value, bit for bit, as [`StoredDocument::has_fields`]
+/// compares documents: a NaN equals itself, `-0.0` differs from `0.0`, and the order of a map's
+/// fields does not matter.
+pub fn identical(a: &Value, b: &Value) -> bool {
+    canonical_value(a).encode_to_vec() == canonical_value(b).encode_to_vec()
 }
 
 /// `fields` with every map, nested ones included, in UTF-8 key order.
