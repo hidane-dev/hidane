@@ -1,3 +1,7 @@
+## 0.2.1
+
+- Downloads hidane 0.2.1.
+
 ## 0.2.0
 
 - Downloads hidane 0.2.0, which enforces Security Rules.

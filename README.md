@@ -10,12 +10,13 @@ evaluates the same Security Rules, reads and writes the same import / export dir
 under `firebase-tools`. No JDK to install. Starts in milliseconds. Tested for parity against the
 official emulator as the oracle.
 
-> **v0.2.0 enforces Security Rules.** hidane serves the Firestore API over gRPC, REST and
+> **v0.2.1 enforces Security Rules.** hidane serves the Firestore API over gRPC, REST and
 > WebChannel: documents, queries, aggregations, vector search, transactions, listeners, exports
 > and imports, and the emulator's own endpoints, each checked against the official emulator;
 > `firebase-tools` launches it in place of the official one. Since v0.2.0 it evaluates
 > `firestore.rules` as the official emulator does, with its denial messages, `:ruleCoverage` and
-> `debug()` output (v0.1 allowed every request). The plan is in
+> `debug()` output (v0.1 allowed every request); v0.2.1 feeds the Emulator UI's request monitor.
+> The plan is in
 > [`docs/ROADMAP.md`](docs/ROADMAP.md), the work in
 > [issues](https://github.com/hidane-dev/hidane/issues).
 
@@ -52,7 +53,7 @@ Which clients can use hidane depends on the transport their SDK speaks to an emu
 ([`docs/compatibility.md`](docs/compatibility.md)). "Verified" means the client's results were
 compared with the official emulator's (`results/`):
 
-| Client | Transport | In v0.2.0 |
+| Client | Transport | In v0.2.1 |
 |---|---|---|
 | firebase-admin (Node) / `@google-cloud/firestore` | gRPC | verified: documents, queries, aggregations, vector search, transactions, listeners |
 | firebase-js-sdk in Node | gRPC | verified: writes, transactions, listeners, offline and resume |
@@ -62,13 +63,13 @@ compared with the official emulator's (`results/`):
 | Go, Python, Java, iOS, Android, Flutter (all platforms), C++ / Unity | gRPC or WebChannel | same transports, not verified yet |
 | Security Rules | every transport | enforced: `allow` conditions, `get` / `exists`, `list` decided from the query's filter, mock tokens, denial messages, `:ruleCoverage`, `debug()`; each recorded from the official emulator and replayed ([`docs/parity-exceptions.md`](docs/parity-exceptions.md) lists the differences) |
 | `firebase emulators:start` / `emulators:exec` | `hidane exec -- firebase …` | verified with firebase-tools 15.33.0, no Java installed |
-| Emulator UI | REST and the emulator's endpoints | verified: browse, create and delete documents, Clear all data; the request monitor is on `main` (#69) |
+| Emulator UI | REST and the emulator's endpoints | verified: browse, create and delete documents, Clear all data, and the request monitor (the Requests tab) |
 | Export / import (`--import`, `--export-on-exit`, `emulators:export`) | the official format | verified: hidane and the official emulator read each other's exports, byte for byte the same files ([`docs/export-format.md`](docs/export-format.md)) |
 
 ## Parity
 
 hidane treats the official emulator as the oracle. Scripts in [`tools/oracle/`](tools/oracle/)
-ask the official emulator how it answers — 31 recorded fixtures so far, from value ordering to
+ask the official emulator how it answers — 33 recorded fixtures so far, from value ordering to
 WebChannel framing, export files and Security Rules — and the test suite replays every recording against hidane; SDK transcripts
 from both emulators are compared in [`results/`](results/). A parity table with a badge will
 follow (#43). No claim of compatibility without a test behind it. Differences that are intentional (performance bugs and
