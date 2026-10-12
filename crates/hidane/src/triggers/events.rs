@@ -396,11 +396,10 @@ mod tests {
 
     #[test]
     fn uuids_are_version_4() {
-        let a = uuid();
-        let b = uuid();
-        assert_ne!(a, b);
-        assert_eq!(a.len(), 36);
-        assert_eq!(&a[14..15], "4");
-        assert!(matches!(&a[19..20], "8" | "9" | "a" | "b"), "{a}");
+        let (a, b) = (uuid(), uuid());
+        assert!(a != b);
+        let bytes = a.as_bytes();
+        assert!(bytes.len() == 36 && bytes[14] == b'4');
+        assert!(matches!(bytes[19], b'8' | b'9' | b'a' | b'b'));
     }
 }
