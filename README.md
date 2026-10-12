@@ -10,11 +10,17 @@ evaluates the same Security Rules, reads and writes the same import / export dir
 under `firebase-tools`. No JDK to install. Starts in milliseconds. Tested for parity against the
 official emulator as the oracle.
 
+> [!WARNING]
+> **v0.1 does not enforce Security Rules: every request is allowed, whatever `firestore.rules`
+> says.** Rules tests pass here even where production would deny the request. Keep the official
+> emulator for rules tests until v0.2, which enforces them (already on `main`, checked against
+> the official emulator).
+
 > **v0.1.0, the first release.** hidane serves the Firestore API over gRPC, REST and WebChannel:
 > documents, queries, aggregations, vector search, transactions, listeners, exports and imports,
 > and the emulator's own endpoints, each checked against the official emulator; `firebase-tools`
-> launches it in place of the official one. **Security Rules are not there yet** (v0.2): every
-> request is allowed. The plan is in [`docs/ROADMAP.md`](docs/ROADMAP.md), the work in
+> launches it in place of the official one. Security Rules come in v0.2. The plan is in
+> [`docs/ROADMAP.md`](docs/ROADMAP.md), the work in
 > [issues](https://github.com/hidane-dev/hidane/issues).
 
 ```sh
