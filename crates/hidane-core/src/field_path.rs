@@ -199,6 +199,29 @@ impl MaskTree {
             .collect();
         hash_order(&names).into_iter().map(|i| &self.children[i])
     }
+
+    /// The paths this level takes whole, below `prefix`, in visiting order.
+    fn flatten(&self, prefix: &mut Vec<String>, out: &mut Vec<FieldPath>) {
+        for (name, below) in self.ordered() {
+            prefix.push(name.clone());
+            if below.whole {
+                out.push(FieldPath(prefix.clone()));
+            } else {
+                below.flatten(prefix, out);
+            }
+            prefix.pop();
+        }
+    }
+}
+
+/// The paths of a mask as the official emulator lists them to Security Rules
+/// (`request.writeFields`, `request.fields`): each once, without those below another, and at
+/// each level in the order of a Java `HashMap` that received the names in mask order
+/// (`tools/oracle/rules_request_fields.py`).
+pub fn mask_paths(mask: &[FieldPath]) -> Vec<FieldPath> {
+    let mut out = Vec::new();
+    MaskTree::new(mask).flatten(&mut Vec::new(), &mut out);
+    out
 }
 
 /// `entries` in the order of a Java `HashMap` that received them in turn.
@@ -297,6 +320,25 @@ fn empty_map() -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn mask_paths_as_rules_see_them() {
+        let listed = |mask: &[&str]| -> Vec<String> {
+            let mask: Vec<FieldPath> = mask.iter().map(|p| FieldPath::parse(p).unwrap()).collect();
+            mask_paths(&mask).iter().map(ToString::to_string).collect()
+        };
+        // Recorded in crates/hidane/tests/fixtures/rules_request_fields.json.
+        assert_eq!(listed(&["c", "b", "a"]), ["a", "b", "c"]);
+        assert_eq!(listed(&["n", "m.b", "z"]), ["z", "m.b", "n"]);
+        assert_eq!(listed(&["b", "a", "b"]), ["a", "b"]);
+        assert_eq!(listed(&["m.b", "m"]), ["m"]);
+        assert_eq!(listed(&["m.b.c", "m.a", "z"]), ["z", "m.a", "m.b.c"]);
+        assert_eq!(
+            listed(&["x.y", "a", "`q r`", "b.c.d"]),
+            ["a", "`q r`", "b.c.d", "x.y"]
+        );
+        assert!(listed(&[]).is_empty());
+    }
 
     fn int(i: i64) -> Value {
         Value {

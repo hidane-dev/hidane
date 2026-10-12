@@ -20,6 +20,9 @@ use crate::{
 #[derive(Debug, Clone)]
 pub enum Observed {
     Null,
+    /// What the official emulator does not know, such as a collection group's `request.path`
+    /// (`undefined`).
+    Undefined,
     Bool(bool),
     Int(i64),
     Float(f64),
@@ -78,7 +81,7 @@ impl KeyStatus {
 impl PartialEq for Observed {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
-            (Self::Null, Self::Null) => true,
+            (Self::Null, Self::Null) | (Self::Undefined, Self::Undefined) => true,
             (Self::Bool(a), Self::Bool(b)) => a == b,
             (Self::Int(a), Self::Int(b)) => a == b,
             (Self::Float(a), Self::Float(b)) => bits(*a) == bits(*b),
@@ -112,7 +115,8 @@ fn bits(f: f64) -> u64 {
 /// Hashes `v` as what it shows ([`observe`]), without building that.
 pub(crate) fn hash_val<H: Hasher>(v: &Val, state: &mut H) {
     match v {
-        Val::Null | Val::Unknown => 0u8.hash(state),
+        Val::Null => 0u8.hash(state),
+        Val::Unknown => 15u8.hash(state),
         Val::Bool(b) => (1u8, b).hash(state),
         Val::Int(i) => (2u8, i).hash(state),
         Val::Float(f) => (3u8, bits(*f)).hash(state),
@@ -153,7 +157,7 @@ pub(crate) fn hash_val<H: Hasher>(v: &Val, state: &mut H) {
 /// Whether `o` is what `v` shows ([`observe`]).
 pub(crate) fn shows(o: &Observed, v: &Val) -> bool {
     match (o, v) {
-        (Observed::Null, Val::Null | Val::Unknown) => true,
+        (Observed::Null, Val::Null) | (Observed::Undefined, Val::Unknown) => true,
         (Observed::Bool(a), Val::Bool(b)) => a == b,
         (Observed::Int(a), Val::Int(b)) => a == b,
         (Observed::Float(a), Val::Float(b)) => bits(*a) == bits(*b),
@@ -301,8 +305,9 @@ impl Trace {
 /// A value as `debug()` and the coverage report show it.
 pub(crate) fn observe(v: &Val) -> Observed {
     match v {
+        Val::Null => Observed::Null,
         // What reading it would leave undecided only shows inside a map.
-        Val::Null | Val::Unknown => Observed::Null,
+        Val::Unknown => Observed::Undefined,
         Val::Bool(b) => Observed::Bool(*b),
         Val::Int(i) => Observed::Int(*i),
         Val::Float(f) => Observed::Float(*f),

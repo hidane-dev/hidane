@@ -107,6 +107,10 @@ fn batch(result: &Json) -> bool {
         };
         let request = Request {
             upsert: false,
+            in_transaction: false,
+            write_fields: None,
+            transforms: None,
+            auto_id: false,
             method,
             path: document_path(&format!("c/{id}")),
             auth: None,
@@ -157,6 +161,10 @@ fn evaluation_matches_the_official_emulator() {
             Some(ruleset) => {
                 let request = Request {
                     upsert: false,
+                    in_transaction: false,
+                    write_fields: None,
+                    transforms: None,
+                    auto_id: false,
                     method: Method::Get,
                     path: document_path("rooms/r1"),
                     auth: None,

@@ -16,7 +16,10 @@ use hidane_proto::google::firestore::v1::{
 use hidane_rules::eval::Method;
 use tonic::Status;
 
-use super::{guard::CheckedWrite, names, validate};
+use super::{
+    guard::{self, CheckedWrite},
+    names, validate,
+};
 
 /// The document a write targets, for duplicate detection.
 pub fn target(write: &Write) -> Option<&str> {
@@ -111,6 +114,10 @@ fn parse_mask(paths: &[String]) -> Result<Vec<FieldPath>, Status> {
 /// `tools/oracle/rules_writes.py`): an `exists` precondition decides between create and update,
 /// else whether the document exists, which makes the write an upsert; a delete is a delete.
 /// The document after the write is left for the caller to fill in.
+///
+/// `request.transforms` lists the paths of the field transforms in order, and
+/// `request.writeFields` those, then the paths of the update mask; each is null for a write
+/// without them (`tools/oracle/rules_request_fields.py`).
 pub(crate) fn rules_method(batch: &dyn WriteBatch, write: &Write) -> Option<CheckedWrite> {
     let path = names::document(target(write)?).ok()?.path;
     let existing = batch.get(&path);
@@ -128,12 +135,48 @@ pub(crate) fn rules_method(batch: &dyn WriteBatch, write: &Write) -> Option<Chec
         },
         Some(Operation::Verify(_)) | None => return None,
     };
+    let field_transforms = match &write.operation {
+        Some(Operation::Transform(transform)) => transform.field_transforms.as_slice(),
+        Some(Operation::Update(_)) => write.update_transforms.as_slice(),
+        _ => &[],
+    };
+    let transforms = (!field_transforms.is_empty()).then(|| {
+        field_transforms
+            .iter()
+            .map(|t| guard::transform_path(&t.field_path))
+            .collect::<Vec<_>>()
+    });
+    let mask = match &write.operation {
+        Some(Operation::Update(_)) => write
+            .update_mask
+            .as_ref()
+            .and_then(|mask| parse_mask(&mask.field_paths).ok()),
+        _ => None,
+    };
+    let write_fields = match (&transforms, &mask) {
+        (None, None) => None,
+        (transforms, mask) => Some(
+            transforms
+                .iter()
+                .flatten()
+                .cloned()
+                .chain(
+                    mask.as_deref()
+                        .map(guard::rules_paths)
+                        .into_iter()
+                        .flatten(),
+                )
+                .collect(),
+        ),
+    };
     Some(CheckedWrite {
         method,
         upsert,
         path,
         before: existing,
         after: None,
+        write_fields,
+        transforms,
     })
 }
 

@@ -77,6 +77,10 @@ fn store() -> Store {
 fn request(method: Method, path: &str, resource: Option<Document>) -> Request {
     Request {
         upsert: false,
+        in_transaction: false,
+        write_fields: None,
+        transforms: None,
+        auto_id: false,
         method,
         path: document_path(path),
         auth: None,

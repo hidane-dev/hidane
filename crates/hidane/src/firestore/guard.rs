@@ -25,7 +25,11 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use hidane_core::{path::ResourcePath, store::StoredDocument};
+use hidane_core::{
+    field_path::{FieldPath, mask_paths},
+    path::ResourcePath,
+    store::StoredDocument,
+};
 use hidane_proto::google::firestore::v1::{Value, value::ValueType};
 use hidane_rules::eval::{self, Auth, Budget, Decision, Method, Request, Trace};
 use serde_json::Value as Json;
@@ -41,6 +45,10 @@ pub(crate) struct Guard {
     auth: Option<Auth>,
     /// `databases/{id}/documents`: the start of every path rules see.
     root: Vec<String>,
+    /// Reads in a transaction begun before them (`request.inTransaction`).
+    in_transaction: bool,
+    /// A create whose document ID the server chose (`request.autoId`).
+    auto_id: bool,
 }
 
 impl Guard {
@@ -73,7 +81,22 @@ impl Guard {
                 database_id.to_owned(),
                 "documents".to_owned(),
             ],
+            in_transaction: false,
+            auto_id: false,
         })
+    }
+
+    /// The checks of reads in a transaction begun before them, if `yes`
+    /// (`request.inTransaction`; writes are always in one).
+    pub(crate) fn in_transaction(mut self, yes: bool) -> Self {
+        self.in_transaction = yes;
+        self
+    }
+
+    /// The checks of a create whose document ID the server chose, if `yes` (`request.autoId`).
+    pub(crate) fn auto_id(mut self, yes: bool) -> Self {
+        self.auto_id = yes;
+        self
     }
 
     /// Decides `request`, counting what it evaluated and printing its `debug()` values.
@@ -131,6 +154,10 @@ impl Guard {
             time,
             resource,
             query: None,
+            in_transaction: self.in_transaction,
+            write_fields: None,
+            transforms: None,
+            auto_id: false,
         }
     }
 
@@ -205,6 +232,14 @@ impl Guard {
             };
             let mut request = self.request(write.method, &write.path, new, time);
             request.upsert = write.upsert;
+            request.in_transaction = true;
+            request.write_fields.clone_from(&write.write_fields);
+            request.transforms.clone_from(&write.transforms);
+            // Decided without the ID: on the collection's path.
+            if self.auto_id && write.method == Method::Create && !write.upsert {
+                request.auto_id = true;
+                request.path.pop();
+            }
             let resource = write.before.as_deref().map(|doc| self.document(doc));
             if let Err(message) = self.decide(&request, resource.as_ref(), &documents, &mut budget)
             {
@@ -229,6 +264,11 @@ pub(crate) struct CheckedWrite {
     pub before: Option<Arc<StoredDocument>>,
     /// The document after the write.
     pub after: Option<Arc<StoredDocument>>,
+    /// `request.writeFields`: the paths of the transforms, then those of the mask
+    /// ([`rules_paths`]); `None` without either.
+    pub write_fields: Option<Vec<String>>,
+    /// `request.transforms` ([`transform_path`]); `None` without any.
+    pub transforms: Option<Vec<String>>,
 }
 
 /// The documents before the commit, for writes: the version a write of the batch replaced, or
@@ -278,6 +318,30 @@ impl eval::Documents for Lookup<'_> {
         let path = self.local(path)?;
         (self.after)(&path).map(|doc| self.guard.document(&doc))
     }
+}
+
+/// Masked or selected field paths as the official emulator lists them to rules
+/// (`request.writeFields`, `request.fields`; `tools/oracle/rules_request_fields.py`): in
+/// mask order ([`mask_paths`]), each the segments joined by `.`, with `.` and `\` escaped
+/// by `\` in a segment.
+pub(crate) fn rules_paths(paths: &[FieldPath]) -> Vec<String> {
+    mask_paths(paths)
+        .iter()
+        .map(|path| {
+            let segments: Vec<String> = path
+                .segments()
+                .iter()
+                .map(|s| s.replace('\\', "\\\\").replace('.', "\\."))
+                .collect();
+            segments.join(".")
+        })
+        .collect()
+}
+
+/// The field path of a transform as `request.transforms` lists it: its segments joined by
+/// `.`, nothing escaped.
+pub(crate) fn transform_path(path: &str) -> String {
+    FieldPath::parse(path).map_or_else(|_| path.to_owned(), |p| p.segments().join("."))
 }
 
 /// Several denials as one message: the entries of each, in order.

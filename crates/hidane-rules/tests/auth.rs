@@ -21,6 +21,10 @@ fn decide(condition: &str, auth: Option<Auth>) -> Decision {
     .expect("compiles");
     let request = Request {
         upsert: false,
+        in_transaction: false,
+        write_fields: None,
+        transforms: None,
+        auto_id: false,
         method: Method::Get,
         path: document_path("c/d"),
         auth,
