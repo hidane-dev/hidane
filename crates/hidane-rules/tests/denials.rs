@@ -66,6 +66,7 @@ fn decide_as(body: &str, method: Method, path: &str, upsert: bool) -> Decision {
         write_fields: None,
         transforms: None,
         auto_id: false,
+        verify: false,
         method,
         path,
         auth: None,

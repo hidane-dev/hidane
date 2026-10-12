@@ -110,10 +110,11 @@ fn parse_mask(paths: &[String]) -> Result<Vec<FieldPath>, Status> {
         .collect()
 }
 
-/// How Security Rules check `write` (`None` for a verify, which they do not check;
-/// `tools/oracle/rules_writes.py`): an `exists` precondition decides between create and update,
-/// else whether the document exists, which makes the write an upsert; a delete is a delete.
-/// The document after the write is left for the caller to fill in.
+/// How Security Rules check `write` (`tools/oracle/rules_writes.py`): an `exists`
+/// precondition decides between create and update, else whether the document exists, which
+/// makes the write an upsert; a delete is a delete, and a verify a get of its document
+/// (`tools/oracle/rules_verify.py`). The document after the write is left for the caller to
+/// fill in.
 ///
 /// `request.transforms` lists the paths of the field transforms in order, and
 /// `request.writeFields` those, then the paths of the update mask; each is null for a write
@@ -122,6 +123,7 @@ pub(crate) fn rules_method(batch: &dyn WriteBatch, write: &Write) -> Option<Chec
     let path = names::document(target(write)?).ok()?.path;
     let existing = batch.get(&path);
     let (method, upsert) = match &write.operation {
+        Some(Operation::Verify(_)) => (Method::Get, false),
         Some(Operation::Delete(_)) => (Method::Delete, false),
         Some(Operation::Update(_) | Operation::Transform(_)) => match write
             .current_document
@@ -133,7 +135,7 @@ pub(crate) fn rules_method(batch: &dyn WriteBatch, write: &Write) -> Option<Chec
             _ if existing.is_some() => (Method::Update, true),
             _ => (Method::Create, true),
         },
-        Some(Operation::Verify(_)) | None => return None,
+        None => return None,
     };
     let field_transforms = match &write.operation {
         Some(Operation::Transform(transform)) => transform.field_transforms.as_slice(),

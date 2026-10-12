@@ -31,6 +31,7 @@ fn decide(content: String) -> Decision {
                 write_fields: None,
                 transforms: None,
                 auto_id: false,
+                verify: false,
                 method: Method::Get,
                 path: document_path("c/d"),
                 auth: None,

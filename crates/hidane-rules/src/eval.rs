@@ -215,7 +215,8 @@ pub struct Request {
     pub path: Vec<String>,
     pub auth: Option<Auth>,
     pub time: Timestamp,
-    /// The document as it would be after a create or an update; `None` otherwise.
+    /// The document as it would be after a create or an update, or for a verify the stored
+    /// one; `None` otherwise.
     pub resource: Option<Document>,
     pub query: Option<Query>,
     /// `request.inTransaction`: true for every write, which the official emulator commits in
@@ -235,6 +236,11 @@ pub struct Request {
     /// unbound, and `request.resource` holds only `data`. `request.autoId` says so for a
     /// create that is not an upsert; other writes do not have it.
     pub auto_id: bool,
+    /// A verify of a commit (`Write.verify`), checked as a `get` of its document. `request` has
+    /// the keys of a write's, `request.resource` the stored document (null when there is none),
+    /// as in the official emulator's second pass, where its first has the keys of a read's
+    /// (`tools/oracle/rules_verify.py`, `docs/parity-exceptions.md`).
+    pub verify: bool,
 }
 
 /// The documents `get()` / `exists()` read (as they were before the request's writes) and
@@ -249,6 +255,10 @@ pub trait Documents {
 /// A document looked up again costs nothing, across the writes of a batch too, and so does the
 /// document a request reads or writes and every document its batch writes
 /// (`tools/oracle/rules_eval.py`).
+///
+/// The verifies of a commit count as its writes (`tools/oracle/rules_verify.py`). The documents
+/// they verify cost nothing through `getAfter()` and `existsAfter()` only, and in a verify's
+/// condition so do the documents the batch writes.
 #[derive(Debug, Clone)]
 pub struct Budget {
     /// Distinct documents looked up so far, by the whole request or batch.
@@ -259,6 +269,10 @@ pub struct Budget {
     pub total_limit: usize,
     /// The documents the batch writes, from `databases` (see [`Budget::add_written`]).
     pub written: Vec<Vec<String>>,
+    /// The documents the batch verifies, from `databases` (see [`Budget::add_verified`]).
+    pub verified: Vec<Vec<String>>,
+    /// Whether a verify is being decided (see [`Budget::next_verify`]).
+    pub verifying: bool,
 }
 
 impl Budget {
@@ -269,6 +283,8 @@ impl Budget {
             part_limit,
             total_limit,
             written: Vec::new(),
+            verified: Vec::new(),
+            verifying: false,
         }
     }
 
@@ -277,6 +293,25 @@ impl Budget {
     pub fn add_written(&mut self, path: Vec<String>) {
         if !self.written.contains(&path) {
             self.written.push(path);
+        }
+    }
+
+    /// Records a document the batch verifies: any write or verify of the batch may look it up
+    /// with `getAfter()` or `existsAfter()` for free.
+    pub fn add_verified(&mut self, path: Vec<String>) {
+        if !self.verified.contains(&path) {
+            self.verified.push(path);
+        }
+    }
+
+    /// Whether `path` costs nothing to look up, `after` the writes or before them, besides the
+    /// document of the request being decided and those looked up already.
+    pub fn free(&self, path: &[String], after: bool) -> bool {
+        let has = |list: &[Vec<String>]| list.iter().any(|p| p.as_slice() == path);
+        if after {
+            has(&self.written) || has(&self.verified)
+        } else {
+            !self.verifying && has(&self.written)
         }
     }
 
@@ -297,6 +332,13 @@ impl Budget {
 
     pub fn next_write(&mut self) {
         self.this_part = 0;
+        self.verifying = false;
+    }
+
+    /// Like [`Budget::next_write`], before a verify of the batch.
+    pub fn next_verify(&mut self) {
+        self.this_part = 0;
+        self.verifying = true;
     }
 }
 
@@ -656,7 +698,8 @@ fn levels<'a>(
 /// - for a `list`: `time`, `auth`, `inTransaction`, `fields`, `query`, `path`, `method`;
 /// - for a write: `time`, `auth`, `inTransaction`, `path`, `transforms`, `writeFields`,
 ///   `readFields` (null), `autoId` (for a create that is not an upsert), `resource` (null for a
-///   delete; only `data` when the ID is the server's), `method`.
+///   delete; only `data` when the ID is the server's), `method`; for a verify, a `get`, the
+///   same but `autoId` (`tools/oracle/rules_verify.py`).
 ///
 /// `auth` is null without a token, else `uid` and `token`.
 fn request_value(request: &Request, method: Method) -> Val {
@@ -677,7 +720,7 @@ fn request_value(request: &Request, method: Method) -> Val {
     );
     let path = Val::path(request.path.clone());
     match method {
-        Method::Get => {
+        Method::Get if !request.verify => {
             map.insert("path".to_owned(), path);
             map.insert("fields".to_owned(), Val::Null);
         }
@@ -687,7 +730,7 @@ fn request_value(request: &Request, method: Method) -> Val {
             map.insert("query".to_owned(), query_value(request, &query));
             map.insert("path".to_owned(), path);
         }
-        Method::Create | Method::Update | Method::Delete => {
+        Method::Get | Method::Create | Method::Update | Method::Delete => {
             map.insert("path".to_owned(), path);
             map.insert("transforms".to_owned(), strings(&request.transforms));
             map.insert("writeFields".to_owned(), strings(&request.write_fields));

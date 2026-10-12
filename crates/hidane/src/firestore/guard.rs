@@ -10,10 +10,14 @@
 //!   denies a whole batchGet.
 //! - A query is a `list` of its collection, decided from its filter (`hidane_rules::eval`).
 //! - A write is a `create` or an `update` by whether the document exists, unless an `exists`
-//!   precondition says which; a delete is a `delete`. The rules come before the precondition:
-//!   a create allowed on a document that exists fails with `ALREADY_EXISTS`, a denied one with
-//!   `PERMISSION_DENIED`. Every write of a commit is checked after all of them were applied,
-//!   so `getAfter()` sees the whole batch; one denied write denies the commit.
+//!   precondition says which; a delete is a `delete`. A verify (`Write.verify`, which the SDKs
+//!   send for a document a transaction read without writing it) is a `get` of its document,
+//!   with `request.resource` the stored document. The rules come before the preconditions, of
+//!   every write of the commit: a create allowed on a document that exists fails with
+//!   `ALREADY_EXISTS`, a denied one, or one next to a denied write, with `PERMISSION_DENIED`.
+//!   Every write of a commit is checked after all of them were applied, so `getAfter()` sees
+//!   the whole batch, in order; the first denied write denies the commit
+//!   (`tools/oracle/rules_verify.py`).
 //! - A denial is `PERMISSION_DENIED` with the evaluator's message.
 //! - `request` holds every key the official emulator's does (`hidane_rules::eval::Request`):
 //!   `inTransaction` for every write and for a read of documents in a transaction begun before
@@ -172,6 +176,7 @@ impl Guard {
             write_fields: None,
             transforms: None,
             auto_id: false,
+            verify: false,
         }
     }
 
@@ -215,7 +220,8 @@ impl Guard {
         self.decide(&request, None, &documents, &mut Budget::query())
     }
 
-    /// The writes of one commit, each with the document before and after it.
+    /// The writes of one commit, each with the document before and after it; the first one
+    /// denied decides.
     pub(crate) fn writes(
         &self,
         writes: &[CheckedWrite],
@@ -233,20 +239,34 @@ impl Guard {
         } else {
             Budget::single()
         };
-        // Any write may look up a document of the batch for free.
+        // Any write may look up a document of the batch for free (`Budget::free`).
         for write in writes {
-            budget.add_written(self.path(&write.path));
+            let path = self.path(&write.path);
+            match write.method {
+                Method::Get => budget.add_verified(path),
+                _ => budget.add_written(path),
+            }
         }
-        let mut denials = Vec::new();
         for write in writes {
-            budget.next_write();
+            // A verify's `request.resource` is the stored document, which it leaves as it is.
             let new = match write.method {
-                Method::Delete => None,
-                _ => write.after.as_deref().map(|doc| self.document(doc)),
+                Method::Get => {
+                    budget.next_verify();
+                    write.before.as_deref().map(|doc| self.document(doc))
+                }
+                Method::Delete => {
+                    budget.next_write();
+                    None
+                }
+                _ => {
+                    budget.next_write();
+                    write.after.as_deref().map(|doc| self.document(doc))
+                }
             };
             let mut request = self.request(write.method, &write.path, new, time);
             request.upsert = write.upsert;
             request.in_transaction = true;
+            request.verify = write.method == Method::Get;
             request.write_fields.clone_from(&write.write_fields);
             request.transforms.clone_from(&write.transforms);
             // Decided without the ID: on the collection's path.
@@ -255,21 +275,18 @@ impl Guard {
                 request.path.pop();
             }
             let resource = write.before.as_deref().map(|doc| self.document(doc));
-            if let Err(message) = self.decide(&request, resource.as_ref(), &documents, &mut budget)
-            {
-                denials.push(message);
-            }
+            // The official emulator stops at the first write it denies. Its denial also lists
+            // the statements of the writes it allowed before, as `false`
+            // (`docs/parity-exceptions.md`).
+            self.decide(&request, resource.as_ref(), &documents, &mut budget)?;
         }
-        match denials.as_slice() {
-            [] => Ok(()),
-            [one] => Err(one.clone()),
-            many => Err(join(many)),
-        }
+        Ok(())
     }
 }
 
 /// A write of a commit, as the rules check it.
 pub(crate) struct CheckedWrite {
+    /// `get` for a verify.
     pub method: Method,
     /// Whether the document's existence chose the method (see `eval::Request::upsert`).
     pub upsert: bool,

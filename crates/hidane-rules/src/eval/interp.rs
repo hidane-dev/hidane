@@ -589,8 +589,8 @@ impl<'a> Interp<'a> {
 
     /// `get()` and its kin: the document at `path` before (`after == false`) or after the
     /// request's writes, `None` if there is none. Each distinct document counts against the
-    /// budget once, except the request's own and those its batch writes; a path that is not a
-    /// document of this database is an error.
+    /// budget once, except the request's own and those of its batch that [`Budget::free`]
+    /// says; a path that is not a document of this database is an error.
     pub fn lookup(
         &mut self,
         function: &str,
@@ -609,7 +609,7 @@ impl<'a> Interp<'a> {
             return Ok(found.clone());
         }
         let budget = &mut *self.budget;
-        let free = path == self.target || budget.written.iter().any(|p| p.as_slice() == path);
+        let free = path == self.target || budget.free(path, after);
         if !free && !budget.looked_up.iter().any(|p| p.as_slice() == path) {
             if budget.this_part >= budget.part_limit || budget.looked_up.len() >= budget.total_limit
             {

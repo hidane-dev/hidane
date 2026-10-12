@@ -81,6 +81,7 @@ fn request(method: Method, path: &str, resource: Option<Document>) -> Request {
         write_fields: None,
         transforms: None,
         auto_id: false,
+        verify: false,
         method,
         path: document_path(path),
         auth: None,

@@ -184,6 +184,9 @@ impl FirestoreService {
 
     /// Runs `writes` as one atomic commit; the first failing write aborts it. With `guard`,
     /// Security Rules check every write once all are applied (`guard`); a denied one aborts it.
+    /// The rules come before the preconditions: a write whose precondition fails is checked as
+    /// if it had none, with the writes after it, and its failure is reported only if the rules
+    /// allow them all (`tools/oracle/rules_verify.py`).
     fn commit_writes(
         &self,
         database: &str,
@@ -198,6 +201,8 @@ impl FirestoreService {
             let mut before = guard::Before {
                 touched: HashMap::new(),
             };
+            // The first precondition that failed, if the rules check the writes.
+            let mut precondition = None;
             for write in writes {
                 let view = guard.and_then(|_| writes::rules_method(&*batch, write));
                 if let Some(view) = &view {
@@ -214,26 +219,29 @@ impl FirestoreService {
                             checked.push(view);
                         }
                     }
-                    Err(status) => {
-                        // The rules come before the precondition: check the write as if it
-                        // had none, and deny it if they do.
-                        if let (Some(guard), Some(mut view), true) =
-                            (guard, view, is_precondition(&status))
-                        {
+                    // The rules come before the precondition: check the write as if it had
+                    // none (a verify has nothing else to apply), and go on with the others.
+                    Err(status) if view.is_some() && is_precondition(&status) => {
+                        let mut view = view.expect("checked");
+                        let applied = view.method == hidane_rules::eval::Method::Get || {
                             let mut unconditional = write.clone();
                             unconditional.current_document = None;
-                            if writes::apply(batch, database, &unconditional).is_ok() {
-                                view.after = batch.get(&view.path);
-                                checked.push(view);
-                                if let Err(message) = check_writes(guard, &checked, &before, batch)
-                                {
-                                    failure = Some(guard::denied(message));
-                                    return Err(StoreError::Aborted(String::new()));
-                                }
-                            }
+                            writes::apply(batch, database, &unconditional).is_ok()
+                        };
+                        if applied {
+                            view.after = batch.get(&view.path);
+                            checked.push(view);
                         }
-                        failure = Some(status);
-                        return Err(StoreError::Aborted(String::new()));
+                        precondition.get_or_insert(status);
+                    }
+                    // Any other failure ends the commit, after the rules of the writes before
+                    // it if a precondition failed already.
+                    Err(status) => {
+                        if precondition.is_none() {
+                            failure = Some(status);
+                            return Err(StoreError::Aborted(String::new()));
+                        }
+                        break;
                     }
                 }
             }
@@ -241,6 +249,10 @@ impl FirestoreService {
                 && let Err(message) = check_writes(guard, &checked, &before, batch)
             {
                 failure = Some(guard::denied(message));
+                return Err(StoreError::Aborted(String::new()));
+            }
+            if let Some(status) = precondition {
+                failure = Some(status);
                 return Err(StoreError::Aborted(String::new()));
             }
             Ok(())
