@@ -99,9 +99,10 @@ hidane's side is #45.
 - TTL, point-in-time recovery, bundles: no emulator support.
 - Realtime Database, Cloud Storage, Auth emulators.
 
-## How to read the parity table (once it exists)
+## How to read the parity table
 
-The parity table (#43) will be generated from the recorded fixtures: per area and transport, how
-many official answers are replayed and at which level they are compared. L0 is the status code,
-L1 adds the HTTP status, L2 the exact error message. L2 is the default; a step is compared at a
-lower level only where this page lists the difference.
+The parity table, [parity.md](parity.md), is generated from the recorded fixtures by
+`tools/parity/table.py`: per area and transport, how many official answers the tests replay and
+how each recording marks their comparison. Where a recording marks an answer as compared in part
+(status only, without messages, not compared, or `differs`), hidane intentionally answers
+differently, and a row of the first table above says why. The table counts these rows too.

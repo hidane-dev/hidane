@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="/style.css?v=20261009a">
+<link rel="stylesheet" href="/style.css?v=20261013a">
 <script src="/theme.js?v=20261009a"></script>
 <script src="/copy.js?v=20261011a" defer></script>
 </head>
@@ -155,8 +155,32 @@
 <div class="wrap sec-in sec-in--narrow">
 <h2 class="h2" id="parity">Parity</h2>
 <p class="lede-lg">hidane treats the official emulator as the oracle: its answers are recorded, and the test suite replays every recording against hidane. No claim of compatibility without a test behind it.</p>
-<p class="placeholder">So far: 37 recorded fixtures, from value ordering to the browser transport, export files and Security Rules, and SDK results compared side by side (<a href="https://github.com/hidane-dev/hidane/tree/main/results">results</a>). A parity table will follow.</p>
-<p class="fine">Known, intentional differences are listed in <a href="https://github.com/hidane-dev/hidane/blob/main/docs/parity-exceptions.md">parity exceptions</a>.</p>
+<!-- parity:start -->
+<p class="fine">So far: 15,092 answers of the official emulator in 38 recordings, each replayed against hidane in CI, and SDK transcripts from both emulators compared side by side (<a href="https://github.com/hidane-dev/hidane/tree/main/results">results</a>). How they are counted: <a href="https://github.com/hidane-dev/hidane/blob/main/docs/parity.md">docs/parity.md</a>.</p>
+<div class="parity-scroll">
+<table class="parity-table">
+<thead>
+<tr><th scope="col">Area</th><th scope="col" class="parity-tr">Transports</th><th scope="col" class="num">Recorded answers</th><th scope="col" class="num">Compared exactly</th><th scope="col">SDK transcripts</th></tr>
+</thead>
+<tbody>
+<tr><th scope="row">Documents &amp; writes<span class="parity-sub">gRPC, REST</span></th><td class="parity-tr">gRPC, REST</td><td class="num">233</td><td class="ns">not stated</td><td class="sdk">0 of 1 identical</td></tr>
+<tr><th scope="row">Queries &amp; aggregations<span class="parity-sub">gRPC, REST</span></th><td class="parity-tr">gRPC, REST</td><td class="num">420</td><td class="ns">not stated</td><td class="sdk">3 of 3 identical</td></tr>
+<tr><th scope="row">Transactions<span class="parity-sub">gRPC, REST</span></th><td class="parity-tr">gRPC, REST</td><td class="num">177</td><td class="num">172</td><td class="sdk">2 of 2 identical</td></tr>
+<tr><th scope="row">Listen &amp; Write streams<span class="parity-sub">gRPC</span></th><td class="parity-tr">gRPC</td><td class="num">49</td><td class="num">48</td><td class="sdk">1 of 3 identical</td></tr>
+<tr><th scope="row">REST<span class="parity-sub">REST</span></th><td class="parity-tr">REST</td><td class="num">79</td><td class="num">53</td><td class="sdk">1 of 1 identical</td></tr>
+<tr><th scope="row">WebChannel<span class="parity-sub">REST, WebChannel</span></th><td class="parity-tr">REST, WebChannel</td><td class="num">34</td><td class="ns">not stated</td><td class="sdk">1 of 2 identical</td></tr>
+<tr><th scope="row">Security Rules<span class="parity-sub">gRPC, REST, WebSocket, in-process</span></th><td class="parity-tr">gRPC, REST, WebSocket, in-process</td><td class="num">13,264</td><td class="ns">not stated</td><td class="sdk">0 of 2 identical</td></tr>
+<tr><th scope="row">Export &amp; import<span class="parity-sub">REST, CLI</span></th><td class="parity-tr">REST, CLI</td><td class="num">70</td><td class="ns">not stated</td><td class="sdk">3 of 3 identical</td></tr>
+<tr><th scope="row">Auth &amp; admin endpoints<span class="parity-sub">gRPC, REST</span></th><td class="parity-tr">gRPC, REST</td><td class="num">488</td><td class="ns">not stated</td><td class="sdk">1 of 2 identical</td></tr>
+<tr><th scope="row">Values &amp; limits<span class="parity-sub">gRPC, REST, WebChannel, in-process</span></th><td class="parity-tr">gRPC, REST, WebChannel, in-process</td><td class="num">278</td><td class="num">13</td><td class="sdk">—</td></tr>
+</tbody>
+<tfoot>
+<tr><th scope="row">Total</th><td class="parity-tr"></td><td class="num">15,092</td><td class="num">286</td><td class="sdk">12 of 19 identical</td></tr>
+</tfoot>
+</table>
+</div>
+<p class="fine">Compared exactly: answers whose recording marks them as compared in full; “not stated” where a recording does not say, and the test that replays it does. SDK transcripts: the same steps run through an SDK against both emulators; <a href="https://github.com/hidane-dev/hidane/blob/main/results/README.md">results/README.md</a> describes each difference. Known, intentional differences (60) are listed in <a href="https://github.com/hidane-dev/hidane/blob/main/docs/parity-exceptions.md">parity exceptions</a>.</p>
+<!-- parity:end -->
 </div>
 </section>
 
