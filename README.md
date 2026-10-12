@@ -133,6 +133,10 @@ See [CONTRIBUTING.md](CONTRIBUTING.md), the [issue templates](.github/ISSUE_TEMP
 [Discussions](https://github.com/hidane-dev/hidane/discussions). Security issues go through
 [private vulnerability reporting](SECURITY.md).
 
+Contributions are accepted under a [Contributor License Agreement](docs/cla/README.md), which a
+pull request asks for once. Contributors keep the copyright in their contributions; the project
+receives the rights to use, distribute, sublicense and relicense them.
+
 ## Limitations and non-goals
 
 - Local development and CI only. hidane is not a production database and must not be exposed on
@@ -164,7 +168,8 @@ at your option ([ADR 0001](docs/adr/0001-license.md)).
 
 Unless you explicitly state otherwise, any contribution intentionally submitted for inclusion in
 the work by you, as defined in the Apache-2.0 license, shall be dual licensed as above, without
-any additional terms or conditions.
+any additional terms or conditions, and is also licensed to the project under the
+[Contributor License Agreement](docs/cla/README.md).
 
 ## Trademarks
 

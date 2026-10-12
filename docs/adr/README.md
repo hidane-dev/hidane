@@ -21,3 +21,4 @@ options and a tentative placeholder. Decisions are made in Phase 1 through the l
 | [0004](0004-webchannel-phase.md) | Why WebChannel is scheduled for v0.3 | Draft |
 | [0005](0005-rules-engine.md) | Security Rules evaluator approach (hand-written, no cel-rust) | Accepted |
 | [0006](0006-launch-under-firebase-tools.md) | Launching under firebase-tools: a scoped `java` shim (`hidane exec`), a firebase-tools change later | Accepted |
+| [0007](0007-contributor-license-agreement.md) | Contributor License Agreement (license CLA, individual and corporate, checked by a workflow) | Accepted |
