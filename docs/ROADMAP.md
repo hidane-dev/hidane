@@ -75,8 +75,9 @@ Parity exceptions planned for v0.1: the listener-induced write slowdown and the 
 **Goal**: evaluate `firestore.rules`; `@firebase/rules-unit-testing` and the Emulator UI request monitor work.
 
 v0.2.0 (2026-10-12) has the P1 items, v0.2.1 adds the request monitor (#69) and the remaining
-`request` fields (#166), and v0.2.2 checks a commit's `verify` writes (#173). Functions events (#70)
-and coverage differences (#167) follow.
+`request` fields (#166), and v0.2.2 checks a commit's `verify` writes (#173). Coverage differences
+(#167) and rules-unit-testing end to end (#186) follow in v0.2.x; Functions events (#70) moved to
+v0.4.
 
 | Priority | Item | Status (2026-10-12) |
 |---|---|---|
@@ -88,8 +89,8 @@ and coverage differences (#167) follow.
 | P1 | Real diagnostics from `:securityRules`, `:ruleCoverage` (JSON), denial message `%s for '%s' @ L%d` | In v0.2.0: denial messages, `GET :securityRules` (#155), `:ruleCoverage` as JSON and as a page, and `debug()` output (#67) |
 | P1 | Mock tokens (`alg: none`) and `Bearer owner` | In v0.2.0 (#68) |
 | P2 | WebSocket `/requests` feed for the Emulator UI | In v0.2.1 (#69): the official records, the last 50 on connect; a client that falls behind is disconnected instead of holding up requests |
-| P2 | Golden results from the production Rules API `projects:test` | #89 (needs a GCP project) |
-| P2 | Event delivery to `--functions_emulator` (v1 and v2 CloudEvents) | #70 |
+| P2 | Golden results from the production Rules API `projects:test` | #82 (backlog, needs a GCP project) |
+| P2 | Event delivery to `--functions_emulator` (v1 and v2 CloudEvents) | Moved to v0.4 (#70); accepting the trigger registrations so `emulators:start` comes up is #185 |
 
 Parity exception: #6252 (the official emulator evaluates conditions in two passes and lists the reasons of both) is not reproduced; hidane evaluates each condition once.
 

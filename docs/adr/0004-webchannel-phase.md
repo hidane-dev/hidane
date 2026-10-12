@@ -1,6 +1,6 @@
 # ADR 0004: Why WebChannel is scheduled for v0.3
 
-- **Status**: Draft (undecided)
+- **Status**: Superseded by events: WebChannel shipped in v0.1.0 (see the update below)
 - **Date**: 2026-10-09
 
 ## Context
