@@ -8,10 +8,14 @@ name: CLA
 # It runs in the base repository (`pull_request_target`, so that pull requests from forks get a
 # token that can set the status), reads only the pull request's metadata through the API, and
 # never checks out or runs the pull request's code: the script and the agreement come from the
-# default branch.
+# default branch. Dependabot's pull requests are the exception: on `pull_request_target` they get
+# a read-only token, which cannot set the status, so for them the check runs on `pull_request`,
+# where the job's permissions apply (and Dependabot, a bot, needs no agreement).
 
 on:
   pull_request_target:
+    types: [opened, reopened, synchronize]
+  pull_request:
     types: [opened, reopened, synchronize]
   issue_comment:
     types: [created]
@@ -25,7 +29,8 @@ jobs:
   check:
     name: CLA agreement
     if: >-
-      github.event_name == 'pull_request_target' ||
+      (github.event_name == 'pull_request_target' && github.event.pull_request.user.login != 'dependabot[bot]') ||
+      (github.event_name == 'pull_request' && github.event.pull_request.user.login == 'dependabot[bot]') ||
       (github.event.issue.pull_request &&
         (startsWith(github.event.comment.body, 'I have read the hidane') || github.event.comment.body == 'recheck'))
     runs-on: ubuntu-latest
