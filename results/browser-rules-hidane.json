@@ -1,0 +1,332 @@
+[
+ {
+  "versions": {
+   "firebase": "13.0.0",
+   "@firebase/rules-unit-testing": "6.0.0"
+  }
+ },
+ {
+  "step": "initializeTestEnvironment with rules",
+  "expect": "succeeds",
+  "passed": true
+ },
+ {
+  "step": "rules disabled: seed",
+  "expect": "succeeds",
+  "passed": true
+ },
+ {
+  "step": "rules disabled: list posts",
+  "expect": "succeeds",
+  "passed": true,
+  "result": [
+   "p1",
+   "p2",
+   "p3"
+  ]
+ },
+ {
+  "step": "alice gets posts/p1 (public)",
+  "expect": "succeeds",
+  "passed": true,
+  "result": {
+   "owner": "alice",
+   "public": true,
+   "title": "Hello"
+  }
+ },
+ {
+  "step": "alice gets posts/p2 (hers)",
+  "expect": "succeeds",
+  "passed": true,
+  "result": {
+   "owner": "alice",
+   "public": false,
+   "title": "Draft"
+  }
+ },
+ {
+  "step": "alice gets posts/p3 (bob's)",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "\nfalse for 'get' @ L11"
+ },
+ {
+  "step": "alice gets posts/missing",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "\nNull value error. for 'get' @ L11"
+ },
+ {
+  "step": "alice gets admins/alice (missing, hers)",
+  "expect": "succeeds",
+  "passed": true,
+  "result": null
+ },
+ {
+  "step": "alice gets admins/bob",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "\nfalse for 'get' @ L23"
+ },
+ {
+  "step": "signed out gets posts/p1 (public)",
+  "expect": "succeeds",
+  "passed": true,
+  "result": {
+   "owner": "alice",
+   "public": true,
+   "title": "Hello"
+  }
+ },
+ {
+  "step": "signed out gets posts/p2",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "\nfalse for 'get' @ L11"
+ },
+ {
+  "step": "alice queries posts where public == true",
+  "expect": "succeeds",
+  "passed": true,
+  "result": [
+   "p1"
+  ]
+ },
+ {
+  "step": "alice queries all posts",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "\nProperty public is undefined on object. for 'list' @ L13"
+ },
+ {
+  "step": "alice queries posts where owner == 'alice'",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "\nProperty public is undefined on object. for 'list' @ L13"
+ },
+ {
+  "step": "signed out queries posts where public == true",
+  "expect": "succeeds",
+  "passed": true,
+  "result": [
+   "p1"
+  ]
+ },
+ {
+  "step": "alice listens to posts where public == true",
+  "expect": "succeeds",
+  "passed": true,
+  "result": [
+   "p1"
+  ]
+ },
+ {
+  "step": "alice listens to all posts",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "\nProperty public is undefined on object. for 'list' @ L13"
+ },
+ {
+  "step": "signed out listens to posts/p2",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "\nfalse for 'get' @ L11"
+ },
+ {
+  "step": "alice creates posts/a1 (hers)",
+  "expect": "succeeds",
+  "passed": true
+ },
+ {
+  "step": "alice creates posts/a2 (owner 'bob')",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "PERMISSION_DENIED: \nfalse for 'create' @ L14, Null value error. for 'update' @ L17"
+ },
+ {
+  "step": "carol creates posts/c1 (email not verified)",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "PERMISSION_DENIED: \nfalse for 'create' @ L14, Null value error. for 'update' @ L17"
+ },
+ {
+  "step": "bob creates posts/b0 (no email_verified claim)",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "PERMISSION_DENIED: \nProperty email_verified is undefined on object. for 'create' @ L14, Null value error. for 'update' @ L17"
+ },
+ {
+  "step": "signed out creates posts/s1",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "PERMISSION_DENIED: \nfalse for 'create' @ L14, false for 'update' @ L17"
+ },
+ {
+  "step": "alice updates posts/p2 (title)",
+  "expect": "succeeds",
+  "passed": true
+ },
+ {
+  "step": "alice updates posts/p2 (owner to 'bob')",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "PERMISSION_DENIED: \nfalse for 'update' @ L17"
+ },
+ {
+  "step": "alice updates posts/p3 (bob's)",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "PERMISSION_DENIED: \nfalse for 'update' @ L17"
+ },
+ {
+  "step": "signed out updates posts/p1",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "PERMISSION_DENIED: \nfalse for 'update' @ L17"
+ },
+ {
+  "step": "alice deletes posts/a1 (hers)",
+  "expect": "succeeds",
+  "passed": true
+ },
+ {
+  "step": "alice deletes posts/p3 (bob's, not an admin)",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "PERMISSION_DENIED: \nNull value error. for 'delete' @ L20"
+ },
+ {
+  "step": "bob deletes posts/p2 (alice's, admin by get())",
+  "expect": "succeeds",
+  "passed": true
+ },
+ {
+  "step": "signed out deletes posts/p1",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "PERMISSION_DENIED: \nfalse for 'delete' @ L20"
+ },
+ {
+  "step": "alice commits a batch of two creates",
+  "expect": "succeeds",
+  "passed": true
+ },
+ {
+  "step": "alice commits a batch with a denied update (posts/p3, bob's)",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "PERMISSION_DENIED: \nfalse for 'update' @ L17"
+ },
+ {
+  "step": "rules disabled: posts/b3 was not written",
+  "expect": "succeeds",
+  "passed": true,
+  "result": null
+ },
+ {
+  "step": "signed out commits a batch deleting posts/b1",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "PERMISSION_DENIED: \nfalse for 'delete' @ L20"
+ },
+ {
+  "step": "alice increments counters/c in a transaction (and reads posts/p1)",
+  "expect": "succeeds",
+  "passed": true,
+  "result": 1
+ },
+ {
+  "step": "alice adds 2 to counters/c in a transaction",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "\nfalse for 'update' @ L27"
+ },
+ {
+  "step": "alice reads posts/p3 (bob's) in a transaction",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "\nfalse for 'get' @ L11"
+ },
+ {
+  "step": "signed out increments counters/c in a transaction",
+  "expect": "fails",
+  "passed": true,
+  "code": "permission-denied",
+  "message": "\nfalse for 'get' @ L26"
+ },
+ {
+  "step": "rules disabled: read everything",
+  "expect": "succeeds",
+  "passed": true,
+  "result": {
+   "posts": [
+    [
+     "b1",
+     {
+      "owner": "alice",
+      "public": true
+     }
+    ],
+    [
+     "b2",
+     {
+      "owner": "alice",
+      "public": false
+     }
+    ],
+    [
+     "p1",
+     {
+      "owner": "alice",
+      "public": true,
+      "title": "Hello"
+     }
+    ],
+    [
+     "p3",
+     {
+      "owner": "bob",
+      "public": false,
+      "title": "Secret"
+     }
+    ]
+   ],
+   "counter": {
+    "n": 1
+   }
+  }
+ },
+ {
+  "step": "clearFirestore()",
+  "expect": "succeeds",
+  "passed": true
+ },
+ {
+  "step": "rules disabled: list posts after clearFirestore()",
+  "expect": "succeeds",
+  "passed": true,
+  "result": []
+ }
+]
