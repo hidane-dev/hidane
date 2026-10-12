@@ -2,7 +2,9 @@
 
 Measurements and transcripts that the documentation cites. Scripts that produce new numbers live
 in `tools/` and in the crates; the oracle scripts and their fixtures are described in
-[`tools/oracle/README.md`](../tools/oracle/README.md).
+[`tools/oracle/README.md`](../tools/oracle/README.md). The side-by-side benchmark of hidane and the
+official emulator, and the layout its results will take here, are in
+[`bench/README.md`](../bench/README.md).
 
 ## Official emulator baseline (Phase 0)
 
@@ -27,7 +29,7 @@ tracked in #50.
 | `sdk-aggregations-official-v1.22.0.json`, `sdk-aggregations-hidane.json` | Transcripts of `tools/oracle/sdk_aggregations.mjs` (`@google-cloud/firestore` 9.3.1) against both, for #22. Identical |
 | `sdk-listen-official-v1.22.0.json`, `sdk-listen-hidane.json` | Transcripts of `tools/oracle/sdk_listen.mjs` (Admin SDK `onSnapshot` on queries, a limit query, documents and a collection group; web SDK `onSnapshot`, `getDoc`, `getDocs`) against both, for #18. Identical except one step: on the official emulator a batch reaches the web SDK's limit query as two snapshots, the first one not atomic (`docs/parity-exceptions.md`) |
 | `sdk-listen-resume-official-v1.22.0.json`, `sdk-listen-resume-hidane.json` | Transcripts of `tools/oracle/sdk_listen_resume.mjs` (web SDK `disableNetwork` / `enableNetwork` around writes, and two limit queries whose window moves while offline), for #19 and #146. The final states match; for the filter query the official emulator gets there in three snapshots after reconnecting, hidane in one (`docs/parity-exceptions.md`). The limit queries are identical |
-| `startup-memory-hidane.txt` | Time until a release build accepts on its port (10 runs) and its RSS idle and after 1,000 documents shaped like the baseline, from `tools/bench/startup_memory.py` (macOS arm64, M1 Max). Not side by side with the baseline (#50) |
+| `startup-memory-hidane.txt` | Time until a release build accepts on its port (10 runs) and its RSS idle and after 1,000 documents shaped like the baseline, from `tools/bench/startup_memory.py`, since replaced by `hidane benchmark` ([`bench/`](../bench/README.md)) (macOS arm64, M1 Max). Not side by side with the baseline (#50) |
 | `sdk-auth-official-v1.22.0.json`, `sdk-auth-hidane.json` | Transcripts of `tools/oracle/sdk_auth.mjs` (rules-unit-testing user and signed-out contexts, `withSecurityRulesDisabled`, the Admin SDK), for #24. Identical |
 | `sdk-rules-unit-testing-official-v1.22.0.json`, `sdk-rules-unit-testing-hidane.json` | Transcripts of `tools/oracle/sdk_rules_unit_testing.mjs` (`firebase` 13.0.0 in Node, over gRPC, and `@firebase/rules-unit-testing` 6.0.0: `assertSucceeds` / `assertFails` under Security Rules for signed-in, signed-out and rules-disabled contexts on gets, lists, listeners, writes, batches and transactions), for #186. The same 42 assertions pass on both, with the same results and error codes. 13 denial messages differ: hidane's give the reasons of one evaluation, where the official emulator's also give those of its first pass (`evaluation error at L11:21 for 'get' @ L11, false for 'get' @ L11` where hidane's say `false for 'get' @ L11`) and, for the denied batch, those of the write checked before the denied one (`docs/parity-exceptions.md`). Each of hidane's is accepted by the comparison the rules tests use (`same_denial` in `crates/hidane/tests/common/rules.rs`) |
 | `sdk-find-nearest-official-v1.22.0.json`, `sdk-find-nearest-hidane.json` | Transcripts of `tools/oracle/sdk_find_nearest.mjs` (Admin SDK `findNearest` with each distance measure, web SDK `vector()`), for #118. Identical |

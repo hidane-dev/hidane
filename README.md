@@ -47,7 +47,7 @@ it hurt everyday local development and CI (details and raw logs: [`docs/why.md`]
 All numbers are measurements, but not side by side: the official emulator's were taken in Phase 0
 on a loaded workstation (see the caveat in `docs/why.md`), hidane's later on a quiet one
 (`results/startup-memory-hidane.txt`, `results/listen-batch-writes-hidane.csv`). A same-machine
-comparison is #50.
+comparison is #50; its harness, which anyone can rerun, is [`bench/`](bench/README.md).
 
 ## What works today
 

@@ -1,0 +1,470 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/hidane-dev/hidane/blob/main/bench/schema/result.schema.json",
+  "title": "hidane benchmark result",
+  "description": "One run of `hidane benchmark` (bench/README.md). A history of results is plotted per metric: results.<scenario>.<target>.<metric>.stats.median over timestamp, marking changes of benchmark.version, environment_revision, targets.hidane.version and targets.official.version. Nothing in a result identifies the machine's network or user: no hostname, IP address, user name, absolute path or environment variable.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "benchmark",
+    "timestamp",
+    "duration_s",
+    "environment_revision",
+    "machine",
+    "environment",
+    "stability",
+    "targets",
+    "results",
+    "errors"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "description": "Version of this format. Bumped when a field changes meaning or is removed.",
+      "const": 1
+    },
+    "benchmark": {
+      "type": "object",
+      "required": ["version", "kind", "canonical", "quick", "config_sha256", "overrides", "engine", "scenarios", "skipped"],
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "description": "Version of the benchmark definitions (what each scenario does, with which parameters). Numbers are comparable only within one version.",
+          "type": "string"
+        },
+        "kind": { "enum": ["local", "pull-request", "nightly", "release"] },
+        "canonical": {
+          "description": "True when the parameters are the canonical ones (bench/canonical.json), unchanged by --quick or command-line overrides, and the official jar is the pinned one.",
+          "type": "boolean"
+        },
+        "quick": { "type": "boolean" },
+        "config_sha256": { "$ref": "#/$defs/sha256OrNull" },
+        "overrides": {
+          "description": "Command-line flags that changed the parameters.",
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "engine": {
+          "description": "The binary that measured (`hidane benchmark`), which can differ from the hidane measured.",
+          "type": "object",
+          "required": ["version", "git_commit", "build_profile", "binary_sha256"],
+          "additionalProperties": false,
+          "properties": {
+            "version": { "type": "string" },
+            "git_commit": { "$ref": "#/$defs/stringOrNull" },
+            "build_profile": { "enum": ["debug", "release"] },
+            "binary_sha256": { "$ref": "#/$defs/sha256" }
+          }
+        },
+        "scenarios": {
+          "description": "The parameters of each scenario that ran.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "startup": { "$ref": "#/$defs/runs" },
+            "memory": {
+              "type": "object",
+              "required": ["warmup", "runs", "idle_ms", "documents", "batch"],
+              "additionalProperties": false,
+              "properties": {
+                "warmup": { "$ref": "#/$defs/count" },
+                "runs": { "$ref": "#/$defs/positive" },
+                "idle_ms": { "$ref": "#/$defs/count" },
+                "documents": { "$ref": "#/$defs/count" },
+                "batch": { "$ref": "#/$defs/positive" }
+              }
+            },
+            "operations": {
+              "type": "object",
+              "required": ["warmup", "iterations", "batch", "seed_documents"],
+              "additionalProperties": false,
+              "properties": {
+                "warmup": { "$ref": "#/$defs/count" },
+                "iterations": { "$ref": "#/$defs/positive" },
+                "batch": { "$ref": "#/$defs/positive" },
+                "seed_documents": { "$ref": "#/$defs/count" }
+              }
+            },
+            "datasets": {
+              "type": "object",
+              "required": ["sizes", "batch", "query_warmup", "query_runs"],
+              "additionalProperties": false,
+              "properties": {
+                "sizes": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": ["documents", "warmup", "runs"],
+                    "additionalProperties": false,
+                    "properties": {
+                      "documents": { "$ref": "#/$defs/positive" },
+                      "warmup": { "$ref": "#/$defs/count" },
+                      "runs": { "$ref": "#/$defs/positive" }
+                    }
+                  }
+                },
+                "batch": { "$ref": "#/$defs/positive" },
+                "query_warmup": { "$ref": "#/$defs/count" },
+                "query_runs": { "$ref": "#/$defs/count" }
+              }
+            },
+            "ci": { "$ref": "#/$defs/ci" },
+            "ci_firebase": { "$ref": "#/$defs/ci" },
+            "command": {
+              "type": "object",
+              "required": ["warmup", "runs", "command"],
+              "additionalProperties": false,
+              "properties": {
+                "warmup": { "$ref": "#/$defs/count" },
+                "runs": { "$ref": "#/$defs/positive" },
+                "command": {
+                  "description": "The program's file name and its number of arguments; never the arguments, which can hold paths.",
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "skipped": {
+          "description": "Scenarios left out for a missing tool, with the reason.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["scenario", "reason"],
+            "additionalProperties": false,
+            "properties": {
+              "scenario": { "$ref": "#/$defs/scenario" },
+              "reason": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "timestamp": {
+      "description": "When the run started, UTC.",
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "duration_s": { "type": "number", "minimum": 0 },
+    "environment_revision": {
+      "description": "The operator's environment file's revision (bench/README.md), as given; null without one. A change marks a new machine image or setup in a history.",
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "machine": {
+      "type": "object",
+      "required": ["id", "os", "arch", "cpu_model", "cpu_cores", "cpu_threads", "ram_bytes", "kernel", "distribution", "filesystem", "cpu_frequency", "virtualization", "cloud"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "description": "The machine's name in histories, chosen by the operator (--machine-id).",
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "os": { "type": "string" },
+        "arch": { "type": "string" },
+        "cpu_model": { "$ref": "#/$defs/stringOrNull" },
+        "cpu_cores": { "$ref": "#/$defs/countOrNull" },
+        "cpu_threads": { "$ref": "#/$defs/countOrNull" },
+        "ram_bytes": { "$ref": "#/$defs/countOrNull" },
+        "kernel": { "$ref": "#/$defs/stringOrNull" },
+        "distribution": { "$ref": "#/$defs/stringOrNull" },
+        "filesystem": {
+          "description": "Filesystem type of the directory the benchmark ran in.",
+          "$ref": "#/$defs/stringOrNull"
+        },
+        "cpu_frequency": {
+          "description": "CPU frequency scaling (Linux cpufreq). note says why driver and governor are null.",
+          "type": "object",
+          "required": ["driver", "governor", "no_turbo", "note"],
+          "additionalProperties": false,
+          "properties": {
+            "driver": { "$ref": "#/$defs/stringOrNull" },
+            "governor": { "$ref": "#/$defs/stringOrNull" },
+            "no_turbo": { "type": ["boolean", "null"] },
+            "note": { "$ref": "#/$defs/stringOrNull" }
+          }
+        },
+        "virtualization": { "$ref": "#/$defs/stringOrNull" },
+        "cloud": {
+          "description": "Read on EC2 from the instance metadata service: only the instance type and availability zone.",
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "required": ["provider", "instance_type", "availability_zone"],
+              "additionalProperties": false,
+              "properties": {
+                "provider": { "const": "aws-ec2" },
+                "instance_type": { "type": "string" },
+                "availability_zone": { "$ref": "#/$defs/stringOrNull" }
+              }
+            }
+          ]
+        },
+        "instance_type": { "description": "From the environment file, as given.", "type": "string" },
+        "ami_id": { "description": "From the environment file, as given.", "type": "string" },
+        "os_image": { "description": "From the environment file, as given.", "type": "string" },
+        "ebs": {
+          "description": "From the environment file, as given.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "type": { "type": "string" },
+            "size_gib": { "$ref": "#/$defs/count" },
+            "iops": { "$ref": "#/$defs/count" },
+            "throughput_mibps": { "$ref": "#/$defs/count" }
+          }
+        }
+      }
+    },
+    "environment": {
+      "description": "Versions of the tools on the machine; null when one is not installed.",
+      "type": "object",
+      "required": ["java", "node", "firebase_tools", "docker", "rustc"],
+      "additionalProperties": false,
+      "properties": {
+        "java": { "$ref": "#/$defs/stringOrNull" },
+        "node": { "$ref": "#/$defs/stringOrNull" },
+        "firebase_tools": { "$ref": "#/$defs/stringOrNull" },
+        "docker": { "$ref": "#/$defs/stringOrNull" },
+        "rustc": { "$ref": "#/$defs/stringOrNull" }
+      }
+    },
+    "stability": {
+      "type": "object",
+      "required": ["stable", "reasons", "limits", "checks", "before", "after", "cpu_steal"],
+      "additionalProperties": false,
+      "properties": {
+        "stable": {
+          "description": "False when any check failed. Unstable results are kept, never published as claims.",
+          "type": "boolean"
+        },
+        "reasons": { "type": "array", "items": { "type": "string" } },
+        "limits": {
+          "type": "object",
+          "required": ["max_load_1m", "min_available_memory_mib", "max_cpu_steal_percent", "max_cpu_temperature_c", "max_startup_cv", "max_known_job_cpu_percent", "allow_battery"],
+          "additionalProperties": false,
+          "properties": {
+            "max_load_1m": { "$ref": "#/$defs/numberOrNull" },
+            "min_available_memory_mib": { "$ref": "#/$defs/numberOrNull" },
+            "max_cpu_steal_percent": { "$ref": "#/$defs/numberOrNull" },
+            "max_cpu_temperature_c": { "$ref": "#/$defs/numberOrNull" },
+            "max_startup_cv": { "$ref": "#/$defs/numberOrNull" },
+            "max_known_job_cpu_percent": { "$ref": "#/$defs/numberOrNull" },
+            "allow_battery": { "type": "boolean" }
+          }
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "phase", "value", "limit", "passed"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "phase": { "enum": ["before", "after", "run"] },
+              "value": { "type": ["number", "string", "null"] },
+              "limit": { "type": ["number", "string", "null"] },
+              "passed": {
+                "description": "null when the value cannot be read on this machine or the check is turned off.",
+                "type": ["boolean", "null"]
+              }
+            }
+          }
+        },
+        "before": { "$ref": "#/$defs/snapshot" },
+        "after": { "$ref": "#/$defs/snapshot" },
+        "cpu_steal": {
+          "description": "Share of CPU time stolen by the hypervisor (/proc/stat, Linux), before the run, over the run and over each scenario.",
+          "type": "object",
+          "required": ["available", "note", "pre_run_percent", "run_percent", "scenarios"],
+          "additionalProperties": false,
+          "properties": {
+            "available": { "type": "boolean" },
+            "note": { "$ref": "#/$defs/stringOrNull" },
+            "pre_run_percent": { "$ref": "#/$defs/numberOrNull" },
+            "run_percent": { "$ref": "#/$defs/numberOrNull" },
+            "scenarios": {
+              "type": "object",
+              "propertyNames": { "$ref": "#/$defs/scenario" },
+              "additionalProperties": { "type": "number" }
+            }
+          }
+        }
+      }
+    },
+    "targets": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": false,
+      "properties": {
+        "hidane": {
+          "type": "object",
+          "required": ["version", "git_commit", "git_dirty", "build_profile", "binary_sha256", "command"],
+          "additionalProperties": false,
+          "properties": {
+            "version": { "type": "string" },
+            "git_commit": { "$ref": "#/$defs/stringOrNull" },
+            "git_dirty": { "type": ["boolean", "null"] },
+            "build_profile": { "$ref": "#/$defs/stringOrNull" },
+            "binary_sha256": { "$ref": "#/$defs/sha256" },
+            "command": { "type": "string" }
+          }
+        },
+        "official": {
+          "type": "object",
+          "required": ["version", "jar_sha256", "jar_verified", "java", "java_vendor", "java_options", "command"],
+          "additionalProperties": false,
+          "properties": {
+            "version": { "type": "string" },
+            "jar_sha256": { "$ref": "#/$defs/sha256" },
+            "jar_verified": {
+              "description": "The jar is the pinned one (its SHA-256 matches firebase-tools' for v1.22.0).",
+              "type": "boolean"
+            },
+            "java": { "type": "string" },
+            "java_vendor": { "$ref": "#/$defs/stringOrNull" },
+            "java_options": { "type": "array", "items": { "type": "string" } },
+            "command": { "type": "string" }
+          }
+        }
+      }
+    },
+    "results": {
+      "description": "Per scenario, per target, per metric.",
+      "type": "object",
+      "propertyNames": { "$ref": "#/$defs/scenario" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "official": { "$ref": "#/$defs/metrics" },
+          "hidane": { "$ref": "#/$defs/metrics" }
+        }
+      }
+    },
+    "errors": {
+      "description": "Runs that failed. Their values are missing from the statistics.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["scenario", "target", "run", "warmup", "message"],
+        "additionalProperties": false,
+        "properties": {
+          "scenario": { "$ref": "#/$defs/scenario" },
+          "target": { "enum": ["official", "hidane"] },
+          "run": { "$ref": "#/$defs/positive" },
+          "warmup": { "type": "boolean" },
+          "message": { "type": "string" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "scenario": { "enum": ["startup", "memory", "operations", "datasets", "ci", "ci_firebase", "command"] },
+    "count": { "type": "integer", "minimum": 0 },
+    "positive": { "type": "integer", "minimum": 1 },
+    "countOrNull": { "type": ["integer", "null"], "minimum": 0 },
+    "numberOrNull": { "type": ["number", "null"] },
+    "stringOrNull": { "type": ["string", "null"] },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "sha256OrNull": {
+      "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }]
+    },
+    "runs": {
+      "type": "object",
+      "required": ["warmup", "runs"],
+      "additionalProperties": false,
+      "properties": {
+        "warmup": { "$ref": "#/$defs/count" },
+        "runs": { "$ref": "#/$defs/positive" }
+      }
+    },
+    "ci": {
+      "type": "object",
+      "required": ["warmup", "runs", "tests", "seed_documents"],
+      "additionalProperties": false,
+      "properties": {
+        "warmup": { "$ref": "#/$defs/count" },
+        "runs": { "$ref": "#/$defs/positive" },
+        "tests": { "$ref": "#/$defs/count" },
+        "seed_documents": { "$ref": "#/$defs/count" }
+      }
+    },
+    "snapshot": {
+      "type": "object",
+      "required": ["load_average", "available_memory_bytes", "cpu_temperature_c", "cpu_busy_percent", "cpu_steal_percent", "power_source", "known_jobs", "other_busy_processes", "other_busy_cpu_percent"],
+      "additionalProperties": false,
+      "properties": {
+        "load_average": {
+          "oneOf": [
+            { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+            { "type": "null" }
+          ]
+        },
+        "available_memory_bytes": { "$ref": "#/$defs/countOrNull" },
+        "cpu_temperature_c": { "$ref": "#/$defs/numberOrNull" },
+        "cpu_busy_percent": { "$ref": "#/$defs/numberOrNull" },
+        "cpu_steal_percent": { "$ref": "#/$defs/numberOrNull" },
+        "power_source": { "enum": ["ac", "battery", null] },
+        "known_jobs": {
+          "description": "Known build and system jobs using CPU (a fixed list of names); other processes are only counted.",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "cpu_percent"],
+            "additionalProperties": false,
+            "properties": {
+              "name": { "type": "string" },
+              "cpu_percent": { "type": "number" }
+            }
+          }
+        },
+        "other_busy_processes": { "$ref": "#/$defs/count" },
+        "other_busy_cpu_percent": { "type": "number" }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z][a-z0-9_]*$" },
+      "additionalProperties": { "$ref": "#/$defs/metric" }
+    },
+    "metric": {
+      "type": "object",
+      "required": ["unit", "description", "stats", "samples"],
+      "additionalProperties": false,
+      "properties": {
+        "unit": { "enum": ["ms", "bytes"] },
+        "description": { "type": "string" },
+        "parameters": { "type": "object" },
+        "stats": {
+          "type": "object",
+          "required": ["n", "median", "p95", "min", "max", "mean", "stddev"],
+          "additionalProperties": false,
+          "properties": {
+            "n": { "$ref": "#/$defs/positive" },
+            "median": { "type": "number" },
+            "p95": {
+              "description": "Linear interpolation between the closest ranks.",
+              "type": "number"
+            },
+            "min": { "type": "number" },
+            "max": { "type": "number" },
+            "mean": { "type": "number" },
+            "stddev": {
+              "description": "Sample standard deviation (n - 1); 0 for one sample.",
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "samples": {
+          "description": "Every measured value, in the order measured. Warm-up values are not included.",
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 1
+        }
+      }
+    }
+  }
+}

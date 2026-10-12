@@ -1,0 +1,56 @@
+{
+  "$comment": "The canonical parameters of hidane's side-by-side benchmark (bench/README.md). They equal `hidane benchmark`'s built-in defaults; a test keeps the two in step. Changing what a scenario does or measures, or any value here, changes what the numbers mean: bump benchmark_version.",
+  "benchmark_version": "1",
+  "official": {
+    "version": "1.22.0",
+    "url": "https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.22.0.jar",
+    "sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "size": 136707194
+  },
+  "scenarios": {
+    "startup": { "warmup": 3, "runs": 10 },
+    "memory": { "warmup": 3, "runs": 10, "idle_ms": 1000, "documents": 1000, "batch": 500 },
+    "operations": { "warmup": 20, "iterations": 100, "batch": 500, "seed_documents": 100 },
+    "datasets": {
+      "batch": 500,
+      "query_warmup": 3,
+      "query_runs": 10,
+      "sizes": [
+        { "documents": 100, "warmup": 3, "runs": 10 },
+        { "documents": 1000, "warmup": 3, "runs": 10 },
+        { "documents": 10000, "warmup": 1, "runs": 5 },
+        { "documents": 100000, "warmup": 1, "runs": 3 }
+      ]
+    },
+    "ci": { "warmup": 3, "runs": 10, "tests": 200, "seed_documents": 100 },
+    "ci_firebase": { "warmup": 1, "runs": 5, "tests": 200, "seed_documents": 100 },
+    "command": { "warmup": 1, "runs": 5 }
+  },
+  "stability": {
+    "max_load_1m": 2.0,
+    "min_available_memory_mib": 4096,
+    "max_cpu_steal_percent": 5.0,
+    "max_cpu_temperature_c": 85,
+    "max_startup_cv": 0.25,
+    "max_known_job_cpu_percent": 10,
+    "allow_battery": false
+  },
+  "quick": {
+    "scenarios": {
+      "startup": { "warmup": 1, "runs": 3 },
+      "memory": { "warmup": 0, "runs": 2 },
+      "operations": { "warmup": 5, "iterations": 20 },
+      "datasets": {
+        "query_warmup": 1,
+        "query_runs": 5,
+        "sizes": [
+          { "documents": 100, "warmup": 1, "runs": 3 },
+          { "documents": 1000, "warmup": 0, "runs": 2 }
+        ]
+      },
+      "ci": { "warmup": 0, "runs": 2, "tests": 20, "seed_documents": 20 },
+      "ci_firebase": { "warmup": 0, "runs": 1, "tests": 20, "seed_documents": 20 },
+      "command": { "warmup": 0, "runs": 1 }
+    }
+  }
+}
