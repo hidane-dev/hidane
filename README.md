@@ -10,16 +10,12 @@ evaluates the same Security Rules, reads and writes the same import / export dir
 under `firebase-tools`. No JDK to install. Starts in milliseconds. Tested for parity against the
 official emulator as the oracle.
 
-> [!WARNING]
-> **v0.1 does not enforce Security Rules: every request is allowed, whatever `firestore.rules`
-> says.** Rules tests pass here even where production would deny the request. Keep the official
-> emulator for rules tests until v0.2, which enforces them (already on `main`, checked against
-> the official emulator).
-
-> **v0.1.0, the first release.** hidane serves the Firestore API over gRPC, REST and WebChannel:
-> documents, queries, aggregations, vector search, transactions, listeners, exports and imports,
-> and the emulator's own endpoints, each checked against the official emulator; `firebase-tools`
-> launches it in place of the official one. Security Rules come in v0.2. The plan is in
+> **v0.2.0 enforces Security Rules.** hidane serves the Firestore API over gRPC, REST and
+> WebChannel: documents, queries, aggregations, vector search, transactions, listeners, exports
+> and imports, and the emulator's own endpoints, each checked against the official emulator;
+> `firebase-tools` launches it in place of the official one. Since v0.2.0 it evaluates
+> `firestore.rules` as the official emulator does, with its denial messages, `:ruleCoverage` and
+> `debug()` output (v0.1 allowed every request). The plan is in
 > [`docs/ROADMAP.md`](docs/ROADMAP.md), the work in
 > [issues](https://github.com/hidane-dev/hidane/issues).
 
@@ -56,15 +52,15 @@ Which clients can use hidane depends on the transport their SDK speaks to an emu
 ([`docs/compatibility.md`](docs/compatibility.md)). "Verified" means the client's results were
 compared with the official emulator's (`results/`):
 
-| Client | Transport | In v0.1.0 |
+| Client | Transport | In v0.2.0 |
 |---|---|---|
 | firebase-admin (Node) / `@google-cloud/firestore` | gRPC | verified: documents, queries, aggregations, vector search, transactions, listeners |
 | firebase-js-sdk in Node | gRPC | verified: writes, transactions, listeners, offline and resume |
 | firebase-js-sdk Lite | REST | verified |
 | firebase-js-sdk in the browser | WebChannel and REST | verified in Chromium: listeners, writes, queries, long polling, mock tokens ([`docs/webchannel.md`](docs/webchannel.md)) |
-| `@firebase/rules-unit-testing` | the above | verified without rules: contexts, `clearFirestore()` |
+| `@firebase/rules-unit-testing` | the above | verified: contexts, `clearFirestore()`; rules through the requests below, not yet through the SDK itself |
 | Go, Python, Java, iOS, Android, Flutter (all platforms), C++ / Unity | gRPC or WebChannel | same transports, not verified yet |
-| Security Rules, the Emulator UI request monitor | — | not yet (v0.2): every request is allowed |
+| Security Rules | every transport | enforced: `allow` conditions, `get` / `exists`, `list` decided from the query's filter, mock tokens, denial messages, `:ruleCoverage`, `debug()`; each recorded from the official emulator and replayed ([`docs/parity-exceptions.md`](docs/parity-exceptions.md) lists the differences) |
 | `firebase emulators:start` / `emulators:exec` | `hidane exec -- firebase …` | verified with firebase-tools 15.33.0, no Java installed |
 | Emulator UI | REST and the emulator's endpoints | verified: browse, create and delete documents, Clear all data; not the request monitor (#69) |
 | Export / import (`--import`, `--export-on-exit`, `emulators:export`) | the official format | verified: hidane and the official emulator read each other's exports, byte for byte the same files ([`docs/export-format.md`](docs/export-format.md)) |
@@ -72,8 +68,8 @@ compared with the official emulator's (`results/`):
 ## Parity
 
 hidane treats the official emulator as the oracle. Scripts in [`tools/oracle/`](tools/oracle/)
-ask the official emulator how it answers — 17 recorded fixtures so far, from value ordering to
-WebChannel framing and export files — and the test suite replays every recording against hidane; SDK transcripts
+ask the official emulator how it answers — 31 recorded fixtures so far, from value ordering to
+WebChannel framing, export files and Security Rules — and the test suite replays every recording against hidane; SDK transcripts
 from both emulators are compared in [`results/`](results/). A parity table with a badge will
 follow (#43). No claim of compatibility without a test behind it. Differences that are intentional (performance bugs and
 known defects of the official emulator that hidane will not reproduce) are listed in
@@ -90,7 +86,7 @@ server SDKs; neither documents REST, WebChannel, Security Rules or running under
 | Language | Rust | Rust | TypeScript |
 | Runtime dependency | none | none | Node.js |
 | Documented transports | gRPC, REST, WebChannel | gRPC | gRPC |
-| Security Rules | planned (v0.2) | not documented | not documented |
+| Security Rules | enforced (v0.2) | not documented | not documented |
 | Verification | the official emulator's answers recorded and replayed, SDK transcripts compared | own test suite, also runnable against real Cloud Firestore | tested against the official emulator |
 
 As read from their READMEs in October 2026; corrections welcome.
@@ -140,7 +136,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md), the [issue templates](.github/ISSUE_TEMP
 
 - Local development and CI only. hidane is not a production database and must not be exposed on
   a network without authentication.
-- Until Security Rules land (v0.2), every request is allowed, whatever `firestore.rules` says.
+- Security Rules are evaluated once per condition: where the official emulator evaluates twice and
+  lists the reasons of both passes in a denial (firebase-tools#6252), hidane lists one.
 - Cloud Firestore only. The Realtime Database, Cloud Storage and Auth emulators are out of scope.
 - Features the official emulator does not implement either (the Admin API, TTL, point-in-time
   recovery, bundles) stay unimplemented. See `docs/parity-exceptions.md`.
