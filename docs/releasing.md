@@ -69,6 +69,10 @@ The macOS binaries are not signed or notarized yet. Archives fetched with `curl`
    v<version>` stages a release's npm packages by hand.
 5. Deploy hidane.dev (`mise run site:deploy`, `bun run deploy` in `website/`), whose `install.sh`
    installs the latest release.
+6. The Install workflow (`.github/workflows/install.yml`) starts when the Release run ends and
+   installs the release through every channel. Its npm, Homebrew and pub.dev jobs wait until
+   those channels serve the new version, for up to three hours: approve the staged npm versions
+   and, without `HOMEBREW_TAP_TOKEN`, commit the formula within that time.
 
 A tag with a pre-release suffix (`v0.1.0-rc.1`) stops at the draft. A pull request that changes the
 workflow runs the builds as a dry run; nothing is released.
