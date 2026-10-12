@@ -5,11 +5,12 @@ project currently stands and how to get involved.
 
 ## Project status
 
-v0.1.0 is the first release. hidane serves the Firestore API over gRPC, REST
-and WebChannel, and runs under firebase-tools (`hidane exec -- firebase
-emulators:start`), with imports and exports. Each feature is built issue by
-issue: the official emulator's behaviour is recorded first (`tools/oracle/`),
-then implemented and replayed by the test suite. Security Rules are next (v0.2).
+v0.2.0 is the current release. hidane serves the Firestore API over gRPC, REST
+and WebChannel, enforces Security Rules, and runs under firebase-tools
+(`hidane exec -- firebase emulators:start`), with imports and exports. Each
+feature is built issue by issue: the official emulator's behaviour is recorded
+first (`tools/oracle/`), then implemented and replayed by the test suite. The
+Emulator UI request monitor and Functions triggers are next.
 `packaging/` holds what the release workflow turns into the npm and pub.dev
 packages, the Homebrew formula and the container image.
 

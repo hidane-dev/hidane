@@ -1,3 +1,7 @@
+## 0.2.0
+
+- Downloads hidane 0.2.0, which enforces Security Rules.
+
 ## 0.1.0
 
 - First release of the launcher: downloads hidane 0.1.0 for the platform, checks its SHA-256,

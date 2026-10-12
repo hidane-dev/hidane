@@ -67,7 +67,7 @@
 <div class="install">
 <div class="install-box">
 <code class="cmd"><span class="prompt" aria-hidden="true">$ </span>curl -fsSL https://hidane.dev/install.sh | sh</code>
-<span class="badge">v0.1.0 · macOS · Linux</span>
+<span class="badge">v0.2.0 · macOS · Linux</span>
 <button type="button" class="copy-btn" title="Copy the command" data-copied="Copied">
 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V6a2 2 0 0 1 2-2h9"></path></svg>
 <span>Copy</span>
@@ -84,7 +84,7 @@
 </a>
 </div>
 
-<p class="status"><span class="dot" aria-hidden="true"></span><span>v0.1.0 · the first release · v0.1 allows every request: Security Rules come in v0.2</span></p>
+<p class="status"><span class="dot" aria-hidden="true"></span><span>v0.2.0 · Security Rules enforced, as the official emulator decides them</span></p>
 </div>
 
 <div class="motif" aria-hidden="true">
@@ -124,7 +124,7 @@
 <div class="wrap sec-in sec-in--tight">
 <h2 class="h2" id="works">Works with</h2>
 <div class="legend">
-<span>Status in v0.1.0:</span>
+<span>Status in v0.2.0:</span>
 <span class="legend-chips">
 <span class="chip">planned</span>
 <span class="chip chip--progress">not verified</span>
@@ -145,7 +145,7 @@
 <div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Flutter (mobile / desktop)</span><span class="chip chip--progress">not verified</span></div>
 <div class="row" role="listitem"><span class="row-ver">WebChannel</span><span class="row-label">Flutter Web</span><span class="chip chip--progress">not verified</span></div>
 <div class="row" role="listitem"><span class="row-ver">files</span><span class="row-label">firebase-tools export / import</span><span class="chip chip--supported">verified</span></div>
-<div class="row" role="listitem"><span class="row-ver">v0.2</span><span class="row-label">Security Rules (on main)</span><span class="chip">planned</span></div>
+<div class="row" role="listitem"><span class="row-ver">rules</span><span class="row-label">Security Rules</span><span class="chip chip--supported">verified</span></div>
 </div>
 <p class="fine">Verified means the client's results were compared with the official emulator's; not verified means hidane serves its transport but nobody has run that client yet. Which transport each SDK needs: <a href="https://github.com/hidane-dev/hidane/blob/main/docs/compatibility.md">compatibility</a>.</p>
 </div>
@@ -155,7 +155,7 @@
 <div class="wrap sec-in sec-in--narrow">
 <h2 class="h2" id="parity">Parity</h2>
 <p class="lede-lg">hidane treats the official emulator as the oracle: its answers are recorded, and the test suite replays every recording against hidane. No claim of compatibility without a test behind it.</p>
-<p class="placeholder">So far: 28 recorded fixtures, from value ordering to the browser transport, export files and Security Rules, and SDK results compared side by side (<a href="https://github.com/hidane-dev/hidane/tree/main/results">results</a>). A parity table will follow.</p>
+<p class="placeholder">So far: 31 recorded fixtures, from value ordering to the browser transport, export files and Security Rules, and SDK results compared side by side (<a href="https://github.com/hidane-dev/hidane/tree/main/results">results</a>). A parity table will follow.</p>
 <p class="fine">Known, intentional differences are listed in <a href="https://github.com/hidane-dev/hidane/blob/main/docs/parity-exceptions.md">parity exceptions</a>.</p>
 </div>
 </section>
@@ -171,7 +171,7 @@
 </li>
 <li>
 <div class="rm-ver">v0.2</div>
-<p>Security Rules, evaluated once per request as the official emulator decides them: reads, writes, listeners and queries, measured against it case by case, with its compiler warnings, rule coverage reports and debug() output. On main now; the Emulator UI's request feed is next. Until v0.2, keep the official emulator for rules tests.</p>
+<p>Security Rules, evaluated once per request as the official emulator decides them: reads, writes, listeners and queries, measured against it case by case, with its compiler warnings, rule coverage reports and debug() output. Released in v0.2.0; the Emulator UI's request feed and Functions triggers follow in v0.2.x.</p>
 <a class="src" href="https://github.com/hidane-dev/hidane/milestone/2">v0.2 milestone on GitHub</a>
 </li>
 <li>
