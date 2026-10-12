@@ -1,9 +1,11 @@
 //! The Security Rules API and `debug()`, against the official emulator's recordings
 //! (`tools/oracle/rules_coverage.py`: `fixtures/rules_coverage.json`, and with `--rules`,
 //! `fixtures/rules_coverage_flag.json`; `tools/oracle/rules_request_fields.py`:
-//! `fixtures/rules_request_fields.json`). Each case's steps are replayed in order against a
-//! fresh hidane, and every answer's status must match. So must:
+//! `fixtures/rules_request_fields.json`; `tools/oracle/rules_verify.py`:
+//! `fixtures/rules_verify.json`). Each case's steps are replayed in order against a fresh
+//! hidane, and every answer's status must match. So must:
 //!
+//! - a denial's message, as `common::rules::same_denial` compares them;
 //! - what `debug()` printed during each step, line for line;
 //! - the body of `GET :securityRules` and `GET :ruleCoverage`, byte for byte, and the data the
 //!   page of `GET :ruleCoverage.html` shows.
@@ -15,6 +17,8 @@
 //!
 //! A case marked `differs` is one where hidane intentionally does not do what the official
 //! emulator does (`docs/parity-exceptions.md`): only its statuses are compared.
+
+mod common;
 
 use std::{
     net::SocketAddr,
@@ -237,6 +241,18 @@ async fn replay(fixture: &str, with_rules_file: bool) {
                     step["status"]
                 ));
             }
+            let official_denial = step["response"]["error"]["message"].as_str();
+            if let Some(official) = official_denial.filter(|_| !differs && status == 403) {
+                let message = serde_json::from_str::<Json>(&body)
+                    .ok()
+                    .and_then(|answer| answer["error"]["message"].as_str().map(str::to_owned));
+                if !message
+                    .as_deref()
+                    .is_some_and(|message| common::rules::same_denial(message, official))
+                {
+                    problems.push(format!("denied {message:?}, official {official:?}"));
+                }
+            }
             let official_log = step["log"].as_str().unwrap_or_default();
             if !differs && without_time_lines(&log) != without_time_lines(official_log) {
                 problems.push(format!(
@@ -289,4 +305,9 @@ async fn the_rules_file() {
 #[tokio::test]
 async fn request_fields() {
     replay(include_str!("fixtures/rules_request_fields.json"), false).await;
+}
+
+#[tokio::test]
+async fn verify_writes() {
+    replay(include_str!("fixtures/rules_verify.json"), false).await;
 }

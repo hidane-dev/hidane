@@ -122,6 +122,8 @@ fn write(json: &Json) -> Write {
         })
     } else if let Some(name) = json.get("delete") {
         Operation::Delete(name.as_str().unwrap().to_owned())
+    } else if let Some(name) = json.get("verify") {
+        Operation::Verify(name.as_str().unwrap().to_owned())
     } else if let Some(t) = json.get("transform") {
         Operation::Transform(DocumentTransform {
             document: t["document"].as_str().unwrap().to_owned(),

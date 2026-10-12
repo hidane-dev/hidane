@@ -46,8 +46,8 @@
         "integerValue": "1"
        }
       },
-      "createTime": "2026-10-11T14:37:42.193196Z",
-      "updateTime": "2026-10-11T14:37:42.193196Z"
+      "createTime": "2026-10-12T12:14:49.722629Z",
+      "updateTime": "2026-10-12T12:14:49.722629Z"
      },
      "targetIds": [
       1
@@ -60,14 +60,14 @@
      "targetIds": [
       1
      ],
-     "resumeToken": "CgkI87eIsZiylwM=",
-     "readTime": "2026-10-11T14:37:42.287347Z"
+     "resumeToken": "CgkIwN2UqLq0lwM=",
+     "readTime": "2026-10-12T12:14:49.896640Z"
     }
    },
    {
     "targetChange": {
-     "resumeToken": "CgkI87eIsZiylwM=",
-     "readTime": "2026-10-11T14:37:42.287347Z"
+     "resumeToken": "CgkIwN2UqLq0lwM=",
+     "readTime": "2026-10-12T12:14:49.896640Z"
     }
    }
   ],
@@ -276,13 +276,158 @@
   "during": null,
   "responses": [
    {
-    "streamId": "22",
+    "streamId": "4",
     "streamToken": "MA=="
    }
   ],
   "status": {
    "code": "PermissionDenied",
    "message": "\nfalse for 'create' @ L7, false for 'update' @ L7"
+  }
+ },
+ {
+  "name": "write: an allowed verify",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if d == 'a';\n      allow list: if false;\n      allow write: if d == 'a';\n    }\n  }\n}\n",
+  "database": "projects/streams-a/databases/(default)",
+  "documents": [
+   {
+    "path": "c/a",
+    "n": 1
+   },
+   {
+    "path": "c/b",
+    "n": 1
+   }
+  ],
+  "rpc": "Write",
+  "requests": [
+   {
+    "database": "projects/streams-a/databases/(default)"
+   },
+   {
+    "streamToken": "",
+    "writes": [
+     {
+      "verify": "projects/streams-a/databases/(default)/documents/c/a",
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "streamId": "5",
+    "streamToken": "MA=="
+   },
+   {
+    "streamToken": "MQ==",
+    "writeResults": [
+     {
+      "updateTime": "2026-10-12T12:14:49.722629Z"
+     }
+    ],
+    "commitTime": "2026-10-12T12:15:03.385115Z"
+   }
+  ],
+  "status": null
+ },
+ {
+  "name": "write: a denied verify",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if d == 'a';\n      allow list: if false;\n      allow write: if d == 'a';\n    }\n  }\n}\n",
+  "database": "projects/streams-a/databases/(default)",
+  "documents": [
+   {
+    "path": "c/a",
+    "n": 1
+   },
+   {
+    "path": "c/b",
+    "n": 1
+   }
+  ],
+  "rpc": "Write",
+  "requests": [
+   {
+    "database": "projects/streams-a/databases/(default)"
+   },
+   {
+    "streamToken": "",
+    "writes": [
+     {
+      "verify": "projects/streams-a/databases/(default)/documents/c/b",
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "streamId": "6",
+    "streamToken": "MA=="
+   }
+  ],
+  "status": {
+   "code": "PermissionDenied",
+   "message": "\nfalse for 'get' @ L5"
+  }
+ },
+ {
+  "name": "write: an allowed write and a denied verify",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n      allow get: if d == 'a';\n      allow list: if false;\n      allow write: if d == 'a';\n    }\n  }\n}\n",
+  "database": "projects/streams-a/databases/(default)",
+  "documents": [
+   {
+    "path": "c/a",
+    "n": 1
+   },
+   {
+    "path": "c/b",
+    "n": 1
+   }
+  ],
+  "rpc": "Write",
+  "requests": [
+   {
+    "database": "projects/streams-a/databases/(default)"
+   },
+   {
+    "streamToken": "",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/streams-a/databases/(default)/documents/c/a",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      }
+     },
+     {
+      "verify": "projects/streams-a/databases/(default)/documents/c/b",
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "streamId": "7",
+    "streamToken": "MA=="
+   }
+  ],
+  "status": {
+   "code": "PermissionDenied",
+   "message": "\nfalse for 'create' @ L7, false for 'update' @ L7, false for 'get' @ L5"
   }
  },
  {
@@ -338,8 +483,8 @@
         "integerValue": "1"
        }
       },
-      "createTime": "2026-10-11T14:37:55.328869Z",
-      "updateTime": "2026-10-11T14:37:55.328869Z"
+      "createTime": "2026-10-12T12:15:12.008289Z",
+      "updateTime": "2026-10-12T12:15:12.008289Z"
      },
      "targetIds": [
       1
@@ -352,14 +497,14 @@
      "targetIds": [
       1
      ],
-     "resumeToken": "CgkIiMamt5iylwM=",
-     "readTime": "2026-10-11T14:37:55.363592Z"
+     "resumeToken": "CgkI8cPcsrq0lwM=",
+     "readTime": "2026-10-12T12:15:12.044529Z"
     }
    },
    {
     "targetChange": {
-     "resumeToken": "CgkIiMamt5iylwM=",
-     "readTime": "2026-10-11T14:37:55.363592Z"
+     "resumeToken": "CgkI8cPcsrq0lwM=",
+     "readTime": "2026-10-12T12:15:12.044529Z"
     }
    },
    {
