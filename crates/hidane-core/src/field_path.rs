@@ -200,9 +200,15 @@ impl MaskTree {
         hash_order(&names).into_iter().map(|i| &self.children[i])
     }
 
-    /// The paths this level takes whole, below `prefix`, in visiting order.
+    /// The paths this level takes whole, below `prefix`, in the order rules list them: that
+    /// of a Java `HashMap` that received the names taken whole first, then the others, each
+    /// in mask order.
     fn flatten(&self, prefix: &mut Vec<String>, out: &mut Vec<FieldPath>) {
-        for (name, below) in self.ordered() {
+        let (whole, below): (Vec<_>, Vec<_>) =
+            self.children.iter().partition(|(_, node)| node.whole);
+        let children: Vec<&(String, MaskTree)> = whole.into_iter().chain(below).collect();
+        let names: Vec<&str> = children.iter().map(|(name, _)| name.as_str()).collect();
+        for (name, below) in hash_order(&names).into_iter().map(|i| children[i]) {
             prefix.push(name.clone());
             if below.whole {
                 out.push(FieldPath(prefix.clone()));
@@ -216,8 +222,8 @@ impl MaskTree {
 
 /// The paths of a mask as the official emulator lists them to Security Rules
 /// (`request.writeFields`, `request.fields`): each once, without those below another, and at
-/// each level in the order of a Java `HashMap` that received the names in mask order
-/// (`tools/oracle/rules_request_fields.py`).
+/// each level in the order of a Java `HashMap` that received the names the mask takes whole,
+/// then the others (`tools/oracle/rules_request_fields.py`).
 pub fn mask_paths(mask: &[FieldPath]) -> Vec<FieldPath> {
     let mut out = Vec::new();
     MaskTree::new(mask).flatten(&mut Vec::new(), &mut out);
@@ -337,6 +343,9 @@ mod tests {
             listed(&["x.y", "a", "`q r`", "b.c.d"]),
             ["a", "`q r`", "b.c.d", "x.y"]
         );
+        // `b`, `r`, `B` and `R` share a bucket: names taken whole come first.
+        assert_eq!(listed(&["b.c", "r", "B.x", "R"]), ["r", "R", "b.c", "B.x"]);
+        assert_eq!(listed(&["m.b.c", "m.r"]), ["m.r", "m.b.c"]);
         assert!(listed(&[]).is_empty());
     }
 

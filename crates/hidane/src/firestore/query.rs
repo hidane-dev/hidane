@@ -432,9 +432,10 @@ impl Query {
             .given_orders
             .iter()
             .map(|order| {
+                // Its segments joined by `.`, nothing escaped.
                 let field = match &order.field {
                     Field::Name => "__name__".to_owned(),
-                    Field::Path(path) => path.to_string(),
+                    Field::Path(path) => path.segments().join("."),
                 };
                 let direction = if order.descending { "DESC" } else { "ASC" };
                 (field, direction.to_owned())
@@ -459,7 +460,6 @@ impl Query {
 
     /// The collection ID a transaction locks for this query: the official emulator locks
     /// every collection with that ID, whatever its parent.
-
     pub fn collection_id(&self) -> Option<&str> {
         match &self.source {
             Source::Collection(id) | Source::Group(id) => Some(id),
