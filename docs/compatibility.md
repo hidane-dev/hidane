@@ -22,7 +22,7 @@ verified yet.
 | Firebase C++ SDK / Unity | iOS C++ core or Android SDK (gRPC) | not verified |
 | firebase-js-sdk imported **in Node** | gRPC (`@grpc/grpc-js`) | verified |
 | firebase-js-sdk **Lite** (`firebase/firestore/lite`, any platform) | REST (`fetch`) only | verified |
-| firebase-js-sdk **in the browser** | **WebChannel** for Listen and Write (this includes `getDoc`, `getDocs`, `setDoc`, `updateDoc`, `deleteDoc`, `writeBatch`), REST for `runTransaction`, aggregate queries and pipelines | verified in Chromium ([webchannel.md](webchannel.md)) |
+| firebase-js-sdk **in the browser** | **WebChannel** for Listen and Write (this includes `getDoc`, `getDocs`, `setDoc`, `updateDoc`, `deleteDoc`, `writeBatch`), REST for `runTransaction`, aggregate queries and pipelines | verified in Chromium ([webchannel.md](webchannel.md)); the SDK's own browser suite passes, 1,183 of 1,183 tests, as on the official emulator (`results/js-sdk-browser-*.json`) |
 | FlutterFire `cloud_firestore_web` | Same as firebase-js-sdk in the browser (`firebase_core_web` loads it from `www.gstatic.com/firebasejs/`) | verified in Chromium |
 | Emulator UI, `curl`, `firebase-tools` itself | REST and emulator-specific HTTP endpoints | REST and the emulator's endpoints served; Emulator UI v1.15.0 verified (browse, create and delete documents, Clear all data), its request monitor (the Requests tab) since v0.2.1, from the WebSocket feed on `--websocket_port` (#69); `firebase emulators:start` / `emulators:exec` launch hidane through `hidane exec` ([ADR 0006](adr/0006-launch-under-firebase-tools.md)), with the Functions emulator's Firestore triggers accepted (#185; their events are not delivered yet, #70); `--import`, `--export-on-exit` and `emulators:export` read and write the official emulator's format, and each emulator reads the other's exports ([export-format.md](export-format.md)) |
 
@@ -30,8 +30,10 @@ So with v0.1 (gRPC only) the server-side SDKs, the mobile SDKs and Node-based te
 Browser apps need WebChannel as well as REST, because the Web SDK does almost everything over
 WebChannel. `main` serves both: listeners, writes, queries, batches, long polling and mock tokens
 from Chromium give the same results on hidane as on the official emulator
-(`results/browser-webchannel-*.json`). Under Security Rules, `@firebase/rules-unit-testing` suites
-pass the same way in Chromium and in Node: the same assertions pass, with the same error codes
+(`results/browser-webchannel-*.json`), and so does firebase-js-sdk's own Firestore browser suite:
+the 1,183 tests that run against an emulator pass on both (`tools/js-sdk-browser/`, checked
+weekly). Under Security Rules, `@firebase/rules-unit-testing` suites pass the same way in
+Chromium and in Node: the same assertions pass, with the same error codes
 (`results/browser-rules-*.json`, `results/sdk-rules-unit-testing-*.json`). Denial messages give
 the reasons of one evaluation, where the official emulator's also give those of its first pass
 and, for a batch, of the writes checked before the denied one ([parity-exceptions.md](parity-exceptions.md)).

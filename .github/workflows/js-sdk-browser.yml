@@ -1,0 +1,97 @@
+name: firebase-js-sdk browser tests
+
+# Runs firebase-js-sdk's Firestore browser integration tests (`test:browser:emulator`: Vitest in
+# Playwright's Chromium, over WebChannel and REST) at a pinned commit against hidane, and compares
+# each test's outcome with the run against the official emulator kept in
+# results/js-sdk-browser-official-v1.22.0.json (tools/js-sdk-browser/README.md). It fails on a
+# test that passes there and not on hidane, unless tools/js-sdk-browser/expected-failures.txt
+# lists it, and on a listed test that passes.
+#
+# It runs weekly, by hand, and for changes to the server, the runner or the recorded results.
+
+on:
+  schedule:
+    - cron: "41 5 * * 2"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "crates/**"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "tools/js-sdk-browser/**"
+      - "results/js-sdk-browser-*.json"
+      - ".github/workflows/js-sdk-browser.yml"
+  pull_request:
+    paths:
+      - "crates/**"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "tools/js-sdk-browser/**"
+      - "results/js-sdk-browser-*.json"
+      - ".github/workflows/js-sdk-browser.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The firebase-js-sdk commit the suite runs at. results/js-sdk-browser-*.json were recorded
+  # there; compare.mjs refuses a run of another commit.
+  FIREBASE_JS_SDK_COMMIT: 8a7e7fda925c7355f98cb3c4dca1bfaed73ab787
+
+jobs:
+  chromium:
+    name: Chromium against hidane
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: firebase/firebase-js-sdk
+          ref: ${{ env.FIREBASE_JS_SDK_COMMIT }}
+          path: firebase-js-sdk
+          persist-credentials: false
+      # Node.js 24 as the SDK requires, and Yarn's cache for its lockfile.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: yarn
+          cache-dependency-path: firebase-js-sdk/yarn.lock
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - name: Build hidane
+        run: cargo build --release --locked -p hidane
+      - name: Install firebase-js-sdk and build what the tests import
+        run: tools/js-sdk-browser/setup.sh firebase-js-sdk
+      - name: Install Playwright's Chromium
+        working-directory: firebase-js-sdk
+        run: npx playwright install --with-deps chromium chromium-headless-shell
+      - name: Start hidane
+        run: |
+          target/release/hidane --host 127.0.0.1 --port 8080 > "$RUNNER_TEMP/hidane.log" 2>&1 &
+          timeout 30 sh -c 'until curl -fsS http://127.0.0.1:8080/ > /dev/null; do sleep 1; done'
+      - name: Run the suite
+        run: tools/js-sdk-browser/run.sh firebase-js-sdk 8080 "$RUNNER_TEMP/report.json"
+      - name: Compare with the official emulator
+        run: |
+          node tools/js-sdk-browser/results.mjs "$FIREBASE_JS_SDK_COMMIT" hidane "$RUNNER_TEMP/report.json" \
+            > "$RUNNER_TEMP/js-sdk-browser-hidane.json"
+          node tools/js-sdk-browser/compare.mjs results/js-sdk-browser-official-v1.22.0.json \
+            "$RUNNER_TEMP/js-sdk-browser-hidane.json" tools/js-sdk-browser/expected-failures.txt
+      # The run's results (as committed in results/), Vitest's report and hidane's log.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: js-sdk-browser-hidane
+          path: |
+            ${{ runner.temp }}/js-sdk-browser-hidane.json
+            ${{ runner.temp }}/report.json
+            ${{ runner.temp }}/hidane.log
+          if-no-files-found: ignore

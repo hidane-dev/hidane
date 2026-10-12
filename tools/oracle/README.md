@@ -24,6 +24,7 @@ evaluation errors exist in English only, and under another locale each of them b
 | `transforms.py` | How are field transforms applied (server time, increment, maximum / minimum, array union / remove), in which order, with which results? | `crates/hidane/tests/fixtures/transforms.json` | `crates/hidane/tests/transforms.rs` |
 | `negative_zero.py` | What becomes of `-0.0` written over gRPC, REST and WebChannel, at the top level, in maps and in arrays, and read back over each; how do field transforms, filters, orderings, cursors, aggregations, Security Rules, writes that change nothing and an export and import treat it? (The store keeps it and REST prints `-0.0`; ProtoJSON reads every literal zero as `0.0`; queries take it as equal to `0.0` and `0`.) Needs `grpcurl` on `PATH` | `crates/hidane/tests/fixtures/negative_zero.json` | `crates/hidane/tests/negative_zero.rs` |
 | `document_writes.py` | How do document reads and writes answer, including errors, preconditions, masks, paging and admin checks? | `crates/hidane/tests/fixtures/document_writes.json` | `crates/hidane/tests/documents.rs` |
+| `same_document_writes.py` | Which commits that write one document more than once are refused, and with which message? (The official emulator collapses them into one Datastore mutation: an insert may only follow a delete, an update may not follow a delete, nor may a delete that needs the document, and only the first write may carry an `update_time`; checked over the whole commit before any precondition.) Every pair of writes on an existing and a missing document, longer sequences, preconditions on later writes, and which error comes first | `crates/hidane/tests/fixtures/same_document_writes.json` | `crates/hidane/tests/same_document_writes.rs` |
 | `field_order.py` | In which order do a document's fields come back after sets, masked updates, transforms and nested writes, and in which order do read masks, query projections and aggregations return them? (Written order; masked and transformed fields that change move to the end in the order of a Java `HashMap`) | `crates/hidane/tests/fixtures/field_order.json` | `crates/hidane/tests/field_order.rs` |
 | `queries.py` | What does RunQuery return for every filter operator on every value type, composite filters, implicit ordering, cursors, offsets, projections, collection groups and queries over every collection, and with which errors? | `crates/hidane/tests/fixtures/queries.json` | `crates/hidane/tests/queries.rs` |
 | `aggregations.py` | What do `count`, `sum` and `avg` return at the edges (integer overflow, NaN, infinities, precision, non-numbers, empty sets), how do they interact with `offset` / `limit`, and which aggregation lists are rejected? | `crates/hidane/tests/fixtures/aggregations.json` | `crates/hidane/tests/aggregations.rs` |
@@ -136,6 +137,10 @@ document. The header of `lib/main.dart` says how to build and serve it; the page
 emulator's port as `?port=` and leaves the transcript in `window.hidaneTranscript`, with the
 firebase-js-sdk version and the URLs it was loaded from. Its transcripts are in
 `results/flutter-web-*.json`.
+
+`tools/js-sdk-browser/` runs firebase-js-sdk's own Firestore browser suite (Vitest in Chromium)
+against either emulator and compares the outcome of each test; its README says how, and its
+results are in `results/js-sdk-browser-*.json`.
 
 `sdk_rest.mjs` drives the REST surface through the web SDK's Lite build (`firebase/firestore/lite`);
 its transcripts are in `results/sdk-rest-*.json`.

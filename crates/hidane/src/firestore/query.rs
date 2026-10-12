@@ -717,13 +717,12 @@ fn parse_filter(filter: &structured_query::Filter) -> Result<Option<Filter>, Sta
                 if matches!(op, Op::ArrayContains | Op::ArrayContainsAny) {
                     return Err(Status::invalid_argument("the name __key__ is reserved"));
                 }
-                match &value.value_type {
-                    Some(ValueType::ArrayValue(array)) if matches!(op, Op::In | Op::NotIn) => {
-                        for value in &array.values {
-                            check_key(value)?;
-                        }
+                // A reference's name is read here; a value that is not a reference is refused
+                // after the checks on the whole filter (`check_keys`).
+                for value in key_values(op, &value) {
+                    if let Some(ValueType::ReferenceValue(name)) = &value.value_type {
+                        names::parent(name)?;
                     }
-                    _ => check_key(&value)?,
                 }
             }
             Ok(Some(Filter::Compare { field, op, value }))
@@ -768,6 +767,67 @@ fn check_key(value: &Value) -> Result<(), Status> {
     match &value.value_type {
         Some(ValueType::ReferenceValue(name)) => names::parent(name).map(|_| ()),
         _ => Err(key_value_required()),
+    }
+}
+
+/// The values a `__name__` filter compares with: each of an `in` or `not-in` list.
+fn key_values(op: Op, value: &Value) -> &[Value] {
+    match &value.value_type {
+        Some(ValueType::ArrayValue(array)) if matches!(op, Op::In | Op::NotIn) => &array.values,
+        _ => std::slice::from_ref(value),
+    }
+}
+
+/// Checks on `__name__` filters, after the others (`tools/oracle/queries.py`): an equality
+/// (`==`, `in`) needs an inequality on `__name__` too when another field has one, and every
+/// value must be a reference.
+fn check_keys(filter: &Filter, leaves: &[(&Field, Leaf)]) -> Result<(), Status> {
+    let inequality = |kind: &Leaf| {
+        matches!(
+            kind,
+            Leaf::Compare(
+                Op::Less
+                    | Op::LessOrEqual
+                    | Op::Greater
+                    | Op::GreaterOrEqual
+                    | Op::NotEqual
+                    | Op::NotIn
+            ) | Leaf::Unary(UnaryOp::NotNan | UnaryOp::NotNull)
+        )
+    };
+    let key_equality = leaves.iter().any(|(field, kind)| {
+        **field == Field::Name && matches!(kind, Leaf::Compare(Op::Equal | Op::In))
+    });
+    let key_inequality = leaves
+        .iter()
+        .any(|(field, kind)| **field == Field::Name && inequality(kind));
+    let other_inequality = leaves
+        .iter()
+        .any(|(field, kind)| **field != Field::Name && inequality(kind));
+    if key_equality && other_inequality && !key_inequality {
+        return Err(Status::invalid_argument(
+            "Equality on key is not allowed if there are other inequality fields and key does \
+             not appear in inequalities.",
+        ));
+    }
+    let mut keys = Ok(());
+    visit_compares(filter, &mut |field, op, value| {
+        if keys.is_ok() && *field == Field::Name {
+            keys = key_values(op, value).iter().try_for_each(check_key);
+        }
+    });
+    keys
+}
+
+fn visit_compares(filter: &Filter, f: &mut dyn FnMut(&Field, Op, &Value)) {
+    match filter {
+        Filter::And(filters) | Filter::Or(filters) => {
+            for filter in filters {
+                visit_compares(filter, f);
+            }
+        }
+        Filter::Compare { field, op, value } => f(field, *op, value),
+        Filter::Unary { .. } => {}
     }
 }
 
@@ -822,13 +882,19 @@ fn check_filter(filter: &Filter, kindless: bool) -> Result<(), Status> {
         ));
     }
     let disjunctions = disjunctions(filter);
+    // Past twice the maximum, the official emulator stops counting.
+    if disjunctions > 2 * MAX_DISJUNCTIONS {
+        return Err(Status::invalid_argument(format!(
+            "Too many disjunctions after normalization, the maximum is {MAX_DISJUNCTIONS}"
+        )));
+    }
     if disjunctions > MAX_DISJUNCTIONS {
         return Err(Status::invalid_argument(format!(
             "Too many disjunctions after normalization. Result had {disjunctions} disjunctions \
              which is more than the maximum of {MAX_DISJUNCTIONS}"
         )));
     }
-    Ok(())
+    check_keys(filter, &leaves)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

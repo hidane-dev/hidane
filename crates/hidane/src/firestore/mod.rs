@@ -284,6 +284,7 @@ impl FirestoreService {
             .iter()
             .map(|write| writes::validate(database, write))
             .collect::<Result<Vec<_>, _>>()?;
+        writes::check_sequences(writes)?;
         self.transactions
             .commit(database, transaction, &targets, || {
                 if writes.is_empty() {
