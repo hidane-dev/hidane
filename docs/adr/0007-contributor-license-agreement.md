@@ -67,10 +67,34 @@ first one, and nothing has to be applied retroactively.
 - An employee may agree to the Individual CLA for work their employer owns. The statement
   confirms the right to agree; a company on the author's profile, or a non-personal commit email
   domain, labels the pull request `cla: employer check`, and a maintainer confirms with the author,
-  and if needed the company, before merging. The signs are recorded with each agreement.
+  and if needed the company, before merging. The signs are recorded with each agreement. Since
+  2026-10-13 the check enforces this (below).
 - The repository settings must require the `cla` status on `main` and protect the
   `cla-signatures` branch from deletion and force pushes.
 - When the project moves to a legal entity, the maintainer assigns the agreements to it, and a
   new version names the entity for later contributions.
 - Before relying on the agreements commercially, a lawyer should review them, in particular the
   governing law, the outbound license clause and the patent clause.
+
+## Update (2026-10-13): co-authors and the employer review are enforced
+
+A review of the check found two gaps between what the documents promised and what the check
+did:
+
+- It identified a pull request's authors by the GitHub account of each commit's author only, so a
+  person named in a `Co-authored-by:` trailer was never asked to agree, although CONTRIBUTING.md
+  required it. The check now reads the co-authors GitHub lists and the trailers themselves, and
+  asks each of them. It identifies someone only by an email address GitHub links to their
+  account, or by a GitHub private address whose account GitHub confirms; it does not guess, and
+  anyone it cannot identify blocks the pull request until fixed or recorded by a maintainer.
+- A sign of an employer only labelled the pull request: the `cla` status passed once the author
+  agreed, and the maintainer's confirmation was a manual step with no record. The status now
+  fails until the outcome is recorded: the contribution is the author's own, the employer
+  authorized it, or the author is a Designated Contributor under a Corporate CLA. A sign does not
+  decide ownership; it asks for a review. Reviews are recorded on the `cla-signatures` branch
+  (`reviews.json`), by the maintainers only.
+
+GitHub Apps are now told apart by the account type GitHub reports rather than by a name ending in
+`[bot]`, and co-authors that are not people (an AI coding assistant) are listed by email on the
+main branch. `.github/cla/test.sh` tests the check against a fake `gh` in CI. Nothing changed for
+agreements already recorded, and the agreements themselves are unchanged.

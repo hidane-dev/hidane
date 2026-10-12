@@ -72,3 +72,15 @@ jobs:
       # A dependency under a license about.toml does not accept fails here, not at release.
       - run: cargo install cargo-about --locked --features cli --version 0.9.2
       - run: cargo about generate --locked --fail about.hbs -o THIRD-PARTY-LICENSES.txt
+
+  cla:
+    name: cla check script
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # The script behind the required `cla` status runs from main, so its changes are tested
+      # here, against a fake gh (.github/cla/test.sh), before they reach main.
+      - run: shellcheck .github/cla/check.sh .github/cla/test.sh
+      - run: bash .github/cla/test.sh

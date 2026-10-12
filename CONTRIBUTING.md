@@ -88,16 +88,19 @@ project asks for this, what each side keeps and how agreements are recorded:
   check with them before agreeing to the Individual CLA.
 
 If your GitHub profile names a company or you commit with a company email
-address, the check labels the pull request `cla: employer check`, and before
-merging a maintainer asks whether the contribution is part of your work for
-that company; if it is, the company signs the Corporate CLA or confirms in
-writing that you may contribute it
+address, the check labels the pull request `cla: employer check` and waits for
+a maintainer's review: the contribution is your own, outside any work for the
+company; or the company allows it in writing; or the company signs the
+Corporate CLA. A company address alone does not make the company the owner;
+the check asks rather than decides
 ([employer check](docs/cla/README.md#employer-check)).
 
 A pull request is merged only when the `cla` check passes. Author your commits
 with an email address linked to your GitHub account, so the check can tell who
 wrote them. If a commit has human co-authors (`Co-authored-by:`), each of them
-must have agreed as well.
+must have agreed as well, and must be named with an email address linked to
+their GitHub account; the check does not guess who someone is
+([how authors are identified](docs/cla/README.md#how-authors-are-identified)).
 
 ## License
 

@@ -33,18 +33,45 @@ obligations under them.
 
 ## Agreeing as an individual
 
-When you open your first pull request, the `cla` check fails and a comment lists every author of
-its commits who has not agreed yet. Each of them agrees by posting this comment on the pull
-request, from their own GitHub account, exactly as written:
+When you open your first pull request, the `cla` check fails and a comment lists everyone who
+wrote its commits and has not agreed yet: each commit's author, each co-author named in a
+`Co-authored-by:` trailer, and the pull request's author. Each of them agrees by posting this
+comment on the pull request, from their own GitHub account, exactly as written:
 
 ```
 I have read the hidane Individual CLA 1.0, I have the right to agree to it for my contributions, and I agree to it.
 ```
 
-The check then passes, and the agreement covers your later pull requests too. Commits must be
-authored with an email address linked to your GitHub account, so that the check can tell who
-wrote them. Post `recheck` to run the check again. If you cannot agree on GitHub, open an issue
-and we will arrange another way to sign.
+The check then passes, and the agreement covers your later pull requests too. Post `recheck` to
+run the check again.
+
+### How authors are identified
+
+The check identifies people only the way GitHub does, and never guesses:
+
+- a commit's author, by the GitHub account its email address is linked to;
+- a co-author, by the account GitHub links the trailer's email address to, or by a GitHub private
+  address (`<id>+<login>@users.noreply.github.com`) whose account GitHub confirms, ID included.
+
+Someone it cannot identify this way (an address linked to no account, a trailer without an
+address) is listed in the comment as needing manual review, and the pull request cannot be
+merged until that is fixed: author your commits with an email address linked to your GitHub
+account, name co-authors with theirs, and remove a trailer if that person did not write part of
+the commit. If someone cannot agree on GitHub, open an issue and we will arrange another way to
+sign; once the signed agreement is on file, a maintainer records it with
+`/cla signed-offline <email>: <note>`.
+
+### Who needs no agreement
+
+- The maintainers, who hold the copyright in hidane, listed in
+  [`.github/cla/exempt`](../../.github/cla/exempt).
+- GitHub Apps, such as Dependabot and GitHub Actions, recognised by the account type GitHub
+  reports (`Bot`), not by their name.
+- Co-authors that are not people, such as an AI coding assistant, listed by email address in
+  [`.github/cla/non-human-co-authors`](../../.github/cla/non-human-co-authors). The person who
+  commits work written with such a tool contributes it, and their agreement covers it.
+
+These lists are read from the main branch, so a pull request cannot change them for itself.
 
 If your employer has rights in what you write, check with them first: they may need to sign the
 Corporate CLA instead (Section 7(d) of the Individual CLA).
@@ -56,18 +83,24 @@ own time, on your own equipment and outside your job is usually yours. But a con
 part of your job, or under an employment contract that assigns everything you create to your
 employer, is the company's to license, not yours, and the Individual CLA cannot grant it.
 
-So the check looks for signs of an employer: a company on your GitHub profile, or commits authored
-with an email address that is not a personal one (`.github/cla/personal-email-domains` lists the
-personal ones). When it finds one, it does not fail; it labels the pull request
-`cla: employer check` and adds a note to its comment. Before merging such a pull request, unless
-it is trivial (a typo, a one-line fix), a maintainer asks whether it is part of your work for that
-company, and records the answer in the pull request:
+A company email address or a company on your profile does not mean the company owns your
+contribution: that depends on your employment contract and the law where you work. So the check
+does not decide it; it asks, and waits for a maintainer to record the answer.
 
-- it is your own work, outside any work for the company: your statement in the pull request is
-  enough;
-- it is work for the company, or the company has rights in it: the company signs the Corporate
-  CLA, or confirms in writing (an email to the maintainer is enough) that you may contribute it
-  under the Individual CLA. The maintainer keeps that confirmation with the signed agreements.
+It looks for signs of an employer: a company on your GitHub profile, commits written with an
+email address that is not a personal one (`.github/cla/personal-email-domains` lists the personal
+ones), or either sign when you agreed to the CLA (recorded then, so it still counts if your
+profile changes). When it finds one, it labels the pull request `cla: employer check`, and the
+`cla` check fails with "employer authorization needs review" until one of these is recorded:
+
+| Outcome | When | How it is recorded |
+|---|---|---|
+| A. Personal contribution | You wrote it outside any work for the company, and the company has no rights in it. You say so in the pull request | A maintainer: `/cla employer @login personal: <note>`, for this pull request |
+| B. Employer authorization | The company has rights in it and confirms in writing (an email to the maintainer is enough) that you may contribute it under the Individual CLA | A maintainer: `/cla employer @login authorized: <note>` for this pull request, or `authorized-standing` when the confirmation covers your contributions in general |
+| C. Corporate CLA | The company signs the Corporate CLA and names you as a Designated Contributor | Automatic, once you are in its Schedule A |
+
+Only the maintainers' comments are accepted as reviews. The maintainer keeps written
+confirmations with the signed agreements; the note says where.
 
 ## Signing as a company
 
@@ -88,13 +121,26 @@ nothing else:
 - `corporate.json`: for each company, its name, the agreement and version, the date, and its
   Designated Contributors' GitHub accounts and IDs, with the dates they were added or removed.
   The signed agreements themselves are kept by the maintainer, not in the repository.
+- `reviews.json`: each review a maintainer recorded with a `/cla` command: an employer review
+  (the account and ID, outcome A or B, whether it covers one pull request or is standing, the
+  signs that triggered it) or an agreement made outside GitHub (the email address), each with the
+  pull request, the note, who recorded it, when, and the comment. To withdraw a standing record,
+  the maintainer adds `"removed": "<date>"` to it.
 
-The maintainer and bots (accounts ending in `[bot]`) are exempt; the maintainer's accounts are
-listed in [`.github/cla/exempt`](../../.github/cla/exempt).
+For a due diligence, these give who agreed to what and when, with the text's SHA-256; the pull
+requests that needed the employer check are listed by
+`gh pr list --repo hidane-dev/hidane --state all --label "cla: employer check"`, and the outcome of
+each is in `reviews.json` or `corporate.json`. The check's own behaviour is tested by
+[`.github/cla/test.sh`](../../.github/cla/test.sh), in CI.
 
-For a due diligence, these give who agreed to what and when; the pull requests that needed the
-employer check, with the maintainer's question and the answer in each, are listed by
-`gh pr list --repo hidane-dev/hidane --state all --label "cla: employer check"`.
+## What the CLA does not cover
+
+Code the project takes from others is not a contribution under the CLA, and keeps its own
+license: the googleapis `.proto` files vendored in `crates/hidane-proto/proto/` (Apache-2.0), and
+the dependencies built into the binary, whose licenses each release lists in
+`THIRD-PARTY-LICENSES.txt` (`hidane --licenses`). A
+contributor who adds third-party code says so in the pull request, and it is kept with its
+license and notices.
 
 ## Versions
 
