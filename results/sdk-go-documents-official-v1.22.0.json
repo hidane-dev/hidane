@@ -1,0 +1,334 @@
+[
+ {
+  "name": "set alice",
+  "ok": "ok"
+ },
+ {
+  "name": "get alice",
+  "ok": {
+   "createEqualsUpdate": true,
+   "data": {
+    "age": 30,
+    "name": "Alice",
+    "nested": {
+     "x": 1
+    },
+    "tags": [
+     "a",
+     "b"
+    ]
+   },
+   "exists": true,
+   "updateEqualsWrite": true
+  }
+ },
+ {
+  "name": "update dotted",
+  "ok": {
+   "age": 31,
+   "name": "Alice",
+   "nested": {
+    "x": 1,
+    "y": 2
+   },
+   "tags": [
+    "a",
+    "b"
+   ]
+  }
+ },
+ {
+  "name": "set merge",
+  "ok": {
+   "age": 31,
+   "city": "Tokyo",
+   "name": "Alice",
+   "nested": {
+    "x": 1,
+    "y": 2,
+    "z": 3
+   },
+   "tags": [
+    "a",
+    "b"
+   ]
+  }
+ },
+ {
+  "name": "set mergeFields",
+  "ok": {
+   "age": 31,
+   "city": "Osaka",
+   "name": "Alice",
+   "nested": {
+    "x": 1,
+    "y": 2,
+    "z": 3
+   },
+   "tags": [
+    "a",
+    "b"
+   ]
+  }
+ },
+ {
+  "name": "create existing",
+  "error": {
+   "code": "ALREADY_EXISTS",
+   "message": "entity already exists: EntityRef[partitionRef=dev~demo-go-documents, path=/users/alice]"
+  }
+ },
+ {
+  "name": "update missing",
+  "error": {
+   "code": "NOT_FOUND",
+   "message": "no entity to update: app: \"dev~demo-go-documents\"\npath <\n  Element {\n    type: \"users\"\n    name: \"nobody\"\n  }\n>\n"
+  }
+ },
+ {
+  "name": "update with a stale lastUpdateTime",
+  "error": {
+   "code": "FAILED_PRECONDITION",
+   "message": "the stored version (<n>) does not match the required base version (<n>)"
+  }
+ },
+ {
+  "name": "delete with a stale lastUpdateTime",
+  "error": {
+   "code": "FAILED_PRECONDITION",
+   "message": "the stored version (<n>) does not match the required base version (<n>)"
+  }
+ },
+ {
+  "name": "update with the current updateTime",
+  "ok": {
+   "age": 32,
+   "city": "Osaka",
+   "name": "Alice",
+   "nested": {
+    "x": 1,
+    "y": 2,
+    "z": 3
+   },
+   "tags": [
+    "a",
+    "b"
+   ]
+  }
+ },
+ {
+  "name": "delete a missing document",
+  "ok": "ok"
+ },
+ {
+  "name": "delete a missing document that must exist",
+  "error": {
+   "code": "NOT_FOUND",
+   "message": "no entity to update: app: \"dev~demo-go-documents\"\npath <\n  Element {\n    type: \"users\"\n    name: \"nobody\"\n  }\n>\n"
+  }
+ },
+ {
+  "name": "identical set keeps updateTime",
+  "ok": {
+   "updateTimeUnchanged": true,
+   "writeTimeIsOldUpdateTime": true
+  }
+ },
+ {
+  "name": "getAll",
+  "ok": [
+   {
+    "exists": false,
+    "id": "nobody"
+   },
+   {
+    "exists": true,
+    "id": "alice"
+   }
+  ]
+ },
+ {
+  "name": "batch",
+  "ok": 5
+ },
+ {
+  "name": "a failing batch writes nothing",
+  "ok": {
+   "commit": {
+    "code": "NOT_FOUND",
+    "message": "no entity to update: app: \"dev~demo-go-documents\"\npath <\n  Element {\n    type: \"users\"\n    name: \"nobody\"\n  }\n>\n"
+   },
+   "eveExists": false
+  }
+ },
+ {
+  "name": "listDocuments users",
+  "ok": [
+   "bob",
+   "carol"
+  ]
+ },
+ {
+  "name": "listDocuments ghosts (missing parent)",
+  "ok": [
+   "g"
+  ]
+ },
+ {
+  "name": "listCollections root",
+  "ok": [
+   "ghosts",
+   "users"
+  ]
+ },
+ {
+  "name": "listCollections bob",
+  "ok": [
+   "posts"
+  ]
+ },
+ {
+  "name": "bulkWriter",
+  "ok": [
+   "ok",
+   "error ALREADY_EXISTS",
+   "error NOT_FOUND",
+   "ok"
+  ]
+ },
+ {
+  "name": "after bulkWriter",
+  "ok": [
+   "bob",
+   "dave"
+  ]
+ },
+ {
+  "name": "add with a generated ID",
+  "ok": {
+   "data": {
+    "n": 1
+   },
+   "idLength": 20
+  }
+ },
+ {
+  "name": "serverTimestamp",
+  "ok": {
+   "isTimestamp": true,
+   "millisecondPrecision": true,
+   "notAfterWrite": true,
+   "sameInNested": true
+  }
+ },
+ {
+  "name": "increment",
+  "ok": {
+   "f": 2.5,
+   "fresh": 5,
+   "n": 3
+  }
+ },
+ {
+  "name": "maximum and minimum",
+  "ok": {
+   "a": 7,
+   "b": 3,
+   "c": 1.5,
+   "fresh": 2
+  }
+ },
+ {
+  "name": "arrayUnion and arrayRemove",
+  "ok": {
+   "afterRemove": [
+    "b"
+   ],
+   "afterUnion": [
+    "a",
+    1,
+    "b"
+   ]
+  }
+ },
+ {
+  "name": "delete a field",
+  "ok": {
+   "keep": 1,
+   "m": {
+    "y": 2
+   }
+  }
+ },
+ {
+  "name": "merge with transforms",
+  "ok": {
+   "a": 1,
+   "b": 3,
+   "list": [
+    "x",
+    "y"
+   ]
+  }
+ },
+ {
+  "name": "update quoted field paths",
+  "ok": {
+   "a.b": {
+    "c": 2
+   },
+   "plain": 1,
+   "x y": 3
+  }
+ },
+ {
+  "name": "value types",
+  "ok": {
+   "-inf": "-Infinity",
+   "array": [
+    1,
+    "a",
+    null,
+    {
+     "m": true
+    }
+   ],
+   "bytes": {
+    "bytes": "AAEC/w=="
+   },
+   "double": 0.1,
+   "emptyArray": [],
+   "emptyMap": {},
+   "geopoint": {
+    "geopoint": [
+     35.68,
+     139.76
+    ]
+   },
+   "inf": "Infinity",
+   "int": 9223372036854775807,
+   "map": {
+    "a": {
+     "b": {
+      "c": 1
+     }
+    }
+   },
+   "nan": "NaN",
+   "negative": -42,
+   "null": null,
+   "reference": {
+    "reference": "users/bob"
+   },
+   "string": "héllo ☃ 😀",
+   "timestamp": "2024-01-02T03:04:05.123456Z",
+   "true": true,
+   "vector": {
+    "vector": [
+     1.0,
+     2.5
+    ]
+   }
+  }
+ }
+]

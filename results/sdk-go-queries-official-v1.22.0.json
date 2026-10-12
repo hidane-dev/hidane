@@ -1,0 +1,398 @@
+[
+ {
+  "name": "seed",
+  "ok": "ok"
+ },
+ {
+  "name": "all",
+  "ok": [
+   "cities/BJ",
+   "cities/DC",
+   "cities/LA",
+   "cities/NAN",
+   "cities/SF",
+   "cities/TOK"
+  ]
+ },
+ {
+  "name": "where ==",
+  "ok": [
+   "cities/LA",
+   "cities/SF"
+  ]
+ },
+ {
+  "name": "where == null (IS_NULL)",
+  "ok": [
+   "cities/BJ",
+   "cities/DC",
+   "cities/TOK"
+  ]
+ },
+ {
+  "name": "where != null (IS_NOT_NULL)",
+  "ok": [
+   "cities/LA",
+   "cities/SF"
+  ]
+ },
+ {
+  "name": "where == NaN (IS_NAN)",
+  "ok": [
+   "cities/NAN"
+  ]
+ },
+ {
+  "name": "where <",
+  "ok": [
+   "cities/DC",
+   "cities/SF"
+  ]
+ },
+ {
+  "name": "where >= orderBy desc",
+  "ok": [
+   "cities/BJ",
+   "cities/TOK",
+   "cities/LA"
+  ]
+ },
+ {
+  "name": "where !=",
+  "ok": [
+   "cities/BJ",
+   "cities/TOK",
+   "cities/NAN"
+  ]
+ },
+ {
+  "name": "where in",
+  "ok": [
+   "cities/BJ",
+   "cities/TOK"
+  ]
+ },
+ {
+  "name": "where not-in",
+  "ok": [
+   "cities/BJ",
+   "cities/NAN"
+  ]
+ },
+ {
+  "name": "array-contains",
+  "ok": [
+   "cities/LA",
+   "cities/SF"
+  ]
+ },
+ {
+  "name": "array-contains-any",
+  "ok": [
+   "cities/LA",
+   "cities/SF",
+   "cities/TOK"
+  ]
+ },
+ {
+  "name": "nested field",
+  "ok": [
+   "cities/TOK",
+   "cities/SF"
+  ]
+ },
+ {
+  "name": "two inequalities",
+  "ok": [
+   "cities/BJ",
+   "cities/LA",
+   "cities/SF",
+   "cities/TOK"
+  ]
+ },
+ {
+  "name": "or",
+  "ok": [
+   "cities/BJ",
+   "cities/DC",
+   "cities/LA",
+   "cities/SF",
+   "cities/TOK"
+  ]
+ },
+ {
+  "name": "or of and",
+  "ok": [
+   "cities/LA",
+   "cities/TOK"
+  ]
+ },
+ {
+  "name": "orderBy limit",
+  "ok": [
+   "cities/BJ",
+   "cities/LA",
+   "cities/NAN"
+  ]
+ },
+ {
+  "name": "limitToLast",
+  "ok": [
+   "cities/TOK",
+   "cities/DC"
+  ]
+ },
+ {
+  "name": "offset",
+  "ok": [
+   "cities/SF",
+   "cities/LA"
+  ]
+ },
+ {
+  "name": "startAt / endBefore values",
+  "ok": [
+   "cities/SF",
+   "cities/LA"
+  ]
+ },
+ {
+  "name": "startAfter a snapshot",
+  "ok": []
+ },
+ {
+  "name": "paging with startAfter",
+  "ok": [
+   [
+    "cities/NAN",
+    "cities/DC"
+   ],
+   [
+    "cities/SF",
+    "cities/LA"
+   ],
+   [
+    "cities/TOK",
+    "cities/BJ"
+   ]
+  ]
+ },
+ {
+  "name": "select",
+  "ok": [
+   {
+    "data": {
+     "name": "Beijing"
+    },
+    "id": "BJ"
+   },
+   {
+    "data": {
+     "name": "Washington, D.C."
+    },
+    "id": "DC"
+   },
+   {
+    "data": {
+     "loc": {
+      "lat": 35.7
+     },
+     "name": "Tokyo"
+    },
+    "id": "TOK"
+   }
+  ]
+ },
+ {
+  "name": "documentId in",
+  "ok": [
+   "cities/SF",
+   "cities/TOK"
+  ]
+ },
+ {
+  "name": "documentId range",
+  "ok": [
+   "cities/LA",
+   "cities/NAN",
+   "cities/SF"
+  ]
+ },
+ {
+  "name": "orderBy documentId desc",
+  "error": {
+   "code": "FAILED_PRECONDITION",
+   "message": "Firestore does not support descending key scans"
+  }
+ },
+ {
+  "name": "collectionGroup",
+  "ok": [
+   "cities/BJ/landmarks/forbidden",
+   "cities/SF/landmarks/legion",
+   "cities/TOK/landmarks/national"
+  ]
+ },
+ {
+  "name": "collectionGroup orderBy name",
+  "ok": [
+   "cities/BJ/landmarks/forbidden",
+   "cities/SF/landmarks/golden-gate",
+   "cities/SF/landmarks/legion",
+   "cities/TOK/landmarks/national"
+  ]
+ },
+ {
+  "name": "subcollection",
+  "ok": [
+   "cities/SF/landmarks/golden-gate",
+   "cities/SF/landmarks/legion"
+  ]
+ },
+ {
+  "name": "stream",
+  "ok": [
+   "BJ",
+   "DC",
+   "TOK"
+  ]
+ },
+ {
+  "name": "in with 31 values",
+  "error": {
+   "code": "INVALID_ARGUMENT",
+   "message": "'IN' supports up to 30 comparison values."
+  }
+ },
+ {
+  "name": "explain",
+  "ok": {
+   "docs": [
+    "cities/BJ",
+    "cities/DC",
+    "cities/TOK"
+   ],
+   "metrics": null
+  }
+ },
+ {
+  "name": "query in a transaction",
+  "ok": [
+   "cities/BJ",
+   "cities/DC",
+   "cities/TOK"
+  ]
+ },
+ {
+  "name": "read-only transaction query",
+  "ok": [
+   "cities/LA",
+   "cities/SF"
+  ]
+ },
+ {
+  "name": "partition query",
+  "error": {
+   "code": "UNIMPLEMENTED",
+   "message": "Method google.firestore.v1.Firestore/PartitionQuery is unimplemented"
+  }
+ },
+ {
+  "name": "count",
+  "ok": {
+   "count": 5
+  }
+ },
+ {
+  "name": "count with a filter",
+  "ok": {
+   "count": 2
+  }
+ },
+ {
+  "name": "count with a limit",
+  "ok": {
+   "count": 2
+  }
+ },
+ {
+  "name": "sum and average",
+  "ok": {
+   "mean": 6.5,
+   "total": 19.5
+  }
+ },
+ {
+  "name": "count next to sum",
+  "ok": {
+   "n": 5,
+   "qty": 12
+  }
+ },
+ {
+  "name": "average of nothing",
+  "ok": {
+   "mean": null,
+   "total": 0
+  }
+ },
+ {
+  "name": "sum beyond 2^53",
+  "ok": {
+   "n": 18014398509481982
+  }
+ },
+ {
+  "name": "collection group count and sum",
+  "ok": {
+   "n": 2,
+   "qty": 10
+  }
+ },
+ {
+  "name": "count in a transaction",
+  "ok": {
+   "count": 2
+  }
+ },
+ {
+  "name": "count after the transaction",
+  "ok": {
+   "count": 3
+  }
+ },
+ {
+  "name": "findNearest euclidean",
+  "ok": [
+   [
+    "a",
+    0.5
+   ],
+   [
+    "c",
+    0.5
+   ],
+   [
+    "b",
+    1.118033988749895
+   ]
+  ]
+ },
+ {
+  "name": "findNearest dot product",
+  "ok": [
+   [
+    "d",
+    5.0
+   ],
+   [
+    "c",
+    1.5
+   ],
+   [
+    "a",
+    1.0
+   ]
+  ]
+ }
+]

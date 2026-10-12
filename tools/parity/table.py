@@ -634,6 +634,11 @@ SDK_DIFFERENCES = {
     "sdk-listen-resume": ("results/README.md", "the official emulator gets there in three"),
     "sdk-rules-unit-testing": ("results/README.md", "13 denial messages differ"),
 }
+# The Go, Python and Java SDKs' transcripts (tools/oracle/sdk_go/ and the others) differ in the
+# same messages.
+for _sdk in ("go", "java", "python"):
+    for _section in ("documents", "transactions"):
+        SDK_DIFFERENCES[f"sdk-{_sdk}-{_section}"] = SDK_DIFFERENCES["sdk-documents"]
 
 
 def suite_outline(data):
@@ -681,6 +686,11 @@ TRANSCRIPTS = {
     "sdk-web-transactions": dict(area="transactions", client="web SDK in Node", transport="gRPC"),
     "sdk-web-writes": dict(area="streams", client="web SDK in Node", transport="gRPC"),
 }
+# One transcript per section of tools/oracle/sdk_go/, sdk_python/ and sdk_java/.
+for _sdk, _client in (("go", "Go SDK"), ("java", "Java SDK"), ("python", "Python SDK")):
+    for _section, _area in (("documents", "documents"), ("listen", "streams"),
+                            ("queries", "queries"), ("transactions", "transactions")):
+        TRANSCRIPTS[f"sdk-{_sdk}-{_section}"] = dict(area=_area, client=_client, transport="gRPC")
 
 # JSON files in results/ that are neither a transcript nor a replayed recording.
 IGNORED = {

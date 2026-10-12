@@ -1,0 +1,125 @@
+[
+ {
+  "name": "create when missing",
+  "ok": {
+   "attempts": 1,
+   "data": {
+    "n": 0
+   },
+   "result": false
+  }
+ },
+ {
+  "name": "read-modify-write",
+  "ok": {
+   "attempts": 1,
+   "data": {
+    "n": 1
+   },
+   "result": 0
+  }
+ },
+ {
+  "name": "getAll",
+  "ok": {
+   "attempts": 1,
+   "result": [
+    {
+     "exists": true,
+     "id": "a"
+    },
+    {
+     "exists": false,
+     "id": "missing"
+    }
+   ]
+  }
+ },
+ {
+  "name": "write-only transaction",
+  "ok": {
+   "attempts": 1,
+   "data": {
+    "n": 1
+   },
+   "result": null
+  }
+ },
+ {
+  "name": "read-only",
+  "ok": {
+   "attempts": 1,
+   "result": {
+    "n": 1
+   }
+  }
+ },
+ {
+  "name": "read-only at a past read time",
+  "ok": {
+   "attempts": 1,
+   "result": {
+    "n": 1
+   }
+  }
+ },
+ {
+  "name": "read-only cannot write",
+  "error": {
+   "client": "firestore: write in read-only transaction"
+  }
+ },
+ {
+  "name": "a failing callback rolls back and releases its locks",
+  "ok": {
+   "failed": "boom",
+   "outsideWriteWaited": false
+  }
+ },
+ {
+  "name": "create of an existing document",
+  "error": {
+   "code": "ALREADY_EXISTS",
+   "message": "Document already exists: projects/demo-go-transactions/databases/(default)/documents/txn/b"
+  }
+ },
+ {
+  "name": "an outside write waits for the transaction that read the document",
+  "ok": {
+   "final": {
+    "by": "outside"
+   },
+   "outside": "ok",
+   "outsideWaited": true,
+   "transaction": {
+    "attempts": 1,
+    "result": null
+   }
+  }
+ },
+ {
+  "name": "an outside write gives up after the lock timeout",
+  "ok": {
+   "final": {
+    "by": "transaction"
+   },
+   "outside": {
+    "code": "ABORTED",
+    "message": "Transaction lock timeout."
+   },
+   "transaction": {
+    "attempts": 1,
+    "result": null
+   }
+  }
+ },
+ {
+  "name": "two transactions increment the same counter",
+  "ok": {
+   "final": {
+    "n": 2
+   },
+   "totalAttempts": 3
+  }
+ }
+]

@@ -209,3 +209,47 @@ weekly, by hand, and on pull requests that change the action or the workflow:
   the new version and SHA-256 to see which recordings change, then re-record every fixture
   against the new jar, update the `oracle` field the scripts write and `pinned.sh`, and change
   hidane where the answers changed.
+
+`sdk_go/`, `sdk_python/` and `sdk_java/` run the same steps through the Go, Python and Java
+server SDKs: `cloud.google.com/go/firestore` 1.26.0 (pinned in `go.mod` and `go.sum`; Go 1.26 or
+newer), `google-cloud-firestore` 2.34.1 (`requirements.txt`; run with Python 3.13) and
+`com.google.cloud:google-cloud-firestore` 3.49.0 (`pom.xml`; Java 21 and Maven). Each takes a
+section as its argument, prints its transcript, and wants a fresh emulator per section (each
+section uses a project of its own, `demo-<sdk>-<section>`):
+
+- `documents`: set, merge and `mergeFields`, dotted and quoted field paths, create, update and
+  delete with and without preconditions (`exists`, `lastUpdateTime`), a write that changes
+  nothing, `getAll`, a field mask, batches (one that fails writes nothing), `listDocuments`,
+  `listCollections`, the BulkWriter (BatchWrite), generated IDs, every field transform and a
+  value of each type;
+- `queries`: the filters, `or` / `and`, orderings, cursors, offsets, limits and `limitToLast`,
+  projections, document-ID filters, collection groups, streaming, `explain` options, queries in
+  transactions, a partition query (`UNIMPLEMENTED` on both emulators), `count` / `sum` /
+  `average`, `findNearest` and `recursiveDelete` (not in the Go SDK);
+- `transactions`: read-write, write-only and read-only transactions (also at a past read time),
+  a callback that fails, a precondition that fails at the commit, an outside write that waits
+  for a transaction's lock or gives up after 2 s, and two transactions that read one
+  document and write it 300 ms apart, so that the first lock wait times out and one of them is
+  retried after `ABORTED` (two commits that start waiting at the same instant can both time
+  out on the official emulator, and the attempts then depend on the SDK's backoff);
+- `listen`: query, limit, collection-group and document listeners while documents enter,
+  change in, move in and leave them, a write that changes nothing, a batch, a server timestamp
+  and a delete; within each step the snapshots are grouped by listener.
+
+A step an SDK does not offer is left out (the Go SDK has no field mask on a get and no
+`recursiveDelete`; the Java SDK has no `exists` precondition for deletes). Keep build output and
+downloaded dependencies out of the repository:
+
+```sh
+tmp=$(mktemp -d); export FIRESTORE_EMULATOR_HOST=127.0.0.1:8089
+# Go
+(cd tools/oracle/sdk_go && go build -o "$tmp/sdk_go" .) && "$tmp/sdk_go" documents > go-documents.json
+# Python
+python3 -m venv "$tmp/venv" && "$tmp/venv/bin/pip" install -r tools/oracle/sdk_python/requirements.txt
+"$tmp/venv/bin/python" -I tools/oracle/sdk_python/transcript.py documents > python-documents.json
+# Java
+cp -R tools/oracle/sdk_java "$tmp/" && (cd "$tmp/sdk_java" && mvn -q compile exec:java -Dexec.args=documents) > java-documents.json
+```
+
+Their transcripts are in `results/sdk-go-*.json`, `results/sdk-python-*.json` and
+`results/sdk-java-*.json`, one pair per section.
