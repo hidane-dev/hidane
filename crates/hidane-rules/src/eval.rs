@@ -36,6 +36,7 @@ mod value;
 pub use constraint::Comparator;
 pub use trace::{KeyStatus, Observed, Outcome, Segment, Trace};
 pub(crate) use trace::{NodeKey, Traced, observe};
+pub use value::java_double;
 
 use std::rc::Rc;
 

@@ -809,7 +809,7 @@ fn json_string(s: &str) -> String {
 }
 
 /// RFC 3339 in UTC with 0, 3, 6 or 9 fractional digits, as ProtoJSON prints timestamps.
-fn timestamp(seconds: i64, nanos: i32) -> String {
+pub(crate) fn timestamp(seconds: i64, nanos: i32) -> String {
     let days = seconds.div_euclid(86_400);
     let secs = seconds.rem_euclid(86_400);
     let (year, month, day) = civil_from_days(days);

@@ -15,6 +15,9 @@
 //!   `PERMISSION_DENIED`. Every write of a commit is checked after all of them were applied,
 //!   so `getAfter()` sees the whole batch; one denied write denies the commit.
 //! - A denial is `PERMISSION_DENIED` with the evaluator's message.
+//!
+//! Each decision is counted in the ruleset's coverage report, and the values of its `debug()`
+//! calls are printed (`crate::rules`).
 
 use std::{
     collections::HashMap,
@@ -24,32 +27,31 @@ use std::{
 
 use hidane_core::{path::ResourcePath, store::StoredDocument};
 use hidane_proto::google::firestore::v1::{Value, value::ValueType};
-use hidane_rules::{
-    Ruleset,
-    eval::{self, Auth, Budget, Decision, Method, Request},
-};
+use hidane_rules::eval::{self, Auth, Budget, Decision, Method, Request, Trace};
 use serde_json::Value as Json;
 use tonic::Status;
 
 use super::auth::Caller;
+use crate::rules::{Loaded, Rules};
 
 /// The checks of one request: the ruleset and who is asking.
 pub(crate) struct Guard {
-    ruleset: Arc<Ruleset>,
+    loaded: Arc<Loaded>,
+    rules: Arc<Rules>,
     auth: Option<Auth>,
     /// `databases/{id}/documents`: the start of every path rules see.
     root: Vec<String>,
 }
 
 impl Guard {
-    /// The checks for `caller` on `database` (`projects/{p}/databases/{d}`), or `None` when
-    /// nothing is checked: an administrator, or a project without rules.
+    /// The checks for `caller` on `database` (`projects/{p}/databases/{d}`) under `loaded`, or
+    /// `None` when nothing is checked: for an administrator.
     pub(crate) fn new(
-        ruleset: Option<Arc<Ruleset>>,
+        loaded: Arc<Loaded>,
+        rules: Arc<Rules>,
         caller: &Caller,
         database: &str,
     ) -> Option<Self> {
-        let ruleset = ruleset?;
         let auth = match caller {
             Caller::Admin => return None,
             Caller::Anonymous => None,
@@ -63,7 +65,8 @@ impl Guard {
         };
         let database_id = database.rsplit('/').next().unwrap_or_default();
         Some(Self {
-            ruleset,
+            loaded,
+            rules,
             auth,
             root: vec![
                 "databases".to_owned(),
@@ -71,6 +74,31 @@ impl Guard {
                 "documents".to_owned(),
             ],
         })
+    }
+
+    /// Decides `request`, counting what it evaluated and printing its `debug()` values.
+    fn decide(
+        &self,
+        request: &Request,
+        resource: Option<&eval::Document>,
+        documents: &Lookup<'_>,
+        budget: &mut Budget,
+    ) -> Result<(), String> {
+        let mut trace = Trace::with_values();
+        let decision = eval::authorize_traced(
+            self.loaded.ruleset(),
+            request,
+            resource,
+            documents,
+            budget,
+            &mut trace,
+        );
+        self.loaded.record(&trace);
+        self.rules.debug(&trace);
+        match decision {
+            Decision::Allow => Ok(()),
+            Decision::Deny(message) => Err(message),
+        }
     }
 
     fn path(&self, path: &ResourcePath) -> Vec<String> {
@@ -120,13 +148,12 @@ impl Guard {
             before: lookup,
             after: lookup,
         };
-        decided(eval::authorize(
-            &self.ruleset,
+        self.decide(
             &request,
             resource.as_ref(),
             &documents,
             &mut Budget::single(),
-        ))
+        )
     }
 
     /// A query of the collection at `collection` (for a collection group, of the collections
@@ -144,13 +171,7 @@ impl Guard {
             before: lookup,
             after: lookup,
         };
-        decided(eval::authorize(
-            &self.ruleset,
-            &request,
-            None,
-            &documents,
-            &mut Budget::query(),
-        ))
+        self.decide(&request, None, &documents, &mut Budget::query())
     }
 
     /// The writes of one commit, each with the document before and after it.
@@ -185,13 +206,8 @@ impl Guard {
             let mut request = self.request(write.method, &write.path, new, time);
             request.upsert = write.upsert;
             let resource = write.before.as_deref().map(|doc| self.document(doc));
-            if let Err(message) = decided(eval::authorize(
-                &self.ruleset,
-                &request,
-                resource.as_ref(),
-                &documents,
-                &mut budget,
-            )) {
+            if let Err(message) = self.decide(&request, resource.as_ref(), &documents, &mut budget)
+            {
                 denials.push(message);
             }
         }
@@ -261,13 +277,6 @@ impl eval::Documents for Lookup<'_> {
     fn get_after(&self, path: &[String]) -> Option<eval::Document> {
         let path = self.local(path)?;
         (self.after)(&path).map(|doc| self.guard.document(&doc))
-    }
-}
-
-fn decided(decision: Decision) -> Result<(), String> {
-    match decision {
-        Decision::Allow => Ok(()),
-        Decision::Deny(message) => Err(message),
     }
 }
 

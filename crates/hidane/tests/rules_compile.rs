@@ -183,7 +183,8 @@ async fn compiles_like_the_official_emulator() {
     assert_eq!(first_line_only.len(), FIRST_LINE_ONLY.len());
 }
 
-/// The ruleset is kept per project; one that does not compile leaves the previous one.
+/// The ruleset is kept per database (`:securityRules` of a project is its default database's);
+/// one that does not compile leaves the previous one.
 #[tokio::test]
 async fn keeps_the_last_ruleset_that_compiled() {
     let (addr, admin) = start().await;
@@ -192,18 +193,30 @@ async fn keeps_the_last_ruleset_that_compiled() {
             .to_string()
     };
     let good = "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read: if true;\n    }\n  }\n}\n";
+    let a = "projects/a/databases/(default)";
     assert_eq!(put(addr, "a", &rules(good)).await.0, 200);
-    let ruleset = admin.rules().get("a").expect("compiled");
+    let ruleset = admin.rules().ruleset(a).expect("compiled");
     assert_eq!(ruleset.version, hidane_rules::Version::V2);
     assert_eq!(ruleset.file_name.as_deref(), Some("firestore.rules"));
     assert!(ruleset.service("cloud.firestore").is_some());
-    assert!(admin.rules().get("b").is_none());
+    assert!(
+        admin
+            .rules()
+            .ruleset("projects/b/databases/(default)")
+            .is_none()
+    );
+    assert!(
+        admin
+            .rules()
+            .ruleset("projects/a/databases/other")
+            .is_none()
+    );
 
     assert_eq!(put(addr, "a", &rules("service x {")).await.0, 400);
     assert!(
         admin
             .rules()
-            .get("a")
+            .ruleset(a)
             .is_some_and(|r| r.version == hidane_rules::Version::V2)
     );
 }

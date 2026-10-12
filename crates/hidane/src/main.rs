@@ -121,8 +121,8 @@ async fn run(args: Vec<OsString>) -> ExitCode {
     if let Some(documents) = seed {
         admin = admin.with_seed(documents);
     }
-    if let Some(ruleset) = rules {
-        admin.rules().set_default(ruleset);
+    if let (Some(path), Some((content, ruleset))) = (cli.rules.as_deref(), rules) {
+        admin.rules().set_default(path, content, ruleset);
     }
     let (code_tx, code_rx) = tokio::sync::oneshot::channel();
     let shutdown = {

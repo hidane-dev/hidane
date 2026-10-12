@@ -404,7 +404,7 @@ pub(crate) fn resource(doc: &Document) -> Val {
 
 /// A float as Java's `Double.toString` writes it: `1.0`, `0.001`, `1.0E7`, `1.0E-4`,
 /// `Infinity`, `NaN`, with the shortest digits that read back the same.
-pub(crate) fn java_double(f: f64) -> String {
+pub fn java_double(f: f64) -> String {
     if f.is_nan() {
         return "NaN".to_owned();
     }

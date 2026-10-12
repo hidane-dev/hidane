@@ -288,12 +288,20 @@ async fn channel_post(
 /// The largest WebChannel POST read (as REST bodies).
 const MAX_CHANNEL_BODY: usize = 16 * 1024 * 1024;
 
-/// Security Rules (`/emulator/v1/projects/{p}:securityRules`), export and import
-/// (`/emulator/v1/projects/{p}:export`, `:import`), REST (`/v1/…`, `/v1beta1/…`), or 404.
+/// Security Rules (`/emulator/v1/projects/{p}:securityRules`, `:ruleCoverage`), export and
+/// import (`/emulator/v1/projects/{p}:export`, `:import`), REST (`/v1/…`, `/v1beta1/…`), or 404.
 async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -> Response {
     let (parts, body) = request.into_parts();
-    if let Some(project) = rules::route(parts.uri.path()) {
-        return rules::handle(&admin.rules, project, &parts.method, &parts.headers, body).await;
+    if let Some(route) = rules::route(parts.uri.path()) {
+        return rules::handle(
+            &admin.rules,
+            route,
+            &parts.method,
+            parts.uri.query(),
+            &parts.headers,
+            body,
+        )
+        .await;
     }
     if let Some(verb) = export::route(parts.uri.path()) {
         return export::handle(admin.firestore(), verb, &parts.method, &parts.headers, body).await;
@@ -325,8 +333,9 @@ fn text(body: &'static str) -> Response {
 async fn reset(State(admin): State<Admin>) -> Response {
     // Every document of every project, and every open transaction with its locks, as on the
     // official emulator; attached listeners see the documents go, which the official emulator
-    // does not tell them.
+    // does not tell them. The rulesets loaded since the start go too, with their coverage.
     admin.firestore().reset().await;
+    admin.rules.reset();
     text("Resetting...\n")
 }
 

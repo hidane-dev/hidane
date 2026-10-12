@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Firestore Rule Coverage Report</title>
+<style>
+body { font: 14px/1.5 system-ui, sans-serif; margin: 1.5em; color: #222; background: #fff; }
+h1 { font-size: 1.2em; }
+pre { font: 13px/1.6 ui-monospace, monospace; background: #f7f7f7; padding: 1em; overflow-x: auto; }
+.expr { border-bottom: 2px solid #3a8; cursor: default; }
+.expr.never { border-bottom-color: #d33; }
+.expr:hover { background: rgba(255, 200, 0, 0.25); }
+#detail { white-space: pre-wrap; font: 13px/1.5 ui-monospace, monospace; min-height: 3em; }
+</style>
+<h1>Firestore Rule Coverage Report</h1>
+<p>Each expression is underlined: green if it was evaluated, red if it never was. Hover over
+one to see what it evaluated to.</p>
+<div id="detail"></div>
+<script>
+// The report, as GET …:ruleCoverage answers it.
+const data = /*DATA*/{};
+
+// What an expression evaluated to, one line per distinct outcome.
+function describe(values) {
+  if (!values || values.length === 0) {
+    return 'Never evaluated';
+  }
+  return values.map(({value, count}) => {
+    const times = count === 1 ? '1 time' : count + ' times';
+    if (value.undefined) {
+      const message = value.undefined.causeMessage;
+      return (message ? 'Error: ' + message : 'Error') + ' (' + times + ')';
+    }
+    if (Object.keys(value).length === 0) {
+      return 'Not evaluated: decided by the other side (' + times + ')';
+    }
+    return JSON.stringify(value) + ' (' + times + ')';
+  }).join('\n');
+}
+
+// The text from code point `from` to `to`, with each expression in it as a span.
+function render(chars, nodes, from, to) {
+  const out = document.createDocumentFragment();
+  const sorted = (nodes || []).slice().sort(
+    (a, b) => a.sourcePosition.currentOffset - b.sourcePosition.currentOffset);
+  let at = from;
+  for (const node of sorted) {
+    const start = node.sourcePosition.currentOffset || 0;
+    const end = (node.sourcePosition.endOffset || 0) + 1;
+    if (start < at || end > to) {
+      continue;
+    }
+    out.append(chars.slice(at, start).join(''));
+    const span = document.createElement('span');
+    span.className = 'expr' + (node.values && node.values.length ? '' : ' never');
+    span.title = describe(node.values);
+    span.addEventListener('mouseover', (event) => {
+      event.stopPropagation();
+      document.getElementById('detail').textContent = span.title;
+    });
+    span.append(render(chars, node.children, start, end));
+    out.append(span);
+    at = end;
+  }
+  out.append(chars.slice(at, to).join(''));
+  return out;
+}
+
+window.onload = () => {
+  const file = data.rules.files[0];
+  const chars = Array.from(file.content);
+  const pre = document.createElement('pre');
+  pre.append(render(chars, data.report, 0, chars.length));
+  document.body.append(pre);
+};
+</script>
