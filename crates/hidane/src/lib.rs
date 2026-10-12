@@ -115,7 +115,7 @@ impl Admin {
         }
     }
 
-    /// The compiled Security Rules, per project.
+    /// The Security Rules, per database.
     pub fn rules(&self) -> &rules::Rules {
         &self.rules
     }

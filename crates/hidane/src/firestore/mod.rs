@@ -91,7 +91,7 @@ pub struct FirestoreService {
     enterprise: bool,
     /// `--seed_from_export`, forgotten on `POST /reset`.
     seeder: Option<Arc<seed::Seeder>>,
-    /// The Security Rules of each project (`:securityRules`, `--rules`).
+    /// The Security Rules of each database (`:securityRules`, `--rules`).
     rules: Option<Arc<crate::rules::Rules>>,
 }
 

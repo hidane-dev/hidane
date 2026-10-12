@@ -1,7 +1,7 @@
 //! Security Rules on each request (#63–#68), applied the way the official emulator
 //! applies them (`tools/oracle/rules_*.py`, fixtures in `tests/fixtures/rules_*.json`).
 //!
-//! A request is checked when its project has a ruleset (loaded with `:securityRules`, or the
+//! A request is checked when its database has a ruleset (loaded with `:securityRules`, or the
 //! `--rules` file) and its caller is not an administrator (`Bearer owner`); otherwise everything
 //! is allowed, as before rules were loaded. `request.auth` holds the token's claims, with `uid`
 //! from `sub`; nothing in the token is verified.

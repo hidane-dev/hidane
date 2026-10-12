@@ -277,10 +277,10 @@ impl Trace {
         self.values.as_ref().map_or(0, Vec::len)
     }
 
-    /// Counts what each statement traced again for each statement evaluated after it: the
-    /// official emulator evaluates the statements of a method as a growing `||` of them, the
-    /// first alone, then the first two, and so on, and counts every evaluation (but runs each
-    /// `debug()` once). `marks` holds where each statement's values start, in order.
+    /// Counts what each statement traced again for each statement evaluated after it, as the
+    /// official emulator's report counts them: as if it evaluated a growing `||` of the
+    /// statements, the first alone, then the first two, and so on (but it runs each `debug()`
+    /// once). `marks` holds where each statement's values start, in order.
     pub(crate) fn repeat(&mut self, marks: &[usize]) {
         let Some(values) = &mut self.values else {
             return;
