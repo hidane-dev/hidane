@@ -26,7 +26,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="/style.css?v=20261009a">
+<link rel="stylesheet" href="/style.css?v=20261013a">
 <script src="/theme.js?v=20261009a"></script>
 <script src="/copy.js?v=20261011a" defer></script>
 </head>
@@ -155,8 +155,32 @@
 <div class="wrap sec-in sec-in--narrow">
 <h2 class="h2" id="parity">Parity</h2>
 <p class="lede-lg">hidane treats the official emulator as the oracle: its answers are recorded, and the test suite replays every recording against hidane. No claim of compatibility without a test behind it.</p>
-<p class="placeholder">So far: 37 recorded fixtures, from value ordering to the browser transport, export files and Security Rules, and SDK results compared side by side (<a href="https://github.com/hidane-dev/hidane/tree/main/results">results</a>). A parity table will follow.</p>
-<p class="fine">Known, intentional differences are listed in <a href="https://github.com/hidane-dev/hidane/blob/main/docs/parity-exceptions.md">parity exceptions</a>.</p>
+<!-- parity:start -->
+<p class="fine">So far: 15,427 answers of the official emulator in 39 recordings, each replayed against hidane in CI, and SDK transcripts from both emulators compared side by side (<a href="https://github.com/hidane-dev/hidane/tree/main/results">results</a>). How they are counted: <a href="https://github.com/hidane-dev/hidane/blob/main/docs/parity.md">docs/parity.md</a>.</p>
+<div class="parity-scroll">
+<table class="parity-table">
+<thead>
+<tr><th scope="col">Area</th><th scope="col" class="parity-tr">Transports</th><th scope="col" class="num">Recorded answers</th><th scope="col" class="num">Compared in full</th><th scope="col">SDK transcripts</th></tr>
+</thead>
+<tbody>
+<tr><th scope="row">Documents &amp; writes<span class="parity-sub"><span class="nw">gRPC</span>, <span class="nw">REST</span></span></th><td class="parity-tr"><span class="nw">gRPC</span>, <span class="nw">REST</span></td><td class="num">544</td><td class="num">229</td><td class="sdk"><span class="sdk-part">1 documented difference</span></td></tr>
+<tr><th scope="row">Queries &amp; aggregations<span class="parity-sub"><span class="nw">gRPC</span>, <span class="nw">REST</span></span></th><td class="parity-tr"><span class="nw">gRPC</span>, <span class="nw">REST</span></td><td class="num">444</td><td class="num">403</td><td class="sdk"><span class="sdk-part">3 identical</span></td></tr>
+<tr><th scope="row">Transactions<span class="parity-sub"><span class="nw">gRPC</span>, <span class="nw">REST</span></span></th><td class="parity-tr"><span class="nw">gRPC</span>, <span class="nw">REST</span></td><td class="num">177</td><td class="num">172</td><td class="sdk"><span class="sdk-part">2 identical</span></td></tr>
+<tr><th scope="row">Listen &amp; Write streams<span class="parity-sub"><span class="nw">gRPC</span></span></th><td class="parity-tr"><span class="nw">gRPC</span></td><td class="num">49</td><td class="num">48</td><td class="sdk"><span class="sdk-part">1 identical</span><span class="sdk-part">2 documented differences</span></td></tr>
+<tr><th scope="row">REST<span class="parity-sub"><span class="nw">REST</span></span></th><td class="parity-tr"><span class="nw">REST</span></td><td class="num">79</td><td class="num">75</td><td class="sdk"><span class="sdk-part">1 identical</span></td></tr>
+<tr><th scope="row">WebChannel<span class="parity-sub"><span class="nw">REST</span>, <span class="nw">WebChannel</span></span></th><td class="parity-tr"><span class="nw">REST</span>, <span class="nw">WebChannel</span></td><td class="num">34</td><td class="num">31</td><td class="sdk"><span class="sdk-part">2 identical</span><span class="sdk-part">1 documented difference</span></td></tr>
+<tr><th scope="row">Security Rules<span class="parity-sub"><span class="nw">gRPC</span>, <span class="nw">REST</span>, <span class="nw">WebSocket</span>, <span class="nw">in-process</span></span></th><td class="parity-tr"><span class="nw">gRPC</span>, <span class="nw">REST</span>, <span class="nw">WebSocket</span>, <span class="nw">in-process</span></td><td class="num">13,264</td><td class="num">5,541</td><td class="sdk"><span class="sdk-part">2 documented differences</span></td></tr>
+<tr><th scope="row">Export &amp; import<span class="parity-sub"><span class="nw">REST</span>, <span class="nw">CLI</span></span></th><td class="parity-tr"><span class="nw">REST</span>, <span class="nw">CLI</span></td><td class="num">70</td><td class="num">67</td><td class="sdk"><span class="sdk-part">3 identical</span></td></tr>
+<tr><th scope="row">Auth &amp; admin endpoints<span class="parity-sub"><span class="nw">gRPC</span>, <span class="nw">REST</span></span></th><td class="parity-tr"><span class="nw">gRPC</span>, <span class="nw">REST</span></td><td class="num">488</td><td class="num">488</td><td class="sdk"><span class="sdk-part">1 identical</span><span class="sdk-part">1 documented difference</span></td></tr>
+<tr><th scope="row">Values &amp; limits<span class="parity-sub"><span class="nw">gRPC</span>, <span class="nw">REST</span>, <span class="nw">WebChannel</span>, <span class="nw">in-process</span></span></th><td class="parity-tr"><span class="nw">gRPC</span>, <span class="nw">REST</span>, <span class="nw">WebChannel</span>, <span class="nw">in-process</span></td><td class="num">278</td><td class="num">274</td><td class="sdk">—</td></tr>
+</tbody>
+<tfoot>
+<tr><th scope="row">Total</th><td class="parity-tr"></td><td class="num">15,427</td><td class="num">7,328</td><td class="sdk"><span class="sdk-part">13 identical</span><span class="sdk-part">7 documented differences</span></td></tr>
+</tfoot>
+</table>
+</div>
+<p class="fine">Compared in full: answers whose test compares everything the recording keeps (status, message or body, values), masking only what changes from run to run, such as times and IDs. The others are compared on the Security Rules decision and its reasons, in part, or on their status; <a href="https://github.com/hidane-dev/hidane/blob/main/docs/parity.md">docs/parity.md</a> breaks them down, test by test. SDK transcripts: the same steps run through an SDK against both emulators; a documented difference is one <a href="https://github.com/hidane-dev/hidane/blob/main/results/README.md">results/README.md</a> or the parity exceptions explain. Known, intentional differences (60) are listed in <a href="https://github.com/hidane-dev/hidane/blob/main/docs/parity-exceptions.md">parity exceptions</a>.</p>
+<!-- parity:end -->
 </div>
 </section>
 

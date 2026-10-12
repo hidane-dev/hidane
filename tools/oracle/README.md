@@ -59,6 +59,15 @@ evaluation errors exist in English only, and under another locale each of them b
 | `rules_warnings.py` | Which warnings does the compiler give, with which positions: the type checker's (`Invalid type. Received one of […]. Expected one of […].`, conditions expecting a boolean, comparisons that can never be true, conditionals with results of different types, the types of wildcards, parameters and `let`s inferred from their uses and checked at each call)? Records the `issues[]` of every condition and ruleset of `rules_eval.py`, `rules_conditions.py` and `rules_paths.py` (whose fixtures keep only the descriptions) with positions, and cases of its own; nothing is read | `crates/hidane-rules/tests/fixtures/rules_warnings.json` | `crates/hidane-rules/tests/warnings.rs` |
 | `transactions.py` | What do transactions lock, how long do writes wait, when do transactions end, and how are `verify` writes checked? Scenarios with concurrent steps and timing; needs `grpcurl` on `PATH` and takes about two minutes | `crates/hidane/tests/fixtures/transactions.json` | `crates/hidane/tests/transactions.rs` |
 
+`tools/parity/table.py` counts the answers the tests replay from these fixtures and writes the
+parity table ([`docs/parity.md`](../../docs/parity.md)), the Parity section of hidane.dev and its
+badge. When you add a fixture, add it to `RECORDINGS` in that script (its area, the test
+functions that replay it, what they compare and how to count its answers, each at the level the
+test compares it) and run `python3 tools/parity/table.py`; a new pair of SDK transcripts in
+`results/` goes in its `TRANSCRIPTS`, and a pair that differs in `SDK_DIFFERENCES` with where the
+documentation explains it. CI fails while a fixture or a transcript is missing from them, or
+while the table is stale.
+
 `sdk_documents.mjs` drives the same operations through `@google-cloud/firestore` (the engine of
 firebase-admin) and prints a transcript without absolute timestamps. Run it from a directory
 outside the repository where the package is installed, once per emulator, and diff the two:

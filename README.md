@@ -1,6 +1,7 @@
 # hidane (火種, *the seed of fire*) — a Firestore emulator without Java.
 
 [![release](https://img.shields.io/github/v/release/hidane-dev/hidane?color=E2553D)](https://github.com/hidane-dev/hidane/releases)
+[![parity](https://img.shields.io/endpoint?url=https%3A%2F%2Fhidane.dev%2Fbadge%2Fparity.json)](docs/parity.md)
 [![license: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-1E1B18)](#license)
 [![website](https://img.shields.io/badge/web-hidane.dev-1E1B18)](https://hidane.dev)
 
@@ -70,10 +71,11 @@ compared with the official emulator's (`results/`):
 ## Parity
 
 hidane treats the official emulator as the oracle. Scripts in [`tools/oracle/`](tools/oracle/)
-ask the official emulator how it answers — 37 recorded fixtures so far, from value ordering to
-WebChannel framing, export files and Security Rules — and the test suite replays every recording against hidane; SDK transcripts
-from both emulators are compared in [`results/`](results/). A parity table with a badge will
-follow (#43). No claim of compatibility without a test behind it. Differences that are intentional (performance bugs and
+ask the official emulator how it answers — from value ordering to WebChannel framing, export
+files and Security Rules — and the test suite replays every recording against hidane; SDK transcripts
+from both emulators are compared in [`results/`](results/). [`docs/parity.md`](docs/parity.md)
+counts the recorded answers the tests replay, per area and transport, generated from the
+fixtures. No claim of compatibility without a test behind it. Differences that are intentional (performance bugs and
 known defects of the official emulator that hidane will not reproduce) are listed in
 [`docs/parity-exceptions.md`](docs/parity-exceptions.md).
 
@@ -118,6 +120,7 @@ downloaded with a browser needs `xattr -d com.apple.quarantine hidane`.
 
 - [Why hidane](docs/why.md) — the measurements behind the table above, with sources
 - [Compatibility](docs/compatibility.md) — transport per SDK, how each finds the emulator, which RPCs they use
+- [Parity](docs/parity.md) — the recorded answers the tests replay, per area and transport, and the SDK transcripts
 - [Parity exceptions](docs/parity-exceptions.md) — where hidane and the official emulator intentionally differ
 - [Roadmap](docs/ROADMAP.md) — scope of v0.1 / v0.2 / v0.3, targets, risks
 - [Decision records](docs/adr/) — storage engine, gRPC stack, WebChannel timing, Rules engine, license (all drafts)
