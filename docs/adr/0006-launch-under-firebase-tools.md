@@ -83,8 +83,8 @@ waits for a first release.
 
 - The README and `docs/compatibility.md` document `hidane exec -- firebase emulators:start`.
 - firebase-tools prints "Env variable override detected. Using firestore emulator at …" and
-  "Firestore Emulator UI websocket is running on …", although hidane does not serve that port yet
-  (#69).
+  "Firestore Emulator UI websocket is running on …"; hidane serves that port, the feed of the
+  Emulator UI's request monitor (#69).
 - Projects that also run the Database, Storage or Pub/Sub emulators still need a Java for those.
 - On Windows the shim is a copy of the binary named `java.exe`; it is not verified yet.
 - Distribution channels (#77, #78) install the same binary; `hidane exec` needs nothing else.

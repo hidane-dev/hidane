@@ -20,8 +20,9 @@
 //!   it, `writeFields` and `transforms` from the write, and for a `CreateDocument` without a
 //!   document ID, `autoId`, decided on the collection's path.
 //!
-//! Each decision is counted in the ruleset's coverage report, and the values of its `debug()`
-//! calls are printed (`crate::rules`).
+//! Each decision is counted in the ruleset's coverage report, the values of its `debug()`
+//! calls are printed, and with the request monitor on, its evaluations are recorded
+//! (`crate::rules`).
 
 use std::{
     collections::HashMap,
@@ -40,7 +41,7 @@ use serde_json::Value as Json;
 use tonic::Status;
 
 use super::auth::Caller;
-use crate::rules::{Loaded, Rules};
+use crate::rules::{Loaded, Rules, monitor::Session};
 
 /// The checks of one request: the ruleset and who is asking.
 pub(crate) struct Guard {
@@ -53,6 +54,8 @@ pub(crate) struct Guard {
     in_transaction: bool,
     /// A create whose document ID the server chose (`request.autoId`).
     auto_id: bool,
+    /// The request monitor's records of this request, when it is on.
+    session: Option<Session>,
 }
 
 impl Guard {
@@ -77,6 +80,7 @@ impl Guard {
         };
         let database_id = database.rsplit('/').next().unwrap_or_default();
         Some(Self {
+            session: rules.session(database, &loaded),
             loaded,
             rules,
             auth,
@@ -112,6 +116,9 @@ impl Guard {
         budget: &mut Budget,
     ) -> Result<(), String> {
         let mut trace = Trace::with_values();
+        if self.session.is_some() {
+            trace = trace.with_evaluations();
+        }
         let decision = eval::authorize_traced(
             self.loaded.ruleset(),
             request,
@@ -122,6 +129,9 @@ impl Guard {
         );
         self.loaded.record(&trace);
         self.rules.debug(&trace);
+        if let Some(session) = &self.session {
+            session.report(request, trace.evaluations());
+        }
         match decision {
             Decision::Allow => Ok(()),
             Decision::Deny(message) => Err(message),

@@ -35,6 +35,7 @@ protox = "0.10.0"
 regex = "1.13.1"
 # preserve_order: JSON objects keep their order, as document fields do (#108).
 serde_json = { version = "1.0.151", features = ["preserve_order"] }
+sha1 = { version = "0.11.0", default-features = false }
 sha2 = { version = "0.11.0", default-features = false }
 tokio = { version = "1.53.2", features = ["macros", "net", "process", "rt-multi-thread", "signal", "time"] }
 tokio-stream = "0.1.19"

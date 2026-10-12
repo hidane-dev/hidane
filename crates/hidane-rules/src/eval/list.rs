@@ -125,9 +125,6 @@ fn decide(
 ) -> Result<(), Option<Vec<String>>> {
     let coverings = covering_parts(ruleset.version, service, parts);
     let applying = statements(&coverings, Method::List);
-    if applying.is_empty() {
-        return Err(None);
-    }
     let mut request_value = request_value(request, Method::List);
     // A collection group's path is not known (`tools/oracle/rules_list.py`).
     let path = match document {
@@ -137,6 +134,10 @@ fn decide(
     };
     if let Val::Map(map) = &mut request_value {
         Rc::make_mut(map).insert("path".to_owned(), path);
+    }
+    if applying.is_empty() {
+        trace.evaluating(Method::List, &request_value, &resource);
+        return Err(None);
     }
     let context = Context {
         ruleset,

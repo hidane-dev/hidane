@@ -21,7 +21,7 @@ use hidane_rules::{
 use super::{File, json_string};
 
 /// A JSON value, printed as JsonFormat prints it.
-enum Json {
+pub(super) enum Json {
     /// A number, a bool or null, as written.
     Raw(String),
     Str(String),
@@ -54,6 +54,39 @@ impl Json {
                 let fields = fields.iter().map(|(k, v)| (k.as_str(), v));
                 object(out, fields, indent, html);
             }
+        }
+    }
+
+    /// Written without spaces or line breaks, as the request monitor's records are
+    /// (`super::monitor`).
+    pub(super) fn compact(&self, out: &mut String) {
+        let object = |out: &mut String, fields: &mut dyn Iterator<Item = (&str, &Json)>| {
+            out.push('{');
+            for (i, (key, value)) in fields.enumerate() {
+                if i > 0 {
+                    out.push(',');
+                }
+                out.push_str(&json_string(key));
+                out.push(':');
+                value.compact(out);
+            }
+            out.push('}');
+        };
+        match self {
+            Self::Raw(text) => out.push_str(text),
+            Self::Str(s) => out.push_str(&json_string(s)),
+            Self::Array(items) => {
+                out.push('[');
+                for (i, item) in items.iter().enumerate() {
+                    if i > 0 {
+                        out.push(',');
+                    }
+                    item.compact(out);
+                }
+                out.push(']');
+            }
+            Self::Object(fields) => object(out, &mut fields.iter().map(|(k, v)| (*k, v))),
+            Self::Map(fields) => object(out, &mut fields.iter().map(|(k, v)| (k.as_str(), v))),
         }
     }
 }
@@ -262,7 +295,7 @@ fn double(f: f64) -> Json {
 }
 
 /// A value message: the one field its type sets.
-fn value(v: &Observed) -> Json {
+pub(super) fn value(v: &Observed) -> Json {
     let list = |items: &[Observed]| {
         let mut fields = Vec::new();
         if !items.is_empty() {

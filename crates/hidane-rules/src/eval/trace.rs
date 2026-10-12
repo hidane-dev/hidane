@@ -4,7 +4,7 @@
 use std::hash::{Hash, Hasher};
 
 use super::{
-    Timestamp,
+    Method, Timestamp,
     constraint::Comparator,
     value::{Error, NANOS, Val},
 };
@@ -226,13 +226,36 @@ pub(crate) enum Traced {
     Skipped,
 }
 
-/// What one decision reports besides the decision: the value of each `debug()` call, in order,
-/// and, when values are traced ([`Trace::with_values`]), what each expression of the coverage
-/// report evaluated to, for [`crate::coverage::Coverage::record`].
+/// What an `allow` statement's condition came to.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Verdict {
+    Allow,
+    False,
+    Error,
+}
+
+/// One evaluation of the statements of a method, as the Emulator UI's request monitor shows it
+/// ([`Trace::with_evaluations`]): what `request` and `resource` held, and what each statement
+/// evaluated came to, in order, by the line of its condition (or of the statement, without
+/// one). A request evaluates the statements of one method, of both for an upsert (`create`'s
+/// first), and of each way a list's filter may be satisfied; none when no statement applies.
+#[derive(Debug, Clone)]
+pub struct Evaluation {
+    pub method: Method,
+    pub request: Observed,
+    pub resource: Observed,
+    pub statements: Vec<(u32, Verdict)>,
+}
+
+/// What one decision reports besides the decision: the value of each `debug()` call, in order;
+/// when values are traced ([`Trace::with_values`]), what each expression of the coverage report
+/// evaluated to, for [`crate::coverage::Coverage::record`]; and when evaluations are
+/// ([`Trace::with_evaluations`]), each [`Evaluation`].
 #[derive(Default)]
 pub struct Trace {
     pub(crate) debug: Vec<Observed>,
     pub(crate) values: Option<Vec<(NodeKey, Traced)>>,
+    pub(crate) evaluations: Option<Vec<Evaluation>>,
 }
 
 impl Trace {
@@ -244,14 +267,51 @@ impl Trace {
     /// A trace of `debug()` and of every expression's value.
     pub fn with_values() -> Self {
         Self {
-            debug: Vec::new(),
             values: Some(Vec::new()),
+            ..Self::default()
         }
+    }
+
+    /// This trace, also reporting each [`Evaluation`].
+    #[must_use]
+    pub fn with_evaluations(mut self) -> Self {
+        self.evaluations = Some(Vec::new());
+        self
     }
 
     /// The values `debug()` received, in order.
     pub fn debug(&self) -> &[Observed] {
         &self.debug
+    }
+
+    /// The evaluations, in order, if they are reported.
+    pub fn evaluations(&self) -> &[Evaluation] {
+        self.evaluations.as_deref().unwrap_or_default()
+    }
+
+    /// Starts an evaluation of `method`'s statements with `request` and `resource`; returns
+    /// where its verdicts go.
+    pub(crate) fn evaluating(
+        &mut self,
+        method: Method,
+        request: &Val,
+        resource: &Val,
+    ) -> Option<usize> {
+        let evaluations = self.evaluations.as_mut()?;
+        evaluations.push(Evaluation {
+            method,
+            request: observe(request),
+            resource: observe(resource),
+            statements: Vec::new(),
+        });
+        Some(evaluations.len() - 1)
+    }
+
+    /// Records what the statement whose condition is at `line` came to, in evaluation `at`.
+    pub(crate) fn verdict(&mut self, at: Option<usize>, line: u32, verdict: Verdict) {
+        if let (Some(at), Some(evaluations)) = (at, &mut self.evaluations) {
+            evaluations[at].statements.push((line, verdict));
+        }
     }
 
     pub(crate) fn tracing(&self) -> bool {

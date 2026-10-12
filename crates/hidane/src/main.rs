@@ -104,6 +104,22 @@ async fn run(args: Vec<OsString>) -> ExitCode {
         .first()
         .and_then(|l| l.local_addr().ok())
         .map_or(cli.port, |a| a.port());
+    // `--websocket_port`: the feed of the Emulator UI's request monitor. The official emulator
+    // starts even when it cannot bind it.
+    let websocket = match cli.websocket_port {
+        Some(websocket_port) => match hidane::bind(&cli.host, websocket_port).await {
+            Ok(listeners) => Some(listeners),
+            Err(err) => {
+                eprintln!(
+                    "WARNING: could not bind {}:{websocket_port} for the Emulator UI's request \
+                     monitor: {err}",
+                    cli.host
+                );
+                None
+            }
+        },
+        None => None,
+    };
 
     // Install the handlers before announcing readiness: a SIGINT that arrives right after the
     // banner must start a clean shutdown, not kill the process with the default action.
@@ -124,6 +140,13 @@ async fn run(args: Vec<OsString>) -> ExitCode {
     if let (Some(path), Some((content, ruleset))) = (cli.rules.as_deref(), rules) {
         admin.rules().set_default(path, content, ruleset);
     }
+    let feed = websocket.map(|listeners| {
+        let monitor = hidane::rules::monitor::Monitor::new();
+        admin
+            .rules()
+            .monitor_requests(std::sync::Arc::clone(&monitor));
+        tokio::spawn(hidane::serve_websocket(listeners, monitor))
+    });
     let (code_tx, code_rx) = tokio::sync::oneshot::channel();
     let shutdown = {
         let admin = admin.clone();
@@ -138,7 +161,11 @@ async fn run(args: Vec<OsString>) -> ExitCode {
         }
     };
     let grpc = hidane::grpc_routes(&admin);
-    if let Err(err) = hidane::serve(listeners, grpc, hidane::http_routes(admin), shutdown).await {
+    let served = hidane::serve(listeners, grpc, hidane::http_routes(admin), shutdown).await;
+    if let Some(feed) = feed {
+        feed.abort();
+    }
+    if let Err(err) = served {
         eprintln!("ERROR: server failed: {err}");
         return ExitCode::FAILURE;
     }

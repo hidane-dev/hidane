@@ -20,6 +20,9 @@
 //!   it is a bad database name, as an empty database ID is.
 //! - Each `debug()` value goes to standard output, which firebase-tools writes to
 //!   `firestore-debug.log` (`report::debug_text`).
+//! - With the request monitor on (`--websocket_port`), each evaluation is recorded
+//!   (`monitor`), and a database without rules is checked against the open rules, so that its
+//!   requests are recorded too.
 //!
 //! The body of a `PUT` is read as protobuf-java's JSON parser reads `{rules: {files: [{name,
 //! content, fingerprint}]}}`: a number or a boolean as text, `null` as empty, the fingerprint in
@@ -27,12 +30,13 @@
 //! request.". The official emulator answers a body without files with a 500 (a crash); hidane
 //! answers it as an invalid payload (`docs/parity-exceptions.md`).
 
+pub mod monitor;
 mod report;
 
 use std::{
     collections::HashMap,
     fmt::Write as _,
-    sync::{Arc, Mutex, RwLock},
+    sync::{Arc, Mutex, OnceLock, RwLock},
 };
 
 use axum::{
@@ -107,6 +111,9 @@ pub struct Rules {
     databases: RwLock<HashMap<String, Arc<Loaded>>>,
     default: RwLock<Option<Arc<Compiled>>>,
     log: RwLock<DebugLog>,
+    monitor: RwLock<Option<Arc<monitor::Monitor>>>,
+    /// `OPEN_RULES`, for the request monitor.
+    open: OnceLock<Arc<Loaded>>,
 }
 
 impl Default for Rules {
@@ -115,6 +122,8 @@ impl Default for Rules {
             databases: RwLock::default(),
             default: RwLock::default(),
             log: RwLock::new(Arc::new(stdout)),
+            monitor: RwLock::default(),
+            open: OnceLock::new(),
         }
     }
 }
@@ -197,6 +206,46 @@ impl Rules {
             .write()
             .unwrap_or_else(|e| e.into_inner())
             .clear();
+    }
+
+    /// Records each evaluation for the Emulator UI's request monitor (`--websocket_port`).
+    pub fn monitor_requests(&self, monitor: Arc<monitor::Monitor>) {
+        *self.monitor.write().unwrap_or_else(|e| e.into_inner()) = Some(monitor);
+    }
+
+    /// The ruleset a request on `database` is checked against: the database's, or with the
+    /// request monitor on, the open rules.
+    pub(crate) fn checked(&self, database: &str) -> Option<Arc<Loaded>> {
+        self.get(database).or_else(|| {
+            self.monitor
+                .read()
+                .unwrap_or_else(|e| e.into_inner())
+                .as_ref()?;
+            let open = self.open.get_or_init(|| {
+                let file = File {
+                    name: Some("OPEN_RULES".to_owned()),
+                    content: OPEN_RULES.to_owned(),
+                    fingerprint: Vec::new(),
+                };
+                let ruleset = hidane_rules::compile(&[SourceFile {
+                    name: file.name.clone(),
+                    content: file.content.clone(),
+                }])
+                .ruleset
+                .expect("the open rules compile");
+                Arc::new(Loaded::new(Arc::new(Compiled {
+                    files: vec![file],
+                    ruleset: Arc::new(ruleset),
+                })))
+            });
+            Some(Arc::clone(open))
+        })
+    }
+
+    /// The records of one request on `database` under `loaded`, with the request monitor on.
+    pub(crate) fn session(&self, database: &str, loaded: &Loaded) -> Option<monitor::Session> {
+        let monitor = self.monitor.read().unwrap_or_else(|e| e.into_inner());
+        Some(monitor.as_ref()?.session(database, &loaded.compiled.files))
     }
 
     /// Sends the values of `debug()` to `log` instead of standard output.

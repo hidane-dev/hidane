@@ -140,7 +140,12 @@ impl FirestoreService {
             return None;
         }
         let rules = self.rules.as_ref()?;
-        guard::Guard::new(rules.get(database)?, Arc::clone(rules), caller, database)
+        guard::Guard::new(
+            rules.checked(database)?,
+            Arc::clone(rules),
+            caller,
+            database,
+        )
     }
 
     pub(crate) fn with_state(
