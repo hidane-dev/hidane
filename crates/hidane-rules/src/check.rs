@@ -6,12 +6,33 @@
 //!    expressions nested too deep, too many `let`s.
 //! 3. [`semantics`], only when nothing so far was an error, and only for the first file:
 //!    names (functions, variables, methods, services), arities, unused declarations, recursion,
-//!    regular expression literals, `let` in version 1, comparisons that can never be true, and
-//!    the limits on parameters, call depth and `match` nesting, paths and variables.
+//!    regular expression literals, `let` in version 1, the limits on parameters, call depth and
+//!    `match` nesting, paths and variables, and the types.
 //!
-//! The comparison check uses a small type inference over literals, wildcards (strings),
-//! `null`, the namespaced constructors and the methods' results; everything else is untyped,
-//! so it warns less often than the official compiler (#60 adds the full type checker).
+//! The types are checked as the official compiler checks them (measured with
+//! `tools/oracle/rules_warnings.py`, `tests/fixtures/rules_warnings.json`), and every finding is
+//! a warning:
+//!
+//! - Each expression has a set of types, from what it is: a literal's, an operator's or a
+//!   function's results (`+` gives `int, float, string, duration, timestamp` whatever its
+//!   operands), a wildcard's. A field, an index, `get()`, a conditional, `request` and a
+//!   parameter or `let` have any type.
+//! - Each operand, receiver and argument is expected to have some types: an operator's for the
+//!   result its parent expects (`(x + y).lower()` expects strings), a function's parameter's,
+//!   `bool` for a condition. An expression that has none of them is reported ("Invalid type.
+//!   Received one of [...]. Expected one of [...]."), and what is in it is then expected to be
+//!   anything, except a map's keys (strings) and a path's `$( )` parts.
+//! - A conditional passes the expected types to both results and warns when they share no
+//!   type. `==` and `!=` warn when their operands' types cannot be equal.
+//! - A wildcard that cannot be of the expected type is reported with "There is no type for
+//!   variable". A parameter or `let` takes the types its uses expect, use after use: from the
+//!   result, then from the `let`s, last first. When none is left, that is reported at the
+//!   statement, and it takes any type again. A `let`'s value is expected to be of its type.
+//! - A call of one of the ruleset's functions expects each argument to be of the type the
+//!   function's body requires of the parameter, and, where the function returns a parameter
+//!   (directly, through `let`s, conditionals and calls), of the type expected of the call.
+
+use std::{collections::HashMap, rc::Rc};
 
 use crate::{
     ast::*,
@@ -320,191 +341,416 @@ fn depth(root: &Expr, file: &FileAst, diags: &mut Vec<Diag>) {
 /// The services the emulator knows, and the methods their rules may name.
 const SERVICES: &[&str] = &["cloud.firestore", "firebase.storage"];
 
-/// Global functions and their arity.
-const GLOBALS: &[(&str, usize)] = &[
-    ("get", 1),
-    ("exists", 1),
-    ("getAfter", 1),
-    ("existsAfter", 1),
-    ("debug", 1),
-    ("int", 1),
-    ("float", 1),
-    ("string", 1),
-    ("path", 1),
-    ("value", 1),
-    ("vector", 1),
-];
-
-/// Functions in a namespace and their arity.
-const NAMESPACED: &[(&str, usize)] = &[
-    ("math.abs", 1),
-    ("math.ceil", 1),
-    ("math.floor", 1),
-    ("math.isNaN", 1),
-    ("math.pow", 2),
-    ("math.round", 1),
-    ("math.sqrt", 1),
-    ("duration.abs", 1),
-    ("duration.time", 4),
-    ("duration.value", 2),
-    ("timestamp.date", 3),
-    ("timestamp.value", 1),
-    ("latlng.value", 2),
-    ("hashing.crc32", 1),
-    ("hashing.crc32c", 1),
-    ("hashing.md5", 1),
-    ("hashing.sha256", 1),
-];
-
-/// Methods of any type and their arity: the compiler checks the name, not the receiver.
-const METHODS: &[(&str, usize)] = &[
-    ("get", 2),
-    ("size", 0),
-    ("matches", 1),
-    ("keys", 0),
-    ("hasAll", 1),
-    ("toSet", 0),
-    ("date", 0),
-    ("time", 0),
-    ("lower", 0),
-    ("upper", 0),
-    ("split", 1),
-    ("replace", 2),
-    ("trim", 0),
-    ("join", 1),
-    ("concat", 1),
-    ("toMillis", 0),
-    ("year", 0),
-    ("month", 0),
-    ("day", 0),
-    ("hours", 0),
-    ("minutes", 0),
-    ("seconds", 0),
-    ("nanos", 0),
-    ("dayOfWeek", 0),
-    ("dayOfYear", 0),
-    ("distance", 1),
-    ("latitude", 0),
-    ("longitude", 0),
-    ("bind", 1),
-    ("toBase64", 0),
-    ("toHexString", 0),
-    ("toUtf8", 0),
-    ("diff", 1),
-    ("addedKeys", 0),
-    ("affectedKeys", 0),
-    ("changedKeys", 0),
-    ("removedKeys", 0),
-    ("unchangedKeys", 0),
-    ("values", 0),
-    ("difference", 1),
-    ("intersection", 1),
-    ("union", 1),
-    ("removeAll", 1),
-    ("hasAny", 1),
-    ("hasOnly", 1),
-];
-
-/// A static type, as far as this check knows it.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Ty {
-    Any,
-    Null,
-    Bool,
+/// A type of the official type checker, as its messages name it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum T {
     Int,
     Float,
-    /// `math.abs`: an int or a float.
-    Number,
     String,
     Bytes,
+    Bool,
+    Null,
     List,
     Map,
     Set,
+    MapDiff,
     Path,
-    /// A recursive wildcard: its value is a string or a path.
-    StringOrPath,
-    Duration,
     Timestamp,
+    Duration,
     LatLng,
     Vector,
+    Constraint,
 }
 
-impl Ty {
-    fn comparable(self, other: Self) -> bool {
-        use Ty::*;
-        let numeric = |t| matches!(t, Int | Float | Number);
-        self == Any
-            || other == Any
-            || self == other
-            || (numeric(self) && numeric(other))
-            || matches!(
-                (self, other),
-                (StringOrPath, String | Path) | (String | Path, StringOrPath)
-            )
+impl T {
+    fn name(self) -> &'static str {
+        match self {
+            T::Int => "int",
+            T::Float => "float",
+            T::String => "string",
+            T::Bytes => "bytes",
+            T::Bool => "bool",
+            T::Null => "null",
+            T::List => "list",
+            T::Map => "map",
+            T::Set => "set",
+            T::MapDiff => "map_diff",
+            T::Path => "path",
+            T::Timestamp => "timestamp",
+            T::Duration => "duration",
+            T::LatLng => "latlng",
+            T::Vector => "vector",
+            T::Constraint => "constraint",
+        }
     }
 }
 
-fn global_type(name: &str) -> Ty {
-    match name {
-        "int" => Ty::Int,
-        "float" => Ty::Float,
-        "string" => Ty::String,
-        "path" => Ty::Path,
-        "vector" => Ty::Vector,
-        _ => Ty::Any,
+/// Some types, in the order the messages list them (each set has its own order).
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+struct Types {
+    len: u8,
+    items: [T; 16],
+}
+
+impl Types {
+    const fn of(types: &[T]) -> Self {
+        let mut items = [T::Int; 16];
+        let mut i = 0;
+        while i < types.len() {
+            items[i] = types[i];
+            i += 1;
+        }
+        Self {
+            len: types.len() as u8,
+            items,
+        }
+    }
+
+    fn as_slice(&self) -> &[T] {
+        &self.items[..usize::from(self.len)]
+    }
+
+    fn contains(&self, t: T) -> bool {
+        self.as_slice().contains(&t)
+    }
+
+    fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+
+    fn push(&mut self, t: T) {
+        if !self.contains(t) {
+            self.items[usize::from(self.len)] = t;
+            self.len += 1;
+        }
+    }
+
+    /// The types of `self` that are in `other`, in `self`'s order.
+    fn filter(self, other: Types) -> Types {
+        let mut out = Types::of(&[]);
+        for &t in self.as_slice() {
+            if other.contains(t) {
+                out.push(t);
+            }
+        }
+        out
+    }
+
+    fn meets(self, other: Types) -> bool {
+        self.as_slice().iter().any(|&t| other.contains(t))
+    }
+
+    /// Whether a value of one could equal a value of the other: they share a type, or both
+    /// have a number.
+    fn comparable(self, other: Types) -> bool {
+        let number = |t: &T| matches!(t, T::Int | T::Float);
+        self.meets(other)
+            || (self.as_slice().iter().any(number) && other.as_slice().iter().any(number))
+    }
+
+    /// `int, float`.
+    fn list(&self) -> String {
+        self.as_slice()
+            .iter()
+            .map(|t| t.name())
+            .collect::<Vec<_>>()
+            .join(", ")
     }
 }
 
-fn namespaced_type(name: &str) -> Ty {
-    match name {
-        "math.isNaN" => Ty::Bool,
-        n if n.starts_with("math.") => Ty::Number,
-        n if n.starts_with("duration.") => Ty::Duration,
-        n if n.starts_with("timestamp.") => Ty::Timestamp,
-        n if n.starts_with("latlng.") => Ty::LatLng,
-        n if n.starts_with("hashing.") => Ty::Bytes,
-        _ => Ty::Any,
+/// A type expected or found: some types, or any (`None`): `request`, a field, a parameter.
+type Ty = Option<Types>;
+
+/// A function and the type expected of its result, for which its signature is worked out.
+type Call = (usize, Ty);
+
+const ANY: Ty = None;
+const BOOL: Types = Types::of(&[T::Bool]);
+const INT: Types = Types::of(&[T::Int]);
+const FLOAT: Types = Types::of(&[T::Float]);
+const NUMBER: Types = Types::of(&[T::Int, T::Float]);
+const FLOAT_INT: Types = Types::of(&[T::Float, T::Int]);
+const STRING: Types = Types::of(&[T::String]);
+const BYTES: Types = Types::of(&[T::Bytes]);
+const LIST: Types = Types::of(&[T::List]);
+const MAP: Types = Types::of(&[T::Map]);
+const SET: Types = Types::of(&[T::Set]);
+const PATH: Types = Types::of(&[T::Path]);
+const DURATION: Types = Types::of(&[T::Duration]);
+const TIMESTAMP: Types = Types::of(&[T::Timestamp]);
+const LATLNG: Types = Types::of(&[T::LatLng]);
+const MAP_DIFF: Types = Types::of(&[T::MapDiff]);
+const TIME: Types = Types::of(&[T::Duration, T::Timestamp]);
+const LIST_SET: Types = Types::of(&[T::List, T::Set]);
+const SIZED: Types = Types::of(&[T::String, T::Bytes, T::List, T::Set, T::Map]);
+const INDEXED: Types = Types::of(&[T::String, T::List, T::Map, T::Path]);
+const SLICED: Types = Types::of(&[T::String, T::List, T::Path]);
+const KEY: Types = Types::of(&[T::Int, T::String]);
+const BOUND: Types = Types::of(&[T::Null, T::Int]);
+const CONTAINER: Types = Types::of(&[T::List, T::Set, T::Map, T::Constraint]);
+const PATH_PART: Types = Types::of(&[T::Path, T::Null, T::Int, T::Float, T::String, T::Bool]);
+
+/// A built-in function or method: its parameters (each any or some types) and result. A
+/// method also has the types of its receiver.
+struct Builtin {
+    name: &'static str,
+    receiver: Types,
+    params: &'static [Ty],
+    result: Ty,
+}
+
+const fn global(name: &'static str, params: &'static [Ty], result: Ty) -> Builtin {
+    Builtin {
+        name,
+        receiver: Types::of(&[]),
+        params,
+        result,
     }
 }
 
-fn method_type(name: &str) -> Ty {
-    match name {
-        "size" | "toMillis" | "year" | "month" | "day" | "hours" | "minutes" | "seconds"
-        | "nanos" | "dayOfWeek" | "dayOfYear" => Ty::Int,
-        "latitude" | "longitude" | "distance" => Ty::Float,
-        "lower" | "upper" | "trim" | "toBase64" | "toHexString" => Ty::String,
-        "toUtf8" => Ty::Bytes,
-        "keys" | "values" => Ty::List,
-        "toSet" | "addedKeys" | "affectedKeys" | "changedKeys" | "removedKeys"
-        | "unchangedKeys" => Ty::Set,
-        "matches" => Ty::Bool,
-        "date" => Ty::Timestamp,
-        "time" => Ty::Duration,
-        "bind" => Ty::Path,
-        _ => Ty::Any,
+const fn method(name: &'static str, receiver: Types, params: &'static [Ty], result: Ty) -> Builtin {
+    Builtin {
+        name,
+        receiver,
+        params,
+        result,
     }
+}
+
+const fn of(types: Types) -> Ty {
+    Some(types)
+}
+
+/// Global functions, as measured.
+const GLOBALS: &[Builtin] = &[
+    global("get", &[of(PATH)], ANY),
+    global("exists", &[of(PATH)], ANY),
+    global("getAfter", &[of(PATH)], ANY),
+    global("existsAfter", &[of(PATH)], ANY),
+    global("value", &[of(PATH)], ANY),
+    global("debug", &[ANY], ANY),
+    global(
+        "int",
+        &[of(Types::of(&[T::Int, T::Float, T::String]))],
+        of(INT),
+    ),
+    global(
+        "float",
+        &[of(Types::of(&[T::Int, T::Float, T::String]))],
+        of(FLOAT),
+    ),
+    global(
+        "string",
+        &[of(Types::of(&[
+            T::Int,
+            T::Float,
+            T::Null,
+            T::String,
+            T::Bool,
+            T::Path,
+        ]))],
+        of(STRING),
+    ),
+    global("path", &[of(STRING)], of(PATH)),
+    global("vector", &[of(LIST)], of(Types::of(&[T::Vector]))),
+];
+
+/// Functions in a namespace, as measured.
+const NAMESPACED: &[Builtin] = &[
+    global("math.abs", &[of(NUMBER)], of(NUMBER)),
+    global("math.ceil", &[of(FLOAT_INT)], of(FLOAT)),
+    global("math.floor", &[of(FLOAT_INT)], of(FLOAT)),
+    global("math.isNaN", &[of(FLOAT_INT)], of(BOOL)),
+    global("math.pow", &[of(FLOAT_INT), of(FLOAT_INT)], of(FLOAT)),
+    global("math.round", &[of(FLOAT_INT)], of(INT)),
+    global("math.sqrt", &[of(FLOAT_INT)], of(FLOAT)),
+    global("duration.abs", &[of(DURATION)], of(DURATION)),
+    global(
+        "duration.time",
+        &[of(INT), of(INT), of(INT), of(INT)],
+        of(DURATION),
+    ),
+    global("duration.value", &[of(INT), of(STRING)], of(DURATION)),
+    global(
+        "timestamp.date",
+        &[of(INT), of(INT), of(INT)],
+        of(TIMESTAMP),
+    ),
+    global(
+        "timestamp.value",
+        &[of(Types::of(&[T::Int, T::String]))],
+        of(TIMESTAMP),
+    ),
+    global("latlng.value", &[of(FLOAT_INT), of(FLOAT_INT)], of(LATLNG)),
+    global(
+        "hashing.crc32",
+        &[of(Types::of(&[T::Bytes, T::String]))],
+        of(BYTES),
+    ),
+    global(
+        "hashing.crc32c",
+        &[of(Types::of(&[T::Bytes, T::String]))],
+        of(BYTES),
+    ),
+    global(
+        "hashing.md5",
+        &[of(Types::of(&[T::Bytes, T::String]))],
+        of(BYTES),
+    ),
+    global(
+        "hashing.sha256",
+        &[of(Types::of(&[T::Bytes, T::String]))],
+        of(BYTES),
+    ),
+];
+
+/// Methods, as measured: the compiler knows them by name, whatever the receiver.
+const METHODS: &[Builtin] = &[
+    method(
+        "get",
+        MAP,
+        &[of(Types::of(&[T::String, T::List])), ANY],
+        ANY,
+    ),
+    method("size", SIZED, &[], of(INT)),
+    method("matches", STRING, &[of(STRING)], of(BOOL)),
+    method("keys", MAP, &[], of(LIST)),
+    method("values", MAP, &[], of(LIST)),
+    method("diff", MAP, &[of(MAP)], of(MAP_DIFF)),
+    method("hasAll", LIST_SET, &[of(LIST_SET)], of(BOOL)),
+    method("hasAny", LIST_SET, &[of(LIST_SET)], of(BOOL)),
+    method("hasOnly", LIST_SET, &[of(LIST_SET)], of(BOOL)),
+    method("toSet", LIST, &[], of(SET)),
+    method("join", LIST, &[of(STRING)], of(STRING)),
+    method("concat", LIST, &[of(LIST)], of(LIST)),
+    method("removeAll", LIST, &[of(LIST)], of(LIST)),
+    method("difference", SET, &[of(SET)], of(SET)),
+    method("intersection", SET, &[of(SET)], of(SET)),
+    method("union", SET, &[of(SET)], of(SET)),
+    method("lower", STRING, &[], of(STRING)),
+    method("upper", STRING, &[], of(STRING)),
+    method("trim", STRING, &[], of(STRING)),
+    method("split", STRING, &[of(STRING)], of(LIST)),
+    method("replace", STRING, &[of(STRING), of(STRING)], of(STRING)),
+    method("toUtf8", STRING, &[], of(BYTES)),
+    method("toBase64", BYTES, &[], of(STRING)),
+    method("toHexString", BYTES, &[], of(STRING)),
+    method("date", TIMESTAMP, &[], of(TIMESTAMP)),
+    method("time", TIMESTAMP, &[], of(DURATION)),
+    method("toMillis", TIMESTAMP, &[], of(INT)),
+    method("year", TIMESTAMP, &[], of(INT)),
+    method("month", TIMESTAMP, &[], of(INT)),
+    method("day", TIMESTAMP, &[], of(INT)),
+    method("hours", TIMESTAMP, &[], of(INT)),
+    method("minutes", TIMESTAMP, &[], of(INT)),
+    method("dayOfWeek", TIMESTAMP, &[], of(INT)),
+    method("dayOfYear", TIMESTAMP, &[], of(INT)),
+    method("seconds", TIME, &[], of(INT)),
+    method("nanos", TIME, &[], of(INT)),
+    method("distance", LATLNG, &[of(LATLNG)], of(FLOAT)),
+    method("latitude", LATLNG, &[], of(FLOAT)),
+    method("longitude", LATLNG, &[], of(FLOAT)),
+    method("bind", PATH, &[of(MAP)], of(PATH)),
+    method("addedKeys", MAP_DIFF, &[], of(SET)),
+    method("affectedKeys", MAP_DIFF, &[], of(SET)),
+    method("changedKeys", MAP_DIFF, &[], of(SET)),
+    method("removedKeys", MAP_DIFF, &[], of(SET)),
+    method("unchangedKeys", MAP_DIFF, &[], of(SET)),
+];
+
+/// A form of an operator: its operands' types and its result's.
+struct Form(&'static [Types], Types);
+
+/// The forms of the arithmetic operators, in the order whose operand types the messages list.
+const ADD: &[Form] = &[
+    Form(&[NUMBER, NUMBER], NUMBER),
+    Form(&[STRING, STRING], STRING),
+    Form(&[DURATION, DURATION], DURATION),
+    Form(&[DURATION, TIMESTAMP], TIMESTAMP),
+    Form(&[TIMESTAMP, DURATION], TIMESTAMP),
+];
+const SUB: &[Form] = &[
+    Form(&[NUMBER, NUMBER], NUMBER),
+    Form(&[DURATION, DURATION], DURATION),
+    Form(&[TIMESTAMP, DURATION], TIMESTAMP),
+    Form(&[TIMESTAMP, TIMESTAMP], DURATION),
+];
+const MUL: &[Form] = &[Form(&[NUMBER, NUMBER], NUMBER)];
+const NEG: &[Form] = &[Form(&[NUMBER], NUMBER), Form(&[DURATION], DURATION)];
+const NOT: &[Form] = &[Form(&[BOOL], BOOL)];
+const LOGIC: &[Form] = &[Form(&[BOOL, BOOL], BOOL)];
+
+/// The result of an operator: every form's.
+fn result_of(forms: &[Form]) -> Types {
+    let mut out = Types::of(&[]);
+    for form in forms {
+        for &t in form.1.as_slice() {
+            out.push(t);
+        }
+    }
+    out
+}
+
+/// The types operand `i` may have for a result of `expected`: those of the forms that give one.
+fn operand_of(forms: &[Form], i: usize, expected: Ty) -> Types {
+    let mut out = Types::of(&[]);
+    for form in forms {
+        if expected.is_none_or(|e| form.1.meets(e)) {
+            for &t in form.0[i].as_slice() {
+                out.push(t);
+            }
+        }
+    }
+    out
 }
 
 /// A scope of function declarations: the top level, a service or a `match`.
 struct Scope<'a> {
     parent: Option<usize>,
-    /// Indexes into `Semantics::functions`, in source order.
+    /// Indexes into `Semantics::functions`, in source order, and the first of each name.
     functions: Vec<usize>,
+    by_name: HashMap<&'a str, usize>,
     /// The variables of the `match` path, if this is one.
     wildcards: Vec<&'a Segment>,
+    /// Their type: a string for a single segment, a path for a recursive wildcard, and, in a
+    /// path with both, both for each variable (in the order of the segments, as measured).
+    wildcard_type: Types,
 }
 
 struct Semantics<'a> {
+    file: &'a FileAst,
     diags: Vec<Diag>,
     scopes: Vec<Scope<'a>>,
     /// Every function and the scope it was declared in.
     functions: Vec<(&'a Function, usize)>,
     used: Vec<bool>,
+    /// Functions declared twice in a scope (an error): calls of them are not typed.
+    duplicated: Vec<bool>,
     calls: Vec<Vec<usize>>,
     /// The scope of every `match`, in the order `declare_body` met them, and how many of them
     /// `body` has visited again.
     match_scopes: Vec<usize>,
     visited: usize,
+    /// Per function, which of its parameters and `let`s it returns, and its result's type.
+    returns: Vec<Option<Rc<Vec<bool>>>>,
+    results: Vec<Option<Ty>>,
+    /// The types a call expecting a result of some type requires of each argument, worked out
+    /// once per function and type, so that the time is bounded by the functions whatever the
+    /// calls. Within a recursion (an error), a call of a function and type being worked out
+    /// takes any arguments: what depends on it is kept only until that one is done
+    /// (`tentative`, with the depth it depends on, and by that depth in `dependents`).
+    /// `working` holds the signatures being worked out, by depth, and `lows` the lowest depth
+    /// each depends on. Past `budget` signatures, in a long cycle of calls, what depends on one
+    /// being worked out is kept as it is.
+    signatures: HashMap<Call, Rc<Vec<Ty>>>,
+    tentative: HashMap<Call, (Rc<Vec<Ty>>, usize)>,
+    dependents: Vec<Vec<Call>>,
+    working: HashMap<Call, usize>,
+    lows: Vec<usize>,
+    budget: usize,
+    /// Functions whose result is being worked out, and how many calls are being followed.
+    busy: Vec<bool>,
+    following: usize,
 }
 
 /// The `match`es around a body, for the compiler's limits.
@@ -525,27 +771,106 @@ const MAX_PATH_LENGTH: usize = 100;
 const MAX_MATCH_VARIABLES: usize = 20;
 const MAX_ARGUMENTS: usize = 7;
 const MAX_CALL_DEPTH: usize = 20;
+/// How many signatures per function may be worked out before those of a cycle of calls are
+/// kept as they are (a ruleset without cycles works out each once).
+const SIGNATURES_PER_FUNCTION: usize = 16;
+/// How many calls deep the types of arguments and results are followed: past the call depth
+/// the compiler allows (an error), the rest of the chain takes any type.
+const MAX_FOLLOWED_CALLS: usize = 64;
 
-/// A parameter or `let` while its function is checked.
-struct Local {
-    name: String,
+/// A parameter or `let` while a function is checked.
+struct Local<'a> {
+    name: &'a str,
+    /// What its uses require so far.
     ty: Ty,
     used: bool,
 }
 
+/// Where an expression is checked.
+struct Cx<'a> {
+    scope: usize,
+    /// The function being checked, if any.
+    caller: Option<usize>,
+    /// Whether to report what is found, or only learn the types of parameters and `let`s.
+    report: bool,
+    /// The function's parameters, then its `let`s.
+    locals: Vec<Local<'a>>,
+    params: usize,
+    /// How many of `locals` the expression sees.
+    visible: usize,
+    /// The start of the statement being checked, where a variable's conflicting uses are
+    /// reported, and the variables reported there.
+    statement: Span,
+    conflicts: Vec<(usize, usize)>,
+}
+
+impl<'a> Cx<'a> {
+    fn new(scope: usize, caller: Option<usize>, report: bool) -> Self {
+        Self {
+            scope,
+            caller,
+            report,
+            locals: Vec::new(),
+            params: 0,
+            visible: 0,
+            statement: Span::default(),
+            conflicts: Vec::new(),
+        }
+    }
+
+    /// The `let` or parameter `name`: the last `let` of the name, or else the first
+    /// parameter.
+    fn local(&self, name: &str) -> Option<usize> {
+        match self.locals[self.params..self.visible]
+            .iter()
+            .rposition(|l| l.name == name)
+        {
+            Some(k) => Some(self.params + k),
+            None => self.locals[..self.params]
+                .iter()
+                .position(|l| l.name == name),
+        }
+    }
+}
+
+/// How an expression is used, for where the compiler reports it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Slot {
+    /// The condition of an `allow`.
+    Root,
+    Operand,
+    /// What a field, index, slice or method is applied to, or what `-` negates: one pair of
+    /// parentheses around it does not count.
+    Receiver,
+}
+
 pub(crate) fn semantics(file: &FileAst, version: Version, diags: &mut Vec<Diag>) {
     let mut s = Semantics {
+        file,
         diags: Vec::new(),
         scopes: vec![Scope {
             parent: None,
             functions: Vec::new(),
+            by_name: HashMap::new(),
             wildcards: Vec::new(),
+            wildcard_type: Types::of(&[]),
         }],
         functions: Vec::new(),
         used: Vec::new(),
+        duplicated: Vec::new(),
         calls: Vec::new(),
         match_scopes: Vec::new(),
         visited: 0,
+        returns: Vec::new(),
+        results: Vec::new(),
+        signatures: HashMap::new(),
+        tentative: HashMap::new(),
+        dependents: Vec::new(),
+        working: HashMap::new(),
+        lows: Vec::new(),
+        budget: 0,
+        busy: Vec::new(),
+        following: 0,
     };
     if version == Version::V1 {
         s.diags.push(Diag {
@@ -581,9 +906,14 @@ pub(crate) fn semantics(file: &FileAst, version: Version, diags: &mut Vec<Diag>)
         services.push((&service.name, scope));
     }
     s.duplicates();
+    let functions = s.functions.len();
+    s.returns = vec![None; functions];
+    s.results = vec![None; functions];
+    s.busy = vec![false; functions];
+    s.budget = SIGNATURES_PER_FUNCTION * functions;
 
     let mut lets = Vec::new();
-    for i in 0..s.functions.len() {
+    for i in 0..functions {
         s.function(i, &mut lets);
     }
     if version == Version::V1 {
@@ -611,16 +941,30 @@ pub(crate) fn semantics(file: &FileAst, version: Version, diags: &mut Vec<Diag>)
 
 impl<'a> Semantics<'a> {
     fn scope(&mut self, parent: usize, wildcards: Vec<&'a Segment>) -> usize {
+        let mut wildcard_type = Types::of(&[]);
+        for segment in &wildcards {
+            match segment.kind {
+                SegmentKind::Wildcard(_) => wildcard_type.push(T::String),
+                SegmentKind::Recursive(_) => wildcard_type.push(T::Path),
+                SegmentKind::Literal(_) => {}
+            }
+        }
         self.scopes.push(Scope {
             parent: Some(parent),
             functions: Vec::new(),
+            by_name: HashMap::new(),
             wildcards,
+            wildcard_type,
         });
         self.scopes.len() - 1
     }
 
     fn declare(&mut self, f: &'a Function, scope: usize) {
-        self.scopes[scope].functions.push(self.functions.len());
+        let s = &mut self.scopes[scope];
+        s.functions.push(self.functions.len());
+        s.by_name
+            .entry(&f.name.name)
+            .or_insert(self.functions.len());
         self.functions.push((f, scope));
         self.used.push(false);
         self.calls.push(Vec::new());
@@ -642,18 +986,20 @@ impl<'a> Semantics<'a> {
     /// "Function f is already defined." for a second declaration in one scope.
     /// A second declaration is never called (calls find the first), and is not reported unused.
     fn duplicates(&mut self) {
+        self.duplicated = vec![false; self.functions.len()];
         for scope in &self.scopes {
-            let mut names: Vec<&str> = Vec::new();
             for &i in &scope.functions {
                 let name = &self.functions[i].0.name;
-                if names.contains(&name.name.as_str()) {
+                let first = scope.by_name[name.name.as_str()];
+                if first != i {
                     self.diags.push(Diag::error(
                         name.span,
                         format!("Function {} is already defined.", name.name),
                     ));
                     self.used[i] = true;
+                    self.duplicated[i] = true;
+                    self.duplicated[first] = true;
                 }
-                names.push(&name.name);
             }
         }
     }
@@ -661,44 +1007,48 @@ impl<'a> Semantics<'a> {
     /// The function `name` as seen from `scope`.
     fn resolve_function(&self, mut scope: usize, name: &str) -> Option<usize> {
         loop {
-            let found = self.scopes[scope]
-                .functions
-                .iter()
-                .copied()
-                .find(|&i| self.functions[i].0.name.name == name);
-            if found.is_some() {
-                return found;
+            if let Some(&found) = self.scopes[scope].by_name.get(name) {
+                return Some(found);
             }
             scope = self.scopes[scope].parent?;
         }
     }
 
-    /// A wildcard's type: a string, and a recursive one a path, or a string or a path when
-    /// its `match` path also has a single-segment wildcard (as measured).
-    fn resolve_wildcard(&self, mut scope: usize, name: &str) -> Option<Ty> {
+    /// The type of the wildcard `name` as seen from `scope`.
+    fn resolve_wildcard(&self, mut scope: usize, name: &str) -> Option<Types> {
         loop {
-            let wildcards = &self.scopes[scope].wildcards;
-            let found = wildcards
-                .iter()
-                .rev()
-                .find(|s| s.kind.variable() == Some(name));
-            if let Some(segment) = found {
-                let single = wildcards
-                    .iter()
-                    .any(|s| matches!(s.kind, SegmentKind::Wildcard(_)));
-                return Some(match segment.kind {
-                    SegmentKind::Recursive(_) if single => Ty::StringOrPath,
-                    SegmentKind::Recursive(_) => Ty::Path,
-                    _ => Ty::String,
-                });
+            let s = &self.scopes[scope];
+            if s.wildcards.iter().any(|w| w.kind.variable() == Some(name)) {
+                return Some(s.wildcard_type);
             }
-            scope = self.scopes[scope].parent?;
+            scope = s.parent?;
         }
     }
 
-    /// Checks function `i`; the names of its `let`s go to `lets`.
-    fn function(&mut self, i: usize, lets: &mut Vec<Span>) {
+    /// Where the body of function `i` is checked: its parameters and `let`s, none of them
+    /// used or typed yet, all visible.
+    fn function_cx(&self, i: usize, report: bool) -> Cx<'a> {
         let (f, scope) = self.functions[i];
+        let mut cx = Cx::new(scope, Some(i), report);
+        cx.locals = f
+            .params
+            .iter()
+            .map(|p| p.name.as_str())
+            .chain(f.lets.iter().map(|l| l.name.name.as_str()))
+            .map(|name| Local {
+                name,
+                ty: ANY,
+                used: false,
+            })
+            .collect();
+        cx.params = f.params.len();
+        cx.visible = cx.locals.len();
+        cx
+    }
+
+    /// Checks function `i`, reporting what it finds; the names of its `let`s go to `lets`.
+    fn function(&mut self, i: usize, lets: &mut Vec<Span>) {
+        let f = self.functions[i].0;
         if f.params.len() > MAX_ARGUMENTS {
             self.diags.push(Diag::error(
                 f.name.span,
@@ -709,28 +1059,25 @@ impl<'a> Semantics<'a> {
                 ),
             ));
         }
-        let mut locals: Vec<Local> = Vec::new();
-        let mut spans = Vec::new();
-        for p in &f.params {
-            // A repeated parameter is an error; neither is reported unused.
-            if let Some(first) = locals.iter_mut().find(|l| l.name == p.name) {
-                first.used = true;
+        let mut cx = self.function_cx(i, true);
+        // A repeated parameter is an error, and is not reported unused: the name is the first.
+        for (k, p) in f.params.iter().enumerate() {
+            if f.params[..k].iter().any(|q| q.name == p.name) {
+                cx.locals[k].used = true;
                 self.diags.push(Diag::error(
                     p.span,
                     format!("Variable {} is already defined.", p.name),
                 ));
             }
-            locals.push(Local {
-                name: p.name.clone(),
-                ty: Ty::Any,
-                used: false,
-            });
-            spans.push(p.span);
         }
-        for l in &f.lets {
+        for (k, l) in f.lets.iter().enumerate() {
             lets.push(l.name.span);
-            let ty = self.expr(&l.value, scope, &mut locals, Some(i));
-            if locals.iter().any(|local| local.name == l.name.name) {
+            let earlier = f
+                .params
+                .iter()
+                .map(|p| p.name.as_str())
+                .chain(f.lets[..k].iter().map(|l| l.name.name.as_str()));
+            if earlier.clone().any(|name| name == l.name.name) {
                 self.diags.push(Diag::error(
                     l.name.span,
                     format!(
@@ -739,20 +1086,277 @@ impl<'a> Semantics<'a> {
                     ),
                 ));
             }
-            locals.push(Local {
-                name: l.name.name.clone(),
-                ty,
-                used: false,
-            });
-            spans.push(l.name.span);
         }
-        self.expr(&f.result, scope, &mut locals, Some(i));
-        for (local, span) in locals.iter().zip(spans) {
+        self.walk_body(i, &mut cx);
+        let spans = f
+            .params
+            .iter()
+            .map(|p| p.span)
+            .chain(f.lets.iter().map(|l| l.name.span));
+        for (local, span) in cx.locals.iter().zip(spans) {
             if !local.used {
                 self.diags.push(Diag::warning(
                     span,
                     format!("Unused variable: {}.", local.name),
                 ));
+            }
+        }
+    }
+
+    /// Checks the body of function `i`: its result, then its `let`s from the last, each
+    /// against what the statements after it require of it.
+    fn walk_body(&mut self, i: usize, cx: &mut Cx<'a>) {
+        let f = self.functions[i].0;
+        cx.visible = cx.locals.len();
+        cx.statement = self.first_token(&f.result);
+        self.check(&f.result, ANY, Slot::Operand, cx);
+        for (k, l) in f.lets.iter().enumerate().rev() {
+            let local = cx.params + k;
+            cx.visible = local;
+            cx.statement = l.span;
+            let ty = cx.locals[local].ty;
+            self.check(&l.value, ty, Slot::Operand, cx);
+        }
+    }
+
+    /// The function a call `name(args)` calls, if it is one of the ruleset's with as many
+    /// parameters.
+    fn user_call(&self, scope: usize, name: &Ident, args: &[Expr]) -> Option<usize> {
+        let g = self.resolve_function(scope, &name.name)?;
+        (self.functions[g].0.params.len() == args.len() && !self.duplicated[g]).then_some(g)
+    }
+
+    /// Which parameters and `let`s of function `i` it returns as they are: directly, through
+    /// `let`s and conditionals, or as an argument another function returns.
+    fn returns(&mut self, i: usize) -> Rc<Vec<bool>> {
+        if let Some(found) = &self.returns[i] {
+            return Rc::clone(found);
+        }
+        let f = self.functions[i].0;
+        let mut cx = self.function_cx(i, false);
+        let mut returned = vec![false; cx.locals.len()];
+        if self.busy[i] || self.following == MAX_FOLLOWED_CALLS {
+            return Rc::new(returned);
+        }
+        self.busy[i] = true;
+        self.following += 1;
+        let mut pending = vec![(&f.result, cx.visible)];
+        while let Some((e, visible)) = pending.pop() {
+            cx.visible = visible;
+            match &e.kind {
+                ExprKind::Ternary {
+                    then, otherwise, ..
+                } => {
+                    pending.push((then, visible));
+                    pending.push((otherwise, visible));
+                }
+                ExprKind::Ident(name) => {
+                    if let Some(local) = cx.local(name) {
+                        if !returned[local] && local >= cx.params {
+                            pending.push((&f.lets[local - cx.params].value, local));
+                        }
+                        returned[local] = true;
+                    }
+                }
+                ExprKind::Call {
+                    callee: Callee::Global(name),
+                    args,
+                } => {
+                    if let Some(g) = self.user_call(cx.scope, name, args) {
+                        let theirs = self.returns(g);
+                        for (arg, _) in args.iter().zip(theirs.iter()).filter(|(_, r)| **r) {
+                            pending.push((arg, visible));
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+        self.busy[i] = false;
+        self.following -= 1;
+        let found = Rc::new(returned);
+        self.returns[i] = Some(Rc::clone(&found));
+        found
+    }
+
+    /// The types a call of function `i` whose result is expected to be of type `ty` requires
+    /// of its arguments. Its body is checked as usual, its result expected to be of `ty`; a
+    /// parameter it returns as it is takes `ty` last.
+    fn signature(&mut self, i: usize, ty: Ty) -> Rc<Vec<Ty>> {
+        let key = (i, ty);
+        if let Some(found) = self.signatures.get(&key) {
+            return Rc::clone(found);
+        }
+        let f = self.functions[i].0;
+        if let Some((found, low)) = self.tentative.get(&key) {
+            let (found, low) = (Rc::clone(found), *low);
+            self.depends_on(low);
+            return found;
+        }
+        if let Some(&depth) = self.working.get(&key) {
+            self.depends_on(depth);
+            return Rc::new(vec![ANY; f.params.len()]);
+        }
+        if self.following == MAX_FOLLOWED_CALLS {
+            return Rc::new(vec![ANY; f.params.len()]);
+        }
+        self.following += 1;
+        let depth = self.lows.len();
+        self.budget = self.budget.saturating_sub(1);
+        self.lows.push(depth);
+        if self.dependents.len() == depth {
+            self.dependents.push(Vec::new());
+        }
+        self.working.insert(key, depth);
+        let returned = self.returns(i);
+        let mut cx = self.function_cx(i, false);
+        // What the parameters returned as they are take last, and what the `let`s returned as
+        // they are take.
+        let mut last = Vec::new();
+        let mut lets = vec![None; f.lets.len()];
+        self.flow(&f.result, ty, &mut cx, &returned, &mut last, &mut lets);
+        for (k, l) in f.lets.iter().enumerate().rev() {
+            let local = cx.params + k;
+            cx.visible = local;
+            match lets[k] {
+                Some(returned_ty) => {
+                    let ty = fold(cx.locals[local].ty, returned_ty);
+                    let mut nested = vec![None; f.lets.len()];
+                    self.flow(&l.value, ty, &mut cx, &returned, &mut last, &mut nested);
+                    for (k, ty) in nested.into_iter().enumerate() {
+                        if let Some(ty) = ty {
+                            lets[k] = Some(lets[k].map_or(ty, |t| fold(t, ty)));
+                        }
+                    }
+                }
+                None => {
+                    let ty = cx.locals[local].ty;
+                    self.check(&l.value, ty, Slot::Operand, &mut cx);
+                }
+            }
+        }
+        for (local, ty) in last {
+            self.constrain(local, ty, &mut cx);
+        }
+        self.working.remove(&key);
+        self.following -= 1;
+        let low = self.lows.pop().unwrap_or(depth);
+        let found = Rc::new(cx.locals[..cx.params].iter().map(|l| l.ty).collect());
+        // What depended on this one is worked out again when needed.
+        for dependent in std::mem::take(&mut self.dependents[depth]) {
+            self.tentative.remove(&dependent);
+        }
+        if low < depth && self.budget > 0 {
+            self.tentative.insert(key, (Rc::clone(&found), low));
+            self.dependents[low].push(key);
+            self.depends_on(low);
+        } else {
+            self.signatures.insert(key, Rc::clone(&found));
+        }
+        found
+    }
+
+    /// The signature being worked out depends on the one at `depth`.
+    fn depends_on(&mut self, depth: usize) {
+        if let Some(low) = self.lows.last_mut() {
+            *low = (*low).min(depth);
+        }
+    }
+
+    /// The part of a function's result `e`, expected to be of type `ty`. A parameter returned
+    /// as it is goes to `last`, a `let` to `lets`; the rest is checked.
+    fn flow(
+        &mut self,
+        e: &'a Expr,
+        ty: Ty,
+        cx: &mut Cx<'a>,
+        returned: &[bool],
+        last: &mut Vec<(usize, Types)>,
+        lets: &mut [Option<Ty>],
+    ) {
+        if let ExprKind::Ternary {
+            condition,
+            then,
+            otherwise,
+            ..
+        } = &e.kind
+        {
+            self.check(condition, Some(BOOL), Slot::Operand, cx);
+            self.flow(then, ty, cx, returned, last, lets);
+            self.flow(otherwise, ty, cx, returned, last, lets);
+            return;
+        }
+        if let ExprKind::Ident(name) = &e.kind
+            && let Some(local) = cx.local(name)
+            && returned[local]
+        {
+            if local < cx.params {
+                last.extend(ty.map(|ty| (local, ty)));
+            } else {
+                let k = local - cx.params;
+                lets[k] = Some(lets[k].map_or(ty, |t| fold(t, ty)));
+            }
+            return;
+        }
+        if let ExprKind::Call {
+            callee: Callee::Global(name),
+            args,
+        } = &e.kind
+            && let Some(g) = self.user_call(cx.scope, name, args)
+        {
+            let theirs = self.returns(g);
+            let types = self.signature(g, ty);
+            for (k, arg) in args.iter().enumerate() {
+                if theirs[k] {
+                    self.flow(arg, types[k], cx, returned, last, lets);
+                } else {
+                    self.check(arg, types[k], Slot::Operand, cx);
+                }
+            }
+            return;
+        }
+        self.check(e, ty, Slot::Operand, cx);
+    }
+
+    /// The type of the result of function `i`, for comparisons.
+    fn result_type(&mut self, i: usize) -> Ty {
+        if let Some(ty) = self.results[i] {
+            return ty;
+        }
+        if self.busy[i] || self.following == MAX_FOLLOWED_CALLS {
+            return ANY;
+        }
+        self.busy[i] = true;
+        self.following += 1;
+        let cx = self.function_cx(i, false);
+        let ty = self.type_of(&self.functions[i].0.result, &cx);
+        self.busy[i] = false;
+        self.following -= 1;
+        self.results[i] = Some(ty);
+        ty
+    }
+
+    /// Adds a use requiring `ty` to a parameter or `let`. When none of its types is left, the
+    /// compiler reports it at the statement, once, and the variable takes any type again.
+    fn constrain(&mut self, local: usize, ty: Types, cx: &mut Cx<'a>) {
+        let current = &mut cx.locals[local].ty;
+        match *current {
+            None => *current = Some(ty),
+            Some(t) if !t.filter(ty).is_empty() => *current = Some(t.filter(ty)),
+            Some(_) => {
+                *current = None;
+                let key = (local, cx.statement.start);
+                if cx.report && !cx.conflicts.contains(&key) {
+                    cx.conflicts.push(key);
+                    self.diags.push(Diag::warning(
+                        cx.statement,
+                        format!(
+                            "Invalid type. There is no type for variable '{}' that satisfies \
+                             all clauses.",
+                            cx.locals[local].name
+                        ),
+                    ));
+                }
             }
         }
     }
@@ -781,7 +1385,8 @@ impl<'a> Semantics<'a> {
                 }
             }
             if let Some(c) = &a.condition {
-                self.expr(c, scope, &mut Vec::new(), None);
+                let mut cx = Cx::new(scope, None, true);
+                self.check(c, Some(BOOL), Slot::Root, &mut cx);
             }
         }
         for m in &body.matches {
@@ -843,86 +1448,146 @@ impl<'a> Semantics<'a> {
         n
     }
 
-    /// Checks `e` and returns its type. `caller` is the function being checked, if any.
-    fn expr(
-        &mut self,
-        e: &Expr,
-        scope: usize,
-        locals: &mut Vec<Local>,
-        caller: Option<usize>,
-    ) -> Ty {
-        match &e.kind {
-            ExprKind::Null => Ty::Null,
-            ExprKind::Bool(_) => Ty::Bool,
-            ExprKind::Int(_) | ExprKind::IntOverflow(_) => Ty::Int,
-            ExprKind::Float(_) => Ty::Float,
-            ExprKind::String(_) => Ty::String,
-            ExprKind::Bytes(_) => Ty::Bytes,
+    // ----- types
+
+    /// The type an expression has, whatever it is expected to be: a parameter, a `let`, a
+    /// field, a conditional and the result of `get()` have any type.
+    fn type_of(&mut self, e: &'a Expr, cx: &Cx<'a>) -> Ty {
+        Some(match &e.kind {
+            ExprKind::Null => Types::of(&[T::Null]),
+            ExprKind::Bool(_) => BOOL,
+            ExprKind::Int(_) | ExprKind::IntOverflow(_) => INT,
+            ExprKind::Float(_) => FLOAT,
+            ExprKind::String(_) => STRING,
+            ExprKind::Bytes(_) => BYTES,
+            ExprKind::List(_) => LIST,
+            ExprKind::Map(_) => MAP,
+            ExprKind::Path(_) => PATH,
             ExprKind::Ident(name) => {
-                if let Some(local) = locals.iter_mut().rev().find(|l| &l.name == name) {
-                    local.used = true;
-                    return local.ty;
+                if cx.local(name).is_some() {
+                    return ANY;
                 }
-                if let Some(ty) = self.resolve_wildcard(scope, name) {
-                    return ty;
-                }
-                if !matches!(name.as_str(), "request" | "resource") && !is_package(name) {
-                    self.diags.push(Diag::warning(
-                        e.span,
-                        format!("Invalid variable name: {name}."),
-                    ));
-                }
-                Ty::Any
+                return self.resolve_wildcard(cx.scope, name);
             }
+            ExprKind::Member { .. } | ExprKind::Index { .. } | ExprKind::Ternary { .. } => {
+                return ANY;
+            }
+            ExprKind::Slice { .. } => SLICED,
+            // A call with the wrong number of arguments may return anything.
+            ExprKind::Call { callee, args } => {
+                let b = match callee {
+                    Callee::Global(name) => match self.resolve_function(cx.scope, &name.name) {
+                        Some(_) => {
+                            return match self.user_call(cx.scope, name, args) {
+                                Some(g) => self.result_type(g),
+                                None => ANY,
+                            };
+                        }
+                        None => builtin(GLOBALS, &name.name),
+                    },
+                    Callee::Namespaced { namespace, name } => {
+                        builtin(NAMESPACED, &format!("{}.{}", namespace.name, name.name))
+                    }
+                    Callee::Method { name, .. } => builtin(METHODS, &name.name),
+                };
+                return b
+                    .filter(|b| b.params.len() == args.len())
+                    .and_then(|b| b.result);
+            }
+            ExprKind::Unary { op, .. } => match op {
+                UnaryOp::Not => BOOL,
+                UnaryOp::Neg => result_of(NEG),
+            },
+            ExprKind::Binary { op, .. } => match op {
+                BinaryOp::Add => result_of(ADD),
+                BinaryOp::Sub => result_of(SUB),
+                BinaryOp::Mul | BinaryOp::Div | BinaryOp::Mod => result_of(MUL),
+                _ => BOOL,
+            },
+            ExprKind::Is { .. } => BOOL,
+        })
+    }
+
+    /// Checks `e` where a value of type `expected` is expected, and what is in it. Returns
+    /// whether `e` itself can be of that type. If it cannot, it is reported (and only what is
+    /// in it regardless of how `e` is used is checked).
+    fn check(&mut self, e: &'a Expr, expected: Ty, slot: Slot, cx: &mut Cx<'a>) -> bool {
+        let found = self.type_of(e, cx);
+        let fits = match (found, expected) {
+            (Some(found), Some(expected)) => found.meets(expected),
+            _ => true,
+        };
+        // Variables, conditionals and calls are reported where they are handled.
+        let reported_here = !matches!(
+            e.kind,
+            ExprKind::Ident(_) | ExprKind::Ternary { .. } | ExprKind::Call { .. }
+        );
+        if !fits && reported_here {
+            self.mismatch(e, slot, found, expected, cx);
+        }
+        // Below a node that does not fit, operands are not expected to be of any type.
+        let within = if fits { expected } else { ANY };
+        match &e.kind {
+            ExprKind::Null
+            | ExprKind::Bool(_)
+            | ExprKind::Int(_)
+            | ExprKind::IntOverflow(_)
+            | ExprKind::Float(_)
+            | ExprKind::String(_)
+            | ExprKind::Bytes(_) => {}
+            ExprKind::Ident(name) => return self.variable(e, name, expected, slot, cx),
             ExprKind::List(items) => {
                 for item in items {
-                    self.expr(item, scope, locals, caller);
+                    self.check(item, ANY, Slot::Operand, cx);
                 }
-                Ty::List
             }
             ExprKind::Map(entries) => {
                 for (k, v) in entries {
-                    self.expr(k, scope, locals, caller);
-                    self.expr(v, scope, locals, caller);
+                    self.check(k, Some(STRING), Slot::Operand, cx);
+                    self.check(v, ANY, Slot::Operand, cx);
                 }
-                Ty::Map
             }
             ExprKind::Path(parts) => {
                 for part in parts {
                     if let PathPart::Expr(e) = part {
-                        self.expr(e, scope, locals, caller);
+                        self.check(e, Some(PATH_PART), Slot::Operand, cx);
                     }
                 }
-                Ty::Path
             }
             ExprKind::Member { object, .. } => {
-                self.expr(object, scope, locals, caller);
-                Ty::Any
+                self.check(object, Some(MAP), Slot::Receiver, cx);
             }
             ExprKind::Index { object, index } => {
-                self.expr(object, scope, locals, caller);
-                self.expr(index, scope, locals, caller);
-                Ty::Any
+                // A string's character is a string; the other values' elements may be anything.
+                let objects = match within {
+                    Some(e) if !e.contains(T::String) => Types::of(&[T::List, T::Map, T::Path]),
+                    _ => INDEXED,
+                };
+                self.check(object, Some(objects), Slot::Receiver, cx);
+                self.check(index, Some(KEY), Slot::Operand, cx);
             }
             ExprKind::Slice { object, start, end } => {
-                self.expr(object, scope, locals, caller);
-                self.expr(start, scope, locals, caller);
-                self.expr(end, scope, locals, caller);
-                Ty::Any
+                if fits {
+                    let objects = within.map_or(SLICED, |e| SLICED.filter(e));
+                    self.check(object, Some(objects), Slot::Receiver, cx);
+                    self.check(start, Some(BOUND), Slot::Operand, cx);
+                    self.check(end, Some(BOUND), Slot::Operand, cx);
+                } else {
+                    self.check(object, ANY, Slot::Receiver, cx);
+                    self.check(start, ANY, Slot::Operand, cx);
+                    self.check(end, ANY, Slot::Operand, cx);
+                }
             }
             ExprKind::Call { callee, args } => {
-                for a in args {
-                    self.expr(a, scope, locals, caller);
-                }
-                self.call(callee, args, scope, locals, caller)
+                return self.call(e, callee, args, (found, expected), slot, cx);
             }
             ExprKind::Unary { op, operand } => {
-                let ty = self.expr(operand, scope, locals, caller);
-                match op {
-                    UnaryOp::Not => Ty::Bool,
-                    UnaryOp::Neg if matches!(ty, Ty::Int | Ty::Float | Ty::Number) => ty,
-                    UnaryOp::Neg => Ty::Any,
-                }
+                let (forms, slot) = match op {
+                    UnaryOp::Not => (NOT, Slot::Operand),
+                    UnaryOp::Neg => (NEG, Slot::Receiver),
+                };
+                let operand_ty = fits.then(|| operand_of(forms, 0, within));
+                self.check(operand, operand_ty, slot, cx);
             }
             ExprKind::Binary {
                 op,
@@ -930,11 +1595,34 @@ impl<'a> Semantics<'a> {
                 left,
                 right,
             } => {
-                let l = self.expr(left, scope, locals, caller);
-                let r = self.expr(right, scope, locals, caller);
-                match op {
-                    BinaryOp::Eq | BinaryOp::Ne => {
-                        if !l.comparable(r) {
+                let forms = match op {
+                    BinaryOp::Add => Some(ADD),
+                    BinaryOp::Sub => Some(SUB),
+                    BinaryOp::Mul | BinaryOp::Div | BinaryOp::Mod => Some(MUL),
+                    BinaryOp::And | BinaryOp::Or => Some(LOGIC),
+                    _ => None,
+                };
+                match (forms, op) {
+                    (Some(forms), _) => {
+                        let left_ty = fits.then(|| operand_of(forms, 0, within));
+                        let right_ty = fits.then(|| operand_of(forms, 1, within));
+                        self.check(left, left_ty, Slot::Operand, cx);
+                        self.check(right, right_ty, Slot::Operand, cx);
+                    }
+                    (None, BinaryOp::In) => {
+                        self.check(left, ANY, Slot::Operand, cx);
+                        self.check(right, fits.then_some(CONTAINER), Slot::Operand, cx);
+                    }
+                    (None, BinaryOp::Eq | BinaryOp::Ne) => {
+                        self.check(left, ANY, Slot::Operand, cx);
+                        self.check(right, ANY, Slot::Operand, cx);
+                        let l = self.type_of(left, cx);
+                        let r = self.type_of(right, cx);
+                        if let (Some(l), Some(r)) = (l, r)
+                            && !l.comparable(r)
+                            && fits
+                            && cx.report
+                        {
                             let result = if *op == BinaryOp::Eq { "false" } else { "true" };
                             self.diags.push(Diag::warning(
                                 *op_span,
@@ -944,25 +1632,15 @@ impl<'a> Semantics<'a> {
                                 ),
                             ));
                         }
-                        Ty::Bool
                     }
-                    BinaryOp::Or
-                    | BinaryOp::And
-                    | BinaryOp::Lt
-                    | BinaryOp::Le
-                    | BinaryOp::Gt
-                    | BinaryOp::Ge
-                    | BinaryOp::In => Ty::Bool,
-                    BinaryOp::Add
-                    | BinaryOp::Sub
-                    | BinaryOp::Mul
-                    | BinaryOp::Div
-                    | BinaryOp::Mod => Ty::Any,
+                    (None, _) => {
+                        self.check(left, ANY, Slot::Operand, cx);
+                        self.check(right, ANY, Slot::Operand, cx);
+                    }
                 }
             }
             ExprKind::Is { value, .. } => {
-                self.expr(value, scope, locals, caller);
-                Ty::Bool
+                self.check(value, ANY, Slot::Operand, cx);
             }
             ExprKind::Ternary {
                 condition,
@@ -970,95 +1648,290 @@ impl<'a> Semantics<'a> {
                 otherwise,
                 ..
             } => {
-                self.expr(condition, scope, locals, caller);
-                self.expr(then, scope, locals, caller);
-                self.expr(otherwise, scope, locals, caller);
-                Ty::Any
+                self.check(condition, Some(BOOL), Slot::Operand, cx);
+                let a = self.check(then, expected, Slot::Operand, cx);
+                let b = self.check(otherwise, expected, Slot::Operand, cx);
+                let (ta, tb) = (self.type_of(then, cx), self.type_of(otherwise, cx));
+                if a && b
+                    && let (Some(ta), Some(tb)) = (ta, tb)
+                    && !ta.meets(tb)
+                    && cx.report
+                {
+                    let at = self.token(e);
+                    self.diags.push(Diag::warning(
+                        at,
+                        "Ternary operator result if condition is true has a different type \
+                         than if condition is false.",
+                    ));
+                }
+                return true;
             }
         }
+        fits
     }
 
+    /// A variable where a value of type `expected` is expected.
+    fn variable(
+        &mut self,
+        e: &'a Expr,
+        name: &str,
+        expected: Ty,
+        slot: Slot,
+        cx: &mut Cx<'a>,
+    ) -> bool {
+        if let Some(local) = cx.local(name) {
+            if cx.report {
+                cx.locals[local].used = true;
+            }
+            if let Some(expected) = expected {
+                self.constrain(local, expected, cx);
+            }
+            return true;
+        }
+        if let Some(ty) = self.resolve_wildcard(cx.scope, name) {
+            let fits = expected.is_none_or(|e| ty.meets(e));
+            if !fits && cx.report {
+                let at = self.position(e, slot);
+                self.mismatch(e, slot, Some(ty), expected, cx);
+                self.diags.push(Diag::warning(
+                    at,
+                    format!(
+                        "Invalid type. There is no type for variable '{name}' that satisfies \
+                         all clauses."
+                    ),
+                ));
+            }
+            return fits;
+        }
+        if !matches!(name, "request" | "resource") && !is_package(name) && cx.report {
+            self.diags.push(Diag::warning(
+                e.span,
+                format!("Invalid variable name: {name}."),
+            ));
+        }
+        true
+    }
+
+    /// "Invalid type. Received one of [found]. Expected one of [expected]." at `e`.
+    fn mismatch(&mut self, e: &Expr, slot: Slot, found: Ty, expected: Ty, cx: &Cx<'a>) {
+        let (Some(found), Some(expected), true) = (found, expected, cx.report) else {
+            return;
+        };
+        let at = self.position(e, slot);
+        let message = if slot == Slot::Root {
+            format!(
+                "Invalid type. Permission statements expect a boolean value. Received one of \
+                 [{}].",
+                found.list()
+            )
+        } else {
+            format!(
+                "Invalid type. Received one of [{}]. Expected one of [{}].",
+                found.list(),
+                expected.list()
+            )
+        };
+        self.diags.push(Diag::warning(at, message));
+    }
+
+    /// A call where a value of type `expected` is expected (`found` is the type of its
+    /// result). A call of one of the ruleset's functions takes the expected type to what the
+    /// function returns; a built-in one with the wrong number of arguments, or whose result
+    /// does not fit, takes any receiver and arguments.
     fn call(
         &mut self,
-        callee: &Callee,
-        args: &[Expr],
-        scope: usize,
-        locals: &mut Vec<Local>,
-        caller: Option<usize>,
-    ) -> Ty {
-        match callee {
+        e: &'a Expr,
+        callee: &'a Callee,
+        args: &'a [Expr],
+        (found, expected): (Ty, Ty),
+        slot: Slot,
+        cx: &mut Cx<'a>,
+    ) -> bool {
+        let (name, full, table, receiver) = match callee {
             Callee::Global(name) => {
-                if let Some(f) = self.resolve_function(scope, &name.name) {
-                    self.used[f] = true;
-                    if let Some(caller) = caller {
-                        self.calls[caller].push(f);
-                    }
-                    if self.functions[f].0.params.len() != args.len() {
-                        self.arity(name, &name.name);
-                    }
-                    return Ty::Any;
+                if let Some(f) = self.resolve_function(cx.scope, &name.name) {
+                    self.function_call(f, name, args, expected, cx);
+                    return true;
                 }
-                match GLOBALS.iter().find(|(n, _)| *n == name.name) {
-                    Some(&(_, arity)) => {
-                        if arity != args.len() {
-                            self.arity(name, &name.name);
-                        }
-                        global_type(&name.name)
-                    }
-                    None => {
-                        self.unknown_function(name, &name.name);
-                        Ty::Any
-                    }
-                }
+                (name, name.name.clone(), GLOBALS, None)
             }
-            Callee::Namespaced { namespace, name } => {
-                let full = format!("{}.{}", namespace.name, name.name);
-                match NAMESPACED.iter().find(|(n, _)| *n == full) {
-                    Some(&(_, arity)) => {
-                        if arity != args.len() {
-                            self.arity(name, &full);
-                        }
-                        namespaced_type(&full)
-                    }
-                    None => {
-                        self.unknown_function(name, &full);
-                        Ty::Any
-                    }
-                }
-            }
+            Callee::Namespaced { namespace, name } => (
+                name,
+                format!("{}.{}", namespace.name, name.name),
+                NAMESPACED,
+                None,
+            ),
             Callee::Method { receiver, name } => {
-                self.expr(receiver, scope, locals, caller);
-                match METHODS.iter().find(|(n, _)| *n == name.name) {
-                    Some(&(_, arity)) => {
-                        if arity != args.len() {
-                            self.arity(name, &name.name);
-                        }
-                        if matches!(name.name.as_str(), "matches" | "split") {
-                            self.regex(args);
-                        }
-                        method_type(&name.name)
-                    }
-                    None => {
-                        self.unknown_function(name, &name.name);
-                        Ty::Any
-                    }
-                }
+                (name, name.name.clone(), METHODS, Some(&**receiver))
             }
+        };
+        let Some(b) = builtin(table, &full) else {
+            self.unknown_function(name, &full, cx);
+            if let Some(receiver) = receiver {
+                self.check(receiver, ANY, Slot::Receiver, cx);
+            }
+            for a in args {
+                self.check(a, ANY, Slot::Operand, cx);
+            }
+            return true;
+        };
+        if cx.report && receiver.is_some() && matches!(full.as_str(), "matches" | "split") {
+            self.regex(args);
+        }
+        let arity = b.params.len() == args.len();
+        if !arity {
+            self.arity(name, &full, cx);
+        }
+        let fits = match (found, expected) {
+            (Some(found), Some(expected)) => found.meets(expected),
+            _ => true,
+        };
+        if !fits {
+            self.mismatch(e, slot, found, expected, cx);
+        }
+        let typed = arity && fits;
+        if let Some(receiver) = receiver {
+            self.check(receiver, typed.then_some(b.receiver), Slot::Receiver, cx);
+        }
+        for (k, a) in args.iter().enumerate() {
+            let ty = if typed { b.params[k] } else { ANY };
+            self.check(a, ty, Slot::Operand, cx);
+        }
+        fits
+    }
+
+    /// A call of the ruleset's function `f`: each argument is expected to be of the type the
+    /// function's body and the use of its result require.
+    fn function_call(
+        &mut self,
+        f: usize,
+        name: &Ident,
+        args: &'a [Expr],
+        expected: Ty,
+        cx: &mut Cx<'a>,
+    ) {
+        if cx.report {
+            self.used[f] = true;
+            if let Some(caller) = cx.caller {
+                self.calls[caller].push(f);
+            }
+        }
+        let arity = self.functions[f].0.params.len() == args.len();
+        if !arity {
+            self.arity(name, &name.name, cx);
+        }
+        if !arity || self.duplicated[f] {
+            for a in args {
+                self.check(a, ANY, Slot::Operand, cx);
+            }
+            return;
+        }
+        let types = self.signature(f, expected);
+        for (a, ty) in args.iter().zip(types.iter()) {
+            self.check(a, *ty, Slot::Operand, cx);
         }
     }
 
-    fn arity(&mut self, at: &Ident, name: &str) {
-        self.diags.push(Diag::warning(
-            at.span,
-            format!("Incorrect number of arguments supplied to function: {name}."),
-        ));
+    fn arity(&mut self, at: &Ident, name: &str, cx: &Cx<'a>) {
+        if cx.report {
+            self.diags.push(Diag::warning(
+                at.span,
+                format!("Incorrect number of arguments supplied to function: {name}."),
+            ));
+        }
     }
 
-    fn unknown_function(&mut self, at: &Ident, name: &str) {
-        self.diags.push(Diag::warning(
-            at.span,
-            format!("Invalid function name: {name}."),
-        ));
+    fn unknown_function(&mut self, at: &Ident, name: &str, cx: &Cx<'a>) {
+        if cx.report {
+            self.diags.push(Diag::warning(
+                at.span,
+                format!("Invalid function name: {name}."),
+            ));
+        }
+    }
+
+    // ----- positions
+
+    /// The parentheses around `e`, outermost first.
+    fn parens(&self, e: &Expr) -> &[Span] {
+        self.file
+            .parens
+            .get(&(e.span.start, e.span.end))
+            .map_or(&[], Vec::as_slice)
+    }
+
+    /// The token the compiler reports `e` at: a literal or variable itself (or the parenthesis
+    /// around it), an operator, a function's name, the start of what a field, index or slice
+    /// is taken of.
+    fn position(&self, e: &Expr, slot: Slot) -> Span {
+        let parens = self.parens(e);
+        let simple = matches!(
+            e.kind,
+            ExprKind::Null
+                | ExprKind::Bool(_)
+                | ExprKind::Int(_)
+                | ExprKind::IntOverflow(_)
+                | ExprKind::Float(_)
+                | ExprKind::String(_)
+                | ExprKind::Bytes(_)
+                | ExprKind::Ident(_)
+                | ExprKind::List(_)
+                | ExprKind::Map(_)
+                | ExprKind::Path(_)
+        );
+        match (simple, slot, parens) {
+            (true, Slot::Receiver, [_, inner, ..]) => *inner,
+            (true, Slot::Receiver, _) | (true, _, []) | (false, _, _) => self.token(e),
+            (true, _, [outer, ..]) => *outer,
+        }
+    }
+
+    /// The token of `e` itself, inside any parentheses.
+    fn token(&self, e: &Expr) -> Span {
+        let first = |len: usize| Span {
+            end: e.span.start + len,
+            ..e.span
+        };
+        match &e.kind {
+            ExprKind::List(_) | ExprKind::Map(_) | ExprKind::Unary { .. } => first(1),
+            ExprKind::Path(parts) => match parts.first() {
+                Some(PathPart::Segment(s)) => first(1 + s.len()),
+                _ => first(1),
+            },
+            ExprKind::Binary { op_span, .. } => *op_span,
+            ExprKind::Ternary { question, .. } => *question,
+            ExprKind::Is { keyword, .. } => *keyword,
+            ExprKind::Call { callee, .. } => match callee {
+                Callee::Global(name)
+                | Callee::Namespaced { name, .. }
+                | Callee::Method { name, .. } => name.span,
+            },
+            ExprKind::Member { object, .. }
+            | ExprKind::Index { object, .. }
+            | ExprKind::Slice { object, .. } => self.first_token(object),
+            _ => e.span,
+        }
+    }
+
+    /// The first token of `e`, parentheses included.
+    fn first_token(&self, e: &Expr) -> Span {
+        if let Some(outer) = self.parens(e).first() {
+            return *outer;
+        }
+        match &e.kind {
+            ExprKind::Binary { left, .. } => self.first_token(left),
+            ExprKind::Ternary { condition, .. } => self.first_token(condition),
+            ExprKind::Is { value, .. } => self.first_token(value),
+            ExprKind::Call {
+                callee: Callee::Namespaced { namespace, .. },
+                ..
+            } => namespace.span,
+            ExprKind::Call {
+                callee: Callee::Method { receiver, .. },
+                ..
+            } => self.first_token(receiver),
+            _ => self.token(e),
+        }
     }
 
     /// A pattern literal that does not compile (RE2 syntax).
@@ -1145,6 +2018,20 @@ impl<'a> Semantics<'a> {
     }
 }
 
+fn builtin(table: &'static [Builtin], name: &str) -> Option<&'static Builtin> {
+    table.iter().find(|b| b.name == name)
+}
+
+/// A variable's type after one more use requiring `ty`: what both allow, or any type again
+/// when nothing is left.
+fn fold(current: Ty, ty: Ty) -> Ty {
+    match (current, ty) {
+        (current, None) => current,
+        (None, ty) => ty,
+        (Some(current), Some(ty)) => Some(current.filter(ty)).filter(|t| !t.is_empty()),
+    }
+}
+
 /// Whether a repetition operator repeats another (`a**`, `a++`, `a*{2}`), which RE2 refuses
 /// and Rust's `regex` accepts. One `?` after an operator makes it lazy and is fine.
 pub(crate) fn repeated_repetition(pattern: &str) -> bool {
@@ -1228,10 +2115,31 @@ mod tests {
 
     #[test]
     fn comparability() {
-        assert!(Ty::Int.comparable(Ty::Float));
-        assert!(Ty::Any.comparable(Ty::Null));
-        assert!(Ty::StringOrPath.comparable(Ty::Path));
-        assert!(!Ty::String.comparable(Ty::Null));
-        assert!(!Ty::LatLng.comparable(Ty::Null));
+        assert!(INT.comparable(FLOAT));
+        assert!(NUMBER.comparable(FLOAT_INT));
+        assert!(Types::of(&[T::String, T::Path]).comparable(PATH));
+        assert!(!STRING.comparable(Types::of(&[T::Null])));
+        assert!(!LIST.comparable(SET));
+    }
+
+    #[test]
+    fn operand_types() {
+        assert_eq!(
+            result_of(ADD).list(),
+            "int, float, string, duration, timestamp"
+        );
+        assert_eq!(
+            operand_of(ADD, 0, Some(TIMESTAMP)).list(),
+            "duration, timestamp"
+        );
+        assert_eq!(
+            operand_of(ADD, 1, Some(TIMESTAMP)).list(),
+            "timestamp, duration"
+        );
+        assert_eq!(
+            operand_of(SUB, 0, Some(DURATION)).list(),
+            "duration, timestamp"
+        );
+        assert_eq!(operand_of(NEG, 0, Some(INT)).list(), "int, float");
     }
 }

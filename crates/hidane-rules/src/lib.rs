@@ -105,10 +105,11 @@ fn compile_here(files: &[SourceFile]) -> Compilation {
         for (file, p) in files.iter().zip(parsed) {
             let mut diags = p.diags;
             diag::sort(&mut diags);
+            let offsets = diag::Offsets::new(&file.content);
             issues.extend(
                 diags
                     .into_iter()
-                    .map(|d| d.into_issue(&file.content, file.name.as_deref())),
+                    .map(|d| d.into_issue(&offsets, file.name.as_deref())),
             );
         }
         Compilation { ruleset, issues }

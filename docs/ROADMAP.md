@@ -72,7 +72,7 @@ Parity exceptions planned for v0.1: the listener-induced write slowdown and the 
 
 | Priority | Item | Status (2026-10-12) |
 |---|---|---|
-| P1 | Grammar (v1 / v2, `let`, operator precedence) and diagnostics (`issues[]` / `Severity`) | On main (#59); the type checker's warnings in progress (#60) |
+| P1 | Grammar (v1 / v2, `let`, operator precedence) and diagnostics (`issues[]` / `Severity`) | On main (#59, #60): the official type checker's warnings |
 | P1 | Type system (14 types, 70+ methods) and built-in functions | On main (#60, #62) |
 | P1 | `request` / `resource` / `request.query`, `request.resource.data` after FieldValue transforms | On main (#63, #64) |
 | P1 | `get` / `exists` / `getAfter` / `existsAfter`, 10 / 20 call limits, cached calls not counted | On main (#65) |

@@ -63,15 +63,15 @@ impl Diag {
         }
     }
 
-    pub fn into_issue(self, src: &str, file_name: Option<&str>) -> Issue {
+    pub fn into_issue(self, offsets: &Offsets, file_name: Option<&str>) -> Issue {
         Issue {
             file_name: file_name.map(str::to_owned),
             position: self.span.map(|span| Position {
                 line: span.line,
                 column: span.column,
-                current_offset: code_points(src, span.start),
+                current_offset: offsets.at(span.start),
                 // The last code point of the span; an empty span ends where it starts.
-                end_offset: code_points(src, span.end).max(code_points(src, span.start) + 1) - 1,
+                end_offset: offsets.at(span.end).max(offsets.at(span.start) + 1) - 1,
             }),
             description: self.message,
             severity: self.severity,
@@ -79,13 +79,36 @@ impl Diag {
     }
 }
 
-/// How many code points precede byte `offset`.
-fn code_points(src: &str, offset: usize) -> u32 {
-    let offset = offset.min(src.len());
-    let count = src
-        .get(..offset)
-        .map_or(offset, |prefix| prefix.chars().count());
-    u32::try_from(count).unwrap_or(u32::MAX)
+/// How many code points precede each byte offset of a file (the byte offset itself in ASCII).
+pub(crate) struct Offsets {
+    len: usize,
+    counts: Option<Vec<u32>>,
+}
+
+impl Offsets {
+    pub fn new(src: &str) -> Self {
+        let counts = (!src.is_ascii()).then(|| {
+            let mut counts = Vec::with_capacity(src.len() + 1);
+            for (count, c) in src.chars().enumerate() {
+                let count = u32::try_from(count).unwrap_or(u32::MAX);
+                counts.extend(std::iter::repeat_n(count, c.len_utf8()));
+            }
+            counts.push(u32::try_from(src.chars().count()).unwrap_or(u32::MAX));
+            counts
+        });
+        Self {
+            len: src.len(),
+            counts,
+        }
+    }
+
+    fn at(&self, offset: usize) -> u32 {
+        let offset = offset.min(self.len);
+        match &self.counts {
+            Some(counts) => counts[offset],
+            None => u32::try_from(offset).unwrap_or(u32::MAX),
+        }
+    }
 }
 
 /// The official order: by line, column and then text (`L0:0` first), duplicates kept.
