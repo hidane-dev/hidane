@@ -79,13 +79,20 @@ project asks for this, what each side keeps and how agreements are recorded:
 - **Individual CLA** ([text](docs/cla/individual.md)): for what you contribute
   on your own behalf. On your first pull request the `cla` check fails and a
   comment asks each author of its commits to agree, by posting
-  `I have read the hidane Individual CLA 1.0 and I agree to it.` on the pull
-  request. Once you have agreed, later pull requests pass without asking again.
+  `I have read the hidane Individual CLA 1.0, I have the right to agree to it for my contributions, and I agree to it.`
+  on the pull request. Once you have agreed, later pull requests pass without asking again.
 - **Corporate CLA** ([text](docs/cla/corporate.md)): for what employees or
   contractors contribute as part of their work for a company. The company
   signs it once and names the GitHub accounts it covers; open an issue titled
   "Corporate CLA" to start. If your employer has rights in what you write,
   check with them before agreeing to the Individual CLA.
+
+If your GitHub profile names a company or you commit with a company email
+address, the check labels the pull request `cla: employer check`, and before
+merging a maintainer asks whether the contribution is part of your work for
+that company; if it is, the company signs the Corporate CLA or confirms in
+writing that you may contribute it
+([employer check](docs/cla/README.md#employer-check)).
 
 A pull request is merged only when the `cla` check passes. Author your commits
 with an email address linked to your GitHub account, so the check can tell who
