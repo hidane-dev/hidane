@@ -167,7 +167,8 @@ action `.github/actions/official-emulator` downloads its jar from the URL fireba
 checks the jar's SHA-256, caches it with `actions/cache` (outside the workspace, so it is never
 committed), sets up Temurin 21 with `actions/setup-java` (leaving `JAVA_HOME` and `PATH` as they
 were), starts the emulator with `-Duser.language=en -Duser.country=US` and waits until `GET /`
-answers, for two minutes at most. Without a `version` it runs the one in
+answers, for two minutes at most (it answers 1 to 3 seconds after `java` starts on
+`ubuntu-24.04`). Without a `version` it runs the one in
 `.github/actions/official-emulator/pinned.sh`, which the fixtures were recorded from:
 
 ```yaml
@@ -198,7 +199,8 @@ weekly, by hand, and on pull requests that change the action or the workflow:
   and come out the same on every run: they wait on no stream, and the server times and IDs the
   emulator chooses are masked or absent in what they record. (`rules_eval.py` does not: under
   Java 21 two of its batch lookup cases are allowed on some runs and denied on others.) Each
-  recording and the emulator's output are uploaded. Run by hand with a `version` and `sha256`, it
+  recording and the emulator's output are uploaded, and each job's summary gives the emulator's
+  start-up time and peak resident memory. Run by hand with a `version` and `sha256`, it
   records against that release instead and shows which answers it changes; the recordings'
   `oracle` field still names the pinned version, since the scripts write it.
 - **newer** reads which Firestore emulator firebase-tools' latest release pins and fails when it

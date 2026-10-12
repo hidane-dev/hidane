@@ -104,6 +104,10 @@ jobs:
           ADDRESS: ${{ steps.emulator.outputs.address }}
           PID: ${{ steps.emulator.outputs.pid }}
         run: |
+          # The most memory it held (Linux reports the peak resident set as VmHWM).
+          if peak=$(awk '/^VmHWM:/ { printf "%.0f", $2 / 1024 }' "/proc/$PID/status" 2> /dev/null) && [[ -n "$peak" ]]; then
+            echo "Its peak resident memory was $peak MiB." | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
           curl --fail --silent --show-error --request POST "http://$ADDRESS/shutdown" || kill "$PID" || true
           timeout 30 tail --pid="$PID" -f /dev/null
       - name: Compare with the committed fixture
