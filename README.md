@@ -10,7 +10,7 @@ evaluates the same Security Rules, reads and writes the same import / export dir
 under `firebase-tools`. No JDK to install. Starts in milliseconds. Tested for parity against the
 official emulator as the oracle.
 
-> **v0.2.3 enforces Security Rules.** hidane serves the Firestore API over gRPC, REST and
+> **v0.2.4 enforces Security Rules.** hidane serves the Firestore API over gRPC, REST and
 > WebChannel: documents, queries, aggregations, vector search, transactions, listeners, exports
 > and imports, and the emulator's own endpoints, each checked against the official emulator;
 > `firebase-tools` launches it in place of the official one. Since v0.2.0 it evaluates
@@ -53,7 +53,7 @@ Which clients can use hidane depends on the transport their SDK speaks to an emu
 ([`docs/compatibility.md`](docs/compatibility.md)). "Verified" means the client's results were
 compared with the official emulator's (`results/`):
 
-| Client | Transport | In v0.2.3 |
+| Client | Transport | In v0.2.4 |
 |---|---|---|
 | firebase-admin (Node) / `@google-cloud/firestore` | gRPC | verified: documents, queries, aggregations, vector search, transactions, listeners |
 | firebase-js-sdk in Node | gRPC | verified: writes, transactions, listeners, offline and resume |
@@ -70,7 +70,7 @@ compared with the official emulator's (`results/`):
 ## Parity
 
 hidane treats the official emulator as the oracle. Scripts in [`tools/oracle/`](tools/oracle/)
-ask the official emulator how it answers — 36 recorded fixtures so far, from value ordering to
+ask the official emulator how it answers — 37 recorded fixtures so far, from value ordering to
 WebChannel framing, export files and Security Rules — and the test suite replays every recording against hidane; SDK transcripts
 from both emulators are compared in [`results/`](results/). A parity table with a badge will
 follow (#43). No claim of compatibility without a test behind it. Differences that are intentional (performance bugs and

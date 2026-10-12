@@ -77,7 +77,8 @@ Parity exceptions planned for v0.1: the listener-induced write slowdown and the 
 v0.2.0 (2026-10-12) has the P1 items, v0.2.1 adds the request monitor (#69) and the remaining
 `request` fields (#166), v0.2.2 checks a commit's `verify` writes (#173), and v0.2.3 verifies
 rules-unit-testing end to end (#186) and accepts the Functions emulator's trigger registrations
-(#185). Coverage differences (#167) follow in v0.2.x; Functions events (#70) moved to v0.4.
+(#185). v0.2.4 shows constraints in coverage reports and `debug()` as the official emulator does
+(#167) and escapes JSON strings as it does (#191). Functions events (#70) moved to v0.4.
 
 | Priority | Item | Status (2026-10-12) |
 |---|---|---|
