@@ -35,7 +35,6 @@ mod report;
 
 use std::{
     collections::HashMap,
-    fmt::Write as _,
     sync::{Arc, Mutex, OnceLock, RwLock},
 };
 
@@ -502,27 +501,7 @@ fn issues_json(issues: &[Issue]) -> String {
 }
 
 /// A JSON string as protobuf-java's JsonFormat writes it.
-pub(crate) fn json_string(s: &str) -> String {
-    let mut out = String::with_capacity(s.len() + 2);
-    out.push('"');
-    for c in s.chars() {
-        match c {
-            '"' => out.push_str("\\\""),
-            '\\' => out.push_str("\\\\"),
-            '\n' => out.push_str("\\n"),
-            '\r' => out.push_str("\\r"),
-            '\t' => out.push_str("\\t"),
-            '\u{8}' => out.push_str("\\b"),
-            '\u{c}' => out.push_str("\\f"),
-            c if u32::from(c) < 0x20 || c == '\u{2028}' || c == '\u{2029}' => {
-                let _ = write!(out, "\\u{:04x}", u32::from(c));
-            }
-            c => out.push(c),
-        }
-    }
-    out.push('"');
-    out
-}
+pub(crate) use crate::rest::json_string;
 
 /// `--rules`: compiles the file at startup. Returns the lines to print and, if it compiled,
 /// the file's content and the ruleset (for [`Rules::set_default`]).
@@ -608,13 +587,5 @@ mod tests {
         ] {
             assert!(parse(bad).is_err(), "{}", String::from_utf8_lossy(bad));
         }
-    }
-
-    #[test]
-    fn json_strings_escape_as_jsonformat_does() {
-        assert_eq!(
-            json_string("a<b>&='\u{e9}\u{2028}/\u{1}\"\\"),
-            "\"a<b>&='\u{e9}\\u2028/\\u0001\\\"\\\\\""
-        );
     }
 }

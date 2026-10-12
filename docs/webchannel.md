@@ -37,7 +37,9 @@ units** (what the browser's string length is), not bytes.
   up from 1 per session, a message per array: a `ListenResponse` / `WriteResponse` in ProtoJSON,
   `"noop"`, or a stream error `{"error":{"message":"INVALID_ARGUMENT: …","status":"INVALID_ARGUMENT"}}`
   (after which the client terminates the session). A back channel resends what came after its
-  `AID`.
+  `AID`. Messages are printed as protobuf-java's JsonFormat prints them over REST, without
+  whitespace, and their strings (not bytes) also escape `<`, `>`, `&`, `=` and `'` as
+  `\u003c` and so on; a stream error's message does not (`tools/oracle/json_escapes.py`).
   - `CI=0` (streaming): what is queued, then a `noop`, then each message as it comes; a `noop`
     every 30 s; after 60 s a last `noop` ends the response and the client opens another.
   - `CI=1` (long polling, `experimentalForceLongPolling`): what is queued ends the response at

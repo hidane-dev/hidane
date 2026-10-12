@@ -1,7 +1,9 @@
 //! REST against the official emulator's recordings (`fixtures/rest.json`, from
-//! `tools/oracle/rest.py`): the same requests, in the same order, to a fresh hidane, comparing
-//! status, content type and the body byte for byte after the oracle's normalisation, so the
-//! JSON layout (protobuf-java JsonFormat's) is checked as well as the values.
+//! `tools/oracle/rest.py`, and the `rest` cases of `fixtures/json_escapes.json`, from
+//! `tools/oracle/json_escapes.py`): the same requests, in the same order, to a fresh hidane,
+//! comparing status, content type and the body byte for byte after the oracle's normalisation,
+//! so the JSON layout (protobuf-java JsonFormat's) and the escaping of strings are checked as
+//! well as the values.
 
 use std::net::SocketAddr;
 
@@ -11,7 +13,7 @@ use tokio::{
     net::{TcpListener, TcpStream},
 };
 
-/// As long as the oracle's `rest-HHMMSS`.
+/// As long as the oracles' `rest-HHMMSS` and `json-HHMMSS`.
 const PROJECT: &str = "rest-000000";
 
 async fn start() -> SocketAddr {
@@ -134,12 +136,10 @@ fn normalize(text: &str) -> String {
     out
 }
 
-#[tokio::test]
-async fn rest_answers_like_the_official_emulator() {
-    let fixture: Json = serde_json::from_str(include_str!("fixtures/rest.json")).unwrap();
+/// Sends `cases` in order to a fresh hidane; the cases that differ.
+async fn replay(cases: &[Json]) -> Vec<String> {
     let addr = start().await;
     let mut differences = Vec::new();
-    let cases = fixture["cases"].as_array().unwrap();
     for case in cases {
         let name = case["name"].as_str().unwrap();
         let path = case["path"].as_str().unwrap().replace("{project}", PROJECT);
@@ -182,7 +182,31 @@ async fn rest_answers_like_the_official_emulator() {
             ));
         }
     }
+    differences
+}
+
+#[tokio::test]
+async fn rest_answers_like_the_official_emulator() {
+    let fixture: Json = serde_json::from_str(include_str!("fixtures/rest.json")).unwrap();
+    let cases = fixture["cases"].as_array().unwrap();
     assert!(cases.len() > 50);
+    let differences = replay(cases).await;
+    assert!(
+        differences.is_empty(),
+        "{} of {} requests differ:\n{}",
+        differences.len(),
+        cases.len(),
+        differences.join("\n")
+    );
+}
+
+/// Strings escaped as the official emulator escapes them, in bodies and in errors
+/// (`fixtures/json_escapes.json`, from `tools/oracle/json_escapes.py`, #191).
+#[tokio::test]
+async fn strings_escape_like_the_official_emulator() {
+    let fixture: Json = serde_json::from_str(include_str!("fixtures/json_escapes.json")).unwrap();
+    let cases = fixture["rest"].as_array().unwrap();
+    let differences = replay(cases).await;
     assert!(
         differences.is_empty(),
         "{} of {} requests differ:\n{}",
