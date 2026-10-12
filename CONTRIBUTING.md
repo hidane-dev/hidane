@@ -5,7 +5,7 @@ project currently stands and how to get involved.
 
 ## Project status
 
-v0.2.1 is the current release. hidane serves the Firestore API over gRPC, REST
+v0.2.2 is the current release. hidane serves the Firestore API over gRPC, REST
 and WebChannel, enforces Security Rules, and runs under firebase-tools
 (`hidane exec -- firebase emulators:start`), with imports and exports. Each
 feature is built issue by issue: the official emulator's behaviour is recorded
