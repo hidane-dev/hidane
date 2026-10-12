@@ -90,7 +90,7 @@ v0.4.
 | P1 | Mock tokens (`alg: none`) and `Bearer owner` | In v0.2.0 (#68) |
 | P2 | WebSocket `/requests` feed for the Emulator UI | In v0.2.1 (#69): the official records, the last 50 on connect; a client that falls behind is disconnected instead of holding up requests |
 | P2 | Golden results from the production Rules API `projects:test` | #82 (backlog, needs a GCP project) |
-| P2 | Event delivery to `--functions_emulator` (v1 and v2 CloudEvents) | Moved to v0.4 (#70); accepting the trigger registrations so `emulators:start` comes up is #185 |
+| P2 | Event delivery to `--functions_emulator` (v1 and v2 CloudEvents) | Moved to v0.4 (#70); the trigger registrations are accepted on `main` (#185), so `emulators:start` comes up with Firestore-triggered functions |
 
 Parity exception: #6252 (the official emulator evaluates conditions in two passes and lists the reasons of both) is not reproduced; hidane evaluates each condition once.
 

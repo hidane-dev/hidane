@@ -126,10 +126,8 @@ fn starts_with_the_firebase_tools_arguments_and_stops_on_sigint_with_130() {
     let status = wait_with_timeout(&mut child, Duration::from_secs(4));
     assert_eq!(status.code(), Some(130));
     let stderr = stderr_of(&mut child);
-    assert!(
-        stderr.contains("WARNING: Events are not delivered to the Functions emulator yet"),
-        "{stderr}"
-    );
+    // No trigger was registered, so nothing to say about the Functions emulator.
+    assert!(!stderr.contains("Functions emulator"), "{stderr}");
     assert!(!stderr.contains("Security Rules"), "{stderr}");
     // The rules file is compiled at startup and what the compiler found is printed.
     assert!(
@@ -203,4 +201,56 @@ fn post_shutdown_exits_zero_like_the_official_emulator() {
     assert!(response.ends_with("Shutting down...\n"), "{response}");
     let status = wait_with_timeout(&mut child, Duration::from_secs(2));
     assert_eq!(status.code(), Some(0));
+}
+
+/// Sends one HTTP/1.1 request and returns the status line.
+fn status_line(port: u16, method: &str, path: &str, body: &str) -> String {
+    let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+    write!(
+        stream,
+        "{method} {path} HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\
+         Content-Type: application/json\r\nContent-Length: {}\r\n\r\n{body}",
+        body.len()
+    )
+    .unwrap();
+    let mut response = String::new();
+    stream.read_to_string(&mut response).unwrap();
+    response.lines().next().unwrap_or_default().to_owned()
+}
+
+/// What firebase-tools' Functions emulator sends for a v1 and a v2 Firestore trigger (#185),
+/// twice: each is accepted, and stderr says once that events are not delivered yet (#70).
+#[test]
+fn trigger_registrations_warn_once_that_events_are_not_delivered() {
+    let mut child = spawn(&[
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "0",
+        "--functions_emulator",
+        "127.0.0.1:5001",
+    ]);
+    let port = port_from(&wait_for_banner(&mut child));
+    let v1 = r#"{"eventTrigger":{"eventType":"providers/cloud.firestore/eventTypes/document.create","resource":"projects/demo-hidane/databases/(default)/documents/items/{id}","service":"firestore.googleapis.com"}}"#;
+    let v2 = r#"{"eventType":"google.cloud.firestore.document.v1.created","database":"(default)","namespace":"(default)","document":{"value":"items/{id}","matchType":"PATH_PATTERN"}}"#;
+    for generation in 0..2 {
+        let v1_path = format!(
+            "/emulator/v1/projects/demo-hidane/triggers/us-central1-v1created-{generation}"
+        );
+        let v2_path = format!(
+            "/emulator/v1/projects/demo-hidane/eventarcTrigger?eventarcTriggerId=us-central1-v2created-{generation}"
+        );
+        assert_eq!(status_line(port, "PUT", &v1_path, v1), "HTTP/1.1 200 OK");
+        assert_eq!(status_line(port, "POST", &v2_path, v2), "HTTP/1.1 200 OK");
+    }
+    signal(&child, "-INT");
+    wait_with_timeout(&mut child, Duration::from_secs(4));
+    let stderr = stderr_of(&mut child);
+    assert_eq!(
+        stderr
+            .matches("WARNING: Firestore triggers are accepted, but events are not delivered to the Functions emulator yet (https://github.com/hidane-dev/hidane/issues/70)")
+            .count(),
+        1,
+        "{stderr}"
+    );
 }

@@ -12,7 +12,7 @@ use std::{fmt::Write as _, path::PathBuf};
 
 use clap::{ArgAction, CommandFactory, Parser, ValueEnum, builder::BoolishValueParser};
 
-const ISSUES: &str = "https://github.com/hidane-dev/hidane/issues";
+pub(crate) const ISSUES: &str = "https://github.com/hidane-dev/hidane/issues";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 pub enum DatabaseEdition {
@@ -313,11 +313,9 @@ impl Cli {
                     .into(),
             );
         }
-        if self.functions_emulator.is_some() {
-            warnings.push(format!(
-                "Events are not delivered to the Functions emulator yet ({ISSUES}/70)"
-            ));
-        }
+        // `--functions_emulator` needs no warning: firebase-tools passes it whenever the
+        // Functions emulator runs, and `triggers` warns once a Firestore trigger is registered
+        // that its events are not delivered yet (#70).
         if self.webchannel_port.is_some() {
             warnings.push(format!(
                 "WebChannel is served on the main port; --webchannel_port is ignored ({ISSUES}/10)"
@@ -372,9 +370,9 @@ mod tests {
         assert_eq!(cli.database_edition, DatabaseEdition::Standard);
         assert_eq!(cli.project_id.as_deref(), Some("demo-hidane"));
         assert!(cli.single_project_mode);
-        let warnings = cli.validate().unwrap();
-        assert!(!warnings.iter().any(|w| w.contains("Security Rules")));
-        assert!(warnings.iter().any(|w| w.contains("Functions emulator")));
+        assert_eq!(cli.functions_emulator.as_deref(), Some("127.0.0.1:5001"));
+        // Nothing to warn about until a trigger is registered (`triggers`).
+        assert!(cli.validate().unwrap().is_empty());
     }
 
     #[test]
