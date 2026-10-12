@@ -1,0 +1,8 @@
+# Tests of firebase-js-sdk's Firestore browser suite that pass on the official emulator and are
+# expected to fail on hidane, one test ID (as in results/js-sdk-browser-*.json) per line, each
+# after a `#` comment that says why. An intentional difference is also listed in
+# docs/parity-exceptions.md; any other has an issue.
+#
+# compare.mjs fails on a listed test that passes on hidane, so the list stays honest.
+#
+# None at the pinned commit.

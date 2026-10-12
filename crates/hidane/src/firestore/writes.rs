@@ -57,6 +57,102 @@ pub fn check_verifies(writes: &[Write]) -> Result<(), Status> {
     Ok(())
 }
 
+/// What a write is to the official emulator, which stores documents as Datastore entities and
+/// collapses a commit's writes to one document into one mutation.
+#[derive(Clone, Copy)]
+enum Mutation {
+    /// An `exists: false` precondition.
+    Insert,
+    /// An `exists: true` or `update_time` precondition.
+    Update,
+    /// No precondition (with or without a mask), or a standalone transform.
+    Upsert,
+    Delete,
+}
+
+impl Mutation {
+    fn name(self) -> &'static str {
+        match self {
+            Mutation::Insert => "insert",
+            Mutation::Update => "update",
+            Mutation::Upsert => "upsert",
+            Mutation::Delete => "delete",
+        }
+    }
+}
+
+/// The official emulator's rules for a commit that writes one document more than once
+/// (`tools/oracle/same_document_writes.py`), checked before any write is applied: an insert
+/// cannot follow anything but a delete, an update cannot follow a delete, nor can a delete with
+/// an `exists: true` precondition; and only the first write may carry an `update_time`
+/// precondition, which a later one may repeat. What follows is checked against the writes so far
+/// collapsed into one: an insert or an update stays one under upserts and updates, a delete then
+/// an insert or an upsert is an upsert, and anything then a delete is a delete. Verifies are
+/// left to `check_verifies`.
+pub fn check_sequences(writes: &[Write]) -> Result<(), Status> {
+    // Per document, the collapsed mutation and the first write's version precondition.
+    let mut documents: HashMap<&str, (Mutation, Option<i64>)> = HashMap::new();
+    for write in writes {
+        let Some(name) = target(write) else {
+            continue;
+        };
+        let condition = write
+            .current_document
+            .as_ref()
+            .and_then(|p| p.condition_type.as_ref());
+        let version = match condition {
+            Some(ConditionType::UpdateTime(time)) => Some(ReadTime::from_timestamp(time).0),
+            _ => None,
+        };
+        let mutation = match (&write.operation, condition) {
+            (Some(Operation::Verify(_)) | None, _) => continue,
+            (Some(Operation::Delete(_)), _) => Mutation::Delete,
+            (_, Some(ConditionType::Exists(false))) => Mutation::Insert,
+            (_, Some(ConditionType::Exists(true) | ConditionType::UpdateTime(_))) => {
+                Mutation::Update
+            }
+            (_, None) => Mutation::Upsert,
+        };
+        let Some((collapsed, base)) = documents.get_mut(name) else {
+            documents.insert(name, (mutation, version));
+            continue;
+        };
+        let refused = match (*collapsed, mutation) {
+            (Mutation::Delete, Mutation::Insert) => false,
+            (_, Mutation::Insert) | (Mutation::Delete, Mutation::Update) => true,
+            (Mutation::Delete, Mutation::Delete) => {
+                matches!(condition, Some(ConditionType::Exists(true)))
+            }
+            _ => false,
+        };
+        if refused {
+            return Err(Status::invalid_argument(format!(
+                "Cannot {} then {} an entity in the same request.",
+                collapsed.name(),
+                mutation.name()
+            )));
+        }
+        if let Some(version) = version
+            && *base != Some(version)
+        {
+            let base = base.map_or_else(
+                || "null".to_owned(),
+                |base| format!("ExactVersion[exactBaseVersion={base}]"),
+            );
+            return Err(Status::invalid_argument(format!(
+                "Cannot collapse mutations with different version preconditions ({base} and \
+                 ExactVersion[exactBaseVersion={version}])"
+            )));
+        }
+        *collapsed = match (*collapsed, mutation) {
+            (_, Mutation::Delete) => Mutation::Delete,
+            (Mutation::Insert | Mutation::Update, _) => *collapsed,
+            _ => Mutation::Upsert,
+        };
+    }
+    Ok(())
+}
+
 /// Checks everything that does not depend on stored data, and returns the target document.
 /// Commits call this before waiting for locks: the official emulator rejects an invalid write
 /// at once, even when its document is locked, and leaves the transaction open.
