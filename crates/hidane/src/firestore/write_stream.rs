@@ -18,7 +18,7 @@ use tokio::sync::mpsc;
 use tokio_stream::{Stream, StreamExt};
 use tonic::Status;
 
-use super::{FirestoreService, names};
+use super::{FirestoreService, names, writes::Verifies};
 
 /// Stream IDs count from 0 over the whole process, as on the official emulator.
 static NEXT_STREAM_ID: AtomicU64 = AtomicU64::new(0);
@@ -97,12 +97,15 @@ impl FirestoreService {
                 .await;
                 return Ok(());
             }
+            // A batch's verifies are only their preconditions, applied in order
+            // (`tools/oracle/commit_checks.py`).
             let (commit_time, write_results) = self
                 .write(
                     &database,
                     None,
                     &request.writes,
                     self.guard(caller, &database).as_ref(),
+                    Verifies::Applied,
                 )
                 .await?
                 .expect("a batch with writes commits");

@@ -334,6 +334,26 @@ def same_document_writes(f):
     return answers
 
 
+def commit_checks(f):
+    rel = f"{H}/commit_checks.rs"
+    known, differs = rust_strings(rel, "KNOWN"), rust_strings(rel, "DIFFERS")
+    precondition = lambda outcome: outcome.get("code") in ("NOT_FOUND", "ALREADY_EXISTS")
+    answers = []
+    for case in f["order"]:
+        for transport, outcome in case["outcomes"].items():
+            if case["name"] in known:
+                level = DIFFERS
+            elif precondition(outcome) or any(map(precondition, outcome.get("statuses", []))):
+                level = CODES  # its message prints the official emulator's internal key
+            else:
+                level = FULL
+            answers.append((REST if transport in ("commit", "batch_write") else GRPC, level))
+    for step in f["other_database"]:
+        transport = GRPC if step["op"] in ("grpc_commit", "write_stream") else REST
+        answers.append((transport, DIFFERS if step["name"] in differs else FULL))
+    return answers
+
+
 def webchannel(steps):
     """Steps in the format of `tools/oracle/webchannel.py`'s fixture; `commit` goes over REST,
     and a long-polling read is compared on its first data and whether it ended."""
@@ -442,6 +462,19 @@ RECORDINGS = {
                  "message)",
         count=lambda f: (each(f["classify"], REST, FULL) + each(f["grpc"], GRPC, FULL)
                          + each(f["rest"], REST, FULL))),
+    f"{H}/fixtures/commit_checks.json": dict(
+        area="documents",
+        tests=[f"{H}/commit_checks.rs::the_first_error_is_the_official_one",
+               f"{H}/commit_checks.rs::writes_to_another_database_are_refused"],
+        counted="each commit over each transport it was recorded over, and each step that "
+                "writes to or reads after another database",
+        compares="in full: the first error's code and message, the number of write results or "
+                 "`:batchWrite`'s statuses, a read's status, names found or missing; a failed "
+                 "precondition without its message (it prints the official emulator's internal "
+                 "key); the cases the test lists in `KNOWN` (array unions of arrays and of vectors with NaN) and the "
+                 "steps in `DIFFERS` (writes to another database, which hidane refuses, and the "
+                 "reads that follow) as intentionally different",
+        count=commit_checks),
     f"{H}/fixtures/cors.json": dict(
         area="rest", tests=[f"{H}/cors.rs::cors_answers_like_the_official_emulator"],
         counted="each request",

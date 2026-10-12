@@ -100,28 +100,41 @@ fn mask(json: &Json) -> Option<DocumentMask> {
 
 fn field_transform(json: &Json) -> FieldTransform {
     let transform_type = if let Some(kind) = json.get("setToServerValue") {
-        assert_eq!(kind, "REQUEST_TIME");
-        TransformType::SetToServerValue(1)
+        Some(TransformType::SetToServerValue(match kind.as_str() {
+            Some("REQUEST_TIME") => 1,
+            Some("SERVER_VALUE_UNSPECIFIED") => 0,
+            _ => panic!("unknown server value {kind}"),
+        }))
     } else if let Some(v) = json.get("increment") {
-        TransformType::Increment(value(v))
+        Some(TransformType::Increment(value(v)))
     } else if let Some(v) = json.get("maximum") {
-        TransformType::Maximum(value(v))
+        Some(TransformType::Maximum(value(v)))
     } else if let Some(v) = json.get("minimum") {
-        TransformType::Minimum(value(v))
+        Some(TransformType::Minimum(value(v)))
     } else if let Some(v) = json.get("appendMissingElements") {
-        TransformType::AppendMissingElements(array(v))
+        Some(TransformType::AppendMissingElements(array(v)))
     } else if let Some(v) = json.get("removeAllFromArray") {
-        TransformType::RemoveAllFromArray(array(v))
+        Some(TransformType::RemoveAllFromArray(array(v)))
     } else {
-        panic!("unknown transform {json}")
+        // A transform without a type, which only `fieldPath` is left for.
+        assert_eq!(
+            json.as_object().map(serde_json::Map::len),
+            Some(1),
+            "{json}"
+        );
+        None
     };
     FieldTransform {
         field_path: json["fieldPath"].as_str().unwrap().to_owned(),
-        transform_type: Some(transform_type),
+        transform_type,
     }
 }
 
 fn write(json: &Json) -> Write {
+    // `{}`: a write without an operation.
+    if json.as_object().is_some_and(serde_json::Map::is_empty) {
+        return Write::default();
+    }
     let operation = if let Some(update) = json.get("update") {
         Operation::Update(Document {
             name: update["name"].as_str().unwrap().to_owned(),
