@@ -338,7 +338,7 @@ match /v/{d} {
         "array": {"arrayValue": {"values": [I(1), S("a"), {"mapValue": {}}]}}, "noarray": {"arrayValue": {}},
         "map": {"mapValue": {"fields": {"z": I(1), "a": {"mapValue": {}}}}}, "nomap": {"mapValue": {}},
     }})
-    rest("POST", f"{docs(p)}/v", {"fields": {"n": I(1)}}, differs="automatic ID")
+    rest("POST", f"{docs(p)}/v", {"fields": {"n": I(1)}})
 
 
 def transaction_cases():

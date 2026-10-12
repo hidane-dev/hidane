@@ -27,7 +27,8 @@
 //!   followed by `/*`, and for a collection group `/**/{id}/*` below its parent; a create with a
 //!   document ID the server chooses, its collection's followed by `/*`.
 //! - `request` and `resource` are value messages as `GET :ruleCoverage` and `debug()` show them
-//!   (`super::report`), with the fields in the official emulator's order.
+//!   (`super::report`), their fields in the official emulator's order, as the evaluator holds
+//!   them.
 //!
 //! The official emulator also evaluates a request without its stored document first, and each
 //! such pass is a record too; hidane evaluates once (`docs/parity-exceptions.md`).
@@ -246,9 +247,9 @@ impl Session {
             evaluation.method.name(),
             json_string(&context_path(request, evaluation)),
         );
-        request_value(&mut out, evaluation);
+        report::value(&evaluation.request).compact(&mut out);
         out.push_str(",\"resource\":");
-        resource_value(&mut out, &evaluation.resource);
+        report::value(&evaluation.resource).compact(&mut out);
         out.push_str("}}");
         out
     }
@@ -292,108 +293,6 @@ fn field<'a>(value: &'a Observed, name: &str) -> Option<&'a Observed> {
     match value {
         Observed::Map(fields) => fields.iter().find(|(k, _)| k == name).map(|(_, v)| v),
         _ => None,
-    }
-}
-
-/// The order of `request`'s fields, by method, and of `request.query`'s and a resource's.
-const GET: &[&str] = &["time", "auth", "inTransaction", "path", "fields", "method"];
-const LIST: &[&str] = &[
-    "time",
-    "auth",
-    "inTransaction",
-    "fields",
-    "query",
-    "path",
-    "method",
-];
-const WRITE: &[&str] = &[
-    "time",
-    "auth",
-    "inTransaction",
-    "path",
-    "transforms",
-    "writeFields",
-    "readFields",
-    "autoId",
-    "resource",
-    "method",
-];
-const QUERY: &[&str] = &[
-    "distinct",
-    "selectOnlyKeys",
-    "groupBy",
-    "kind",
-    "parent",
-    "ancestor",
-    "orderBy",
-    "limit",
-    "offset",
-    "allDescendants",
-];
-const RESOURCE: &[&str] = &["data", "__name__", "id"];
-
-/// `entries` with the names of `order` first, in that order, then the others as they were.
-fn ordered<'a>(
-    entries: &'a [(String, Observed)],
-    order: &[&str],
-) -> impl Iterator<Item = &'a (String, Observed)> {
-    let known = order
-        .iter()
-        .filter_map(|name| entries.iter().find(|(k, _)| k == name));
-    let others = entries.iter().filter(|(k, _)| !order.contains(&k.as_str()));
-    known.chain(others).collect::<Vec<_>>().into_iter()
-}
-
-/// `{"mapValue":{"fields":{…}}}` (or `{}` inside without fields) of `entries`, each written by
-/// `write`.
-fn map<'a>(
-    out: &mut String,
-    entries: impl Iterator<Item = &'a (String, Observed)>,
-    mut write: impl FnMut(&mut String, &str, &Observed),
-) {
-    out.push_str("{\"mapValue\":{");
-    let mut first = true;
-    for (name, value) in entries {
-        out.push_str(if first { "\"fields\":{" } else { "," });
-        first = false;
-        out.push_str(&json_string(name));
-        out.push(':');
-        write(out, name, value);
-    }
-    if !first {
-        out.push('}');
-    }
-    out.push_str("}}");
-}
-
-fn value(out: &mut String, v: &Observed) {
-    report::value(v).compact(out);
-}
-
-/// `request`, its fields in the official emulator's order.
-fn request_value(out: &mut String, evaluation: &Evaluation) {
-    let Observed::Map(entries) = &evaluation.request else {
-        return value(out, &evaluation.request);
-    };
-    let order = match evaluation.method {
-        Method::Get => GET,
-        Method::List => LIST,
-        Method::Create | Method::Update | Method::Delete => WRITE,
-    };
-    map(out, ordered(entries, order), |out, name, v| match (name, v) {
-        ("query", Observed::Map(query)) => map(out, ordered(query, QUERY), |out, _, v| {
-            value(out, v);
-        }),
-        ("resource", _) => resource_value(out, v),
-        _ => value(out, v),
-    });
-}
-
-/// A document as `resource` (`data`, `__name__`, `id`), or what a list knows of one.
-fn resource_value(out: &mut String, v: &Observed) {
-    match v {
-        Observed::Map(entries) => map(out, ordered(entries, RESOURCE), |out, _, v| value(out, v)),
-        _ => value(out, v),
     }
 }
 

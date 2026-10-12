@@ -7,19 +7,18 @@
 //! - what changes from run to run: `time` and `requestId` (checked for their form),
 //!   `rulesContext.time` (which must be `request.time`), and the number at the end of
 //!   `rulesReleaseKey`;
-//! - `resource` where the official emulator's record shows it undefined: its first pass does not
-//!   read the stored document, and hidane's only one does;
-//! - the fields of `request` and `request.query` hidane does not have yet (#166), and the order
-//!   of the fields a list's filter names in `resource.data`, which the official emulator orders
-//!   its own way.
+//! - `resource` and `request.resource` where the official emulator's record shows them
+//!   undefined: its first pass does not read the stored document, and hidane's only one does;
+//! - the order of the fields a list's filter names in `resource.data`, which the official
+//!   emulator orders its own way.
 //!
 //! A step marked `differs` is one where hidane does not do what the official emulator does:
 //! intentionally (`docs/parity-exceptions.md`) the records of a second pass, which hidane does
-//! not make, an automatic document ID, which hidane shows, a Listen query target checked again,
-//! and paths the official emulator does not answer; not yet, the `resource.__name__` a list of a
-//! collection group below a document holds. Only the method and path of its records are
-//! compared, or for a handshake, that hidane answers `404`. A client that does not read, which
-//! holds up the official emulator's requests, is a test of its own.
+//! not make, a Listen query target checked again, and paths the official emulator does not
+//! answer; not yet, the `resource.__name__` a list of a collection group below a document holds.
+//! Only the method and path of its records are compared, or for a handshake, that hidane answers
+//! `404`. A client that does not read, which holds up the official emulator's requests, is a test
+//! of its own.
 
 mod common;
 
@@ -266,25 +265,6 @@ fn listen_request(database: &str, target: &Json) -> ListenRequest {
     }
 }
 
-/// The fields of `request` and `request.query` hidane does not have yet (#166).
-const PENDING: &[&str] = &[
-    "inTransaction",
-    "fields",
-    "transforms",
-    "writeFields",
-    "readFields",
-    "autoId",
-];
-const PENDING_QUERY: &[&str] = &[
-    "distinct",
-    "selectOnlyKeys",
-    "groupBy",
-    "kind",
-    "parent",
-    "ancestor",
-    "allDescendants",
-];
-
 fn fields(value: &mut Json) -> Option<&mut Map<String, Json>> {
     value
         .get_mut("mapValue")?
@@ -328,15 +308,6 @@ fn sort_data(record: &mut Json) {
     }
 }
 
-/// A map value of `entries`.
-fn theirs_order_value(entries: &Map<String, Json>) -> Json {
-    if entries.is_empty() {
-        serde_json::json!({"mapValue": {}})
-    } else {
-        serde_json::json!({"mapValue": {"fields": entries}})
-    }
-}
-
 /// The official emulator's record and hidane's, without what is not compared.
 fn compared(official: &Json, hidane: &Json) -> (String, String) {
     let (mut official, mut hidane) = (official.clone(), hidane.clone());
@@ -347,36 +318,12 @@ fn compared(official: &Json, hidane: &Json) -> (String, String) {
         official["rulesContext"]["resource"] = hidane["rulesContext"]["resource"].clone();
     }
     let ours = fields(&mut hidane["rulesContext"]["request"])
-        .unwrap()
-        .clone();
+        .and_then(|request| request.get("resource").cloned());
     let theirs = fields(&mut official["rulesContext"]["request"]).unwrap();
-    theirs.retain(|name, _| !PENDING.contains(&name.as_str()) || ours.contains_key(name));
     if theirs.get("resource") == Some(&undefined)
-        && let Some(resource) = ours.get("resource")
+        && let Some(resource) = ours
     {
-        theirs.insert("resource".to_owned(), resource.clone());
-    }
-    if let (Some(query), Some(mut our_query)) = (
-        theirs.get_mut("query").and_then(fields),
-        ours.get("query").cloned(),
-    ) {
-        let our_query = fields(&mut our_query).cloned().unwrap_or_default();
-        query.retain(|name, _| {
-            !PENDING_QUERY.contains(&name.as_str()) || our_query.contains_key(name)
-        });
-        // hidane's `orderBy` also holds the orderings the query implies (#166).
-        let order = |query: &Map<String, Json>| {
-            let mut order = query.get("orderBy").cloned().unwrap_or_default();
-            fields(&mut order).cloned().unwrap_or_default()
-        };
-        let (their_order, our_order) = (order(query), order(&our_query));
-        if their_order.len() < our_order.len()
-            && their_order.iter().zip(&our_order).all(|(a, b)| a == b)
-            && let Some(request) = fields(&mut hidane["rulesContext"]["request"])
-            && let Some(query) = request.get_mut("query").and_then(fields)
-        {
-            query.insert("orderBy".to_owned(), theirs_order_value(&their_order));
-        }
+        theirs.insert("resource".to_owned(), resource);
     }
     sort_data(&mut official);
     sort_data(&mut hidane);
@@ -400,18 +347,11 @@ fn same_records(label: &str, official: &[Json], hidane: &[Json]) {
 }
 
 /// For a step marked `differs`: each of hidane's records has a method and path the official
-/// emulator recorded (but a document ID it chose itself).
-fn similar_records(label: &str, step: &Json, official: &[Json], hidane: &[Json]) {
-    let automatic = step["differs"] == "automatic ID";
+/// emulator recorded.
+fn similar_records(label: &str, official: &[Json], hidane: &[Json]) {
     let place = |record: &Json| {
         let context = &record["rulesContext"];
-        let path = context["path"].as_str().unwrap();
-        let path = if automatic {
-            path.rsplit_once('/').unwrap().0
-        } else {
-            path
-        };
-        format!("{} {path}", context["method"])
+        format!("{} {}", context["method"], context["path"])
     };
     let theirs: Vec<String> = official.iter().map(place).collect();
     assert!(!hidane.is_empty(), "{label}");
@@ -540,7 +480,7 @@ async fn records_as_the_official_emulator_sends_them() {
             };
             let records = monitor.frames(count, pause).await;
             if differs {
-                similar_records(&label, step, expected, &records);
+                similar_records(&label, expected, &records);
             } else {
                 same_records(&label, expected, &records);
             }

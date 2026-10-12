@@ -423,7 +423,11 @@ fn no_match() -> Decision {
 /// The denial of a request no statement applies to, reported as an evaluation of none.
 fn unmatched(request: &Request, resource: Val, trace: &mut Trace) -> Decision {
     if trace.evaluations.is_some() {
-        trace.evaluating(request.method, &request_value(request, request.method), &resource);
+        trace.evaluating(
+            request.method,
+            &request_value(request, request.method),
+            &resource,
+        );
     }
     no_match()
 }
