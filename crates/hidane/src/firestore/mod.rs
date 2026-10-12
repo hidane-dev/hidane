@@ -73,6 +73,7 @@ use self::{
     names::Name,
     query::Query,
     transactions::{Mode, Transactions},
+    writes::Verifies,
 };
 
 const METADATA_ADMIN: &str = "Metadata operations require admin authentication.";
@@ -211,7 +212,7 @@ impl FirestoreService {
                         .entry(view.path.clone())
                         .or_insert_with(|| view.before.clone());
                 }
-                match writes::apply(batch, database, write) {
+                match writes::apply(batch, write) {
                     Ok(result) => {
                         results.push(result);
                         if let Some(mut view) = view {
@@ -226,7 +227,7 @@ impl FirestoreService {
                         let applied = view.method == hidane_rules::eval::Method::Get || {
                             let mut unconditional = write.clone();
                             unconditional.current_document = None;
-                            writes::apply(batch, database, &unconditional).is_ok()
+                            writes::apply(batch, &unconditional).is_ok()
                         };
                         if applied {
                             view.after = batch.get(&view.path);
@@ -269,7 +270,7 @@ impl FirestoreService {
         }
     }
 
-    /// Validates `writes`, waits for the locks on their documents and commits them atomically,
+    /// Checks `writes`, waits for the locks on their documents and commits them atomically,
     /// in `transaction` if given. `None` for an empty commit, which has no commit time.
     async fn write(
         &self,
@@ -277,14 +278,10 @@ impl FirestoreService {
         transaction: Option<&[u8]>,
         writes: &[Write],
         guard: Option<&guard::Guard>,
+        verifies: writes::Verifies,
     ) -> Result<Option<(ReadTime, Vec<WriteResult>)>, Status> {
         // Invalid writes fail before waiting for any lock, as on the official emulator.
-        writes::check_verifies(writes)?;
-        let targets = writes
-            .iter()
-            .map(|write| writes::validate(database, write))
-            .collect::<Result<Vec<_>, _>>()?;
-        writes::check_sequences(writes)?;
+        let targets = writes::check(database, writes, verifies)?;
         self.transactions
             .commit(database, transaction, &targets, || {
                 if writes.is_empty() {
@@ -671,7 +668,13 @@ impl Firestore for FirestoreService {
             .guard(&caller, &parent.database)
             .map(|guard| guard.auto_id(req.document_id.is_empty()));
         let (commit_time, _) = self
-            .write(&parent.database, None, &[write], guard.as_ref())
+            .write(
+                &parent.database,
+                None,
+                &[write],
+                guard.as_ref(),
+                Verifies::Checked,
+            )
             .await?
             .expect("one write");
         let mask = parse_mask(req.mask.as_ref())?;
@@ -700,7 +703,13 @@ impl Firestore for FirestoreService {
         };
         let guard = self.guard(&caller, &name.database);
         let (commit_time, _) = self
-            .write(&name.database, None, &[write], guard.as_ref())
+            .write(
+                &name.database,
+                None,
+                &[write],
+                guard.as_ref(),
+                Verifies::Checked,
+            )
             .await?
             .expect("one write");
         let mask = parse_mask(req.mask.as_ref())?;
@@ -725,8 +734,14 @@ impl Firestore for FirestoreService {
             ..Write::default()
         };
         let guard = self.guard(&caller, &name.database);
-        self.write(&name.database, None, &[write], guard.as_ref())
-            .await?;
+        self.write(
+            &name.database,
+            None,
+            &[write],
+            guard.as_ref(),
+            Verifies::Checked,
+        )
+        .await?;
         Ok(Response::new(()))
     }
 
@@ -832,6 +847,7 @@ impl Firestore for FirestoreService {
                     transaction,
                     &req.writes,
                     self.guard(&caller, &database).as_ref(),
+                    Verifies::Checked,
                 )
                 .await?
             {
@@ -1093,9 +1109,15 @@ impl Firestore for FirestoreService {
                 "the same document cannot be written more than once in a single request",
             ));
         }
-        // An invalid write fails the whole request, as on the official emulator.
-        for write in &req.writes {
-            writes::validate(&database, write)?;
+        // An invalid write fails the whole request, as on the official emulator: the names of
+        // every write first, then their values (`tools/oracle/commit_checks.py`).
+        let targets = req
+            .writes
+            .iter()
+            .map(|write| writes::check_names(&database, write))
+            .collect::<Result<Vec<_>, _>>()?;
+        for (write, path) in req.writes.iter().zip(&targets) {
+            writes::check_values(path, write)?;
         }
         if !caller.is_admin() {
             return Err(Status::permission_denied(BATCH_WRITE_ADMIN));
@@ -1112,6 +1134,7 @@ impl Firestore for FirestoreService {
                     None,
                     std::slice::from_ref(write),
                     self.guard(&caller, &database).as_ref(),
+                    Verifies::Checked,
                 )
                 .await
             {

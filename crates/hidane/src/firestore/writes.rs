@@ -153,25 +153,72 @@ pub fn check_sequences(writes: &[Write]) -> Result<(), Status> {
     Ok(())
 }
 
-/// Checks everything that does not depend on stored data, and returns the target document.
-/// Commits call this before waiting for locks: the official emulator rejects an invalid write
-/// at once, even when its document is locked, and leaves the transaction open.
-pub fn validate(database: &str, write: &Write) -> Result<ResourcePath, Status> {
-    let name = target(write).ok_or_else(|| Status::invalid_argument("Write has no operation."))?;
+/// Whether a commit checks its verifies (`check_verifies`). The Write stream does not: a verify
+/// there is only its precondition, applied in order.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Verifies {
+    Checked,
+    Applied,
+}
+
+/// Checks everything about `writes` that does not depend on stored data, in the official
+/// emulator's order (`tools/oracle/commit_checks.py`), and returns their documents: the
+/// verifies of the commit, the names of every write, the sequences of writes to one document,
+/// then the values of every write. Preconditions and document sizes are checked when the writes
+/// are applied. Commits call this before waiting for locks: the official emulator rejects an
+/// invalid write at once, even when its document is locked, and leaves the transaction open.
+pub fn check(
+    database: &str,
+    writes: &[Write],
+    verifies: Verifies,
+) -> Result<Vec<ResourcePath>, Status> {
+    if verifies == Verifies::Checked {
+        check_verifies(writes)?;
+    }
+    let targets = writes
+        .iter()
+        .map(|write| check_names(database, write))
+        .collect::<Result<Vec<_>, _>>()?;
+    check_sequences(writes)?;
+    for (write, path) in writes.iter().zip(&targets) {
+        check_values(path, write)?;
+    }
+    Ok(targets)
+}
+
+/// The names of one write, and its shape: what kind of write may carry a mask or transforms,
+/// its document's name (which must be in `database`), a verify's precondition, then its fields'
+/// names, its mask's paths and its transforms, in that order.
+pub fn check_names(database: &str, write: &Write) -> Result<ResourcePath, Status> {
+    let kind = match &write.operation {
+        None => return Err(Status::invalid_argument("empty write operation")),
+        Some(Operation::Update(_)) => None,
+        Some(Operation::Delete(_)) => Some("delete"),
+        Some(Operation::Verify(_)) => Some("verify"),
+        Some(Operation::Transform(_)) => Some("transform"),
+    };
+    if let Some(kind) = kind {
+        if write.update_mask.is_some() {
+            return Err(Status::invalid_argument(format!(
+                "a {kind} must not specify a document mask."
+            )));
+        }
+        if !write.update_transforms.is_empty() {
+            return Err(Status::invalid_argument(format!(
+                "a {kind} must not specify a update transform."
+            )));
+        }
+    }
+    let name = target(write).expect("an operation");
     let parsed = names::document(name)?;
+    // The official emulator acknowledges such a write and keeps it where no read finds it
+    // (docs/parity-exceptions.md).
     if parsed.database != database {
         return Err(Status::invalid_argument(format!(
             "Document \"{name}\" is not in database \"{database}\"."
         )));
     }
     match &write.operation {
-        Some(Operation::Update(document)) => {
-            validate::fields(&document.fields)?;
-            validate::limits(&parsed.path, &document.fields)?;
-            if let Some(mask) = &write.update_mask {
-                parse_mask(&mask.field_paths)?;
-            }
-        }
         Some(Operation::Verify(_)) => {
             if write
                 .current_document
@@ -183,20 +230,43 @@ pub fn validate(database: &str, write: &Write) -> Result<ResourcePath, Status> {
                     "a verify must contain a precondition",
                 ));
             }
-            if write.update_mask.is_some() {
-                return Err(Status::invalid_argument(
-                    "a verify must not specify a document mask.",
-                ));
-            }
-            if !write.update_transforms.is_empty() {
-                return Err(Status::invalid_argument(
-                    "a verify must not specify a update transform.",
-                ));
-            }
         }
-        _ => {}
+        Some(Operation::Update(document)) => {
+            validate::names(&document.fields)?;
+            if let Some(mask) = &write.update_mask {
+                for path in &mask.field_paths {
+                    validate::field_path(path)?;
+                }
+            }
+            write
+                .update_transforms
+                .iter()
+                .try_for_each(validate::transform)?;
+        }
+        Some(Operation::Transform(transform)) => {
+            if transform.field_transforms.is_empty() {
+                return Err(Status::invalid_argument(
+                    "The list of FieldTransform must not be empty.",
+                ));
+            }
+            transform
+                .field_transforms
+                .iter()
+                .try_for_each(validate::transform)?;
+        }
+        Some(Operation::Delete(_)) | None => {}
     }
     Ok(parsed.path)
+}
+
+/// The values of one write whose names are checked: the document an update or a transform
+/// writes, its key, then its fields.
+pub fn check_values(path: &ResourcePath, write: &Write) -> Result<(), Status> {
+    match &write.operation {
+        Some(Operation::Update(document)) => validate::values(path, &document.fields),
+        Some(Operation::Transform(_)) => validate::key(path),
+        _ => Ok(()),
+    }
 }
 
 fn parse_mask(paths: &[String]) -> Result<Vec<FieldPath>, Status> {
@@ -278,15 +348,11 @@ pub(crate) fn rules_method(batch: &dyn WriteBatch, write: &Write) -> Option<Chec
     })
 }
 
-/// Applies `write` to `batch` (which must belong to `database`). Nothing is written when an
-/// error is returned, so a caller may continue with other writes.
-pub fn apply(
-    batch: &mut dyn WriteBatch,
-    database: &str,
-    write: &Write,
-) -> Result<WriteResult, Status> {
-    let path = validate(database, write)?;
-    let name = target(write).expect("validated");
+/// Applies `write`, which `check` has checked, to `batch`. Nothing is written when an error is
+/// returned, so a caller may continue with other writes.
+pub fn apply(batch: &mut dyn WriteBatch, write: &Write) -> Result<WriteResult, Status> {
+    let name = target(write).expect("checked");
+    let path = names::document(name)?.path;
     let existing = batch.get(&path);
     check_precondition(write.current_document.as_ref(), existing.as_deref(), name)?;
 
@@ -377,8 +443,8 @@ fn apply_transforms(
             transform::apply(&mut transformed, t, &commit_time).map_err(Status::invalid_argument)
         })
         .collect::<Result<Vec<_>, _>>()?;
-    // Operands can introduce nested arrays or reserved names.
-    validate::fields(&transformed)?;
+    // An array union can bring in nested arrays and vectors with NaN.
+    validate::transformed(&transformed)?;
     let paths = transforms
         .iter()
         .map(|t| FieldPath::parse(&t.field_path).map_err(Status::invalid_argument))

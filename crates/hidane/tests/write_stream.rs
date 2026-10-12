@@ -315,7 +315,7 @@ async fn the_write_stream_behaves_like_the_official_emulator() {
 /// Where hidane differs on purpose (docs/parity-exceptions.md). The official emulator fails a
 /// stream without `google-cloud-resource-prefix` metadata with UNKNOWN (every test here sends
 /// none), accepts any database name in the handshake, and acknowledges a write to a document
-/// of another database without storing it anywhere.
+/// of another database, which it keeps where no read finds it (`commit_checks.rs`).
 #[tokio::test]
 async fn invalid_names_are_rejected_instead_of_ignored() {
     let mut client = start().await;
