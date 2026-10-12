@@ -101,28 +101,6 @@ impl PartialEq for Observed {
 
 impl Eq for Observed {}
 
-impl Hash for Observed {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        std::mem::discriminant(self).hash(state);
-        match self {
-            Self::Null => {}
-            Self::Bool(b) => b.hash(state),
-            Self::Int(i) => i.hash(state),
-            Self::Float(f) => bits(*f).hash(state),
-            Self::String(s) => s.hash(state),
-            Self::Bytes(b) => b.hash(state),
-            Self::Timestamp(t) => t.hash(state),
-            Self::Duration(s, n) => (s, n).hash(state),
-            Self::LatLng(a, b) => (bits(*a), bits(*b)).hash(state),
-            Self::Path(p) => p.hash(state),
-            Self::Map(m) => m.hash(state),
-            Self::List(items) | Self::Set(items) => items.hash(state),
-            Self::MapDiff(d) => d.hash(state),
-            Self::Constraint(c) => c.hash(state),
-        }
-    }
-}
-
 fn bits(f: f64) -> u64 {
     if f.is_nan() {
         f64::NAN.to_bits()
@@ -131,8 +109,85 @@ fn bits(f: f64) -> u64 {
     }
 }
 
+/// Hashes `v` as what it shows ([`observe`]), without building that.
+pub(crate) fn hash_val<H: Hasher>(v: &Val, state: &mut H) {
+    match v {
+        Val::Null | Val::Unknown => 0u8.hash(state),
+        Val::Bool(b) => (1u8, b).hash(state),
+        Val::Int(i) => (2u8, i).hash(state),
+        Val::Float(f) => (3u8, bits(*f)).hash(state),
+        Val::Str(s) => (4u8, &**s).hash(state),
+        Val::Bytes(b) => (5u8, &**b).hash(state),
+        Val::Timestamp(seconds, nanos) => (6u8, seconds, nanos).hash(state),
+        Val::Duration(nanos) => (7u8, nanos).hash(state),
+        Val::LatLng(lat, lng) => (8u8, bits(*lat), bits(*lng)).hash(state),
+        Val::Path(segments) => (9u8, &**segments).hash(state),
+        Val::Map(map) => {
+            (10u8, map.len()).hash(state);
+            for (k, v) in map.iter() {
+                k.hash(state);
+                hash_val(v, state);
+            }
+        }
+        Val::List(items) | Val::Set(items) => {
+            (
+                if matches!(v, Val::Set(_)) { 12u8 } else { 11u8 },
+                items.len(),
+            )
+                .hash(state);
+            for item in items.iter() {
+                hash_val(item, state);
+            }
+        }
+        Val::MapDiff(diff) => (13u8, &diff.statuses).hash(state),
+        Val::Constraint(simple) => {
+            (14u8, simple.len()).hash(state);
+            for s in simple.iter() {
+                s.comparator.hash(state);
+                hash_val(&s.value, state);
+            }
+        }
+    }
+}
+
+/// Whether `o` is what `v` shows ([`observe`]).
+pub(crate) fn shows(o: &Observed, v: &Val) -> bool {
+    match (o, v) {
+        (Observed::Null, Val::Null | Val::Unknown) => true,
+        (Observed::Bool(a), Val::Bool(b)) => a == b,
+        (Observed::Int(a), Val::Int(b)) => a == b,
+        (Observed::Float(a), Val::Float(b)) => bits(*a) == bits(*b),
+        (Observed::String(a), Val::Str(b)) => a.as_str() == &**b,
+        (Observed::Bytes(a), Val::Bytes(b)) => a.as_slice() == &**b,
+        (Observed::Timestamp(t), Val::Timestamp(seconds, nanos)) => {
+            t.seconds == *seconds && i64::from(t.nanos) == i64::from(*nanos)
+        }
+        (Observed::Duration(..), Val::Duration(_)) | (Observed::Path(_), Val::Path(_)) => {
+            *o == observe(v)
+        }
+        (Observed::LatLng(a, b), Val::LatLng(c, d)) => bits(*a) == bits(*c) && bits(*b) == bits(*d),
+        (Observed::Map(a), Val::Map(b)) => {
+            a.len() == b.len()
+                && a.iter()
+                    .zip(b.iter())
+                    .all(|((k, x), (l, y))| k == l && shows(x, y))
+        }
+        (Observed::List(a), Val::List(b)) | (Observed::Set(a), Val::Set(b)) => {
+            a.len() == b.len() && a.iter().zip(b.iter()).all(|(x, y)| shows(x, y))
+        }
+        (Observed::MapDiff(a), Val::MapDiff(b)) => *a == b.statuses,
+        (Observed::Constraint(a), Val::Constraint(b)) => {
+            a.len() == b.len()
+                && a.iter()
+                    .zip(b.iter())
+                    .all(|((c, x), s)| *c == s.comparator && shows(x, &s.value))
+        }
+        _ => false,
+    }
+}
+
 /// What an expression of the coverage report evaluated to once.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Outcome {
     Value(Observed),
     /// An evaluation error: where the official emulator places it, and its text. A comparison

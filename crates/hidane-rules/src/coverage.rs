@@ -10,28 +10,34 @@
 //!   statements. A body or a condition that is a literal is left out.
 //! - A function body with `let`s starts at its first `let`: each `let` holds its value and the
 //!   body from the next `let` on (or the result), and has the function's result.
-//! - An expression starts at its first token, or at the outermost parenthesis before it, and
+//! - The expressions in one come in source order, but `x in y` holds `y` first.
+//! - An expression starts at its first token, or at the outermost parenthesis before it (but
+//!   the object of a member, an index or a method leaves its outermost parenthesis to them), and
 //!   ends with its last part: a call with its last argument (or its name), a list or a map with
 //!   its last item (or its opening bracket), a path with its last segment, a member with its
 //!   name; closing brackets are left out. Offsets count code points, and the end is inclusive.
 //! - Each expression lists the distinct things it evaluated to, in the order first seen, with
 //!   how many times: a value, an error, or nothing (`{}`) when `&&`, `||` or `?:` decided
 //!   without it. An error is placed at a token of the expression that raised it (an operator,
-//!   a function's name, or the expression's first token) and keeps that place as it goes up.
+//!   a function's name, or the expression's first token) and keeps that place as it goes up;
+//!   a comparison a list's filter does not decide is an error without either.
+//! - The statements of a request's method count as a growing `||` of them: the first evaluated
+//!   once for each statement evaluated after it, and once more (`Trace`).
 //!
-//! The official emulator evaluates a condition again after an error, and its report counts
-//! both passes; hidane's counts each evaluation once (`docs/parity-exceptions.md`). It also
-//! keeps at most [`MAX_VALUES`] distinct values per expression.
+//! The official emulator evaluates a condition again after an error, or when it reads a
+//! document, and its report counts both passes; hidane's counts each evaluation once. It also
+//! keeps at most [`MAX_VALUES`] distinct values per expression (`docs/parity-exceptions.md`).
 
 use std::{
     collections::HashMap,
     hash::{DefaultHasher, Hash, Hasher},
+    rc::Rc,
 };
 
 use crate::{
     ast::{BinaryOp, Body, Callee, Expr, ExprKind, Function, PathPart, Ruleset, Span},
     diag::Position,
-    eval::{NodeKey, Outcome, Trace, Traced, observe},
+    eval::{NodeKey, Outcome, Trace, Traced, Val, hash_val, observe, shows},
     lexer,
 };
 
@@ -206,24 +212,76 @@ impl Coverage {
         ))
     }
 
-    /// Counts what `trace` saw of this ruleset's expressions.
+    /// Counts what `trace` saw of this ruleset's expressions. A value is only built for the
+    /// report when it is new.
     pub fn record(&mut self, trace: &Trace) {
         let Some(values) = &trace.values else {
             return;
         };
+        // The hashes of the maps and lists seen, by address: the same document or `request`
+        // comes up again and again.
+        let mut hashes: HashMap<usize, u64> = HashMap::new();
         for (key, traced) in values {
             let Some(&i) = self.index.get(key) else {
                 continue;
             };
-            let outcome = match traced {
-                Traced::Value(v) => Outcome::Value(observe(v)),
-                Traced::Error(e) => Outcome::Error {
-                    position: e.at.and_then(|at| self.token(at)),
-                    message: e.message.clone(),
-                },
-                Traced::Skipped => Outcome::Skipped,
+            let mut hasher = DefaultHasher::new();
+            let address = match traced {
+                Traced::Value(Val::Map(map)) => Some(Rc::as_ptr(map).addr()),
+                Traced::Value(Val::List(items)) => Some(Rc::as_ptr(items).addr()),
+                _ => None,
             };
-            self.nodes[i].count(outcome);
+            let known = address.and_then(|a| hashes.get(&a).copied());
+            let position = match traced {
+                Traced::Value(v) => {
+                    if known.is_none() {
+                        0u8.hash(&mut hasher);
+                        hash_val(v, &mut hasher);
+                    }
+                    None
+                }
+                Traced::Error(e) => {
+                    let position = e.at.and_then(|at| self.token(at));
+                    (1u8, position, &e.message).hash(&mut hasher);
+                    position
+                }
+                Traced::Skipped => {
+                    2u8.hash(&mut hasher);
+                    None
+                }
+            };
+            let hash = known.unwrap_or_else(|| hasher.finish());
+            if let Some(address) = address {
+                hashes.insert(address, hash);
+            }
+            let node = &mut self.nodes[i];
+            let seen = node.seen.get(&hash).into_iter().flatten();
+            let same = |outcome: &Outcome| match (outcome, traced) {
+                (Outcome::Value(o), Traced::Value(v)) => shows(o, v),
+                (
+                    Outcome::Error {
+                        position: p,
+                        message,
+                    },
+                    Traced::Error(e),
+                ) => *p == position && *message == e.message,
+                (Outcome::Skipped, Traced::Skipped) => true,
+                _ => false,
+            };
+            if let Some(&found) = seen.into_iter().find(|&&j| same(&node.values[j].0)) {
+                node.values[found].1 += 1;
+            } else if node.values.len() < MAX_VALUES {
+                let outcome = match traced {
+                    Traced::Value(v) => Outcome::Value(observe(v)),
+                    Traced::Error(e) => Outcome::Error {
+                        position,
+                        message: e.message.clone(),
+                    },
+                    Traced::Skipped => Outcome::Skipped,
+                };
+                node.seen.entry(hash).or_default().push(node.values.len());
+                node.values.push((outcome, 1));
+            }
         }
     }
 
@@ -239,26 +297,6 @@ impl Coverage {
             position: node.position,
             values: &node.values,
             children: &node.children,
-        }
-    }
-}
-
-impl Node {
-    fn count(&mut self, outcome: Outcome) {
-        let mut hasher = DefaultHasher::new();
-        outcome.hash(&mut hasher);
-        let hash = hasher.finish();
-        if let Some(seen) = self.seen.get(&hash) {
-            for &i in seen {
-                if self.values[i].0 == outcome {
-                    self.values[i].1 += 1;
-                    return;
-                }
-            }
-        }
-        if self.values.len() < MAX_VALUES {
-            self.seen.entry(hash).or_default().push(self.values.len());
-            self.values.push((outcome, 1));
         }
     }
 }

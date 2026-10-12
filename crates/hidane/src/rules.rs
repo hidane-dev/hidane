@@ -16,7 +16,8 @@
 //!   :ruleCoverage` the same with the coverage report (`hidane_rules::coverage`), counted since
 //!   the ruleset was loaded; `GET :ruleCoverage.html` a page that shows it, but only for a
 //!   request without a query string or a content type. Other methods are `404`, and so is
-//!   `:ruleCoverage/html`. An empty project ID is a `500` without a message.
+//!   `:ruleCoverage/html`. An empty project ID is a `500` without a message, but with a database
+//!   it is a bad database name, as an empty database ID is.
 //! - Each `debug()` value goes to standard output, which firebase-tools writes to
 //!   `firestore-debug.log` (`report::debug_text`).
 //!

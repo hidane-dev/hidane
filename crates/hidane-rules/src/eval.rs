@@ -15,15 +15,20 @@
 //!   but not inside lists and maps. Sets and map diffs compare numbers by value at any depth.
 //! - Strings are Java strings: sizes, indexes and slices count UTF-16 code units, `lower()` and
 //!   `upper()` change ASCII letters only, and regular expressions are RE2.
-//! - The arguments of a function, then its `let`s in order, are evaluated before its result,
-//!   but an error in one only matters if the function uses it.
+//! - The operands of an operator, a call or a list or map literal are all evaluated, the last
+//!   first (as `debug()` shows), and the first error in order wins (for `x in y`, `y`'s; for a
+//!   method, a null receiver or a method it does not have comes before its arguments' errors).
+//! - The arguments of a function (the last first), then its `let`s in order, are evaluated
+//!   before its result, but an error in one only matters if the function uses it.
 //!
 //! Each condition is evaluated once, so a denial lists each statement once; the official
 //! emulator evaluates again after an error and lists everything twice
 //! (`docs/parity-exceptions.md`).
 //!
 //! [`authorize_traced`] also reports what the official emulator logs and counts for its
-//! coverage report ([`Trace`]): each `debug()` value, and what each expression evaluated to.
+//! coverage report (`tools/oracle/rules_coverage.py`, [`Trace`]): each `debug()` value, and
+//! what each expression evaluated to. Which statements it evaluates shows there: those of
+//! every `match` covering the path, each `match`'s until one allows.
 
 mod constraint;
 mod interp;
@@ -35,7 +40,7 @@ mod value;
 
 pub use constraint::Comparator;
 pub use trace::{KeyStatus, Observed, Outcome, Segment, Trace};
-pub(crate) use trace::{NodeKey, Traced, observe};
+pub(crate) use trace::{NodeKey, Traced, hash_val, observe, shows};
 pub use value::java_double;
 
 use std::rc::Rc;
@@ -47,7 +52,7 @@ use crate::{
     paths::{Binding, Covering},
 };
 use interp::{Frame, Interp, Level};
-use value::Val;
+pub(crate) use value::Val;
 
 /// A value as rules see it. Firestore values convert to these (`timestamp`, `bytes`, `latlng`,
 /// a reference as a `path`, maps and lists); the others only come from rules.
@@ -277,7 +282,7 @@ pub enum Decision {
 /// how recursive wildcards match.
 ///
 /// The `allow` statements of every `match` that covers the path and names the method apply, in
-/// source order; the first whose condition is true allows. A denial lists each one's result:
+/// source order; one whose condition is true allows. A denial lists each one's result:
 /// `false for 'get' @ L5` or the error instead of `false`, with the line of the condition, or
 /// says `No matching allow statements` when none applies. For an upsert the statements of the
 /// other method are listed too, `create`'s first: each is `false`, or its condition's error.
@@ -304,7 +309,7 @@ pub fn authorize(
 /// [`authorize`], reporting into `trace` what the conditions evaluated.
 ///
 /// An upsert evaluates the statements of both methods, whichever applies, as the official
-/// emulator does: `create`'s until one allows, then `update`'s until one allows
+/// emulator does: `create`'s, then `update`'s, as [`authorize`] evaluates those of a method
 /// (`tools/oracle/rules_coverage.py`). Only those of the method that applies decide.
 pub fn authorize_traced(
     ruleset: &Ruleset,
