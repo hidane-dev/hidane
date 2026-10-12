@@ -19,7 +19,7 @@
 | Rules `list` evaluation (query constraints vs rule conditions) is unspecified for a closed-source engine | Planned: a conservative subset, deny-by-default. Measuring showed the official model, now reproduced whole ([ADR 0005](adr/0005-rules-engine.md)) | [rules-query docs](https://firebase.google.com/docs/firestore/security/rules-query) |
 | Known official-emulator divergences: simple-lock transactions, `PartitionQuery` 501, `ExecutePipeline` enterprise-only, #6252, #11241 | A parity-exception list is needed | [parity-exceptions.md](parity-exceptions.md) |
 | Official baseline (under load): 0.74 s to port (2.5 s via CLI), 95 MiB idle, 456 MiB after 1k docs, superlinear writes with a listener | Targets below | [why.md](why.md), `results/` |
-| The jar grants no redistribution rights | CI downloads it each run and verifies SHA256 | jar `FIRESTORE_EMULATOR_LICENSES` |
+| The jar grants no redistribution rights | Never committed or shipped: its answers are recorded into fixtures that CI replays without Java, and a workflow that needs the jar downloads it from Google's URL and checks the SHA-256 (#40) | jar `FIRESTORE_EMULATOR_LICENSES` |
 
 ## 1. Targets (proposed)
 
@@ -39,6 +39,10 @@ quiet machine.
 **Goal**: usable from server SDKs, mobile SDKs and Node-based firebase-js-sdk, under
 `firebase emulators:start`, with Security Rules fixed to allow-all.
 
+v0.1.0 was released on 2026-10-11. Its milestone was closed on 2026-10-12: the parity and
+benchmark work it still held moved to the "Quality: parity & benchmarks" milestone (#5, #6), and
+#14, #36, #44 and #50 to the backlog.
+
 **Supported clients**: firebase-admin (Node) / `@google-cloud/firestore`, Go, Python, Java, iOS, Android,
 Flutter (Android / iOS / macOS / Windows), C++ / Unity, firebase-js-sdk in Node.
 **Not supported (stated up front)**: browser firebase-js-sdk, Flutter Web, firebase-js-sdk Lite (REST only;
@@ -55,8 +59,8 @@ works once R1 lands).
 | P1 | storage | In-memory store (ADR 0002), `__name__` ordering, value type ordering, monotonically increasing commit timestamps, snapshot reads |
 | P1 | storage | Change notification in O(changed documents) per commit |
 | P1 | rest | Admin HTTP (`GET /`, `POST /reset`, `POST /shutdown`) and the `/emulator/v1` endpoints firebase-tools calls (`:securityRules` accepted and ignored, `DELETE …/documents`) |
-| P1 | parity | Oracle jar in CI, conformance-suite format, nodejs-firestore system tests (gRPC) |
-| P1 | bench | Startup, RSS and degradation regression benchmarks in CI |
+| P1 | parity | The official emulator's answers recorded by `tools/oracle/` and replayed in CI without Java (done). Drift checks, the method's conventions, the parity table and the nodejs-firestore system tests moved to the Quality milestone (#5) |
+| P1 | bench | Startup, RSS and listener-degradation measurements (done by hand, `results/`); running them in CI moved to the Quality milestone (#6) |
 | P1 | distribution | hidane.dev DNS / HTTPS (currently a dead link), GitHub Releases naming |
 | P2 | rest | REST transcoding of the documents API (enables js-sdk Lite, `curl`, Emulator UI, `preferRest`) |
 | P2 | storage | Export / import (LevelDB log + EntityProto, `--seed_from_export`, `POST :export`) — done, [export-format.md](export-format.md) |
@@ -71,8 +75,9 @@ Parity exceptions planned for v0.1: the listener-induced write slowdown and the 
 **Goal**: evaluate `firestore.rules`; `@firebase/rules-unit-testing` and the Emulator UI request monitor work.
 
 v0.2.0 (2026-10-12) has the P1 items, v0.2.1 adds the request monitor (#69) and the remaining
-`request` fields (#166), and v0.2.2 checks a commit's `verify` writes (#173). Functions events (#70)
-and coverage differences (#167) follow.
+`request` fields (#166), and v0.2.2 checks a commit's `verify` writes (#173). Coverage differences
+(#167) and rules-unit-testing end to end (#186) follow in v0.2.x; Functions events (#70) moved to
+v0.4.
 
 | Priority | Item | Status (2026-10-12) |
 |---|---|---|
@@ -84,8 +89,8 @@ and coverage differences (#167) follow.
 | P1 | Real diagnostics from `:securityRules`, `:ruleCoverage` (JSON), denial message `%s for '%s' @ L%d` | In v0.2.0: denial messages, `GET :securityRules` (#155), `:ruleCoverage` as JSON and as a page, and `debug()` output (#67) |
 | P1 | Mock tokens (`alg: none`) and `Bearer owner` | In v0.2.0 (#68) |
 | P2 | WebSocket `/requests` feed for the Emulator UI | In v0.2.1 (#69): the official records, the last 50 on connect; a client that falls behind is disconnected instead of holding up requests |
-| P2 | Golden results from the production Rules API `projects:test` | #89 (needs a GCP project) |
-| P2 | Event delivery to `--functions_emulator` (v1 and v2 CloudEvents) | #70 |
+| P2 | Golden results from the production Rules API `projects:test` | #82 (backlog, needs a GCP project) |
+| P2 | Event delivery to `--functions_emulator` (v1 and v2 CloudEvents) | Moved to v0.4 (#70); accepting the trigger registrations so `emulators:start` comes up is #185 |
 
 Parity exception: #6252 (the official emulator evaluates conditions in two passes and lists the reasons of both) is not reproduced; hidane evaluates each condition once.
 
@@ -104,13 +109,12 @@ Parity exception: #6252 (the official emulator evaluates conditions in two passe
 ## 5. Backlog
 
 - Enterprise edition pipelines (`ExecutePipeline`, #80)
-- Datastore mode (`--database-mode datastore-mode`), `--index_file` / `--require_indexes`
+- Datastore mode (`--database-mode datastore-mode`), `--index_file` / `--require_indexes` (#81)
 - `google.firestore.admin.v1` (not in the official emulator either; stays UNIMPLEMENTED)
-- Distribution channels: Homebrew tap, cargo binstall, ghcr multi-arch, `curl | sh`, npm optionalDependencies, pub.dev launcher, mise
-- License decision (ADR 0001)
-- Registry metadata alignment (npm keywords, `0.0.0-stage`, pub.dev description)
-- Nightly against production Firestore (needs a GCP project)
-- iOS / Android integration tests (monthly, manual)
+- The remaining `/emulator/v1` endpoints and the gRPC `FirestoreEmulator` service (#36)
+- Runs against production Firestore and the production Rules API (needs a GCP project, #82)
+
+The distribution channels and the license decision listed here before shipped in v0.1.0.
 
 ## 6. Out of scope
 

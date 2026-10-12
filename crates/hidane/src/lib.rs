@@ -472,7 +472,9 @@ pub async fn serve(
     http: Router,
     shutdown: impl Future<Output = ()>,
 ) -> io::Result<()> {
-    // HTTP/2 tuning (keepalive, max message size) is tracked in #25; defaults for now.
+    // hyper's HTTP/2 defaults, on purpose (#25): keepalive pings are answered, where the official
+    // emulator sends GOAWAY (docs/parity-exceptions.md). Message sizes are limited per service
+    // (MAX_GRPC_MESSAGE, MAX_CHANNEL_BODY).
     let builder = auto::Builder::new(TokioExecutor::new());
     let graceful = GracefulShutdown::new();
 

@@ -4,7 +4,8 @@ Which clients can talk to hidane depends on the transport each SDK uses when it 
 emulator. Phase 0 read the SDK sources to settle this; the conclusions are below. The status
 column says what `main` does today: **verified** means the client's results were compared with the
 official emulator's (`results/`); **not verified** means hidane serves its transport but nobody has
-run that client against it yet. Nothing is released yet.
+run that client against it yet. The latest release is in the README; #187 tracks the clients not
+verified yet.
 
 ## Transport required by each client
 

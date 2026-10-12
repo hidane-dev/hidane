@@ -1,7 +1,8 @@
 # Architecture Decision Records
 
-Phase 0 does **not** decide anything. Each ADR below is a draft that lays out the question, the
-options and a tentative placeholder. Decisions are made in Phase 1 through the linked issues.
+Each ADR lays out a question, the options and the decision. Phase 0 wrote them as drafts with
+placeholders; they were decided through the linked issues, and later ones were written when the
+decision was made.
 
 ## Format
 
@@ -15,10 +16,10 @@ options and a tentative placeholder. Decisions are made in Phase 1 through the l
 
 | # | Topic | Status |
 |---|---|---|
-| [0001](0001-license.md) | License (MIT placeholder vs MIT OR Apache-2.0) | Draft |
+| [0001](0001-license.md) | License (MIT placeholder vs MIT OR Apache-2.0) | Accepted |
 | [0002](0002-storage-engine.md) | Storage engine (in-memory / redb / SQLite) | Accepted |
 | [0003](0003-grpc-stack.md) | gRPC stack (tonic) and sharing one port with REST / WebChannel | Accepted |
-| [0004](0004-webchannel-phase.md) | Why WebChannel is scheduled for v0.3 | Draft |
+| [0004](0004-webchannel-phase.md) | Why WebChannel is scheduled for v0.3 | Superseded (shipped in v0.1.0) |
 | [0005](0005-rules-engine.md) | Security Rules evaluator approach (hand-written, no cel-rust) | Accepted |
 | [0006](0006-launch-under-firebase-tools.md) | Launching under firebase-tools: a scoped `java` shim (`hidane exec`), a firebase-tools change later | Accepted |
 | [0007](0007-contributor-license-agreement.md) | Contributor License Agreement (license CLA, individual and corporate, checked by a workflow) | Accepted |
