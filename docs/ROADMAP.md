@@ -99,12 +99,19 @@ Parity exception: #6252 (the official emulator evaluates conditions in two passe
 
 **Goal**: browser firebase-js-sdk and Flutter Web work. Together with REST (v0.1 P2) this completes Web support.
 
+v0.3.0 (2026-10-13) completes it. WebChannel itself landed early, in v0.1.0 (#71–#73); v0.2.4
+verified Flutter Web (#75); and in v0.3.0 firebase-js-sdk's own browser suite passes on hidane as
+on the official emulator, 1,183 tests in Chromium, run in CI (#74). Two differences it found were
+fixed from new recordings: commits that write one document more than once, and an equality on
+`__name__` next to inequalities on other fields. The parity table (#43) is generated from the
+recordings ([parity.md](parity.md)).
+
 | Priority | Item |
 |---|---|
 | P1 | WebChannel v8: handshake, forward channel, back channel (chunked), `noop`, `terminate` (landed early: #71, [webchannel.md](webchannel.md)) |
 | P1 | Authorization extracted from the `headers=` body field; CORS expose-headers |
 | P1 | `forceLongPolling` (`CI=1`) and `detectBufferingProxy` must keep working |
-| P1 | firebase-js-sdk browser integration tests (Playwright) run against hidane |
+| P1 | firebase-js-sdk browser integration tests (Playwright) run against hidane (done: #74, `tools/js-sdk-browser/`) |
 | prerequisite | Listen / Write core designed transport-agnostic from v0.1 (ADR 0004) |
 
 ## 5. Backlog
