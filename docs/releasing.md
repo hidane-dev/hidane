@@ -39,17 +39,20 @@ The macOS binaries are not signed or notarized yet. Archives fetched with `curl`
 
 ## Cutting a release
 
-1. Set the version everywhere it is written and merge it: `version` in the workspace
+1. Sort out the release's milestone: close each open issue that is done, with a comment citing
+   the evidence (pull requests, tests, files), and move each one that is not to another
+   milestone, with a comment saying what remains. Close the milestone once it is empty.
+2. Set the version everywhere it is written and merge it: `version` in the workspace
    `Cargo.toml` and the `=` pins of `hidane-core`, `hidane-proto` and `hidane-rules` under
    `[workspace.dependencies]`; `version` in `packaging/pub/pubspec.yaml` and `hidaneVersion` in
    `packaging/pub/lib/hidane.dart`, with a `packaging/pub/CHANGELOG.md` entry.
    `mise run release:check` (`node packaging/check-versions.mjs`) checks that they agree, and CI
    runs it.
-2. Push the tag `v<version>` on that commit. The workflow checks the tag against those versions,
+3. Push the tag `v<version>` on that commit. The workflow checks the tag against those versions,
    builds every target, writes `sha256sums.txt`, attests the archives and creates a **draft**
    release with all of them.
-3. Write the notes on the draft and check the assets.
-4. Approve the workflow's `publish the release` job (the `release` environment). It publishes the
+4. Write the notes on the draft and check the assets.
+5. Approve the workflow's `publish the release` job (the `release` environment). It publishes the
    GitHub Release; then, in parallel:
 
    | Job | Publishes |
@@ -67,9 +70,9 @@ The macOS binaries are not signed or notarized yet. Archives fetched with `curl`
    A failed job can be re-run; the crates.io and npm jobs skip versions that are already published
    (or staged). Re-running a job uses the workflow as it was at the tag; `mise run npm:stage
    v<version>` stages a release's npm packages by hand.
-5. Deploy hidane.dev (`mise run site:deploy`, `bun run deploy` in `website/`), whose `install.sh`
+6. Deploy hidane.dev (`mise run site:deploy`, `bun run deploy` in `website/`), whose `install.sh`
    installs the latest release.
-6. The Install workflow (`.github/workflows/install.yml`) starts when the Release run ends and
+7. The Install workflow (`.github/workflows/install.yml`) starts when the Release run ends and
    installs the release through every channel. Its npm, Homebrew and pub.dev jobs wait until
    those channels serve the new version, for up to three hours: approve the staged npm versions
    and, without `HOMEBREW_TAP_TOKEN`, commit the formula within that time.

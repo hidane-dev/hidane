@@ -1,11 +1,13 @@
 # Parity exceptions
 
-hidane treats the official Cloud Firestore emulator as the oracle: the same test suites run
-against both and the differences are published. This page lists the places where hidane
+hidane treats the official Cloud Firestore emulator as the oracle: its answers are recorded
+(`tools/oracle/`) and replayed against hidane by the test suite, and the differences are
+published. This page lists the places where hidane
 **intentionally** behaves differently, and the places where the official emulator itself
 diverges from production Firestore so that a parity target has to be chosen.
 
-Status: Phase 0 draft. Entries will be tagged in the conformance suite (issue #45).
+Status: kept up to date with each change. Naming, for each entry, the fixture or test that pins
+hidane's side is #45.
 
 ## Intentional differences (hidane will not reproduce these)
 
@@ -97,7 +99,7 @@ Status: Phase 0 draft. Entries will be tagged in the conformance suite (issue #4
 
 ## How to read the parity table (once it exists)
 
-The conformance suite will publish, per RPC and scenario, whether hidane and the official emulator
-returned the same result at three levels: L0 status code, L1 status code + HTTP status, L2 exact
-error message (only required for a small Tier 3 set). Entries listed on this page are tagged so they
-do not count as regressions.
+The parity table (#43) will be generated from the recorded fixtures: per area and transport, how
+many official answers are replayed and at which level they are compared. L0 is the status code,
+L1 adds the HTTP status, L2 the exact error message. L2 is the default; a step is compared at a
+lower level only where this page lists the difference.

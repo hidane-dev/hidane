@@ -39,6 +39,10 @@ quiet machine.
 **Goal**: usable from server SDKs, mobile SDKs and Node-based firebase-js-sdk, under
 `firebase emulators:start`, with Security Rules fixed to allow-all.
 
+v0.1.0 was released on 2026-10-11. Its milestone was closed on 2026-10-12: the parity and
+benchmark work it still held moved to the "Quality: parity & benchmarks" milestone (#5, #6), and
+#14, #36, #44 and #50 to the backlog.
+
 **Supported clients**: firebase-admin (Node) / `@google-cloud/firestore`, Go, Python, Java, iOS, Android,
 Flutter (Android / iOS / macOS / Windows), C++ / Unity, firebase-js-sdk in Node.
 **Not supported (stated up front)**: browser firebase-js-sdk, Flutter Web, firebase-js-sdk Lite (REST only;
@@ -55,8 +59,8 @@ works once R1 lands).
 | P1 | storage | In-memory store (ADR 0002), `__name__` ordering, value type ordering, monotonically increasing commit timestamps, snapshot reads |
 | P1 | storage | Change notification in O(changed documents) per commit |
 | P1 | rest | Admin HTTP (`GET /`, `POST /reset`, `POST /shutdown`) and the `/emulator/v1` endpoints firebase-tools calls (`:securityRules` accepted and ignored, `DELETE …/documents`) |
-| P1 | parity | Oracle jar in CI, conformance-suite format, nodejs-firestore system tests (gRPC) |
-| P1 | bench | Startup, RSS and degradation regression benchmarks in CI |
+| P1 | parity | The official emulator's answers recorded by `tools/oracle/` and replayed in CI without Java (done). Drift checks, the method's conventions, the parity table and the nodejs-firestore system tests moved to the Quality milestone (#5) |
+| P1 | bench | Startup, RSS and listener-degradation measurements (done by hand, `results/`); running them in CI moved to the Quality milestone (#6) |
 | P1 | distribution | hidane.dev DNS / HTTPS (currently a dead link), GitHub Releases naming |
 | P2 | rest | REST transcoding of the documents API (enables js-sdk Lite, `curl`, Emulator UI, `preferRest`) |
 | P2 | storage | Export / import (LevelDB log + EntityProto, `--seed_from_export`, `POST :export`) — done, [export-format.md](export-format.md) |

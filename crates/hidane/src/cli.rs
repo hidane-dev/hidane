@@ -320,7 +320,7 @@ impl Cli {
         }
         if self.webchannel_port.is_some() {
             warnings.push(format!(
-                "WebChannel is not implemented yet; --webchannel_port is ignored ({ISSUES}/10)"
+                "WebChannel is served on the main port; --webchannel_port is ignored ({ISSUES}/10)"
             ));
         }
         if self.index_file.is_some() {
