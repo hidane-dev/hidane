@@ -61,5 +61,18 @@ where the file names none.
 
 ## The corpus manifest
 
-Reserved for the Hidane Oracle Corpus manifest, which lists every recording with its provenance
-in one generated file, checked in CI. It follows in a separate pull request.
+The [Hidane Oracle Corpus](../oracle-corpus.md) manifest, [`docs/oracle-corpus.json`](../oracle-corpus.json),
+puts the provenance of every recording in one file, fixtures and official transcripts alike.
+`tools/oracle/corpus.py` generates it from the recordings and `tools/parity/table.py`, and CI
+fails when it is stale or does not fit its schema. For each recording it gives:
+
+| Field | Provenance it records |
+|---|---|
+| `recorder`, `client` | The script that made it, the official emulator's interfaces it used, and the packages it used with their versions: pinned by the recorder, stated by the recording, or not known (installed when the script ran) |
+| `oracle` | The release, its jar's SHA-256 where known, and how the release is known: `header`, `file name`, or `git history`, with the `evidence` (the check described above, done by the script) |
+| `recorded` | The dates of the first and the last commit that changed it |
+| `sha256`, `bytes` | Its content, so a copy can be matched with the manifest; `digest` does the same for the whole corpus |
+| `tests`, `levels`, `counted`, `compared`, `compared_with` | How hidane is checked against it |
+
+So the recordings without a header have their release stated in the manifest, with how it was
+established; `git log -- <path>` then gives the commits and pull requests that made each one.

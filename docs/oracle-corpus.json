@@ -1,0 +1,2987 @@
+{
+ "$schema": "./oracle-corpus.schema.json",
+ "name": "Hidane Oracle Corpus",
+ "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
+ "schema_version": 1,
+ "generated_by": "tools/oracle/corpus.py",
+ "digest": "sha256:62a3c5ef398bfc572cf939f1ff9e5ca0a5a97cac30eb1863147e4c38cd02105a",
+ "releases": [
+  {
+   "product": "cloud-firestore-emulator",
+   "release": "v1.22.0",
+   "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+   "pinned": true
+  }
+ ],
+ "totals": {
+  "files": 72,
+  "fixtures": 41,
+  "transcripts": 31,
+  "answers": 20224,
+  "bytes": 10721462,
+  "levels": {
+   "full": 12029,
+   "reasons": 3912,
+   "part": 731,
+   "status": 3401,
+   "codes": 30,
+   "none": 1,
+   "differs": 120
+  },
+  "by_area": {
+   "documents": {
+    "fixtures": 6,
+    "transcripts": 4,
+    "answers": 5208
+   },
+   "queries": {
+    "fixtures": 4,
+    "transcripts": 6,
+    "answers": 444
+   },
+   "transactions": {
+    "fixtures": 1,
+    "transcripts": 5,
+    "answers": 177
+   },
+   "streams": {
+    "fixtures": 1,
+    "transcripts": 6,
+    "answers": 49
+   },
+   "rest": {
+    "fixtures": 2,
+    "transcripts": 1,
+    "answers": 79
+   },
+   "webchannel": {
+    "fixtures": 1,
+    "transcripts": 3,
+    "answers": 34
+   },
+   "rules": {
+    "fixtures": 17,
+    "transcripts": 2,
+    "answers": 13264
+   },
+   "export": {
+    "fixtures": 1,
+    "transcripts": 1,
+    "answers": 70
+   },
+   "admin": {
+    "fixtures": 3,
+    "transcripts": 3,
+    "answers": 621
+   },
+   "values": {
+    "fixtures": 5,
+    "transcripts": 0,
+    "answers": 278
+   }
+  },
+  "by_release": {
+   "v1.22.0": {
+    "fixtures": 41,
+    "transcripts": 31,
+    "answers": 20224
+   }
+  },
+  "by_release_source": {
+   "header": 22,
+   "file name": 32,
+   "git history": 18
+  }
+ },
+ "recordings": [
+  {
+   "path": "crates/hidane/tests/fixtures/commit_checks.json",
+   "kind": "fixture",
+   "area": "documents",
+   "recorder": "tools/oracle/commit_checks.py",
+   "client": {
+    "over": [
+     "gRPC",
+     "REST"
+    ],
+    "using": "Python standard library and grpcurl",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 1115146,
+   "sha256": "5abc1d8ff5707b231dc5e5b24de2749da275d64356d24da06e3e87df5c226444",
+   "answers": 4664,
+   "levels": {
+    "full": 4616,
+    "codes": 29,
+    "differs": 19
+   },
+   "replayed_over": [
+    "gRPC",
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/commit_checks.rs::the_first_error_is_the_official_one",
+    "crates/hidane/tests/commit_checks.rs::writes_to_another_database_are_refused"
+   ],
+   "counted": "each commit over each transport it was recorded over, and each step that writes to or reads after another database",
+   "compared": "in full: the first error's code and message, the number of write results or `:batchWrite`'s statuses, a read's status, names found or missing; a failed precondition without its message (it prints the official emulator's internal key); the cases the test lists in `KNOWN` (array unions of arrays and of vectors with NaN) and the steps in `DIFFERS` (writes to another database, which hidane refuses, and the reads that follow) as intentionally different"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/document_writes.json",
+   "kind": "fixture",
+   "area": "documents",
+   "recorder": "tools/oracle/document_writes.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 47497,
+   "sha256": "ade0d3c75406e6254c0e28406d9fb06571ead9d14abeb6fb9991f090b79eebf6",
+   "answers": 16,
+   "levels": {
+    "full": 16
+   },
+   "replayed_over": [
+    "gRPC"
+   ],
+   "tests": [
+    "crates/hidane/tests/documents.rs::reads_and_their_errors",
+    "crates/hidane/tests/documents.rs::preconditions",
+    "crates/hidane/tests/documents.rs::invalid_writes_use_the_official_messages",
+    "crates/hidane/tests/documents.rs::listing_documents_and_collections",
+    "crates/hidane/tests/documents.rs::batch_write_reports_each_write"
+   ],
+   "counted": "each recorded message the tests check hidane's against (they replay no case as a whole); recorded over REST",
+   "compared": "in full: the code and the message (a stored version's timestamps masked)"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/field_order.json",
+   "kind": "fixture",
+   "area": "documents",
+   "recorder": "tools/oracle/field_order.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that added it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-11",
+    "last_changed": "2026-10-11"
+   },
+   "bytes": 136018,
+   "sha256": "11f5274c96b640afa4d36b7f1e29e75bee550d18ba54249c1c72ee978f3335de",
+   "answers": 145,
+   "levels": {
+    "full": 1,
+    "part": 79,
+    "status": 65
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/field_order.rs::fields_come_back_in_the_official_order"
+   ],
+   "counted": "each call",
+   "compared": "an error in full (status and message); a commit on its status; a read in part: the order of every field, nested ones included, and which commit its `updateTime` names, not the values"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/list_documents.json",
+   "kind": "fixture",
+   "area": "documents",
+   "recorder": "tools/oracle/list_documents.py",
+   "client": {
+    "over": [
+     "gRPC",
+     "REST"
+    ],
+    "using": "Python standard library and grpcurl",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 11134,
+   "sha256": "f375f291c6250fd2bd27a7e92db19d7d2314d33bacf71313ca55bf23a6843e58",
+   "answers": 35,
+   "levels": {
+    "full": 35
+   },
+   "replayed_over": [
+    "gRPC",
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/list_documents.rs::list_documents_like_the_official_emulator"
+   ],
+   "counted": "each case (a paged case is one)",
+   "compared": "in full: the names of every page, or the code and message"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/same_document_writes.json",
+   "kind": "fixture",
+   "area": "documents",
+   "recorder": "tools/oracle/same_document_writes.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 221469,
+   "sha256": "bbee40abb5434aa44e9f68065654c1cd22eb2b89ef3c3b664b518bf700d5ab9f",
+   "answers": 311,
+   "levels": {
+    "full": 153,
+    "part": 91,
+    "status": 67
+   },
+   "replayed_over": [
+    "gRPC"
+   ],
+   "tests": [
+    "crates/hidane/tests/same_document_writes.rs::every_recorded_case_gives_the_official_answer"
+   ],
+   "counted": "each call; recorded over REST",
+   "compared": "an error in full (code and message), but a failed precondition on its code (its message prints the official emulator's internal key, an intentional difference); a commit in full (its number of write results, whose times differ from run to run), in part where they hold transform results, which are not compared; a read in part (the fields and their order), a missing document on its code"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/transforms.json",
+   "kind": "fixture",
+   "area": "documents",
+   "recorder": "tools/oracle/transforms.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 32930,
+   "sha256": "c54db65d1a4a2ac4e272225fa68cfae15676158bb97eb821d59d54a91f34c77e",
+   "answers": 37,
+   "levels": {
+    "full": 24,
+    "part": 13
+   },
+   "replayed_over": [
+    "gRPC"
+   ],
+   "tests": [
+    "crates/hidane/tests/transforms.rs::every_recorded_case_gives_the_official_answer"
+   ],
+   "counted": "each call; recorded over REST",
+   "compared": "a commit in full (its transform results, server times as the request time, or the code and message); a read in part (the document's fields)"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/aggregations.json",
+   "kind": "fixture",
+   "area": "queries",
+   "recorder": "tools/oracle/aggregations.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 38956,
+   "sha256": "0154eb009459ebad4b16145c504ad5be9c74ed5b9faf6d6a8b9665397a6611ff",
+   "answers": 52,
+   "levels": {
+    "full": 11,
+    "part": 41
+   },
+   "replayed_over": [
+    "gRPC"
+   ],
+   "tests": [
+    "crates/hidane/tests/aggregations.rs::aggregations_answer_like_the_official_emulator"
+   ],
+   "counted": "each query; recorded over REST",
+   "compared": "an error in full (status and message); results in part: every aggregate value with its type, not `done`, which gRPC does not carry"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/find_nearest.json",
+   "kind": "fixture",
+   "area": "queries",
+   "recorder": "tools/oracle/find_nearest.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 509922,
+   "sha256": "51d7ab7bce5aa14701ac367cd1bb2ed8d51086b99cee581177bc4d5e6cd741cf",
+   "answers": 87,
+   "levels": {
+    "full": 87
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/find_nearest.rs::find_nearest_like_the_official_emulator"
+   ],
+   "counted": "each query, aggregation and write",
+   "compared": "in full: the documents' names and fields but the vector (as the recording keeps them), the aggregate values, or the status and message"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/queries.json",
+   "kind": "fixture",
+   "area": "queries",
+   "recorder": "tools/oracle/queries.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 236017,
+   "sha256": "f70a9e4713b1ced744aa5ad86e8209e031c7890b684275ee993abdeec502e18d",
+   "answers": 291,
+   "levels": {
+    "full": 291
+   },
+   "replayed_over": [
+    "gRPC"
+   ],
+   "tests": [
+    "crates/hidane/tests/queries.rs::queries_answer_like_the_official_emulator"
+   ],
+   "counted": "each query but the `findNearest` one; recorded over REST",
+   "compared": "in full: each response's document, `skippedResults` and `done`, the fields of projected documents, or the status and message"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/unsupported.json",
+   "kind": "fixture",
+   "area": "queries",
+   "recorder": "tools/oracle/unsupported.py",
+   "client": {
+    "over": [
+     "gRPC",
+     "REST"
+    ],
+    "using": "Python standard library and grpcurl",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 6619,
+   "sha256": "4e73b3ae0fc14d7c425ae80e10a75170567b7f1aa2bbd9801a66da53d9187bec",
+   "answers": 14,
+   "levels": {
+    "full": 14
+   },
+   "replayed_over": [
+    "gRPC",
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/unsupported.rs::ignored_and_refused_like_the_official_emulator"
+   ],
+   "counted": "each call",
+   "compared": "in full: the outcome as the recording summarises it"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/transactions.json",
+   "kind": "fixture",
+   "area": "transactions",
+   "recorder": "tools/oracle/transactions.py",
+   "client": {
+    "over": [
+     "gRPC",
+     "REST"
+    ],
+    "using": "Python standard library and grpcurl",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 55831,
+   "sha256": "994925a29b5bb05830d472317436f8f9bf3dbd0a832568e4f7e90ef163ec7018",
+   "answers": 177,
+   "levels": {
+    "full": 172,
+    "status": 3,
+    "codes": 1,
+    "none": 1
+   },
+   "replayed_over": [
+    "gRPC",
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/transactions.rs::replay"
+   ],
+   "counted": "each step with an outcome, except those of the scenario marked `slow`",
+   "compared": "as each step's `compare` marks it; without a mark in full (status, message, elapsed time to 0.5 s and the result, not transaction IDs)"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/write_stream.json",
+   "kind": "fixture",
+   "area": "streams",
+   "recorder": "tools/oracle/write_stream.mjs",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Node.js",
+    "packages": [
+     {
+      "name": "@grpc/grpc-js",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     },
+     {
+      "name": "@grpc/proto-loader",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 15837,
+   "sha256": "bc4c2b4c174be48f7a8a04234c1bd264d10d40130681f9165993e4acb7bc7a3c",
+   "answers": 49,
+   "levels": {
+    "full": 48,
+    "status": 1
+   },
+   "replayed_over": [
+    "gRPC"
+   ],
+   "tests": [
+    "crates/hidane/tests/write_stream.rs::replay"
+   ],
+   "counted": "each step with an outcome",
+   "compared": "as each step's `compare` marks it; without a mark in full (the response's token, write results and commit time as the recording summarises them, the error, the elapsed time)"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/cors.json",
+   "kind": "fixture",
+   "area": "rest",
+   "recorder": "tools/oracle/cors.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 11778,
+   "sha256": "6dd295bc8968599d80379845ba66cbebc562cff9daf466e4af27c671f3a1b92c",
+   "answers": 22,
+   "levels": {
+    "full": 22
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/cors.rs::cors_answers_like_the_official_emulator"
+   ],
+   "counted": "each request",
+   "compared": "in full: status, every header but `date`, `content-length` and `connection`, and the body"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/rest.json",
+   "kind": "fixture",
+   "area": "rest",
+   "recorder": "tools/oracle/rest.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 45126,
+   "sha256": "a96c4a7159b723e1dbd814a1aeba53b0a509b5e8735b9ba084d33e2829999a39",
+   "answers": 57,
+   "levels": {
+    "full": 53,
+    "status": 4
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/rest.rs::rest_answers_like_the_official_emulator"
+   ],
+   "counted": "each request",
+   "compared": "as each case's `compare` marks it: `exact` in full (status, content type and body byte for byte, server times, IDs and tokens masked), `status` on its status and content type"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/webchannel.json",
+   "kind": "fixture",
+   "area": "webchannel",
+   "recorder": "tools/oracle/webchannel.py",
+   "client": {
+    "over": [
+     "REST",
+     "WebChannel"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 1060300,
+   "sha256": "f6aa9efa77c32638938ff827848fe451b1fbe84ec263dc0cc30a24efd6328657",
+   "answers": 34,
+   "levels": {
+    "full": 31,
+    "part": 3
+   },
+   "replayed_over": [
+    "REST",
+    "WebChannel"
+   ],
+   "tests": [
+    "crates/hidane/tests/webchannel.rs::webchannel_like_the_official_emulator"
+   ],
+   "counted": "each step",
+   "compared": "in full: status, frames and messages (session IDs, times and tokens masked); a long-polling read in part (its first data and whether it ended: where the `noop`s fall depends on timing)"
+  },
+  {
+   "path": "crates/hidane-rules/tests/fixtures/rules_eval.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/rules_eval.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that added it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-11",
+    "last_changed": "2026-10-11"
+   },
+   "bytes": 363959,
+   "sha256": "707045af9487f107bcd730c6479a0b5a95500379718b22937789bdcf0d4babea",
+   "answers": 1278,
+   "levels": {
+    "full": 384,
+    "reasons": 889,
+    "part": 2,
+    "differs": 3
+   },
+   "replayed_over": [
+    "in-process"
+   ],
+   "tests": [
+    "crates/hidane-rules/tests/library.rs::evaluation_matches_the_official_emulator"
+   ],
+   "counted": "each condition or ruleset decided; recorded over REST",
+   "compared": "an allow and a compile error in full; a denial as decision and reasons (the entries of one evaluation where the official emulator lists two); a denied batch on its decision only (in part); the official 500s, which hidane answers with an evaluation error, as intentionally different"
+  },
+  {
+   "path": "crates/hidane-rules/tests/fixtures/rules_paths.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/rules_paths.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that added it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-11",
+    "last_changed": "2026-10-11"
+   },
+   "bytes": 26489,
+   "sha256": "757d1f10eda3a01766c65a81b013a43a09d1b94c900845c023a4491874f88d13",
+   "answers": 182,
+   "levels": {
+    "full": 180,
+    "part": 2
+   },
+   "replayed_over": [
+    "in-process"
+   ],
+   "tests": [
+    "crates/hidane-rules/tests/paths.rs::matches_cover_the_documents_the_official_emulator_allows"
+   ],
+   "counted": "each read under `allow read: if true`, and each `match` path refused; recorded over REST",
+   "compared": "each read's decision in full; a refused path on the refusal only (in part; `rules_warnings.json` holds the message)"
+  },
+  {
+   "path": "crates/hidane-rules/tests/fixtures/rules_warnings.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/rules_warnings.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that added it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-12",
+    "last_changed": "2026-10-12"
+   },
+   "bytes": 858697,
+   "sha256": "892f2f939a5a622aa46605f4f0bd0ec46cb1ac8eacd89cf105d0fb8ac4382108",
+   "answers": 3694,
+   "levels": {
+    "full": 3678,
+    "differs": 16
+   },
+   "replayed_over": [
+    "in-process"
+   ],
+   "tests": [
+    "crates/hidane-rules/tests/warnings.rs::warnings_are_the_official_emulators"
+   ],
+   "counted": "each ruleset compiled, its `issues[]` or error; recorded over REST",
+   "compared": "in full: every issue with its position and severity, or the error message; the cases the test lists in `FIRST_LINE_ONLY` (the first line) and `KNOWN` as intentionally different"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/rules_auth.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/rules_auth.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that last changed it, as at the earlier commit that changed it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-11",
+    "last_changed": "2026-10-12"
+   },
+   "bytes": 122492,
+   "sha256": "b0c178e20292964f371dd47fdbdbfcbc35af3927301c9f0ab98a2820e3638d31",
+   "answers": 247,
+   "levels": {
+    "reasons": 88,
+    "status": 159
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/rules_server.rs::replay"
+   ],
+   "counted": "each call",
+   "compared": "a denial as decision and reasons (`same_denial`: hidane's reasons are among the official ones); every other answer on its status"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/rules_compile.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/rules_compile.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that added it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-11",
+    "last_changed": "2026-10-11"
+   },
+   "bytes": 155276,
+   "sha256": "ffff41a19e995bf0aea1f3572196bfd0631d5ba180211c9d5a9ca85336935577",
+   "answers": 250,
+   "levels": {
+    "full": 248,
+    "differs": 2
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/rules_compile.rs::compiles_like_the_official_emulator"
+   ],
+   "counted": "each ruleset loaded",
+   "compared": "in full: status and body byte for byte; the cases the test lists in `CRASHES` and `FIRST_LINE_ONLY` as intentionally different"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/rules_coverage.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/rules_coverage.py",
+   "client": {
+    "over": [
+     "REST",
+     "process"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that last changed it, as at the earlier commit that changed it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-12",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 701347,
+   "sha256": "e50f7bcfe8d51f788a221db8155aab57a2b9f22548e9977b909cccb43a132b2e",
+   "answers": 250,
+   "levels": {
+    "full": 35,
+    "reasons": 4,
+    "part": 75,
+    "status": 126,
+    "differs": 10
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/rules_coverage.rs::replay"
+   ],
+   "counted": "each call",
+   "compared": "every status and what `debug()` printed (without `request.time`); the rules and coverage reports in full (byte for byte, without `request.time`); a denial as decision and reasons (`same_denial`); a call that printed in part, the others on their status; the coverage page and the cases marked `differs` as intentionally different"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/rules_coverage_flag.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/rules_coverage.py",
+   "client": {
+    "over": [
+     "REST",
+     "process"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that added it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-12",
+    "last_changed": "2026-10-12"
+   },
+   "bytes": 21795,
+   "sha256": "3d782fd4eb0820f397fbc0524ab2eb91ecb9c608907a470ee8ecb88ffa124911",
+   "answers": 17,
+   "levels": {
+    "full": 9,
+    "reasons": 2,
+    "part": 4,
+    "status": 2
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/rules_coverage.rs::replay"
+   ],
+   "counted": "each call",
+   "compared": "every status and what `debug()` printed (without `request.time`); the rules and coverage reports in full (byte for byte, without `request.time`); a denial as decision and reasons (`same_denial`); a call that printed in part, the others on their status; the coverage page and the cases marked `differs` as intentionally different"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/rules_denials.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/rules_denials.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that last changed it, as at the earlier commit that changed it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-11",
+    "last_changed": "2026-10-12"
+   },
+   "bytes": 22982,
+   "sha256": "b4ce584670bd76baa4e013c7e7b4103dffa22b4e185edfc603795a719b8cccf0",
+   "answers": 65,
+   "levels": {
+    "reasons": 21,
+    "status": 44
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/rules_server.rs::replay"
+   ],
+   "counted": "each call",
+   "compared": "a denial as decision and reasons (`same_denial`: hidane's reasons are among the official ones); every other answer on its status"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/rules_list.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/rules_list.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that last changed it, as at the 2 earlier commits that changed it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-11",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 1651406,
+   "sha256": "ce75a822be9b1887a26c0385f5d7294442b976298ea1c3c87f8592fbc93b8fe4",
+   "answers": 3451,
+   "levels": {
+    "reasons": 2395,
+    "status": 1056
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/rules_server.rs::replay"
+   ],
+   "counted": "each call",
+   "compared": "a denial as decision and reasons (`same_denial`: hidane's reasons are among the official ones); every other answer on its status"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/rules_lookups.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/rules_lookups.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that last changed it, as at the earlier commit that changed it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-11",
+    "last_changed": "2026-10-12"
+   },
+   "bytes": 118636,
+   "sha256": "d439d8d14ed40b7486ef8296b858b9e02d93ad98ab3f8d75f5e5dbf171842667",
+   "answers": 304,
+   "levels": {
+    "reasons": 15,
+    "status": 289
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/rules_server.rs::replay"
+   ],
+   "counted": "each call",
+   "compared": "a denial as decision and reasons (`same_denial`: hidane's reasons are among the official ones); every other answer on its status"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/rules_request.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/rules_request.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that last changed it, as at the 2 earlier commits that changed it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-11",
+    "last_changed": "2026-10-12"
+   },
+   "bytes": 380568,
+   "sha256": "32ed2236d67d380d044d07b913266f0acd1f4917d80a5cfaae8b5c99103ad990",
+   "answers": 1018,
+   "levels": {
+    "reasons": 118,
+    "status": 900
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/rules_server.rs::replay"
+   ],
+   "counted": "each call",
+   "compared": "a denial as decision and reasons (`same_denial`: hidane's reasons are among the official ones); every other answer on its status"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/rules_request_fields.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/rules_request_fields.py",
+   "client": {
+    "over": [
+     "REST",
+     "process"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that added it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-12",
+    "last_changed": "2026-10-12"
+   },
+   "bytes": 422680,
+   "sha256": "1e6d75c7a65ebc5526460b20608829c9d728b3d38e751be6544779749e717f5e",
+   "answers": 182,
+   "levels": {
+    "full": 37,
+    "part": 50,
+    "status": 95
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/rules_coverage.rs::replay"
+   ],
+   "counted": "each call",
+   "compared": "every status and what `debug()` printed (without `request.time`); the rules and coverage reports in full (byte for byte, without `request.time`); a denial as decision and reasons (`same_denial`); a call that printed in part, the others on their status; the coverage page and the cases marked `differs` as intentionally different"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/rules_streams.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/rules_streams.py",
+   "client": {
+    "over": [
+     "gRPC",
+     "REST"
+    ],
+    "using": "Python standard library and grpcurl",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that last changed it, as at the earlier commit that changed it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-11",
+    "last_changed": "2026-10-12"
+   },
+   "bytes": 10947,
+   "sha256": "92d03e93ca301c9c4abdcac8c0e9015bcf73e5179147191e301c9698440c56b2",
+   "answers": 23,
+   "levels": {
+    "full": 9,
+    "reasons": 7,
+    "part": 7
+   },
+   "replayed_over": [
+    "gRPC"
+   ],
+   "tests": [
+    "crates/hidane/tests/rules_streams.rs::streams_under_rules"
+   ],
+   "counted": "each stream response, and each error that ended a stream",
+   "compared": "a target change in full (type, targets, resume tokens and times masked); a denied target's cause and an error that ended the stream as decision and reasons; a document change in part (its name and targets, not its fields) and a write response in part (its number of results)"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/rules_verify.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/rules_verify.py",
+   "client": {
+    "over": [
+     "REST",
+     "process"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that added it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-12",
+    "last_changed": "2026-10-12"
+   },
+   "bytes": 165865,
+   "sha256": "c3516376cd7f9841e4deae924de6e19ead8456ea08d4cd581ce49aa225bb42ae",
+   "answers": 337,
+   "levels": {
+    "reasons": 39,
+    "part": 4,
+    "status": 290,
+    "differs": 4
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/rules_coverage.rs::replay"
+   ],
+   "counted": "each call",
+   "compared": "every status and what `debug()` printed (without `request.time`); the rules and coverage reports in full (byte for byte, without `request.time`); a denial as decision and reasons (`same_denial`); a call that printed in part, the others on their status; the coverage page and the cases marked `differs` as intentionally different"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/rules_writes.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/rules_writes.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that last changed it, as at the earlier commit that changed it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-11",
+    "last_changed": "2026-10-12"
+   },
+   "bytes": 118949,
+   "sha256": "3d1ce8e287757cf99c5b997029c14edbe6e3fac3216686b1548218ba63798476",
+   "answers": 366,
+   "levels": {
+    "reasons": 66,
+    "status": 300
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/rules_server.rs::replay"
+   ],
+   "counted": "each call",
+   "compared": "a denial as decision and reasons (`same_denial`: hidane's reasons are among the official ones); every other answer on its status"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/websocket_requests.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/websocket_requests.py",
+   "client": {
+    "over": [
+     "gRPC",
+     "REST",
+     "WebSocket"
+    ],
+    "using": "Python standard library and grpcurl",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that last changed it, as at the earlier commit that changed it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-12",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 346340,
+   "sha256": "96ad1fa64b2e082e36b599f444d5529cce4261e0a796d988f96ebcf71552deb5",
+   "answers": 149,
+   "levels": {
+    "full": 45,
+    "part": 90,
+    "differs": 14
+   },
+   "replayed_over": [
+    "WebSocket"
+   ],
+   "tests": [
+    "crates/hidane/tests/websocket_requests.rs::records_as_the_official_emulator_sends_them"
+   ],
+   "counted": "each step: the request monitor's records of a call, or a WebSocket exchange",
+   "compared": "in full: every record field for field (times, request IDs and the release key's number masked, a list filter's fields in any order); in part where an official record shows `resource` undefined (its first pass), which accepts hidane's stored document; a step marked `differs` (method and path only) as intentionally different"
+  },
+  {
+   "path": "results/rules-conditions-official-v1.22.0.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/rules_conditions.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-11",
+    "last_changed": "2026-10-11"
+   },
+   "bytes": 381200,
+   "sha256": "85741620680108149761c4457ccd50f5e916931b26c7eed6963363ba943b1c58",
+   "answers": 1451,
+   "levels": {
+    "full": 916,
+    "reasons": 268,
+    "part": 267
+   },
+   "replayed_over": [
+    "in-process"
+   ],
+   "tests": [
+    "crates/hidane-rules/tests/conditions.rs::conditions_decide_as_on_the_official_emulator"
+   ],
+   "counted": "each condition decided; recorded over REST",
+   "compared": "an allow in full; a denial (`false` or an error) as decision and reasons; a ruleset that does not compile on the refusal only (in part; `rules_warnings.json` holds the message)"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/export_import.json",
+   "kind": "fixture",
+   "area": "export",
+   "recorder": "tools/oracle/export_import.py",
+   "client": {
+    "over": [
+     "REST",
+     "process"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that added it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 76402,
+   "sha256": "68e68c630266ad485ba6bb1c1228181fe1fe2eb52e9fd38ca9a6e26c605a1319",
+   "answers": 70,
+   "levels": {
+    "full": 67,
+    "part": 3
+   },
+   "replayed_over": [
+    "REST",
+    "CLI"
+   ],
+   "tests": [
+    "crates/hidane/tests/export_import.rs::exports_match_the_official_files",
+    "crates/hidane/tests/export_import.rs::imports_write_what_the_official_emulator_writes",
+    "crates/hidane/tests/export_import.rs::production_shaped_exports_import_like_the_official_emulator",
+    "crates/hidane/tests/export_import.rs::the_endpoints_answer_like_the_official_emulator",
+    "crates/hidane/tests/export_import.rs::databases_are_seeded_like_the_official_emulator",
+    "crates/hidane/tests/export_import.rs::start_up_like_the_official_emulator"
+   ],
+   "counted": "each export, import, endpoint answer, seeding step and start-up",
+   "compared": "an export in part: its files, metadata byte for byte and every record, in name order (an intentional difference) and without times; the rest in full: imported documents, the endpoints' status, content type and body, seeding, exit codes and messages"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/auth.json",
+   "kind": "fixture",
+   "area": "admin",
+   "recorder": "tools/oracle/auth.py",
+   "client": {
+    "over": [
+     "gRPC",
+     "REST"
+    ],
+    "using": "Python standard library and grpcurl",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 45866,
+   "sha256": "45a5735130fdaff5bac82bd059e9ddba23ef9df49d70ed8f124c032fa22304e5",
+   "answers": 146,
+   "levels": {
+    "full": 146
+   },
+   "replayed_over": [
+    "gRPC",
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/auth.rs::authorization_is_read_like_the_official_emulator"
+   ],
+   "counted": "each case",
+   "compared": "in full: the outcome as the recording summarises it (status or code and message)"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/function_events.json",
+   "kind": "fixture",
+   "area": "admin",
+   "recorder": "tools/oracle/function_events.py",
+   "client": {
+    "over": [
+     "gRPC",
+     "REST",
+     "process"
+    ],
+    "using": "Python standard library and grpcurl",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 353298,
+   "sha256": "ef2faadb08d4daabf50f54940692a93600c2c290e50eb65fcd7851db86df41b9",
+   "answers": 133,
+   "levels": {
+    "full": 85,
+    "differs": 48
+   },
+   "replayed_over": [
+    "gRPC",
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/function_events.rs::events_reach_the_functions_emulator_as_on_the_official_emulator"
+   ],
+   "counted": "each step of each case (registrations and writes over REST, gRPC and the Write stream), in the three runs: with a Functions emulator, without, and with one that does not listen",
+   "compared": "in full: the status, every request the Functions emulator received (method, path, content type and `ce-*` headers, the v1 body byte for byte and the v2 body decoded, times and IDs as labels), and every `WARNING` about events. Intentionally different: steps with v2 events (`ce-source` names the project once), events for writes that change nothing, after `POST /reset`, and a v2 trigger without a database; in part (in any order): a deleted path or a cleared database"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/function_triggers.json",
+   "kind": "fixture",
+   "area": "admin",
+   "recorder": "tools/oracle/function_triggers.py",
+   "client": {
+    "over": [
+     "REST",
+     "process"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 195143,
+   "sha256": "cd985c1fd2458a9c360d01a09f89892610a4da2493b42d7cdc12a017339712f0",
+   "answers": 342,
+   "levels": {
+    "full": 342
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/function_triggers.rs::registrations_answer_like_the_official_emulator"
+   ],
+   "counted": "each registration, in both runs",
+   "compared": "in full: status, content type and body"
+  },
+  {
+   "path": "crates/hidane-core/tests/fixtures/value_order.json",
+   "kind": "fixture",
+   "area": "values",
+   "recorder": "tools/oracle/value_order.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 13304,
+   "sha256": "c85ab4f45174d9c042799b88fb0e9af4eefe896bad5f7113ec25ba8606dc745f",
+   "answers": 103,
+   "levels": {
+    "full": 103
+   },
+   "replayed_over": [
+    "in-process"
+   ],
+   "tests": [
+    "crates/hidane-core/tests/official_order.rs::values_within_a_group_are_equal",
+    "crates/hidane-core/tests/official_order.rs::groups_are_strictly_ascending",
+    "crates/hidane-core/tests/official_order.rs::document_names_sort_like_a_collection_group_query"
+   ],
+   "counted": "each value placed in the official order, and each document name; recorded over REST",
+   "compared": "in full: each value's place and its ties, the names' order"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/grpc_settings.json",
+   "kind": "fixture",
+   "area": "values",
+   "recorder": "tools/oracle/grpc_settings.py",
+   "client": {
+    "over": [
+     "gRPC",
+     "REST"
+    ],
+    "using": "Python standard library and grpcurl",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 4251,
+   "sha256": "cf17d504b32c4b6ec85a87bf2848fbfa13ba1fd0148a04da1790453c35ec1781",
+   "answers": 11,
+   "levels": {
+    "full": 11
+   },
+   "replayed_over": [
+    "gRPC",
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/grpc_settings.rs::v1beta1_is_v1_under_another_name",
+    "crates/hidane/tests/grpc_settings.rs::large_grpc_requests_pass",
+    "crates/hidane/tests/grpc_settings.rs::rest_bodies_up_to_16_mib"
+   ],
+   "counted": "each v1beta1 call, gRPC size up to 20 MB and REST size (not the larger gRPC sizes nor the reflection listing)",
+   "compared": "in full: the outcome as the recording summarises it"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/json_escapes.json",
+   "kind": "fixture",
+   "area": "values",
+   "recorder": "tools/oracle/json_escapes.py",
+   "client": {
+    "over": [
+     "REST",
+     "WebChannel"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 34931,
+   "sha256": "324747db6f5c67c6d95aaeefdfff68e9f28aa75360b400765abbdbd75c8cc103",
+   "answers": 30,
+   "levels": {
+    "full": 30
+   },
+   "replayed_over": [
+    "REST",
+    "WebChannel"
+   ],
+   "tests": [
+    "crates/hidane/tests/rest.rs::strings_escape_like_the_official_emulator",
+    "crates/hidane/tests/webchannel.rs::strings_escape_like_the_official_emulator"
+   ],
+   "counted": "each REST request and each WebChannel step",
+   "compared": "in full: REST as `rest.json` (its `compare` marks), WebChannel messages as their exact JSON text"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/limits.json",
+   "kind": "fixture",
+   "area": "values",
+   "recorder": "tools/oracle/limits.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 28969,
+   "sha256": "d8a6020d1f964a33e4f5d7272872aa5a4b7d26630ccc10c794e448f46a9cf339",
+   "answers": 37,
+   "levels": {
+    "full": 37
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/limits.rs::limits_like_the_official_emulator"
+   ],
+   "counted": "each commit",
+   "compared": "in full: status and message"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/negative_zero.json",
+   "kind": "fixture",
+   "area": "values",
+   "recorder": "tools/oracle/negative_zero.py",
+   "client": {
+    "over": [
+     "gRPC",
+     "REST",
+     "WebChannel",
+     "process"
+    ],
+    "using": "Python standard library and grpcurl",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-12",
+    "last_changed": "2026-10-12"
+   },
+   "bytes": 90338,
+   "sha256": "667aa0a43a06cf89638123a1900d2b2c295751996d8aefb13a7c5e4e21db2f2f",
+   "answers": 97,
+   "levels": {
+    "full": 93,
+    "differs": 4
+   },
+   "replayed_over": [
+    "gRPC",
+    "REST",
+    "WebChannel"
+   ],
+   "tests": [
+    "crates/hidane/tests/negative_zero.rs::every_recorded_step_gives_the_official_answer"
+   ],
+   "counted": "each step",
+   "compared": "in full: the answer as the recording summarises it, each double spelled out; the steps that write `-1e-400` as intentionally different"
+  },
+  {
+   "path": "results/sdk-documents-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "documents",
+   "recorder": "tools/oracle/sdk_documents.mjs",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Admin SDK",
+    "packages": [
+     {
+      "name": "@google-cloud/firestore",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 2546,
+   "sha256": "97df8319a0416852f24be80d3dcb72243b54465d69ac3b84a2bdfbea1d57f91b",
+   "compared_with": [
+    {
+     "path": "results/sdk-documents-hidane.json",
+     "what": "hidane",
+     "result": "documented",
+     "explained_in": "docs/parity-exceptions.md"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-go-documents-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "documents",
+   "recorder": "tools/oracle/sdk_go/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Go SDK",
+    "packages": [
+     {
+      "name": "cloud.google.com/go/firestore",
+      "version": "1.26.0",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_go/go.mod"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 4827,
+   "sha256": "c2a935e1a9d1e7113703ba03edf3c9820e1b774c9cb1e812f72c6a031764f5b1",
+   "compared_with": [
+    {
+     "path": "results/sdk-go-documents-hidane.json",
+     "what": "hidane",
+     "result": "documented",
+     "explained_in": "docs/parity-exceptions.md"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-java-documents-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "documents",
+   "recorder": "tools/oracle/sdk_java/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Java SDK",
+    "packages": [
+     {
+      "name": "com.google.cloud:google-cloud-firestore",
+      "version": "3.49.0",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_java/pom.xml"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 4698,
+   "sha256": "4d3f7c1cd97e1209f135fff6d57b061f53f1e7d7ce73983e1f4ccfc3557e13cb",
+   "compared_with": [
+    {
+     "path": "results/sdk-java-documents-hidane.json",
+     "what": "hidane",
+     "result": "documented",
+     "explained_in": "docs/parity-exceptions.md"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-python-documents-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "documents",
+   "recorder": "tools/oracle/sdk_python/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Python SDK",
+    "packages": [
+     {
+      "name": "google-cloud-firestore",
+      "version": "2.34.1",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_python/requirements.txt"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 4950,
+   "sha256": "dd05900e4334ffac6e310a5d98fefa6ea1c271ef7c1a2f7e18868fe69901e18e",
+   "compared_with": [
+    {
+     "path": "results/sdk-python-documents-hidane.json",
+     "what": "hidane",
+     "result": "documented",
+     "explained_in": "docs/parity-exceptions.md"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-aggregations-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "queries",
+   "recorder": "tools/oracle/sdk_aggregations.mjs",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Admin SDK",
+    "packages": [
+     {
+      "name": "@google-cloud/firestore",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 946,
+   "sha256": "56229456fc639cbcbeca853b8798770ae7c56ec033bf3ba56a611c6958b0d9fe",
+   "compared_with": [
+    {
+     "path": "results/sdk-aggregations-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-find-nearest-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "queries",
+   "recorder": "tools/oracle/sdk_find_nearest.mjs",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Admin SDK, web SDK",
+    "packages": [
+     {
+      "name": "@google-cloud/firestore",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     },
+     {
+      "name": "firebase",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 1762,
+   "sha256": "484fb05b01ed8e33f5ba9039f2a5b6ff4fe3f9814ca407e8b055db492ac6b520",
+   "compared_with": [
+    {
+     "path": "results/sdk-find-nearest-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-go-queries-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "queries",
+   "recorder": "tools/oracle/sdk_go/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Go SDK",
+    "packages": [
+     {
+      "name": "cloud.google.com/go/firestore",
+      "version": "1.26.0",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_go/go.mod"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 4951,
+   "sha256": "547ed3249931cec3921ffdef84793361918cf86c40c62d4d6a944cf3265ee98b",
+   "compared_with": [
+    {
+     "path": "results/sdk-go-queries-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-java-queries-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "queries",
+   "recorder": "tools/oracle/sdk_java/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Java SDK",
+    "packages": [
+     {
+      "name": "com.google.cloud:google-cloud-firestore",
+      "version": "3.49.0",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_java/pom.xml"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 5314,
+   "sha256": "6c91ee40ff1454e26c06c0afa82c721f99359512328246fdbd552d66b8e4c807",
+   "compared_with": [
+    {
+     "path": "results/sdk-java-queries-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-python-queries-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "queries",
+   "recorder": "tools/oracle/sdk_python/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Python SDK",
+    "packages": [
+     {
+      "name": "google-cloud-firestore",
+      "version": "2.34.1",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_python/requirements.txt"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 5333,
+   "sha256": "0efaf570b2e7b5b610f9f16f56378c897cdbdb72aad43e6d84249967545d7d71",
+   "compared_with": [
+    {
+     "path": "results/sdk-python-queries-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-queries-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "queries",
+   "recorder": "tools/oracle/sdk_queries.mjs",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Admin SDK",
+    "packages": [
+     {
+      "name": "@google-cloud/firestore",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 3956,
+   "sha256": "76d8f36f53c050a97036881945b2073fddfd52cafe62044d85cac2bc0574cc52",
+   "compared_with": [
+    {
+     "path": "results/sdk-queries-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-go-transactions-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "transactions",
+   "recorder": "tools/oracle/sdk_go/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Go SDK",
+    "packages": [
+     {
+      "name": "cloud.google.com/go/firestore",
+      "version": "1.26.0",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_go/go.mod"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 1863,
+   "sha256": "c9ebbecc06965184cd0f9de0f03bed399c432d30d50583b5489e1d75b9f979a3",
+   "compared_with": [
+    {
+     "path": "results/sdk-go-transactions-hidane.json",
+     "what": "hidane",
+     "result": "documented",
+     "explained_in": "docs/parity-exceptions.md"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-java-transactions-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "transactions",
+   "recorder": "tools/oracle/sdk_java/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Java SDK",
+    "packages": [
+     {
+      "name": "com.google.cloud:google-cloud-firestore",
+      "version": "3.49.0",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_java/pom.xml"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 1906,
+   "sha256": "7bf2e3e07ecde760f7fbc9dd092bb8530a95b997b07e040cab48339cf273ade5",
+   "compared_with": [
+    {
+     "path": "results/sdk-java-transactions-hidane.json",
+     "what": "hidane",
+     "result": "documented",
+     "explained_in": "docs/parity-exceptions.md"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-python-transactions-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "transactions",
+   "recorder": "tools/oracle/sdk_python/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Python SDK",
+    "packages": [
+     {
+      "name": "google-cloud-firestore",
+      "version": "2.34.1",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_python/requirements.txt"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 1882,
+   "sha256": "7f03dd4998e64e7b49d9ced98504f9bedd909abc764322461114cbe2269a97b8",
+   "compared_with": [
+    {
+     "path": "results/sdk-python-transactions-hidane.json",
+     "what": "hidane",
+     "result": "documented",
+     "explained_in": "docs/parity-exceptions.md"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-transactions-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "transactions",
+   "recorder": "tools/oracle/sdk_transactions.mjs",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Admin SDK",
+    "packages": [
+     {
+      "name": "@google-cloud/firestore",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 1546,
+   "sha256": "c6d901a88f915c6c3c44670f69996a81588882525cdeb095773ade8820fd8b87",
+   "compared_with": [
+    {
+     "path": "results/sdk-transactions-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-web-transactions-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "transactions",
+   "recorder": "tools/oracle/sdk_web_transactions.mjs",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "web SDK in Node",
+    "packages": [
+     {
+      "name": "firebase",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 609,
+   "sha256": "9fd2087e026e7ae35e668086e7d32549d772505adce7d7f39ca70a84a92d8d68",
+   "compared_with": [
+    {
+     "path": "results/sdk-web-transactions-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-go-listen-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "streams",
+   "recorder": "tools/oracle/sdk_go/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Go SDK",
+    "packages": [
+     {
+      "name": "cloud.google.com/go/firestore",
+      "version": "1.26.0",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_go/go.mod"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 12568,
+   "sha256": "35a4abf7aade74564e0056779cc5f61763c4b47b4f7ecf2ec0105de6b891a307",
+   "compared_with": [
+    {
+     "path": "results/sdk-go-listen-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-java-listen-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "streams",
+   "recorder": "tools/oracle/sdk_java/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Java SDK",
+    "packages": [
+     {
+      "name": "com.google.cloud:google-cloud-firestore",
+      "version": "3.49.0",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_java/pom.xml"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 12568,
+   "sha256": "35a4abf7aade74564e0056779cc5f61763c4b47b4f7ecf2ec0105de6b891a307",
+   "compared_with": [
+    {
+     "path": "results/sdk-java-listen-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-listen-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "streams",
+   "recorder": "tools/oracle/sdk_listen.mjs",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Admin SDK, web SDK",
+    "packages": [
+     {
+      "name": "@google-cloud/firestore",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     },
+     {
+      "name": "firebase",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 16082,
+   "sha256": "6cbc04f5e5eb156c18813fad62950720233ac1ab908faa0f41466d7a073804b2",
+   "compared_with": [
+    {
+     "path": "results/sdk-listen-hidane.json",
+     "what": "hidane",
+     "result": "documented",
+     "explained_in": "results/README.md"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-listen-resume-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "streams",
+   "recorder": "tools/oracle/sdk_listen_resume.mjs",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "web SDK, Admin SDK",
+    "packages": [
+     {
+      "name": "@google-cloud/firestore",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     },
+     {
+      "name": "firebase",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-11"
+   },
+   "bytes": 3834,
+   "sha256": "ecfe0978d854d589b08f42972ef80c2497f7a8f542f9235c6c8b385e70cf3094",
+   "compared_with": [
+    {
+     "path": "results/sdk-listen-resume-hidane.json",
+     "what": "hidane",
+     "result": "documented",
+     "explained_in": "results/README.md"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-python-listen-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "streams",
+   "recorder": "tools/oracle/sdk_python/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Python SDK",
+    "packages": [
+     {
+      "name": "google-cloud-firestore",
+      "version": "2.34.1",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_python/requirements.txt"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 12568,
+   "sha256": "b72b1ac542c90fc174b489051e458cded659ad134079ab1e715b421b37fb61b3",
+   "compared_with": [
+    {
+     "path": "results/sdk-python-listen-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-web-writes-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "streams",
+   "recorder": "tools/oracle/sdk_web_writes.mjs",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "web SDK in Node",
+    "packages": [
+     {
+      "name": "firebase",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 860,
+   "sha256": "8505450287579f98ea11c5ef0b9125fddfe9dbfb9c4dd030fdad60506980f781",
+   "compared_with": [
+    {
+     "path": "results/sdk-web-writes-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-rest-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "rest",
+   "recorder": "tools/oracle/sdk_rest.mjs",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "web SDK Lite",
+    "packages": [
+     {
+      "name": "firebase",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 841,
+   "sha256": "c5ce131a102f126441c6238f08bd6dc3d4581059ae405d9253b7cb06d85cf04f",
+   "compared_with": [
+    {
+     "path": "results/sdk-rest-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/browser-webchannel-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "webchannel",
+   "recorder": "tools/oracle/webchannel/page.js",
+   "client": {
+    "over": [
+     "WebChannel"
+    ],
+    "using": "firebase in Chromium",
+    "packages": [
+     {
+      "name": "firebase",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 3461,
+   "sha256": "22476f097c91598397174de6a5c3ce162e34b08161dc2e94327d57b71afdd31b",
+   "compared_with": [
+    {
+     "path": "results/browser-webchannel-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/flutter-web-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "webchannel",
+   "recorder": "tools/oracle/flutter_web/",
+   "client": {
+    "over": [
+     "REST",
+     "WebChannel"
+    ],
+    "using": "Flutter Web (cloud_firestore) in Chromium",
+    "packages": [
+     {
+      "name": "firebase_core",
+      "version": "4.15.0",
+      "source": "pinned",
+      "where": "tools/oracle/flutter_web/pubspec.yaml"
+     },
+     {
+      "name": "cloud_firestore",
+      "version": "6.10.0",
+      "source": "pinned",
+      "where": "tools/oracle/flutter_web/pubspec.yaml"
+     },
+     {
+      "name": "cloud_firestore_web",
+      "version": "5.7.3",
+      "source": "pinned",
+      "where": "tools/oracle/flutter_web/pubspec.yaml"
+     },
+     {
+      "name": "firebase_core_web",
+      "version": "3.12.0",
+      "source": "pinned",
+      "where": "tools/oracle/flutter_web/pubspec.yaml"
+     },
+     {
+      "name": "firebase-js-sdk",
+      "version": "12.19.0",
+      "source": "recorded",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 14090,
+   "sha256": "0a4d18b820562c9108aa941e8a544de06b59d2822985a0f89086cd3a52e03ab8",
+   "compared_with": [
+    {
+     "path": "results/flutter-web-hidane.json",
+     "what": "hidane",
+     "result": "documented",
+     "explained_in": "results/README.md"
+    }
+   ]
+  },
+  {
+   "path": "results/js-sdk-browser-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "webchannel",
+   "recorder": "tools/js-sdk-browser/",
+   "client": {
+    "over": [
+     "REST",
+     "WebChannel"
+    ],
+    "using": "firebase-js-sdk browser suite in Chromium",
+    "packages": [
+     {
+      "name": "firebase-js-sdk",
+      "version": "8a7e7fda925c7355f98cb3c4dca1bfaed73ab787",
+      "source": "pinned",
+      "where": ".github/workflows/js-sdk-browser.yml"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 298090,
+   "sha256": "70d3bc1f74332afcb084007edb66cb5a23767d6a5d2ec4f606a0becd808c29a3",
+   "compared_with": [
+    {
+     "path": "results/js-sdk-browser-hidane.json",
+     "what": "hidane, without `emulator`; the outcome of each test: 1,183 passed, 739 skipped, 0 failed",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/browser-rules-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "rules",
+   "recorder": "tools/oracle/webchannel/rules_page.js",
+   "client": {
+    "over": [
+     "REST",
+     "WebChannel"
+    ],
+    "using": "firebase + rules-unit-testing in Chromium",
+    "packages": [
+     {
+      "name": "@firebase/rules-unit-testing",
+      "version": "6.0.0",
+      "source": "recorded",
+      "where": null
+     },
+     {
+      "name": "firebase",
+      "version": "13.0.0",
+      "source": "recorded",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 7821,
+   "sha256": "a322e16176a0a254954ac4904c2fba7d57d91af3ec593b59a63692e2a076a408",
+   "compared_with": [
+    {
+     "path": "results/browser-rules-hidane.json",
+     "what": "hidane",
+     "result": "documented",
+     "explained_in": "results/README.md"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-rules-unit-testing-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "rules",
+   "recorder": "tools/oracle/sdk_rules_unit_testing.mjs",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "firebase + rules-unit-testing in Node",
+    "packages": [
+     {
+      "name": "@firebase/rules-unit-testing",
+      "version": "6.0.0",
+      "source": "recorded",
+      "where": null
+     },
+     {
+      "name": "firebase",
+      "version": "13.0.0",
+      "source": "recorded",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 7880,
+   "sha256": "2300808e5739e456f301aa3fec9e35869f8364855fb8c9647f6671060f0164b0",
+   "compared_with": [
+    {
+     "path": "results/sdk-rules-unit-testing-hidane.json",
+     "what": "hidane",
+     "result": "documented",
+     "explained_in": "results/README.md"
+    }
+   ]
+  },
+  {
+   "path": "results/export-import-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "export",
+   "recorder": "tools/oracle/sdk_export_import.mjs",
+   "client": {
+    "over": [
+     "gRPC",
+     "CLI"
+    ],
+    "using": "firebase-tools + Admin SDK",
+    "packages": [
+     {
+      "name": "@google-cloud/firestore",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 1237,
+   "sha256": "a6385d4a8a99f78670c9b256f42f2516da01c49fe381e31fa39c5acf162adea7",
+   "compared_with": [
+    {
+     "path": "results/export-import-hidane-to-official.json",
+     "what": "exported by hidane, read by the official emulator",
+     "result": "identical"
+    },
+    {
+     "path": "results/export-import-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    },
+    {
+     "path": "results/export-import-official-to-hidane.json",
+     "what": "exported by the official emulator, read by hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/functions-triggers-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "admin",
+   "recorder": "tools/oracle/functions/drive.mjs",
+   "client": {
+    "over": [
+     "gRPC",
+     "CLI"
+    ],
+    "using": "firebase-tools Functions emulator (firebase-functions v1 and v2), Admin SDK",
+    "packages": [
+     {
+      "name": "firebase-admin",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-13",
+    "last_changed": "2026-10-13"
+   },
+   "bytes": 22885,
+   "sha256": "6065ce0d3404a3b4c41065406c6245a94ec6c589d7975364e062afae11e1346e",
+   "compared_with": [
+    {
+     "path": "results/functions-triggers-hidane.json",
+     "what": "hidane",
+     "result": "documented",
+     "explained_in": "docs/parity-exceptions.md"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-auth-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "admin",
+   "recorder": "tools/oracle/sdk_auth.mjs",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "rules-unit-testing, web SDK, Admin SDK",
+    "packages": [
+     {
+      "name": "@google-cloud/firestore",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     },
+     {
+      "name": "@firebase/rules-unit-testing",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     },
+     {
+      "name": "firebase",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 710,
+   "sha256": "bfaf7d792c45f30b39fbbb3140207b839739a3b11b642442301705da1405c523",
+   "compared_with": [
+    {
+     "path": "results/sdk-auth-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-clear-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "admin",
+   "recorder": "tools/oracle/sdk_clear.mjs",
+   "client": {
+    "over": [
+     "gRPC",
+     "REST"
+    ],
+    "using": "rules-unit-testing, web SDK, Admin SDK",
+    "packages": [
+     {
+      "name": "@google-cloud/firestore",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     },
+     {
+      "name": "@firebase/rules-unit-testing",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     },
+     {
+      "name": "firebase",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-10",
+    "last_changed": "2026-10-10"
+   },
+   "bytes": 2168,
+   "sha256": "25dac9fcd013e65a7936bf3e2be7da526bbca0e09fc0e6213c8a36da398df75e",
+   "compared_with": [
+    {
+     "path": "results/sdk-clear-hidane.json",
+     "what": "hidane",
+     "result": "documented",
+     "explained_in": "results/README.md"
+    }
+   ]
+  }
+ ]
+}

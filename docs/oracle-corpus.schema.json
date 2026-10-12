@@ -1,0 +1,177 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Hidane Oracle Corpus manifest",
+  "description": "docs/oracle-corpus.json, written by tools/oracle/corpus.py: every recording of the official Cloud Firestore emulator in the repository, with its provenance and how hidane's tests compare its answers. docs/oracle-corpus.md explains each field.",
+  "type": "object",
+  "required": ["name", "description", "schema_version", "generated_by", "digest", "releases", "totals", "recordings"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {"type": "string"},
+    "name": {"const": "Hidane Oracle Corpus"},
+    "description": {"type": "string"},
+    "schema_version": {"type": "integer", "const": 1, "description": "The version of this format; it changes when a field is removed or changes meaning."},
+    "generated_by": {"const": "tools/oracle/corpus.py"},
+    "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$", "description": "SHA-256 of the lines `<sha256>  <path>` of every recording, sorted by path: the identity of the corpus's content."},
+    "releases": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/release"}},
+    "totals": {"$ref": "#/$defs/totals"},
+    "recordings": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/recording"}}
+  },
+  "$defs": {
+    "date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "version": {"type": "string", "pattern": "^v[0-9]+(\\.[0-9]+)+$", "description": "A release of the official emulator, such as v1.22.0."},
+    "path": {"type": "string", "pattern": "^[A-Za-z0-9_.\\-]+(/[A-Za-z0-9_.\\-]+)*/?$", "description": "A path in the repository; a directory ends with /."},
+    "area": {"type": "string", "pattern": "^[a-z]+$", "description": "An area of the parity table (tools/parity/table.py, AREAS): documents, queries, transactions, streams, rest, webchannel, rules, export, admin, values."},
+    "level": {"enum": ["full", "reasons", "part", "status", "codes", "none", "differs", "unstated"], "description": "How a test compares an answer (docs/parity.md): in full, decision and reasons, in part, status only, without messages, not compared, intentionally different, not stated."},
+    "interface": {"enum": ["gRPC", "REST", "WebChannel", "WebSocket", "process", "CLI"]},
+    "count": {"type": "integer", "minimum": 0},
+    "counts": {
+      "type": "object",
+      "required": ["fixtures", "transcripts", "answers"],
+      "additionalProperties": false,
+      "properties": {
+        "fixtures": {"$ref": "#/$defs/count"},
+        "transcripts": {"$ref": "#/$defs/count"},
+        "answers": {"$ref": "#/$defs/count"}
+      }
+    },
+    "release": {
+      "type": "object",
+      "required": ["product", "release", "jar_sha256", "pinned"],
+      "additionalProperties": false,
+      "properties": {
+        "product": {"const": "cloud-firestore-emulator"},
+        "release": {"$ref": "#/$defs/version"},
+        "jar_sha256": {"oneOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+        "pinned": {"type": "boolean", "description": "Whether .github/actions/official-emulator/pinned.sh names this release, the one new recordings are made against."}
+      }
+    },
+    "totals": {
+      "type": "object",
+      "required": ["files", "fixtures", "transcripts", "answers", "bytes", "levels", "by_area", "by_release", "by_release_source"],
+      "additionalProperties": false,
+      "properties": {
+        "files": {"$ref": "#/$defs/count"},
+        "fixtures": {"$ref": "#/$defs/count"},
+        "transcripts": {"$ref": "#/$defs/count"},
+        "answers": {"$ref": "#/$defs/count"},
+        "bytes": {"$ref": "#/$defs/count"},
+        "levels": {"type": "object", "propertyNames": {"$ref": "#/$defs/level"}, "additionalProperties": {"$ref": "#/$defs/count"}},
+        "by_area": {"type": "object", "propertyNames": {"$ref": "#/$defs/area"}, "additionalProperties": {"$ref": "#/$defs/counts"}},
+        "by_release": {"type": "object", "propertyNames": {"$ref": "#/$defs/version"}, "additionalProperties": {"$ref": "#/$defs/counts"}},
+        "by_release_source": {
+          "type": "object",
+          "required": ["header", "file name", "git history"],
+          "additionalProperties": false,
+          "properties": {
+            "header": {"$ref": "#/$defs/count"},
+            "file name": {"$ref": "#/$defs/count"},
+            "git history": {"$ref": "#/$defs/count"}
+          }
+        }
+      }
+    },
+    "package": {
+      "type": "object",
+      "required": ["name", "version", "source", "where"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"type": "string"},
+        "version": {"type": ["string", "null"]},
+        "source": {"enum": ["pinned", "recorded", "unpinned"], "description": "pinned: the recorder pins the version in `where`; recorded: the recording states it; unpinned: the recorder installs the release current when it runs, and the version is not known."},
+        "where": {"oneOf": [{"$ref": "#/$defs/path"}, {"type": "null"}]}
+      }
+    },
+    "client": {
+      "type": "object",
+      "required": ["over", "using", "packages"],
+      "additionalProperties": false,
+      "properties": {
+        "over": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/interface"}, "description": "The official emulator's interfaces the recorder used. REST: any HTTP/1.1 request; process: the jar's flags, output, exit code and files; CLI: firebase-tools commands."},
+        "using": {"type": "string", "description": "What the recorder used to talk to it."},
+        "packages": {"type": "array", "items": {"$ref": "#/$defs/package"}}
+      }
+    },
+    "stated_release": {
+      "type": "object",
+      "required": ["release", "jar_sha256", "source"],
+      "additionalProperties": false,
+      "properties": {
+        "release": {"$ref": "#/$defs/version"},
+        "jar_sha256": {"oneOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+        "source": {"enum": ["header", "file name"]}
+      }
+    },
+    "release_from_history": {
+      "type": "object",
+      "required": ["release", "jar_sha256", "source", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "release": {"$ref": "#/$defs/version"},
+        "jar_sha256": {"oneOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]},
+        "source": {"const": "git history"},
+        "evidence": {"type": "string"}
+      }
+    },
+    "recorded": {
+      "type": "object",
+      "required": ["first_recorded", "last_changed"],
+      "additionalProperties": false,
+      "properties": {
+        "first_recorded": {"$ref": "#/$defs/date"},
+        "last_changed": {"$ref": "#/$defs/date"}
+      }
+    },
+    "comparison": {
+      "type": "object",
+      "required": ["path", "what", "result"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"$ref": "#/$defs/path"},
+        "what": {"type": "string"},
+        "result": {"enum": ["identical", "documented", "unexplained"]},
+        "explained_in": {"$ref": "#/$defs/path"}
+      }
+    },
+    "fixture": {
+      "type": "object",
+      "required": ["path", "kind", "area", "recorder", "client", "oracle", "recorded", "bytes", "sha256", "answers", "levels", "replayed_over", "tests", "counted", "compared"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"$ref": "#/$defs/path"},
+        "kind": {"const": "fixture"},
+        "area": {"$ref": "#/$defs/area"},
+        "recorder": {"$ref": "#/$defs/path"},
+        "client": {"$ref": "#/$defs/client"},
+        "oracle": {"oneOf": [{"$ref": "#/$defs/stated_release"}, {"$ref": "#/$defs/release_from_history"}]},
+        "recorded": {"$ref": "#/$defs/recorded"},
+        "bytes": {"$ref": "#/$defs/count"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "answers": {"$ref": "#/$defs/count"},
+        "levels": {"type": "object", "propertyNames": {"$ref": "#/$defs/level"}, "additionalProperties": {"$ref": "#/$defs/count"}},
+        "replayed_over": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["gRPC", "REST", "WebChannel", "WebSocket", "CLI", "in-process"]}},
+        "tests": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^[A-Za-z0-9_./\\-]+\\.rs::[A-Za-z0-9_:]+$"}},
+        "counted": {"type": "string", "description": "What one answer is."},
+        "compared": {"type": "string", "description": "What the tests compare of each answer."}
+      }
+    },
+    "transcript": {
+      "type": "object",
+      "required": ["path", "kind", "area", "recorder", "client", "oracle", "recorded", "bytes", "sha256", "compared_with"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"$ref": "#/$defs/path"},
+        "kind": {"const": "transcript"},
+        "area": {"$ref": "#/$defs/area"},
+        "recorder": {"$ref": "#/$defs/path"},
+        "client": {"$ref": "#/$defs/client"},
+        "oracle": {"oneOf": [{"$ref": "#/$defs/stated_release"}, {"$ref": "#/$defs/release_from_history"}]},
+        "recorded": {"$ref": "#/$defs/recorded"},
+        "bytes": {"$ref": "#/$defs/count"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "compared_with": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/comparison"}}
+      }
+    },
+    "recording": {"oneOf": [{"$ref": "#/$defs/fixture"}, {"$ref": "#/$defs/transcript"}]}
+  }
+}

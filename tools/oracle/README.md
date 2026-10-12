@@ -70,6 +70,14 @@ test compares it) and run `python3 tools/parity/table.py`; a new pair of SDK tra
 documentation explains it. CI fails while a fixture or a transcript is missing from them, or
 while the table is stale.
 
+`corpus.py` lists every recording, fixtures and official transcripts, in the manifest of the
+[Hidane Oracle Corpus](../../docs/oracle-corpus.md) (`docs/oracle-corpus.json`): the script that
+made each, the client it used, the official emulator release it was made against and how that is
+known, when it was recorded, its SHA-256, and how the tests compare it. Run
+`python3 tools/oracle/corpus.py` after `table.py`; CI fails while the manifest is stale. Where
+these recordings may come from and how they are made is in
+[`docs/clean-room/`](../../docs/clean-room/README.md).
+
 `sdk_documents.mjs` drives the same operations through `@google-cloud/firestore` (the engine of
 firebase-admin) and prints a transcript without absolute timestamps. Run it from a directory
 outside the repository where the package is installed, once per emulator, and diff the two:
