@@ -67,7 +67,7 @@
 <div class="install">
 <div class="install-box">
 <code class="cmd"><span class="prompt" aria-hidden="true">$ </span>curl -fsSL https://hidane.dev/install.sh | sh</code>
-<span class="badge">v0.2.2 · macOS · Linux</span>
+<span class="badge">v0.2.3 · macOS · Linux</span>
 <button type="button" class="copy-btn" title="Copy the command" data-copied="Copied">
 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V6a2 2 0 0 1 2-2h9"></path></svg>
 <span>Copy</span>
@@ -84,7 +84,7 @@
 </a>
 </div>
 
-<p class="status"><span class="dot" aria-hidden="true"></span><span>v0.2.2 · Security Rules enforced, as the official emulator decides them</span></p>
+<p class="status"><span class="dot" aria-hidden="true"></span><span>v0.2.3 · Security Rules enforced, as the official emulator decides them</span></p>
 </div>
 
 <div class="motif" aria-hidden="true">
@@ -124,7 +124,7 @@
 <div class="wrap sec-in sec-in--tight">
 <h2 class="h2" id="works">Works with</h2>
 <div class="legend">
-<span>Status in v0.2.2:</span>
+<span>Status in v0.2.3:</span>
 <span class="legend-chips">
 <span class="chip">planned</span>
 <span class="chip chip--progress">not verified</span>
@@ -155,7 +155,7 @@
 <div class="wrap sec-in sec-in--narrow">
 <h2 class="h2" id="parity">Parity</h2>
 <p class="lede-lg">hidane treats the official emulator as the oracle: its answers are recorded, and the test suite replays every recording against hidane. No claim of compatibility without a test behind it.</p>
-<p class="placeholder">So far: 35 recorded fixtures, from value ordering to the browser transport, export files and Security Rules, and SDK results compared side by side (<a href="https://github.com/hidane-dev/hidane/tree/main/results">results</a>). A parity table will follow.</p>
+<p class="placeholder">So far: 36 recorded fixtures, from value ordering to the browser transport, export files and Security Rules, and SDK results compared side by side (<a href="https://github.com/hidane-dev/hidane/tree/main/results">results</a>). A parity table will follow.</p>
 <p class="fine">Known, intentional differences are listed in <a href="https://github.com/hidane-dev/hidane/blob/main/docs/parity-exceptions.md">parity exceptions</a>.</p>
 </div>
 </section>
@@ -171,13 +171,18 @@
 </li>
 <li>
 <div class="rm-ver">v0.2</div>
-<p>Security Rules, evaluated once per request as the official emulator decides them: reads, writes, listeners and queries, measured against it case by case, with its compiler warnings, rule coverage reports and debug() output. Released in v0.2.0; v0.2.1 feeds the Emulator UI's request monitor. Functions triggers are next.</p>
+<p>Security Rules, evaluated once per request as the official emulator decides them: reads, writes, listeners and queries, measured against it case by case, with its compiler warnings, rule coverage reports and debug() output. Released in v0.2.0; v0.2.1 feeds the Emulator UI's request monitor, and @firebase/rules-unit-testing is verified end to end, in Node and in the browser.</p>
 <a class="src" href="https://github.com/hidane-dev/hidane/milestone/2">v0.2 milestone on GitHub</a>
 </li>
 <li>
 <div class="rm-ver">v0.3</div>
-<p>Browser clients: firebase-js-sdk in the browser (already working on main) and Flutter Web.</p>
+<p>Browser clients: firebase-js-sdk in the browser (working since v0.1.0; its own test suite run against hidane is next) and Flutter Web.</p>
 <a class="src" href="https://github.com/hidane-dev/hidane/milestone/3">v0.3 milestone on GitHub</a>
+</li>
+<li>
+<div class="rm-ver">v0.4</div>
+<p>Functions triggers: Firestore events delivered to the Functions emulator, v1 and v2, under firebase emulators:start. Since v0.2.3 the trigger registrations are accepted, so functions load.</p>
+<a class="src" href="https://github.com/hidane-dev/hidane/milestone/7">v0.4 milestone on GitHub</a>
 </li>
 </ol>
 <p class="fine">Scope, targets and risks: <a href="https://github.com/hidane-dev/hidane/blob/main/docs/ROADMAP.md">ROADMAP</a>.</p>
