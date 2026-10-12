@@ -13,9 +13,9 @@ verified yet.
 |---|---|---|
 | firebase-admin (Node) / `@google-cloud/firestore` (default settings) | gRPC (plaintext). `listen` is always gRPC even with `preferRest` | verified |
 | `@google-cloud/firestore` with `preferRest: true` or `FIRESTORE_PREFER_REST=true` | REST for unary calls, gRPC for `listen` | not verified (both transports served) |
-| google-cloud-go `firestore` | gRPC. `NewRESTClient` does not support the emulator | not verified |
-| google-cloud-firestore (Python) | gRPC | not verified |
-| java-firestore | gRPC | not verified |
+| google-cloud-go `firestore` | gRPC. `NewRESTClient` does not support the emulator | verified (`cloud.google.com/go/firestore` 1.26.0) |
+| google-cloud-firestore (Python) | gRPC | verified (2.34.1) |
+| java-firestore | gRPC | verified (`com.google.cloud:google-cloud-firestore` 3.49.0) |
 | firebase-ios-sdk (iOS, macOS, tvOS, watchOS) | gRPC. Uses the Listen and Write streams | not verified |
 | firebase-android-sdk | gRPC (grpc-okhttp). Uses the Listen and Write streams | not verified |
 | FlutterFire `cloud_firestore` on Android / iOS / macOS / Windows | Native SDK (gRPC) | not verified |
@@ -27,6 +27,16 @@ verified yet.
 | Emulator UI, `curl`, `firebase-tools` itself | REST and emulator-specific HTTP endpoints | REST and the emulator's endpoints served; Emulator UI v1.15.0 verified (browse, create and delete documents, Clear all data), its request monitor (the Requests tab) since v0.2.1, from the WebSocket feed on `--websocket_port` (#69); `firebase emulators:start` / `emulators:exec` launch hidane through `hidane exec` ([ADR 0006](adr/0006-launch-under-firebase-tools.md)), with the Functions emulator's Firestore triggers accepted (#185; their events are not delivered yet, #70); `--import`, `--export-on-exit` and `emulators:export` read and write the official emulator's format, and each emulator reads the other's exports ([export-format.md](export-format.md)) |
 
 So with v0.1 (gRPC only) the server-side SDKs, the mobile SDKs and Node-based test suites work.
+The Go, Python and Java server SDKs get the same results from both emulators
+(`results/sdk-go-*.json`, `results/sdk-python-*.json`, `results/sdk-java-*.json`, one pair per
+section): documents and writes (merges, preconditions, every field transform, a value of each
+type, batches, the BulkWriter, listings), queries (filters, `or`, cursors, `limitToLast`,
+collection groups, `explain` options), `count` / `sum` / `average`, `findNearest`,
+`recursiveDelete` (Python, Java), transactions (read-only, at a past read time, lock waits and timeouts,
+retries after `ABORTED`) and listeners on queries, limits, collection groups and documents.
+`PartitionQuery` answers `UNIMPLEMENTED` on both. Only the wording of `ALREADY_EXISTS` and
+`NOT_FOUND` for a failed precondition differs, as it does for every client
+([parity-exceptions.md](parity-exceptions.md)).
 Browser apps need WebChannel as well as REST, because the Web SDK does almost everything over
 WebChannel. `main` serves both: listeners, writes, queries, batches, long polling and mock tokens
 from Chromium give the same results on hidane as on the official emulator
