@@ -19,7 +19,7 @@
 | Rules `list` evaluation (query constraints vs rule conditions) is unspecified for a closed-source engine | Planned: a conservative subset, deny-by-default. Measuring showed the official model, now reproduced whole ([ADR 0005](adr/0005-rules-engine.md)) | [rules-query docs](https://firebase.google.com/docs/firestore/security/rules-query) |
 | Known official-emulator divergences: simple-lock transactions, `PartitionQuery` 501, `ExecutePipeline` enterprise-only, #6252, #11241 | A parity-exception list is needed | [parity-exceptions.md](parity-exceptions.md) |
 | Official baseline (under load): 0.74 s to port (2.5 s via CLI), 95 MiB idle, 456 MiB after 1k docs, superlinear writes with a listener | Targets below | [why.md](why.md), `results/` |
-| The jar grants no redistribution rights | CI downloads it each run and verifies SHA256 | jar `FIRESTORE_EMULATOR_LICENSES` |
+| The jar grants no redistribution rights | Never committed or shipped: its answers are recorded into fixtures that CI replays without Java, and a workflow that needs the jar downloads it from Google's URL and checks the SHA-256 (#40) | jar `FIRESTORE_EMULATOR_LICENSES` |
 
 ## 1. Targets (proposed)
 
@@ -108,13 +108,12 @@ Parity exception: #6252 (the official emulator evaluates conditions in two passe
 ## 5. Backlog
 
 - Enterprise edition pipelines (`ExecutePipeline`, #80)
-- Datastore mode (`--database-mode datastore-mode`), `--index_file` / `--require_indexes`
+- Datastore mode (`--database-mode datastore-mode`), `--index_file` / `--require_indexes` (#81)
 - `google.firestore.admin.v1` (not in the official emulator either; stays UNIMPLEMENTED)
-- Distribution channels: Homebrew tap, cargo binstall, ghcr multi-arch, `curl | sh`, npm optionalDependencies, pub.dev launcher, mise
-- License decision (ADR 0001)
-- Registry metadata alignment (npm keywords, `0.0.0-stage`, pub.dev description)
-- Nightly against production Firestore (needs a GCP project)
-- iOS / Android integration tests (monthly, manual)
+- The remaining `/emulator/v1` endpoints and the gRPC `FirestoreEmulator` service (#36)
+- Runs against production Firestore and the production Rules API (needs a GCP project, #82)
+
+The distribution channels and the license decision listed here before shipped in v0.1.0.
 
 ## 6. Out of scope
 
