@@ -125,6 +125,17 @@ stream and a denied listener's target is removed with a cause; its transcripts a
 `results/browser-rules-*.json`. `webchannel/tap.py` records the wire between a browser and an
 emulator, which is how `docs/webchannel.md` was written.
 
+`flutter_web/` is a Flutter Web app (`cloud_firestore` with `useFirestoreEmulator`, which drives
+the firebase-js-sdk that `firebase_core_web` loads from gstatic.com). It writes and reads
+documents of every value type, updates them with transforms and merges, runs queries (filters,
+`Filter.or`, cursors, `limitToLast`, a collection group, `count` / `sum` / `average`), listens to a
+query and a document while a document is added, changed, moved, taken out of the query and
+deleted, commits a batch and transactions, and records the errors of updates of a missing
+document. The header of `lib/main.dart` says how to build and serve it; the page takes the
+emulator's port as `?port=` and leaves the transcript in `window.hidaneTranscript`, with the
+firebase-js-sdk version and the URLs it was loaded from. Its transcripts are in
+`results/flutter-web-*.json`.
+
 `sdk_rest.mjs` drives the REST surface through the web SDK's Lite build (`firebase/firestore/lite`);
 its transcripts are in `results/sdk-rest-*.json`.
 

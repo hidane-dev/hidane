@@ -1,0 +1,1048 @@
+[
+ {
+  "step": "versions",
+  "value": {
+   "firebaseJsSdk": "12.19.0",
+   "scripts": [
+    "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js",
+    "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore-pipelines.js"
+   ]
+  }
+ },
+ {
+  "step": "set",
+  "value": "ok"
+ },
+ {
+  "step": "get",
+  "value": {
+   "id": "alpha",
+   "exists": true,
+   "data": {
+    "string": "a",
+    "int": 1,
+    "double": 1.5,
+    "bool": true,
+    "null": null,
+    "timestamp": {
+     "timestamp": [
+      1700000000,
+      123456000
+     ]
+    },
+    "geoPoint": {
+     "geoPoint": [
+      35.68,
+      139.76
+     ]
+    },
+    "bytes": {
+     "bytes": [
+      0,
+      1,
+      254,
+      255
+     ]
+    },
+    "reference": {
+     "reference": "docs/beta"
+    },
+    "list": [
+     1,
+     "two",
+     {
+      "three": 3
+     }
+    ],
+    "map": {
+     "k": "v",
+     "nested": {
+      "deep": true
+     }
+    },
+    "vector": {
+     "vector": [
+      1,
+      2.5
+     ]
+    }
+   },
+   "fromCache": false,
+   "pending": false
+  }
+ },
+ {
+  "step": "get from server",
+  "value": {
+   "id": "alpha",
+   "exists": true,
+   "data": {
+    "string": "a",
+    "int": 1,
+    "double": 1.5,
+    "bool": true,
+    "null": null,
+    "timestamp": {
+     "timestamp": [
+      1700000000,
+      123456000
+     ]
+    },
+    "geoPoint": {
+     "geoPoint": [
+      35.68,
+      139.76
+     ]
+    },
+    "bytes": {
+     "bytes": [
+      0,
+      1,
+      254,
+      255
+     ]
+    },
+    "reference": {
+     "reference": "docs/beta"
+    },
+    "list": [
+     1,
+     "two",
+     {
+      "three": 3
+     }
+    ],
+    "map": {
+     "k": "v",
+     "nested": {
+      "deep": true
+     }
+    },
+    "vector": {
+     "vector": [
+      1,
+      2.5
+     ]
+    }
+   },
+   "fromCache": false,
+   "pending": false
+  }
+ },
+ {
+  "step": "update with transforms",
+  "value": {
+   "id": "alpha",
+   "exists": true,
+   "data": {
+    "string": "a",
+    "int": 3,
+    "double": 1.75,
+    "null": null,
+    "timestamp": {
+     "timestamp": [
+      1700000000,
+      123456000
+     ]
+    },
+    "geoPoint": {
+     "geoPoint": [
+      35.68,
+      139.76
+     ]
+    },
+    "bytes": {
+     "bytes": [
+      0,
+      1,
+      254,
+      255
+     ]
+    },
+    "reference": {
+     "reference": "docs/beta"
+    },
+    "list": [
+     1,
+     "two",
+     {
+      "three": 3
+     },
+     "four"
+    ],
+    "map": {
+     "k": "w",
+     "nested": {
+      "deep": true
+     }
+    },
+    "vector": {
+     "vector": [
+      1,
+      2.5
+     ]
+    },
+    "updatedAt": "server timestamp"
+   },
+   "fromCache": false,
+   "pending": false
+  }
+ },
+ {
+  "step": "array remove",
+  "value": [
+   1,
+   {
+    "three": 3
+   },
+   "four"
+  ]
+ },
+ {
+  "step": "set with merge",
+  "value": {
+   "id": "alpha",
+   "exists": true,
+   "data": {
+    "string": "a",
+    "null": null,
+    "timestamp": {
+     "timestamp": [
+      1700000000,
+      123456000
+     ]
+    },
+    "geoPoint": {
+     "geoPoint": [
+      35.68,
+      139.76
+     ]
+    },
+    "bytes": {
+     "bytes": [
+      0,
+      1,
+      254,
+      255
+     ]
+    },
+    "reference": {
+     "reference": "docs/beta"
+    },
+    "vector": {
+     "vector": [
+      1,
+      2.5
+     ]
+    },
+    "map": {
+     "nested": {
+      "deep": true
+     },
+     "k": "w",
+     "added": 1
+    },
+    "double": 1.75,
+    "int": 3,
+    "updatedAt": "server timestamp",
+    "list": [
+     1,
+     {
+      "three": 3
+     },
+     "four"
+    ],
+    "merged": "m"
+   },
+   "fromCache": false,
+   "pending": false
+  }
+ },
+ {
+  "step": "set with mergeFields",
+  "value": {
+   "string": "b",
+   "null": null,
+   "timestamp": {
+    "timestamp": [
+     1700000000,
+     123456000
+    ]
+   },
+   "geoPoint": {
+    "geoPoint": [
+     35.68,
+     139.76
+    ]
+   },
+   "bytes": {
+    "bytes": [
+     0,
+     1,
+     254,
+     255
+    ]
+   },
+   "reference": {
+    "reference": "docs/beta"
+   },
+   "vector": {
+    "vector": [
+     1,
+     2.5
+    ]
+   },
+   "double": 1.75,
+   "int": 3,
+   "updatedAt": "server timestamp",
+   "list": [
+    1,
+    {
+     "three": 3
+    },
+    "four"
+   ],
+   "merged": "m",
+   "map": {
+    "nested": {
+     "deep": true
+    },
+    "k": "w",
+    "added": 1
+   }
+  }
+ },
+ {
+  "step": "delete",
+  "value": {
+   "id": "beta",
+   "exists": false,
+   "data": null,
+   "fromCache": false,
+   "pending": false
+  }
+ },
+ {
+  "step": "get a missing document",
+  "value": {
+   "id": "missing",
+   "exists": false,
+   "data": null,
+   "fromCache": false,
+   "pending": false
+  }
+ },
+ {
+  "step": "add (generated ID)",
+  "value": {
+   "idLength": 20,
+   "data": {
+    "n": 1
+   }
+  }
+ },
+ {
+  "step": "seed",
+  "value": "ok"
+ },
+ {
+  "step": "where == orderBy desc",
+  "value": [
+   "i6",
+   "i4",
+   "i2"
+  ]
+ },
+ {
+  "step": "range with limit",
+  "value": [
+   "i2",
+   "i3"
+  ]
+ },
+ {
+  "step": "whereIn",
+  "value": [
+   "i1",
+   "i3"
+  ]
+ },
+ {
+  "step": "whereNotIn",
+  "value": [
+   "i2",
+   "i4",
+   "i5",
+   "i6"
+  ]
+ },
+ {
+  "step": "isNotEqualTo",
+  "value": [
+   "i2",
+   "i4",
+   "i6"
+  ]
+ },
+ {
+  "step": "arrayContains",
+  "value": [
+   "i3",
+   "i6"
+  ]
+ },
+ {
+  "step": "arrayContainsAny",
+  "value": [
+   "i3",
+   "i5",
+   "i6"
+  ]
+ },
+ {
+  "step": "Filter.or",
+  "value": [
+   "i1",
+   "i5",
+   "i6"
+  ]
+ },
+ {
+  "step": "limitToLast",
+  "value": [
+   "i5",
+   "i6"
+  ]
+ },
+ {
+  "step": "startAfter / endAt",
+  "value": [
+   "i3",
+   "i4"
+  ]
+ },
+ {
+  "step": "documentId",
+  "value": [
+   "i5",
+   "i6"
+  ]
+ },
+ {
+  "step": "collectionGroup",
+  "value": [
+   "items/i1/notes/x",
+   "docs/alpha/notes/y"
+  ]
+ },
+ {
+  "step": "count, sum, average",
+  "value": {
+   "count": 6,
+   "sum": 21,
+   "average": 3.5
+  }
+ },
+ {
+  "step": "count with a filter",
+  "value": 3
+ },
+ {
+  "step": "listen: add",
+  "value": "ok"
+ },
+ {
+  "step": "listen: change",
+  "value": "ok"
+ },
+ {
+  "step": "listen: move",
+  "value": "ok"
+ },
+ {
+  "step": "listen: leave the query",
+  "value": "ok"
+ },
+ {
+  "step": "listen: delete",
+  "value": "ok"
+ },
+ {
+  "step": "query snapshots",
+  "value": [
+   {
+    "docs": [
+     {
+      "id": "i1",
+      "data": {
+       "n": 1,
+       "group": "odd",
+       "tags": []
+      }
+     },
+     {
+      "id": "i3",
+      "data": {
+       "n": 3,
+       "group": "odd",
+       "tags": [
+        "three"
+       ]
+      }
+     },
+     {
+      "id": "i5",
+      "data": {
+       "n": 5,
+       "group": "odd",
+       "tags": [
+        "big"
+       ]
+      }
+     }
+    ],
+    "changes": [
+     [
+      "added",
+      "i1",
+      -1,
+      0
+     ],
+     [
+      "added",
+      "i3",
+      -1,
+      1
+     ],
+     [
+      "added",
+      "i5",
+      -1,
+      2
+     ]
+    ],
+    "fromCache": true,
+    "pending": false
+   },
+   {
+    "docs": [
+     {
+      "id": "i1",
+      "data": {
+       "n": 1,
+       "group": "odd",
+       "tags": []
+      }
+     },
+     {
+      "id": "i3",
+      "data": {
+       "n": 3,
+       "group": "odd",
+       "tags": [
+        "three"
+       ]
+      }
+     },
+     {
+      "id": "i5",
+      "data": {
+       "n": 5,
+       "group": "odd",
+       "tags": [
+        "big"
+       ]
+      }
+     },
+     {
+      "id": "i7",
+      "data": {
+       "n": 7,
+       "group": "odd",
+       "tags": []
+      }
+     }
+    ],
+    "changes": [
+     [
+      "added",
+      "i7",
+      -1,
+      3
+     ]
+    ],
+    "fromCache": false,
+    "pending": true
+   },
+   {
+    "docs": [
+     {
+      "id": "i1",
+      "data": {
+       "n": 1,
+       "group": "odd",
+       "tags": []
+      }
+     },
+     {
+      "id": "i3",
+      "data": {
+       "n": 3,
+       "group": "odd",
+       "tags": [
+        "three"
+       ]
+      }
+     },
+     {
+      "id": "i5",
+      "data": {
+       "n": 5,
+       "group": "odd",
+       "tags": [
+        "big"
+       ]
+      }
+     },
+     {
+      "id": "i7",
+      "data": {
+       "n": 7,
+       "group": "odd",
+       "tags": [
+        "seven"
+       ]
+      }
+     }
+    ],
+    "changes": [
+     [
+      "modified",
+      "i7",
+      3,
+      3
+     ]
+    ],
+    "fromCache": false,
+    "pending": true
+   },
+   {
+    "docs": [
+     {
+      "id": "i7",
+      "data": {
+       "n": 0,
+       "group": "odd",
+       "tags": [
+        "seven"
+       ]
+      }
+     },
+     {
+      "id": "i1",
+      "data": {
+       "n": 1,
+       "group": "odd",
+       "tags": []
+      }
+     },
+     {
+      "id": "i3",
+      "data": {
+       "n": 3,
+       "group": "odd",
+       "tags": [
+        "three"
+       ]
+      }
+     },
+     {
+      "id": "i5",
+      "data": {
+       "n": 5,
+       "group": "odd",
+       "tags": [
+        "big"
+       ]
+      }
+     }
+    ],
+    "changes": [
+     [
+      "modified",
+      "i7",
+      3,
+      0
+     ]
+    ],
+    "fromCache": false,
+    "pending": true
+   },
+   {
+    "docs": [
+     {
+      "id": "i1",
+      "data": {
+       "n": 1,
+       "group": "odd",
+       "tags": []
+      }
+     },
+     {
+      "id": "i3",
+      "data": {
+       "n": 3,
+       "group": "odd",
+       "tags": [
+        "three"
+       ]
+      }
+     },
+     {
+      "id": "i5",
+      "data": {
+       "n": 5,
+       "group": "odd",
+       "tags": [
+        "big"
+       ]
+      }
+     }
+    ],
+    "changes": [
+     [
+      "removed",
+      "i7",
+      0,
+      -1
+     ]
+    ],
+    "fromCache": false,
+    "pending": false
+   },
+   {
+    "docs": [
+     {
+      "id": "i3",
+      "data": {
+       "n": 3,
+       "group": "odd",
+       "tags": [
+        "three"
+       ]
+      }
+     },
+     {
+      "id": "i5",
+      "data": {
+       "n": 5,
+       "group": "odd",
+       "tags": [
+        "big"
+       ]
+      }
+     }
+    ],
+    "changes": [
+     [
+      "removed",
+      "i1",
+      0,
+      -1
+     ]
+    ],
+    "fromCache": false,
+    "pending": false
+   }
+  ]
+ },
+ {
+  "step": "document snapshots",
+  "value": [
+   {
+    "id": "i7",
+    "exists": false,
+    "data": null,
+    "fromCache": false,
+    "pending": false
+   },
+   {
+    "id": "i7",
+    "exists": true,
+    "data": {
+     "n": 7,
+     "group": "odd",
+     "tags": []
+    },
+    "fromCache": false,
+    "pending": true
+   },
+   {
+    "id": "i7",
+    "exists": true,
+    "data": {
+     "n": 7,
+     "group": "odd",
+     "tags": []
+    },
+    "fromCache": false,
+    "pending": false
+   },
+   {
+    "id": "i7",
+    "exists": true,
+    "data": {
+     "n": 7,
+     "group": "odd",
+     "tags": [
+      "seven"
+     ]
+    },
+    "fromCache": false,
+    "pending": true
+   },
+   {
+    "id": "i7",
+    "exists": true,
+    "data": {
+     "n": 7,
+     "group": "odd",
+     "tags": [
+      "seven"
+     ]
+    },
+    "fromCache": false,
+    "pending": false
+   },
+   {
+    "id": "i7",
+    "exists": true,
+    "data": {
+     "n": 0,
+     "group": "odd",
+     "tags": [
+      "seven"
+     ]
+    },
+    "fromCache": false,
+    "pending": true
+   },
+   {
+    "id": "i7",
+    "exists": true,
+    "data": {
+     "group": "odd",
+     "tags": [
+      "seven"
+     ],
+     "n": 0
+    },
+    "fromCache": false,
+    "pending": false
+   },
+   {
+    "id": "i7",
+    "exists": true,
+    "data": {
+     "group": "even",
+     "tags": [
+      "seven"
+     ],
+     "n": 0
+    },
+    "fromCache": false,
+    "pending": true
+   },
+   {
+    "id": "i7",
+    "exists": true,
+    "data": {
+     "tags": [
+      "seven"
+     ],
+     "n": 0,
+     "group": "even"
+    },
+    "fromCache": false,
+    "pending": false
+   },
+   {
+    "id": "i7",
+    "exists": false,
+    "data": null,
+    "fromCache": false,
+    "pending": false
+   }
+  ]
+ },
+ {
+  "step": "batch",
+  "value": [
+   {
+    "id": "b1",
+    "data": {
+     "n": 10,
+     "group": "batch"
+    }
+   },
+   {
+    "id": "i2",
+    "data": {
+     "n": 20,
+     "group": "even",
+     "tags": []
+    }
+   },
+   {
+    "id": "i3",
+    "data": {
+     "n": 3,
+     "group": "odd",
+     "tags": [
+      "three"
+     ],
+     "extra": true
+    }
+   },
+   {
+    "id": "i5",
+    "data": {
+     "n": 5,
+     "group": "odd",
+     "tags": [
+      "big"
+     ]
+    }
+   },
+   {
+    "id": "i6",
+    "data": {
+     "n": 6,
+     "group": "even",
+     "tags": [
+      "three",
+      "big"
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "step": "transaction: create",
+  "value": {
+   "count": 1
+  }
+ },
+ {
+  "step": "transaction: increment",
+  "value": {
+   "seen": [
+    [
+     1,
+     20
+    ]
+   ],
+   "after": {
+    "count": 2
+   }
+  }
+ },
+ {
+  "step": "transaction: delete",
+  "value": false
+ },
+ {
+  "step": "error: update a missing document",
+  "value": {
+   "error": {
+    "code": "not-found",
+    "message": "NOT_FOUND: No document to update: projects/demo-hidane/databases/(default)/documents/docs/missing"
+   }
+  }
+ },
+ {
+  "step": "error: batch with a missing document",
+  "value": {
+   "error": {
+    "code": "not-found",
+    "message": "NOT_FOUND: No document to update: projects/demo-hidane/databases/(default)/documents/docs/missing"
+   }
+  }
+ },
+ {
+  "step": "error: the batch wrote nothing",
+  "value": false
+ },
+ {
+  "step": "error: update a missing document in a transaction",
+  "value": {
+   "error": {
+    "code": "not-found",
+    "message": "No document to update: projects/demo-hidane/databases/(default)/documents/docs/missing"
+   }
+  }
+ },
+ {
+  "step": "error: reserved field name",
+  "value": {
+   "error": {
+    "code": "invalid-argument",
+    "message": "Function setDoc() called with invalid data. Document fields cannot begin and end with \"__\" (found in field __reserved__ in document docs/reserved)"
+   }
+  }
+ },
+ {
+  "step": "error: invalid query",
+  "value": {
+   "error": {
+    "code": "invalid-argument",
+    "message": "Invalid Query. A non-empty array is required for 'in' filters."
+   }
+  }
+ },
+ {
+  "step": "final state",
+  "value": [
+   {
+    "id": "i2",
+    "data": {
+     "group": "even",
+     "tags": [],
+     "n": 20
+    }
+   },
+   {
+    "id": "i3",
+    "data": {
+     "n": 3,
+     "group": "odd",
+     "tags": [
+      "three"
+     ],
+     "extra": true
+    }
+   },
+   {
+    "id": "i5",
+    "data": {
+     "n": 5,
+     "group": "odd",
+     "tags": [
+      "big"
+     ]
+    }
+   },
+   {
+    "id": "i6",
+    "data": {
+     "n": 6,
+     "group": "even",
+     "tags": [
+      "three",
+      "big"
+     ]
+    }
+   }
+  ]
+ }
+]
