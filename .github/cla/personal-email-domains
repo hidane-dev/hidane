@@ -1,0 +1,39 @@
+# Email domains that say nothing about an employer: GitHub's private addresses and personal mail
+# services. A commit email at any other domain, or a company on the author's GitHub profile,
+# marks the pull request for the employer check (docs/cla/README.md).
+users.noreply.github.com
+gmail.com
+googlemail.com
+outlook.com
+hotmail.com
+live.com
+msn.com
+yahoo.com
+yahoo.co.jp
+ymail.com
+icloud.com
+me.com
+mac.com
+aol.com
+proton.me
+protonmail.com
+pm.me
+gmx.com
+gmx.de
+gmx.net
+web.de
+mail.com
+zoho.com
+fastmail.com
+hey.com
+tutanota.com
+yandex.ru
+yandex.com
+mail.ru
+qq.com
+163.com
+126.com
+naver.com
+docomo.ne.jp
+ezweb.ne.jp
+softbank.ne.jp

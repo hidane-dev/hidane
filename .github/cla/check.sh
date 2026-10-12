@@ -5,6 +5,11 @@
 # author posts the statement, the agreement is recorded on the cla-signatures branch. Then the
 # `cla` status is set on the pull request's head, and one comment on it is kept up to date.
 #
+# An author whose GitHub profile names a company, or who commits with an email address outside
+# .github/cla/personal-email-domains, may be writing for an employer that has rights in the work:
+# the pull request gets the `cla: employer check` label and a note, for a maintainer to confirm
+# (docs/cla/README.md). That does not fail the check.
+#
 # Environment: GH_TOKEN, REPO (owner/name) and PR (number); for a comment, COMMENT_BODY,
 # COMMENTER_LOGIN, COMMENTER_ID and COMMENT_URL. DRY_RUN=1 prints what would be written instead.
 set -euo pipefail
@@ -12,10 +17,12 @@ set -euo pipefail
 branch=cla-signatures
 document=docs/cla/individual.md
 version=1.0
-statement='I have read the hidane Individual CLA 1.0 and I agree to it.'
+statement='I have read the hidane Individual CLA 1.0, I have the right to agree to it for my contributions, and I agree to it.'
+label='cla: employer check'
 marker='<!-- hidane-cla -->'
 readme="https://github.com/$REPO/blob/main/docs/cla/README.md"
 exempt_file=${EXEMPT_FILE:-.github/cla/exempt}
+personal_file=.github/cla/personal-email-domains
 
 # Writes go through here, so that a dry run writes nothing.
 write() {
@@ -48,13 +55,30 @@ head=$(jq -r .head.sha <<<"$pr")
 # Who wrote the pull request: its author and each commit's author, by GitHub account. A commit
 # whose author email is linked to no account cannot be attributed to anyone.
 commits=$(gh api --paginate "repos/$REPO/pulls/$PR/commits" \
-  --jq '.[] | {sha: .sha[0:7], login: .author.login, id: .author.id, name: .commit.author.name}' | jq -s .)
-exempt=$({ grep -v -e '^#' -e '^[[:space:]]*$' "$exempt_file" || true; } | jq -R . | jq -s .)
+  --jq '.[] | {sha: .sha[0:7], login: .author.login, id: .author.id, name: .commit.author.name,
+    domain: (.commit.author.email | ascii_downcase | split("@") | .[1] // "")}' | jq -s .)
+list() { { grep -v -e '^#' -e '^[[:space:]]*$' "$1" || true; } | jq -R 'ascii_downcase' | jq -s .; }
+exempt=$(list "$exempt_file")
+personal=$(list "$personal_file")
 authors=$(jq -c --argjson pr "$pr" --argjson exempt "$exempt" '
   [{login: $pr.user.login, id: $pr.user.id}] + [.[] | select(.id != null) | {login, id}]
   | unique_by(.id)
   | map(select((.login | endswith("[bot]")) or (.login as $l | $exempt | index($l)) | not))' <<<"$commits")
 unlinked=$(jq -c '[.[] | select(.id == null) | {sha, name}]' <<<"$commits")
+
+# Signs of an employer: the company on each author's profile, and their commit email domains
+# that are not personal ones.
+signals='[]'
+while read -r login id; do
+  company=$(gh api "users/$login" --jq '.company // ""')
+  signals=$(jq -c --arg login "$login" --argjson id "$id" --arg company "$company" \
+    --argjson commits "$commits" --argjson personal "$personal" '
+    . + [{login: $login, id: $id,
+          company: ($company | gsub("^\\s+|\\s+$"; "") | if . == "" then null else . end),
+          domains: ([$commits[] | select(.id == $id) | .domain] | unique
+                    | map(select(. != "" and (. as $d | $personal | index($d) | not))))}]' <<<"$signals")
+done < <(jq -r '.[] | "\(.login) \(.id)"' <<<"$authors")
+flagged=$(jq -c '[.[] | select(.company != null or (.domains | length > 0))]' <<<"$signals")
 
 stored=$(read_record individual.json '{"signatures": []}')
 individual=$(jq -c .data <<<"$stored")
@@ -73,8 +97,11 @@ if [[ "$body" == "$statement" ]] && jq -e --argjson id "$COMMENTER_ID" 'any(.id 
   record=$(jq -n --arg login "$COMMENTER_LOGIN" --argjson id "$COMMENTER_ID" --arg version "$version" \
     --arg sha256 "$({ sha256sum "$document" 2>/dev/null || shasum -a 256 "$document"; } | cut -d' ' -f1)" --arg at "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
     --argjson pr "$PR" --arg comment "$COMMENT_URL" \
+    --argjson signal "$(jq -c --argjson id "$COMMENTER_ID" '.[] | select(.id == $id) | {company, domains}' <<<"$signals")" \
     '{login: $login, id: $id, agreement: "individual", version: $version, document_sha256: $sha256,
-      signed_at: $at, pull_request: $pr, comment: $comment}')
+      signed_at: $at, pull_request: $pr, comment: $comment,
+      github_company: $signal.company, commit_email_domains: $signal.domains,
+      employer_check: ($signal.company != null or ($signal.domains | length > 0))}')
   if ! gh api "repos/$REPO/git/ref/heads/$branch" >/dev/null 2>&1; then
     # The branch holds the records only: it starts from a commit of its own.
     tree=$(jq -n --arg readme "$(cat <<EOF
@@ -124,8 +151,12 @@ echo "cla: $state ($description)"
 # One comment, kept up to date, once someone outside the exempt accounts is involved.
 existing=$(gh api --paginate "repos/$REPO/issues/$PR/comments" \
   --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | contains(\"$marker\"))) | .id" | head -n1)
+employers=$(jq length <<<"$flagged")
+if ((employers > 0)); then
+  write "repos/$REPO/issues/$PR/labels" -f "labels[]=$label" >/dev/null || echo "could not add the label" >&2
+fi
 if [[ $state == success ]]; then
-  [[ -z "$existing" ]] && exit 0
+  [[ -z "$existing" ]] && ((employers == 0)) && exit 0
   message="$marker
 Every author of this pull request has agreed to the hidane [Contributor License Agreement]($readme). Thank you!"
 else
@@ -156,6 +187,11 @@ These commits are authored with an email address that is linked to no GitHub acc
   message="$message
 
 Post \`recheck\` to run the check again."
+fi
+if ((employers > 0)); then
+  message="$message
+
+**Employer check.** $(jq -r 'map("@" + .login + " (" + ([if .company then "profile: " + .company else empty end] + [if (.domains | length) > 0 then "email: " + (.domains | join(", ")) else empty end] | join("; ")) + ")") | join(", ")' <<<"$flagged") may be writing for a company. If this contribution is part of your work for it, or it otherwise has rights in what you write, the company has to allow it: either it signs the [Corporate CLA](https://github.com/$REPO/blob/main/docs/cla/corporate.md), or it confirms in writing that you may contribute this under the Individual CLA. A maintainer will check with you before merging. If the contribution is your own, outside any work for the company, say so here."
 fi
 if [[ -n "$existing" ]]; then
   write -X PATCH "repos/$REPO/issues/comments/$existing" -f body="$message" >/dev/null

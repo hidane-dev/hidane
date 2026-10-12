@@ -38,7 +38,7 @@ its commits who has not agreed yet. Each of them agrees by posting this comment 
 request, from their own GitHub account, exactly as written:
 
 ```
-I have read the hidane Individual CLA 1.0 and I agree to it.
+I have read the hidane Individual CLA 1.0, I have the right to agree to it for my contributions, and I agree to it.
 ```
 
 The check then passes, and the agreement covers your later pull requests too. Commits must be
@@ -48,6 +48,26 @@ and we will arrange another way to sign.
 
 If your employer has rights in what you write, check with them first: they may need to sign the
 Corporate CLA instead (Section 7(d) of the Individual CLA).
+
+## Employer check
+
+Working for a company does not by itself mean it owns what you contribute: what you write on your
+own time, on your own equipment and outside your job is usually yours. But a contribution made as
+part of your job, or under an employment contract that assigns everything you create to your
+employer, is the company's to license, not yours, and the Individual CLA cannot grant it.
+
+So the check looks for signs of an employer: a company on your GitHub profile, or commits authored
+with an email address that is not a personal one (`.github/cla/personal-email-domains` lists the
+personal ones). When it finds one, it does not fail; it labels the pull request
+`cla: employer check` and adds a note to its comment. Before merging such a pull request, unless
+it is trivial (a typo, a one-line fix), a maintainer asks whether it is part of your work for that
+company, and records the answer in the pull request:
+
+- it is your own work, outside any work for the company: your statement in the pull request is
+  enough;
+- it is work for the company, or the company has rights in it: the company signs the Corporate
+  CLA, or confirms in writing (an email to the maintainer is enough) that you may contribute it
+  under the Individual CLA. The maintainer keeps that confirmation with the signed agreements.
 
 ## Signing as a company
 
@@ -62,14 +82,19 @@ The check records each agreement on the `cla-signatures` branch of this reposito
 nothing else:
 
 - `individual.json`: for each contributor, the GitHub account and its numeric ID, the agreement
-  and version, the SHA-256 of the agreement's text, the time, and the pull request and comment
-  where they agreed.
+  and version, the SHA-256 of the agreement's text, the time, the pull request and comment where
+  they agreed, and the signs of an employer seen then (the company on their profile, their
+  non-personal commit email domains, and whether either was present).
 - `corporate.json`: for each company, its name, the agreement and version, the date, and its
   Designated Contributors' GitHub accounts and IDs, with the dates they were added or removed.
   The signed agreements themselves are kept by the maintainer, not in the repository.
 
 The maintainer and bots (accounts ending in `[bot]`) are exempt; the maintainer's accounts are
 listed in [`.github/cla/exempt`](../../.github/cla/exempt).
+
+For a due diligence, these give who agreed to what and when; the pull requests that needed the
+employer check, with the maintainer's question and the answer in each, are listed by
+`gh pr list --repo hidane-dev/hidane --state all --label "cla: employer check"`.
 
 ## Versions
 

@@ -64,6 +64,10 @@ first one, and nothing has to be applied retroactively.
 
 - CONTRIBUTING.md, the README and the pull request template describe the CLA; `docs/cla/README.md`
   explains it to contributors.
+- An employee may agree to the Individual CLA for work their employer owns. The statement
+  confirms the right to agree; a company on the author's profile, or a non-personal commit email
+  domain, labels the pull request `cla: employer check`, and a maintainer confirms with the author,
+  and if needed the company, before merging. The signs are recorded with each agreement.
 - The repository settings must require the `cla` status on `main` and protect the
   `cla-signatures` branch from deletion and force pushes.
 - When the project moves to a legal entity, the maintainer assigns the agreements to it, and a
