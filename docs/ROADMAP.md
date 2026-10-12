@@ -75,9 +75,9 @@ Parity exceptions planned for v0.1: the listener-induced write slowdown and the 
 **Goal**: evaluate `firestore.rules`; `@firebase/rules-unit-testing` and the Emulator UI request monitor work.
 
 v0.2.0 (2026-10-12) has the P1 items, v0.2.1 adds the request monitor (#69) and the remaining
-`request` fields (#166), and v0.2.2 checks a commit's `verify` writes (#173). Coverage differences
-(#167) and rules-unit-testing end to end (#186) follow in v0.2.x; Functions events (#70) moved to
-v0.4.
+`request` fields (#166), v0.2.2 checks a commit's `verify` writes (#173), and v0.2.3 verifies
+rules-unit-testing end to end (#186) and accepts the Functions emulator's trigger registrations
+(#185). Coverage differences (#167) follow in v0.2.x; Functions events (#70) moved to v0.4.
 
 | Priority | Item | Status (2026-10-12) |
 |---|---|---|
@@ -90,7 +90,7 @@ v0.4.
 | P1 | Mock tokens (`alg: none`) and `Bearer owner` | In v0.2.0 (#68) |
 | P2 | WebSocket `/requests` feed for the Emulator UI | In v0.2.1 (#69): the official records, the last 50 on connect; a client that falls behind is disconnected instead of holding up requests |
 | P2 | Golden results from the production Rules API `projects:test` | #82 (backlog, needs a GCP project) |
-| P2 | Event delivery to `--functions_emulator` (v1 and v2 CloudEvents) | Moved to v0.4 (#70); the trigger registrations are accepted on `main` (#185), so `emulators:start` comes up with Firestore-triggered functions |
+| P2 | Event delivery to `--functions_emulator` (v1 and v2 CloudEvents) | Moved to v0.4 (#70); the trigger registrations are accepted since v0.2.3 (#185), so `emulators:start` comes up with Firestore-triggered functions |
 
 Parity exception: #6252 (the official emulator evaluates conditions in two passes and lists the reasons of both) is not reproduced; hidane evaluates each condition once.
 
