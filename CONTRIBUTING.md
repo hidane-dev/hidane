@@ -64,6 +64,20 @@ docs: describe import/export directory layout
 - Leave `packaging/` and the release workflow alone unless the issue is about
   distribution.
 
+## Clean room
+
+hidane is a clean-room implementation: its behaviour comes only from public
+sources (the protobuf definitions, the Firebase and Google Cloud documentation,
+the SDKs' and firebase-tools' public source, CEL's specification) and from
+observing the official emulator from the outside, never from the code inside
+its jar. [docs/clean-room](docs/clean-room/README.md) lists the
+[allowed sources](docs/clean-room/SOURCES.md), how the official emulator is
+[observed](docs/clean-room/OBSERVATION_POLICY.md), and what
+[must never be used](docs/clean-room/CONTRIBUTOR_GUIDE.md): decompiled or
+disassembled code (the official jar's above all), leaked source, confidential
+Google or Firebase material, and code under incompatible licenses. A pull
+request that adds or changes behaviour says where the behaviour came from.
+
 ## Contributor License Agreement
 
 Contributions are accepted under the hidane Contributor License Agreement

@@ -159,7 +159,10 @@ receives the rights to use, distribute, sublicense and relicense them.
 hidane is a clean-room implementation written from the public protobuf definitions
 ([googleapis](https://github.com/googleapis/googleapis)), the public Firebase and Google Cloud
 documentation, and black-box observation of the official emulator. No code was decompiled or
-ported from the official jar. Thanks to the authors of skunkteam/rust-firestore-emulator and
+ported from the official jar. [`docs/clean-room/`](docs/clean-room/README.md) lists every source
+hidane's behaviour may come from (the SDKs' and firebase-tools' public source and CEL's
+specification among them), how the official emulator is observed, and how each behaviour traces
+back. Thanks to the authors of skunkteam/rust-firestore-emulator and
 YutaUra/firestore-emulator, whose public work helped us map the landscape, and to the model
 projects whose approach to parity testing we follow: [dynoxide](https://github.com/nubo-db/dynoxide)
 and [zerobrew](https://github.com/zerobrewhq/zerobrew).
