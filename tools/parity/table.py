@@ -313,6 +313,27 @@ def transforms(f):
     return answers
 
 
+def same_document_writes(f):
+    answers = []
+    for case in f["cases"]:
+        for step in case["steps"]:
+            error = (step["response"] or {}).get("error")
+            if step["method"] == "GET":
+                # Found: its fields and their order. Missing: the code.
+                level = PART if step["status"] == 200 else STATUS
+            elif error:
+                # A failed precondition prints the official emulator's internal key (parity
+                # exceptions): its code only. Other errors: the code and the message.
+                level = STATUS if error["status"] in ("NOT_FOUND", "ALREADY_EXISTS") else FULL
+            else:
+                # The number of write results; their times differ from run to run, and their
+                # transform results are not compared.
+                results = step["response"].get("writeResults", [])
+                level = PART if any("transformResults" in r for r in results) else FULL
+            answers.append((GRPC, level))
+    return answers
+
+
 def webchannel(steps):
     """Steps in the format of `tools/oracle/webchannel.py`'s fixture; `commit` goes over REST,
     and a long-polling read is compared on its first data and whether it ended."""
@@ -537,6 +558,17 @@ RECORDINGS = {
         compares="as each step's `compare` marks it; without a mark in full (status, message, "
                  "elapsed time to 0.5 s and the result, not transaction IDs)",
         count=transactions),
+    f"{H}/fixtures/same_document_writes.json": dict(
+        area="documents",
+        tests=[f"{H}/same_document_writes.rs::every_recorded_case_gives_the_official_answer"],
+        counted="each call; " + OVER_REST,
+        compares="an error in full (code and message), but a failed precondition on its code (its "
+                 "message prints the official emulator's internal key, an intentional "
+                 "difference); a commit in full (its number of write results, whose times "
+                 "differ from run to run), in part where they hold transform results, which are "
+                 "not compared; a read in part (the fields and their order), a missing document "
+                 "on its code",
+        count=same_document_writes),
     f"{H}/fixtures/transforms.json": dict(
         area="documents",
         tests=[f"{H}/transforms.rs::every_recorded_case_gives_the_official_answer"],
@@ -603,8 +635,17 @@ SDK_DIFFERENCES = {
     "sdk-rules-unit-testing": ("results/README.md", "13 denial messages differ"),
 }
 
+
+def suite_outline(data):
+    """What a test suite's transcript holds: its counts of outcomes."""
+    counts = data["counts"]
+    return (f"the outcome of each test: {n(counts['passed'])} passed, "
+            f"{n(counts['skipped'])} skipped, {n(counts['failed'])} failed")
+
+
 # SDK transcripts in results/: name -> area, the client, its transport, and other transcripts
-# compared with the official one besides `<name>-hidane.json`.
+# compared with the official one besides `<name>-hidane.json`; `ignore` lists top-level keys
+# left out of the comparison, `outline` says what the official transcript holds.
 TRANSCRIPTS = {
     "browser-rules": dict(area="rules", client="firebase + rules-unit-testing in Chromium",
                           transport="WebChannel, REST"),
@@ -619,6 +660,10 @@ TRANSCRIPTS = {
                           }),
     "flutter-web": dict(area="webchannel", client="Flutter Web (cloud_firestore) in Chromium",
                         transport="WebChannel, REST"),
+    # Each test's outcome; `emulator` names the emulator the suite ran against.
+    "js-sdk-browser": dict(area="webchannel", client="firebase-js-sdk browser suite in Chromium",
+                           transport="WebChannel, REST", ignore=("emulator",),
+                           outline=suite_outline),
     "sdk-aggregations": dict(area="queries", client="Admin SDK", transport="gRPC"),
     "sdk-auth": dict(area="admin", client="rules-unit-testing, web SDK, Admin SDK",
                      transport="gRPC"),
@@ -690,8 +735,12 @@ def recordings():
     return sorted(rows, key=lambda r: (AREA_ORDER.index(r["area"]), r["path"]))
 
 
-def normalized(rel):
-    return json.dumps(load(rel), sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+def normalized(rel, ignore=()):
+    """A transcript as compared: keys sorted, without the top-level keys in `ignore`."""
+    data = load(rel)
+    if isinstance(data, dict):
+        data = {key: value for key, value in data.items() if key not in ignore}
+    return json.dumps(data, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
 
 
 def explained(name):
@@ -715,14 +764,19 @@ def transcripts():
         if len(official) != 1 or hidane not in files:
             raise Stop(f"TRANSCRIPTS[{name!r}]: expected one results/{name}-official-v<version>"
                        f".json and {hidane}; found {official or 'no official one'}.")
+        ignore = entry.get("ignore", ())
         others = [(hidane, "hidane")] + [(f"results/{variant}", what)
                                          for variant, what in entry.get("variants", {}).items()]
         for rel, what in others:
             if rel not in files:
                 raise Stop(f"TRANSCRIPTS[{name!r}]: {rel} not found.")
             accounted.add(rel)
+            if ignore:
+                what += ", without " + ", ".join(f"`{key}`" for key in ignore)
+            if "outline" in entry:
+                what += "; " + entry["outline"](load(official[0]))
             where = None
-            if normalized(official[0]) == normalized(rel):
+            if normalized(official[0], ignore) == normalized(rel, ignore):
                 result = IDENTICAL
             else:
                 where = explained(name)
