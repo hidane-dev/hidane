@@ -74,14 +74,14 @@ Parity exceptions planned for v0.1: the listener-induced write slowdown and the 
 |---|---|---|
 | P1 | Grammar (v1 / v2, `let`, operator precedence) and diagnostics (`issues[]` / `Severity`) | On main (#59, #60): the official type checker's warnings |
 | P1 | Type system (14 types, 70+ methods) and built-in functions | On main (#60, #62) |
-| P1 | `request` / `resource` / `request.query`, `request.resource.data` after FieldValue transforms | On main (#63, #64) |
+| P1 | `request` / `resource` / `request.query`, `request.resource.data` after FieldValue transforms | On main (#63, #64); fields still missing (`writeFields`, `inTransaction`, …): #166 |
 | P1 | `get` / `exists` / `getAfter` / `existsAfter`, 10 / 20 call limits, cached calls not counted | On main (#65) |
 | P1 | `list` implication, measured against the official emulator | On main (#66): the official model, not a subset |
 | P1 | Real diagnostics from `:securityRules`, `:ruleCoverage` (JSON), denial message `%s for '%s' @ L%d` | On main: denial messages, `GET :securityRules` (#155), `:ruleCoverage` as JSON and as a page, and `debug()` output (#67) |
 | P1 | Mock tokens (`alg: none`) and `Bearer owner` | On main (#68) |
-| P2 | WebSocket `/requests` feed for the Emulator UI | |
-| P2 | Golden results from the production Rules API `projects:test` | |
-| P2 | Event delivery to `--functions_emulator` (v1 and v2 CloudEvents) | |
+| P2 | WebSocket `/requests` feed for the Emulator UI | #69 |
+| P2 | Golden results from the production Rules API `projects:test` | #89 (needs a GCP project) |
+| P2 | Event delivery to `--functions_emulator` (v1 and v2 CloudEvents) | #70 |
 
 Parity exception: #6252 (the official emulator evaluates conditions in two passes and lists the reasons of both) is not reproduced; hidane evaluates each condition once.
 
