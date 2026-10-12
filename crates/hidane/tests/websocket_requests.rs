@@ -13,11 +13,13 @@
 //!   of the fields a list's filter names in `resource.data`, which the official emulator orders
 //!   its own way.
 //!
-//! A step marked `differs` is one where hidane intentionally does not do what the official
-//! emulator does (`docs/parity-exceptions.md`): the records of a second pass, which hidane does
+//! A step marked `differs` is one where hidane does not do what the official emulator does:
+//! intentionally (`docs/parity-exceptions.md`) the records of a second pass, which hidane does
 //! not make, an automatic document ID, which hidane shows, a Listen query target checked again,
-//! and paths the official emulator does not answer. Only the method and path of its records are
-//! compared, or for a handshake, that hidane answers `404`.
+//! and paths the official emulator does not answer; not yet, the `resource.__name__` a list of a
+//! collection group below a document holds. Only the method and path of its records are
+//! compared, or for a handshake, that hidane answers `404`. A client that does not read, which
+//! holds up the official emulator's requests, is a test of its own.
 
 mod common;
 
@@ -471,13 +473,21 @@ async fn records_as_the_official_emulator_sends_them() {
                         let connected = clients.get_mut(&client).unwrap();
                         connected.frames(Some(expected.len()), pause).await
                     }
+                    // The official emulator's writes waited for a client that did not read:
+                    // `a_client_that_does_not_read_is_disconnected`.
+                    "stall" => {
+                        assert!(step["waited"].is_number(), "{label}");
+                        continue;
+                    }
                     other => panic!("{other}"),
                 };
                 same_records(&label, &expected, &frames);
                 continue;
             }
             let monitor = clients.get_mut("monitor").unwrap();
-            let expected = step["records"].as_array().unwrap();
+            // Without `records`, the monitor had closed: only the status is compared.
+            let expected = step["records"].as_array().cloned().unwrap_or_default();
+            let expected = &expected[..];
             let count = (!differs).then_some(expected.len());
             if let Some(database) = step["listen"].as_str() {
                 let (requests, received) = mpsc::channel(4);
@@ -520,6 +530,9 @@ async fn records_as_the_official_emulator_sends_them() {
                     ours["transaction"].as_str().unwrap().to_owned(),
                 ));
             }
+            if step.get("records").is_none() {
+                continue;
+            }
             let pause = if differs {
                 Duration::from_millis(300)
             } else {
@@ -533,4 +546,65 @@ async fn records_as_the_official_emulator_sends_them() {
             }
         }
     }
+}
+
+/// A client that stops reading never holds up a request (the official emulator's requests wait
+/// for it): once more than `CLIENT_BUFFER` bytes of records wait for it, it is disconnected,
+/// while a client that reads gets every record.
+#[tokio::test]
+async fn a_client_that_does_not_read_is_disconnected() {
+    const WRITES: usize = 100;
+    let (addr, ws_addr) = start().await;
+    let content = "rules_version = '2';\nservice cloud.firestore {\n  match \
+                   /databases/{database}/documents {\n    match /c/{d} {\n      allow write: if \
+                   true;\n    }\n  }\n}\n";
+    let rules = serde_json::json!({"rules": {"files": [{"name": "r", "content": content}]}});
+    let put =
+        serde_json::json!({"method": "PUT", "path": "/emulator/v1/projects/slow:securityRules"});
+    assert_eq!(send(addr, &put, &rules.to_string()).await.0, 200);
+
+    let socket = tokio::net::TcpSocket::new_v4().unwrap();
+    socket.set_recv_buffer_size(4096).unwrap();
+    let mut stalled = socket.connect(ws_addr).await.unwrap();
+    stalled
+        .write_all(
+            b"GET /requests HTTP/1.1\r\nHost: localhost\r\nUpgrade: websocket\r\n\
+              Connection: Upgrade\r\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n\
+              Sec-WebSocket-Version: 13\r\n\r\n",
+        )
+        .await
+        .unwrap();
+    let mut reading = Client::connect(ws_addr).await;
+    let backlog = reading.frames(Some(1), Duration::ZERO).await;
+    assert_eq!(backlog, [Json::Array(Vec::new())]);
+    let counted = tokio::spawn(async move {
+        let mut count = 0;
+        let end = Instant::now() + Duration::from_secs(60);
+        while count < WRITES {
+            match reading.frame(end).await {
+                Some(frame) if frame.is_object() => count += 1,
+                _ => break,
+            }
+        }
+        count
+    });
+
+    let big = "x".repeat(256 * 1024);
+    let body = serde_json::json!({"fields": {"s": {"stringValue": big}}}).to_string();
+    for i in 0..WRITES {
+        let patch = serde_json::json!({
+            "method": "PATCH",
+            "path": format!("/v1/projects/slow/databases/(default)/documents/c/{}", i % 10),
+        });
+        let sent = timeout(Duration::from_secs(10), send(addr, &patch, &body)).await;
+        assert_eq!(sent.expect("a write waited").0, 200);
+    }
+    assert_eq!(counted.await.unwrap(), WRITES);
+    // What the stalled client was sent before it was dropped, then the end of the connection.
+    let drained = timeout(Duration::from_secs(10), async {
+        let mut sink = vec![0; 1 << 16];
+        while stalled.read(&mut sink).await.is_ok_and(|n| n > 0) {}
+    })
+    .await;
+    assert!(drained.is_ok(), "the stalled client is still connected");
 }

@@ -62,7 +62,7 @@ compared with the official emulator's (`results/`):
 | Go, Python, Java, iOS, Android, Flutter (all platforms), C++ / Unity | gRPC or WebChannel | same transports, not verified yet |
 | Security Rules | every transport | enforced: `allow` conditions, `get` / `exists`, `list` decided from the query's filter, mock tokens, denial messages, `:ruleCoverage`, `debug()`; each recorded from the official emulator and replayed ([`docs/parity-exceptions.md`](docs/parity-exceptions.md) lists the differences) |
 | `firebase emulators:start` / `emulators:exec` | `hidane exec -- firebase …` | verified with firebase-tools 15.33.0, no Java installed |
-| Emulator UI | REST and the emulator's endpoints | verified: browse, create and delete documents, Clear all data; not the request monitor (#69) |
+| Emulator UI | REST and the emulator's endpoints | verified: browse, create and delete documents, Clear all data; the request monitor is on `main` (#69) |
 | Export / import (`--import`, `--export-on-exit`, `emulators:export`) | the official format | verified: hidane and the official emulator read each other's exports, byte for byte the same files ([`docs/export-format.md`](docs/export-format.md)) |
 
 ## Parity

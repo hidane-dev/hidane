@@ -22,7 +22,8 @@ and frames of other clients. The cases:
 - values of every type in `request.resource`, ruleset files and release keys;
 - the backlog of a client that connects late (the last 50 records), after `PUT
   :securityRules` and `POST /reset` (neither clears it), with several clients at once;
-- what a client may send: text (ignored), a ping (answered with a pong), a close (echoed).
+- what a client may send: text (ignored), a ping (answered with a pong), a close (echoed);
+- a client that never reads: the writes checked against rules wait for it (`stall`, last).
 
 The official emulator evaluates a request in passes: first without the stored document
 (`resource` is undefined), then, if that does not decide, with it, and each pass is a record
@@ -39,6 +40,8 @@ import struct
 import subprocess
 import sys
 import time
+import urllib.error
+import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -440,6 +443,35 @@ def client_cases():
     ws(action="send", client="monitor", opcode=8, payload="\x03\xe8bye", frames=MONITOR.frames(1.0))
 
 
+def stall_cases():
+    """A client that connects (with a small backlog) and never reads: do writes checked against
+    rules wait for it? Each write is 256 KiB, sent until one has not answered after 5 s; then the
+    client goes away. Last, because its records fill the backlog."""
+    p = "ws-stall"
+    case("a client that does not read", project=p)
+    steps.rules(p, ruleset("match /x/{d} {\n  allow write: if true;\n}"))
+    stalled = socket.socket()
+    stalled.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 4096)
+    stalled.connect((WS_HOST, WS_PORT))
+    stalled.sendall(b"GET /requests HTTP/1.1\r\nHost: x\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n"
+                    b"Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\nSec-WebSocket-Version: 13\r\n\r\n")
+    time.sleep(0.5)
+    body = json.dumps({"fields": {"s": S("x" * 256 * 1024)}}).encode()
+    answered, waited = 0, None
+    for i in range(40):
+        req = urllib.request.Request(f"http://{HOST}{docs(p)}/x/{i % 10}", data=body, method="PATCH",
+                                     headers={"Content-Type": "application/json"})
+        start = time.time()
+        try:
+            urllib.request.urlopen(req, timeout=5).read()
+            answered += 1
+        except (socket.timeout, TimeoutError, urllib.error.URLError):
+            waited = round(time.time() - start, 1)
+            break
+    stalled.close()
+    ws(action="stall", answered=answered, waited=waited, differs="holds up requests")
+
+
 handshake_cases()
 read_cases()
 list_cases()
@@ -449,4 +481,5 @@ listen_cases()
 database_cases()
 backlog_cases()
 client_cases()
+stall_cases()
 dump()

@@ -82,7 +82,7 @@ remaining `request` fields (#166) and coverage differences (#167) follow in v0.2
 | P1 | `list` implication, measured against the official emulator | In v0.2.0 (#66): the official model, not a subset |
 | P1 | Real diagnostics from `:securityRules`, `:ruleCoverage` (JSON), denial message `%s for '%s' @ L%d` | In v0.2.0: denial messages, `GET :securityRules` (#155), `:ruleCoverage` as JSON and as a page, and `debug()` output (#67) |
 | P1 | Mock tokens (`alg: none`) and `Bearer owner` | In v0.2.0 (#68) |
-| P2 | WebSocket `/requests` feed for the Emulator UI | #69 |
+| P2 | WebSocket `/requests` feed for the Emulator UI | On main (#69): the official records, the last 50 on connect; a client that falls behind is disconnected instead of holding up requests |
 | P2 | Golden results from the production Rules API `projects:test` | #89 (needs a GCP project) |
 | P2 | Event delivery to `--functions_emulator` (v1 and v2 CloudEvents) | #70 |
 
