@@ -1,12 +1,17 @@
 //! The Security Rules API and `debug()`, against the official emulator's recordings
 //! (`tools/oracle/rules_coverage.py`: `fixtures/rules_coverage.json`, and with `--rules`,
-//! `fixtures/rules_coverage_flag.json`). Each case's steps are replayed in order against a fresh
-//! hidane, and every answer's status must match. So must:
+//! `fixtures/rules_coverage_flag.json`; `tools/oracle/rules_request_fields.py`:
+//! `fixtures/rules_request_fields.json`). Each case's steps are replayed in order against a
+//! fresh hidane, and every answer's status must match. So must:
 //!
 //! - what `debug()` printed during each step, line for line;
-//! - the body of `GET :securityRules` and `GET :ruleCoverage`, byte for byte, but for the values
-//!   of the expression `request` (it holds the time, and fields hidane does not have), which are
-//!   left out of both; and the data the page of `GET :ruleCoverage.html` shows.
+//! - the body of `GET :securityRules` and `GET :ruleCoverage`, byte for byte, and the data the
+//!   page of `GET :ruleCoverage.html` shows.
+//!
+//! Both leave out the time each request was made, `request.time`: `debug()`'s lines for it,
+//! and in a coverage report its value in each value of `request`, whose values that then
+//! become equal count as one. A transaction the official emulator began is named by hidane's
+//! ID for it in the steps after.
 //!
 //! A case marked `differs` is one where hidane intentionally does not do what the official
 //! emulator does (`docs/parity-exceptions.md`): only its statuses are compared.
@@ -129,33 +134,70 @@ fn page_data(html: &str) -> &str {
     &html[start..end]
 }
 
-/// A report's expressions `request` without their values, as text.
-fn without_request(body: &str) -> String {
-    let mut json: Json = serde_json::from_str(body).unwrap();
-    let content: Vec<char> = json["rules"]["files"][0]["content"]
-        .as_str()
-        .unwrap_or_default()
-        .chars()
-        .collect();
-    fn walk(nodes: &mut Json, content: &[char]) {
+/// A report without the time of each value of `request` (a map with `time` and `method`);
+/// the values of an expression that then are equal count as one.
+fn without_time(body: &str) -> String {
+    fn walk(nodes: &mut Json) {
         for node in nodes.as_array_mut().into_iter().flatten() {
-            let position = &node["sourcePosition"];
-            let at = |key: &str| position[key].as_u64().unwrap_or(0) as usize;
-            let text: String = content
-                .get(at("currentOffset")..=at("endOffset"))
-                .unwrap_or_default()
-                .iter()
-                .collect();
-            if text == "request"
-                && let Some(fields) = node.as_object_mut()
-            {
-                fields.remove("values");
+            if let Some(values) = node["values"].as_array_mut() {
+                let mut merged: Vec<Json> = Vec::new();
+                for mut entry in values.drain(..) {
+                    if let Some(fields) = entry["value"]["mapValue"]["fields"].as_object_mut()
+                        && fields.contains_key("method")
+                    {
+                        fields.remove("time");
+                    }
+                    match merged.iter_mut().find(|e| e["value"] == entry["value"]) {
+                        Some(seen) => {
+                            let count = |e: &Json| e["count"].as_u64().unwrap_or(1);
+                            seen["count"] = Json::from(count(seen) + count(&entry));
+                        }
+                        None => merged.push(entry),
+                    }
+                }
+                *values = merged;
             }
-            walk(&mut node["children"], content);
+            walk(&mut node["children"]);
         }
     }
-    walk(&mut json["report"], &content);
+    let mut json: Json = serde_json::from_str(body).unwrap();
+    walk(&mut json["report"]);
     serde_json::to_string_pretty(&json).unwrap()
+}
+
+/// What `debug()` printed, without the lines of `request.time`: a map entry with the key
+/// `time` loses the seconds and nanoseconds of its timestamp.
+fn without_time_lines(log: &str) -> String {
+    let mut out = String::new();
+    // The indentation of the `key: "time"` line, while in its entry.
+    let mut entry: Option<usize> = None;
+    for line in log.split_inclusive('\n') {
+        let text = line.trim_start();
+        let indent = line.len() - text.len();
+        match entry {
+            Some(at) if indent < at => entry = None,
+            Some(_) if text.starts_with("seconds: ") || text.starts_with("nanos: ") => continue,
+            _ => {}
+        }
+        if text.starts_with("key: \"time\"") {
+            entry = Some(indent);
+        }
+        out.push_str(line);
+    }
+    out
+}
+
+/// `step` with hidane's ID for each transaction the official emulator began in its body.
+fn with_transactions(step: &Json, transactions: &[(String, String)]) -> Json {
+    let mut step = step.clone();
+    if !transactions.is_empty() && !step["body"].is_null() {
+        let mut body = step["body"].to_string();
+        for (official, ours) in transactions {
+            body = body.replace(official.as_str(), ours);
+        }
+        step["body"] = serde_json::from_str(&body).unwrap();
+    }
+    step
 }
 
 /// Whether hidane's body says what the official emulator's does (see the module's comment).
@@ -164,7 +206,7 @@ fn same_body(path: &str, hidane: &str, official: &str) -> bool {
         return page_data(hidane) == page_data(official);
     }
     hidane == official
-        || (path.contains(":ruleCoverage") && without_request(hidane) == without_request(official))
+        || (path.contains(":ruleCoverage") && without_time(hidane) == without_time(official))
 }
 
 async fn replay(fixture: &str, with_rules_file: bool) {
@@ -172,11 +214,20 @@ async fn replay(fixture: &str, with_rules_file: bool) {
     let (addr, printed) = start(with_rules_file).await;
     let mut differences = Vec::new();
     let mut compared = 0;
+    // The ID of each transaction the official emulator began, and hidane's.
+    let mut transactions: Vec<(String, String)> = Vec::new();
     for case in &cases {
         let name = case["name"].as_str().unwrap();
         let differs = case.get("differs").is_some();
         for (i, step) in case["steps"].as_array().unwrap().iter().enumerate() {
+            let step = &with_transactions(step, &transactions);
             let (status, content_type, body) = send(addr, step).await;
+            if let Some(official) = step["response"]["transaction"].as_str()
+                && let Ok(answer) = serde_json::from_str::<Json>(&body)
+                && let Some(ours) = answer["transaction"].as_str()
+            {
+                transactions.push((official.to_owned(), ours.to_owned()));
+            }
             let log = std::mem::take(&mut *printed.lock().unwrap());
             let path = step["path"].as_str().unwrap();
             let mut problems = Vec::new();
@@ -186,7 +237,8 @@ async fn replay(fixture: &str, with_rules_file: bool) {
                     step["status"]
                 ));
             }
-            if !differs && log != step["log"].as_str().unwrap_or_default() {
+            let official_log = step["log"].as_str().unwrap_or_default();
+            if !differs && without_time_lines(&log) != without_time_lines(official_log) {
                 problems.push(format!(
                     "printed {log:?}, official {:?}",
                     step["log"].as_str().unwrap_or_default()
@@ -232,4 +284,9 @@ async fn rules_coverage_and_debug() {
 #[tokio::test]
 async fn the_rules_file() {
     replay(include_str!("fixtures/rules_coverage_flag.json"), true).await;
+}
+
+#[tokio::test]
+async fn request_fields() {
+    replay(include_str!("fixtures/rules_request_fields.json"), false).await;
 }

@@ -382,10 +382,10 @@ impl From<&Value> for Val {
     }
 }
 
-/// A document as `resource` and `get()` give it: `__name__`, `data` and `id`.
+/// A document as `resource` and `get()` give it: `data`, `__name__` and `id`, in the order
+/// of the official emulator's coverage report (`tools/oracle/rules_request_fields.py`).
 pub(crate) fn resource(doc: &Document) -> Val {
     let mut map = IndexMap::with_capacity(3);
-    map.insert("__name__".to_owned(), Val::path(doc.path.clone()));
     map.insert(
         "data".to_owned(),
         Val::Map(Rc::new(
@@ -395,6 +395,7 @@ pub(crate) fn resource(doc: &Document) -> Val {
                 .collect(),
         )),
     );
+    map.insert("__name__".to_owned(), Val::path(doc.path.clone()));
     map.insert(
         "id".to_owned(),
         Val::str(doc.path.last().map_or("", String::as_str)),

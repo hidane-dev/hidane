@@ -69,12 +69,16 @@ pub(super) fn authorize(
                 let resource = documents
                     .get(&path)
                     .map_or(Val::Null, |d| value::resource(&d));
-                let shown = Request {
-                    path: path.clone(),
-                    ..request.clone()
-                };
                 decide(
-                    ruleset, service, &shown, &parts, resource, documents, budget, trace,
+                    ruleset,
+                    service,
+                    request,
+                    Some(&path),
+                    &parts,
+                    resource,
+                    documents,
+                    budget,
+                    trace,
                 )
             }
             Way::Fields(fields) => {
@@ -91,7 +95,7 @@ pub(super) fn authorize(
                 resource.insert("data".to_owned(), data(&fields));
                 let resource = Val::Map(Rc::new(resource));
                 decide(
-                    ruleset, service, request, &parts, resource, documents, budget, trace,
+                    ruleset, service, request, None, &parts, resource, documents, budget, trace,
                 )
             }
         };
@@ -105,12 +109,14 @@ pub(super) fn authorize(
     Decision::Allow
 }
 
-/// One way, decided by the statements covering `parts`: `Err(None)` when none does.
+/// One way, decided by the statements covering `parts`: `Err(None)` when none does. A way
+/// decided on one `document` shows its path as `request.path`.
 #[allow(clippy::too_many_arguments)]
 fn decide(
     ruleset: &Ruleset,
     service: &ast::Service,
     request: &Request,
+    document: Option<&Vec<String>>,
     parts: &[Part<'_>],
     resource: Val,
     documents: &dyn Documents,
@@ -122,19 +128,22 @@ fn decide(
     if applying.is_empty() {
         return Err(None);
     }
-    let mut request_value = request_value(request);
+    let mut request_value = request_value(request, Method::List);
     // A collection group's path is not known (`tools/oracle/rules_list.py`).
-    if parts.contains(&Part::UnknownRun)
-        && let Val::Map(map) = &mut request_value
-    {
-        Rc::make_mut(map).insert("path".to_owned(), Val::Unknown);
+    let path = match document {
+        Some(path) => Val::path(path.clone()),
+        None if parts.contains(&Part::UnknownRun) => Val::Unknown,
+        None => Val::path(request.path.clone()),
+    };
+    if let Val::Map(map) = &mut request_value {
+        Rc::make_mut(map).insert("path".to_owned(), path);
     }
     let context = Context {
         ruleset,
         service,
         request: request_value,
         resource,
-        target: &request.path,
+        target: document.unwrap_or(&request.path),
         documents,
     };
     context

@@ -272,6 +272,7 @@ fn value(v: &Observed) -> Json {
     };
     let (name, inner) = match v {
         Observed::Null => ("nullValue", Json::Raw("null".to_owned())),
+        Observed::Undefined => ("undefined", Json::Object(Vec::new())),
         Observed::Bool(b) => ("boolValue", Json::Raw(b.to_string())),
         Observed::Int(i) => ("intValue", Json::Str(i.to_string())),
         Observed::Float(f) => ("floatValue", double(*f)),
@@ -403,6 +404,10 @@ fn text_value(out: &mut String, indent: usize, v: &Observed) {
     let inner = indent + 2;
     match v {
         Observed::Null => scalar(out, "null_value", "NULL_VALUE"),
+        Observed::Undefined => {
+            open(out, "undefined");
+            close(out);
+        }
         Observed::Bool(b) => scalar(out, "bool_value", &b.to_string()),
         Observed::Int(i) => scalar(out, "int_value", &i.to_string()),
         Observed::Float(f) => scalar(out, "float_value", &java_double(*f)),
@@ -580,6 +585,15 @@ mod tests {
             ])),
             "map_value \t {\n  fields {\n    key: \"a\"\n    value {\n      bool_value: true\n    \
              }\n  }\n  fields {\n    key: \"b\"\n    value {\n      int_value: 1\n    }\n  }\n}\n\n"
+        );
+        // A collection group's `request.path`.
+        assert_eq!(
+            text(Observed::Map(vec![(
+                "path".to_owned(),
+                Observed::Undefined
+            )])),
+            "map_value \t {\n  fields {\n    key: \"path\"\n    value {\n      undefined {\n      \
+             }\n    }\n  }\n}\n\n"
         );
         assert_eq!(
             text(Observed::Timestamp(Timestamp {

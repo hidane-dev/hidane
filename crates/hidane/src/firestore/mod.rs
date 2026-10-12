@@ -410,8 +410,13 @@ impl Firestore for FirestoreService {
         };
         let mask = parse_mask(req.mask.as_ref())?;
         let stored = self.store.get(&name.database, &name.path, at);
+        let in_transaction = matches!(
+            req.consistency_selector,
+            Some(get_document_request::ConsistencySelector::Transaction(_))
+        );
         if let Some(guard) = self.guard(&caller, &name.database) {
             guard
+                .in_transaction(in_transaction)
                 .get(&name.path, stored.as_deref(), &|path| {
                     self.store.get(&name.database, path, at)
                 })
@@ -477,7 +482,9 @@ impl Firestore for FirestoreService {
         // A list of the collection, with `pageSize` as its limit.
         if let Some(guard) = self.guard(&caller, &parent.database) {
             let collection = parent.path.child(req.collection_id.clone());
-            // Without a page size, rules see a limit of 30 (`tools/oracle/rules_list.py`).
+            // Without a page size, rules see a limit of 30 (`tools/oracle/rules_list.py`); an
+            // order (by name) shows, and the mask as `request.fields`
+            // (`tools/oracle/rules_request_fields.py`).
             let view = hidane_rules::eval::Query {
                 limit: Some(if req.page_size > 0 {
                     i64::from(req.page_size)
@@ -485,6 +492,15 @@ impl Firestore for FirestoreService {
                     30
                 }),
                 offset: Some(0),
+                order_by: if req.order_by.is_empty() {
+                    Vec::new()
+                } else {
+                    vec![("__name__".to_owned(), "ASC".to_owned())]
+                },
+                fields: parse_mask(req.mask.as_ref())
+                    .ok()
+                    .flatten()
+                    .map(|mask| guard::rules_paths(&mask)),
                 ..hidane_rules::eval::Query::default()
             };
             let at = self.store.latest_read_time(&parent.database);
@@ -633,7 +649,9 @@ impl Firestore for FirestoreService {
             }),
             ..Write::default()
         };
-        let guard = self.guard(&caller, &parent.database);
+        let guard = self
+            .guard(&caller, &parent.database)
+            .map(|guard| guard.auto_id(req.document_id.is_empty()));
         let (commit_time, _) = self
             .write(&parent.database, None, &[write], guard.as_ref())
             .await?
@@ -738,7 +756,14 @@ impl Firestore for FirestoreService {
             None => self.read_time(&database, None)?,
         };
         // One denied document denies the whole call, missing documents included.
-        if let Some(guard) = self.guard(&caller, &database) {
+        let in_transaction = matches!(
+            req.consistency_selector,
+            Some(batch_get_documents_request::ConsistencySelector::Transaction(_))
+        );
+        if let Some(guard) = self
+            .guard(&caller, &database)
+            .map(|guard| guard.in_transaction(in_transaction))
+        {
             let denials: Vec<String> = paths
                 .iter()
                 .filter_map(|path| {

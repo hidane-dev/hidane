@@ -39,6 +39,10 @@ fn list_in(matched: &str, condition: &str, filter: Option<Filter>, group: bool) 
     let request = Request {
         method: Method::List,
         upsert: false,
+        in_transaction: false,
+        write_fields: None,
+        transforms: None,
+        auto_id: false,
         path,
         auth: None,
         time: now(),

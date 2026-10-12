@@ -18,6 +18,7 @@ use std::{cmp::Ordering, sync::Arc};
 
 use hidane_core::{
     field_path::{FieldPath, get},
+    hash_order::hash_order,
     normalize::normalize_value,
     order::{compare, is_vector, type_rank},
     path::ResourcePath,
@@ -289,6 +290,8 @@ pub struct Query {
     source: Source,
     filter: Option<Filter>,
     orders: Vec<Order>,
+    /// The orderings the query gives, before `orders` completes them.
+    given_orders: Vec<Order>,
     start: Option<Bound>,
     end: Option<Bound>,
     offset: usize,
@@ -396,6 +399,7 @@ impl Query {
             source,
             filter,
             orders,
+            given_orders: explicit,
             start,
             end,
             offset,
@@ -412,28 +416,35 @@ impl Query {
         self.required.extend(fields);
     }
 
-    /// The collection ID a transaction locks for this query: the official emulator locks
-    /// every collection with that ID, whatever its parent.
     /// What Security Rules see of the query: the collection it lists (for a collection group,
     /// the parent below which it looks), `request.query` (`offset` is 0 without one, `orderBy`
-    /// maps fields to `ASC` / `DESC`) and the filter that decides it (`tools/oracle/rules_list.py`).
+    /// maps the fields the query orders by, not those completing its order, to `ASC` / `DESC`
+    /// in the order of a Java `HashMap`), `request.fields` (the projection, as
+    /// `guard::rules_paths` lists it) and the filter that decides it
+    /// (`tools/oracle/rules_list.py`, `rules_request_fields.py`).
     pub fn rules_view(&self) -> (ResourcePath, hidane_rules::eval::Query) {
         let (path, group) = match &self.source {
             Source::Collection(id) => (self.parent.child(id.clone()), None),
             Source::Group(id) => (self.parent.clone(), Some(id.clone())),
             Source::Children | Source::Descendants => (self.parent.clone(), Some(String::new())),
         };
-        let order_by = self
-            .orders
+        let order_by: Vec<(String, String)> = self
+            .given_orders
             .iter()
             .map(|order| {
+                // Its segments joined by `.`, nothing escaped.
                 let field = match &order.field {
                     Field::Name => "__name__".to_owned(),
-                    Field::Path(path) => path.to_string(),
+                    Field::Path(path) => path.segments().join("."),
                 };
                 let direction = if order.descending { "DESC" } else { "ASC" };
                 (field, direction.to_owned())
             })
+            .collect();
+        let fields: Vec<&String> = order_by.iter().map(|(field, _)| field).collect();
+        let order_by = hash_order(&fields)
+            .into_iter()
+            .map(|i| order_by[i].clone())
             .collect();
         let query = hidane_rules::eval::Query {
             limit: self.limit.map(|n| i64::try_from(n).unwrap_or(i64::MAX)),
@@ -441,10 +452,14 @@ impl Query {
             order_by,
             filter: self.filter.as_ref().map(rules_filter),
             group,
+            children: matches!(self.source, Source::Children),
+            fields: self.projection.as_deref().map(super::guard::rules_paths),
         };
         (path, query)
     }
 
+    /// The collection ID a transaction locks for this query: the official emulator locks
+    /// every collection with that ID, whatever its parent.
     pub fn collection_id(&self) -> Option<&str> {
         match &self.source {
             Source::Collection(id) | Source::Group(id) => Some(id),

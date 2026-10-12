@@ -49,7 +49,7 @@ use indexmap::IndexMap;
 
 use crate::{
     Ruleset, ast,
-    paths::{Binding, Covering},
+    paths::{Binding, Covering, Part},
 };
 use interp::{Frame, Interp, Level};
 pub(crate) use value::Val;
@@ -139,16 +139,30 @@ pub struct Auth {
 }
 
 /// `request.query` for a list, and the filter that decides it.
+///
+/// `request.query` holds `limit`, `offset` and `orderBy` from here, and what the official
+/// emulator derives from the path (`tools/oracle/rules_request_fields.py`): `kind`, the
+/// collection ID (null for a query of every collection); `parent`, the document the collection
+/// is in (null at the root), named `ancestor` for a collection group; `allDescendants`; and
+/// `distinct` and `selectOnlyKeys`, always false, and `groupBy`, always empty, which Firestore
+/// queries cannot set.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Query {
     pub limit: Option<i64>,
     pub offset: Option<i64>,
-    /// Field path to `ASC` or `DESC`.
+    /// The orderings the query gives (not those completing it), field path to `ASC` or
+    /// `DESC`, in the order `request.query.orderBy` lists them.
     pub order_by: Vec<(String, String)>,
     pub filter: Option<Filter>,
     /// For a collection group, its collection ID: the list covers the collections with that ID
     /// at any depth below [`Request::path`] (an empty ID: every collection below it).
     pub group: Option<String>,
+    /// With an empty [`Query::group`]: only the collections directly below [`Request::path`]
+    /// (a query whose `from` has no collection ID and is not `allDescendants`).
+    pub children: bool,
+    /// `request.fields`: the fields the query selects, as the official emulator lists them
+    /// (`None`, null, without a projection).
+    pub fields: Option<Vec<String>>,
 }
 
 /// A query's filter.
@@ -204,6 +218,23 @@ pub struct Request {
     /// The document as it would be after a create or an update; `None` otherwise.
     pub resource: Option<Document>,
     pub query: Option<Query>,
+    /// `request.inTransaction`: true for every write, which the official emulator commits in
+    /// a transaction of its own, and for a read of documents in a transaction begun before it;
+    /// false for a read that begins one, and for every list, in a transaction or not
+    /// (`tools/oracle/rules_request_fields.py`).
+    pub in_transaction: bool,
+    /// For a write, `request.writeFields`: the paths of its transforms, then those of its
+    /// update mask (`None`, null, for a write with neither).
+    pub write_fields: Option<Vec<String>>,
+    /// For a write, `request.transforms`: the paths its field transforms change, in order
+    /// (`None`, null, without any).
+    pub transforms: Option<Vec<String>>,
+    /// A create whose document ID the server chooses (a `CreateDocument` without one). The
+    /// official emulator decides it without the ID: [`Request::path`] is the collection's,
+    /// the statements are those of the collection's documents, with the document's wildcard
+    /// unbound, and `request.resource` holds only `data`. `request.autoId` says so for a
+    /// create that is not an upsert; other writes do not have it.
+    pub auto_id: bool,
 }
 
 /// The documents `get()` / `exists()` read (as they were before the request's writes) and
@@ -325,8 +356,11 @@ pub fn authorize_traced(
     if request.method == Method::List {
         return list::authorize(ruleset, service, request, documents, budget, trace);
     }
-    let path: Vec<&str> = request.path.iter().map(String::as_str).collect();
-    let coverings = crate::paths::covering(ruleset.version, service, &path);
+    let mut parts: Vec<Part<'_>> = request.path.iter().map(|s| Part::Segment(s)).collect();
+    if request.auto_id {
+        parts.push(Part::UnknownId);
+    }
+    let coverings = crate::paths::covering_parts(ruleset.version, service, &parts);
     let other = match request.method {
         Method::Create if request.upsert => Some(Method::Update),
         Method::Update if request.upsert => Some(Method::Create),
@@ -338,37 +372,42 @@ pub fn authorize_traced(
         return no_match();
     }
 
-    let context = Context {
+    // The statements of each method see `request.method` as theirs.
+    let context_for = |method| Context {
         ruleset,
         service,
-        request: request_value(request),
+        request: request_value(request, method),
         resource: resource.map_or(Val::Null, value::resource),
         target: &request.path,
         documents,
     };
+    let context = context_for(request.method);
     let Some((other, others)) = others else {
         return match context.decide(&applying, request.method, budget, trace) {
             Ok(()) => Decision::Allow,
             Err(entries) => denied(&entries),
         };
     };
+    let other_context = context_for(other);
     // `create`'s statements come first: before the decision when `update` applies. The other
     // method's lookups count against a copy of the budget.
     if other == Method::Create {
-        context.each(&others, other, &mut budget.clone(), trace);
+        other_context.each(&others, other, &mut budget.clone(), trace);
     }
     let decided = context.decide(&applying, request.method, budget, trace);
     let Err(entries) = decided else {
         if other == Method::Update {
-            context.each(&others, other, &mut budget.clone(), trace);
+            other_context.each(&others, other, &mut budget.clone(), trace);
         }
         return Decision::Allow;
     };
     // A denial lists every statement of the other method; `create`'s, evaluated already, are
     // evaluated again without being traced.
     let listed = match other {
-        Method::Create => context.listed(&others, other, &mut budget.clone(), &mut Trace::new()),
-        _ => context.listed(&others, other, &mut budget.clone(), trace),
+        Method::Create => {
+            other_context.listed(&others, other, &mut budget.clone(), &mut Trace::new())
+        }
+        _ => other_context.listed(&others, other, &mut budget.clone(), trace),
     };
     let entries: Vec<String> = match other {
         Method::Create => listed.into_iter().chain(entries).collect(),
@@ -582,11 +621,115 @@ fn levels<'a>(
     levels
 }
 
-/// `request`: `auth` (null without a token, else `uid` and `token`), `method`, `path` and
-/// `time`; `resource` for a write (null for a delete); `query` for a list.
-fn request_value(request: &Request) -> Val {
+/// `request` for the statements of `method`, with the keys the official emulator gives it, in
+/// the order its coverage report lists them (`tools/oracle/rules_request_fields.py`):
+///
+/// - for a `get`: `time`, `auth`, `inTransaction`, `path`, `fields` (null), `method`;
+/// - for a `list`: `time`, `auth`, `inTransaction`, `fields`, `query`, `path`, `method`;
+/// - for a write: `time`, `auth`, `inTransaction`, `path`, `transforms`, `writeFields`,
+///   `readFields` (null), `autoId` (for a create that is not an upsert), `resource` (null for a
+///   delete; only `data` when the ID is the server's), `method`.
+///
+/// `auth` is null without a token, else `uid` and `token`.
+fn request_value(request: &Request, method: Method) -> Val {
+    let strings = |list: &Option<Vec<String>>| {
+        list.as_ref().map_or(Val::Null, |items| {
+            Val::list(items.iter().map(|s| Val::str(s)).collect())
+        })
+    };
     let mut map = IndexMap::new();
-    let auth = match &request.auth {
+    map.insert(
+        "time".to_owned(),
+        Val::from(&Value::Timestamp(request.time)),
+    );
+    map.insert("auth".to_owned(), auth_value(request));
+    map.insert(
+        "inTransaction".to_owned(),
+        Val::Bool(request.in_transaction),
+    );
+    let path = Val::path(request.path.clone());
+    match method {
+        Method::Get => {
+            map.insert("path".to_owned(), path);
+            map.insert("fields".to_owned(), Val::Null);
+        }
+        Method::List => {
+            let query = request.query.clone().unwrap_or_default();
+            map.insert("fields".to_owned(), strings(&query.fields));
+            map.insert("query".to_owned(), query_value(request, &query));
+            map.insert("path".to_owned(), path);
+        }
+        Method::Create | Method::Update | Method::Delete => {
+            map.insert("path".to_owned(), path);
+            map.insert("transforms".to_owned(), strings(&request.transforms));
+            map.insert("writeFields".to_owned(), strings(&request.write_fields));
+            map.insert("readFields".to_owned(), Val::Null);
+            if method == Method::Create && !request.upsert {
+                map.insert("autoId".to_owned(), Val::Bool(request.auto_id));
+            }
+            let resource = match &request.resource {
+                None => Val::Null,
+                // The document has no name yet.
+                Some(doc) if request.auto_id => match value::resource(doc) {
+                    Val::Map(map) => {
+                        let data = map.get("data").cloned().unwrap_or(Val::Null);
+                        Val::Map(Rc::new(IndexMap::from([("data".to_owned(), data)])))
+                    }
+                    other => other,
+                },
+                Some(doc) => value::resource(doc),
+            };
+            map.insert("resource".to_owned(), resource);
+        }
+    }
+    map.insert("method".to_owned(), Val::str(method.name()));
+    Val::Map(Rc::new(map))
+}
+
+/// `request.query`, its keys in the order of the official emulator's coverage report.
+fn query_value(request: &Request, query: &Query) -> Val {
+    let all_descendants = query.group.is_some() && !query.children;
+    // The collection ID, and the document holding the collection (or the collections).
+    let (kind, parent) = match &query.group {
+        None => match request.path.split_last() {
+            Some((id, parent)) => (Val::str(id), parent),
+            None => (Val::Null, &[][..]),
+        },
+        Some(id) if id.is_empty() => (Val::Null, request.path.as_slice()),
+        Some(id) => (Val::str(id), request.path.as_slice()),
+    };
+    // `databases/{id}/documents`, the root, is no document.
+    let parent = if parent.len() > 3 {
+        Val::path(parent.to_vec())
+    } else {
+        Val::Null
+    };
+    let order_by = query
+        .order_by
+        .iter()
+        .map(|(field, direction)| (field.clone(), Val::str(direction)))
+        .collect();
+    let mut q = IndexMap::new();
+    q.insert("distinct".to_owned(), Val::Bool(false));
+    q.insert("selectOnlyKeys".to_owned(), Val::Bool(false));
+    q.insert("groupBy".to_owned(), Val::Map(Rc::default()));
+    q.insert("kind".to_owned(), kind);
+    let parent_key = if all_descendants {
+        "ancestor"
+    } else {
+        "parent"
+    };
+    q.insert(parent_key.to_owned(), parent);
+    q.insert("orderBy".to_owned(), Val::Map(Rc::new(order_by)));
+    q.insert("limit".to_owned(), query.limit.map_or(Val::Null, Val::Int));
+    q.insert("offset".to_owned(), Val::Int(query.offset.unwrap_or(0)));
+    q.insert("allDescendants".to_owned(), Val::Bool(all_descendants));
+    Val::Map(Rc::new(q))
+}
+
+/// `request.auth`: null without a token, else `uid` and `token`.
+fn auth_value(request: &Request) -> Val {
+    match &request.auth {
         None => Val::Null,
         Some(auth) => {
             let mut a = IndexMap::new();
@@ -600,32 +743,5 @@ fn request_value(request: &Request) -> Val {
             );
             Val::Map(Rc::new(a))
         }
-    };
-    map.insert("auth".to_owned(), auth);
-    map.insert("method".to_owned(), Val::str(request.method.name()));
-    map.insert("path".to_owned(), Val::path(request.path.clone()));
-    map.insert(
-        "time".to_owned(),
-        Val::from(&Value::Timestamp(request.time)),
-    );
-    if matches!(
-        request.method,
-        Method::Create | Method::Update | Method::Delete
-    ) {
-        let resource = request.resource.as_ref().map_or(Val::Null, value::resource);
-        map.insert("resource".to_owned(), resource);
     }
-    if let Some(query) = &request.query {
-        let mut q = IndexMap::new();
-        q.insert("limit".to_owned(), query.limit.map_or(Val::Null, Val::Int));
-        q.insert("offset".to_owned(), Val::Int(query.offset.unwrap_or(0)));
-        let order_by = query
-            .order_by
-            .iter()
-            .map(|(field, direction)| (field.clone(), Val::str(direction)))
-            .collect();
-        q.insert("orderBy".to_owned(), Val::Map(Rc::new(order_by)));
-        map.insert("query".to_owned(), Val::Map(Rc::new(q)));
-    }
-    Val::Map(Rc::new(map))
 }

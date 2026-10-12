@@ -27,6 +27,10 @@ fn decide(content: String) -> Decision {
         .spawn(move || {
             let request = Request {
                 upsert: false,
+                in_transaction: false,
+                write_fields: None,
+                transforms: None,
+                auto_id: false,
                 method: Method::Get,
                 path: document_path("c/d"),
                 auth: None,

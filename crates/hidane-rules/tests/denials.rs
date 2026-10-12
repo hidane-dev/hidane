@@ -62,6 +62,10 @@ fn decide_as(body: &str, method: Method, path: &str, upsert: bool) -> Decision {
     };
     let request = Request {
         upsert,
+        in_transaction: false,
+        write_fields: None,
+        transforms: None,
+        auto_id: false,
         method,
         path,
         auth: None,

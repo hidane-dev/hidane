@@ -199,6 +199,35 @@ impl MaskTree {
             .collect();
         hash_order(&names).into_iter().map(|i| &self.children[i])
     }
+
+    /// The paths this level takes whole, below `prefix`, in the order rules list them: that
+    /// of a Java `HashMap` that received the names taken whole first, then the others, each
+    /// in mask order.
+    fn flatten(&self, prefix: &mut Vec<String>, out: &mut Vec<FieldPath>) {
+        let (whole, below): (Vec<_>, Vec<_>) =
+            self.children.iter().partition(|(_, node)| node.whole);
+        let children: Vec<&(String, MaskTree)> = whole.into_iter().chain(below).collect();
+        let names: Vec<&str> = children.iter().map(|(name, _)| name.as_str()).collect();
+        for (name, below) in hash_order(&names).into_iter().map(|i| children[i]) {
+            prefix.push(name.clone());
+            if below.whole {
+                out.push(FieldPath(prefix.clone()));
+            } else {
+                below.flatten(prefix, out);
+            }
+            prefix.pop();
+        }
+    }
+}
+
+/// The paths of a mask as the official emulator lists them to Security Rules
+/// (`request.writeFields`, `request.fields`): each once, without those below another, and at
+/// each level in the order of a Java `HashMap` that received the names the mask takes whole,
+/// then the others (`tools/oracle/rules_request_fields.py`).
+pub fn mask_paths(mask: &[FieldPath]) -> Vec<FieldPath> {
+    let mut out = Vec::new();
+    MaskTree::new(mask).flatten(&mut Vec::new(), &mut out);
+    out
 }
 
 /// `entries` in the order of a Java `HashMap` that received them in turn.
@@ -297,6 +326,28 @@ fn empty_map() -> Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn mask_paths_as_rules_see_them() {
+        let listed = |mask: &[&str]| -> Vec<String> {
+            let mask: Vec<FieldPath> = mask.iter().map(|p| FieldPath::parse(p).unwrap()).collect();
+            mask_paths(&mask).iter().map(ToString::to_string).collect()
+        };
+        // Recorded in crates/hidane/tests/fixtures/rules_request_fields.json.
+        assert_eq!(listed(&["c", "b", "a"]), ["a", "b", "c"]);
+        assert_eq!(listed(&["n", "m.b", "z"]), ["z", "m.b", "n"]);
+        assert_eq!(listed(&["b", "a", "b"]), ["a", "b"]);
+        assert_eq!(listed(&["m.b", "m"]), ["m"]);
+        assert_eq!(listed(&["m.b.c", "m.a", "z"]), ["z", "m.a", "m.b.c"]);
+        assert_eq!(
+            listed(&["x.y", "a", "`q r`", "b.c.d"]),
+            ["a", "`q r`", "b.c.d", "x.y"]
+        );
+        // `b`, `r`, `B` and `R` share a bucket: names taken whole come first.
+        assert_eq!(listed(&["b.c", "r", "B.x", "R"]), ["r", "R", "b.c", "B.x"]);
+        assert_eq!(listed(&["m.b.c", "m.r"]), ["m.r", "m.b.c"]);
+        assert!(listed(&[]).is_empty());
+    }
 
     fn int(i: i64) -> Value {
         Value {
