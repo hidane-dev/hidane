@@ -347,30 +347,23 @@ pub fn authorize_traced(
             Err(entries) => denied(&entries),
         };
     };
-    // `create`'s statements come first: before the decision when `update` applies.
-    let early = (other == Method::Create).then(|| {
-        let mut scratch = budget.clone();
-        let listed = context.listed(&others, other, &mut scratch, trace, true);
-        (listed, scratch)
-    });
+    // `create`'s statements come first: before the decision when `update` applies. The other
+    // method's lookups count against a copy of the budget.
+    if other == Method::Create {
+        context.each(&others, other, &mut budget.clone(), trace);
+    }
     let decided = context.decide(&applying, request.method, budget, trace);
-    let (listed, mut scratch) = match early {
-        Some(((listed, evaluated), scratch)) => (Some((listed, evaluated)), scratch),
-        None => (None, budget.clone()),
-    };
     let Err(entries) = decided else {
         if other == Method::Update {
-            context.listed(&others, other, &mut scratch, trace, true);
+            context.each(&others, other, &mut budget.clone(), trace);
         }
         return Decision::Allow;
     };
-    let listed = match listed {
-        Some((mut listed, evaluated)) => {
-            let rest = &others[evaluated..];
-            listed.extend(context.listed(rest, other, &mut scratch, trace, false).0);
-            listed
-        }
-        None => context.listed(&others, other, &mut scratch, trace, false).0,
+    // A denial lists every statement of the other method; `create`'s, evaluated already, are
+    // evaluated again without being traced.
+    let listed = match other {
+        Method::Create => context.listed(&others, other, &mut budget.clone(), &mut Trace::new()),
+        _ => context.listed(&others, other, &mut budget.clone(), trace),
     };
     let entries: Vec<String> = match other {
         Method::Create => listed.into_iter().chain(entries).collect(),
@@ -426,7 +419,9 @@ struct Context<'a> {
 }
 
 impl Context<'_> {
-    /// Evaluates `statements` in order until one allows; if none does, each one's entry.
+    /// Evaluates `statements` in order; if none allows, each one's entry. As the official
+    /// emulator does, the statements of a `match` stop at the first that allows, but those of
+    /// every other `match` are evaluated too (`tools/oracle/rules_coverage.py`).
     fn decide(
         &self,
         statements: &[(&ast::Allow, &Covering<'_>)],
@@ -434,19 +429,62 @@ impl Context<'_> {
         budget: &mut Budget,
         trace: &mut Trace,
     ) -> Result<(), Vec<String>> {
+        let (entries, allowed) = self.each(statements, method, budget, trace);
+        if allowed { Ok(()) } else { Err(entries) }
+    }
+
+    /// The statements of an upsert's method that does not apply, for a denial: each one's
+    /// entry, `false` or its condition's error.
+    fn listed(
+        &self,
+        statements: &[(&ast::Allow, &Covering<'_>)],
+        method: Method,
+        budget: &mut Budget,
+        trace: &mut Trace,
+    ) -> Vec<String> {
         let mut entries = Vec::with_capacity(statements.len());
         let mut marks = Vec::with_capacity(statements.len());
-        let mut decision = Err(());
         for (allow, covering) in statements {
             marks.push(trace.mark());
+            let (text, line) = match &allow.condition {
+                Some(condition) => (
+                    self.evaluate(covering, condition, budget, trace).err(),
+                    condition.span.line,
+                ),
+                None => (None, allow.span.line),
+            };
+            entries.push(entry(text.as_deref().unwrap_or("false"), method, line));
+        }
+        trace.repeat(&marks);
+        entries
+    }
+
+    /// Evaluates `statements` but those after one that allowed in the same `match`. Returns the
+    /// entries of those that did not allow, and whether one did.
+    fn each(
+        &self,
+        statements: &[(&ast::Allow, &Covering<'_>)],
+        method: Method,
+        budget: &mut Budget,
+        trace: &mut Trace,
+    ) -> (Vec<String>, bool) {
+        let mut entries = Vec::with_capacity(statements.len());
+        let mut marks = Vec::with_capacity(statements.len());
+        let mut allowed: Vec<*const ast::Match> = Vec::new();
+        for (allow, covering) in statements {
+            let target = std::ptr::from_ref(covering.target());
+            if allowed.contains(&target) {
+                continue;
+            }
+            marks.push(trace.mark());
             let Some(condition) = &allow.condition else {
-                decision = Ok(());
-                break;
+                allowed.push(target);
+                continue;
             };
             let text = match self.evaluate(covering, condition, budget, trace) {
                 Ok(true) => {
-                    decision = Ok(());
-                    break;
+                    allowed.push(target);
+                    continue;
                 }
                 Ok(false) => "false".to_owned(),
                 Err(e) => e,
@@ -454,41 +492,7 @@ impl Context<'_> {
             entries.push(entry(&text, method, condition.span.line));
         }
         trace.repeat(&marks);
-        decision.map_err(|()| entries)
-    }
-
-    /// The entries of the statements of an upsert's method that does not apply: each `false`,
-    /// or its condition's error. With `until_allowed`, stops after one that would allow.
-    /// Returns the entries and how many statements were evaluated.
-    fn listed(
-        &self,
-        statements: &[(&ast::Allow, &Covering<'_>)],
-        method: Method,
-        budget: &mut Budget,
-        trace: &mut Trace,
-        until_allowed: bool,
-    ) -> (Vec<String>, usize) {
-        let mut entries = Vec::with_capacity(statements.len());
-        let mut marks = Vec::with_capacity(statements.len());
-        for (allow, covering) in statements {
-            marks.push(trace.mark());
-            let (result, line) = match &allow.condition {
-                Some(condition) => (
-                    self.evaluate(covering, condition, budget, trace),
-                    condition.span.line,
-                ),
-                None => (Ok(true), allow.span.line),
-            };
-            let allowed = result == Ok(true);
-            let text = result.err().unwrap_or_else(|| "false".to_owned());
-            entries.push(entry(&text, method, line));
-            if until_allowed && allowed {
-                break;
-            }
-        }
-        trace.repeat(&marks);
-        let evaluated = entries.len();
-        (entries, evaluated)
+        (entries, !allowed.is_empty())
     }
 
     /// The condition of a statement at the end of `covering`: true, false or the error's text.

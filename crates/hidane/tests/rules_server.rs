@@ -18,6 +18,10 @@ async fn start() -> SocketAddr {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
     let admin = hidane::Admin::default();
+    // `debug()` prints to standard output; `rules_coverage.rs` compares what it prints.
+    admin
+        .rules()
+        .set_debug_log(std::sync::Arc::new(|_: &str| {}));
     tokio::spawn(hidane::serve(
         vec![listener],
         hidane::grpc_routes(&admin),
@@ -158,6 +162,5 @@ async fn request_auth_from_tokens() {
 
 #[tokio::test]
 async fn denials() {
-    // `:ruleCoverage` is not served yet.
-    replay(include_str!("fixtures/rules_denials.json"), &["coverage"]).await;
+    replay(include_str!("fixtures/rules_denials.json"), &[]).await;
 }

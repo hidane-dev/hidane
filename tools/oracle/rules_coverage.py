@@ -21,10 +21,11 @@ rules or the coverage report keep their body as sent (`raw`). The cases:
 - coverage reports: which expressions they hold and where (functions, `let`s, nested matches,
   parentheses, literals), what each evaluated to (every type of value, as `debug()` prints it
   too), in which order and how many times, expressions not evaluated (`&&`, `||`, `?:`), errors
-  and where they are placed, upserts (whose `create` and `update` statements are both
-  evaluated), lists (constraints) and offsets in code points. The conditions end in a value, not
-  an error, and read no document: the official emulator evaluates a condition again after an
-  error, or when it reads one, and its report counts both passes;
+  and where they are placed, statements counted once more for each one evaluated after them,
+  upserts (whose `create` and `update` statements are both evaluated), lists (constraints, and
+  the path segments a list does not know) and offsets in code points. The conditions end in a
+  value, not an error, and read no document: the official emulator evaluates a condition again
+  after an error, or when it reads one, and its report counts both passes;
 - cases marked `differs`, where hidane does not do what the official emulator does
   (`docs/parity-exceptions.md`): the second pass, and a branch of `?:` not taken.
 
@@ -54,7 +55,8 @@ def b64(obj):
 # An unsigned token whose claims have every type the errors need.
 TOKEN = "Bearer " + b64({"alg": "none"}) + "." + b64(
     {"sub": "u", "n": 1, "s": "a", "t": True, "f": False, "nul": None, "l": [1], "m": {"a": 1}, "pat": "["}) + "."
-T = "request.auth.token"
+# The token, through a function: its claims are the values, and `request` shows once per call.
+T = "t()"
 
 
 def ruleset(body):
@@ -233,6 +235,20 @@ service cloud.firestore {
     coverage_case("order and counts", "cov-order", "match /c/{d} {\n  allow read: if d.size() > 0;\n}",
                   [get(f"/c/{d}") for d in ("m", "b", "b", "zz", "a", "a", "a")])
 
+    coverage_case("statements", "cov-statements", "\n".join([
+        "function f(x) {",
+        "  return x == 'y';",
+        "}",
+        "match /c/{d} {",
+        "  allow get: if d == 'x';",
+        "  allow read: if f(d);",
+        "  allow get: if d.size() == 1;",
+        "}",
+        "match /{path=**} {",
+        "  allow get: if path[1] == 'z';",
+        "}",
+    ]), [get("/c/a"), get("/c/b"), get("/c/zz")])
+
     coverage_case("not evaluated", "cov-skipped", "\n".join([
         "match /c/{d} {",
         "  allow read: if d == 'x' && debug(d) == 'y' || debug(d.size()) == 1;",
@@ -255,7 +271,7 @@ service cloud.firestore {
         f"{T}.nul.size() == 1", f"{T}.s.size(1) == 1", f"{T}.m.get('x') == 1", f"{T}.s.split(1) == 1",
         "int('a') == 1", "debug(int('a')) == 1",
     ]
-    fns = ("function f2() {\n  let z = int('q');\n  return z == 1;\n}\n"
+    fns = ("function t() {\n  return request.auth.token;\n}\nfunction f2() {\n  let z = int('q');\n  return z == 1;\n}\n"
            "function f3(x) {\n  return x.size() == 1;\n}\n")
     body = fns + "\n".join(f"match /e{i}/{{d}} {{\n  allow read: if ({e}) || true;\n}}" for i, e in enumerate(errors))
     coverage_case("errors", "cov-errors", body, [get(f"/e{i}/x", TOKEN) for i in range(len(errors))])
@@ -308,6 +324,15 @@ service cloud.firestore {
         query(field("IN", {"arrayValue": {"values": [I(1), I(2)]}})), query(field("ARRAY_CONTAINS", I(1))),
         query(field("LESS_THAN_OR_EQUAL", I(1))), query(field("NOT_IN", {"arrayValue": {"values": [I(1), I(2)]}})),
         query(),
+    ])
+
+    def group(parent=""):
+        q = {"from": [{"collectionId": "q", "allDescendants": True}]}
+        return ("POST", f"{parent}:runQuery", {"structuredQuery": q}, None)
+
+    coverage_case("unknown segments", "cov-unknown", "match /{rest=**} {\n  allow list: if debug(rest) != null || true;\n}", [
+        query(), ("POST", "/x/y:runQuery", {"structuredQuery": {"from": [{"collectionId": "q"}]}}, None),
+        group(), group("/x/y"),
     ])
 
     case("two passes", differs="the official emulator evaluates a condition that reads `resource` twice")

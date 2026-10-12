@@ -5,7 +5,7 @@ and its steps, each step the request (method, path, body, `Authorization`) and t
 emulator's answer (status, and the body: JSON when it parses). hidane's tests replay the steps
 in order and compare the answers. Stdlib only.
 
-With `raw=True` a step also keeps the body as sent (`raw`) and its content type, and a step
+With `raw=True` a step keeps the body as sent instead (`raw`) and its content type, and a step
 sent with another `content_type` (or `None`, for none) keeps it. With `LOG` set to the path of
 the official emulator's standard output, a step keeps what the emulator printed while it ran
 (`log`), such as the values of `debug()`.
@@ -66,6 +66,8 @@ def call(method, path, body=None, auth=None, record=True, raw=False, content_typ
         if raw:
             step["raw"] = text
             step["answered"] = answered
+            if status == 200:
+                step["response"] = None
         if LOG:
             printed = _printed(since)
             if printed:
