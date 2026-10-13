@@ -19,7 +19,11 @@ updates:
   # The examples pin every dependency; .github/workflows/examples.yml runs each update against
   # hidane.
   - package-ecosystem: npm
-    directories: ["/examples/admin-node"]
+    directories:
+      - /examples/admin-node
+      - /examples/functions
+      - /examples/functions/functions
+      - /examples/rules-unit-testing
     schedule: { interval: weekly }
     groups:
       examples-npm: { patterns: ["*"] }
@@ -33,3 +37,7 @@ updates:
     schedule: { interval: weekly }
     groups:
       examples-go: { patterns: ["*"] }
+  # The workflow to copy (outside .github/workflows, so that it does not run here).
+  - package-ecosystem: github-actions
+    directory: /examples/github-actions
+    schedule: { interval: weekly }

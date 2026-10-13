@@ -4,7 +4,8 @@ name: Examples
 # projects with `npm test`, which starts hidane under `firebase emulators:exec` through
 # `hidane exec`, and the Python and Go projects against hidane started on its own. Each runs twice:
 # against hidane built from this commit, and against the published release in PUBLISHED_VERSION,
-# installed by hidane-dev/setup-hidane.
+# installed by hidane-dev/setup-hidane. The github-actions job runs the steps of
+# examples/github-actions/firestore-tests.yml, which installs the latest release.
 #
 # It runs for changes to hidane or the examples, and weekly, for changes in the runners; the
 # examples pin their dependencies.
@@ -107,7 +108,8 @@ jobs:
           cache-dependency-path: examples/admin-node/package-lock.json
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm test
-      - name: firebase-tools ran hidane, not the official emulator
+      - &no-jar
+        name: firebase-tools ran hidane, not the official emulator
         run: |
           # `hidane exec` names a placeholder as the emulator's jar, so firebase-tools downloads none.
           # A jar in its cache would mean that the official emulator ran.
@@ -124,6 +126,63 @@ jobs:
             examples/*/*.log
             ${{ runner.temp }}/hidane.log
           if-no-files-found: ignore
+
+  functions:
+    name: functions (hidane ${{ matrix.hidane }})
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        hidane: [source, published]
+    defaults:
+      run:
+        working-directory: examples/functions
+    steps:
+      - *checkout
+      - *source-download
+      - *source-path
+      - *published
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            examples/functions/package-lock.json
+            examples/functions/functions/package-lock.json
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm ci --prefix functions --ignore-scripts --no-audit --no-fund
+      - run: npm test
+      - *no-jar
+      - *logs
+
+  rules-unit-testing:
+    name: rules-unit-testing (hidane ${{ matrix.hidane }})
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        hidane: [source, published]
+    defaults:
+      run:
+        working-directory: examples/rules-unit-testing
+    steps:
+      - *checkout
+      - *source-download
+      - *source-path
+      - *published
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: examples/rules-unit-testing/package-lock.json
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm test
+      - *no-jar
+      - *logs
 
   admin-python:
     name: admin-python (hidane ${{ matrix.hidane }})
@@ -184,3 +243,32 @@ jobs:
         env:
           FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080
       - *logs
+
+  # examples/github-actions/firestore-tests.yml's steps, in examples/admin-node as if it were the
+  # repository's root. Like the example, it installs the latest release.
+  github-actions:
+    name: github-actions (setup-hidane, latest release)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: examples/admin-node
+    steps:
+      - *checkout
+      - name: The same steps as the example
+        id: same-steps
+        working-directory: .
+        run: |
+          # Each step's action (without its version) or command, in order, in the example's job and
+          # in this one, this step left out.
+          steps='explode(.) | [.jobs[env(JOB)].steps[] | select(.id != "same-steps") | ((.uses // "") | sub("@.*"; "")) + (.run // "")]'
+          diff -u <(JOB='test' yq -o=json "$steps" examples/github-actions/firestore-tests.yml) \
+            <(JOB=github-actions yq -o=json "$steps" .github/workflows/examples.yml)
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: examples/admin-node/package-lock.json
+      - uses: hidane-dev/setup-hidane@f0bdb68d1e28100cd5b445456455e1108f370987 # v1.0.0
+      - run: npm ci --ignore-scripts
+      - run: npm test

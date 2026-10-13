@@ -1,0 +1,35 @@
+# Runs a Node.js project's Firestore tests against hidane, for pushes to main and pull requests.
+# Copy it into .github/workflows/ in your repository. It expects `npm test` to start the emulator
+# itself, with firebase-tools among the devDependencies, as examples/admin-node does:
+#
+#   "test": "hidane exec -- firebase emulators:exec --only firestore --project demo-hidane \"node --test\""
+#
+# No Java is needed.
+name: Firestore tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      # Installs the latest hidane release, after checking its SHA-256 and build provenance, and
+      # puts it on PATH. `with: { version: 0.4.0 }` pins a version.
+      - uses: hidane-dev/setup-hidane@f0bdb68d1e28100cd5b445456455e1108f370987 # v1.0.0
+      # --ignore-scripts: no dependency runs code while it installs. Drop it if yours need to.
+      - run: npm ci --ignore-scripts
+      - run: npm test
