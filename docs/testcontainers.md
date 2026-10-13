@@ -6,7 +6,7 @@ hidane's container image, `ghcr.io/hidane-dev/hidane`, runs in Testcontainers in
   Tests that use `FirestoreEmulatorContainer` keep their code and change the image name. This
   needs an image newer than v0.4.0: the release after v0.4.0 is the first to have it.
 - **As a generic container**, with the image's own command and the last line of its banner. This
-  works with the published images, v0.4.0 included.
+  works with the published images too (tested with v0.4.0).
 
 Either way the image is the static hidane binary on an empty base. v0.4.0 is a 4.9 MB download
 for linux/amd64, against 446 MB for `gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators`,
@@ -27,7 +27,7 @@ container tests also run against the published v0.4.0 image.
 |---|---|---|---|
 | Java | `org.testcontainers:testcontainers-gcloud`, `FirestoreEmulatorContainer` | in place of the Cloud SDK image (newer than v0.4.0) | Testcontainers 2.0.5, `google-cloud-firestore` 3.43.0 ([`testcontainers/java`](../testcontainers/java/)) |
 | Node | `@testcontainers/gcloud`, `FirestoreEmulatorContainer` | in place of the Cloud SDK image (newer than v0.4.0) | Testcontainers 12.2.0, `firebase-admin` 14.5.0 ([`testcontainers/node`](../testcontainers/node/)) |
-| Java, Node | `GenericContainer` | the image's own command (every published image) | the same projects, with the image from source and v0.4.0 |
+| Java, Node | `GenericContainer` | the image's own command (published images too) | the same projects, with the image from source and v0.4.0 |
 | Go | `modules/gcloud/firestore` | not tested yet: it starts the image with the same command line as Java and Node | |
 | .NET | `Testcontainers.Firestore` | does not work yet: the module replaces the image's entrypoint with `gcloud`, which hidane's image does not have | |
 | Python | no Firestore module (`DatastoreContainer` is for Datastore) | as a `DockerContainer`, the generic way: not tested yet | |
@@ -64,7 +64,7 @@ try (FirestoreEmulatorContainer emulator = new FirestoreEmulatorContainer(hidane
 are below. `org.testcontainers.containers.FirestoreEmulatorContainer`, the deprecated class kept
 from Testcontainers 1.x, passes the same command, but is not tested here.
 
-As a generic container, with any published image:
+As a generic container, which works with the published v0.4.0 image too:
 
 ```java
 import org.testcontainers.containers.GenericContainer;
@@ -100,7 +100,7 @@ await emulator.stop();
 call also tells the SDK not to look for credentials; `db.settings({ host, ssl: false })`, as in
 Testcontainers' own example, connects too, after a lookup of the metadata server that times out.
 
-As a generic container, with any published image:
+As a generic container, which works with the published v0.4.0 image too:
 
 ```js
 import { GenericContainer, Wait } from "testcontainers";
