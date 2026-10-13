@@ -74,7 +74,7 @@
       "status": "likely-compatible",
       "severity": "info",
       "title": "firebase-tools ^15.30.0 (package.json): likely compatible — the same major version as the verified 15.33.0; the version it resolves to is not known and is not verified itself",
-      "source": "docs/adr/0006-launch-under-firebase-tools.md; results/export-import-*.json",
+      "source": "docs/sdk-certification.md",
       "file": "package.json",
       "line": 14
     },

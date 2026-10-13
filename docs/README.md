@@ -4,6 +4,7 @@
 |---|---|
 | [why.md](why.md) | Why replace the official emulator: Java 21, startup / memory, write slowdown — with measurements and sources |
 | [compatibility.md](compatibility.md) | Which SDKs will work with which hidane version, how each finds the emulator, which RPCs they use |
+| [sdk-certification.md](sdk-certification.md) | The SDK certification matrix: each client and tool, the version that was run, its transport, what was exercised, its status and the recorded results behind it (generated, [JSON](sdk-certification.json)) |
 | [testcontainers.md](testcontainers.md) | hidane's container image in Testcontainers: in place of the Cloud SDK image in the gcloud modules (Java, Node), or as a generic container |
 | [migrating.md](migrating.md) | What `hidane doctor` checks in a Firebase project, and what `hidane migrate` changes to move it from the official emulator to hidane |
 | [parity.md](parity.md) | How many of the official emulator's recorded answers the tests replay against hidane, per area and transport, and which SDK transcripts are identical (generated) |

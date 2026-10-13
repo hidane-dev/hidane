@@ -3,9 +3,12 @@
 Which clients can talk to hidane depends on the transport each SDK uses when it is pointed at an
 emulator. Phase 0 read the SDK sources to settle this; the conclusions are below. The status
 column says what `main` does today: **verified** means the client's results were compared with the
-official emulator's (`results/`); **not verified** means hidane serves its transport but nobody has
-run that client against it yet. The latest release is in the README; #187 tracks the clients not
-verified yet.
+official emulator's (`results/`) for everything it is expected to do; **partially verified**, for
+some of it; **not verified** means hidane serves its transport but nobody has run that client
+against it yet. The statuses come from the
+[SDK certification matrix](sdk-certification.md), generated from the recorded results, which also
+gives each client's version, what was exercised and the evidence; CI fails when this column says
+otherwise. The latest release is in the README; #187 tracks the clients not verified yet.
 
 ## Transport required by each client
 
@@ -20,7 +23,7 @@ verified yet.
 | firebase-android-sdk | gRPC (grpc-okhttp). Uses the Listen and Write streams | not verified |
 | FlutterFire `cloud_firestore` on Android / iOS / macOS / Windows | Native SDK (gRPC) | not verified |
 | Firebase C++ SDK / Unity | iOS C++ core or Android SDK (gRPC) | not verified |
-| firebase-js-sdk imported **in Node** | gRPC (`@grpc/grpc-js`) | verified |
+| firebase-js-sdk imported **in Node** | gRPC (`@grpc/grpc-js`) | partially verified: documents and writes, queries, transactions and listeners give the same results; no aggregation query has been compared ([sdk-certification.md](sdk-certification.md)) |
 | firebase-js-sdk **Lite** (`firebase/firestore/lite`, any platform) | REST (`fetch`) only | verified |
 | firebase-js-sdk **in the browser** | **WebChannel** for Listen and Write (this includes `getDoc`, `getDocs`, `setDoc`, `updateDoc`, `deleteDoc`, `writeBatch`), REST for `runTransaction`, aggregate queries and pipelines | verified in Chromium ([webchannel.md](webchannel.md)); the SDK's own browser suite passes, 1,183 of 1,183 tests, as on the official emulator (`results/js-sdk-browser-*.json`) |
 | FlutterFire `cloud_firestore_web` | Same as firebase-js-sdk in the browser (`firebase_core_web` loads it from `www.gstatic.com/firebasejs/`) | verified in Chromium |

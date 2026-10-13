@@ -26,6 +26,10 @@ jobs:
       # docs/oracle-corpus.json lists the same recordings with their provenance (needs no history:
       # its git-derived fields are kept while a recording is unchanged).
       - run: python3 tools/oracle/corpus.py --check
+      # docs/sdk-certification.json, the SDK certification matrix, follows the transcripts in
+      # results/; hidane doctor's verified versions (crates/hidane/src/project/verified.rs), the
+      # table in docs/migrating.md and the status column of docs/compatibility.md follow it.
+      - run: python3 tools/parity/sdk_certification.py --check
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy

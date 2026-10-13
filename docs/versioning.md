@@ -135,10 +135,11 @@ shows what that release was tested with, and a tag does not move.
   [oracle corpus](oracle-corpus.md) lists each recording with the version it came from, and the
   weekly *Official emulator* workflow fails when firebase-tools' latest release pins another
   version.
-- **firebase-tools and the SDKs.** [compatibility.md](compatibility.md) lists, per client, whether
-  it is verified and with which version; [migrating.md](migrating.md#findings) lists the
-  versions `hidane doctor` treats as verified. Each comes from a transcript in `results/` compared
-  with the official emulator's.
+- **firebase-tools and the SDKs.** The [SDK certification matrix](sdk-certification.md) gives,
+  per client, its status, the version that was run, what was exercised and the transcripts in
+  `results/` behind it, each compared with the official emulator's; it is generated from those
+  transcripts, and [compatibility.md](compatibility.md) and the versions `hidane doctor` treats
+  as verified ([migrating.md](migrating.md#findings)) follow it.
 - **Parity.** [parity.md](parity.md) counts the recorded answers the tests replay, per area and
   transport, at that commit.
 - **The release notes** name the official emulator and firebase-tools versions the release was
