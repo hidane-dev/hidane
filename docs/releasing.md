@@ -51,7 +51,9 @@ The macOS binaries are not signed or notarized yet. Archives fetched with `curl`
 3. Push the tag `v<version>` on that commit. The workflow checks the tag against those versions,
    builds every target, writes `sha256sums.txt`, attests the archives and creates a **draft**
    release with all of them.
-4. Write the notes on the draft and check the assets.
+4. Write the notes on the draft and check the assets. The notes name the official emulator and
+   firebase-tools versions the release was verified with, and list any changes to a stable
+   surface under **Breaking changes** and **Deprecated** ([versioning.md](versioning.md)).
 5. Approve the workflow's `publish the release` job (the `release` environment). It publishes the
    GitHub Release; then, in parallel:
 

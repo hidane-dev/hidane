@@ -148,7 +148,10 @@ explains both.
 - [Roadmap](docs/ROADMAP.md) — scope of v0.1 / v0.2 / v0.3, targets, risks
 - [Decision records](docs/adr/) — storage engine, gRPC stack, WebChannel timing, Rules engine, license (all drafts)
 - [Benchmark results](results/) — the official emulator baseline, hidane's measurements and the SDK differentials
+- [Versioning](docs/versioning.md) — what a version promises: stable surfaces, patch / minor / major, deprecation
+- [Release channels](docs/release-channels.md) — pinning a version on each channel; a possible LTS model, not offered today
 - [Releasing](docs/releasing.md) — release assets, checksums, provenance and how a release is cut
+- [Project assets](docs/project-assets.md) — the official repositories, packages, image, website and accounts
 
 ## Contributing
 
