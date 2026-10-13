@@ -72,9 +72,10 @@ collection take 4.9 s on `main`, about 10.5 ms per batch from start to end
 - Not a production database. It is a local-development and CI emulator and is not meant to be
   exposed on a network without authentication (see [`SECURITY.md`](../SECURITY.md)).
 - Not a reimplementation of the Realtime Database, Cloud Storage or Auth emulators.
-- Not derived from the official jar. hidane is a clean-room implementation built from the public
-  `google.firestore.v1` protos, the public documentation and black-box observation of the
-  official emulator. No decompilation.
+- Not derived from the official jar's code. hidane is a clean-room implementation built from the
+  public `google.firestore.v1` protos, the public documentation and black-box observation of the
+  official emulator. No decompilation. What was read from the jar before the clean-room policy is
+  in its [history](clean-room/OBSERVATION_POLICY.md#history-before-this-policy).
 
 hidane is an independent open-source project and is not affiliated with or endorsed by Google LLC.
 Firebase and Cloud Firestore are trademarks of Google LLC.
