@@ -330,6 +330,26 @@ SCENARIOS = [
         step("commit", "T commits after reset", txn="T", writes=[up("c/d", 3)], compare="none"),
         step("begin", "begin after reset", **{"as": "U"}),
     ]),
+    # Found by the differential fuzzer (tools/fuzz/, #262): the transaction a commit names comes
+    # before anything about its writes. A malformed or ended one, then a read-only one with any
+    # write (a verify or a delete too), whatever is wrong with the writes.
+    scenario("a commit's transaction is checked before its writes", [
+        SEED_ONE,
+        step("begin", "begin R", **{"as": "R", "options": {"readOnly": {}}}),
+        step("commit", "R writes a reserved field name", txn="R", writes=[up("c/a", 1, reserved=True)]),
+        step("commit", "R writes to a collection's name", txn="R", writes=[up("c")]),
+        step("commit", "R updates then creates c/d", txn="R", writes=[up("c/d", 1, exists=True), up("c/d", 2, exists=False)]),
+        step("commit", "R writes with an invalid mask", txn="R", writes=[up("c/d", 1, mask=["a..b"])]),
+        step("commit", "R verifies c/d", txn="R", writes=[{"verify": "c/d", "exists": True}]),
+        step("commit", "R deletes c/d", txn="R", writes=[{"delete": "c/d"}]),
+        step("commit", "R commits nothing", txn="R", writes=[]),
+        step("begin", "begin T", **{"as": "T"}),
+        step("rollback", "rollback T", txn="T"),
+        step("commit", "ended T writes a reserved field name", txn="T", writes=[up("c/a", 1, reserved=True)]),
+        step("commit", "ended T updates then creates c/d", txn="T", writes=[up("c/d", 1, exists=True), up("c/d", 2, exists=False)]),
+        step("commit", "malformed bytes and a reserved field name", raw="AAAA", writes=[up("c/a", 1, reserved=True)]),
+        step("get", "c/d as it was", document="c/d"),
+    ]),
     scenario("an idle transaction expires after 60 seconds", [
         SEED_ONE,
         step("begin", "begin T", **{"as": "T"}),

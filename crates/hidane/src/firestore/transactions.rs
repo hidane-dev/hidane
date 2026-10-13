@@ -210,6 +210,25 @@ impl Transactions {
         Ok(txn.mode)
     }
 
+    /// The transaction a commit names, checked before anything about its writes, as on the
+    /// official emulator (`tools/oracle/transactions.py`, #262): one that is malformed, unknown
+    /// or ended, then a read-only one with any write (`writes`).
+    pub fn check_commit(
+        &self,
+        database: &str,
+        transaction: &[u8],
+        writes: bool,
+    ) -> Result<(), Status> {
+        let id = decode(transaction)?;
+        let now = Instant::now();
+        let shared = self.database(database);
+        let mut db = self.lock(&shared, now);
+        if matches!(db.get(id, now)?.mode, Mode::ReadOnly(_)) && writes {
+            return Err(Status::invalid_argument(READ_ONLY));
+        }
+        Ok(())
+    }
+
     /// Ends `transaction`. Rolling back a transaction that already ended succeeds.
     pub fn rollback(&self, database: &str, transaction: &[u8]) -> Result<(), Status> {
         let id = decode(transaction)?;
