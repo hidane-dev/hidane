@@ -452,7 +452,31 @@ impl Query {
 
     /// Leaves out documents without `fields`, before `offset` and `limit` apply. Aggregating a
     /// field does this on the official emulator, also for the `count` next to it.
+    ///
+    /// The fields also order the query, as on the official emulator (`tools/oracle/
+    /// aggregations.py`, #262): in path order, after the orders the query gives and those its
+    /// inequalities imply, before the key, in the direction of the last order it gives; not
+    /// at all when the query orders by the key itself. `offset` and `limit` take documents in
+    /// that order.
     pub fn require(&mut self, fields: impl IntoIterator<Item = FieldPath>) {
+        let mut fields: Vec<FieldPath> = fields.into_iter().collect();
+        fields.sort();
+        fields.dedup();
+        if !self.given_orders.iter().any(|o| o.field == Field::Name) {
+            let descending = self.given_orders.last().is_some_and(|o| o.descending);
+            let key = self
+                .orders
+                .iter()
+                .position(|o| o.field == Field::Name)
+                .unwrap_or(self.orders.len());
+            let added: Vec<Order> = fields
+                .iter()
+                .map(|path| Field::Path(path.clone()))
+                .filter(|field| !self.orders.iter().any(|o| o.field == *field))
+                .map(|field| Order { field, descending })
+                .collect();
+            self.orders.splice(key..key, added);
+        }
         self.required.extend(fields);
     }
 

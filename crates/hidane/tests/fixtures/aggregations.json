@@ -472,6 +472,113 @@
      }
     }
    }
+  },
+  {
+   "name": "ordered/a",
+   "fields": {
+    "v": {
+     "integerValue": "5"
+    },
+    "u": {
+     "integerValue": "1"
+    },
+    "k": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "ordered/b",
+   "fields": {
+    "v": {
+     "integerValue": "1"
+    },
+    "u": {
+     "integerValue": "3"
+    },
+    "k": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "ordered/c",
+   "fields": {
+    "v": {
+     "integerValue": "3"
+    },
+    "u": {
+     "integerValue": "2"
+    },
+    "k": {
+     "integerValue": "0"
+    }
+   }
+  },
+  {
+   "name": "ordered/d",
+   "fields": {
+    "v": {
+     "stringValue": "s"
+    },
+    "u": {
+     "integerValue": "0"
+    },
+    "k": {
+     "integerValue": "2"
+    }
+   }
+  },
+  {
+   "name": "ordered/e",
+   "fields": {
+    "u": {
+     "integerValue": "9"
+    },
+    "k": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "bytes_first/d1",
+   "fields": {
+    "b": {
+     "bytesValue": "AQ=="
+    }
+   }
+  },
+  {
+   "name": "bytes_first/d2",
+   "fields": {
+    "b": {
+     "doubleValue": -0.0
+    }
+   }
+  },
+  {
+   "name": "time_first/d0",
+   "fields": {
+    "b": {
+     "timestampValue": "2020-01-01T00:00:00Z"
+    }
+   }
+  },
+  {
+   "name": "time_first/d1",
+   "fields": {
+    "b": {
+     "doubleValue": 1.0
+    }
+   }
+  },
+  {
+   "name": "time_first/d2",
+   "fields": {
+    "b": {
+     "integerValue": "0"
+    }
+   }
   }
  ],
  "cases": [
@@ -1789,7 +1896,7 @@
       "result": {
        "aggregateFields": {
         "n": {
-         "integerValue": "40"
+         "integerValue": "50"
         }
        }
       },
@@ -1823,7 +1930,7 @@
       "result": {
        "aggregateFields": {
         "n": {
-         "integerValue": "42"
+         "integerValue": "52"
         }
        }
       },
@@ -3321,6 +3428,570 @@
    "outcome": {
     "status": "INVALID_ARGUMENT",
     "message": "Cannot convert firestore.v1.Value with type unset."
+   }
+  },
+  {
+   "name": "sum with limit 1 takes the smallest value",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "limit": 1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg with limit 1 takes the smallest value",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "limit": 1
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "doubleValue": 1.0
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "count and sum with limit 2",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "limit": 2
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "2"
+        },
+        "s": {
+         "integerValue": "4"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "count and sum with offset 3 (a value that is not a number)",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "offset": 3
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "1"
+        },
+        "s": {
+         "integerValue": "0"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg with offset 2",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "offset": 2
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "doubleValue": 5.0
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "sums of v and u, limit 1 (u first)",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "limit": 1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sv"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "u"
+      }
+     },
+     "alias": "su"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "sv": {
+         "integerValue": "0"
+        },
+        "su": {
+         "integerValue": "0"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "sums of u and v, limit 1 (u first)",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "limit": 1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "u"
+      }
+     },
+     "alias": "su"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sv"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "su": {
+         "integerValue": "0"
+        },
+        "sv": {
+         "integerValue": "0"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "an inequality's field comes before the summed field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "k"
+      },
+      "op": "GREATER_THAN",
+      "value": {
+       "integerValue": "0"
+      }
+     }
+    },
+    "limit": 1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "the summed field in the direction of the last order",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "k"
+      },
+      "direction": "DESCENDING"
+     }
+    ],
+    "limit": 2
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "5"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "the summed field after an ascending order",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "k"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "offset": 1,
+    "limit": 1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "an order by the summed field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      },
+      "direction": "DESCENDING"
+     }
+    ],
+    "limit": 1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "0"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg with limit 1: bytes after numbers",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "bytes_first"
+     }
+    ],
+    "limit": 1
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "b"
+      }
+     }
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "field_1": {
+         "doubleValue": 0.0
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg with offset 2: a timestamp after numbers",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "time_first"
+     }
+    ],
+    "offset": 2
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "b"
+      }
+     }
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "field_1": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
    }
   }
  ]
