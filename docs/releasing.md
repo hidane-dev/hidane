@@ -4,7 +4,7 @@ Releases are built by `.github/workflows/release.yml` and published by a maintai
 
 ## Assets
 
-Each release has one archive per target, its checksum and its build provenance:
+Each release has one archive per target, with its SBOM, checksum and attestations:
 
 | Target | Archive |
 |---|---|
@@ -16,8 +16,10 @@ Each release has one archive per target, its checksum and its build provenance:
 
 An archive holds one directory, `hidane-<version>-<target>/`, with the `hidane` binary
 (`hidane.exe` on Windows), `LICENSE-MIT`, `LICENSE-APACHE`, `THIRD-PARTY-LICENSES.txt` and
-`README.md`. `sha256sums.txt` lists the SHA-256 of every archive, as `sha256sum` prints it. Linux
-binaries are statically linked, so they run on any distribution, Alpine included.
+`README.md`. Next to each archive, `hidane-<version>-<target>.cdx.json` is its CycloneDX SBOM: the
+crates built into the binary (`cargo-cyclonedx`, in the workflow's `sbom` job). `sha256sums.txt`
+lists the SHA-256 of every archive and SBOM, as `sha256sum` prints it. Linux binaries are
+statically linked, so they run on any distribution, Alpine included.
 
 `THIRD-PARTY-LICENSES.txt` holds the licenses of the crates built into the binary and of the
 googleapis protobuf definitions it is generated from; `hidane --licenses` prints the same text.
@@ -25,8 +27,11 @@ The release workflow writes it with [cargo-about](https://github.com/EmbarkStudi
 (`about.toml`, `about.hbs`) and embeds it at build time; CI checks on every pull request that
 each dependency's license is one `about.toml` accepts.
 
-Each archive carries a [GitHub artifact attestation](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)
-of its build provenance, which ties it to the workflow run and commit that built it:
+Each archive carries [GitHub artifact attestations](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations)
+of its build provenance, which ties it to the workflow run and commit that built it, and of its
+SBOM; `hidane-<version>.intoto.jsonl` is the provenance's Sigstore bundle. The image on ghcr.io
+has the same two attestations. [verifying-releases.md](verifying-releases.md) shows how to check
+each of them:
 
 ```sh
 sha256sum --check --ignore-missing sha256sums.txt
@@ -72,7 +77,7 @@ signing and notarizing them would take.
    | `crates.io` | `hidane-proto`, `hidane-core`, `hidane-rules`, then `hidane`; `cargo install` and `cargo binstall` then work |
    | `npm` | **stages** the five `@hidane-dev/<platform>` packages, then `hidane` (`packaging/npm/assemble.mjs`, `stage.sh`), with provenance. Approve them on npmjs.com with 2FA, the platform packages first |
    | `pub.dev` | `packaging/pub` |
-   | `ghcr.io/hidane-dev/hidane` | the image for linux/amd64 and linux/arm64, tagged `<version>`, `<major>.<minor>` and `latest` |
+   | `ghcr.io/hidane-dev/hidane` | the image for linux/amd64 and linux/arm64, tagged `<version>`, `<major>.<minor>` and `latest`, with provenance and SBOM attestations |
    | `Homebrew tap` | `Formula/hidane.rb` in hidane-dev/homebrew-tap, or the formula in the job summary when `HOMEBREW_TAP_TOKEN` is not set |
 
    crates.io, npm and pub.dev are reached through trusted publishing: each job gets a

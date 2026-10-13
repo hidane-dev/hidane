@@ -138,7 +138,7 @@ docker run --rm -p 8080:8080 ghcr.io/hidane-dev/hidane
 Then `export FIRESTORE_EMULATOR_HOST=127.0.0.1:8080`, or let `firebase emulators:start` launch it
 through `hidane exec`. The archives, their checksums and build provenance are on
 [GitHub Releases](https://github.com/hidane-dev/hidane/releases)
-([how to verify them](docs/releasing.md#assets)). The macOS binaries are not signed yet: one
+([how to verify them](docs/verifying-releases.md)). The macOS binaries are not signed yet: one
 downloaded with a browser needs `xattr -d com.apple.quarantine hidane`.
 
 ## Migrating
