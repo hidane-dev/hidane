@@ -314,6 +314,18 @@ pub struct Results {
 impl Query {
     /// Validates `query` under `parent`, with the official error messages.
     pub fn parse(parent: ResourcePath, query: &StructuredQuery) -> Result<Self, Status> {
+        Self::parse_aggregated(parent, query, false)
+    }
+
+    /// Validates the query of an aggregation; `orders_fields` when it has a `sum` or an `avg`,
+    /// which order by their fields: like an explicit order, that needs a collection, checked
+    /// after the limit and the offset and before the filter (`tools/oracle/aggregations.py`,
+    /// #262).
+    pub fn parse_aggregated(
+        parent: ResourcePath,
+        query: &StructuredQuery,
+        orders_fields: bool,
+    ) -> Result<Self, Status> {
         let source = match query.from.as_slice() {
             [] => Source::Children,
             [selector] if selector.collection_id.is_empty() => {
@@ -347,6 +359,11 @@ impl Query {
             return Err(Status::invalid_argument("offset is negative"));
         }
         let offset = usize::try_from(query.offset).unwrap_or(0);
+        if kindless && orders_fields {
+            return Err(Status::invalid_argument(
+                "kind is required for all orders except __key__ ascending",
+            ));
+        }
 
         let filter = query
             .r#where
@@ -651,10 +668,11 @@ fn reference(database: &str, path: &ResourcePath) -> Value {
     }
 }
 
-/// `None` for a filter that constrains nothing (an empty composite filter).
+/// `None` for a filter that constrains nothing (an empty composite filter). A filter of no kind
+/// is refused, wherever it is (`tools/oracle/queries.py`, #262).
 fn parse_filter(filter: &structured_query::Filter) -> Result<Option<Filter>, Status> {
     match &filter.filter_type {
-        None => Ok(None),
+        None => Err(Status::invalid_argument("Unknown Filter type.")),
         Some(FilterType::CompositeFilter(composite)) => {
             let combine: fn(Vec<Filter>) -> Filter =
                 match composite_filter::Operator::try_from(composite.op) {
@@ -867,16 +885,7 @@ fn check_filter(filter: &Filter, kindless: bool) -> Result<(), Status> {
             "'NOT_IN' cannot be used in the same query with 'IN', 'ARRAY_CONTAINS_ANY' or 'OR'.",
         ));
     }
-    let array_filters = leaves
-        .iter()
-        .filter(|(_, kind)| {
-            matches!(
-                kind,
-                Leaf::Compare(Op::ArrayContains | Op::ArrayContainsAny)
-            )
-        })
-        .count();
-    if array_filters > 1 {
+    if array_filters(filter) > 1 {
         return Err(Status::failed_precondition(
             "Only a single array-contains clause is allowed in a query",
         ));
@@ -912,6 +921,21 @@ fn collect_leaves<'a>(filter: &'a Filter, out: &mut Vec<(&'a Field, Leaf)>) {
         }
         Filter::Compare { field, op, .. } => out.push((field, Leaf::Compare(*op))),
         Filter::Unary { field, op } => out.push((field, Leaf::Unary(*op))),
+    }
+}
+
+/// The most `array-contains` and `array-contains-any` filters one conjunction of the filter's
+/// disjunctive normal form holds: the branches of an `or` are conjunctions of their own, so two
+/// of them there are allowed (`tools/oracle/queries.py`, #262).
+fn array_filters(filter: &Filter) -> usize {
+    match filter {
+        Filter::Or(filters) => filters.iter().map(array_filters).max().unwrap_or(0),
+        Filter::And(filters) => filters.iter().map(array_filters).sum(),
+        Filter::Compare {
+            op: Op::ArrayContains | Op::ArrayContainsAny,
+            ..
+        } => 1,
+        Filter::Compare { .. } | Filter::Unary { .. } => 0,
     }
 }
 

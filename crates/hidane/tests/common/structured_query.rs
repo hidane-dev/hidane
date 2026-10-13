@@ -1,7 +1,11 @@
 //! REST `structuredQuery` JSON → `StructuredQuery`, to replay recorded queries over gRPC.
 
 use hidane_proto::google::firestore::v1::{
-    Cursor, StructuredQuery,
+    Cursor, StructuredAggregationQuery, StructuredQuery,
+    structured_aggregation_query::{
+        self, Aggregation,
+        aggregation::{Avg, Count, Operator, Sum},
+    },
     structured_query::{
         CollectionSelector, CompositeFilter, Direction, FieldFilter, FieldReference, Filter,
         FindNearest, Order, Projection, UnaryFilter, composite_filter, field_filter,
@@ -19,6 +23,10 @@ pub fn field(json: &Json) -> FieldReference {
 }
 
 fn filter(json: &Json) -> Filter {
+    // `{}`: a filter of no kind.
+    if json.as_object().is_some_and(serde_json::Map::is_empty) {
+        return Filter { filter_type: None };
+    }
     let filter_type = if let Some(c) = json.get("compositeFilter") {
         FilterType::CompositeFilter(CompositeFilter {
             op: c["op"]
@@ -61,6 +69,42 @@ fn cursor(json: &Json) -> Cursor {
             .map(|vs| vs.iter().map(value).collect())
             .unwrap_or_default(),
         before: json["before"].as_bool().unwrap_or(false),
+    }
+}
+
+/// A REST aggregation (`count`, `sum`, `avg`, with its `alias`) as the proto message.
+pub fn aggregation(json: &Json) -> Aggregation {
+    let operator = if let Some(count) = json.get("count") {
+        Some(Operator::Count(Count {
+            up_to: count["upTo"].as_str().map(|n| n.parse().unwrap()),
+        }))
+    } else if let Some(sum) = json.get("sum") {
+        Some(Operator::Sum(Sum {
+            field: sum.get("field").map(field),
+        }))
+    } else {
+        json.get("avg").map(|avg| {
+            Operator::Avg(Avg {
+                field: avg.get("field").map(field),
+            })
+        })
+    };
+    Aggregation {
+        operator,
+        alias: json["alias"].as_str().unwrap_or_default().to_owned(),
+    }
+}
+
+/// A REST `structuredAggregationQuery` as the proto message.
+pub fn structured_aggregation_query(json: &Json) -> StructuredAggregationQuery {
+    StructuredAggregationQuery {
+        aggregations: json["aggregations"]
+            .as_array()
+            .map(|a| a.iter().map(aggregation).collect())
+            .unwrap_or_default(),
+        query_type: json
+            .get("structuredQuery")
+            .map(|q| structured_aggregation_query::QueryType::StructuredQuery(structured_query(q))),
     }
 }
 

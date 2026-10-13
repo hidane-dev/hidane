@@ -314,6 +314,21 @@ case("not-in on __name__ with a string", q("p", where_=ff("__name__", "NOT_IN", 
 case("__name__ < a collection path", q("p", where_=ff("__name__", "LESS_THAN", {"referenceValue": "{documents}/p"})))
 case("two array-contains", q("p", where_=AND(ff("tags", "ARRAY_CONTAINS", s("red")), ff("tags", "ARRAY_CONTAINS", s("blue")))))
 
+# --- found by the differential fuzzer (tools/fuzz/, #262) ------------------------------------
+# A filter of no kind is refused, wherever it is. array-contains and array-contains-any count
+# once per disjunction of the filter in disjunctive normal form: two of them in different
+# branches of an `or` are allowed, two that end up in one conjunction are not.
+case("empty filter", q("p", where_={}))
+case("empty filter in an and", q("p", where_=AND(ff("a", "EQUAL", i(1)), {})))
+case("empty filter in an or", q("p", where_=OR(ff("a", "EQUAL", i(1)), {})))
+case("empty filter without a collection", {"where": {}})
+case("array-contains in two branches of an or", q("p", where_=OR(ff("tags", "ARRAY_CONTAINS", s("red")), ff("tags", "ARRAY_CONTAINS", s("blue")))))
+case("array-contains or array-contains-any", q("p", where_=OR(ff("tags", "ARRAY_CONTAINS", s("red")), ff("tags", "ARRAY_CONTAINS_ANY", arr(s("blue"), s("x"))))))
+case("array-contains-any in two branches of an or", q("p", where_=OR(ff("tags", "ARRAY_CONTAINS_ANY", arr(s("red"))), ff("tags", "ARRAY_CONTAINS_ANY", arr(s("blue"))))))
+case("array-contains and array-contains-any", q("p", where_=AND(ff("tags", "ARRAY_CONTAINS", s("red")), ff("tags", "ARRAY_CONTAINS_ANY", arr(s("blue"))))))
+case("an or of array-contains, and array-contains", q("p", where_=AND(OR(ff("tags", "ARRAY_CONTAINS", s("red")), ff("tags", "ARRAY_CONTAINS", s("blue"))), ff("tags", "ARRAY_CONTAINS", s("x")))))
+case("array-contains, or an and of two", q("p", where_=OR(ff("tags", "ARRAY_CONTAINS", s("red")), AND(ff("tags", "ARRAY_CONTAINS", s("blue")), ff("tags", "ARRAY_CONTAINS", s("x"))))))
+
 # --- equality on __name__ next to inequalities (#74) -----------------------------------------
 # Refused unless __name__ has an inequality too; checked after the other filter checks, and
 # before a __name__ value that is not a reference is refused.

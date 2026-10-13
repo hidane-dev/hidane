@@ -12768,6 +12768,461 @@
    }
   },
   {
+   "name": "empty filter",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {}
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Unknown Filter type."
+   }
+  },
+  {
+   "name": "empty filter in an and",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {}
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Unknown Filter type."
+   }
+  },
+  {
+   "name": "empty filter in an or",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "OR",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {}
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Unknown Filter type."
+   }
+  },
+  {
+   "name": "empty filter without a collection",
+   "parent": "",
+   "query": {
+    "where": {}
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Unknown Filter type."
+   }
+  },
+  {
+   "name": "array-contains in two branches of an or",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "OR",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "tags"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "stringValue": "red"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "tags"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "stringValue": "blue"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "document": "p/p1"
+     },
+     {
+      "document": "p/p2"
+     },
+     {
+      "document": "p/p4",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "array-contains or array-contains-any",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "OR",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "tags"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "stringValue": "red"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "tags"
+         },
+         "op": "ARRAY_CONTAINS_ANY",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "stringValue": "blue"
+            },
+            {
+             "stringValue": "x"
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "document": "p/p1"
+     },
+     {
+      "document": "p/p2"
+     },
+     {
+      "document": "p/p4",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "array-contains-any in two branches of an or",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "OR",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "tags"
+         },
+         "op": "ARRAY_CONTAINS_ANY",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "stringValue": "red"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "tags"
+         },
+         "op": "ARRAY_CONTAINS_ANY",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "stringValue": "blue"
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "document": "p/p1"
+     },
+     {
+      "document": "p/p2"
+     },
+     {
+      "document": "p/p4",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "array-contains and array-contains-any",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "tags"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "stringValue": "red"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "tags"
+         },
+         "op": "ARRAY_CONTAINS_ANY",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "stringValue": "blue"
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "FAILED_PRECONDITION",
+    "message": "Only a single array-contains clause is allowed in a query"
+   }
+  },
+  {
+   "name": "an or of array-contains, and array-contains",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "compositeFilter": {
+         "op": "OR",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "tags"
+            },
+            "op": "ARRAY_CONTAINS",
+            "value": {
+             "stringValue": "red"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "tags"
+            },
+            "op": "ARRAY_CONTAINS",
+            "value": {
+             "stringValue": "blue"
+            }
+           }
+          }
+         ]
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "tags"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "stringValue": "x"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "FAILED_PRECONDITION",
+    "message": "Only a single array-contains clause is allowed in a query"
+   }
+  },
+  {
+   "name": "array-contains, or an and of two",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "OR",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "tags"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "stringValue": "red"
+         }
+        }
+       },
+       {
+        "compositeFilter": {
+         "op": "AND",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "tags"
+            },
+            "op": "ARRAY_CONTAINS",
+            "value": {
+             "stringValue": "blue"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "tags"
+            },
+            "op": "ARRAY_CONTAINS",
+            "value": {
+             "stringValue": "x"
+            }
+           }
+          }
+         ]
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "FAILED_PRECONDITION",
+    "message": "Only a single array-contains clause is allowed in a query"
+   }
+  },
+  {
    "name": "a != 1 and __name__ == p3",
    "parent": "",
    "query": {

@@ -5,6 +5,8 @@
 //! scenario gets its own server and they all run at once. Scenarios marked `slow` (over a minute
 //! of waiting) are covered with a paused clock by the unit tests in `src/firestore/transactions`.
 
+mod common;
+
 use std::{
     collections::HashMap,
     net::SocketAddr,
@@ -12,6 +14,7 @@ use std::{
 };
 
 use base64::{Engine as _, engine::general_purpose::STANDARD};
+use common::structured_query::{structured_aggregation_query, structured_query};
 use hidane_proto::google::firestore::v1::{
     BatchGetDocumentsRequest, BatchWriteRequest, BeginTransactionRequest, CommitRequest, Document,
     DocumentMask, GetDocumentRequest, ListDocumentsRequest, Precondition, RollbackRequest,
@@ -367,17 +370,21 @@ impl Context {
                 } else {
                     None
                 };
+                // The query given (none for null), or one over a whole collection.
+                let query = match step.get("structuredQuery") {
+                    Some(Json::Null) => None,
+                    Some(given) => Some(structured_query(given)),
+                    None => Some(StructuredQuery {
+                        from: vec![CollectionSelector {
+                            collection_id: step["collection"].as_str().unwrap().to_owned(),
+                            all_descendants: step["group"] == true,
+                        }],
+                        ..StructuredQuery::default()
+                    }),
+                };
                 let request = RunQueryRequest {
                     parent: self.base(),
-                    query_type: Some(run_query_request::QueryType::StructuredQuery(
-                        StructuredQuery {
-                            from: vec![CollectionSelector {
-                                collection_id: step["collection"].as_str().unwrap().to_owned(),
-                                all_descendants: step["group"] == true,
-                            }],
-                            ..StructuredQuery::default()
-                        },
-                    )),
+                    query_type: query.map(run_query_request::QueryType::StructuredQuery),
                     consistency_selector,
                     ..RunQueryRequest::default()
                 };
@@ -425,28 +432,30 @@ impl Context {
                 } else {
                     None
                 };
-                let query = StructuredQuery {
-                    from: vec![CollectionSelector {
-                        collection_id: step["collection"].as_str().unwrap().to_owned(),
-                        all_descendants: false,
-                    }],
-                    ..StructuredQuery::default()
+                // The aggregation query given (none for null), or a count of a collection.
+                let aggregation_query = match step.get("structuredAggregationQuery") {
+                    Some(Json::Null) => None,
+                    Some(given) => Some(structured_aggregation_query(given)),
+                    None => Some(StructuredAggregationQuery {
+                        aggregations: vec![Aggregation {
+                            operator: Some(Operator::Count(Count { up_to: None })),
+                            alias: "n".to_owned(),
+                        }],
+                        query_type: Some(structured_aggregation_query::QueryType::StructuredQuery(
+                            StructuredQuery {
+                                from: vec![CollectionSelector {
+                                    collection_id: step["collection"].as_str().unwrap().to_owned(),
+                                    all_descendants: false,
+                                }],
+                                ..StructuredQuery::default()
+                            },
+                        )),
+                    }),
                 };
                 let request = RunAggregationQueryRequest {
                     parent: self.base(),
-                    query_type: Some(
-                        run_aggregation_query_request::QueryType::StructuredAggregationQuery(
-                            StructuredAggregationQuery {
-                                aggregations: vec![Aggregation {
-                                    operator: Some(Operator::Count(Count { up_to: None })),
-                                    alias: "n".to_owned(),
-                                }],
-                                query_type: Some(
-                                    structured_aggregation_query::QueryType::StructuredQuery(query),
-                                ),
-                            },
-                        ),
-                    ),
+                    query_type: aggregation_query
+                        .map(run_aggregation_query_request::QueryType::StructuredAggregationQuery),
                     consistency_selector,
                     ..RunAggregationQueryRequest::default()
                 };

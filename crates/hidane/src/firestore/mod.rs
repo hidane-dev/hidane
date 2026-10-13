@@ -911,11 +911,18 @@ impl Firestore for FirestoreService {
         let database = parent.database;
         // `explain_options` is ignored, as on the official emulator: the same results, no
         // explain metrics.
-        // An absent query is the empty one, as on the official emulator.
-        let default = StructuredQuery::default();
-        let structured = match &req.query_type {
-            Some(run_query_request::QueryType::StructuredQuery(structured)) => structured,
-            None => &default,
+        // The transaction the request reads in comes first: a malformed or ended one is
+        // reported before anything about the query (`tools/oracle/transactions.py`, #262).
+        if let Some(run_query_request::ConsistencySelector::Transaction(t)) =
+            &req.consistency_selector
+        {
+            self.read_in(&database, t, &[], None)?;
+        }
+        let Some(run_query_request::QueryType::StructuredQuery(structured)) = &req.query_type
+        else {
+            return Err(Status::invalid_argument(
+                "only structured queries are supported",
+            ));
         };
         let query = Query::parse(parent.path, structured)?;
         self.check_list(&caller, &database, &query)?;
@@ -991,20 +998,33 @@ impl Firestore for FirestoreService {
         let database = parent.database;
         // `explain_options` is ignored, as on the official emulator: the same results, no
         // explain metrics.
-        let default = StructuredQuery::default();
-        let (structured, aggregations) = match &req.query_type {
-            Some(run_aggregation_query_request::QueryType::StructuredAggregationQuery(q)) => (
-                match &q.query_type {
-                    Some(structured_aggregation_query::QueryType::StructuredQuery(s)) => s,
-                    None => &default,
-                },
-                q.aggregations.as_slice(),
-            ),
-            None => (&default, &[][..]),
+        // As for RunQuery, the transaction first; then the aggregations, before the query they
+        // aggregate (`tools/oracle/aggregations.py`, #262). An aggregation query without a
+        // query aggregates the empty one.
+        if let Some(run_aggregation_query_request::ConsistencySelector::Transaction(t)) =
+            &req.consistency_selector
+        {
+            self.read_in(&database, t, &[], None)?;
+        }
+        let Some(run_aggregation_query_request::QueryType::StructuredAggregationQuery(q)) =
+            &req.query_type
+        else {
+            return Err(Status::invalid_argument(
+                "Only structured aggregation queries are supported.",
+            ));
         };
-        let mut query = Query::parse(parent.path, structured)?;
+        let default = StructuredQuery::default();
+        let structured = match &q.query_type {
+            Some(structured_aggregation_query::QueryType::StructuredQuery(s)) => s,
+            None => &default,
+        };
+        let aggregations = Aggregations::parse(&q.aggregations)?;
+        let mut query = Query::parse_aggregated(
+            parent.path,
+            structured,
+            aggregations.fields().next().is_some(),
+        )?;
         self.check_list(&caller, &database, &query)?;
-        let aggregations = Aggregations::parse(aggregations)?;
         query.require(aggregations.fields());
         let consistency = match &req.consistency_selector {
             Some(run_aggregation_query_request::ConsistencySelector::Transaction(t)) => {

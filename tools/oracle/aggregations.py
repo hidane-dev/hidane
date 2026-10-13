@@ -123,6 +123,20 @@ case("sum of an invalid field path", q("ints"), [total("a..b", "s")])
 case("sum without a field", q("ints"), [{"sum": {}, "alias": "s"}])
 case("aggregation without an operator", q("ints"), [{"alias": "x"}])
 case("invalid query", q("ints", limit=-1), [count("n")])
+# Found by the differential fuzzer (tools/fuzz/, #262): `sum` and `avg` need a collection, as an
+# order by a field does; `count` does not. The aggregations are checked before the query, and
+# this after the query's limit and before its filter.
+case("sum without a collection", {}, [total("v", "s")])
+case("avg without a collection", {}, [avg("v", "a")])
+case("count and sum of every collection", {"from": [{"collectionId": ""}]}, [count("n"), total("v", "s")])
+case("sum of every descendant", {"from": [{"collectionId": "", "allDescendants": True}]}, [total("v", "s")])
+case("avg under a document without a collection", {}, [avg("v", "a")], parent="mixed/i1")
+case("count under a document without a collection", {}, [count("n")], parent="mixed/i1")
+case("sum without a collection, with a filter", {"where": {"fieldFilter": {"field": f("v"), "op": "EQUAL", "value": i(1)}}}, [total("v", "s")])
+case("sum without a collection, with a negative limit", {"limit": -1}, [total("v", "s")])
+case("sum without a collection, and a count up to -1", {}, [total("v", "s"), count("n", up_to=-1)])
+case("no aggregations and an invalid query", q("ints", limit=-1), [])
+case("a count up to -1 and an invalid query", q("ints", orderBy=[{"field": f("v")}, {"field": f("v")}]), [count("n", up_to=-1)])
 
 
 def fill(value):

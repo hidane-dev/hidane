@@ -7,16 +7,11 @@ mod common;
 
 use common::{
     protojson::{fields, same_fields},
-    structured_query::{field, structured_query},
+    structured_query::{aggregation, structured_query},
 };
 use hidane_proto::google::firestore::v1::{
     CommitRequest, Document, RunAggregationQueryRequest, StructuredAggregationQuery, Write,
-    firestore_client::FirestoreClient,
-    run_aggregation_query_request,
-    structured_aggregation_query::{
-        self, Aggregation,
-        aggregation::{Avg, Count, Operator, Sum},
-    },
+    firestore_client::FirestoreClient, run_aggregation_query_request, structured_aggregation_query,
     write::Operation,
 };
 use serde_json::{Value as Json, json};
@@ -48,28 +43,6 @@ async fn start() -> Client {
 
 fn documents() -> String {
     format!("projects/{PROJECT}/databases/(default)/documents")
-}
-
-fn aggregation(json: &Json) -> Aggregation {
-    let operator = if let Some(count) = json.get("count") {
-        Some(Operator::Count(Count {
-            up_to: count["upTo"].as_str().map(|n| n.parse().unwrap()),
-        }))
-    } else if let Some(sum) = json.get("sum") {
-        Some(Operator::Sum(Sum {
-            field: sum.get("field").map(field),
-        }))
-    } else {
-        json.get("avg").map(|avg| {
-            Operator::Avg(Avg {
-                field: avg.get("field").map(field),
-            })
-        })
-    };
-    Aggregation {
-        operator,
-        alias: json["alias"].as_str().unwrap_or_default().to_owned(),
-    }
 }
 
 fn code_name(code: Code) -> String {

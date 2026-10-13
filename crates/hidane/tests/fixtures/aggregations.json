@@ -2684,6 +2684,274 @@
     "status": "INVALID_ARGUMENT",
     "message": "limit is negative"
    }
+  },
+  {
+   "name": "sum without a collection",
+   "parent": "",
+   "query": {},
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "kind is required for all orders except __key__ ascending"
+   }
+  },
+  {
+   "name": "avg without a collection",
+   "parent": "",
+   "query": {},
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "kind is required for all orders except __key__ ascending"
+   }
+  },
+  {
+   "name": "count and sum of every collection",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": ""
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "kind is required for all orders except __key__ ascending"
+   }
+  },
+  {
+   "name": "sum of every descendant",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "",
+      "allDescendants": true
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "kind is required for all orders except __key__ ascending"
+   }
+  },
+  {
+   "name": "avg under a document without a collection",
+   "parent": "mixed/i1",
+   "query": {},
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "kind is required for all orders except __key__ ascending"
+   }
+  },
+  {
+   "name": "count under a document without a collection",
+   "parent": "mixed/i1",
+   "query": {},
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum without a collection, with a filter",
+   "parent": "",
+   "query": {
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "kind is required for all orders except __key__ ascending"
+   }
+  },
+  {
+   "name": "sum without a collection, with a negative limit",
+   "parent": "",
+   "query": {
+    "limit": -1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "limit is negative"
+   }
+  },
+  {
+   "name": "sum without a collection, and a count up to -1",
+   "parent": "",
+   "query": {},
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "count": {
+      "upTo": "-1"
+     },
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The `up_to` value in a COUNT aggregation must be greater than or equal to zero."
+   }
+  },
+  {
+   "name": "no aggregations and an invalid query",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "limit": -1
+   },
+   "aggregations": [],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregations can not be empty."
+   }
+  },
+  {
+   "name": "a count up to -1 and an invalid query",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     {
+      "field": {
+       "fieldPath": "v"
+      }
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {
+      "upTo": "-1"
+     },
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The `up_to` value in a COUNT aggregation must be greater than or equal to zero."
+   }
   }
  ]
 }

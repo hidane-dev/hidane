@@ -176,6 +176,18 @@ case("list with a reserved name in the read mask", "GET", B + "/fz?mask.fieldPat
 case("list with an empty read mask path", "GET", B + "/fz?mask.fieldPaths=")
 case("batchGet with a reserved name in the mask", "POST", B + ":batchGet", {"documents": [NAME + "/fz/b"], "mask": {"fieldPaths": ["__x__"]}})
 case("batchGet with an empty mask path", "POST", B + ":batchGet", {"documents": [NAME + "/fz/b"], "mask": {"fieldPaths": [""]}})
+# RunQuery and RunAggregationQuery need a structured query, checked after the transaction the
+# request names (a malformed one comes first) and before a new transaction or a read time.
+case("runQuery without a query", "POST", B + ":runQuery", {})
+case("runQuery without a query, in a new transaction", "POST", B + ":runQuery", {"newTransaction": {"readOnly": {}}})
+case("runQuery without a query, at a future read time", "POST", B + ":runQuery", {"readTime": "2999-01-01T00:00:00Z"})
+case("runQuery without a query, with a malformed transaction", "POST", B + ":runQuery", {"transaction": "AAAA"})
+case("runQuery with a malformed transaction and an invalid query", "POST", B + ":runQuery", {"structuredQuery": {"from": [{"collectionId": "c"}], "orderBy": [{"field": {"fieldPath": "a"}}, {"field": {"fieldPath": "a"}}]}, "transaction": "AAAA"})
+case("runAggregationQuery without a query", "POST", B + ":runAggregationQuery", {})
+case("runAggregationQuery without a query, in a new transaction", "POST", B + ":runAggregationQuery", {"newTransaction": {}})
+case("runAggregationQuery without a query, with a malformed transaction", "POST", B + ":runAggregationQuery", {"transaction": "AAAA"})
+case("runAggregationQuery with no aggregations and a malformed transaction", "POST", B + ":runAggregationQuery", {"structuredAggregationQuery": {}, "transaction": "AAAA"})
+case("runAggregationQuery with a count and no query", "POST", B + ":runAggregationQuery", {"structuredAggregationQuery": {"aggregations": [{"count": {}}]}})
 
 
 def norm(text):

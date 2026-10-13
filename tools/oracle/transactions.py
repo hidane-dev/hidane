@@ -13,8 +13,11 @@ Step ops (documents are relative to the project's database, e.g. "c/d"):
     get         {txn?, document}                  GetDocument (with txn over gRPC through grpcurl:
                                                   REST GET ?transaction= hangs)
     list        {txn?, collection, pageSize?}     ListDocuments (same)
-    query       {txn?, new?, collection, group?}  RunQuery over a whole collection (or group)
-    aggregate   {txn?, new?, collection}          RunAggregationQuery counting a collection
+    query       {txn?, new?, collection, group?}  RunQuery over a whole collection (or group); or
+                {txn?, new?, structuredQuery}     the query given (REST JSON, null for none)
+    aggregate   {txn?, new?, collection}          RunAggregationQuery counting a collection; or
+                {txn?, new?,                      the aggregation query given (REST JSON, null
+                 structuredAggregationQuery}      for none)
     commit      {txn?, writes}                    Commit; writes are {update | delete | verify,
                                                   n?, exists?, reserved?, mask?, increment?}
     batchWrite  {writes}                          BatchWrite
@@ -243,6 +246,26 @@ SCENARIOS = [
         step("commit", "T creates c/mine", txn="T", writes=[up("c/mine", 2)]),
         step("aggregate", "count c after T", collection="c"),
     ]),
+    # Found by the differential fuzzer (tools/fuzz/, #262): the transaction a query or an
+    # aggregation reads in is checked before the query, so an ended one is reported first.
+    scenario("the transaction of a query is checked before the query", [
+        step("begin", "begin T", **{"as": "T"}),
+        step("rollback", "rollback T", txn="T"),
+        step("query", "ended T queries without a query", txn="T", structuredQuery=None),
+        step("query", "ended T queries with a filter of no kind", txn="T",
+             structuredQuery={"from": [{"collectionId": "c"}], "where": {}}),
+        step("query", "ended T queries with an unknown field filter operator", txn="T",
+             structuredQuery={"where": {"fieldFilter": {}}}),
+        step("aggregate", "ended T aggregates without a query", txn="T", structuredAggregationQuery=None),
+        step("aggregate", "ended T aggregates nothing", txn="T", structuredAggregationQuery={}),
+        step("aggregate", "ended T sums without a collection", txn="T",
+             structuredAggregationQuery={"structuredQuery": {}, "aggregations": [{"sum": {"field": {"fieldPath": "a"}}}]}),
+        step("begin", "begin U", **{"as": "U"}),
+        step("query", "U queries without a query", txn="U", structuredQuery=None),
+        step("aggregate", "U aggregates without a query", txn="U", structuredAggregationQuery=None),
+        step("aggregate", "U aggregates nothing", txn="U", structuredAggregationQuery={}),
+        step("rollback", "rollback U", txn="U"),
+    ]),
     scenario("BatchGetDocuments can start a transaction", [
         SEED_ONE,
         step("read", "new read-write transaction reads c/d", new={"readWrite": {}}, documents=["c/d"], **{"as": "T"}),
@@ -440,7 +463,10 @@ def run(sc, project):
                 status, message, res = grpc("ListDocuments", body)
             return status, message, [doc_result(base, d) for d in res.get("documents", [])] if res is not None else None
         if op == "query":
-            body = {"structuredQuery": {"from": [{"collectionId": st["collection"], "allDescendants": st.get("group", False)}]}}
+            if "structuredQuery" in st:
+                body = {} if st["structuredQuery"] is None else {"structuredQuery": st["structuredQuery"]}
+            else:
+                body = {"structuredQuery": {"from": [{"collectionId": st["collection"], "allDescendants": st.get("group", False)}]}}
             if txn:
                 body["transaction"] = txn
             if "new" in st:
@@ -457,8 +483,12 @@ def run(sc, project):
                     out.append({"document": doc_result(base, r["document"])})
             return status, message, out
         if op == "aggregate":
-            body = {"structuredAggregationQuery": {"structuredQuery": {"from": [{"collectionId": st["collection"]}]},
-                                                   "aggregations": [{"count": {}, "alias": "n"}]}}
+            if "structuredAggregationQuery" in st:
+                given = st["structuredAggregationQuery"]
+                body = {} if given is None else {"structuredAggregationQuery": given}
+            else:
+                body = {"structuredAggregationQuery": {"structuredQuery": {"from": [{"collectionId": st["collection"]}]},
+                                                       "aggregations": [{"count": {}, "alias": "n"}]}}
             if txn:
                 body["transaction"] = txn
             if "new" in st:
