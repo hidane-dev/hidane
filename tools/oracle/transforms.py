@@ -154,6 +154,20 @@ case("transforms of nested fields, and other problems", "t-nested-order", [
     commit(write("t/e", {}, [inc("m", i(1)), inc("m.x", i(1))]), {"delete": "{base}/t/e", "currentDocument": {"exists": True}}),
     get("t/e"),
 ])
+# Found by the differential fuzzer (#262): a transform of `__name__` reads and writes the field
+# `__key__`, wherever `__name__` is in its path (quoted or not, nested or not), and the transforms
+# of one write are checked against each other with those names. An update mask may not hold
+# `__name__` inside a longer path; a transform may.
+case("transforms of __name__", "t-name", [
+    commit(write("c/d", {"a": i(1)}, [inc("__name__", i(1))])),
+    commit(write("c/d", {}, [inc("`__name__`", i(2)), maximum("b.__name__", i(5)), inc("m.__name__.c", i(1))], mask=[])),
+    commit(write("c/d", {}, [inc("__name__", i(1)), inc("__name__.x", i(1))], mask=[])),
+    commit(write("c/d", {}, [inc("b.__name__", i(1)), inc("b.__name__.y", i(1))], mask=[])),
+    commit(write("c/d", {}, [inc("x", i(1))], mask=["b.__name__"])),
+    commit(transform_only("c/e", union("__name__", s("x")), minimum("n.__name__", i(3)))),
+    get("c/d"),
+    get("c/e"),
+])
 case("transforms of siblings and of one field twice", "t-siblings", [
     commit(write("t/e", {}, [inc("m.y", i(1)), inc("m.z", i(1)), inc("mm", i(1)), inc("`a.b`", i(1)), inc("a", i(1))])),
     commit(write("t/e", {}, [inc("m.y", i(1)), inc("m.y", i(1))])),

@@ -105,9 +105,9 @@ pub fn reserved(name: &str) -> bool {
     name.len() >= 4 && name.starts_with("__") && name.ends_with("__")
 }
 
-/// A field path of an update mask or a field transform: one that parses and names no reserved
-/// field, which the message names with the rest of the path. `__name__` alone is the document's
-/// name; in a longer path it is refused.
+/// A field path of an update mask: one that parses and names no reserved field, which the
+/// message names with the rest of the path. `__name__` alone is the document's name; in a
+/// longer path it is refused. A field transform's path is `transform_path`.
 pub fn field_path(path: &str) -> Result<FieldPath, Status> {
     if path.is_empty() {
         return Err(Status::invalid_argument(
@@ -131,10 +131,42 @@ pub fn field_path(path: &str) -> Result<FieldPath, Status> {
     Ok(parsed)
 }
 
+/// The field a field transform reads and writes: its path parsed and checked as `field_path`
+/// does, except that `__name__` may be anywhere in it, and each `__name__` segment names the
+/// field `__key__`, quoted or not, nested or not (`tools/oracle/transforms.py`, #262).
+pub fn transform_path(path: &str) -> Result<FieldPath, Status> {
+    if path.is_empty() {
+        return Err(Status::invalid_argument(
+            "Invalid empty property path string.",
+        ));
+    }
+    let parsed = FieldPath::parse(path).map_err(Status::invalid_argument)?;
+    let segments = parsed.segments();
+    if let Some(at) = segments
+        .iter()
+        .position(|s| s != "__name__" && reserved_name(s))
+    {
+        return Err(Status::invalid_argument(format!(
+            "Invalid reserved name in field path {}",
+            segments[at..].join(".")
+        )));
+    }
+    if !segments.iter().any(|s| s == "__name__") {
+        return Ok(parsed);
+    }
+    Ok(FieldPath::from_segments(segments.iter().map(|s| {
+        if s == "__name__" {
+            "__key__"
+        } else {
+            s.as_str()
+        }
+    })))
+}
+
 /// A field transform, with the names of its write: its path, its operand's names, then the
 /// operand's type.
 pub fn transform(transform: &FieldTransform) -> Result<(), Status> {
-    field_path(&transform.field_path)?;
+    transform_path(&transform.field_path)?;
     match &transform.transform_type {
         None => Err(Status::invalid_argument(
             "Operation type must be specified for field transformation.",
@@ -168,13 +200,13 @@ pub fn transform(transform: &FieldTransform) -> Result<(), Status> {
 
 /// The field transforms of one write, in order: each one (`transform`), then against the ones
 /// before it, since a write may not transform a field and a field nested in it. The same path
-/// twice is allowed. The message names the shorter path, its segments joined by dots
-/// (`tools/oracle/transforms.py`, #262).
+/// twice is allowed. The message names the shorter path, its segments joined by dots, with
+/// `__key__` for `__name__` (`tools/oracle/transforms.py`, #262).
 pub fn transforms(transforms: &[FieldTransform]) -> Result<(), Status> {
     let mut paths: Vec<FieldPath> = Vec::with_capacity(transforms.len());
     for t in transforms {
         transform(t)?;
-        let path = FieldPath::parse(&t.field_path).map_err(Status::invalid_argument)?;
+        let path = transform_path(&t.field_path)?;
         if let Some(parent) = paths.iter().find_map(|earlier| {
             let (a, b) = (earlier.segments(), path.segments());
             if a.len() < b.len() && b.starts_with(a) {

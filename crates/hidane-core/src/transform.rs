@@ -42,7 +42,18 @@ pub fn apply(
     commit_time: &Timestamp,
 ) -> Result<Value, String> {
     let path = FieldPath::parse(&transform.field_path)?;
-    let current = get(fields, &path);
+    apply_at(fields, &path, transform, commit_time)
+}
+
+/// Applies `transform` at `path` rather than at its own field path, for a caller that maps the
+/// path first (a transform of `__name__` writes the field `__key__` on the official emulator).
+pub fn apply_at(
+    fields: &mut Fields,
+    path: &FieldPath,
+    transform: &FieldTransform,
+    commit_time: &Timestamp,
+) -> Result<Value, String> {
+    let current = get(fields, path);
     let (stored, result) = match transform
         .transform_type
         .as_ref()
@@ -86,7 +97,7 @@ pub fn apply(
             (array(elements), null())
         }
     };
-    set(fields, &path, stored);
+    set(fields, path, stored);
     Ok(result)
 }
 

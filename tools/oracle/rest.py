@@ -310,6 +310,16 @@ case("commit an update of the documents root", "POST", B + ":commit", {"writes":
 case("commit a delete of the documents root", "POST", B + ":commit", {"writes": [{"delete": NAME}]})
 case("batchGet the documents root", "POST", B + ":batchGet", {"documents": [NAME]})
 case("batchGet another project's documents root", "POST", B + ":batchGet", {"documents": ["projects/other/databases/(default)/documents"]})
+# A transform of `__name__` writes the field `__key__` (`transforms.py`), which a read mask or an
+# update mask of `__name__` does not name, and which reads and queries return.
+case("a transform of __name__ writes the field __key__", "POST", B + ":commit", {"writes": [
+    {"update": {"name": NAME + "/nm/a", "fields": {"a": i(1)}}, "updateTransforms": [{"fieldPath": "__name__", "increment": i(1)}]},
+]})
+case("a read mask of __name__ does not name __key__", "GET", B + "/nm/a?mask.fieldPaths=__name__")
+case("an update mask of __name__ leaves __key__", "PATCH", B + "/nm/a?updateMask.fieldPaths=__name__", {"fields": {}})
+case("a GET returns __key__", "GET", B + "/nm/a")
+case("a list returns __key__", "GET", B + "/nm")
+case("a query returns __key__", "POST", B + ":runQuery", {"structuredQuery": {"from": [{"collectionId": "nm"}]}})
 
 
 def norm(text):

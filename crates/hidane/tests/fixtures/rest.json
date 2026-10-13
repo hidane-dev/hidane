@@ -4096,6 +4096,124 @@
     "contentType": "application/json",
     "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/other\\/databases\\/(default)\\/documents\\\" is invalid: Omit \\\"\\/documents\\\" when referencing a database (except as the parent of a document).\",\"status\":\"INVALID_ARGUMENT\"}}"
    }
+  },
+  {
+   "name": "a transform of __name__ writes the field __key__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/nm/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "__name__",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"integerValue\": \"1\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a read mask of __name__ does not name __key__",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/nm/a?mask.fieldPaths=__name__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/nm/a\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an update mask of __name__ leaves __key__",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/nm/a?updateMask.fieldPaths=__name__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {}
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/nm/a\",\n  \"fields\": {\n    \"a\": {\n      \"integerValue\": \"1\"\n    },\n    \"__key__\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a GET returns __key__",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/nm/a",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/nm/a\",\n  \"fields\": {\n    \"a\": {\n      \"integerValue\": \"1\"\n    },\n    \"__key__\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a list returns __key__",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/nm",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/nm/a\",\n    \"fields\": {\n      \"a\": {\n        \"integerValue\": \"1\"\n      },\n      \"__key__\": {\n        \"integerValue\": \"1\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "a query returns __key__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "nm"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/nm/a\",\n    \"fields\": {\n      \"a\": {\n        \"integerValue\": \"1\"\n      },\n      \"__key__\": {\n        \"integerValue\": \"1\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
   }
  ]
 }

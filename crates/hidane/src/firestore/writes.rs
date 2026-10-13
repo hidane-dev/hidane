@@ -430,19 +430,22 @@ fn apply_transforms(
         return Ok(Vec::new());
     }
     let commit_time = commit_time.to_timestamp();
+    // A transform of `__name__` reads and writes the field `__key__`.
+    let paths = transforms
+        .iter()
+        .map(|t| validate::transform_path(&t.field_path))
+        .collect::<Result<Vec<_>, _>>()?;
     let mut transformed = fields.clone();
     let results = transforms
         .iter()
-        .map(|t| {
-            transform::apply(&mut transformed, t, &commit_time).map_err(Status::invalid_argument)
+        .zip(&paths)
+        .map(|(t, path)| {
+            transform::apply_at(&mut transformed, path, t, &commit_time)
+                .map_err(Status::invalid_argument)
         })
         .collect::<Result<Vec<_>, _>>()?;
     // An array union can bring in nested arrays and vectors with NaN.
     validate::transformed(&transformed)?;
-    let paths = transforms
-        .iter()
-        .map(|t| FieldPath::parse(&t.field_path).map_err(Status::invalid_argument))
-        .collect::<Result<Vec<_>, _>>()?;
     apply_mask(fields, &transformed, &paths);
     Ok(results)
 }
