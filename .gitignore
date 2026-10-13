@@ -79,6 +79,8 @@ firebase-export-*/
 **/target/
 **/*.rs.bk
 *.pdb
+# The Go SDK harness, as `go build` names it in its directory.
+/tools/oracle/sdk_go/sdk_go
 # Coverage and profiling.
 *.profraw
 *.profdata
