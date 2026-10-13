@@ -1,0 +1,270 @@
+{
+  "schema": "hidane.doctor/1",
+  "hidane": "<version>",
+  "summary": {
+    "compatible": 6,
+    "ok": 4,
+    "info": 3,
+    "unknown": 0,
+    "incompatible": 0
+  },
+  "findings": [
+    {
+      "code": "firebase-json.found",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "firebase.json found",
+      "file": "firebase.json"
+    },
+    {
+      "code": "firestore-emulator.configured",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "Firestore emulator configured: 127.0.0.1:8080",
+      "details": [
+        "Under `hidane exec`, hidane listens where firebase-tools tells it to: FIRESTORE_EMULATOR_HOST stays as it is"
+      ],
+      "file": "firebase.json"
+    },
+    {
+      "code": "emulators.single-project-mode",
+      "group": "firebase",
+      "status": "info",
+      "severity": "info",
+      "title": "Single project mode (the default): hidane accepts --single_project_mode but does not log the official emulator's warning for requests to other project IDs",
+      "file": "firebase.json"
+    },
+    {
+      "code": "java.firestore-only",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "Only the Firestore emulator needs Java here: under `hidane exec`, firebase-tools needs no Java",
+      "file": "firebase.json"
+    },
+    {
+      "code": "rules.compile",
+      "group": "rules",
+      "status": "compatible",
+      "severity": "info",
+      "title": "firestore.rules compiles with hidane's rules compiler",
+      "source": "crates/hidane/tests/fixtures/rules_compile.json; docs/parity-exceptions.md",
+      "file": "firestore.rules"
+    },
+    {
+      "code": "rules.indexes",
+      "group": "rules",
+      "status": "compatible",
+      "severity": "info",
+      "title": "firestore.indexes.json: neither emulator enforces composite indexes",
+      "source": "docs/parity-exceptions.md (Composite indexes)",
+      "file": "firebase.json"
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "compatible",
+      "severity": "info",
+      "title": "Firebase JS SDK (firebase) 13.0.0 (package.json): verified with hidane (in Node over gRPC, Lite over REST, and in Chromium over WebChannel)",
+      "source": "docs/compatibility.md; results/sdk-web-writes-*.json, results/sdk-rest-*.json, results/browser-webchannel-*.json",
+      "file": "package.json",
+      "line": 8
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "compatible",
+      "severity": "info",
+      "title": "Firebase Admin SDK (firebase-admin) 13.6.0 (package.json), whose Firestore client is @google-cloud/firestore 9.3.1: verified with hidane (documents, queries, aggregations, transactions, listeners)",
+      "source": "docs/compatibility.md; results/sdk-documents-*.json, results/sdk-queries-*.json, results/sdk-listen-*.json",
+      "file": "package.json",
+      "line": 9
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "compatible",
+      "severity": "info",
+      "title": "@firebase/rules-unit-testing 6.0.0 (package.json): verified with hidane (assertSucceeds / assertFails under Security Rules, clearFirestore())",
+      "source": "docs/compatibility.md; results/sdk-rules-unit-testing-*.json, results/browser-rules-*.json",
+      "file": "package.json",
+      "line": 12
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "compatible",
+      "severity": "info",
+      "title": "firebase-tools 15.33.0 (package.json): verified with hidane (emulators:start and emulators:exec through hidane exec, without Java)",
+      "source": "docs/adr/0006-launch-under-firebase-tools.md; results/export-import-*.json",
+      "file": "package.json",
+      "line": 13
+    },
+    {
+      "code": "workflow.emulators",
+      "group": "workflows",
+      "status": "info",
+      "severity": "info",
+      "title": ".github/workflows/test.yml, job `test`: starts the emulators",
+      "details": [
+        ".github/workflows/test.yml:25: npx firebase emulators:exec --only firestore \"npm test\""
+      ],
+      "file": ".github/workflows/test.yml",
+      "line": 9
+    },
+    {
+      "code": "workflow.setup-java",
+      "group": "workflows",
+      "status": "info",
+      "severity": "warning",
+      "title": ".github/workflows/test.yml, job `test`: actions/setup-java is there only for the Firestore emulator; with hidane the job needs no Java",
+      "file": ".github/workflows/test.yml",
+      "line": 9
+    },
+    {
+      "code": "workflow.emulator-host",
+      "group": "workflows",
+      "status": "ok",
+      "severity": "info",
+      "title": ".github/workflows/test.yml, job `test`: FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 stays as it is: hidane serves the same address",
+      "file": ".github/workflows/test.yml",
+      "line": 9
+    }
+  ],
+  "facts": {
+    "firebase": [
+      {
+        "file": "firebase.json",
+        "firestore": {
+          "host": "127.0.0.1",
+          "port": 8080,
+          "websocket_port": null,
+          "edition": null,
+          "databases": [
+            {
+              "database": null,
+              "rules": "firestore.rules",
+              "indexes": "firestore.indexes.json"
+            }
+          ]
+        },
+        "emulators": [],
+        "single_project_mode": true,
+        "ui": true,
+        "functions": []
+      }
+    ],
+    "rules": [
+      {
+        "file": "firestore.rules",
+        "database": null,
+        "found": true,
+        "compiles": true,
+        "errors": [],
+        "warnings": []
+      }
+    ],
+    "functions": [],
+    "dependencies": [
+      {
+        "ecosystem": "npm",
+        "name": "firebase",
+        "file": "package.json",
+        "line": 8,
+        "declared": "^13.0.0",
+        "resolved": "13.0.0",
+        "lockfile": "package-lock.json",
+        "engine": null,
+        "platforms": []
+      },
+      {
+        "ecosystem": "npm",
+        "name": "firebase-admin",
+        "file": "package.json",
+        "line": 9,
+        "declared": "^13.6.0",
+        "resolved": "13.6.0",
+        "lockfile": "package-lock.json",
+        "engine": [
+          "@google-cloud/firestore",
+          "9.3.1"
+        ],
+        "platforms": []
+      },
+      {
+        "ecosystem": "npm",
+        "name": "@firebase/rules-unit-testing",
+        "file": "package.json",
+        "line": 12,
+        "declared": "^6.0.0",
+        "resolved": "6.0.0",
+        "lockfile": "package-lock.json",
+        "engine": null,
+        "platforms": []
+      },
+      {
+        "ecosystem": "npm",
+        "name": "firebase-tools",
+        "file": "package.json",
+        "line": 13,
+        "declared": "15.33.0",
+        "resolved": "15.33.0",
+        "lockfile": "package-lock.json",
+        "engine": null,
+        "platforms": []
+      }
+    ],
+    "emulator_commands": [
+      {
+        "file": ".github/workflows/test.yml",
+        "line": 25,
+        "command": "npx firebase emulators:exec --only firestore \"npm test\"",
+        "subcommand": "emulators:exec",
+        "only": [
+          "firestore"
+        ],
+        "starts": [
+          "firestore"
+        ],
+        "config": "firebase.json",
+        "under_hidane": false,
+        "editable": true,
+        "import": false,
+        "export": false
+      }
+    ],
+    "workflows": [
+      {
+        "file": ".github/workflows/test.yml",
+        "parsed": true,
+        "jobs": [
+          {
+            "id": "test",
+            "line": 9,
+            "runs_on": "ubuntu-latest",
+            "setup_java": [
+              2
+            ],
+            "setup_hidane": false,
+            "emulators": [
+              0
+            ],
+            "first_emulator_step": 4,
+            "java": {
+              "verdict": "not-needed"
+            },
+            "emulator_host": [
+              "127.0.0.1:8080"
+            ],
+            "caches_emulators": false,
+            "other_shell": false
+          }
+        ]
+      }
+    ],
+    "scripts": [],
+    "unread": []
+  }
+}

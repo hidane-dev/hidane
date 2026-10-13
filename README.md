@@ -119,10 +119,19 @@ through `hidane exec`. The archives, their checksums and build provenance are on
 ([how to verify them](docs/releasing.md#assets)). The macOS binaries are not signed yet: one
 downloaded with a browser needs `xattr -d com.apple.quarantine hidane`.
 
+## Migrating
+
+`hidane doctor` checks a Firebase project before it moves to hidane, without running or changing
+anything: `firebase.json` and the emulators it starts, the rules, the SDK and firebase-tools
+versions, and the CI workflows and scripts that start the emulators, each marked verified, not
+verified or incompatible. [`docs/migrating.md`](docs/migrating.md) explains the checks and what to
+change.
+
 ## Documentation
 
 - [Why hidane](docs/why.md) — the measurements behind the table above, with sources
 - [Compatibility](docs/compatibility.md) — transport per SDK, how each finds the emulator, which RPCs they use
+- [Migrating](docs/migrating.md) — `hidane doctor`, and what to change in a project that used the official emulator
 - [Parity](docs/parity.md) — the recorded answers the tests replay, per area and transport, and the SDK transcripts
 - [Parity exceptions](docs/parity-exceptions.md) — where hidane and the official emulator intentionally differ
 - [Roadmap](docs/ROADMAP.md) — scope of v0.1 / v0.2 / v0.3, targets, risks

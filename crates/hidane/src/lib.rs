@@ -18,6 +18,7 @@ pub mod cli;
 pub mod export;
 mod firestore;
 mod ordered_json;
+pub mod project;
 mod rest;
 pub mod rules;
 pub mod triggers;

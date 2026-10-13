@@ -1,0 +1,27 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      # firebase-tools 15 needs Java 21 to run the Firestore emulator.
+      - name: Set up Java
+        uses: actions/setup-java@v4 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: "21"
+      - run: npm ci
+      - name: Test against the emulator
+        run: npx firebase emulators:exec --only firestore "npm test"
+        env:
+          FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080

@@ -5,11 +5,13 @@ use hidane::cli::{self, Cli};
 
 mod bench;
 mod launch;
+mod project_cli;
 
 fn main() -> ExitCode {
     match launch::mode(std::env::args_os().collect()) {
         launch::Mode::Exec(command) => launch::exec(&command),
         launch::Mode::Benchmark(args) => bench::main(args),
+        launch::Mode::Project(args) => project_cli::run(args),
         // firebase-tools running "java" in a `hidane exec` command (ADR 0006).
         launch::Mode::Java(args) => match launch::java(&args) {
             Ok(flags) => emulator(

@@ -1,0 +1,2 @@
+google-cloud-firestore==2.34.1
+firebase-admin>=6.5,<7  # Admin SDK for the jobs

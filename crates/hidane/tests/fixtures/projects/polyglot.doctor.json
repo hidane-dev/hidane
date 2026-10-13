@@ -1,0 +1,422 @@
+{
+  "schema": "hidane.doctor/1",
+  "hidane": "<version>",
+  "summary": {
+    "compatible": 7,
+    "ok": 2,
+    "info": 4,
+    "unknown": 5,
+    "incompatible": 1
+  },
+  "findings": [
+    {
+      "code": "firebase-json.found",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "firebase.json found",
+      "file": "firebase.json"
+    },
+    {
+      "code": "firestore-emulator.configured",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "Firestore emulator configured: localhost:8080",
+      "details": [
+        "Under `hidane exec`, hidane listens where firebase-tools tells it to: FIRESTORE_EMULATOR_HOST stays as it is"
+      ],
+      "file": "firebase.json"
+    },
+    {
+      "code": "firestore.enterprise-edition",
+      "group": "firebase",
+      "status": "incompatible",
+      "severity": "error",
+      "title": "Enterprise edition: hidane does not implement pipelines yet (#80)",
+      "source": "https://github.com/hidane-dev/hidane/issues/80; docs/parity-exceptions.md (ExecutePipeline)",
+      "file": "firebase.json"
+    },
+    {
+      "code": "emulators.single-project-mode",
+      "group": "firebase",
+      "status": "info",
+      "severity": "info",
+      "title": "Single project mode (the default): hidane accepts --single_project_mode but does not log the official emulator's warning for requests to other project IDs",
+      "file": "firebase.json"
+    },
+    {
+      "code": "java.other-emulators",
+      "group": "firebase",
+      "status": "info",
+      "severity": "warning",
+      "title": "The pubsub emulator still needs Java: hidane serves only Firestore, and `hidane exec` runs the others with the Java on PATH",
+      "file": "firebase.json"
+    },
+    {
+      "code": "emulators.others",
+      "group": "firebase",
+      "status": "info",
+      "severity": "info",
+      "title": "Other emulators: functions, pubsub, extensions",
+      "details": [
+        "functions (port 5001): runs without Java; hidane does not change it",
+        "pubsub (port 8085): runs on Java, which hidane does not replace",
+        "extensions (port 5001): runs without Java; hidane does not change it"
+      ],
+      "file": "firebase.json"
+    },
+    {
+      "code": "rules.compile",
+      "group": "rules",
+      "status": "compatible",
+      "severity": "info",
+      "title": "firestore.rules compiles with hidane's rules compiler",
+      "source": "crates/hidane/tests/fixtures/rules_compile.json; docs/parity-exceptions.md",
+      "file": "firestore.rules"
+    },
+    {
+      "code": "functions.firestore-triggers",
+      "group": "functions",
+      "status": "compatible",
+      "severity": "info",
+      "title": "1 Firestore trigger in functions (firebase-functions ^6.4.0): their events reach the Functions emulator as with the official emulator (verified with firebase-functions 6.6.0)",
+      "details": [
+        "functions/src/index.ts:4: onDocumentCreated"
+      ],
+      "source": "docs/compatibility.md; results/functions-triggers-*.json"
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "unknown",
+      "severity": "warning",
+      "title": "Firebase Android SDK (firebase-firestore) (app/android/app/build.gradle.kts): not verified with hidane — manual verification required",
+      "details": [
+        "docs/compatibility.md lists the Android SDK as not verified (same gRPC transport)"
+      ],
+      "file": "app/android/app/build.gradle.kts",
+      "line": 7
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "compatible",
+      "severity": "info",
+      "title": "FlutterFire cloud_firestore ^6.10.0 (app/pubspec.yaml) on the web: verified with hidane at 6.10.0 (Flutter Web in Chromium), the same major version",
+      "source": "docs/compatibility.md; results/flutter-web-*.json",
+      "file": "app/pubspec.yaml",
+      "line": 10
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "unknown",
+      "severity": "warning",
+      "title": "FlutterFire cloud_firestore ^6.10.0 (app/pubspec.yaml) on android: not verified with hidane — manual verification required",
+      "details": [
+        "Flutter on Android, iOS, macOS and Windows uses the native SDKs (gRPC), which are not verified yet (docs/compatibility.md)"
+      ],
+      "file": "app/pubspec.yaml",
+      "line": 10
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "compatible",
+      "severity": "info",
+      "title": "google-cloud-firestore (Python) 2.34.1 (backend/requirements.txt): verified with hidane (documents, queries, aggregations, transactions, listeners)",
+      "source": "docs/compatibility.md; results/sdk-python-*.json",
+      "file": "backend/requirements.txt",
+      "line": 1
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "unknown",
+      "severity": "warning",
+      "title": "Firebase Admin SDK for Python (firebase-admin) >=6.5,<7 (backend/requirements.txt): its Firestore client, google-cloud-firestore, is not in a lockfile — not verified with hidane, manual verification required",
+      "details": [
+        "hidane verified google-cloud-firestore 2.34.1"
+      ],
+      "file": "backend/requirements.txt",
+      "line": 2
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "unknown",
+      "severity": "warning",
+      "title": "Firebase Admin SDK (firebase-admin) ^13.6.0 (functions/package.json): its Firestore client, @google-cloud/firestore, is not in a lockfile — not verified with hidane, manual verification required",
+      "details": [
+        "hidane verified @google-cloud/firestore 9.3.1"
+      ],
+      "file": "functions/package.json",
+      "line": 10
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "compatible",
+      "severity": "info",
+      "title": "google-cloud-firestore (Java) 3.49.0 (service/pom.xml): verified with hidane (documents, queries, aggregations, transactions, listeners)",
+      "source": "docs/compatibility.md; results/sdk-java-*.json",
+      "file": "service/pom.xml",
+      "line": 11
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "compatible",
+      "severity": "info",
+      "title": "cloud.google.com/go/firestore 1.26.0 (worker/go.mod): verified with hidane (documents, queries, aggregations, transactions, listeners)",
+      "source": "docs/compatibility.md; results/sdk-go-*.json",
+      "file": "worker/go.mod",
+      "line": 6
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "compatible",
+      "severity": "info",
+      "title": "Firebase Admin SDK for Go 4.18.0 (worker/go.mod), whose Firestore client is cloud.google.com/go/firestore 1.26.0: verified with hidane (documents, queries, aggregations, transactions, listeners)",
+      "source": "docs/compatibility.md; results/sdk-go-*.json",
+      "file": "worker/go.mod",
+      "line": 7
+    },
+    {
+      "code": "dependency.firebase-tools",
+      "group": "dependencies",
+      "status": "unknown",
+      "severity": "warning",
+      "title": "The firebase-tools version is not known (it is in no package.json and no CI step installs it): hidane exec is verified with firebase-tools 15.33.0 — manual verification required"
+    },
+    {
+      "code": "script.emulators",
+      "group": "scripts",
+      "status": "info",
+      "severity": "info",
+      "title": "functions/package.json: script `serve` starts the emulators",
+      "details": [
+        "npm run build && firebase emulators:start --only functions,firestore"
+      ],
+      "file": "functions/package.json",
+      "line": 7
+    }
+  ],
+  "facts": {
+    "firebase": [
+      {
+        "file": "firebase.json",
+        "firestore": {
+          "host": "localhost",
+          "port": 8080,
+          "websocket_port": null,
+          "edition": "enterprise",
+          "databases": [
+            {
+              "database": null,
+              "rules": "firestore.rules",
+              "indexes": null
+            }
+          ]
+        },
+        "emulators": [
+          {
+            "name": "functions",
+            "host": null,
+            "port": 5001,
+            "java": false
+          },
+          {
+            "name": "pubsub",
+            "host": null,
+            "port": 8085,
+            "java": true
+          },
+          {
+            "name": "extensions",
+            "host": null,
+            "port": 5001,
+            "java": false
+          }
+        ],
+        "single_project_mode": true,
+        "ui": true,
+        "functions": [
+          "functions"
+        ]
+      }
+    ],
+    "rules": [
+      {
+        "file": "firestore.rules",
+        "database": null,
+        "found": true,
+        "compiles": true,
+        "errors": [],
+        "warnings": []
+      }
+    ],
+    "functions": [
+      {
+        "source": "functions",
+        "found": true,
+        "firestore_triggers": [
+          {
+            "file": "functions/src/index.ts",
+            "line": 4,
+            "api": "onDocumentCreated"
+          }
+        ]
+      }
+    ],
+    "dependencies": [
+      {
+        "ecosystem": "maven",
+        "name": "com.google.firebase:firebase-firestore",
+        "file": "app/android/app/build.gradle.kts",
+        "line": 7,
+        "declared": null,
+        "resolved": null,
+        "lockfile": null,
+        "engine": null,
+        "platforms": []
+      },
+      {
+        "ecosystem": "pub",
+        "name": "cloud_firestore",
+        "file": "app/pubspec.yaml",
+        "line": 10,
+        "declared": "^6.10.0",
+        "resolved": null,
+        "lockfile": null,
+        "engine": null,
+        "platforms": [
+          "android",
+          "web"
+        ]
+      },
+      {
+        "ecosystem": "pypi",
+        "name": "google-cloud-firestore",
+        "file": "backend/requirements.txt",
+        "line": 1,
+        "declared": "==2.34.1",
+        "resolved": "2.34.1",
+        "lockfile": null,
+        "engine": null,
+        "platforms": []
+      },
+      {
+        "ecosystem": "pypi",
+        "name": "firebase-admin",
+        "file": "backend/requirements.txt",
+        "line": 2,
+        "declared": ">=6.5,<7",
+        "resolved": null,
+        "lockfile": null,
+        "engine": [
+          "google-cloud-firestore",
+          null
+        ],
+        "platforms": []
+      },
+      {
+        "ecosystem": "npm",
+        "name": "firebase-admin",
+        "file": "functions/package.json",
+        "line": 10,
+        "declared": "^13.6.0",
+        "resolved": null,
+        "lockfile": null,
+        "engine": [
+          "@google-cloud/firestore",
+          null
+        ],
+        "platforms": []
+      },
+      {
+        "ecosystem": "npm",
+        "name": "firebase-functions",
+        "file": "functions/package.json",
+        "line": 11,
+        "declared": "^6.4.0",
+        "resolved": null,
+        "lockfile": null,
+        "engine": null,
+        "platforms": []
+      },
+      {
+        "ecosystem": "maven",
+        "name": "com.google.cloud:google-cloud-firestore",
+        "file": "service/pom.xml",
+        "line": 11,
+        "declared": "3.49.0",
+        "resolved": "3.49.0",
+        "lockfile": null,
+        "engine": null,
+        "platforms": []
+      },
+      {
+        "ecosystem": "go",
+        "name": "cloud.google.com/go/firestore",
+        "file": "worker/go.mod",
+        "line": 6,
+        "declared": "v1.26.0",
+        "resolved": "1.26.0",
+        "lockfile": null,
+        "engine": null,
+        "platforms": []
+      },
+      {
+        "ecosystem": "go",
+        "name": "firebase.google.com/go/v4",
+        "file": "worker/go.mod",
+        "line": 7,
+        "declared": "v4.18.0",
+        "resolved": "4.18.0",
+        "lockfile": null,
+        "engine": [
+          "cloud.google.com/go/firestore",
+          "1.26.0"
+        ],
+        "platforms": []
+      }
+    ],
+    "emulator_commands": [
+      {
+        "file": "functions/package.json",
+        "line": 7,
+        "command": "firebase emulators:start --only functions,firestore",
+        "subcommand": "emulators:start",
+        "only": [
+          "functions",
+          "firestore"
+        ],
+        "starts": [
+          "functions",
+          "firestore"
+        ],
+        "config": "firebase.json",
+        "under_hidane": false,
+        "editable": true,
+        "import": false,
+        "export": false
+      }
+    ],
+    "workflows": [],
+    "scripts": [
+      {
+        "file": "functions/package.json",
+        "name": "serve",
+        "line": 7,
+        "command": "npm run build && firebase emulators:start --only functions,firestore",
+        "emulators": [
+          0
+        ]
+      }
+    ],
+    "unread": []
+  }
+}

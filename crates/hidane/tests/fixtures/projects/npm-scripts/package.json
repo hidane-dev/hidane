@@ -1,0 +1,18 @@
+{
+  "name": "npm-scripts",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p .",
+    "emulators": "firebase emulators:start --only firestore,auth",
+    "test": "vitest run",
+    "test:emulator": "firebase emulators:exec --only firestore 'npm test'",
+    "ci": "npm run build && firebase emulators:exec --project demo-app --only firestore,auth \"vitest run --coverage\"",
+    "seed": "firebase emulators:start --only firestore --import ./seed --export-on-exit",
+    "e2e": "bash scripts/e2e.sh"
+  },
+  "devDependencies": {
+    "firebase-tools": "^15.30.0",
+    "typescript": "^5.9.0",
+    "vitest": "^3.2.0"
+  }
+}

@@ -1,0 +1,43 @@
+name: Unusual
+
+on: push
+
+jobs:
+  # The emulators start inside a quoted command.
+  quoted:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: bash -c "npx firebase emulators:exec --only firestore 'npm test'"
+
+  # PowerShell on Windows.
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npx firebase emulators:exec --only firestore "npm test"
+
+  # A container action runs firebase-tools with its own Java.
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: w9jds/firebase-action@v14.10.1
+        with:
+          args: emulators:exec --only firestore "npm test"
+
+  # Started by another tool.
+  concurrently:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v4
+        id: java
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npx concurrently --kill-others "firebase emulators:start --only firestore" "npm run test:watch"

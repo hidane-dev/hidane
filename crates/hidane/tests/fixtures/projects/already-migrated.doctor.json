@@ -1,0 +1,272 @@
+{
+  "schema": "hidane.doctor/1",
+  "hidane": "<version>",
+  "summary": {
+    "compatible": 2,
+    "ok": 6,
+    "info": 2,
+    "unknown": 0,
+    "incompatible": 0
+  },
+  "findings": [
+    {
+      "code": "firebase-json.found",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "firebase.json found",
+      "file": "firebase.json"
+    },
+    {
+      "code": "firestore-emulator.configured",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "Firestore emulator configured: localhost:8080",
+      "details": [
+        "Under `hidane exec`, hidane listens where firebase-tools tells it to: FIRESTORE_EMULATOR_HOST stays as it is"
+      ],
+      "file": "firebase.json"
+    },
+    {
+      "code": "emulators.single-project-mode",
+      "group": "firebase",
+      "status": "info",
+      "severity": "info",
+      "title": "Single project mode (the default): hidane accepts --single_project_mode but does not log the official emulator's warning for requests to other project IDs",
+      "file": "firebase.json"
+    },
+    {
+      "code": "java.firestore-only",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "Only the Firestore emulator needs Java here: under `hidane exec`, firebase-tools needs no Java",
+      "file": "firebase.json"
+    },
+    {
+      "code": "rules.compile",
+      "group": "rules",
+      "status": "compatible",
+      "severity": "info",
+      "title": "firestore.rules compiles with hidane's rules compiler",
+      "source": "crates/hidane/tests/fixtures/rules_compile.json; docs/parity-exceptions.md",
+      "file": "firestore.rules"
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "compatible",
+      "severity": "info",
+      "title": "firebase-tools 15.33.0 (package.json): verified with hidane (emulators:start and emulators:exec through hidane exec, without Java)",
+      "source": "docs/adr/0006-launch-under-firebase-tools.md; results/export-import-*.json",
+      "file": "package.json",
+      "line": 10
+    },
+    {
+      "code": "dependency.hidane",
+      "group": "dependencies",
+      "status": "info",
+      "severity": "info",
+      "title": "hidane ^0.3.0 (package.json) is a dependency: npm scripts can run `hidane exec`",
+      "file": "package.json",
+      "line": 11
+    },
+    {
+      "code": "workflow.emulators",
+      "group": "workflows",
+      "status": "ok",
+      "severity": "info",
+      "title": ".github/workflows/test.yml, job `test`: runs the emulators under hidane exec",
+      "details": [
+        ".github/workflows/test.yml:12: npx firebase emulators:exec --only firestore \"npm test\"",
+        "package.json:7: firebase emulators:exec --only firestore 'npm test'"
+      ],
+      "file": ".github/workflows/test.yml",
+      "line": 6
+    },
+    {
+      "code": "script.emulators",
+      "group": "scripts",
+      "status": "ok",
+      "severity": "info",
+      "title": "package.json: script `emulators` runs the emulators under hidane exec",
+      "details": [
+        "hidane exec -- firebase emulators:start --only firestore"
+      ],
+      "file": "package.json",
+      "line": 5
+    },
+    {
+      "code": "script.emulators",
+      "group": "scripts",
+      "status": "ok",
+      "severity": "info",
+      "title": "package.json: script `test:emulator` runs the emulators under hidane exec",
+      "details": [
+        "hidane exec -- firebase emulators:exec --only firestore 'npm test'"
+      ],
+      "file": "package.json",
+      "line": 7
+    }
+  ],
+  "facts": {
+    "firebase": [
+      {
+        "file": "firebase.json",
+        "firestore": {
+          "host": "localhost",
+          "port": 8080,
+          "websocket_port": null,
+          "edition": null,
+          "databases": [
+            {
+              "database": null,
+              "rules": "firestore.rules",
+              "indexes": null
+            }
+          ]
+        },
+        "emulators": [],
+        "single_project_mode": true,
+        "ui": true,
+        "functions": []
+      }
+    ],
+    "rules": [
+      {
+        "file": "firestore.rules",
+        "database": null,
+        "found": true,
+        "compiles": true,
+        "errors": [],
+        "warnings": []
+      }
+    ],
+    "functions": [],
+    "dependencies": [
+      {
+        "ecosystem": "npm",
+        "name": "firebase-tools",
+        "file": "package.json",
+        "line": 10,
+        "declared": "15.33.0",
+        "resolved": null,
+        "lockfile": null,
+        "engine": null,
+        "platforms": []
+      },
+      {
+        "ecosystem": "npm",
+        "name": "hidane",
+        "file": "package.json",
+        "line": 11,
+        "declared": "^0.3.0",
+        "resolved": null,
+        "lockfile": null,
+        "engine": null,
+        "platforms": []
+      }
+    ],
+    "emulator_commands": [
+      {
+        "file": ".github/workflows/test.yml",
+        "line": 12,
+        "command": "npx firebase emulators:exec --only firestore \"npm test\"",
+        "subcommand": "emulators:exec",
+        "only": [
+          "firestore"
+        ],
+        "starts": [
+          "firestore"
+        ],
+        "config": "firebase.json",
+        "under_hidane": true,
+        "editable": true,
+        "import": false,
+        "export": false
+      },
+      {
+        "file": "package.json",
+        "line": 7,
+        "command": "firebase emulators:exec --only firestore 'npm test'",
+        "subcommand": "emulators:exec",
+        "only": [
+          "firestore"
+        ],
+        "starts": [
+          "firestore"
+        ],
+        "config": "firebase.json",
+        "under_hidane": true,
+        "editable": true,
+        "import": false,
+        "export": false
+      },
+      {
+        "file": "package.json",
+        "line": 5,
+        "command": "firebase emulators:start --only firestore",
+        "subcommand": "emulators:start",
+        "only": [
+          "firestore"
+        ],
+        "starts": [
+          "firestore"
+        ],
+        "config": "firebase.json",
+        "under_hidane": true,
+        "editable": true,
+        "import": false,
+        "export": false
+      }
+    ],
+    "workflows": [
+      {
+        "file": ".github/workflows/test.yml",
+        "parsed": true,
+        "jobs": [
+          {
+            "id": "test",
+            "line": 6,
+            "runs_on": "ubuntu-latest",
+            "setup_java": [],
+            "setup_hidane": true,
+            "emulators": [
+              0,
+              1
+            ],
+            "first_emulator_step": null,
+            "java": {
+              "verdict": "not-needed"
+            },
+            "emulator_host": [],
+            "caches_emulators": false,
+            "other_shell": false
+          }
+        ]
+      }
+    ],
+    "scripts": [
+      {
+        "file": "package.json",
+        "name": "emulators",
+        "line": 5,
+        "command": "hidane exec -- firebase emulators:start --only firestore",
+        "emulators": [
+          2
+        ]
+      },
+      {
+        "file": "package.json",
+        "name": "test:emulator",
+        "line": 7,
+        "command": "hidane exec -- firebase emulators:exec --only firestore 'npm test'",
+        "emulators": [
+          1
+        ]
+      }
+    ],
+    "unread": []
+  }
+}

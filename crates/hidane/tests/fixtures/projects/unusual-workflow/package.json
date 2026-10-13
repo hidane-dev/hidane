@@ -1,0 +1,11 @@
+{
+  "name": "unusual-workflow",
+  "private": true,
+  "scripts": {
+    "test": "jest",
+    "dev": "concurrently \"firebase emulators:start --only firestore\" \"vite\""
+  },
+  "devDependencies": {
+    "firebase-tools": "^15.0.0"
+  }
+}

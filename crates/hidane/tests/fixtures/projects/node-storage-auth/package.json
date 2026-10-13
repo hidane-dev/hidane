@@ -1,0 +1,10 @@
+{
+  "name": "node-storage-auth",
+  "private": true,
+  "scripts": {
+    "test": "node --test"
+  },
+  "dependencies": {
+    "firebase": "^12.4.0"
+  }
+}

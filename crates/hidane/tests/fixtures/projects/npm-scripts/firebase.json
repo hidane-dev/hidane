@@ -1,0 +1,10 @@
+{
+  // firebase-tools reads this file with comments allowed.
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "emulators": {
+    "auth": { "port": 9099 },
+    "firestore": { "port": 8085 }
+  }
+}
