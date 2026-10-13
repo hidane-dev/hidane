@@ -722,6 +722,9 @@ impl Scanner<'_> {
                         };
                         self.walk(&src, cwd.clone(), depth + 1, reach, visited);
                     }
+                    // A file the job makes itself (`source venv/bin/activate`) is not a
+                    // script of the project.
+                    None if !path.ends_with(".sh") => {}
                     None => reach.unknown.push(format!("the script {path}, not found")),
                 }
             }
@@ -828,6 +831,13 @@ impl Scanner<'_> {
                     .map(str::to_owned)
                     .collect(),
             ),
+            // Without a firebase.json, firebase-tools starts the emulators `--only` names.
+            None if !e.only_dynamic => e.only.as_ref().map(|only| {
+                only.iter()
+                    .filter(|o| firebase::SERVICE_EMULATORS.contains(&o.as_str()))
+                    .cloned()
+                    .collect()
+            }),
             _ => None,
         };
         let editable = src.editable;
@@ -1090,6 +1100,26 @@ mod tests {
         assert!(matches!(jobs[2].java, Java::NotNeeded | Java::Unknown(_)));
         assert_eq!(ci.unread.len(), 1);
         assert!(!ci.commands[2].editable);
+    }
+
+    #[test]
+    fn without_firebase_json_only_names_the_emulators() {
+        let tree: Memory = [(
+            ".github/workflows/ci.yml",
+            "jobs:\n  a:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/setup-java@v4\n        with:\n          java-version: 21\n      - run: |\n          source venv/bin/activate\n          firebase emulators:exec --only database,firestore 'pytest'\n          firebase emulators:exec --only auth 'pytest'\n",
+        )]
+        .into_iter()
+        .collect();
+        let ci = scan_tree(&tree);
+        assert_eq!(
+            ci.commands[0].starts.as_deref(),
+            Some(&["database".to_owned(), "firestore".to_owned()][..])
+        );
+        assert!(!ci.commands[1].starts_firestore());
+        assert_eq!(
+            ci.workflows[0].jobs[0].java,
+            Java::Needed(vec!["the database emulator".into()])
+        );
     }
 
     #[test]

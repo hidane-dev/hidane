@@ -11,7 +11,7 @@ use super::{
 
 /// The emulators firebase-tools starts for a project (`ALL_SERVICE_EMULATORS`, then
 /// `extensions`), in its order.
-const SERVICE_EMULATORS: [&str; 12] = [
+pub const SERVICE_EMULATORS: [&str; 12] = [
     "apphosting",
     "auth",
     "functions",
