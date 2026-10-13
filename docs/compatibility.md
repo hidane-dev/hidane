@@ -23,16 +23,16 @@ firebase-tools that launches it and the official emulator it is compared with.
 
 | hidane | firebase-tools | Official emulator | Status | Evidence |
 |---|---|---|---|---|
-| 0.5.x | 15.33.0 | 1.22.0 | Verified | 20,590 recorded answers of the official emulator v1.22.0 in 41 fixtures, replayed against hidane by cargo test; 33 comparisons of SDK transcripts with the official emulator v1.22.0's: 19 identical, 14 documented differences; 2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers (last recorded 2026-10-13) |
+| 0.5.x | 15.33.0 | 1.22.0 | Verified | 20,609 recorded answers of the official emulator v1.22.0 in 41 fixtures, replayed against hidane by cargo test; 33 comparisons of SDK transcripts with the official emulator v1.22.0's: 19 identical, 14 documented differences; 2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers (last recorded 2026-10-13) |
 
 | Evidence | What the results show | Where |
 |---|---|---|
-| Oracle corpus | 72 recordings of the official emulator 1.22.0 (41 fixtures, 31 official transcripts), `sha256:a0340c3f1601…` | [oracle-corpus.md](oracle-corpus.md) |
-| Record and replay | 20,590 recorded answers in 41 fixtures, replayed by `cargo test` on every pull request and push to main: 12,370 in full, 3,912 decision and reasons, 753 in part, 3,404 status only, 30 without messages, 1 not compared, 120 intentionally different | [parity.md](parity.md) |
+| Oracle corpus | 72 recordings of the official emulator 1.22.0 (41 fixtures, 31 official transcripts), `sha256:b2efcefab13d…` | [oracle-corpus.md](oracle-corpus.md) |
+| Record and replay | 20,609 recorded answers in 41 fixtures, replayed by `cargo test` on every pull request and push to main: 12,385 in full, 3,912 decision and reasons, 753 in part, 3,404 status only, 30 without messages, 1 not compared, 124 intentionally different | [parity.md](parity.md) |
 | SDK transcripts | 33 comparisons of 31 transcript pairs: 19 identical, 14 documented differences | [parity.md](parity.md) |
 | SDK certification | 16 clients and tools: 10 verified, 1 partially verified, 5 not verified | [sdk-certification.md](sdk-certification.md) |
 | Browser | firebase-js-sdk's browser suite at `8a7e7fd`: 1,183 passed, 0 failed, 739 skipped on hidane; 1,183 passed, 0 failed on the official emulator (identical). 3 transcripts in Chromium: browser-webchannel (identical), flutter-web (documented), browser-rules (documented) | [`js-sdk-browser.yml`](../.github/workflows/js-sdk-browser.yml) |
-| Functions events | `function_events.json`: 133 recorded answers, `function_triggers.json`: 342 recorded answers; functions-triggers: 37 events on hidane, 43 on the official emulator (documented) | [parity-exceptions.md](parity-exceptions.md) |
+| Functions events | `function_events.json`: 152 recorded answers, `function_triggers.json`: 342 recorded answers; functions-triggers: 37 events on hidane, 43 on the official emulator (documented) | [parity-exceptions.md](parity-exceptions.md) |
 | Integration tests | 48 test files (`crates/*/tests/*.rs`), 32 of them replaying recordings, run on every pull request and push to main | [`crates/`](../crates/) |
 | Differential fuzzing | 1 run | [`differential-fuzzing.json`](../results/differential-fuzzing.json) |
 | Differences | 73 intentional differences (1 bug-for-bug, 47 more correct, 18 equivalent, 7 limitation); 15 places where the official emulator departs from production (12 bug-for-bug, 3 more correct) | [parity-exceptions.md](parity-exceptions.md) |

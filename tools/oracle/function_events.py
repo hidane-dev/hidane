@@ -299,9 +299,13 @@ def grpc_output(text):
     return out, code
 
 
-def grpcurl(rpc, database, messages):
+def grpcurl(rpc, database, messages, headers=None):
+    """`headers` replace the owner's credential (`{}`: none)."""
+    sent = []
+    for name, value in (OWNER if headers is None else headers).items():
+        sent += ["-H", f"{name.lower()}: {value}"]
     args = ["grpcurl", "-plaintext", "-import-path", PROTOS, "-proto", "google/firestore/v1/firestore.proto",
-            "-H", f"google-cloud-resource-prefix: {database}", "-H", "authorization: Bearer owner",
+            "-H", f"google-cloud-resource-prefix: {database}", *sent,
             "-d", "@", HOST, f"google.firestore.v1.Firestore/{rpc}"]
     proc = subprocess.run(args, input="\n".join(json.dumps(m) for m in messages), capture_output=True, text=True,
                           timeout=60)
@@ -581,6 +585,41 @@ def cases():
           {"streamToken": "", "writes": [update(P, "c/stream", {"n": I(1)})]}]),
     ]
 
+    # Rules that deny writes to `closed`: a denied write commits nothing and sends no event, over
+    # each transport, in a batch with an allowed write and in a transaction; the owner's
+    # credential skips the rules.
+    P = "demo-denied"
+    rules = ("rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
+             "    match /open/{id} {\n      allow read, write: if true;\n    }\n"
+             "    match /closed/{id} {\n      allow read: if true;\n      allow write: if false;\n    }\n  }\n}\n")
+    database = f"projects/{P}/databases/(default)"
+    yield "writes the rules deny", [
+        ("rest", "PUT", f"/emulator/v1/projects/{P}:securityRules",
+         {"rules": {"files": [{"name": "firestore.rules", "content": rules}]}}, None),
+        v1(P, "v1", "write", "{coll}/{id}"),
+        v2(P, "v2", "written", "{coll}/{id}"),
+        v2(P, "v2-auth", "written.withAuthContext", "{coll}/{id}"),
+        patch(P, "open/a", {"n": I(1)}),
+        patch(P, "closed/a", {"n": I(1)}),
+        patch(P, "closed/a", {"n": I(1)}, headers=user),
+        commit(P, update(P, "open/b", {"n": I(1)}), update(P, "closed/b", {"n": I(1)})),
+        ("rest", "GET", f"{base(P)}/open/b", None, None),
+        ("grpc", "Commit", database,
+         [{"database": database, "writes": [update(P, "closed/c", {"n": I(1)})]}], {}),
+        ("grpc", "Commit", database,
+         [{"database": database, "writes": [update(P, "open/c", {"n": I(1)}), update(P, "closed/c", {"n": I(1)})]}],
+         {}),
+        ("grpc", "Write", database,
+         [{"database": database}, {"streamToken": "", "writes": [update(P, "closed/d", {"n": I(1)})]}], {}),
+        ("rest", "POST", f"{base(P)}:beginTransaction", {}, None),
+        commit(P, update(P, "open/e", {"n": I(1)}), update(P, "closed/e", {"n": I(1)}), transaction=True),
+        ("rest", "GET", f"{base(P)}/open/e", None, None),
+        patch(P, "closed/a", {"n": I(1)}, headers=OWNER),
+        ("grpc", "Commit", database, [{"database": database, "writes": [update(P, "closed/c", {"n": I(1)})]}]),
+        delete(P, "closed/a"),
+        ("rest", "DELETE", f"{base(P)}/closed/a", None, OWNER),
+    ]
+
     P = "demo-answers"
     yield "the Functions emulator's answers", [
         v1(P, "a-slow-v1", "write", "c/{id}"),
@@ -660,9 +699,12 @@ def run_step(step, work, log, state):
         if status != 200:
             recorded["response"] = json.loads(json.dumps(answer).replace(work, "{work}"))
     else:
-        _, rpc, database, messages = step
-        answers, code = grpcurl(rpc, database, messages)
+        _, rpc, database, messages, *rest_ = step
+        headers = rest_[0] if rest_ else None
+        answers, code = grpcurl(rpc, database, messages, headers)
         recorded = {"kind": "grpc", "rpc": rpc, "database": database, "messages": messages, "code": code}
+        if headers is not None:
+            recorded["headers"] = headers
         if code != "OK":
             recorded["answers"] = answers
     took = time.monotonic() - started
