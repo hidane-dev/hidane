@@ -17,6 +17,7 @@
 | [project-assets.md](project-assets.md) | The official repositories, packages, image, website and accounts; anything else using the name is not the project's |
 | [setup-hidane-marketplace.md](setup-hidane-marketplace.md) | How a maintainer lists the `hidane-dev/setup-hidane` Action on GitHub Marketplace, and releases it later |
 | [ROADMAP.md](ROADMAP.md) | Tentative scope of v0.1 / v0.2 / v0.3, targets, risks |
+| [macos-signing.md](macos-signing.md) | Why a macOS binary downloaded with a browser is blocked and how to run it, and what signing and notarizing the macOS binaries would take (deferred) |
 | [clean-room/](clean-room/README.md) | Where hidane's behaviour comes from: the allowed sources, how the official emulator is observed, the provenance of its recordings, and what contributors must not use |
 | [../tools/upstream/](../tools/upstream/README.md) | How new releases of firebase-tools, the SDKs and the official emulator are noticed, and how to move the verified versions to them |
 | [adr/](adr/) | Draft decision records: license, storage, gRPC stack, WebChannel timing, Rules engine |
