@@ -17,6 +17,7 @@
 pub mod cli;
 pub mod export;
 mod firestore;
+pub mod migrate;
 mod ordered_json;
 pub mod project;
 mod rest;

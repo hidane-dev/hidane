@@ -4,6 +4,7 @@ Most projects move their tests from the official Firestore emulator to hidane wi
 firebase-tools runs under `hidane exec` ([ADR 0006](adr/0006-launch-under-firebase-tools.md)), and
 CI stops installing Java where only the Firestore emulator needed it. `hidane doctor` checks a
 project first: what it uses, whether hidane has verified it, and what still needs Java.
+`hidane migrate` then shows those changes as a diff, and makes them with `--apply`.
 
 ## `hidane doctor`
 
@@ -101,19 +102,42 @@ scan read: `firebase`, `rules`, `functions`, `dependencies`, `emulator_commands`
 The engine behind it is the `hidane::project` module, which reads a directory or files held in
 memory.
 
-## Changing a project
+## `hidane migrate`
 
-### GitHub Actions
+```sh
+hidane migrate                   # what would change, as a diff; changes nothing
+hidane migrate --apply           # make the changes
+hidane migrate --format patch    # only the diff, for `git apply`
+hidane migrate --format json     # the plan, for tools
+```
 
-When a job installs Java only for the Firestore emulator, install hidane instead with the
-[`hidane-dev/setup-hidane`](https://github.com/hidane-dev/setup-hidane) action (`@v1` follows the
-latest 1.x release; its `version` input picks a hidane version), and run firebase-tools under
-`hidane exec`:
+`hidane migrate` reads the project as `hidane doctor` does, without the network. Without
+`--apply` it changes nothing: it prints what it detected, the suggested changes and their diff,
+what it leaves as it is, and the command that applies them.
+
+In GitHub Actions, hidane is installed with the
+[`hidane-dev/setup-hidane`](https://github.com/hidane-dev/setup-hidane) action: `@v1` follows the
+latest 1.x release, and its `version` input picks a hidane version.
+
+### What it changes
+
+Only patterns it recognises, as little as possible, editing the text in place so that comments
+and layout stay:
+
+| Where | Before | After |
+|---|---|---|
+| A workflow `run` step in bash or sh, an npm script, or a shell script that one of them runs | `firebase emulators:exec …` or `emulators:start …`, run directly or through `npx`, `pnpm exec`, `yarn` or `bunx`, after `VAR=value`, in a `&&` chain | the same command after `hidane exec -- ` |
+| A job that starts the emulators that way and needs Java for nothing else | `uses: actions/setup-java@…`, its `with` inputs, a step name that mentions Java | `uses: hidane-dev/setup-hidane@v1` |
+| A job where something else still needs Java (another emulator, `./gradlew`, `mvn`, setup-java's build cache, a matrix of Java versions), or where that is not known | `actions/setup-java` | kept, and `- uses: hidane-dev/setup-hidane@v1` added after it |
+| A job without setup-java | | `- uses: hidane-dev/setup-hidane@v1` added before the step that starts the emulators |
+
+A job whose only Java was for the Firestore emulator:
 
 ```yaml
 # Before
+      # firebase-tools 15 needs Java 21 to run the Firestore emulator.
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v4 # v4.7.1
         with:
           distribution: temurin
           java-version: "21"
@@ -123,18 +147,28 @@ latest 1.x release; its `version` input picks a hidane version), and run firebas
 
 ```yaml
 # After
+      # firebase-tools 15 needs Java 21 to run the Firestore emulator.
       - name: Set up hidane
         uses: hidane-dev/setup-hidane@v1
       - run: npm ci
       - run: hidane exec -- npx firebase emulators:exec --only firestore "npm test"
 ```
 
-When another emulator or a build in the job needs Java, keep `actions/setup-java` and add
-`hidane-dev/setup-hidane@v1` after it. `FIRESTORE_EMULATOR_HOST` stays as it is: under
-`hidane exec`, hidane listens on the host and port firebase-tools gives it, which come from
-`firebase.json`.
+A job that also starts the Storage emulator keeps its Java:
 
-### npm scripts
+```yaml
+# After
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: hidane-dev/setup-hidane@v1
+      - run: |
+          hidane exec -- firebase emulators:exec "npm test" \
+            --project demo-storage-auth
+```
+
+An npm script:
 
 ```json
 "test:emulator": "firebase emulators:exec --only firestore 'npm test'"
@@ -144,5 +178,49 @@ When another emulator or a build in the job needs Java, keep `actions/setup-java
 "test:emulator": "hidane exec -- firebase emulators:exec --only firestore 'npm test'"
 ```
 
-Scripts that run `hidane` need it installed: `npm install --save-dev hidane` puts it where npm
-scripts find it, or install it any other way ([README](../README.md#install)).
+A command already under `hidane exec`, or a job that already uses `hidane-dev/setup-hidane`, is
+left as it is, so a second run changes nothing.
+
+### What it leaves to you
+
+Each of these is listed under "Left as it is", with the reason:
+
+- `FIRESTORE_EMULATOR_HOST`: it stays as it is, since under `hidane exec` hidane listens on the
+  host and port firebase-tools gives it, from `firebase.json`.
+- Dependencies and lockfiles: npm scripts that now run `hidane` need it installed
+  (`npm install --save-dev hidane`, or another channel in the [README](../README.md#install)).
+- Commands it could not read with confidence: in a quoted string (`bash -c "…"`), started by
+  another tool (`concurrently "firebase emulators:start" …`), by a container action, in a
+  Makefile, in PowerShell or on a Windows runner (where `hidane exec` is not verified), and
+  `gcloud emulators firestore start`.
+- setup-java steps with a key or an input it does not know (`id`, `cache`, …), several of them
+  in one job, or one after the step that starts the emulators.
+- A workflow that pins its actions by commit SHA: pin `hidane-dev/setup-hidane` the same way.
+- Caches of `~/.cache/firebase/emulators`: firebase-tools no longer downloads the Firestore
+  emulator there, but still the Emulator UI and other emulators.
+
+### `--apply`
+
+1. Each file is checked to be the one the plan was made from.
+2. Unless `--force` is given, git is asked whether any of the files has uncommitted changes
+   (untracked files included); if one has, nothing is written. Outside a git work tree it says
+   that it could not check.
+3. Each file is copied to `.hidane-backup/<UTC time>/<path>` in the project. Delete the directory
+   once the changes are reviewed, or add it to `.gitignore`.
+4. Each file is written atomically: a temporary file in the same directory, with the file's
+   permissions, renamed over it.
+5. A second plan is made, which must find nothing to change; if it does, it says so.
+
+`hidane migrate` exits with 0 when the plan was printed or applied (or there was nothing to
+change), 1 when `--apply` refused or failed, and 2 for a usage error or a path that is not a
+directory.
+
+### JSON
+
+`--format json` prints the plan: `schema` (`hidane.migrate/1`), `hidane`, `detected` (the emulator
+commands and setup-java steps it found, each with `file`, `line` and `what`), `files` (for each
+file: `file`, `blob`, the git blob id of the file the plan was made from, `changes` with `code`,
+`line` and `description`, `diff`, and `after`, the whole new text), `notes` (findings, as in
+`hidane doctor`) and `patch` (every diff). With `--apply`, `applied` lists the files written and
+the backup directory. A tool that holds a copy of the repository can check `blob` against its
+copy before writing `after`. The engine behind it is the `hidane::migrate` module.

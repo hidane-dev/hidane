@@ -36,6 +36,17 @@ pub fn text(report: &Report, path: &str) -> String {
     } else {
         let _ = writeln!(out, "No incompatibility found (exit code 0).");
     }
+    if report
+        .facts
+        .emulator_commands
+        .iter()
+        .any(|c| c.needs_prefix())
+    {
+        let _ = writeln!(
+            out,
+            "`hidane migrate` shows the changes that run these emulators under hidane."
+        );
+    }
     out
 }
 

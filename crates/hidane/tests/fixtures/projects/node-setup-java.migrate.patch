@@ -1,0 +1,20 @@
+diff --git a/.github/workflows/test.yml b/.github/workflows/test.yml
+--- a/.github/workflows/test.yml
++++ b/.github/workflows/test.yml
+@@ -15,13 +15,10 @@
+           node-version: 22
+           cache: npm
+       # firebase-tools 15 needs Java 21 to run the Firestore emulator.
+-      - name: Set up Java
+-        uses: actions/setup-java@v4 # v4.7.1
+-        with:
+-          distribution: temurin
+-          java-version: "21"
++      - name: Set up hidane
++        uses: hidane-dev/setup-hidane@v1
+       - run: npm ci
+       - name: Test against the emulator
+-        run: npx firebase emulators:exec --only firestore "npm test"
++        run: hidane exec -- npx firebase emulators:exec --only firestore "npm test"
+         env:
+           FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080

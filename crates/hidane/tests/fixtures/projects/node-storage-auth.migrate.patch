@@ -1,0 +1,18 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -11,6 +11,7 @@
+         with:
+           distribution: temurin
+           java-version: 21
++      - uses: hidane-dev/setup-hidane@v1
+       - uses: actions/cache@v4
+         with:
+           path: ~/.cache/firebase/emulators
+@@ -19,5 +20,5 @@
+       - run: npm ci
+       - name: Test with the Auth, Firestore and Storage emulators
+         run: |
+-          firebase emulators:exec "npm test" \
++          hidane exec -- firebase emulators:exec "npm test" \
+             --project demo-storage-auth

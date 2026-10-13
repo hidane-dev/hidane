@@ -1,0 +1,12 @@
+diff --git a/functions/package.json b/functions/package.json
+--- a/functions/package.json
++++ b/functions/package.json
+@@ -4,7 +4,7 @@
+   "main": "lib/index.js",
+   "scripts": {
+     "build": "tsc",
+-    "serve": "npm run build && firebase emulators:start --only functions,firestore"
++    "serve": "npm run build && hidane exec -- firebase emulators:start --only functions,firestore"
+   },
+   "dependencies": {
+     "firebase-admin": "^13.6.0",

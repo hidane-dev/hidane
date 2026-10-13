@@ -124,14 +124,16 @@ downloaded with a browser needs `xattr -d com.apple.quarantine hidane`.
 `hidane doctor` checks a Firebase project before it moves to hidane, without running or changing
 anything: `firebase.json` and the emulators it starts, the rules, the SDK and firebase-tools
 versions, and the CI workflows and scripts that start the emulators, each marked verified, not
-verified or incompatible. [`docs/migrating.md`](docs/migrating.md) explains the checks and what to
-change.
+verified or incompatible. `hidane migrate` shows the changes as a diff (`hidane exec --` before
+`firebase emulators:exec`, `hidane-dev/setup-hidane` where `actions/setup-java` served only the
+Firestore emulator) and makes them with `--apply`. [`docs/migrating.md`](docs/migrating.md)
+explains both.
 
 ## Documentation
 
 - [Why hidane](docs/why.md) — the measurements behind the table above, with sources
 - [Compatibility](docs/compatibility.md) — transport per SDK, how each finds the emulator, which RPCs they use
-- [Migrating](docs/migrating.md) — `hidane doctor`, and what to change in a project that used the official emulator
+- [Migrating](docs/migrating.md) — `hidane doctor` and `hidane migrate`: checking a project that used the official emulator, and moving it to hidane
 - [Parity](docs/parity.md) — the recorded answers the tests replay, per area and transport, and the SDK transcripts
 - [Parity exceptions](docs/parity-exceptions.md) — where hidane and the official emulator intentionally differ
 - [Roadmap](docs/ROADMAP.md) — scope of v0.1 / v0.2 / v0.3, targets, risks
