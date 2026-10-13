@@ -324,7 +324,7 @@ def finding_for_emulator(entry, upstream, url):
         "",
         f"Run: {url}" if url else "Run: (not recorded)",
         f"The recordings are in the run's `canary-{entry['slug']}-*` artifacts, the report in "
-        "`compatibility`.",
+        "`compatibility-report`.",
         "",
         f"What to do: [{README}]({repository_url()}/blob/main/{README}#acting-on-a-canary-issue).",
         "",

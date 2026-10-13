@@ -97,9 +97,10 @@ For each new official emulator jar, whichever channel pins it:
 2. **hidane against v…** puts each confirmed recording in its fixture's place and runs
    `cargo test --workspace` (`python3 tools/upstream/canary.py replay`). A test that fails is run
    again with the committed fixtures; it is a **regression** only if it passes there.
-3. **compatibility report** (`canary.py report`) writes the job summary and the `compatibility`
-   artifact (`compatibility.json`): for each new emulator, every recording's result, hidane's
-   tests, how many of the fixtures the canary re-recorded, and a verdict:
+3. **compatibility report** (`canary.py report`) writes the job summary and the
+   `compatibility-report` artifact (`compatibility-report.json`): for each new emulator, every
+   recording's result, hidane's tests, how many of the fixtures the canary re-recorded, and a
+   verdict:
    - **same**: every recording is byte for byte the committed one, and hidane's tests pass;
    - **different**: a recording differs, confirmed, or hidane's tests regress with the new
      recordings: a finding, which gets an issue;
