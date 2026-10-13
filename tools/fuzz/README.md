@@ -123,6 +123,36 @@ A difference file is input for a person, not a fixture:
 3. If hidane is right on purpose, add the difference to docs/parity-exceptions.md (and
    `docs/parity-exceptions.json`) and a rule here that names the new entry.
 
+## Continuous verification
+
+The Differential fuzzing workflow (`.github/workflows/fuzz.yml`) runs on GitHub-hosted runners
+only, daily, by hand (`seed`, `cases`, `minutes`, and `issues` to file issues from a manual run
+of main), and for changes to the fuzzer, `tools/oracle/harness.py` or the workflow (seed 1, a
+few minutes):
+
+- **fuzz** runs the tests above, builds hidane from the commit, starts it and the pinned jar
+  (`.github/actions/official-emulator`), and fuzzes for the time given (25 minutes on the
+  schedule, with a seed from the date). `summary.md` goes to the job summary; the run's
+  `--out` and both emulators' output go to the `fuzz` artifact.
+- **issues**, on main only, and the only job with `issues: write`: by hand with `issues` on, or
+  on the schedule once the repository variable `FUZZ_FILE_ISSUES` is `true` (see below).
+  [`issues.py`](issues.py) opens one issue per unexplained difference, labelled
+  `fuzz`, whose first line is a marker naming the signature
+  (`<!-- hidane-fuzz signature="…" first-run="…" -->`). A later run that finds the signature
+  again updates the open issue and leaves a closed one closed: close it once hidane is fixed or
+  the difference is accepted (with a rule here). At most 10 issues are opened per run, the most
+  severe first (crash, data, status, order, message). An issue holds only fields checked against
+  strict patterns and the error messages escaped in a code block; the bodies are in the
+  artifact. The Upstream workflow's issues carry the label `upstream` instead.
+- **issues (dry run)**, everywhere else, says what `issues` would do, with read-only access.
+
+Scheduled runs do not file issues yet. The differences known so far are triaged in one tracking
+issue ([#262](https://github.com/hidane-dev/hidane/issues/262)), so that the daily run does not
+open one issue per signature for them. Once that list is worked down, set the repository
+variable `FUZZ_FILE_ISSUES` to `true` (Settings, Secrets and variables, Actions, Variables) and
+the schedule files issues as described above; unset or anything else, it only does the dry run.
+A manual run with `issues` on files them either way.
+
 ## Limits
 
 REST only: gRPC answers with the same codes and messages (the recordings check that), but the
