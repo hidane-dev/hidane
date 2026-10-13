@@ -23,6 +23,11 @@ The dependencies are pinned to exact versions, with a lockfile (`package-lock.js
 `requirements.txt` with hashes, `go.sum`). Dependabot proposes their updates, and this workflow
 tests them.
 
+Where a pinned package holds a vulnerable transitive dependency that Dependabot cannot move, the
+Node examples override it, scoped to that package, at the first fixed version: `uuid` 11.1.1 under
+firebase-tools' `gaxios`, and `@grpc/grpc-js` 1.14.6 under `@firebase/firestore` (firebase 13 pins
+1.9). Remove an override once the package that pins the old version moves past it.
+
 Not here: a Next.js app would reach Firestore through the same SDKs as `admin-node/` (on the
 server) and `rules-unit-testing/` (the Firebase JS SDK), so it would add a framework and a build
 without testing anything more. Flutter Web needs the Flutter SDK and a browser; it is verified in
