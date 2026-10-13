@@ -39,7 +39,7 @@ concurrency:
 
 env:
   # The published release the examples also run against.
-  PUBLISHED_VERSION: 0.5.0
+  PUBLISHED_VERSION: 0.5.1
 
 jobs:
   build:
