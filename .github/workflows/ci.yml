@@ -30,6 +30,9 @@ jobs:
       # results/; hidane doctor's verified versions (crates/hidane/src/project/verified.rs), the
       # table in docs/migrating.md and the status column of docs/compatibility.md follow it.
       - run: python3 tools/parity/sdk_certification.py --check
+      # docs/compatibility.json and the tables at the top of docs/compatibility.md sum up the
+      # above, the browser and Functions results and the integration tests for this tree.
+      - run: python3 tools/parity/compatibility.py --check
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy

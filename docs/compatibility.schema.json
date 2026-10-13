@@ -1,0 +1,295 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "hidane compatibility report",
+  "description": "docs/compatibility.json, written by tools/parity/compatibility.py: what the recorded results and the tests show about hidane's compatibility with the official Cloud Firestore emulator, its SDKs and firebase-tools, for the tree it is generated from. docs/compatibility.md explains each field.",
+  "type": "object",
+  "required": ["name", "description", "schema_version", "generated_by", "hidane", "official_emulator", "matrix", "oracle_corpus", "replay", "transcripts", "sdk_certification", "browser", "functions", "integration_tests", "differential_fuzzing", "intentional_differences"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {"type": "string"},
+    "name": {"const": "hidane compatibility report"},
+    "description": {"type": "string"},
+    "schema_version": {"type": "integer", "const": 1, "description": "The version of this format; it changes when a field is removed or changes meaning."},
+    "generated_by": {"const": "tools/parity/compatibility.py"},
+    "hidane": {
+      "type": "object",
+      "required": ["version", "series"],
+      "additionalProperties": false,
+      "properties": {
+        "version": {"type": "string", "description": "The workspace version of the tree (Cargo.toml)."},
+        "series": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.x$", "description": "Its major and minor version, which the matrix names."}
+      }
+    },
+    "official_emulator": {
+      "type": "object",
+      "required": ["product", "release", "jar_sha256"],
+      "additionalProperties": false,
+      "description": "The release new recordings are made against (.github/actions/official-emulator/pinned.sh).",
+      "properties": {
+        "product": {"const": "cloud-firestore-emulator"},
+        "release": {"$ref": "#/$defs/version"},
+        "jar_sha256": {"oneOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]}
+      }
+    },
+    "matrix": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/combination"}},
+    "oracle_corpus": {
+      "type": "object",
+      "required": ["where", "digest", "releases", "files", "fixtures", "transcripts", "answers", "bytes"],
+      "additionalProperties": false,
+      "properties": {
+        "where": {"$ref": "#/$defs/path"},
+        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+        "releases": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/version"}},
+        "files": {"$ref": "#/$defs/count"},
+        "fixtures": {"$ref": "#/$defs/count"},
+        "transcripts": {"$ref": "#/$defs/count"},
+        "answers": {"$ref": "#/$defs/count"},
+        "bytes": {"$ref": "#/$defs/count"}
+      }
+    },
+    "replay": {
+      "type": "object",
+      "required": ["fixtures", "answers", "levels", "by_area", "replayed_by", "runs", "where"],
+      "additionalProperties": false,
+      "properties": {
+        "fixtures": {"$ref": "#/$defs/count"},
+        "answers": {"$ref": "#/$defs/count"},
+        "levels": {"$ref": "#/$defs/levels"},
+        "by_area": {
+          "type": "object",
+          "propertyNames": {"$ref": "#/$defs/area"},
+          "additionalProperties": {
+            "type": "object",
+            "required": ["fixtures", "answers", "full", "transports"],
+            "additionalProperties": false,
+            "properties": {
+              "fixtures": {"$ref": "#/$defs/count"},
+              "answers": {"$ref": "#/$defs/count"},
+              "full": {"$ref": "#/$defs/count"},
+              "transports": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        },
+        "replayed_by": {"type": "string"},
+        "runs": {"type": "string"},
+        "where": {"$ref": "#/$defs/path"}
+      }
+    },
+    "transcripts": {
+      "type": "object",
+      "required": ["pairs", "comparisons", "identical", "documented", "unexplained", "where"],
+      "additionalProperties": false,
+      "properties": {
+        "pairs": {"$ref": "#/$defs/count"},
+        "comparisons": {"$ref": "#/$defs/count"},
+        "identical": {"$ref": "#/$defs/count"},
+        "documented": {"$ref": "#/$defs/count"},
+        "unexplained": {"$ref": "#/$defs/count"},
+        "where": {"$ref": "#/$defs/path"}
+      }
+    },
+    "sdk_certification": {
+      "type": "object",
+      "required": ["where", "totals", "by_status"],
+      "additionalProperties": false,
+      "properties": {
+        "where": {"$ref": "#/$defs/path"},
+        "totals": {
+          "type": "object",
+          "required": ["clients", "verified", "partially-verified", "not-verified"],
+          "additionalProperties": false,
+          "properties": {
+            "clients": {"$ref": "#/$defs/count"},
+            "verified": {"$ref": "#/$defs/count"},
+            "partially-verified": {"$ref": "#/$defs/count"},
+            "not-verified": {"$ref": "#/$defs/count"}
+          }
+        },
+        "by_status": {
+          "type": "object",
+          "required": ["verified", "partially-verified", "not-verified"],
+          "additionalProperties": false,
+          "properties": {
+            "verified": {"$ref": "#/$defs/ids"},
+            "partially-verified": {"$ref": "#/$defs/ids"},
+            "not-verified": {"$ref": "#/$defs/ids"}
+          }
+        }
+      }
+    },
+    "browser": {
+      "type": "object",
+      "required": ["suite", "transcripts"],
+      "additionalProperties": false,
+      "properties": {
+        "suite": {
+          "type": "object",
+          "required": ["workflow", "result", "official", "hidane", "commit"],
+          "additionalProperties": false,
+          "properties": {
+            "workflow": {"$ref": "#/$defs/path"},
+            "result": {"$ref": "#/$defs/result"},
+            "official": {"$ref": "#/$defs/outcomes"},
+            "hidane": {"$ref": "#/$defs/outcomes"},
+            "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$", "description": "The firebase-js-sdk commit the suite ran at."}
+          }
+        },
+        "transcripts": {"type": "array", "items": {"$ref": "#/$defs/pair"}}
+      }
+    },
+    "functions": {
+      "type": "object",
+      "required": ["fixtures", "transcripts"],
+      "additionalProperties": false,
+      "properties": {
+        "fixtures": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["path", "answers", "levels", "tests"],
+            "additionalProperties": false,
+            "properties": {
+              "path": {"$ref": "#/$defs/path"},
+              "answers": {"$ref": "#/$defs/count"},
+              "levels": {"$ref": "#/$defs/levels"},
+              "tests": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        },
+        "transcripts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["name", "client", "official_events", "hidane_events", "result"],
+            "additionalProperties": false,
+            "properties": {
+              "name": {"type": "string"},
+              "client": {"type": "string"},
+              "official_events": {"$ref": "#/$defs/count"},
+              "hidane_events": {"$ref": "#/$defs/count"},
+              "result": {"$ref": "#/$defs/result"},
+              "explained_in": {"$ref": "#/$defs/path"}
+            }
+          }
+        }
+      }
+    },
+    "integration_tests": {
+      "type": "object",
+      "required": ["files", "replaying_files", "runs", "suites"],
+      "additionalProperties": false,
+      "properties": {
+        "files": {"$ref": "#/$defs/count"},
+        "replaying_files": {"$ref": "#/$defs/count"},
+        "runs": {"type": "string"},
+        "suites": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["path", "replays"],
+            "additionalProperties": false,
+            "properties": {
+              "path": {"$ref": "#/$defs/path"},
+              "replays": {"type": "array", "items": {"$ref": "#/$defs/path"}}
+            }
+          }
+        }
+      }
+    },
+    "differential_fuzzing": {
+      "type": "object",
+      "required": ["status", "where", "runs"],
+      "additionalProperties": false,
+      "properties": {
+        "status": {"enum": ["not-run", "run"]},
+        "where": {"oneOf": [{"$ref": "#/$defs/path"}, {"type": "null"}]},
+        "runs": {"type": "array", "items": {"$ref": "#/$defs/fuzzing_run"}}
+      }
+    },
+    "intentional_differences": {
+      "type": "object",
+      "required": ["count", "where"],
+      "properties": {
+        "count": {"$ref": "#/$defs/count"},
+        "where": {"$ref": "#/$defs/path"}
+      }
+    }
+  },
+  "$defs": {
+    "count": {"type": "integer", "minimum": 0},
+    "date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "version": {"type": "string", "pattern": "^[0-9]+(\\.[0-9]+)+$"},
+    "path": {"type": "string", "pattern": "^[A-Za-z0-9_.\\-]+(/[A-Za-z0-9_.\\-]+)*/?$", "description": "A path in the repository; a directory ends with /."},
+    "area": {"type": "string", "pattern": "^[a-z]+$"},
+    "status": {"enum": ["verified", "partially-verified", "not-verified"]},
+    "result": {"enum": ["identical", "documented", "unexplained"]},
+    "ids": {"type": "array", "items": {"type": "string", "pattern": "^[a-z0-9-]+$"}},
+    "levels": {"type": "object", "propertyNames": {"enum": ["full", "reasons", "part", "status", "codes", "none", "differs", "unstated"]}, "additionalProperties": {"$ref": "#/$defs/count"}},
+    "outcomes": {
+      "type": "object",
+      "required": ["path", "passed", "failed", "skipped"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"$ref": "#/$defs/path"},
+        "passed": {"$ref": "#/$defs/count"},
+        "failed": {"$ref": "#/$defs/count"},
+        "skipped": {"$ref": "#/$defs/count"}
+      }
+    },
+    "pair": {
+      "type": "object",
+      "required": ["name", "client", "transport", "result"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"type": "string"},
+        "client": {"type": "string"},
+        "transport": {"type": "string"},
+        "result": {"$ref": "#/$defs/result"},
+        "explained_in": {"$ref": "#/$defs/path"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["kind", "count", "description", "where", "runs", "last_recorded"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {"enum": ["replay", "transcripts", "firebase-tools"], "description": "replay: fixtures cargo test replays on every commit; transcripts: SDK transcripts compared side by side; firebase-tools: transcripts made under firebase-tools."},
+        "count": {"$ref": "#/$defs/count"},
+        "description": {"type": "string"},
+        "where": {"$ref": "#/$defs/path"},
+        "runs": {"type": "string", "description": "When it runs: on every commit through CI, or `recorded` once and committed."},
+        "last_recorded": {"oneOf": [{"$ref": "#/$defs/date"}, {"type": "null"}]}
+      }
+    },
+    "combination": {
+      "type": "object",
+      "required": ["hidane", "firebase_tools", "official_emulator", "status", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "hidane": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.x$"},
+        "firebase_tools": {"oneOf": [{"$ref": "#/$defs/version"}, {"type": "null"}]},
+        "official_emulator": {"$ref": "#/$defs/version"},
+        "status": {"$ref": "#/$defs/status"},
+        "evidence": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/evidence"}}
+      }
+    },
+    "fuzzing_run": {
+      "type": "object",
+      "required": ["name", "date", "target", "cases", "differences", "unexplained", "evidence"],
+      "description": "One differential fuzzing run against both emulators. More fields may be added.",
+      "properties": {
+        "name": {"type": "string"},
+        "date": {"$ref": "#/$defs/date"},
+        "target": {"type": "string", "description": "What was fuzzed: an RPC, a transport, Security Rules conditions."},
+        "official_emulator": {"$ref": "#/$defs/version"},
+        "cases": {"$ref": "#/$defs/count"},
+        "differences": {"$ref": "#/$defs/count"},
+        "unexplained": {"$ref": "#/$defs/count"},
+        "evidence": {"$ref": "#/$defs/path"}
+      }
+    }
+  }
+}
