@@ -1,5 +1,5 @@
-# What `npm ci` and `vhs demo.tape` leave here; the GIF that is kept is docs/assets/demo.gif.
+# What `npm ci` and `vhs <name>.tape` leave here; the GIFs that are kept are in docs/assets/.
 node_modules/
-demo.gif
+*.gif
 machine.txt
 *.log
