@@ -224,3 +224,52 @@ file: `file`, `blob`, the git blob id of the file the plan was made from, `chang
 `hidane doctor`) and `patch` (every diff). With `--apply`, `applied` lists the files written and
 the backup directory. A tool that holds a copy of the repository can check `blob` against its
 copy before writing `after`. The engine behind it is the `hidane::migrate` module.
+
+## Opening the migration as a pull request
+
+The [`hidane-dev/setup-hidane/migrate`](https://github.com/hidane-dev/setup-hidane#migrating-to-hidane-in-a-pull-request)
+action runs `hidane migrate` in GitHub Actions and opens its changes as a pull request. It is
+opt-in: it runs in a workflow someone starts by hand in their own repository, never on a schedule
+or on any other event.
+
+```yaml
+name: Migrate to hidane
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: hidane-dev/setup-hidane/migrate@v1
+```
+
+It makes the plan with `--format json` from the tip of the base branch, and stops when there is
+nothing to change. Otherwise it applies the plan with `--apply` on a new branch
+(`hidane/migrate-<commit>`), commits exactly the files hidane wrote (not `.hidane-backup/`), pushes
+that branch, which must not exist yet, and opens a draft pull request whose description is the
+plan: the changes, what it leaves to you, the diff, and `hidane doctor`'s report on the branch.
+`dry-run: true` shows that description without pushing anything.
+
+The workflow's `GITHUB_TOKEN` cannot push changes to `.github/workflows/`, and the pull requests it
+opens start no workflow; the action's README shows how to give it a GitHub App token or a
+fine-grained personal access token instead. The action needs a hidane release with
+`hidane migrate`, that is, a release after 0.4.0.
+
+### One engine
+
+`hidane migrate`, the action and any later integration make the same changes, because they share
+one engine: `hidane::migrate::plan` makes the plan from a project's files (a directory, or files
+held in memory, through `hidane::project::files::Tree`), and `hidane::migrate::apply` writes it.
+The action reads the plan as JSON (`hidane.migrate/1`) and edits nothing itself. A GitHub App, if
+one comes later, would call the same `hidane::migrate::plan` on a repository's files and open the
+same pull request, so that what it proposes is what `hidane migrate` shows locally.
