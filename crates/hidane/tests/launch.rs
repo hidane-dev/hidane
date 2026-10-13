@@ -187,3 +187,91 @@ fn the_jar_runs_the_emulator_and_exec_ends_with_it() {
     let status = child.wait().unwrap();
     assert_eq!(status.code(), Some(0), "exec ends with the command's code");
 }
+
+/// What Testcontainers' gcloud modules start hidane's container image with, after its
+/// entrypoint: `/bin/sh -c "gcloud beta emulators firestore start --host-port …"`
+/// (docs/testcontainers.md). hidane reads the gcloud command line itself.
+#[test]
+fn a_gcloud_command_line_after_sh_c_runs_the_emulator() {
+    let port = TcpListener::bind("127.0.0.1:0")
+        .unwrap()
+        .local_addr()
+        .unwrap()
+        .port();
+    let script = format!(
+        "gcloud beta emulators firestore start --host-port 127.0.0.1:{port} --project=demo-hidane"
+    );
+    let mut child = Command::new(BIN)
+        .args(["/bin/sh", "-c", &script])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    // The line the modules wait for, from the banner.
+    let mut stdout = child.stdout.take().unwrap();
+    let mut seen = String::new();
+    let mut buf = [0; 256];
+    while !seen.contains("Dev App Server is now running.") {
+        let n = stdout.read(&mut buf).unwrap();
+        assert!(n > 0, "no banner: {seen}");
+        seen.push_str(&String::from_utf8_lossy(&buf[..n]));
+    }
+    assert!(
+        seen.contains(&format!("API endpoint: http://127.0.0.1:{port}")),
+        "{seen}"
+    );
+    let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+    stream
+        .write_all(b"POST /shutdown HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\nContent-Length: 0\r\n\r\n")
+        .unwrap();
+    let mut answer = String::new();
+    stream.read_to_string(&mut answer).unwrap();
+    let status = child.wait().unwrap();
+    assert_eq!(status.code(), Some(0));
+    let mut stderr = String::new();
+    child
+        .stderr
+        .take()
+        .unwrap()
+        .read_to_string(&mut stderr)
+        .unwrap();
+    assert!(
+        stderr.contains(&format!(
+            "in place of `gcloud emulators firestore start`, with: hidane --host 127.0.0.1 --port {port}"
+        )),
+        "{stderr}"
+    );
+}
+
+/// hidane's image has no shell: a script that is not a gcloud command line it serves stops
+/// with the reason, and a flag hidane rejects stops it as it would stop hidane.
+#[test]
+fn other_scripts_and_unserved_flags_are_refused() {
+    for (script, code, says) in [
+        ("echo hello", 127, "hidane's image has no shell"),
+        (
+            "gcloud beta emulators firestore start | tee log",
+            127,
+            "`|` would need a shell",
+        ),
+        (
+            "gcloud beta emulators firestore start --store-on-disk",
+            2,
+            "`--store-on-disk` is not a flag",
+        ),
+        (
+            "gcloud beta emulators firestore start --database-mode=datastore-mode",
+            2,
+            "Datastore mode is not supported by hidane yet",
+        ),
+    ] {
+        let output = Command::new(BIN)
+            .args(["/bin/sh", "-c", script])
+            .output()
+            .unwrap();
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert_eq!(output.status.code(), Some(code), "{script}: {stderr}");
+        assert!(stderr.contains(says), "{script}: {stderr}");
+        assert!(!stderr.contains("running"), "{script}: {stderr}");
+    }
+}

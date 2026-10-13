@@ -143,6 +143,7 @@ explains both.
 - [Why hidane](docs/why.md) — the measurements behind the table above, with sources
 - [Compatibility](docs/compatibility.md) — transport per SDK, how each finds the emulator, which RPCs they use
 - [Migrating](docs/migrating.md) — `hidane doctor` and `hidane migrate`: checking a project that used the official emulator, and moving it to hidane
+- [Testcontainers](docs/testcontainers.md) — hidane's image in Testcontainers: in place of the Cloud SDK image in the gcloud modules (Java, Node), or as a generic container
 - [Parity](docs/parity.md) — the recorded answers the tests replay, per area and transport, and the SDK transcripts
 - [Parity exceptions](docs/parity-exceptions.md) — where hidane and the official emulator intentionally differ
 - [Roadmap](docs/ROADMAP.md) — scope of v0.1 / v0.2 / v0.3, targets, risks

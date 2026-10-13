@@ -1,0 +1,151 @@
+name: Testcontainers
+
+# Starts hidane's container image through Testcontainers for Java and Node, in place of the Cloud
+# SDK image in their gcloud modules' FirestoreEmulatorContainer and as a generic container, and
+# runs Firestore operations against it (docs/testcontainers.md, testcontainers/).
+#
+# The image is built from this commit with packaging/docker/Dockerfile, from the same kind of
+# context as the release workflow's: a change to hidane or to the image is tested before a release
+# publishes it, and the gcloud modules need an image newer than v0.4.0. The generic container
+# tests also run against the published v0.4.0 image, pinned by digest, which users can pull today.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "crates/**"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "packaging/docker/**"
+      - "testcontainers/**"
+      - ".github/workflows/testcontainers.yml"
+  pull_request:
+    paths:
+      - "crates/**"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "packaging/docker/**"
+      - "testcontainers/**"
+      - ".github/workflows/testcontainers.yml"
+  # Weekly, for changes in Docker and the runners; the test projects pin their dependencies.
+  schedule:
+    - cron: "23 4 * * 3"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The image built from this commit, loaded into each job's Docker; never pushed.
+  SOURCE_IMAGE: hidane:testcontainers
+  # ghcr.io/hidane-dev/hidane:0.4.0 (linux/amd64, linux/arm64).
+  PUBLISHED_IMAGE: ghcr.io/hidane-dev/hidane@sha256:a4ba8b9671177ed460238f2caeb21f7d5e44a333ec94ae8ef28bed0876773cf0
+
+jobs:
+  image:
+    name: image from source
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Rust and musl
+        run: |
+          rustup toolchain install stable --profile minimal --target x86_64-unknown-linux-musl
+          rustup default stable
+          sudo apt-get update && sudo apt-get install -y musl-tools
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          key: musl
+      - name: Build
+        run: cargo build --release --locked -p hidane --target x86_64-unknown-linux-musl
+      - name: Image
+        run: |
+          # The release workflow's context: the static binary per architecture and the license
+          # files. The third-party notices are generated for releases only.
+          ctx="$RUNNER_TEMP/ctx"
+          mkdir -p "$ctx/amd64"
+          cp target/x86_64-unknown-linux-musl/release/hidane "$ctx/amd64/hidane"
+          cp LICENSE-MIT LICENSE-APACHE "$ctx/"
+          echo "The release images carry the third-party notices here." > "$ctx/THIRD-PARTY-LICENSES.txt"
+          docker build --platform linux/amd64 -f packaging/docker/Dockerfile -t "$SOURCE_IMAGE" "$ctx"
+          docker run --rm "$SOURCE_IMAGE" --version
+          docker save "$SOURCE_IMAGE" | gzip > "$RUNNER_TEMP/image.tar.gz"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: image
+          path: ${{ runner.temp }}/image.tar.gz
+          if-no-files-found: error
+          retention-days: 3
+
+  java:
+    name: Java (testcontainers-gcloud)
+    needs: image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: testcontainers/java
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: image
+          path: ${{ runner.temp }}
+      - name: Load the image
+        run: docker load --input "$RUNNER_TEMP/image.tar.gz"
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: testcontainers/java/pom.xml
+      - name: The image from source, through the gcloud module and as a generic container
+        env:
+          HIDANE_IMAGE: ${{ env.SOURCE_IMAGE }}
+        run: mvn -B -ntp test
+      - name: The published v0.4.0 image, as a generic container
+        env:
+          HIDANE_IMAGE: ${{ env.PUBLISHED_IMAGE }}
+        run: mvn -B -ntp test -Dtest=GenericContainerTest
+
+  node:
+    name: Node (@testcontainers/gcloud)
+    needs: image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: testcontainers/node
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: image
+          path: ${{ runner.temp }}
+      - name: Load the image
+        run: docker load --input "$RUNNER_TEMP/image.tar.gz"
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: testcontainers/node/package-lock.json
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: The image from source, through the gcloud module and as a generic container
+        env:
+          HIDANE_IMAGE: ${{ env.SOURCE_IMAGE }}
+        run: npm test
+      - name: The published v0.4.0 image, as a generic container
+        env:
+          HIDANE_IMAGE: ${{ env.PUBLISHED_IMAGE }}
+          GENERIC_ONLY: "1"
+        run: npm test
