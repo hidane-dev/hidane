@@ -9,6 +9,7 @@ Phase 0 (research). Nothing to run yet.
 | [parity.md](parity.md) | How many of the official emulator's recorded answers the tests replay against hidane, per area and transport, and which SDK transcripts are identical (generated) |
 | [parity-exceptions.md](parity-exceptions.md) | Where hidane intentionally differs from the official emulator, and where the official emulator differs from production |
 | [ROADMAP.md](ROADMAP.md) | Tentative scope of v0.1 / v0.2 / v0.3, targets, risks |
+| [clean-room/](clean-room/README.md) | Where hidane's behaviour comes from: the allowed sources, how the official emulator is observed, the provenance of its recordings, and what contributors must not use |
 | [adr/](adr/) | Draft decision records: license, storage, gRPC stack, WebChannel timing, Rules engine |
 | [../results/](../results/) | The official emulator baseline, hidane's measurements and the SDK differentials |
 

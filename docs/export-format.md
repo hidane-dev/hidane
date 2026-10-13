@@ -1,9 +1,12 @@
 # Export format and import
 
 How the official Cloud Firestore emulator (v1.22.0) exports and imports data, and how hidane
-reproduces it. Everything here was observed from the outside: exports written by the official
-emulator, read byte by byte, and its answers to imports of exports made for the purpose. Nothing
-was decompiled. `tools/oracle/export_import.py` records the observations in
+reproduces it. The format and the endpoints' behaviour were observed from the outside: exports
+written by the official emulator, read byte by byte, its answers to imports of exports made for
+the purpose, and how firebase-tools calls it. The exception is the field names of the `:export`
+and `:import` requests, which were read from the jar's class files before the clean-room policy
+([history](clean-room/OBSERVATION_POLICY.md#history-before-this-policy)). Nothing was decompiled.
+`tools/oracle/export_import.py` records the observations in
 `crates/hidane/tests/fixtures/export_import.json`, and `crates/hidane/tests/export_import.rs`
 replays them against hidane. The format is Cloud Datastore's managed export: LevelDB log files
 holding App Engine `EntityProto`s (#88).
