@@ -1,8 +1,8 @@
 name: Demo
 
-# Records the README's demo (docs/assets/demo/demo.tape) on a GitHub-hosted runner: firebase-tools
-# starting and stopping the official emulator and hidane's latest release, then 200 firebase-admin
-# tests through `hidane exec` in a shell without Java. It uploads demo.gif as an artifact, which a
+# Records the README's demo (docs/assets/demo/demo.tape) on a GitHub-hosted runner: how long the
+# official emulator and hidane's latest release each take to open their port, then 200
+# firebase-admin tests through `hidane exec` in a shell without Java. It uploads demo.gif as an artifact, which a
 # maintainer copies to docs/assets/demo.gif; nothing is pushed or published. Each command runs
 # once before the recording, so the jar is downloaded and both start from the same warm caches.
 
@@ -74,8 +74,9 @@ jobs:
         run: |
           echo "$PWD/node_modules/.bin" >> "$GITHUB_PATH"
           export PATH="$PWD/node_modules/.bin:$PATH"
-          firebase emulators:exec "true" > /dev/null 2>&1
-          hidane exec -- firebase emulators:exec "true" > /dev/null 2>&1
+          firebase emulators:exec "npm test" > /dev/null 2>&1
+          ./ready java -jar ~/.cache/firebase/emulators/cloud-firestore-emulator-*.jar --host 127.0.0.1 --port 8080
+          ./ready hidane --host 127.0.0.1 --port 8080
           (
             PATH="$(printf %s "$PATH" | tr : '\n' | grep -vxF "$JAVA_HOME/bin" | paste -sd: -)"
             if command -v java; then exit 1; fi

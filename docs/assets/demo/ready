@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# The README's demo: starts an emulator with the command given, prints how long its port took to
+# accept a TCP connection, then stops it. Bash 5 (EPOCHREALTIME, /dev/tcp); port 8080.
+set -euo pipefail
+start=$EPOCHREALTIME
+"$@" > /dev/null 2>&1 &
+pid=$!
+until (exec 3<> /dev/tcp/127.0.0.1/8080) 2> /dev/null; do
+  kill -0 "$pid" 2> /dev/null || { echo "the emulator exited" >&2; exit 1; }
+done
+end=$EPOCHREALTIME
+kill "$pid"
+wait "$pid" 2> /dev/null || true
+awk -v s="$start" -v e="$end" 'BEGIN { ms = (e - s) * 1000; printf "port open after %s ms\n", (ms < 10 ? sprintf("%.1f", ms) : sprintf("%d", ms)) }'
