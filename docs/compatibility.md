@@ -35,7 +35,7 @@ firebase-tools that launches it and the official emulator it is compared with.
 | Functions events | `function_events.json`: 133 recorded answers, `function_triggers.json`: 342 recorded answers; functions-triggers: 37 events on hidane, 43 on the official emulator (documented) | [parity-exceptions.md](parity-exceptions.md) |
 | Integration tests | 47 test files (`crates/*/tests/*.rs`), 32 of them replaying recordings, run on every pull request and push to main | [`crates/`](../crates/) |
 | Differential fuzzing | not run yet | — |
-| Intentional differences | 68 | [parity-exceptions.md](parity-exceptions.md) |
+| Differences | 68 intentional differences (1 bug-for-bug, 43 more correct, 18 equivalent, 6 limitation); 14 places where the official emulator departs from production (12 bug-for-bug, 2 more correct) | [parity-exceptions.md](parity-exceptions.md) |
 
 <!-- compatibility:end -->
 
@@ -62,16 +62,18 @@ digest and totals), `replay` (answers per area and per way of comparing them), `
 firebase-js-sdk suite's outcomes on each emulator, the transcripts made in Chromium),
 `functions` (the fixtures of trigger registrations and events, the events each emulator sent),
 `integration_tests` (the test files under `crates/*/tests/` and the recordings each replays),
-`differential_fuzzing` and `intentional_differences`. `schema_version` changes when a field is
-removed or changes meaning, not when one is added.
+`differential_fuzzing`, and `differences` (the
+[difference database](parity-exceptions.md)'s entries by table and by kind: bug-for-bug, more
+correct, equivalent, limitation). `schema_version` changes when a field is removed or changes
+meaning, not when one is added.
 
 Differential fuzzing has not run yet. A run is reported by writing a summary to
 `results/differential-fuzzing.json`, an object whose `runs` each have `name`, `date`, `target`,
 `cases`, `differences`, `unexplained` and `evidence` (the file with the cases), and optionally
 `official_emulator` (the schema's `fuzzing_run`; list the file in `IGNORED` of
 `tools/parity/table.py`). Run `python3 tools/parity/compatibility.py` after
-`tools/parity/table.py`, `tools/oracle/corpus.py` and `tools/parity/sdk_certification.py`; CI
-fails while the report is stale.
+`tools/parity/table.py`, `tools/oracle/corpus.py`, `tools/parity/sdk_certification.py` and
+`tools/parity/differences.py`; CI fails while the report is stale.
 
 ## Transport required by each client
 

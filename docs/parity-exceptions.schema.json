@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "hidane official emulator difference database",
+  "description": "docs/parity-exceptions.json: every place where the official Cloud Firestore emulator, production Firestore and hidane do not all behave the same. Edited by hand and checked by tools/parity/differences.py, which writes the tables of docs/parity-exceptions.md from it. docs/parity-exceptions.md explains each field.",
+  "type": "object",
+  "required": ["name", "description", "schema_version", "kinds", "differences"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {"type": "string"},
+    "name": {"const": "hidane official emulator difference database"},
+    "description": {"type": "string"},
+    "schema_version": {"type": "integer", "const": 1, "description": "The version of this format; it changes when a field is removed or changes meaning."},
+    "kinds": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "object",
+        "required": ["key", "meaning"],
+        "additionalProperties": false,
+        "properties": {
+          "key": {"$ref": "#/$defs/kind"},
+          "meaning": {"type": "string"}
+        }
+      }
+    },
+    "differences": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/difference"}}
+  },
+  "$defs": {
+    "kind": {"enum": ["bug-for-bug", "more-correct", "equivalent", "limitation"]},
+    "text": {"type": "string", "minLength": 1, "description": "Markdown, as it appears in a table cell of docs/parity-exceptions.md."},
+    "difference": {
+      "type": "object",
+      "required": ["id", "table", "area", "topic", "kind", "official", "firestore", "hidane", "reason", "references"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^D[0-9]{3}$", "description": "A stable ID: D001, D002, … in the order entries were added; a new entry takes the next one, and an ID is never reused."},
+        "table": {"enum": ["intentional", "production"], "description": "The table of docs/parity-exceptions.md it is in: hidane departing from the official emulator on purpose, or the official emulator departing from production with the parity target decided."},
+        "area": {"enum": ["documents", "queries", "transactions", "streams", "rest", "webchannel", "rules", "export", "admin", "values"], "description": "Its area in the parity table (tools/parity/table.py, AREAS)."},
+        "topic": {"oneOf": [{"$ref": "#/$defs/text"}, {"type": "null"}], "description": "The production table's Area column; null in the other table."},
+        "kind": {"$ref": "#/$defs/kind"},
+        "official": {"$ref": "#/$defs/text", "description": "What the official emulator does."},
+        "firestore": {"oneOf": [{"$ref": "#/$defs/text"}, {"type": "null"}], "description": "What production Firestore does, where the entry knows it; null where nothing recorded says (production is not observed yet: #82)."},
+        "hidane": {"$ref": "#/$defs/text", "description": "What hidane does."},
+        "reason": {"$ref": "#/$defs/text", "description": "Why: the intentional table's Why column, or the production table's Decision column."},
+        "references": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}, "description": "Issues (`hidane-dev/hidane#86`, `firebase/firebase-tools#11241`), web pages, and files or pages of the repository (globs allowed). Every one the entry's text mentions must be here; more may be added, such as the fixture or test that pins hidane's side."}
+      }
+    }
+  }
+}

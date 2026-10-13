@@ -3,7 +3,7 @@
   "title": "hidane compatibility report",
   "description": "docs/compatibility.json, written by tools/parity/compatibility.py: what the recorded results and the tests show about hidane's compatibility with the official Cloud Firestore emulator, its SDKs and firebase-tools, for the tree it is generated from. docs/compatibility.md explains each field.",
   "type": "object",
-  "required": ["name", "description", "schema_version", "generated_by", "hidane", "official_emulator", "matrix", "oracle_corpus", "replay", "transcripts", "sdk_certification", "browser", "functions", "integration_tests", "differential_fuzzing", "intentional_differences"],
+  "required": ["name", "description", "schema_version", "generated_by", "hidane", "official_emulator", "matrix", "oracle_corpus", "replay", "transcripts", "sdk_certification", "browser", "functions", "integration_tests", "differential_fuzzing", "differences"],
   "additionalProperties": false,
   "properties": {
     "$schema": {"type": "string"},
@@ -208,12 +208,16 @@
         "runs": {"type": "array", "items": {"$ref": "#/$defs/fuzzing_run"}}
       }
     },
-    "intentional_differences": {
+    "differences": {
       "type": "object",
-      "required": ["count", "where"],
+      "required": ["where", "page", "intentional", "production"],
+      "additionalProperties": false,
+      "description": "The official emulator difference database (docs/parity-exceptions.json): its two tables, by kind.",
       "properties": {
-        "count": {"$ref": "#/$defs/count"},
-        "where": {"$ref": "#/$defs/path"}
+        "where": {"$ref": "#/$defs/path"},
+        "page": {"$ref": "#/$defs/path"},
+        "intentional": {"$ref": "#/$defs/kinds"},
+        "production": {"$ref": "#/$defs/kinds"}
       }
     }
   },
@@ -226,6 +230,15 @@
     "area": {"type": "string", "pattern": "^[a-z]+$"},
     "status": {"enum": ["verified", "partially-verified", "not-verified"]},
     "result": {"enum": ["identical", "documented", "unexplained"]},
+    "kinds": {
+      "type": "object",
+      "required": ["count", "by_kind"],
+      "additionalProperties": false,
+      "properties": {
+        "count": {"$ref": "#/$defs/count"},
+        "by_kind": {"type": "object", "propertyNames": {"enum": ["bug-for-bug", "more-correct", "equivalent", "limitation"]}, "additionalProperties": {"$ref": "#/$defs/count"}}
+      }
+    },
     "ids": {"type": "array", "items": {"type": "string", "pattern": "^[a-z0-9-]+$"}},
     "levels": {"type": "object", "propertyNames": {"enum": ["full", "reasons", "part", "status", "codes", "none", "differs", "unstated"]}, "additionalProperties": {"$ref": "#/$defs/count"}},
     "outcomes": {
