@@ -116,7 +116,8 @@ pub fn scan(tree: &dyn files::Tree) -> Report {
     firebase_findings(&configs, &facts, &mut findings);
     rules_findings(&facts, &mut findings);
     functions_findings(&facts, &mut findings);
-    dependency_findings(&facts, &ci, &mut findings);
+    let tools = dependency_findings(&facts, &ci, &mut findings);
+    ui_findings(&configs, &facts, &tools, &mut findings);
     workflow_findings(&facts, &ci, &mut findings);
     script_findings(&facts, &mut findings);
     findings.sort_by_key(|f| f.group);
@@ -231,7 +232,8 @@ fn firebase_findings(configs: &[firebase::Config], facts: &Facts, out: &mut Vec<
                             g,
                             "Single project mode (the default): hidane accepts --single_project_mode but does not log the official emulator's warning for requests to other project IDs",
                         )
-                        .at(file, None),
+                        .at(file, None)
+                        .detail("docs/parity-exceptions.md lists this difference"),
                     );
                 }
                 let java: Vec<&str> = f
@@ -300,20 +302,58 @@ fn firebase_findings(configs: &[firebase::Config], facts: &Facts, out: &mut Vec<
                 })),
             );
         }
-        if f.ui && f.firestore.is_some() && config_has(config, &["emulators", "ui"]) {
-            out.push(
-                Finding::compatible(
-                    "emulators.ui",
-                    g,
-                    format!(
-                        "Emulator UI: verified with hidane ({})",
-                        verified::EMULATOR_UI.0
-                    ),
-                    verified::EMULATOR_UI.1,
-                )
-                .at(file, None),
-            );
+    }
+}
+
+/// The Emulator UI, whose version is the one the firebase-tools in use pins: verified as far
+/// as that firebase-tools is (`tools`, the status of each firebase-tools version found).
+fn ui_findings(
+    configs: &[firebase::Config],
+    facts: &Facts,
+    tools: &[Status],
+    out: &mut Vec<Finding>,
+) {
+    let g = Group::Firebase;
+    // The least verified of the versions found.
+    let least = tools.iter().copied().max_by_key(|s| match s {
+        Status::Compatible => 0,
+        Status::LikelyCompatible => 1,
+        _ => 2,
+    });
+    let (ui, source) = verified::EMULATOR_UI;
+    for config in configs {
+        let Some(f) = facts.firebase.iter().find(|f| f.file == config.file) else {
+            continue;
+        };
+        if !(f.ui && f.firestore.is_some() && config_has(config, &["emulators", "ui"])) {
+            continue;
         }
+        let finding = match least {
+            Some(Status::Compatible) => Finding::compatible(
+                "emulators.ui",
+                g,
+                format!("Emulator UI: verified with hidane ({ui})"),
+                source,
+            ),
+            Some(Status::LikelyCompatible) => Finding::likely_compatible(
+                "emulators.ui",
+                g,
+                format!(
+                    "Emulator UI: likely compatible — hidane was verified with {}; the firebase-tools here may download another version",
+                    verified::EMULATOR_UI_VERSION
+                ),
+                source,
+            ),
+            _ => Finding::unknown(
+                "emulators.ui",
+                g,
+                format!(
+                    "Emulator UI: its version follows firebase-tools, whose version is not verified here — manual verification required (hidane was verified with {})",
+                    verified::EMULATOR_UI_VERSION
+                ),
+            ),
+        };
+        out.push(finding.at(&config.file, None));
     }
 }
 
@@ -418,30 +458,33 @@ fn functions_findings(facts: &Facts, out: &mut Vec<Finding>) {
                     && d.name == "firebase-functions"
                     && files::parent(&d.file) == source
             });
-            let version = dependency.and_then(|d| d.resolved.as_deref().or(d.declared.as_deref()));
             let what = plural(node.len(), "Firestore trigger", "Firestore triggers");
-            let finding = match (version, verified::verified("npm", "firebase-functions")) {
-                (Some(version), Some(v)) if deps::major(version) == Some(v.major()) => {
-                    Finding::compatible(
-                        "functions.firestore-triggers",
-                        g,
-                        format!("{what} in {source} (firebase-functions {version}): their events reach the Functions emulator as with the official emulator (verified with firebase-functions {})", v.version),
-                        v.source,
-                    )
-                }
-                (version, _) => Finding::unknown(
-                    "functions.firestore-triggers",
-                    g,
-                    format!(
-                        "{what} in {source} (firebase-functions {}): not verified with hidane — manual verification required",
-                        version.unwrap_or("of no known version")
-                    ),
-                )
-                .details(
-                    verified::verified("npm", "firebase-functions")
-                        .map(|v| format!("hidane verified firebase-functions {} ({})", v.version, v.what)),
+            let shown = dependency
+                .and_then(|d| d.resolved.as_deref().or(d.declared.as_deref()))
+                .unwrap_or("of no known version");
+            let verdict = judge(
+                "functions.firestore-triggers",
+                "npm",
+                "firebase-functions",
+                shown,
+                dependency.and_then(concrete),
+                dependency.and_then(|d| d.declared.as_deref()),
+            );
+            let title = match verdict.status {
+                Status::Compatible => format!(
+                    "{what} in {source} (firebase-functions {shown}): their events reach the Functions emulator as with the official emulator"
+                ),
+                Status::LikelyCompatible => format!(
+                    "{what} in {source} (firebase-functions {shown}): likely compatible — the same major version as the verified {}; this version itself is not verified",
+                    verified::verified("npm", "firebase-functions").map_or("", |v| v.version)
+                ),
+                _ => format!(
+                    "{what} in {source} (firebase-functions {shown}): not verified with hidane — manual verification required"
                 ),
             };
+            let mut finding = verdict;
+            finding.group = g;
+            finding.title = title;
             out.push(finding.details(trigger_lines(&node)));
         }
         if !python.is_empty() {
@@ -494,13 +537,19 @@ fn label(ecosystem: &str, name: &str) -> String {
     }
 }
 
-/// A verdict on a version of a package hidane may have verified.
+/// A verdict on a package hidane may have verified. `concrete` is the version it is known to
+/// be (resolved by a lockfile, or pinned exactly), `range` what is declared.
+///
+/// - `compatible`: the concrete version has the verified version's major and minor versions;
+/// - `likely-compatible`: only the major version is the same (or a range pins only it);
+/// - `unknown`: anything else.
 fn judge(
     code: &'static str,
     ecosystem: &str,
     name: &str,
     shown: &str,
-    version: Option<&str>,
+    concrete: Option<&str>,
+    range: Option<&str>,
 ) -> Finding {
     let g = Group::Dependencies;
     let what = label(ecosystem, name);
@@ -511,22 +560,51 @@ fn judge(
             format!("{what} {shown}: not verified with hidane — manual verification required"),
         );
     };
-    let major = version.and_then(deps::major);
-    match major {
-        Some(m) if m == v.major() => {
-            let how = if version == Some(v.version) {
-                format!("verified with hidane ({})", v.what)
-            } else {
-                format!("verified with hidane at {} ({}), the same major version", v.version, v.what)
-            };
-            Finding::compatible(code, g, format!("{what} {shown}: {how}"), v.source)
-        }
-        Some(_) => Finding::unknown(
+    let not_verified = || {
+        Finding::unknown(
             code,
             g,
             format!("{what} {shown}: not verified with hidane — manual verification required"),
         )
-        .detail(format!("hidane verified {name} {}", v.version)),
+        .detail(format!("hidane verified {name} {}", v.version))
+    };
+    if let Some(c) = concrete {
+        let minor = deps::major_minor(c);
+        if minor.is_some() && minor == deps::major_minor(v.version) {
+            let how = if c.trim_start_matches(['v', 'V']) == v.version {
+                format!("verified with hidane ({})", v.what)
+            } else {
+                format!(
+                    "verified with hidane at {} ({}); only the patch version differs",
+                    v.version, v.what
+                )
+            };
+            return Finding::compatible(code, g, format!("{what} {shown}: {how}"), v.source);
+        }
+        if deps::major(c) == Some(v.major()) {
+            return Finding::likely_compatible(
+                code,
+                g,
+                format!(
+                    "{what} {shown}: likely compatible — the same major version as the verified {}; this version itself is not verified",
+                    v.version
+                ),
+                v.source,
+            );
+        }
+        return not_verified();
+    }
+    match range.and_then(deps::major) {
+        Some(m) if m == v.major() => Finding::likely_compatible(
+            code,
+            g,
+            format!(
+                "{what} {shown}: likely compatible — the same major version as the verified {}; the version it resolves to is not known and is not verified itself",
+                v.version
+            ),
+            v.source,
+        ),
+        Some(_) => not_verified(),
         None => Finding::unknown(
             code,
             g,
@@ -536,9 +614,19 @@ fn judge(
     }
 }
 
-fn dependency_findings(facts: &Facts, ci: &ci::Ci, out: &mut Vec<Finding>) {
+/// The version a dependency is known to be: resolved by a lockfile, or pinned exactly.
+fn concrete(dep: &deps::Dependency) -> Option<&str> {
+    dep.resolved
+        .as_deref()
+        .or_else(|| dep.declared.as_deref().and_then(deps::exact))
+}
+
+/// The dependency findings, and the status of every firebase-tools version found (the
+/// Emulator UI's version follows it).
+fn dependency_findings(facts: &Facts, ci: &ci::Ci, out: &mut Vec<Finding>) -> Vec<Status> {
     let g = Group::Dependencies;
     let mut tools_seen = false;
+    let mut tools = Vec::new();
     for dep in &facts.dependencies {
         let shown = dep
             .resolved
@@ -547,7 +635,8 @@ fn dependency_findings(facts: &Facts, ci: &ci::Ci, out: &mut Vec<Finding>) {
             .map(|v| format!("{v} "))
             .unwrap_or_default();
         let shown = format!("{shown}({})", dep.file);
-        let version = dep.resolved.as_deref().or(dep.declared.as_deref());
+        let exact = concrete(dep);
+        let declared = dep.declared.as_deref();
         let finding = match (dep.ecosystem, dep.name.as_str()) {
             ("npm", "hidane") => Some(Finding::info(
                 "dependency.hidane",
@@ -583,7 +672,7 @@ fn dependency_findings(facts: &Facts, ci: &ci::Ci, out: &mut Vec<Finding>) {
                     .map(String::as_str)
                     .collect();
                 if web {
-                    let mut f = judge("dependency.sdk", dep.ecosystem, &dep.name, &format!("{shown} on the web"), version);
+                    let mut f = judge("dependency.sdk", dep.ecosystem, &dep.name, &format!("{shown} on the web"), exact, declared);
                     f = f.at(&dep.file, dep.line);
                     out.push(f);
                 }
@@ -609,7 +698,7 @@ fn dependency_findings(facts: &Facts, ci: &ci::Ci, out: &mut Vec<Finding>) {
                 let (engine, engine_version) = dep.engine.clone().unwrap_or_default();
                 Some(match engine_version {
                     Some(ev) => {
-                        let mut f = judge("dependency.sdk", dep.ecosystem, &engine, &ev, Some(&ev));
+                        let mut f = judge("dependency.sdk", dep.ecosystem, &engine, &ev, Some(&ev), None);
                         f.title = format!("{} {shown}, whose Firestore client is {}", label(dep.ecosystem, &dep.name), f.title);
                         f
                     }
@@ -636,10 +725,12 @@ fn dependency_findings(facts: &Facts, ci: &ci::Ci, out: &mut Vec<Finding>) {
                 .detail("hidane verified com.google.cloud:google-cloud-firestore 3.49.0"),
             ),
             (eco, name) => {
+                let finding = judge("dependency.sdk", eco, name, &shown, exact, declared);
                 if name == "firebase-tools" {
                     tools_seen = true;
+                    tools.push(finding.status);
                 }
-                Some(judge("dependency.sdk", eco, name, &shown, version))
+                Some(finding)
             }
         };
         if let Some(finding) = finding {
@@ -661,6 +752,7 @@ fn dependency_findings(facts: &Facts, ci: &ci::Ci, out: &mut Vec<Finding>) {
                 "npm",
                 "firebase-tools",
                 &format!("{v} ({file})"),
+                deps::exact(v),
                 Some(v),
             ),
             _ => Finding::unknown(
@@ -671,6 +763,7 @@ fn dependency_findings(facts: &Facts, ci: &ci::Ci, out: &mut Vec<Finding>) {
                 ),
             ),
         };
+        tools.push(finding.status);
         out.push(finding.at(file, Some(*line)));
     }
     if !tools_seen && !ci.commands.is_empty() {
@@ -680,6 +773,7 @@ fn dependency_findings(facts: &Facts, ci: &ci::Ci, out: &mut Vec<Finding>) {
             "The firebase-tools version is not known (it is in no package.json and no CI step installs it): hidane exec is verified with firebase-tools 15.33.0 — manual verification required",
         ));
     }
+    tools
 }
 
 fn workflow_findings(facts: &Facts, ci: &ci::Ci, out: &mut Vec<Finding>) {
@@ -968,7 +1062,10 @@ mod tests {
         .collect();
         let report = scan(&tree);
         for f in &report.findings {
-            if matches!(f.status, Status::Compatible | Status::Incompatible) {
+            if matches!(
+                f.status,
+                Status::Compatible | Status::LikelyCompatible | Status::Incompatible
+            ) {
                 assert!(f.source.is_some(), "{f:?}");
             }
         }
@@ -994,5 +1091,67 @@ mod tests {
                     && f.title.starts_with("Firebase JS SDK (firebase) 13.0.0"))
         );
         assert!(report.has_incompatibility());
+    }
+
+    /// `compatible` takes the verified major and minor versions, of a version known exactly;
+    /// the same major version alone, or a range, is at most `likely-compatible`.
+    #[test]
+    fn versions_are_compatible_only_as_verified() {
+        let tree: Memory = [
+            ("firebase.json", r#"{"firestore": {}, "emulators": {"ui": {}}}"#),
+            (
+                "package.json",
+                r#"{"devDependencies": {"firebase": "13.0.0", "@firebase/rules-unit-testing": "6.0.3", "@google-cloud/firestore": "9.4.0", "firebase-tools": "^15.33.0"}}"#,
+            ),
+            ("requirements.txt", "google-cloud-firestore==2.35.0\n"),
+            ("go.mod", "module x\n\nrequire cloud.google.com/go/firestore v1.26.3\n"),
+            ("pom.xml", "<dependency><groupId>com.google.cloud</groupId><artifactId>google-cloud-firestore</artifactId><version>4.0.0</version></dependency>"),
+        ]
+        .into_iter()
+        .collect();
+        let report = scan(&tree);
+        let status = |prefix: &str| {
+            report
+                .findings
+                .iter()
+                .find(|f| f.title.starts_with(prefix))
+                .map(|f| f.status)
+                .unwrap_or_else(|| panic!("{prefix}: {:#?}", report.findings))
+        };
+        assert_eq!(
+            status("Firebase JS SDK (firebase) 13.0.0"),
+            Status::Compatible
+        );
+        assert_eq!(
+            status("@firebase/rules-unit-testing 6.0.3"),
+            Status::Compatible
+        );
+        assert_eq!(
+            status("@google-cloud/firestore 9.4.0"),
+            Status::LikelyCompatible
+        );
+        assert_eq!(status("firebase-tools ^15.33.0"), Status::LikelyCompatible);
+        assert_eq!(
+            status("google-cloud-firestore (Python) 2.35.0"),
+            Status::LikelyCompatible
+        );
+        assert_eq!(
+            status("cloud.google.com/go/firestore 1.26.3"),
+            Status::Compatible
+        );
+        assert_eq!(
+            status("google-cloud-firestore (Java) 4.0.0"),
+            Status::Unknown
+        );
+        // The Emulator UI follows firebase-tools.
+        assert_eq!(status("Emulator UI"), Status::LikelyCompatible);
+        assert!(
+            report
+                .findings
+                .iter()
+                .any(|f| f.title.contains("only the patch version differs"))
+        );
+        assert_eq!(report.summary.likely_compatible, 4);
+        assert!(!report.has_incompatibility());
     }
 }

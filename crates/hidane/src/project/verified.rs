@@ -99,6 +99,10 @@ pub const EMULATOR_UI: (&str, &str) = (
     "docs/compatibility.md",
 );
 
+/// The Emulator UI version verified, the one firebase-tools 15.33.0 pins
+/// (`src/emulator/downloadableEmulatorInfo.json`).
+pub const EMULATOR_UI_VERSION: &str = "v1.15.0, the version firebase-tools 15.33.0 downloads";
+
 /// Imports and exports in the official format.
 pub const EXPORT_IMPORT: (&str, &str) = (
     "--import and --export-on-exit read and write the official emulator's format",

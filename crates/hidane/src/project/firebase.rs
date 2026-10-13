@@ -11,7 +11,7 @@ use super::{
 
 /// The emulators firebase-tools starts for a project (`ALL_SERVICE_EMULATORS`, then
 /// `extensions`), in its order.
-pub const SERVICE_EMULATORS: [&str; 12] = [
+const SERVICE_EMULATORS: [&str; 12] = [
     "apphosting",
     "auth",
     "functions",
@@ -113,6 +113,19 @@ pub struct Emulator {
     pub port: Option<u16>,
     /// Runs on a JVM under firebase-tools.
     pub java: bool,
+}
+
+/// The configuration firebase-tools 15.33.0 uses when it finds no `firebase.json` and
+/// `--only` names neither functions nor hosting: `DEFAULT_CONFIG` in
+/// `src/emulator/commandUtils.ts`, applied by `beforeEmulatorCommand`. Of the emulators it lists,
+/// `eventarc` is not one firebase-tools reads from the top level, so it never starts that way.
+pub fn default_config() -> Config {
+    Config {
+        file: String::new(),
+        doc: json::parse(
+            r#"{"eventarc": {}, "database": {}, "firestore": {}, "functions": {}, "hosting": {}, "emulators": {"auth": {}, "pubsub": {}}}"#,
+        ),
+    }
 }
 
 /// Reads the `firebase.json` at `file`, if there is one.

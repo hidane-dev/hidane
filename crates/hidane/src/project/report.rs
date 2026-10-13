@@ -4,8 +4,8 @@ use std::fmt::Write as _;
 
 use super::{Finding, Report, Status};
 
-/// The findings, grouped, with a mark for each status (✓ compatible or passed, · information,
-/// ? not verified, ✗ incompatible), then the summary.
+/// The findings, grouped, with a mark for each status (✓ compatible or passed, ~ likely
+/// compatible, · information, ? not verified, ✗ incompatible), then the summary.
 pub fn text(report: &Report, path: &str) -> String {
     let mut out = String::new();
     let _ = writeln!(out, "hidane doctor {} — {path}", report.hidane);
@@ -20,18 +20,18 @@ pub fn text(report: &Report, path: &str) -> String {
     let s = report.summary;
     let _ = writeln!(
         out,
-        "\nSummary: {} compatible, {} ok, {} info, {} not verified, {} incompatible.",
-        s.compatible, s.ok, s.info, s.unknown, s.incompatible
+        "\nSummary: {} compatible, {} likely compatible, {} ok, {} info, {} not verified, {} incompatible.",
+        s.compatible, s.likely_compatible, s.ok, s.info, s.unknown, s.incompatible
     );
     if report.has_incompatibility() {
         let _ = writeln!(
             out,
             "Exit code 1: something here does not work with hidane yet (✗)."
         );
-    } else if s.unknown > 0 {
+    } else if s.unknown > 0 || s.likely_compatible > 0 {
         let _ = writeln!(
             out,
-            "No incompatibility found (exit code 0). Items marked ? are not verified with hidane: check them by hand."
+            "No incompatibility found (exit code 0). Items marked ~ or ? are not verified with hidane as they are: check them by hand."
         );
     } else {
         let _ = writeln!(out, "No incompatibility found (exit code 0).");
@@ -49,7 +49,10 @@ fn write_finding(out: &mut String, finding: &Finding) {
         let _ = writeln!(out, "      {detail}");
     }
     if let Some(source) = &finding.source
-        && matches!(finding.status, Status::Compatible | Status::Incompatible)
+        && matches!(
+            finding.status,
+            Status::Compatible | Status::LikelyCompatible | Status::Incompatible
+        )
     {
         let _ = writeln!(out, "      source: {source}");
     }

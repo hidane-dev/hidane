@@ -4,10 +4,14 @@ use serde::Serialize;
 
 /// Whether hidane is known to work for the thing a finding is about.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Serialize)]
-#[serde(rename_all = "lowercase")]
+#[serde(rename_all = "kebab-case")]
 pub enum Status {
-    /// Verified with hidane; the finding's `source` says where.
+    /// Verified with hidane; the finding's `source` says where. For a version, its major and
+    /// minor versions are the verified one's.
     Compatible,
+    /// The same major version as one verified with hidane, but not that version itself; the
+    /// finding's `source` names the verification. Not an incompatibility.
+    LikelyCompatible,
     /// A check that passed, which claims nothing about verification (`firebase.json` found).
     Ok,
     /// Information: nothing to verify, or nothing hidane changes.
@@ -22,6 +26,7 @@ impl Status {
     pub fn mark(self) -> &'static str {
         match self {
             Status::Compatible | Status::Ok => "✓",
+            Status::LikelyCompatible => "~",
             Status::Info => "·",
             Status::Unknown => "?",
             Status::Incompatible => "✗",
@@ -122,6 +127,23 @@ impl Finding {
         .with_source(source)
     }
 
+    /// The same major version as a verified one, which `source` shows.
+    pub fn likely_compatible(
+        code: &'static str,
+        group: Group,
+        title: impl Into<String>,
+        source: impl Into<String>,
+    ) -> Self {
+        Self::new(
+            code,
+            group,
+            Status::LikelyCompatible,
+            Severity::Info,
+            title.into(),
+        )
+        .with_source(source)
+    }
+
     pub fn ok(code: &'static str, group: Group, title: impl Into<String>) -> Self {
         Self::new(code, group, Status::Ok, Severity::Info, title.into())
     }
@@ -194,6 +216,7 @@ impl Finding {
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize)]
 pub struct Summary {
     pub compatible: usize,
+    pub likely_compatible: usize,
     pub ok: usize,
     pub info: usize,
     pub unknown: usize,
@@ -206,6 +229,7 @@ impl Summary {
         for finding in findings {
             *match finding.status {
                 Status::Compatible => &mut summary.compatible,
+                Status::LikelyCompatible => &mut summary.likely_compatible,
                 Status::Ok => &mut summary.ok,
                 Status::Info => &mut summary.info,
                 Status::Unknown => &mut summary.unknown,

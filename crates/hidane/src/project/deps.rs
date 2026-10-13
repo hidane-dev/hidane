@@ -727,6 +727,34 @@ fn poetry_spec(spec: &str) -> String {
     }
 }
 
+/// The one version a spec names, if it names one: `15.33.0`, `=15.33.0`, `==2.34.1`, `v1.26.0`
+/// (a pre-release or build suffix allowed). A range (`^15.0.0`, `>=2.20`) names none.
+pub fn exact(spec: &str) -> Option<&str> {
+    let spec = spec.trim();
+    let version = spec
+        .strip_prefix("==")
+        .or_else(|| spec.strip_prefix('='))
+        .unwrap_or(spec)
+        .trim();
+    let digits = version.strip_prefix(['v', 'V']).unwrap_or(version);
+    let core = digits.split(['-', '+']).next().unwrap_or(digits);
+    let parts: Vec<&str> = core.split('.').collect();
+    let numeric = parts.len() == 3
+        && parts
+            .iter()
+            .all(|p| !p.is_empty() && p.chars().all(|c| c.is_ascii_digit()));
+    numeric.then_some(version)
+}
+
+/// The major and minor versions of a version (`15.33.0` → (15, 33)).
+pub fn major_minor(version: &str) -> Option<(u64, u64)> {
+    let version = version.trim().trim_start_matches(['v', 'V', '=']);
+    let mut parts = version.split(['.', '-', '+']);
+    let major = parts.next()?.parse().ok()?;
+    let minor = parts.next()?.parse().ok()?;
+    Some((major, minor))
+}
+
 /// The major version a version or range pins, if it pins one: `13.0.0`, `^13.1`, `~13.0.0`,
 /// `13.x`, `==2.34.1`, `~=2.34`, `>=2.20,<3`, `v1.26.0`. A range across majors, or without an
 /// upper bound, pins none.
@@ -800,6 +828,27 @@ mod tests {
         ] {
             assert_eq!(major(spec), expected, "{spec}");
         }
+    }
+
+    #[test]
+    fn exact_versions() {
+        for (spec, expected) in [
+            ("15.33.0", Some("15.33.0")),
+            ("=15.33.0", Some("15.33.0")),
+            ("==2.34.1", Some("2.34.1")),
+            ("v1.26.0", Some("v1.26.0")),
+            ("6.0.0-beta.1", Some("6.0.0-beta.1")),
+            ("^15.33.0", None),
+            ("~9.3.1", None),
+            ("13.x", None),
+            ("13", None),
+            (">=2.20", None),
+        ] {
+            assert_eq!(exact(spec), expected, "{spec}");
+        }
+        assert_eq!(major_minor("15.33.0"), Some((15, 33)));
+        assert_eq!(major_minor("v1.26.0"), Some((1, 26)));
+        assert_eq!(major_minor("13"), None);
     }
 
     #[test]

@@ -3,6 +3,7 @@
   "hidane": "<version>",
   "summary": {
     "compatible": 2,
+    "likely_compatible": 0,
     "ok": 6,
     "info": 2,
     "unknown": 0,
@@ -34,6 +35,9 @@
       "status": "info",
       "severity": "info",
       "title": "Single project mode (the default): hidane accepts --single_project_mode but does not log the official emulator's warning for requests to other project IDs",
+      "details": [
+        "docs/parity-exceptions.md lists this difference"
+      ],
       "file": "firebase.json"
     },
     {

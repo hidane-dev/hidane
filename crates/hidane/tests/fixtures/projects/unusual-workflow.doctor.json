@@ -2,7 +2,8 @@
   "schema": "hidane.doctor/1",
   "hidane": "<version>",
   "summary": {
-    "compatible": 1,
+    "compatible": 0,
+    "likely_compatible": 1,
     "ok": 3,
     "info": 5,
     "unknown": 7,
@@ -34,6 +35,9 @@
       "status": "info",
       "severity": "info",
       "title": "Single project mode (the default): hidane accepts --single_project_mode but does not log the official emulator's warning for requests to other project IDs",
+      "details": [
+        "docs/parity-exceptions.md lists this difference"
+      ],
       "file": "firebase.json"
     },
     {
@@ -55,9 +59,9 @@
     {
       "code": "dependency.sdk",
       "group": "dependencies",
-      "status": "compatible",
+      "status": "likely-compatible",
       "severity": "info",
-      "title": "firebase-tools ^15.0.0 (package.json): verified with hidane at 15.33.0 (emulators:start and emulators:exec through hidane exec, without Java), the same major version",
+      "title": "firebase-tools ^15.0.0 (package.json): likely compatible — the same major version as the verified 15.33.0; the version it resolves to is not known and is not verified itself",
       "source": "docs/adr/0006-launch-under-firebase-tools.md; results/export-import-*.json",
       "file": "package.json",
       "line": 9

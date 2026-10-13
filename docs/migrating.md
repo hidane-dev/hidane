@@ -31,12 +31,22 @@ Each finding has a status:
 | Mark | Status | Meaning |
 |---|---|---|
 | ✓ | `compatible` | Verified with hidane. The finding names its source: a document or a result file in this repository |
+| ~ | `likely-compatible` | The same major version as a version verified with hidane, but not that version itself; the finding names the verification. Not an incompatibility |
 | ✓ | `ok` | A check that passed and claims nothing about verification (`firebase.json found`) |
 | · or ! | `info` | Information; `!` (severity `warning`) when it asks for something, such as keeping Java for another emulator |
 | ? | `unknown` | Nothing hidane has verified covers it: manual verification required |
 | ✗ | `incompatible` | A known gap, or something that will not work under hidane as it is |
 
-A version counts as verified when it has the major version hidane was verified with:
+A package's version is judged against the version hidane was verified with:
+
+- `compatible` when the version the project uses is known (resolved by a lockfile, or pinned
+  exactly, such as `"firebase-tools": "15.33.0"` or `google-cloud-firestore==2.34.1`) and has the
+  verified version's major and minor versions; only the patch version may differ;
+- `likely-compatible` when only the major version is the same, or when a range pins that major
+  version but the version it resolves to is not known (`^13.0.0` without a lockfile);
+- `unknown` otherwise.
+
+The verified versions:
 
 | Package | Verified with | Source |
 |---|---|---|
@@ -54,7 +64,9 @@ A version counts as verified when it has the major version hidane was verified w
 lockfile it is not verified. Firestore triggers are judged by the `firebase-functions` of their
 functions; triggers written in Python are not verified. The mobile SDKs and Flutter on Android,
 iOS, macOS and Windows are not verified yet ([compatibility.md](compatibility.md)). A version
-range that does not pin a major version (`>=2.20`, `*`) is not verified either.
+range that does not pin a major version (`>=2.20`, `*`) is `unknown`. The Emulator UI's version
+is the one firebase-tools pins (v1.15.0 for firebase-tools 15.33.0), so it is judged as the
+project's firebase-tools is.
 
 Known gaps are `incompatible`:
 
@@ -74,12 +86,14 @@ A CI job keeps `actions/setup-java` when one of them starts, when it runs anothe
 (`./gradlew`, `mvn`, `java`), or when `setup-java` caches a Java build.
 
 `hidane doctor` exits with 0 when no finding is incompatible, 1 when one is, and 2 for a usage
-error or a path that is not a directory.
+error or a path that is not a directory. `likely-compatible` and `unknown` findings do not change
+the exit code.
 
 ### JSON
 
 `--format json` prints the report as one object: `schema` (`hidane.doctor/1`, which changes when
-the shape does), `hidane` (the version that wrote it), `summary` (the count of each status),
+the shape does), `hidane` (the version that wrote it), `summary` (the count of each status: `compatible`, `likely_compatible`, `ok`, `info`, `unknown`,
+`incompatible`),
 `findings` (each with `code`, `group`, `status`, `severity`, `title`, and when they apply
 `details`, `source`, `file` and `line`; paths are relative to the project) and `facts` (what the
 scan read: `firebase`, `rules`, `functions`, `dependencies`, `emulator_commands`, `workflows`,
@@ -91,8 +105,10 @@ memory.
 
 ### GitHub Actions
 
-When a job installs Java only for the Firestore emulator, install hidane instead, and run
-firebase-tools under `hidane exec`:
+When a job installs Java only for the Firestore emulator, install hidane instead with the
+[`hidane-dev/setup-hidane`](https://github.com/hidane-dev/setup-hidane) action (`@v1` follows the
+latest 1.x release; its `version` input picks a hidane version), and run firebase-tools under
+`hidane exec`:
 
 ```yaml
 # Before

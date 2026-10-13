@@ -831,12 +831,20 @@ impl Scanner<'_> {
                     .map(str::to_owned)
                     .collect(),
             ),
-            // Without a firebase.json, firebase-tools starts the emulators `--only` names.
-            None if !e.only_dynamic => e.only.as_ref().map(|only| {
-                only.iter()
-                    .filter(|o| firebase::SERVICE_EMULATORS.contains(&o.as_str()))
-                    .cloned()
-                    .collect()
+            // Without a firebase.json, firebase-tools 15.33.0 uses a default configuration when
+            // `--only` names neither functions nor hosting (`beforeEmulatorCommand` and
+            // `DEFAULT_CONFIG` in src/emulator/commandUtils.ts), and starts what
+            // `filterEmulatorTargets` (src/emulator/controller.ts) selects from it; otherwise it
+            // stops for want of a configuration, and what would start is not known here.
+            None if !e.only_dynamic => e.only.as_ref().and_then(|only| {
+                let without_config = only.iter().all(|o| o != "functions" && o != "hosting");
+                without_config.then(|| {
+                    firebase::default_config()
+                        .targets(Some(only))
+                        .into_iter()
+                        .map(str::to_owned)
+                        .collect()
+                })
             }),
             _ => None,
         };
@@ -1106,16 +1114,18 @@ mod tests {
     fn without_firebase_json_only_names_the_emulators() {
         let tree: Memory = [(
             ".github/workflows/ci.yml",
-            "jobs:\n  a:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/setup-java@v4\n        with:\n          java-version: 21\n      - run: |\n          source venv/bin/activate\n          firebase emulators:exec --only database,firestore 'pytest'\n          firebase emulators:exec --only auth 'pytest'\n",
+            "jobs:\n  a:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/setup-java@v4\n        with:\n          java-version: 21\n      - run: |\n          source venv/bin/activate\n          firebase emulators:exec --only database,firestore 'pytest'\n          firebase emulators:exec --only auth 'pytest'\n          firebase emulators:exec --only storage,firestore 'pytest'\n          firebase emulators:exec --only functions,firestore 'pytest'\n",
         )]
         .into_iter()
         .collect();
         let ci = scan_tree(&tree);
-        assert_eq!(
-            ci.commands[0].starts.as_deref(),
-            Some(&["database".to_owned(), "firestore".to_owned()][..])
-        );
+        let starts = |i: usize| ci.commands[i].starts.clone();
+        assert_eq!(starts(0), Some(vec!["firestore".into(), "database".into()]));
         assert!(!ci.commands[1].starts_firestore());
+        // Storage is not in firebase-tools' default configuration.
+        assert_eq!(starts(2), Some(vec!["firestore".into()]));
+        // With functions, firebase-tools needs a firebase.json.
+        assert_eq!(starts(3), None);
         assert_eq!(
             ci.workflows[0].jobs[0].java,
             Java::Needed(vec!["the database emulator".into()])

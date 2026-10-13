@@ -2,7 +2,8 @@
   "schema": "hidane.doctor/1",
   "hidane": "<version>",
   "summary": {
-    "compatible": 7,
+    "compatible": 5,
+    "likely_compatible": 2,
     "ok": 2,
     "info": 4,
     "unknown": 5,
@@ -43,6 +44,9 @@
       "status": "info",
       "severity": "info",
       "title": "Single project mode (the default): hidane accepts --single_project_mode but does not log the official emulator's warning for requests to other project IDs",
+      "details": [
+        "docs/parity-exceptions.md lists this difference"
+      ],
       "file": "firebase.json"
     },
     {
@@ -78,9 +82,9 @@
     {
       "code": "functions.firestore-triggers",
       "group": "functions",
-      "status": "compatible",
+      "status": "likely-compatible",
       "severity": "info",
-      "title": "1 Firestore trigger in functions (firebase-functions ^6.4.0): their events reach the Functions emulator as with the official emulator (verified with firebase-functions 6.6.0)",
+      "title": "1 Firestore trigger in functions (firebase-functions ^6.4.0): likely compatible — the same major version as the verified 6.6.0; this version itself is not verified",
       "details": [
         "functions/src/index.ts:4: onDocumentCreated"
       ],
@@ -101,9 +105,9 @@
     {
       "code": "dependency.sdk",
       "group": "dependencies",
-      "status": "compatible",
+      "status": "likely-compatible",
       "severity": "info",
-      "title": "FlutterFire cloud_firestore ^6.10.0 (app/pubspec.yaml) on the web: verified with hidane at 6.10.0 (Flutter Web in Chromium), the same major version",
+      "title": "FlutterFire cloud_firestore ^6.10.0 (app/pubspec.yaml) on the web: likely compatible — the same major version as the verified 6.10.0; the version it resolves to is not known and is not verified itself",
       "source": "docs/compatibility.md; results/flutter-web-*.json",
       "file": "app/pubspec.yaml",
       "line": 10
