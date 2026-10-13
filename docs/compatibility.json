@@ -556,9 +556,89 @@
   ]
  },
  "differential_fuzzing": {
-  "status": "not-run",
-  "where": null,
-  "runs": []
+  "status": "run",
+  "where": "results/differential-fuzzing.json",
+  "runs": [
+   {
+    "name": "REST, seed 20261013, cases 0 to 3499",
+    "date": "2026-10-13",
+    "target": "REST requests to both emulators: documents, queries, transactions, batches, transforms, rules, malformed",
+    "official_emulator": "1.22.0",
+    "cases": 3500,
+    "differences": 211,
+    "unexplained": 146,
+    "evidence": "tools/fuzz/",
+    "seed": 20261013,
+    "first_case": 0,
+    "accepted": 62,
+    "flaky": 3,
+    "by_area": {
+     "documents": {
+      "cases": 500,
+      "differing": 116,
+      "accepted": 91,
+      "unexplained": 25,
+      "flaky": 0
+     },
+     "queries": {
+      "cases": 500,
+      "differing": 97,
+      "accepted": 0,
+      "unexplained": 97,
+      "flaky": 0
+     },
+     "transactions": {
+      "cases": 500,
+      "differing": 112,
+      "accepted": 11,
+      "unexplained": 101,
+      "flaky": 0
+     },
+     "batches": {
+      "cases": 500,
+      "differing": 257,
+      "accepted": 31,
+      "unexplained": 226,
+      "flaky": 0
+     },
+     "transforms": {
+      "cases": 500,
+      "differing": 86,
+      "accepted": 60,
+      "unexplained": 25,
+      "flaky": 1
+     },
+     "rules": {
+      "cases": 500,
+      "differing": 354,
+      "accepted": 249,
+      "unexplained": 103,
+      "flaky": 2
+     },
+     "malformed": {
+      "cases": 500,
+      "differing": 119,
+      "accepted": 16,
+      "unexplained": 103,
+      "flaky": 0
+     }
+    },
+    "accepted_by": {
+     "D008": 44,
+     "D025": 3,
+     "D029": 2,
+     "D048": 2,
+     "D064": 11
+    },
+    "unexplained_by_kind": {
+     "crash": 1,
+     "status": 42,
+     "message": 90,
+     "order": 0,
+     "data": 13
+    }
+   }
+  ]
  },
  "differences": {
   "where": "docs/parity-exceptions.json",

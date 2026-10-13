@@ -1,0 +1,65 @@
+{
+ "description": "Differences between the official emulator and hidane that docs/parity-exceptions.md accepts, as rules the differential fuzzer applies (tools/fuzz/diff.py, class Exceptions). Each rule names the entry of docs/parity-exceptions.json that accepts what it matches; `fuzz.py check` fails when that entry is gone.",
+ "rules": [
+  {
+   "id": "rules-denial-reasons",
+   "exception": "D008",
+   "why": "The official emulator evaluates conditions in two passes and lists the reasons of both (a first pass where resource.data fails, or the same reason twice); hidane evaluates once and lists only its own. D018 and D019 (reasons listed as false for allowed ways and writes) follow from the same.",
+   "kinds": ["message"],
+   "official": {"status": 403, "code": "^PERMISSION_DENIED$"},
+   "hidane": {"status": 403, "code": "^PERMISSION_DENIED$"},
+   "relation": "hidane-reasons-subset"
+  },
+  {
+   "id": "precondition-wording",
+   "exception": "D064",
+   "why": "Precondition failures print the official emulator's internal Datastore key; hidane prints production Firestore's wording, with the same status.",
+   "kinds": ["message"],
+   "official": {"code": "^(ALREADY_EXISTS|NOT_FOUND)$", "message": "^(entity already exists: EntityRef\\[|no entity to update: )"},
+   "hidane": {"code": "^(ALREADY_EXISTS|NOT_FOUND)$", "message": "^(Document already exists|No document to update): projects/"}
+  },
+  {
+   "id": "precondition-wording-in-batch-write",
+   "exception": "D064",
+   "why": "The same wording, in the status a batchWrite answers for each write.",
+   "kinds": ["data"],
+   "verbs": "^:batchWrite$",
+   "detail": "^status\\.\\[\\]\\.message$",
+   "official": {"value": "^(entity already exists: EntityRef\\[|no entity to update: )"},
+   "hidane": {"value": "^(Document already exists|No document to update): projects/"}
+  },
+  {
+   "id": "unknown-transaction",
+   "exception": "D025",
+   "why": "A well-formed transaction ID that was never issued fails with UNKNOWN and no message on the official emulator; hidane answers INVALID_ARGUMENT \"Transaction is invalid or expired.\".",
+   "kinds": ["crash", "status"],
+   "official": {"status": 500, "code": "^UNKNOWN$"},
+   "hidane": {"status": 400, "code": "^INVALID_ARGUMENT$", "message": "^Transaction is invalid or expired\\.$"}
+  },
+  {
+   "id": "negative-zero-literal",
+   "exception": "D048",
+   "why": "ProtoJSON reads a double through BigDecimal on the official emulator, so a literal that only rounds to zero (-1e-400) is -0.0 there; hidane reads every -0.0 from ProtoJSON as 0.0.",
+   "kinds": ["data"],
+   "detail": "doubleValue$",
+   "official": {"value": "^-0\\.0$"},
+   "hidane": {"value": "^0\\.0$"}
+  },
+  {
+   "id": "write-to-other-database",
+   "exception": "D029",
+   "why": "A write to a document of another database or project is acknowledged by the official emulator and lost; hidane refuses the commit.",
+   "kinds": ["status"],
+   "official": {"status": 200},
+   "hidane": {"status": 400, "code": "^INVALID_ARGUMENT$", "message": "is not in database"}
+  },
+  {
+   "id": "array-union-of-invalid-values",
+   "exception": "D030",
+   "why": "An array union whose operand holds an array, or a vector with NaN, is stored by the official emulator; hidane refuses it with the message the value gets in a field.",
+   "kinds": ["status"],
+   "official": {"status": 200},
+   "hidane": {"status": 400, "code": "^INVALID_ARGUMENT$", "message": "^(Nested arrays are not allowed|Vector cannot contain NaN values\\.)"}
+  }
+ ]
+}
