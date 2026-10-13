@@ -88,12 +88,13 @@ def recorder_results(directory, root=ROOT):
 
 _RUNNING = re.compile(r"^\s*(?:Running|Doc-tests)\s+(\S+)")
 _FAILED = re.compile(r"^test (.+?) \.\.\. FAILED\s*$")
+_ANSI = re.compile(r"\x1b\[[0-9;]*[A-Za-z]")
 
 
 def failures(output):
-    """The tests `cargo test` reported as failed, as `<target>::<test>`."""
+    """The tests `cargo test` reported as failed, as `<target>::<test>` (colours or not)."""
     target, out = "?", []
-    for line in output.splitlines():
+    for line in _ANSI.sub("", output).splitlines():
         running = _RUNNING.match(line)
         if running:
             target = running.group(1)
@@ -111,8 +112,10 @@ def cargo_test(run, log):
 
 
 def default_run(command):
+    # dtolnay/rust-toolchain sets CARGO_TERM_COLOR=always; the output is parsed.
     return subprocess.run(command, cwd=ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                          text=True, errors="replace")
+                          text=True, errors="replace",
+                          env=dict(os.environ, CARGO_TERM_COLOR="never"))
 
 
 def replay(directory, run=default_run, root=ROOT):

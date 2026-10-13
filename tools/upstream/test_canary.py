@@ -107,6 +107,9 @@ class Replay(unittest.TestCase):
             "hidane_core::src/lib.rs - Value (line 3)", "tests/queries.rs::replay",
             "tests/rest.rs::replay"])
         self.assertEqual(canary.failures(CARGO_OK), [])
+        coloured = ("\x1b[1m\x1b[92m     Running\x1b[0m tests/queries.rs (target/debug/deps/q)\n"
+                    "test replay ... \x1b[31mFAILED\x1b[0m\n")
+        self.assertEqual(canary.failures(coloured), ["tests/queries.rs::replay"])
 
     def test_identical_recordings_run_the_tests_once(self):
         self.tree.recording(self.slug, "queries", FIXTURE_Q, "identical", '{"committed": true}\n')
