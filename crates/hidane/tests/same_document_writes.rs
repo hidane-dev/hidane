@@ -1,13 +1,15 @@
 //! Commits that write one document more than once (#74), replaying every case the official
 //! emulator answered in `fixtures/same_document_writes.json`
 //! (`tools/oracle/same_document_writes.py`) over gRPC: which sequences are refused, with which
-//! message, and the document each leaves. Precondition failures compare their codes only: the
-//! official emulator's messages print its internal Datastore key (docs/parity-exceptions.md).
+//! message, the write results of the others, and the document each leaves. Precondition failures
+//! compare their codes only: the official emulator's messages print its internal Datastore key
+//! (docs/parity-exceptions.md).
 
 mod common;
 
 use common::protojson;
 use hidane_proto::google::firestore::v1::{GetDocumentRequest, firestore_client::FirestoreClient};
+use prost_types::Timestamp;
 use tokio::net::TcpListener;
 use tonic::{Code, transport::Channel};
 
@@ -37,6 +39,10 @@ async fn every_recorded_case_gives_the_official_answer() {
     let mut refused = 0;
     for case in fixture["cases"].as_array().unwrap() {
         let name = case["name"].as_str().unwrap();
+        // The commit times of the case so far, which write results' update times are compared
+        // to: each side's own.
+        let mut official_commits: Vec<String> = Vec::new();
+        let mut hidane_commits: Vec<Timestamp> = Vec::new();
         for step in case["steps"].as_array().unwrap() {
             let path = step["path"].as_str().unwrap();
             let expected = &step["response"];
@@ -75,6 +81,40 @@ async fn every_recorded_case_gives_the_official_answer() {
                 let response = got.unwrap_or_else(|e| panic!("{name}: {e}")).into_inner();
                 let writes = step["body"]["writes"].as_array().unwrap();
                 assert_eq!(response.write_results.len(), writes.len(), "{name}");
+                // Each write result's update time: none (the document is deleted at the end),
+                // or the time of one of the case's commits, this one or an earlier one when the
+                // commit left the document as it was (#262).
+                official_commits.push(expected["commitTime"].as_str().unwrap().to_owned());
+                hidane_commits.push(response.commit_time.unwrap());
+                let want: Vec<Option<usize>> = expected["writeResults"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .map(|result| {
+                        result.get("updateTime").map(|time| {
+                            official_commits
+                                .iter()
+                                .position(|c| c == time.as_str().unwrap())
+                                .expect("the time of a commit of the case")
+                        })
+                    })
+                    .collect();
+                let got: Vec<Option<usize>> = response
+                    .write_results
+                    .iter()
+                    .map(|result| {
+                        result.update_time.as_ref().map(|time| {
+                            hidane_commits
+                                .iter()
+                                .position(|c| c == time)
+                                .unwrap_or(usize::MAX)
+                        })
+                    })
+                    .collect();
+                assert_eq!(
+                    got, want,
+                    "{name}: the commit each write result's update time comes from"
+                );
                 continue;
             };
             let err = got.expect_err(name);

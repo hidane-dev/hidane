@@ -189,6 +189,10 @@ pub trait WriteBatch {
 
     /// Deletes the document. Deleting a missing document is not an error.
     fn delete(&mut self, path: &ResourcePath);
+
+    /// Drops the batch's writes to the document, which keeps its latest committed version: a
+    /// commit whose writes leave a document as it was changes nothing.
+    fn revert(&mut self, path: &ResourcePath);
 }
 
 /// Called for each document of a scan, in `__name__` order; return `Break` to stop early.

@@ -141,6 +141,42 @@ case("listen is not REST", "POST", B + ":listen", {})
 case("PUT is not a method", "PUT", B + "/c/a", {})
 case("GET with a verb", "GET", B + ":commit")
 
+# Differences the differential fuzzer found (tools/fuzz/, #262), minimised. A batchGet answers a
+# document named more than once once, where it is first named (`c/e` exists, `c/zz` does not).
+case("batchGet with documents named twice", "POST", B + ":batchGet", {"documents": [NAME + "/c/zz", NAME + "/c/e", NAME + "/c/zz", NAME + "/c/e"]})
+case("batchGet with documents named twice, in a new transaction", "POST", B + ":batchGet", {"documents": [NAME + "/c/e", NAME + "/c/e"], "newTransaction": {"readOnly": {}}})
+case("batchGet with documents named twice and a mask", "POST", B + ":batchGet", {"documents": [NAME + "/c/a", NAME + "/c/a"], "mask": {"fieldPaths": ["int"]}})
+# A read mask (`mask.fieldPaths`) is checked like a field path: reserved names, `__name__` inside
+# a path, the empty path. On a write it is checked after the write's names (its document, its
+# fields' names, its update mask) and before its values and its precondition, and a write whose
+# read mask is invalid writes nothing.
+case("PATCH with a read mask that does not parse writes nothing", "PATCH", B + "/fz/a?mask.fieldPaths=x%20y", {"fields": {"a": i(1)}})
+case("PATCH with a read mask that does not parse, the document", "GET", B + "/fz/a")
+case("PATCH creating with a read mask that does not parse", "PATCH", B + "/fz/a?currentDocument.exists=false&mask.fieldPaths=%5C", {})
+case("PATCH creating with a read mask that does not parse, the collection", "GET", B + "/fz")
+case("POST with a read mask that does not parse writes nothing", "POST", B + "/fz?documentId=a&mask.fieldPaths=a-b", {})
+case("POST with a generated ID and a read mask that does not parse", "POST", B + "/fz?mask.fieldPaths=a-b", {})
+case("POST with a read mask that does not parse, the collection", "GET", B + "/fz")
+case("PATCH with a reserved name in the read mask", "PATCH", B + "/fz/a?mask.fieldPaths=a&mask.fieldPaths=__x__", {})
+case("PATCH with __name__ inside a read mask path", "PATCH", B + "/fz/a?mask.fieldPaths=a.__name__", {})
+case("PATCH with an empty read mask path", "PATCH", B + "/fz/a?mask.fieldPaths=", {})
+case("PATCH with a reserved name in the read mask, the collection", "GET", B + "/fz")
+case("PATCH with a read mask of __name__", "PATCH", B + "/fz/b?mask.fieldPaths=__name__", {"fields": {"a": i(1)}})
+case("an invalid read mask comes after a reserved field name", "PATCH", B + "/fz/b?mask.fieldPaths=x%20y", {"fields": {"__x__": i(1)}})
+case("an invalid read mask comes after the update mask", "PATCH", B + "/fz/b?mask.fieldPaths=__x__&updateMask.fieldPaths=__y__", {})
+case("an invalid read mask comes before nested arrays", "PATCH", B + "/fz/b?mask.fieldPaths=x%20y", {"fields": {"a": {"arrayValue": {"values": [{"arrayValue": {}}]}}}})
+case("an invalid read mask comes before the precondition", "PATCH", B + "/fz/b?mask.fieldPaths=x%20y&currentDocument.exists=false", {"fields": {"a": i(2)}})
+case("an invalid read mask comes before an update time precondition", "PATCH", B + "/fz/b?mask.fieldPaths=x%20y&currentDocument.updateTime=2001-01-01T00:00:00Z", {})
+case("PATCH with an invalid read mask leaves the document as it was", "GET", B + "/fz/b")
+case("GET with a reserved name in the read mask", "GET", B + "/fz/b?mask.fieldPaths=__x__")
+case("GET with __name__ inside a read mask path", "GET", B + "/fz/b?mask.fieldPaths=a.__name__")
+case("GET with an empty read mask path", "GET", B + "/fz/b?mask.fieldPaths=")
+case("GET with a read mask of __name__", "GET", B + "/fz/b?mask.fieldPaths=__name__")
+case("list with a reserved name in the read mask", "GET", B + "/fz?mask.fieldPaths=__x__")
+case("list with an empty read mask path", "GET", B + "/fz?mask.fieldPaths=")
+case("batchGet with a reserved name in the mask", "POST", B + ":batchGet", {"documents": [NAME + "/fz/b"], "mask": {"fieldPaths": ["__x__"]}})
+case("batchGet with an empty mask path", "POST", B + ":batchGet", {"documents": [NAME + "/fz/b"], "mask": {"fieldPaths": [""]}})
+
 
 def norm(text):
     return mask(text, PROJECT)

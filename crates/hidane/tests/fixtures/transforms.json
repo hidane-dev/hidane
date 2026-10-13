@@ -48,26 +48,26 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.566755Z",
+        "updateTime": "2026-10-13T08:11:21.688789Z",
         "transformResults": [
          {
-          "timestampValue": "2026-10-10T03:18:04.392Z"
+          "timestampValue": "2026-10-13T08:11:21.686Z"
          },
          {
-          "timestampValue": "2026-10-10T03:18:04.392Z"
+          "timestampValue": "2026-10-13T08:11:21.686Z"
          }
         ]
        },
        {
-        "updateTime": "2026-10-10T03:18:04.566755Z",
+        "updateTime": "2026-10-13T08:11:21.688789Z",
         "transformResults": [
          {
-          "timestampValue": "2026-10-10T03:18:04.392Z"
+          "timestampValue": "2026-10-13T08:11:21.686Z"
          }
         ]
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.566755Z"
+      "commitTime": "2026-10-13T08:11:21.688789Z"
      }
     },
     {
@@ -82,20 +82,20 @@
         "integerValue": "1"
        },
        "b": {
-        "timestampValue": "2026-10-10T03:18:04.392Z"
+        "timestampValue": "2026-10-13T08:11:21.686Z"
        },
        "m": {
         "mapValue": {
          "fields": {
           "at": {
-           "timestampValue": "2026-10-10T03:18:04.392Z"
+           "timestampValue": "2026-10-13T08:11:21.686Z"
           }
          }
         }
        }
       },
-      "createTime": "2026-10-10T03:18:04.566755Z",
-      "updateTime": "2026-10-10T03:18:04.566755Z"
+      "createTime": "2026-10-13T08:11:21.688789Z",
+      "updateTime": "2026-10-13T08:11:21.688789Z"
      }
     }
    ]
@@ -136,10 +136,10 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.633754Z"
+        "updateTime": "2026-10-13T08:11:21.705205Z"
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.633754Z"
+      "commitTime": "2026-10-13T08:11:21.705205Z"
      }
     },
     {
@@ -206,7 +206,7 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.646684Z",
+        "updateTime": "2026-10-13T08:11:21.710751Z",
         "transformResults": [
          {
           "integerValue": "5"
@@ -232,7 +232,7 @@
         ]
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.646684Z"
+      "commitTime": "2026-10-13T08:11:21.710751Z"
      }
     },
     {
@@ -265,8 +265,8 @@
         "doubleValue": 3.5
        }
       },
-      "createTime": "2026-10-10T03:18:04.633754Z",
-      "updateTime": "2026-10-10T03:18:04.646684Z"
+      "createTime": "2026-10-13T08:11:21.705205Z",
+      "updateTime": "2026-10-13T08:11:21.710751Z"
      }
     }
    ]
@@ -295,10 +295,10 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.667058Z"
+        "updateTime": "2026-10-13T08:11:21.724017Z"
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.667058Z"
+      "commitTime": "2026-10-13T08:11:21.724017Z"
      }
     },
     {
@@ -329,7 +329,7 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.676131Z",
+        "updateTime": "2026-10-13T08:11:21.729308Z",
         "transformResults": [
          {
           "doubleValue": 7.5
@@ -337,7 +337,7 @@
         ]
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.676131Z"
+      "commitTime": "2026-10-13T08:11:21.729308Z"
      }
     },
     {
@@ -352,8 +352,8 @@
         "doubleValue": 7.5
        }
       },
-      "createTime": "2026-10-10T03:18:04.667058Z",
-      "updateTime": "2026-10-10T03:18:04.676131Z"
+      "createTime": "2026-10-13T08:11:21.724017Z",
+      "updateTime": "2026-10-13T08:11:21.729308Z"
      }
     }
    ]
@@ -403,10 +403,10 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.698119Z"
+        "updateTime": "2026-10-13T08:11:21.739100Z"
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.698119Z"
+      "commitTime": "2026-10-13T08:11:21.739100Z"
      }
     },
     {
@@ -485,7 +485,7 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.711381Z",
+        "updateTime": "2026-10-13T08:11:21.746660Z",
         "transformResults": [
          {
           "integerValue": "5"
@@ -517,7 +517,7 @@
         ]
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.711381Z"
+      "commitTime": "2026-10-13T08:11:21.746660Z"
      }
     },
     {
@@ -556,8 +556,8 @@
         "doubleValue": "NaN"
        }
       },
-      "createTime": "2026-10-10T03:18:04.698119Z",
-      "updateTime": "2026-10-10T03:18:04.711381Z"
+      "createTime": "2026-10-13T08:11:21.739100Z",
+      "updateTime": "2026-10-13T08:11:21.746660Z"
      }
     }
    ]
@@ -598,10 +598,10 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.732255Z"
+        "updateTime": "2026-10-13T08:11:21.757179Z"
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.732255Z"
+      "commitTime": "2026-10-13T08:11:21.757179Z"
      }
     },
     {
@@ -674,7 +674,7 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.740822Z",
+        "updateTime": "2026-10-13T08:11:21.762916Z",
         "transformResults": [
          {
           "nullValue": null
@@ -688,7 +688,7 @@
         ]
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.740822Z"
+      "commitTime": "2026-10-13T08:11:21.762916Z"
      }
     },
     {
@@ -739,8 +739,8 @@
         }
        }
       },
-      "createTime": "2026-10-10T03:18:04.732255Z",
-      "updateTime": "2026-10-10T03:18:04.740822Z"
+      "createTime": "2026-10-13T08:11:21.757179Z",
+      "updateTime": "2026-10-13T08:11:21.762916Z"
      }
     }
    ]
@@ -802,10 +802,10 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.759786Z"
+        "updateTime": "2026-10-13T08:11:21.772994Z"
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.759786Z"
+      "commitTime": "2026-10-13T08:11:21.772994Z"
      }
     },
     {
@@ -875,7 +875,7 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.768234Z",
+        "updateTime": "2026-10-13T08:11:21.778041Z",
         "transformResults": [
          {
           "nullValue": null
@@ -889,7 +889,7 @@
         ]
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.768234Z"
+      "commitTime": "2026-10-13T08:11:21.778041Z"
      }
     },
     {
@@ -919,8 +919,8 @@
         "arrayValue": {}
        }
       },
-      "createTime": "2026-10-10T03:18:04.759786Z",
-      "updateTime": "2026-10-10T03:18:04.768234Z"
+      "createTime": "2026-10-13T08:11:21.772994Z",
+      "updateTime": "2026-10-13T08:11:21.778041Z"
      }
     }
    ]
@@ -957,7 +957,7 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.787058Z",
+        "updateTime": "2026-10-13T08:11:21.789001Z",
         "transformResults": [
          {
           "integerValue": "2"
@@ -965,7 +965,7 @@
         ]
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.787058Z"
+      "commitTime": "2026-10-13T08:11:21.789001Z"
      }
     },
     {
@@ -980,8 +980,8 @@
         "integerValue": "2"
        }
       },
-      "createTime": "2026-10-10T03:18:04.787058Z",
-      "updateTime": "2026-10-10T03:18:04.787058Z"
+      "createTime": "2026-10-13T08:11:21.789001Z",
+      "updateTime": "2026-10-13T08:11:21.789001Z"
      }
     }
    ]
@@ -1010,10 +1010,10 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.802303Z"
+        "updateTime": "2026-10-13T08:11:21.799409Z"
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.802303Z"
+      "commitTime": "2026-10-13T08:11:21.799409Z"
      }
     },
     {
@@ -1050,7 +1050,7 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.810178Z",
+        "updateTime": "2026-10-13T08:11:21.805223Z",
         "transformResults": [
          {
           "integerValue": "11"
@@ -1058,7 +1058,7 @@
         ]
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.810178Z"
+      "commitTime": "2026-10-13T08:11:21.805223Z"
      }
     },
     {
@@ -1073,8 +1073,8 @@
         "integerValue": "11"
        }
       },
-      "createTime": "2026-10-10T03:18:04.802303Z",
-      "updateTime": "2026-10-10T03:18:04.810178Z"
+      "createTime": "2026-10-13T08:11:21.799409Z",
+      "updateTime": "2026-10-13T08:11:21.805223Z"
      }
     }
    ]
@@ -1113,7 +1113,7 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.825910Z",
+        "updateTime": "2026-10-13T08:11:21.815216Z",
         "transformResults": [
          {
           "integerValue": "1"
@@ -1124,7 +1124,7 @@
         ]
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.825910Z"
+      "commitTime": "2026-10-13T08:11:21.815216Z"
      }
     }
    ]
@@ -1153,10 +1153,10 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.835688Z"
+        "updateTime": "2026-10-13T08:11:21.820990Z"
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.835688Z"
+      "commitTime": "2026-10-13T08:11:21.820990Z"
      }
     },
     {
@@ -1187,7 +1187,7 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.842013Z",
+        "updateTime": "2026-10-13T08:11:21.825290Z",
         "transformResults": [
          {
           "integerValue": "1"
@@ -1195,7 +1195,7 @@
         ]
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.842013Z"
+      "commitTime": "2026-10-13T08:11:21.825290Z"
      }
     },
     {
@@ -1216,8 +1216,8 @@
         }
        }
       },
-      "createTime": "2026-10-10T03:18:04.835688Z",
-      "updateTime": "2026-10-10T03:18:04.842013Z"
+      "createTime": "2026-10-13T08:11:21.820990Z",
+      "updateTime": "2026-10-13T08:11:21.825290Z"
      }
     }
    ]
@@ -1246,10 +1246,10 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.857247Z"
+        "updateTime": "2026-10-13T08:11:21.834476Z"
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.857247Z"
+      "commitTime": "2026-10-13T08:11:21.834476Z"
      }
     },
     {
@@ -1276,7 +1276,7 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.865232Z",
+        "updateTime": "2026-10-13T08:11:21.839079Z",
         "transformResults": [
          {
           "integerValue": "2"
@@ -1284,7 +1284,7 @@
         ]
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.865232Z"
+      "commitTime": "2026-10-13T08:11:21.839079Z"
      }
     },
     {
@@ -1311,7 +1311,7 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.876025Z",
+        "updateTime": "2026-10-13T08:11:21.847513Z",
         "transformResults": [
          {
           "integerValue": "1"
@@ -1319,7 +1319,7 @@
         ]
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.876025Z"
+      "commitTime": "2026-10-13T08:11:21.847513Z"
      }
     },
     {
@@ -1334,8 +1334,8 @@
         "integerValue": "2"
        }
       },
-      "createTime": "2026-10-10T03:18:04.857247Z",
-      "updateTime": "2026-10-10T03:18:04.865232Z"
+      "createTime": "2026-10-13T08:11:21.834476Z",
+      "updateTime": "2026-10-13T08:11:21.839079Z"
      }
     },
     {
@@ -1350,8 +1350,8 @@
         "integerValue": "1"
        }
       },
-      "createTime": "2026-10-10T03:18:04.876025Z",
-      "updateTime": "2026-10-10T03:18:04.876025Z"
+      "createTime": "2026-10-13T08:11:21.847513Z",
+      "updateTime": "2026-10-13T08:11:21.847513Z"
      }
     }
    ]
@@ -1386,10 +1386,10 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.893393Z"
+        "updateTime": "2026-10-13T08:11:21.858864Z"
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.893393Z"
+      "commitTime": "2026-10-13T08:11:21.858864Z"
      }
     },
     {
@@ -1424,7 +1424,7 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.893393Z",
+        "updateTime": "2026-10-13T08:11:21.858864Z",
         "transformResults": [
          {
           "nullValue": null
@@ -1432,7 +1432,7 @@
         ]
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.898539Z"
+      "commitTime": "2026-10-13T08:11:21.863067Z"
      }
     },
     {
@@ -1453,8 +1453,8 @@
         }
        }
       },
-      "createTime": "2026-10-10T03:18:04.893393Z",
-      "updateTime": "2026-10-10T03:18:04.893393Z"
+      "createTime": "2026-10-13T08:11:21.858864Z",
+      "updateTime": "2026-10-13T08:11:21.858864Z"
      }
     }
    ]
@@ -1527,15 +1527,15 @@
      "response": {
       "writeResults": [
        {
-        "updateTime": "2026-10-10T03:18:04.923267Z",
+        "updateTime": "2026-10-13T08:11:21.877053Z",
         "transformResults": [
          {
-          "timestampValue": "2026-10-10T03:18:04.922Z"
+          "timestampValue": "2026-10-13T08:11:21.875Z"
          }
         ]
        }
       ],
-      "commitTime": "2026-10-10T03:18:04.923267Z"
+      "commitTime": "2026-10-13T08:11:21.877053Z"
      }
     },
     {
@@ -1550,11 +1550,983 @@
         "integerValue": "1"
        },
        "t": {
-        "timestampValue": "2026-10-10T03:18:04.922Z"
+        "timestampValue": "2026-10-13T08:11:21.875Z"
        }
       },
-      "createTime": "2026-10-10T03:18:04.923267Z",
-      "updateTime": "2026-10-10T03:18:04.923267Z"
+      "createTime": "2026-10-13T08:11:21.877053Z",
+      "updateTime": "2026-10-13T08:11:21.877053Z"
+     }
+    }
+   ]
+  },
+  {
+   "name": "a transform and a transform of a nested field",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/t-nested/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-nested/databases/(default)/documents/t/e",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "m.y",
+          "appendMissingElements": {
+           "values": []
+          }
+         },
+         {
+          "fieldPath": "m",
+          "removeAllFromArray": {
+           "values": []
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Cannot transform property m and its nested property at the same time.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-nested/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-nested/databases/(default)/documents/t/e",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "m",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "m.y.z",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Cannot transform property m and its nested property at the same time.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-nested/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-nested/databases/(default)/documents/t/e",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "m.x",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "m.x.y",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Cannot transform property m.x and its nested property at the same time.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-nested/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-nested/databases/(default)/documents/t/e",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "a.b",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "c",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "a",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "c.d",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Cannot transform property a and its nested property at the same time.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-nested/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-nested/databases/(default)/documents/t/e",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "`m`",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "m.x",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Cannot transform property m and its nested property at the same time.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-nested/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-nested/databases/(default)/documents/t/e",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "`a b`.c",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "`a b`",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Cannot transform property a b and its nested property at the same time.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-nested/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-nested/databases/(default)/documents/t/e",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "`x.y`",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "`x.y`.z",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Cannot transform property x.y and its nested property at the same time.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-nested/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-nested/databases/(default)/documents/t/e",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "m",
+          "setToServerValue": "REQUEST_TIME"
+         },
+         {
+          "fieldPath": "m.x",
+          "setToServerValue": "REQUEST_TIME"
+         }
+        ]
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Cannot transform property m and its nested property at the same time.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-nested/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "transform": {
+         "document": "projects/t-nested/databases/(default)/documents/t/e",
+         "fieldTransforms": [
+          {
+           "fieldPath": "a.b",
+           "increment": {
+            "integerValue": "1"
+           }
+          },
+          {
+           "fieldPath": "a",
+           "increment": {
+            "integerValue": "1"
+           }
+          }
+         ]
+        }
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Cannot transform property a and its nested property at the same time.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/t-nested/databases/(default)/documents/t/e",
+     "body": null,
+     "status": 404,
+     "response": {
+      "error": {
+       "code": 404,
+       "message": "Document (projects/t-nested/databases/(default)/documents/t/e) not found.",
+       "status": "NOT_FOUND"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "transforms of nested fields, and other problems",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/t-nested-order/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-nested-order/databases/(default)/documents/t/e",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "a",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "a.b",
+          "increment": {
+           "stringValue": "x"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Input must be int64 or double.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-nested-order/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-nested-order/databases/(default)/documents/t/e",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "a",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "a.__x__",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Invalid reserved name in field path __x__",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-nested-order/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-nested-order/databases/(default)/documents/t/e",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "a",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "a.b",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "a..b",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Cannot transform property a and its nested property at the same time.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-nested-order/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-nested-order/databases/(default)/documents/t/e",
+         "fields": {
+          "__x__": {
+           "integerValue": "1"
+          }
+         }
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "a",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "a.b",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "field name __x__ is reserved",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-nested-order/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-nested-order/databases/(default)/documents/t/e",
+         "fields": {}
+        },
+        "updateMask": {
+         "fieldPaths": [
+          "a..b"
+         ]
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "a",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "a.b",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Invalid property path \"a..b\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\]|(?:\\\\.))+`)",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-nested-order/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-nested-order/databases/(default)/documents/t/e",
+         "fields": {}
+        },
+        "currentDocument": {
+         "exists": true
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "m",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "m.x",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Cannot transform property m and its nested property at the same time.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-nested-order/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-nested-order/databases/(default)/documents/t/e",
+         "fields": {
+          "a": {
+           "arrayValue": {
+            "values": [
+             {
+              "arrayValue": {
+               "values": []
+              }
+             }
+            ]
+           }
+          }
+         }
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "m",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "m.x",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Cannot transform property m and its nested property at the same time.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-nested-order/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-nested-order/databases/(default)/documents/t/f",
+         "fields": {
+          "__x__": {
+           "integerValue": "1"
+          }
+         }
+        }
+       },
+       {
+        "update": {
+         "name": "projects/t-nested-order/databases/(default)/documents/t/e",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "m",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "m.x",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "field name __x__ is reserved",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-nested-order/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-nested-order/databases/(default)/documents/t/e",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "m",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "m.x",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       },
+       {
+        "update": {
+         "name": "projects/t-nested-order/databases/(default)/documents/t/f",
+         "fields": {
+          "__x__": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Cannot transform property m and its nested property at the same time.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-nested-order/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-nested-order/databases/(default)/documents/t/e",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "m",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "m.x",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       },
+       {
+        "delete": "projects/t-nested-order/databases/(default)/documents/t/e",
+        "currentDocument": {
+         "exists": true
+        }
+       }
+      ]
+     },
+     "status": 400,
+     "response": {
+      "error": {
+       "code": 400,
+       "message": "Cannot transform property m and its nested property at the same time.",
+       "status": "INVALID_ARGUMENT"
+      }
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/t-nested-order/databases/(default)/documents/t/e",
+     "body": null,
+     "status": 404,
+     "response": {
+      "error": {
+       "code": 404,
+       "message": "Document (projects/t-nested-order/databases/(default)/documents/t/e) not found.",
+       "status": "NOT_FOUND"
+      }
+     }
+    }
+   ]
+  },
+  {
+   "name": "transforms of siblings and of one field twice",
+   "steps": [
+    {
+     "method": "POST",
+     "path": "projects/t-siblings/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-siblings/databases/(default)/documents/t/e",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "m.y",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "m.z",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "mm",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "`a.b`",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "a",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-13T08:11:21.945364Z",
+        "transformResults": [
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         }
+        ]
+       }
+      ],
+      "commitTime": "2026-10-13T08:11:21.945364Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-siblings/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-siblings/databases/(default)/documents/t/e",
+         "fields": {}
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "m.y",
+          "increment": {
+           "integerValue": "1"
+          }
+         },
+         {
+          "fieldPath": "m.y",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-13T08:11:21.950256Z",
+        "transformResults": [
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "2"
+         }
+        ]
+       }
+      ],
+      "commitTime": "2026-10-13T08:11:21.950256Z"
+     }
+    },
+    {
+     "method": "POST",
+     "path": "projects/t-siblings/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/t-siblings/databases/(default)/documents/t/e",
+         "fields": {
+          "m": {
+           "integerValue": "1"
+          }
+         }
+        },
+        "updateMask": {
+         "fieldPaths": [
+          "m"
+         ]
+        },
+        "updateTransforms": [
+         {
+          "fieldPath": "m.x",
+          "increment": {
+           "integerValue": "1"
+          }
+         }
+        ]
+       }
+      ]
+     },
+     "status": 200,
+     "response": {
+      "writeResults": [
+       {
+        "updateTime": "2026-10-13T08:11:21.955198Z",
+        "transformResults": [
+         {
+          "integerValue": "1"
+         }
+        ]
+       }
+      ],
+      "commitTime": "2026-10-13T08:11:21.955198Z"
+     }
+    },
+    {
+     "method": "GET",
+     "path": "projects/t-siblings/databases/(default)/documents/t/e",
+     "body": null,
+     "status": 200,
+     "response": {
+      "name": "projects/t-siblings/databases/(default)/documents/t/e",
+      "fields": {
+       "m": {
+        "mapValue": {
+         "fields": {
+          "x": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      },
+      "createTime": "2026-10-13T08:11:21.945364Z",
+      "updateTime": "2026-10-13T08:11:21.955198Z"
      }
     }
    ]

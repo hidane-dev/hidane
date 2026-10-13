@@ -1,6 +1,6 @@
 //! Applying one `Write` inside a commit.
 
-use std::collections::HashMap;
+use std::{collections::HashMap, sync::Arc};
 
 use hidane_core::{
     field_path::{FieldPath, Fields, apply_mask},
@@ -238,10 +238,7 @@ pub fn check_names(database: &str, write: &Write) -> Result<ResourcePath, Status
                     validate::field_path(path)?;
                 }
             }
-            write
-                .update_transforms
-                .iter()
-                .try_for_each(validate::transform)?;
+            validate::transforms(&write.update_transforms)?;
         }
         Some(Operation::Transform(transform)) => {
             if transform.field_transforms.is_empty() {
@@ -249,10 +246,7 @@ pub fn check_names(database: &str, write: &Write) -> Result<ResourcePath, Status
                     "The list of FieldTransform must not be empty.",
                 ));
             }
-            transform
-                .field_transforms
-                .iter()
-                .try_for_each(validate::transform)?;
+            validate::transforms(&transform.field_transforms)?;
         }
         Some(Operation::Delete(_)) | None => {}
     }
@@ -451,6 +445,64 @@ fn apply_transforms(
         .collect::<Result<Vec<_>, _>>()?;
     apply_mask(fields, &transformed, &paths);
     Ok(results)
+}
+
+/// The documents a commit writes (verifies aside), each as it was before the commit and whether
+/// one of the commit's writes deleted it.
+#[derive(Default)]
+pub struct Touched(HashMap<ResourcePath, (Option<Arc<StoredDocument>>, bool)>);
+
+impl Touched {
+    /// Notes the document `write` writes; call it before applying the write.
+    pub fn record(&mut self, batch: &dyn WriteBatch, write: &Write) {
+        let Some(path) = written(write) else {
+            return;
+        };
+        let entry = self
+            .0
+            .entry(path)
+            .or_insert_with_key(|path| (batch.get(path), false));
+        if matches!(write.operation, Some(Operation::Delete(_))) {
+            entry.1 = true;
+        }
+    }
+
+    /// Settles the commit's write results, once every write is applied. The official emulator
+    /// collapses a commit's writes to one document into one mutation (`check_sequences`), so
+    /// each of them reports the document as the whole commit leaves it: no update time when it
+    /// is deleted, else its update time. Writes that leave a document as it was, bit for bit,
+    /// change nothing and report the time it had, unless one of them deleted it, which makes it
+    /// a new document (`tools/oracle/same_document_writes.py`, #262).
+    pub fn settle(
+        &self,
+        batch: &mut dyn WriteBatch,
+        writes: &[Write],
+        results: &mut [WriteResult],
+    ) {
+        for (path, (before, deleted)) in &self.0 {
+            let update_time = match (before, batch.get(path)) {
+                (_, None) => None,
+                (Some(before), Some(after)) if !deleted && after.has_fields(&before.fields()) => {
+                    batch.revert(path);
+                    Some(before.update_time)
+                }
+                (_, Some(after)) => Some(after.update_time),
+            };
+            for (write, result) in writes.iter().zip(results.iter_mut()) {
+                if written(write).as_ref() == Some(path) {
+                    result.update_time = update_time;
+                }
+            }
+        }
+    }
+}
+
+/// The document a write changes: none for a verify.
+fn written(write: &Write) -> Option<ResourcePath> {
+    if matches!(write.operation, Some(Operation::Verify(_))) {
+        return None;
+    }
+    names::document(target(write)?).ok().map(|name| name.path)
 }
 
 /// Stores `fields` unless they are what is stored, bit for bit: then the document, and its
