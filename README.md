@@ -5,6 +5,11 @@
 [![license: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-1E1B18)](#license)
 [![website](https://img.shields.io/badge/web-hidane.dev-1E1B18)](https://hidane.dev)
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/hidane-dev/hidane/main/docs/assets/readme-banner-dark.png">
+  <img alt="hidane. One binary. No JDK. Milliseconds to start. A Firestore emulator that speaks the official one's gRPC, REST and WebChannel protocols and Security Rules, tested against it as the oracle." src="https://raw.githubusercontent.com/hidane-dev/hidane/main/docs/assets/readme-banner-light.png" width="100%">
+</picture>
+
 hidane (pronounced *hi-da-ne*) aims to be a drop-in replacement for the official Cloud Firestore
 emulator: a single Rust binary that speaks the same gRPC, REST and WebChannel wire protocols,
 evaluates the same Security Rules, reads and writes the same import / export directories, and runs
