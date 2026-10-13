@@ -1223,6 +1223,509 @@
     "contentType": null,
     "body": "Not Found\n"
    }
+  },
+  {
+   "name": "batchGet with documents named twice",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/{project}/databases/(default)/documents/c/zz",
+     "projects/{project}/databases/(default)/documents/c/e",
+     "projects/{project}/databases/(default)/documents/c/zz",
+     "projects/{project}/databases/(default)/documents/c/e"
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"missing\": \"projects/{project}/databases/(default)/documents/c/zz\",\n  \"readTime\": \"<time>\"\n},\n{\n  \"found\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/c/e\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n}\n]\n"
+   }
+  },
+  {
+   "name": "batchGet with documents named twice, in a new transaction",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/{project}/databases/(default)/documents/c/e",
+     "projects/{project}/databases/(default)/documents/c/e"
+    ],
+    "newTransaction": {
+     "readOnly": {}
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"transaction\": \"<id>\"\n},\n{\n  \"found\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/c/e\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n}\n]\n"
+   }
+  },
+  {
+   "name": "batchGet with documents named twice and a mask",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/{project}/databases/(default)/documents/c/a",
+     "projects/{project}/databases/(default)/documents/c/a"
+    ],
+    "mask": {
+     "fieldPaths": [
+      "int"
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"found\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/c/a\",\n    \"fields\": {\n      \"int\": {\n        \"integerValue\": \"42\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n}\n]\n"
+   }
+  },
+  {
+   "name": "PATCH with a read mask that does not parse writes nothing",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/a?mask.fieldPaths=x%20y",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "a": {
+      "integerValue": "1"
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"x y\\\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\\\\\]|(?:\\\\\\\\.))+`)\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH with a read mask that does not parse, the document",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/a",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/a) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "PATCH creating with a read mask that does not parse",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/a?currentDocument.exists=false&mask.fieldPaths=%5C",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"\\\\\\\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\\\\\]|(?:\\\\\\\\.))+`)\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH creating with a read mask that does not parse, the collection",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "POST with a read mask that does not parse writes nothing",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz?documentId=a&mask.fieldPaths=a-b",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"a-b\\\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\\\\\]|(?:\\\\\\\\.))+`)\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST with a generated ID and a read mask that does not parse",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz?mask.fieldPaths=a-b",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"a-b\\\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\\\\\]|(?:\\\\\\\\.))+`)\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST with a read mask that does not parse, the collection",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "PATCH with a reserved name in the read mask",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/a?mask.fieldPaths=a&mask.fieldPaths=__x__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid reserved name in field path __x__\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH with __name__ inside a read mask path",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/a?mask.fieldPaths=a.__name__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the name __key__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH with an empty read mask path",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/a?mask.fieldPaths=",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid empty property path string.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH with a reserved name in the read mask, the collection",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "PATCH with a read mask of __name__",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/b?mask.fieldPaths=__name__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "a": {
+      "integerValue": "1"
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/b\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an invalid read mask comes after a reserved field name",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/b?mask.fieldPaths=x%20y",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "__x__": {
+      "integerValue": "1"
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"field name __x__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an invalid read mask comes after the update mask",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/b?mask.fieldPaths=__x__&updateMask.fieldPaths=__y__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid reserved name in field path __y__\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an invalid read mask comes before nested arrays",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/b?mask.fieldPaths=x%20y",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "a": {
+      "arrayValue": {
+       "values": [
+        {
+         "arrayValue": {}
+        }
+       ]
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"x y\\\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\\\\\]|(?:\\\\\\\\.))+`)\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an invalid read mask comes before the precondition",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/b?mask.fieldPaths=x%20y&currentDocument.exists=false",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "a": {
+      "integerValue": "2"
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"x y\\\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\\\\\]|(?:\\\\\\\\.))+`)\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an invalid read mask comes before an update time precondition",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/b?mask.fieldPaths=x%20y&currentDocument.updateTime=2001-01-01T00:00:00Z",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"x y\\\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\\\\\]|(?:\\\\\\\\.))+`)\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH with an invalid read mask leaves the document as it was",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/b",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/b\",\n  \"fields\": {\n    \"a\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "GET with a reserved name in the read mask",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/b?mask.fieldPaths=__x__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid reserved name in field path __x__\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "GET with __name__ inside a read mask path",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/b?mask.fieldPaths=a.__name__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the name __key__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "GET with an empty read mask path",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/b?mask.fieldPaths=",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid empty property path string.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "GET with a read mask of __name__",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/b?mask.fieldPaths=__name__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/b\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "list with a reserved name in the read mask",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz?mask.fieldPaths=__x__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid reserved name in field path __x__\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "list with an empty read mask path",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz?mask.fieldPaths=",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid empty property path string.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "batchGet with a reserved name in the mask",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/{project}/databases/(default)/documents/fz/b"
+    ],
+    "mask": {
+     "fieldPaths": [
+      "__x__"
+     ]
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid reserved name in field path __x__\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "batchGet with an empty mask path",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/{project}/databases/(default)/documents/fz/b"
+    ],
+    "mask": {
+     "fieldPaths": [
+      ""
+     ]
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid empty property path string.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
   }
  ]
 }

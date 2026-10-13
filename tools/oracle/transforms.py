@@ -125,6 +125,41 @@ case("server time with a precondition on a missing document", "t-precondition", 
     commit(write("c/d", {"a": i(1)}, [server_time("t")], exists=False)),
     get("c/d"),
 ])
+# Found by the differential fuzzer (tools/fuzz/, #262): a write may not transform a field and a
+# field nested in it. Each transform is checked in order, its path and operand first, then
+# against the transforms before it; the message names the shorter path, its segments joined by
+# dots. The same path twice, siblings and a transform under a masked field are allowed.
+case("a transform and a transform of a nested field", "t-nested", [
+    commit(write("t/e", {}, [union("m.y"), remove("m")])),
+    commit(write("t/e", {}, [inc("m", i(1)), inc("m.y.z", i(1))])),
+    commit(write("t/e", {}, [inc("m.x", i(1)), inc("m.x.y", i(1))])),
+    commit(write("t/e", {}, [inc("a.b", i(1)), inc("c", i(1)), inc("a", i(1)), inc("c.d", i(1))])),
+    commit(write("t/e", {}, [inc("`m`", i(1)), inc("m.x", i(1))])),
+    commit(write("t/e", {}, [inc("`a b`.c", i(1)), inc("`a b`", i(1))])),
+    commit(write("t/e", {}, [inc("`x.y`", i(1)), inc("`x.y`.z", i(1))])),
+    commit(write("t/e", {}, [server_time("m"), server_time("m.x")])),
+    commit(transform_only("t/e", inc("a.b", i(1)), inc("a", i(1)))),
+    get("t/e"),
+])
+case("transforms of nested fields, and other problems", "t-nested-order", [
+    commit(write("t/e", {}, [inc("a", i(1)), inc("a.b", s("x"))])),
+    commit(write("t/e", {}, [inc("a", i(1)), inc("a.__x__", i(1))])),
+    commit(write("t/e", {}, [inc("a", i(1)), inc("a.b", i(1)), inc("a..b", i(1))])),
+    commit(write("t/e", {"__x__": i(1)}, [inc("a", i(1)), inc("a.b", i(1))])),
+    commit(write("t/e", {}, [inc("a", i(1)), inc("a.b", i(1))], mask=["a..b"])),
+    commit(write("t/e", {}, [inc("m", i(1)), inc("m.x", i(1))], exists=True)),
+    commit(write("t/e", {"a": arr(arr())}, [inc("m", i(1)), inc("m.x", i(1))])),
+    commit(update("t/f", {"__x__": i(1)}), write("t/e", {}, [inc("m", i(1)), inc("m.x", i(1))])),
+    commit(write("t/e", {}, [inc("m", i(1)), inc("m.x", i(1))]), update("t/f", {"__x__": i(1)})),
+    commit(write("t/e", {}, [inc("m", i(1)), inc("m.x", i(1))]), {"delete": "{base}/t/e", "currentDocument": {"exists": True}}),
+    get("t/e"),
+])
+case("transforms of siblings and of one field twice", "t-siblings", [
+    commit(write("t/e", {}, [inc("m.y", i(1)), inc("m.z", i(1)), inc("mm", i(1)), inc("`a.b`", i(1)), inc("a", i(1))])),
+    commit(write("t/e", {}, [inc("m.y", i(1)), inc("m.y", i(1))])),
+    commit(write("t/e", {"m": i(1)}, [inc("m.x", i(1))], mask=["m"])),
+    get("t/e"),
+])
 
 json.dump({
     "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",

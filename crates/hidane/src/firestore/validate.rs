@@ -147,6 +147,35 @@ pub fn transform(transform: &FieldTransform) -> Result<(), Status> {
     }
 }
 
+/// The field transforms of one write, in order: each one (`transform`), then against the ones
+/// before it, since a write may not transform a field and a field nested in it. The same path
+/// twice is allowed. The message names the shorter path, its segments joined by dots
+/// (`tools/oracle/transforms.py`, #262).
+pub fn transforms(transforms: &[FieldTransform]) -> Result<(), Status> {
+    let mut paths: Vec<FieldPath> = Vec::with_capacity(transforms.len());
+    for t in transforms {
+        transform(t)?;
+        let path = FieldPath::parse(&t.field_path).map_err(Status::invalid_argument)?;
+        if let Some(parent) = paths.iter().find_map(|earlier| {
+            let (a, b) = (earlier.segments(), path.segments());
+            if a.len() < b.len() && b.starts_with(a) {
+                Some(a)
+            } else if b.len() < a.len() && a.starts_with(b) {
+                Some(b)
+            } else {
+                None
+            }
+        }) {
+            return Err(Status::invalid_argument(format!(
+                "Cannot transform property {} and its nested property at the same time.",
+                parent.join(".")
+            )));
+        }
+        paths.push(path);
+    }
+    Ok(())
+}
+
 /// What the fields may hold once a write's transforms are applied: no nested array and no
 /// vector with NaN. The official emulator stores an array union's operands as they are
 /// (docs/parity-exceptions.md).

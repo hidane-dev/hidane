@@ -240,7 +240,9 @@ impl FirestoreService {
             };
             // The first precondition that failed, if the rules check the writes.
             let mut precondition = None;
+            let mut touched = writes::Touched::default();
             for write in writes {
+                touched.record(&*batch, write);
                 let view = guard.and_then(|_| writes::rules_method(&*batch, write));
                 if let Some(view) = &view {
                     before
@@ -292,6 +294,7 @@ impl FirestoreService {
                 failure = Some(status);
                 return Err(StoreError::Aborted(String::new()));
             }
+            touched.settle(batch, writes, &mut results);
             Ok(())
         });
         match outcome {
@@ -704,6 +707,7 @@ impl Firestore for FirestoreService {
         let guard = self
             .guard(&caller, &parent.database)
             .map(|guard| guard.auto_id(req.document_id.is_empty()));
+        let mask = read_mask(&parent.database, &write, req.mask.as_ref())?;
         let (commit_time, _) = self
             .write(
                 &parent.database,
@@ -714,7 +718,6 @@ impl Firestore for FirestoreService {
             )
             .await?
             .expect("one write");
-        let mask = parse_mask(req.mask.as_ref())?;
         Ok(Response::new(self.read_back(
             &parent.database,
             &path,
@@ -739,6 +742,7 @@ impl Firestore for FirestoreService {
             ..Write::default()
         };
         let guard = self.guard(&caller, &name.database);
+        let mask = read_mask(&name.database, &write, req.mask.as_ref())?;
         let (commit_time, _) = self
             .write(
                 &name.database,
@@ -749,7 +753,6 @@ impl Firestore for FirestoreService {
             )
             .await?
             .expect("one write");
-        let mask = parse_mask(req.mask.as_ref())?;
         Ok(Response::new(self.read_back(
             &name.database,
             &name.path,
@@ -789,22 +792,23 @@ impl Firestore for FirestoreService {
         let (metadata, _, req) = request.into_parts();
         let database = names::database(&req.database)?;
         let caller = auth::caller(&metadata)?;
-        let paths = req
-            .documents
-            .iter()
-            .map(|name| {
-                let parsed = names::document(name)?;
-                if parsed.database == database {
-                    Ok(parsed.path)
-                } else {
-                    Err(Status::invalid_argument(format!(
-                        "Document \"{name}\" is not in database \"{database}\"."
-                    )))
-                }
-            })
-            .collect::<Result<Vec<_>, Status>>()?;
+        // A document named more than once is read and answered once, where it is first named,
+        // as on the official emulator (#262).
+        let mut documents: Vec<(&String, ResourcePath)> = Vec::with_capacity(req.documents.len());
+        for name in &req.documents {
+            let parsed = names::document(name)?;
+            if parsed.database != database {
+                return Err(Status::invalid_argument(format!(
+                    "Document \"{name}\" is not in database \"{database}\"."
+                )));
+            }
+            if !documents.iter().any(|(_, path)| *path == parsed.path) {
+                documents.push((name, parsed.path));
+            }
+        }
+        let paths: Vec<ResourcePath> = documents.iter().map(|(_, path)| path.clone()).collect();
         let mask = parse_mask(req.mask.as_ref())?;
-        let mut responses = Vec::with_capacity(req.documents.len() + 1);
+        let mut responses = Vec::with_capacity(documents.len() + 1);
         let at = match &req.consistency_selector {
             Some(batch_get_documents_request::ConsistencySelector::Transaction(transaction)) => {
                 self.read_in(&database, transaction, &paths, None)?
@@ -850,14 +854,14 @@ impl Firestore for FirestoreService {
             }
         }
         // Answers come back in request order, all with the same read time.
-        for (name, path) in req.documents.iter().zip(&paths) {
+        for (name, path) in &documents {
             let result = match self.store.get(&database, path, at) {
                 Some(doc) => batch_get_documents_response::Result::Found(to_document(
                     &database,
                     &doc,
                     mask.as_deref(),
                 )),
-                None => batch_get_documents_response::Result::Missing(name.clone()),
+                None => batch_get_documents_response::Result::Missing((*name).clone()),
             };
             responses.push(Ok(BatchGetDocumentsResponse {
                 transaction: Vec::new(),
@@ -1273,14 +1277,29 @@ fn document_with(
     }
 }
 
+/// A read mask, whose paths are checked as field paths are: no reserved name, no `__name__`
+/// inside a longer path, not empty (`tools/oracle/rest.py`, #262).
 fn parse_mask(mask: Option<&DocumentMask>) -> Result<Option<Vec<FieldPath>>, Status> {
     mask.map(|m| {
         m.field_paths
             .iter()
-            .map(|p| FieldPath::parse(p).map_err(Status::invalid_argument))
+            .map(|p| validate::field_path(p))
             .collect()
     })
     .transpose()
+}
+
+/// The read mask of a write that returns the document (UpdateDocument, CreateDocument), checked
+/// as the official emulator does: after the names of the write (its document, its fields' names,
+/// its update mask, its transforms) and before its values and its precondition, so that a write
+/// whose mask is invalid writes nothing (`tools/oracle/rest.py`, #262).
+fn read_mask(
+    database: &str,
+    write: &Write,
+    mask: Option<&DocumentMask>,
+) -> Result<Option<Vec<FieldPath>>, Status> {
+    writes::check_names(database, write)?;
+    parse_mask(mask)
 }
 
 fn store_error(err: &StoreError) -> Status {

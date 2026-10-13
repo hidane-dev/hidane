@@ -43,12 +43,19 @@ async fn every_recorded_case_gives_the_official_answer() {
             let path = step["path"].as_str().unwrap();
             let expected = &step["response"];
             if step["method"] == "GET" {
-                let doc = client
+                let got = client
                     .get_document(GetDocumentRequest {
                         name: path.to_owned(),
                         ..GetDocumentRequest::default()
                     })
-                    .await
+                    .await;
+                // Refused writes leave no document.
+                if step["status"] == 404 {
+                    let err = got.expect_err(name);
+                    assert_eq!(err.code(), tonic::Code::NotFound, "{name}: GET {path}");
+                    continue;
+                }
+                let doc = got
                     .unwrap_or_else(|e| panic!("{name}: GET {path}: {e}"))
                     .into_inner();
                 let want = protojson::fields(&expected["fields"]);

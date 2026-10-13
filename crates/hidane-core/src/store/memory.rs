@@ -429,6 +429,10 @@ impl WriteBatch for MemoryBatch<'_> {
         let shared = self.shared_path(&key, path);
         self.pending.insert(key, (shared, None));
     }
+
+    fn revert(&mut self, path: &ResourcePath) {
+        self.pending.remove(&encode_path(path.segments()));
+    }
 }
 
 #[cfg(test)]

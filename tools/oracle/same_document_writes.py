@@ -129,6 +129,31 @@ case("the same documents in two commits", "s-order-8", [
     ("GET", "{base}/c/b", None),
 ])
 
+# The write results of a collapsed mutation (found by the differential fuzzer, tools/fuzz/,
+# #262): every write to one document reports the document as the whole commit leaves it, no
+# update time when it is deleted, else its update time. Writes that leave it as it was change
+# nothing and report the time it had, unless one of them deleted it.
+case("delete then set without fields", "s-result-1", [
+    commit(delete("c/d"), {"update": {"name": "{base}/c/d"}}),
+    ("GET", "{base}/c/d", None),
+])
+case("writes that leave the document as it was", "s-result-2", [
+    commit(update("c/d", {"v": i(0)})),
+    commit(update("c/d", {"v": i(1)}), update("c/d", {"v": i(0)})),
+    commit(update("c/d", {"v": i(0)}), update("c/e", {"v": i(0)}), update("c/d", {"v": i(0)})),
+    commit(write("transform", "c/d", 0), write("set", "c/d", 0)),
+    ("GET", "{base}/c/d", None),
+    commit(delete("c/d"), update("c/d", {"v": i(0)})),
+    ("GET", "{base}/c/d", None),
+])
+case("writes to two documents, one deleted at the end", "s-result-3", [
+    commit(update("c/d", {"v": i(0)})),
+    commit(update("c/d", {"v": i(3)}), delete("c/d"), update("c/e", {"v": i(3)}), delete("c/e"),
+           update("c/e", {"v": i(4)})),
+    ("GET", "{base}/c/d", None),
+    ("GET", "{base}/c/e", None),
+])
+
 json.dump({
     "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
     "generated_by": "tools/oracle/same_document_writes.py",

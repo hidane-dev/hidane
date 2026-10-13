@@ -334,8 +334,12 @@ def transforms(f):
     answers = []
     for case in f["cases"]:
         for step in case["steps"]:
-            # A read back: its fields. A commit: its transform results, or its error.
-            answers.append((GRPC, PART if step["method"] == "GET" else FULL))
+            # A read back: its fields, or the code of a missing document. A commit: its
+            # transform results, or its error.
+            if step["method"] == "GET":
+                answers.append((GRPC, PART if step["status"] == 200 else STATUS))
+            else:
+                answers.append((GRPC, FULL))
     return answers
 
 
@@ -352,8 +356,9 @@ def same_document_writes(f):
                 # exceptions): its code only. Other errors: the code and the message.
                 level = STATUS if error["status"] in ("NOT_FOUND", "ALREADY_EXISTS") else FULL
             else:
-                # The number of write results; their times differ from run to run, and their
-                # transform results are not compared.
+                # The number of write results and the commit each one's update time comes from
+                # (the times themselves differ from run to run); their transform results are not
+                # compared.
                 results = step["response"].get("writeResults", [])
                 level = PART if any("transformResults" in r for r in results) else FULL
             answers.append((GRPC, level))
@@ -637,7 +642,8 @@ RECORDINGS = {
         counted="each call; " + OVER_REST,
         compares="an error in full (code and message), but a failed precondition on its code (its "
                  "message prints the official emulator's internal key, an intentional "
-                 "difference); a commit in full (its number of write results, whose times "
+                 "difference); a commit in full (its number of write results and the commit "
+                 "each one's update time comes from, or that it has none; the times themselves "
                  "differ from run to run), in part where they hold transform results, which are "
                  "not compared; a read in part (the fields and their order), a missing document "
                  "on its code",
@@ -647,7 +653,8 @@ RECORDINGS = {
         tests=[f"{H}/transforms.rs::every_recorded_case_gives_the_official_answer"],
         counted="each call; " + OVER_REST,
         compares="a commit in full (its transform results, server times as the request time, "
-                 "or the code and message); a read in part (the document's fields)",
+                 "or the code and message); a read in part (the document's fields), a missing "
+                 "document on its code",
         count=transforms),
     f"{H}/fixtures/unsupported.json": dict(
         area="queries",

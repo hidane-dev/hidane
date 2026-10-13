@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:62a3c5ef398bfc572cf939f1ff9e5ca0a5a97cac30eb1863147e4c38cd02105a",
+ "digest": "sha256:49e9b1cf75b4ab2dda95b99bf39caa5c6ff6b27327d77820db05836663217c5e",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -17,13 +17,13 @@
   "files": 72,
   "fixtures": 41,
   "transcripts": 31,
-  "answers": 20224,
-  "bytes": 10721462,
+  "answers": 20291,
+  "bytes": 10768634,
   "levels": {
-   "full": 12029,
+   "full": 12087,
    "reasons": 3912,
-   "part": 731,
-   "status": 3401,
+   "part": 737,
+   "status": 3404,
    "codes": 30,
    "none": 1,
    "differs": 120
@@ -32,7 +32,7 @@
    "documents": {
     "fixtures": 6,
     "transcripts": 4,
-    "answers": 5208
+    "answers": 5246
    },
    "queries": {
     "fixtures": 4,
@@ -52,7 +52,7 @@
    "rest": {
     "fixtures": 2,
     "transcripts": 1,
-    "answers": 79
+    "answers": 108
    },
    "webchannel": {
     "fixtures": 1,
@@ -84,7 +84,7 @@
    "v1.22.0": {
     "fixtures": 41,
     "transcripts": 31,
-    "answers": 20224
+    "answers": 20291
    }
   },
   "by_release_source": {
@@ -273,13 +273,13 @@
     "first_recorded": "2026-10-13",
     "last_changed": "2026-10-13"
    },
-   "bytes": 221469,
-   "sha256": "bbee40abb5434aa44e9f68065654c1cd22eb2b89ef3c3b664b518bf700d5ab9f",
-   "answers": 311,
+   "bytes": 230555,
+   "sha256": "d65a7eace7aada7cf94a435ae0540056dc8af6c3d52c57b6c01d39eb9ad3ffda",
+   "answers": 324,
    "levels": {
-    "full": 153,
-    "part": 91,
-    "status": 67
+    "full": 160,
+    "part": 96,
+    "status": 68
    },
    "replayed_over": [
     "gRPC"
@@ -288,7 +288,7 @@
     "crates/hidane/tests/same_document_writes.rs::every_recorded_case_gives_the_official_answer"
    ],
    "counted": "each call; recorded over REST",
-   "compared": "an error in full (code and message), but a failed precondition on its code (its message prints the official emulator's internal key, an intentional difference); a commit in full (its number of write results, whose times differ from run to run), in part where they hold transform results, which are not compared; a read in part (the fields and their order), a missing document on its code"
+   "compared": "an error in full (code and message), but a failed precondition on its code (its message prints the official emulator's internal key, an intentional difference); a commit in full (its number of write results and the commit each one's update time comes from, or that it has none; the times themselves differ from run to run), in part where they hold transform results, which are not compared; a read in part (the fields and their order), a missing document on its code"
   },
   {
    "path": "crates/hidane/tests/fixtures/transforms.json",
@@ -309,14 +309,15 @@
    },
    "recorded": {
     "first_recorded": "2026-10-10",
-    "last_changed": "2026-10-10"
+    "last_changed": "2026-10-13"
    },
-   "bytes": 32930,
-   "sha256": "c54db65d1a4a2ac4e272225fa68cfae15676158bb97eb821d59d54a91f34c77e",
-   "answers": 37,
+   "bytes": 54286,
+   "sha256": "03faba11af6d5351f8cb9e0776b41b6d38632e9911f5491826fc7d4b87a38f8e",
+   "answers": 62,
    "levels": {
-    "full": 24,
-    "part": 13
+    "full": 46,
+    "part": 14,
+    "status": 2
    },
    "replayed_over": [
     "gRPC"
@@ -325,7 +326,7 @@
     "crates/hidane/tests/transforms.rs::every_recorded_case_gives_the_official_answer"
    ],
    "counted": "each call; recorded over REST",
-   "compared": "a commit in full (its transform results, server times as the request time, or the code and message); a read in part (the document's fields)"
+   "compared": "a commit in full (its transform results, server times as the request time, or the code and message); a read in part (the document's fields), a missing document on its code"
   },
   {
    "path": "crates/hidane/tests/fixtures/aggregations.json",
@@ -620,13 +621,13 @@
    },
    "recorded": {
     "first_recorded": "2026-10-10",
-    "last_changed": "2026-10-10"
+    "last_changed": "2026-10-13"
    },
-   "bytes": 45126,
-   "sha256": "a96c4a7159b723e1dbd814a1aeba53b0a509b5e8735b9ba084d33e2829999a39",
-   "answers": 57,
+   "bytes": 61856,
+   "sha256": "e93860a5c0b85a8ca863a1a1c06a2df5b1cc53a14cc36cc8eb25638f143c3c09",
+   "answers": 86,
    "levels": {
-    "full": 53,
+    "full": 82,
     "status": 4
    },
    "replayed_over": [

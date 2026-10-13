@@ -157,6 +157,28 @@ fn batch_reads_its_own_writes() {
 }
 
 #[test]
+fn a_reverted_document_keeps_its_version_and_reports_no_change() {
+    let store = MemoryStore::new();
+    let first = set(&store, "users/alice", 1);
+    let commit = store
+        .commit(DB, &mut |batch| {
+            batch.set(&path("users/alice"), fields(2));
+            batch.delete(&path("users/bob"));
+            batch.set(&path("users/carol"), fields(3));
+            batch.revert(&path("users/alice"));
+            assert_eq!(n_of(&batch.get(&path("users/alice")).unwrap()), 1);
+            batch.revert(&path("users/bob"));
+            Ok(())
+        })
+        .unwrap();
+    let changed: Vec<String> = commit.changes.iter().map(|c| c.path.to_string()).collect();
+    assert_eq!(changed, ["users/carol"]);
+    let alice = store.get(DB, &path("users/alice"), ReadTime::MAX).unwrap();
+    assert_eq!(n_of(&alice), 1);
+    assert_eq!(alice.update_time, first.to_timestamp());
+}
+
+#[test]
 fn a_failed_commit_applies_nothing() {
     let store = MemoryStore::new();
     set(&store, "users/alice", 1);
