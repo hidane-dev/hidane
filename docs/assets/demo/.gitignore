@@ -1,0 +1,4 @@
+# Recording the demo (demo.tape) happens in a copy of this directory; these never belong here.
+node_modules/
+demo.gif
+*.log
