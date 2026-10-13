@@ -2,7 +2,7 @@
 // Cloud SDK image in modules/gcloud/firestore, which starts it with
 // `/bin/sh -c "gcloud beta emulators firestore start --host-port 0.0.0.0:8080 --project=<id>"` and
 // waits for the port and a log line with "running", and as a generic container. HIDANE_IMAGE names
-// the image to test; the module needs an image newer than v0.4.0 (`-run TestGenericContainer` for
+// the image to test; the module needs hidane 0.5.0 or newer (`-run TestGenericContainer` for
 // older ones).
 package hidane
 

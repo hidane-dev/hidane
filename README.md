@@ -11,14 +11,14 @@ evaluates the same Security Rules, reads and writes the same import / export dir
 under `firebase-tools`. No JDK to install. Starts in milliseconds. Tested for parity against the
 official emulator as the oracle.
 
-> **v0.4.0 delivers Firestore events to Cloud Functions.** hidane serves the Firestore API over
-> gRPC, REST and WebChannel: documents, queries, aggregations, vector search, transactions,
-> listeners, exports and imports, and the emulator's own endpoints, each checked against the
-> official emulator; `firebase-tools` launches it in place of the official one. It evaluates
-> `firestore.rules` as the official emulator does (since v0.2.0), firebase-js-sdk's own browser
-> test suite passes on it (v0.3.0), and in v0.4.0 Firestore-triggered functions, v1 and v2, fire
-> under the Functions emulator with the same data as with the official one. The Go, Python and Java
-> server SDKs are verified too.
+> **v0.5.0 adds the tools around the emulator.** `hidane doctor` checks a Firebase project before
+> it moves, `hidane migrate` makes the move, `hidane benchmark` and `hidane benchmark savings`
+> measure what it saves on your own tests, and `hidane report` collects what a bug report needs.
+> hidane's image also stands in for the Cloud SDK image in Testcontainers. Underneath, hidane serves
+> the Firestore API over gRPC, REST and WebChannel, each checked against the official emulator:
+> documents, queries, aggregations, vector search, transactions, listeners, exports and imports,
+> Security Rules (since v0.2.0), firebase-js-sdk's browser suite (v0.3.0) and Firestore-triggered
+> Cloud Functions (v0.4.0); `firebase-tools` launches it in place of the official one.
 > The plan is in
 > [`docs/ROADMAP.md`](docs/ROADMAP.md), the work in
 > [issues](https://github.com/hidane-dev/hidane/issues).
@@ -78,7 +78,7 @@ compared with the official emulator's (`results/`); the version of each client t
 was compared and the evidence are in the
 [SDK certification matrix](docs/sdk-certification.md), generated from those results:
 
-| Client | Transport | In v0.4.0 |
+| Client | Transport | In v0.5.0 |
 |---|---|---|
 | firebase-admin (Node) / `@google-cloud/firestore` | gRPC | verified: documents, queries, aggregations, vector search, transactions, listeners |
 | firebase-js-sdk in Node | gRPC | verified: writes, transactions, listeners, offline and resume |
@@ -92,6 +92,7 @@ was compared and the evidence are in the
 | `firebase emulators:start` / `emulators:exec` | `hidane exec -- firebase …` | verified with firebase-tools 15.33.0, no Java installed; with the Functions emulator, Firestore-triggered functions, v1 and v2 (`withAuthContext` too), fire on the same writes with the same data as with the official emulator ([`docs/parity-exceptions.md`](docs/parity-exceptions.md) lists the differences) |
 | Emulator UI | REST and the emulator's endpoints | verified: browse, create and delete documents, Clear all data, and the request monitor (the Requests tab) |
 | Export / import (`--import`, `--export-on-exit`, `emulators:export`) | the official format | verified: hidane and the official emulator read each other's exports, byte for byte the same files ([`docs/export-format.md`](docs/export-format.md)) |
+| Testcontainers | hidane's container image | verified in CI: in place of the Cloud SDK image in the Firestore modules for Java, Node and Go, and as a generic container in Python ([`docs/testcontainers.md`](docs/testcontainers.md)) |
 
 ## Parity
 

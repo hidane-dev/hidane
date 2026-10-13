@@ -9,8 +9,8 @@
   "differences": "https://github.com/hidane-dev/hidane/blob/main/docs/parity-exceptions.md"
  },
  "hidane": {
-  "version": "0.4.0",
-  "series": "0.4.x"
+  "version": "0.5.0",
+  "series": "0.5.x"
  },
  "official_emulator": {
   "product": "cloud-firestore-emulator",
@@ -19,7 +19,7 @@
  },
  "matrix": [
   {
-   "hidane": "0.4.x",
+   "hidane": "0.5.x",
    "firebase_tools": "15.33.0",
    "official_emulator": "1.22.0",
    "status": "verified",

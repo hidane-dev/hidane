@@ -68,8 +68,8 @@ notes as a change.
 | Export format | The official emulator's export files: hidane reads the official emulator's exports, and the official emulator reads hidane's ([export-format.md](export-format.md)) | `crates/hidane/tests/export_import.rs`, against exports recorded from the official emulator |
 | Release assets | Archive names (`hidane-<version>-<target>.tar.gz`, `.zip` on Windows), their layout, `sha256sums.txt`; the package names on each registry; the image tags `<version>`, `<major>.<minor>` and `latest` ([releasing.md](releasing.md#assets)). `install.sh`, setup-hidane, cargo-binstall and mise find the archives by these names | `.github/workflows/install.yml`, which installs every release through every channel; setup-hidane's own CI |
 
-`hidane doctor`, `hidane migrate`, `hidane report` and `hidane benchmark` are first released
-after v0.4.0; their schemas start at version 1 there.
+`hidane doctor`, `hidane migrate`, `hidane report` and `hidane benchmark` are first released in
+0.5.0, with their schemas at version 1.
 
 ### Exit codes
 

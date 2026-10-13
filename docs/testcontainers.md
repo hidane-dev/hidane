@@ -4,8 +4,7 @@ hidane's container image, `ghcr.io/hidane-dev/hidane`, runs in Testcontainers in
 
 - **In place of the Cloud SDK image** in the Firestore module of Testcontainers' gcloud modules.
   Tests that use the module (`FirestoreEmulatorContainer` in Java and Node, `firestore.Run` in Go)
-  keep their code and change the image name. This needs an image newer than v0.4.0: the release
-  after v0.4.0 is the first to have it.
+  keep their code and change the image name. This needs hidane 0.5.0 or newer.
 - **As a generic container**, with the image's own command and the last line of its banner. This
   works with the published images too (tested with v0.4.0), and in Testcontainers for Python,
   which has no Firestore module.
@@ -28,9 +27,9 @@ the published v0.4.0 image.
 
 | Language | Testcontainers module | With hidane's image | Tested with |
 |---|---|---|---|
-| Java | `org.testcontainers:testcontainers-gcloud`, `FirestoreEmulatorContainer` | in place of the Cloud SDK image (newer than v0.4.0) | Testcontainers 2.0.5, `google-cloud-firestore` 3.43.0 ([`testcontainers/java`](../testcontainers/java/)) |
-| Node | `@testcontainers/gcloud`, `FirestoreEmulatorContainer` | in place of the Cloud SDK image (newer than v0.4.0) | Testcontainers 12.2.0, `firebase-admin` 14.5.0 ([`testcontainers/node`](../testcontainers/node/)) |
-| Go | `github.com/testcontainers/testcontainers-go/modules/gcloud/firestore`, `firestore.Run` | in place of the Cloud SDK image (newer than v0.4.0) | Testcontainers 0.44.0, `cloud.google.com/go/firestore` 1.26.0 ([`testcontainers/go`](../testcontainers/go/)) |
+| Java | `org.testcontainers:testcontainers-gcloud`, `FirestoreEmulatorContainer` | in place of the Cloud SDK image (0.5.0 or newer) | Testcontainers 2.0.5, `google-cloud-firestore` 3.43.0 ([`testcontainers/java`](../testcontainers/java/)) |
+| Node | `@testcontainers/gcloud`, `FirestoreEmulatorContainer` | in place of the Cloud SDK image (0.5.0 or newer) | Testcontainers 12.2.0, `firebase-admin` 14.5.0 ([`testcontainers/node`](../testcontainers/node/)) |
+| Go | `github.com/testcontainers/testcontainers-go/modules/gcloud/firestore`, `firestore.Run` | in place of the Cloud SDK image (0.5.0 or newer) | Testcontainers 0.44.0, `cloud.google.com/go/firestore` 1.26.0 ([`testcontainers/go`](../testcontainers/go/)) |
 | Java, Node, Go | `GenericContainer` (`testcontainers.Run` in Go) | the image's own command (published images too) | the same projects, with the image from source and v0.4.0 |
 | Python | `testcontainers`, `DockerContainer` (no Firestore module: `DatastoreContainer` is for Datastore) | the image's own command (published images too) | Testcontainers 4.15.0, `google-cloud-firestore` 2.34.1, with the image from source and v0.4.0 ([`testcontainers/python`](../testcontainers/python/)) |
 | .NET | `Testcontainers.Firestore` | does not work yet: the module replaces the image's entrypoint with `gcloud`, which hidane's image does not have | |
@@ -47,7 +46,7 @@ import com.google.cloud.firestore.FirestoreOptions;
 import org.testcontainers.gcloud.FirestoreEmulatorContainer;
 import org.testcontainers.utility.DockerImageName;
 
-// latest for brevity: pin a version newer than 0.4.0.
+// latest for brevity: pin 0.5.0 or newer.
 DockerImageName hidane = DockerImageName.parse("ghcr.io/hidane-dev/hidane:latest")
         .asCompatibleSubstituteFor("gcr.io/google.com/cloudsdktool/google-cloud-cli");
 
@@ -91,7 +90,7 @@ import { FirestoreEmulatorContainer } from "@testcontainers/gcloud";
 import { initializeApp } from "firebase-admin/app";
 import { getFirestore } from "firebase-admin/firestore";
 
-// latest for brevity: pin a version newer than 0.4.0.
+// latest for brevity: pin 0.5.0 or newer.
 const emulator = await new FirestoreEmulatorContainer("ghcr.io/hidane-dev/hidane:latest").start();
 process.env.FIRESTORE_EMULATOR_HOST = emulator.getEmulatorEndpoint();
 const db = getFirestore(initializeApp({ projectId: "demo-test" }));
@@ -126,7 +125,7 @@ import (
 	tcfirestore "github.com/testcontainers/testcontainers-go/modules/gcloud/firestore"
 )
 
-// latest for brevity: pin a version newer than 0.4.0.
+// latest for brevity: pin 0.5.0 or newer.
 ctr, err := tcfirestore.Run(ctx, "ghcr.io/hidane-dev/hidane:latest", tcfirestore.WithProjectID("demo-test"))
 testcontainers.CleanupContainer(t, ctr)
 if err != nil {
@@ -241,5 +240,5 @@ cd testcontainers/python && python3 -m venv .venv && .venv/bin/pip install --req
   && HIDANE_IMAGE=ghcr.io/hidane-dev/hidane:0.4.0 .venv/bin/pytest
 ```
 
-Without `-Dtest` / `GENERIC_ONLY` / `-run`, the gcloud module tests run too, which need an image
-newer than v0.4.0.
+Without `-Dtest` / `GENERIC_ONLY` / `-run`, the gcloud module tests run too, which need an image of
+0.5.0 or newer.

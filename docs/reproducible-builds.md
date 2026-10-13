@@ -46,7 +46,7 @@ What has been seen so far (2026-10-13):
 
 v0.4.0 was built before `build.sh` existed, without remapped paths, so its rebuild had to use the
 same paths as the release (the checkout at `/home/runner/work/hidane/hidane` and the Cargo home
-of GitHub's runners) and the same Rust (1.99.0). Releases after 0.4.0 are built with `build.sh`
+of GitHub's runners) and the same Rust (1.99.0). Releases from 0.5.0 on are built with `build.sh`
 and can be rebuilt anywhere.
 
 ## Rebuilding a release

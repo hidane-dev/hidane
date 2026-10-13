@@ -23,7 +23,7 @@ firebase-tools that launches it and the official emulator it is compared with.
 
 | hidane | firebase-tools | Official emulator | Status | Evidence |
 |---|---|---|---|---|
-| 0.4.x | 15.33.0 | 1.22.0 | Verified | 20,368 recorded answers of the official emulator v1.22.0 in 41 fixtures, replayed against hidane by cargo test; 33 comparisons of SDK transcripts with the official emulator v1.22.0's: 19 identical, 14 documented differences; 2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers (last recorded 2026-10-13) |
+| 0.5.x | 15.33.0 | 1.22.0 | Verified | 20,368 recorded answers of the official emulator v1.22.0 in 41 fixtures, replayed against hidane by cargo test; 33 comparisons of SDK transcripts with the official emulator v1.22.0's: 19 identical, 14 documented differences; 2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers (last recorded 2026-10-13) |
 
 | Evidence | What the results show | Where |
 |---|---|---|
