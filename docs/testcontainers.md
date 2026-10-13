@@ -6,7 +6,8 @@ hidane's container image, `ghcr.io/hidane-dev/hidane`, runs in Testcontainers in
   Tests that use `FirestoreEmulatorContainer` keep their code and change the image name. This
   needs an image newer than v0.4.0: the release after v0.4.0 is the first to have it.
 - **As a generic container**, with the image's own command and the last line of its banner. This
-  works with the published images too (tested with v0.4.0).
+  works with the published images too (tested with v0.4.0), and in Testcontainers for Python,
+  which has no Firestore module.
 
 Either way the image is the static hidane binary on an empty base. v0.4.0 is a 4.9 MB download
 for linux/amd64, against 446 MB for `gcr.io/google.com/cloudsdktool/google-cloud-cli:emulators`,
@@ -28,9 +29,9 @@ container tests also run against the published v0.4.0 image.
 | Java | `org.testcontainers:testcontainers-gcloud`, `FirestoreEmulatorContainer` | in place of the Cloud SDK image (newer than v0.4.0) | Testcontainers 2.0.5, `google-cloud-firestore` 3.43.0 ([`testcontainers/java`](../testcontainers/java/)) |
 | Node | `@testcontainers/gcloud`, `FirestoreEmulatorContainer` | in place of the Cloud SDK image (newer than v0.4.0) | Testcontainers 12.2.0, `firebase-admin` 14.5.0 ([`testcontainers/node`](../testcontainers/node/)) |
 | Java, Node | `GenericContainer` | the image's own command (published images too) | the same projects, with the image from source and v0.4.0 |
+| Python | `testcontainers`, `DockerContainer` (no Firestore module: `DatastoreContainer` is for Datastore) | the image's own command (published images too) | Testcontainers 4.15.0, `google-cloud-firestore` 2.34.1, with the image from source and v0.4.0 ([`testcontainers/python`](../testcontainers/python/)) |
 | Go | `modules/gcloud/firestore` | not tested yet: it starts the image with the same command line as Java and Node | |
 | .NET | `Testcontainers.Firestore` | does not work yet: the module replaces the image's entrypoint with `gcloud`, which hidane's image does not have | |
-| Python | no Firestore module (`DatastoreContainer` is for Datastore) | as a `DockerContainer`, the generic way: not tested yet | |
 
 ## Java
 
@@ -112,6 +113,37 @@ const hidane = await new GenericContainer("ghcr.io/hidane-dev/hidane:0.4")
 process.env.FIRESTORE_EMULATOR_HOST = `${hidane.getHost()}:${hidane.getMappedPort(8080)}`;
 ```
 
+## Python
+
+Testcontainers for Python has no Firestore module. hidane's image runs as a generic container,
+which works with the published v0.4.0 image too:
+
+```python
+import os
+
+from google.cloud import firestore
+from testcontainers.core.container import DockerContainer
+from testcontainers.core.wait_strategies import LogMessageWaitStrategy
+
+with (
+    DockerContainer("ghcr.io/hidane-dev/hidane:0.4")
+    .with_exposed_ports(8080)
+    .waiting_for(LogMessageWaitStrategy("Dev App Server is now running"))
+) as hidane:
+    os.environ["FIRESTORE_EMULATOR_HOST"] = (
+        f"{hidane.get_container_host_ip()}:{hidane.get_exposed_port(8080)}"
+    )
+    db = firestore.Client(project="demo-test")
+    # …
+```
+
+`LogMessageWaitStrategy` takes a regular expression. Setting `FIRESTORE_EMULATOR_HOST` before the
+client is created also tells it not to look for credentials. In pytest, a module- or
+session-scoped fixture that yields from the `with` block starts one container for many tests, as
+[`testcontainers/python`](../testcontainers/python/test_testcontainers.py) does; the emulator's
+`DELETE /emulator/v1/projects/{project}/databases/(default)/documents` empties the database between
+tests.
+
 ## The command line the modules pass
 
 The Firestore modules of Java, Node and Go expose port 8080, start the image with the command
@@ -151,6 +183,8 @@ shows how):
 ```sh
 cd testcontainers/java && HIDANE_IMAGE=ghcr.io/hidane-dev/hidane:0.4.0 mvn -B test -Dtest=GenericContainerTest
 cd testcontainers/node && npm ci && HIDANE_IMAGE=ghcr.io/hidane-dev/hidane:0.4.0 GENERIC_ONLY=1 npm test
+cd testcontainers/python && python3 -m venv .venv && .venv/bin/pip install --require-hashes -r requirements.txt \
+  && HIDANE_IMAGE=ghcr.io/hidane-dev/hidane:0.4.0 .venv/bin/pytest
 ```
 
 Without `-Dtest` / `GENERIC_ONLY`, the gcloud module tests run too, which need an image newer than

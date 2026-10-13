@@ -1,0 +1,4 @@
+# What installing and running the test projects leaves behind (node_modules/, target/ and
+# __pycache__/ are in the repository's .gitignore).
+.venv/
+.pytest_cache/
