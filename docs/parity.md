@@ -53,7 +53,8 @@ How to read them:
   hidane's crates directly, as for value ordering and the Security Rules engine). Where a
   recording was made over another transport, the list says so.
 - **Oracle**: the version of the official emulator a recording names (its `oracle` header, or
-  its file name in `results/`); "not stated" where it names none.
+  its file name in `results/`); "not stated" where it names none. The
+  [Oracle Corpus manifest](oracle-corpus.md) gives the version of those too, from git history.
 - **SDK transcripts**: `tools/oracle/sdk_*.mjs` and `tools/oracle/webchannel/*.js` run the same
   steps through an SDK against both emulators and print a transcript, kept in `results/` as
   `<name>-official-v<version>.json` and `<name>-hidane.json` (for export and import, also each

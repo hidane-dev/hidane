@@ -23,6 +23,9 @@ jobs:
       # docs/parity.md, hidane.dev's Parity section and its badge follow the fixtures; the tests
       # below replaying every fixture is what makes the counts matching answers.
       - run: python3 tools/parity/table.py --check
+      # docs/oracle-corpus.json lists the same recordings with their provenance (needs no history:
+      # its git-derived fields are kept while a recording is unchanged).
+      - run: python3 tools/oracle/corpus.py --check
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
