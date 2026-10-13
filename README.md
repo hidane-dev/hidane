@@ -64,8 +64,9 @@ hidane benchmark --compare-official --official-download -- npm test \
   | hidane benchmark savings - --runs-per-month 600
 ```
 
-One cost the benchmark does not measure yet (#50) is writing while a listener is attached. In
-that case, the official emulator's batch writes slow down as documents accumulate
+Writing while a listener is attached is in the benchmark (`listen_writes`) but not yet in a
+published result (#50). Measured before, not side by side, the official emulator's batch writes
+slow down as documents accumulate
 ([firebase-tools#3477](https://github.com/firebase/firebase-tools/issues/3477)), while hidane's
 stay flat per batch ([`docs/why.md`](docs/why.md#3-writes-slow-down-while-a-listener-is-attached)).
 

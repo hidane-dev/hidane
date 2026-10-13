@@ -18,6 +18,7 @@ const SCENARIOS: &[(&str, &str)] = &[
     ("datasets", "Dataset sizes"),
     ("ci", "CI workload"),
     ("ci_firebase", "CI workload through firebase-tools"),
+    ("listen_writes", "Writes with a listener attached"),
     ("command", "Command"),
 ];
 
@@ -155,6 +156,26 @@ fn summary(result: &Value) -> Vec<String> {
         &format!(
             "wall-clock time of `firebase emulators:exec` around the same workload ({} tests)",
             thousands(scenarios["ci_firebase"]["tests"].as_u64().unwrap_or(0))
+        ),
+    ));
+    let listen = &scenarios["listen_writes"];
+    let listened = format!(
+        "{} documents in commits of {} with a listener on the collection",
+        thousands(listen["documents"].as_u64().unwrap_or(0)),
+        listen["batch"].as_u64().unwrap_or(0)
+    );
+    lines.push(sentence(
+        result,
+        "listen_writes",
+        "writes",
+        &format!("time to write {listened}"),
+    ));
+    lines.push(sentence(
+        result,
+        "listen_writes",
+        "batch_growth",
+        &format!(
+            "growth of a commit's time per 10,000 documents already stored, writing {listened},"
         ),
     ));
     lines.push(sentence(
@@ -456,6 +477,14 @@ fn scenario_line(scenario: &str, p: &Value) -> String {
             n("runs"),
             n("seed_documents"),
             thousands(n("tests"))
+        ),
+        "listen_writes" => format!(
+            "A fresh process per run ({} warm-up, {} measured per target): a Listen stream on the whole collection over its own connection, read as it arrives, then {} documents written in commits of {}, one at a time, over another; the run ends when the listener's snapshot holds every document. Without a listener, the same writes are `seed_{}` under Dataset sizes when that size is measured.",
+            n("warmup"),
+            n("runs"),
+            thousands(n("documents")),
+            n("batch"),
+            n("documents")
         ),
         "command" => format!(
             "A fresh process per run ({} warm-up, {} measured per target); the command runs with FIRESTORE_EMULATOR_HOST pointing at it.",

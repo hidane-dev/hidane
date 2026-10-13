@@ -37,6 +37,7 @@ const TINY: &str = r#"{
     "datasets": {"batch": 100, "query_warmup": 1, "query_runs": 2,
                  "sizes": [{"documents": 100, "warmup": 0, "runs": 2}]},
     "ci": {"warmup": 0, "runs": 2, "tests": 3, "seed_documents": 10},
+    "listen_writes": {"warmup": 0, "runs": 2, "documents": 2000, "batch": 500},
     "command": {"warmup": 0, "runs": 2}
   }
 }"#;
@@ -171,6 +172,16 @@ fn a_hidane_run_matches_the_schema_and_renders_from_its_json() {
     assert_eq!(n("datasets", "seed_100"), Some(2));
     assert_eq!(n("datasets", "query_100"), Some(4));
     assert_eq!(n("ci", "total"), Some(2));
+    for metric in [
+        "writes",
+        "delivered",
+        "batch_first_decile",
+        "batch_last_decile",
+        "batch_growth",
+        "rss_after",
+    ] {
+        assert_eq!(n("listen_writes", metric), Some(2), "{metric}");
+    }
     let time_to_port = r["startup"]["hidane"]["time_to_port"]["stats"]["median"]
         .as_f64()
         .unwrap();
@@ -207,6 +218,11 @@ fn a_hidane_run_matches_the_schema_and_renders_from_its_json() {
          accepted connections was "
     ));
     assert!(md.contains(" for hidane."));
+    assert!(md.contains("## Writes with a listener attached"));
+    assert!(md.contains(
+        "median time to write 2,000 documents in commits of 500 with a listener on the \
+         collection was "
+    ));
     assert!(md.contains("## Skipped"));
     // `--format markdown` is the same rendering of the same JSON.
     let direct = benchmark(&["--render", "result.json"], &dir);
@@ -417,6 +433,62 @@ fn operator_files_and_flags_are_checked() {
     let out = benchmark(&["--config", "bad.json"], &dir);
     assert_eq!(out.status.code(), Some(2));
     assert!(String::from_utf8_lossy(&out.stderr).contains("unknown key \"run\""));
+    let _ = std::fs::remove_dir_all(dir);
+}
+
+/// #49 and #30: batch writes with a listener on the whole collection do not slow down as
+/// documents accumulate (firebase-tools#3477, docs/why.md §3). The listen_writes scenario writes
+/// 100,000 documents in commits of 500 while a Listen stream on the collection takes every
+/// change. The checks compare the run with itself, not with milliseconds, so a slow runner or a
+/// debug build passes them: the median commit time of the last tenth of the batches stays within
+/// twice the first tenth's, and the growth over the whole run (Theil–Sen, per 10,000 documents
+/// stored, times 10) stays under one early batch's time. hidane's batches are flat (a ratio near 1, a
+/// growth near 0); a commit whose cost grows with the documents stored, as the official
+/// emulator's does (about +168 ms per 10,000 documents in Phase 0), fails them.
+#[test]
+fn writes_with_a_listener_attached_stay_flat() {
+    let dir = scratch("listen");
+    std::fs::write(
+        dir.join("listen.json"),
+        r#"{"scenarios": {"listen_writes": {"warmup": 0, "runs": 1, "documents": 100000, "batch": 500}}}"#,
+    )
+    .unwrap();
+    let out = benchmark(
+        &[
+            "--config",
+            "listen.json",
+            "--scenarios",
+            "listen_writes",
+            "--no-imds",
+            "--out",
+            "result.json",
+        ],
+        &dir,
+    );
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let result: Value =
+        serde_json::from_str(&std::fs::read_to_string(dir.join("result.json")).unwrap()).unwrap();
+    validate(&result);
+    let r = &result["results"]["listen_writes"]["hidane"];
+    let median = |metric: &str| r[metric]["stats"]["median"].as_f64().unwrap();
+    let (first, last, growth) = (
+        median("batch_first_decile"),
+        median("batch_last_decile"),
+        median("batch_growth"),
+    );
+    assert!(
+        last <= 2.0 * first,
+        "the last tenth of the batches took {last} ms (median), the first {first} ms"
+    );
+    assert!(
+        growth * 10.0 < first,
+        "batches grew by {growth} ms per 10,000 documents stored; the first took {first} ms"
+    );
+    assert!(median("delivered") > 0.0);
     let _ = std::fs::remove_dir_all(dir);
 }
 

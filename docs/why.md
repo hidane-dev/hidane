@@ -75,7 +75,10 @@ write. The Emulator UI keeps listeners open, which matches the "only slow when t
 comments in the issue. hidane is designed so that a commit costs only what it changes
 (see [ROADMAP](ROADMAP.md) and ADR 0002): the same 100,000 documents with a listener on the whole
 collection take 4.9 s on `main`, about 10.5 ms per batch from start to end
-(`results/listen-batch-writes-hidane.csv`, #30).
+(`results/listen-batch-writes-hidane.csv`, #30). These figures come from different machines and
+clients. The canonical benchmark's `listen_writes` scenario measures the same case for both
+emulators side by side ([`bench/`](../bench/README.md#writes-with-a-listener-attached)); its
+figures will replace these once a published result has them (#50).
 
 ## What hidane is not
 

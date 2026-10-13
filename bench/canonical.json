@@ -1,5 +1,5 @@
 {
-  "$comment": "The canonical parameters of hidane's side-by-side benchmark (bench/README.md). They equal `hidane benchmark`'s built-in defaults; a test keeps the two in step. Changing what a scenario does or measures, or any value here, changes what the numbers mean: bump benchmark_version.",
+  "$comment": "The canonical parameters of hidane's side-by-side benchmark (bench/README.md). They equal `hidane benchmark`'s built-in defaults; a test keeps the two in step. Changing what an existing scenario does or measures, or any of its values here, changes what its numbers mean: bump benchmark_version. A new scenario, run after the existing ones, leaves their numbers comparable and keeps the version (bench/README.md, Versions).",
   "benchmark_version": "1",
   "official": {
     "version": "1.22.0",
@@ -24,6 +24,7 @@
     },
     "ci": { "warmup": 3, "runs": 10, "tests": 200, "seed_documents": 100 },
     "ci_firebase": { "warmup": 1, "runs": 5, "tests": 200, "seed_documents": 100 },
+    "listen_writes": { "warmup": 0, "runs": 3, "documents": 100000, "batch": 500 },
     "command": { "warmup": 1, "runs": 5 }
   },
   "stability": {
@@ -50,6 +51,7 @@
       },
       "ci": { "warmup": 0, "runs": 2, "tests": 20, "seed_documents": 20 },
       "ci_firebase": { "warmup": 0, "runs": 1, "tests": 20, "seed_documents": 20 },
+      "listen_writes": { "warmup": 0, "runs": 1, "documents": 10000 },
       "command": { "warmup": 0, "runs": 1 }
     }
   }
