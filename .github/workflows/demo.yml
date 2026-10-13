@@ -68,26 +68,26 @@ jobs:
         run: |
           echo "$PWD/node_modules/.bin" >> "$GITHUB_PATH"
           export PATH="$PWD/node_modules/.bin:$PATH"
-          firebase emulators:exec --only firestore "npm test" 2>&1 | grep -E " (pass|fail) [0-9]+$"
-          hidane exec -- firebase emulators:exec --only firestore "npm test" 2>&1 | grep -E " (pass|fail) [0-9]+$"
+          firebase emulators:exec "npm test" 2>&1 | grep -w pass
+          hidane exec -- firebase emulators:exec "npm test" 2>&1 | grep -w pass
       - name: The machine and the versions
         run: |
           {
-            echo "## The recording's machine"
-            echo
-            echo '```'
-            echo "runner: $RUNNER_OS $ImageOS $ImageVersion, $(nproc) vCPUs, $(free -g | awk '/^Mem:/ { print $2 }') GiB"
+            echo "runner: $ImageOS $ImageVersion, $(nproc) vCPUs, $(free -g | awk '/^Mem:/ { print $2 }') GiB"
             grep -m1 'model name' /proc/cpuinfo
             java -version 2>&1 | head -1
             echo "node $(node --version), firebase-tools $(firebase --version)"
             hidane --version
             vhs --version
-            echo '```'
-          } >> "$GITHUB_STEP_SUMMARY"
+          } > machine.txt
+          cat machine.txt
+          { echo "## The recording's machine"; echo; echo '```'; cat machine.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       - name: Record
         run: vhs demo.tape
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: demo
-          path: docs/assets/demo/demo.gif
+          path: |
+            docs/assets/demo/demo.gif
+            docs/assets/demo/machine.txt
           if-no-files-found: error
