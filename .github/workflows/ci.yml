@@ -33,6 +33,10 @@ jobs:
       # docs/compatibility.json and the tables at the top of docs/compatibility.md sum up the
       # above, the browser and Functions results and the integration tests for this tree.
       - run: python3 tools/parity/compatibility.py --check
+      # tools/upstream/watch.json, what the Upstream workflow watches, names the verified
+      # versions above and the pinned official emulator (tools/upstream/README.md).
+      - run: python3 -I -B -m unittest discover -s tools/upstream -p "test_*.py"
+      - run: python3 -I -B tools/upstream/watch.py check
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy

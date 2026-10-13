@@ -55,8 +55,8 @@ next release will download).
 
 ## The workflow
 
-It runs daily, by hand (`workflow_dispatch`), and on pull requests that change the watcher, the
-watch list, or what it is checked against:
+It runs daily, by hand (`workflow_dispatch`), and on pull requests that change the watcher or
+the watch list; CI runs the watcher's tests and `watch.py check` on every pull request:
 
 - **watch list** runs the watcher's tests (`test_watch.py`, offline) and
   `python3 tools/upstream/watch.py check`, which fails when `watch.json` does not name the

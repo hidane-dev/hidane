@@ -5,8 +5,8 @@ name: Upstream
 # latest and prerelease channels, read from the registries' public metadata only. The job summary
 # lists what is new, and the report is uploaded.
 #
-# It runs daily, by hand, and for changes to the watcher, the watch list or what it is checked
-# against. It only reads: it never pushes, and needs no secret.
+# It runs daily, by hand, and for changes to the watcher (CI checks the watch list against the
+# verified versions on every pull request). It only reads: it never pushes, and needs no secret.
 
 on:
   schedule:
@@ -16,10 +16,6 @@ on:
     paths:
       - "tools/upstream/**"
       - ".github/workflows/upstream.yml"
-      - "crates/hidane/src/project/verified.rs"
-      - "docs/sdk-certification.json"
-      - "docs/compatibility.json"
-      - ".github/actions/official-emulator/pinned.sh"
 
 permissions:
   contents: read
