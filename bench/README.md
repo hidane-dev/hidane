@@ -146,7 +146,8 @@ Notes:
   against both.
 - **Pinned versions.** The official jar is the one firebase-tools 15.33.0 downloads, checked
   against its SHA-256 (`9b6498b7…5166c`, `canonical.json`); the result records the hash of the
-  jar used and of the hidane binary measured, the Java, and the commit of each binary.
+  jar used and of the hidane binary measured, the Java, and the commit of each binary (required
+  in a nightly or release result, [Provenance](#provenance)).
 
 ### Cold and warm
 
@@ -279,6 +280,24 @@ from `main`. Without `--official-jar`, the pinned jar is downloaded into `--cach
 `~/.cache/hidane-bench`) and checked against its SHA-256. Without `--engine`, `run.sh` builds
 hidane from the checkout and reads the commit from git; without `--hidane`, it measures the
 engine binary.
+
+### Provenance
+
+A nightly or release result goes into the canonical history, so it must trace every number to
+the binaries behind it: the commit of the hidane measured (`targets.hidane.git_commit`) and of
+the engine that measured it (`benchmark.engine.git_commit`), each a full SHA, 40 lowercase
+hexadecimal digits. The engine refuses a `--kind nightly` or `--kind release` run that does not
+measure hidane, or lacks `--hidane-commit` or `--engine-commit` in that form: it exits 2 before
+measuring anything and writes no result. The schema holds such a result to the same rule (an
+`if`/`then` on `benchmark.kind`). Local and pull-request runs may leave the commits out, or give
+them in any form.
+
+Where the commits come from is the operator's job. The canonical infrastructure takes a nightly
+run's from the commit of `main` it builds; for a release run, the measured hidane's commit is the
+source commit named by the published binary's build provenance attestation (signed by
+`release.yml` at the release tag), checked against the commit the tag names. Its results, and any
+correction made to one after publication, are listed with their evidence in
+[hidane-dev/benchmark-results](https://github.com/hidane-dev/benchmark-results) (`PROVENANCE.md`).
 
 `run.sh` writes exactly one `<name>.json` and one `<name>.md` into `--out` (name: `--name`, or
 `<UTC date>-<kind>`). It exits 0 when the run completed, stable or not; 1 when it completed but

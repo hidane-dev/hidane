@@ -51,7 +51,10 @@
           "additionalProperties": false,
           "properties": {
             "version": { "type": "string" },
-            "git_commit": { "$ref": "#/$defs/stringOrNull" },
+            "git_commit": {
+              "description": "The commit the engine was built from (--engine-commit). A full SHA in a nightly or release result.",
+              "$ref": "#/$defs/stringOrNull"
+            },
             "build_profile": { "enum": ["debug", "release"] },
             "binary_sha256": { "$ref": "#/$defs/sha256" }
           }
@@ -315,7 +318,10 @@
           "additionalProperties": false,
           "properties": {
             "version": { "type": "string" },
-            "git_commit": { "$ref": "#/$defs/stringOrNull" },
+            "git_commit": {
+              "description": "The commit the hidane measured was built from (--hidane-commit). A full SHA in a nightly or release result.",
+              "$ref": "#/$defs/stringOrNull"
+            },
             "git_dirty": { "type": ["boolean", "null"] },
             "build_profile": { "$ref": "#/$defs/stringOrNull" },
             "binary_sha256": { "$ref": "#/$defs/sha256" },
@@ -371,6 +377,43 @@
       }
     }
   },
+  "allOf": [
+    {
+      "description": "A nightly or release result belongs to the canonical history, which traces every number to the commits it measured and was measured with: it measures hidane, and records the commit of the hidane measured and of the engine in full. Local and pull-request results may leave them out.",
+      "if": {
+        "required": ["benchmark"],
+        "properties": {
+          "benchmark": {
+            "required": ["kind"],
+            "properties": { "kind": { "enum": ["nightly", "release"] } }
+          }
+        }
+      },
+      "then": {
+        "required": ["targets"],
+        "properties": {
+          "benchmark": {
+            "required": ["engine"],
+            "properties": {
+              "engine": {
+                "required": ["git_commit"],
+                "properties": { "git_commit": { "$ref": "#/$defs/commit" } }
+              }
+            }
+          },
+          "targets": {
+            "required": ["hidane"],
+            "properties": {
+              "hidane": {
+                "required": ["git_commit"],
+                "properties": { "git_commit": { "$ref": "#/$defs/commit" } }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "scenario": { "enum": ["startup", "memory", "operations", "datasets", "ci", "ci_firebase", "listen_writes", "command"] },
     "count": { "type": "integer", "minimum": 0 },
@@ -379,6 +422,11 @@
     "numberOrNull": { "type": ["number", "null"] },
     "stringOrNull": { "type": ["string", "null"] },
     "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "commit": {
+      "description": "A full git commit SHA: 40 lowercase hexadecimal digits.",
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
     "sha256OrNull": {
       "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }]
     },

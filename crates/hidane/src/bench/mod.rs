@@ -119,7 +119,8 @@ struct Args {
     /// The hidane binary to measure (default: this one).
     #[arg(long, value_name = "PATH")]
     hidane: Option<PathBuf>,
-    /// The git commit the hidane binary was built from, to record.
+    /// The git commit the hidane binary was built from, to record (in full; required for a
+    /// nightly or release run).
     #[arg(long, value_name = "SHA")]
     hidane_commit: Option<String>,
     /// The hidane binary was built from a working tree with uncommitted changes.
@@ -144,7 +145,8 @@ struct Args {
     /// firebase-tools' `firebase`, for the ci_firebase scenario (skipped without it).
     #[arg(long, value_name = "PATH")]
     firebase: Option<PathBuf>,
-    /// The git commit this binary (the engine) was built from, to record.
+    /// The git commit this binary (the engine) was built from, to record (in full; required for a
+    /// nightly or release run).
     #[arg(long, value_name = "SHA")]
     engine_commit: Option<String>,
     /// Scenarios to run (default: all but command; with a command, only command).
@@ -172,7 +174,8 @@ struct Args {
     /// A few runs of everything, to check the setup.
     #[arg(long)]
     quick: bool,
-    /// What kind of run this is, to record.
+    /// What kind of run this is, to record. Nightly and release runs are the canonical
+    /// history's: they need --hidane-commit and --engine-commit.
     #[arg(long, value_enum, default_value = "local")]
     kind: RunKind,
     /// The machine's name in result histories, chosen by the operator.
@@ -785,7 +788,55 @@ fn command_label(command: &[OsString]) -> String {
     }
 }
 
+/// A full git commit SHA, as a canonical result records it.
+fn is_commit(sha: &str) -> bool {
+    sha.len() == 40 && sha.bytes().all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f'))
+}
+
+/// A nightly or release result goes into the canonical history, which traces every number to the
+/// commit of the hidane measured and of the engine that measured it (bench/README.md,
+/// Provenance). Such a run measures hidane and is given both commits in full, or it does not
+/// start.
+fn check_provenance(args: &Args) -> Result<(), String> {
+    let kind = match args.kind {
+        RunKind::Nightly => "nightly",
+        RunKind::Release => "release",
+        RunKind::Local | RunKind::PullRequest => return Ok(()),
+    };
+    if !args.compare_official && args.target == Which::Official {
+        return Err(format!(
+            "a {kind} run measures hidane (and records its commit); --target official measures \
+             the official emulator alone"
+        ));
+    }
+    for (flag, what, value) in [
+        (
+            "--hidane-commit",
+            "the hidane it measures",
+            &args.hidane_commit,
+        ),
+        ("--engine-commit", "this engine", &args.engine_commit),
+    ] {
+        match value.as_deref() {
+            Some(sha) if is_commit(sha) => {}
+            Some(sha) => {
+                return Err(format!(
+                    "a {kind} run records full commits: {flag} {sha:?} is not 40 lowercase \
+                     hexadecimal digits"
+                ));
+            }
+            None => {
+                return Err(format!(
+                    "a {kind} run records the commit {what} was built from: pass {flag} <SHA>"
+                ));
+            }
+        }
+    }
+    Ok(())
+}
+
 fn run(args: &Args) -> Result<ExitCode, String> {
+    check_provenance(args)?;
     let begun = Instant::now();
     let timestamp = utc_now();
     let (params, config_sha256, overrides) = params(args)?;
