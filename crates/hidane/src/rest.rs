@@ -103,6 +103,14 @@ pub async fn handle(
         }
         None => None,
     };
+    // The official emulator trims whitespace (Unicode's White_Space, as `str::trim`) around
+    // every segment of the path (`tools/oracle/rest.py`).
+    for segment in &mut segments {
+        let trimmed = segment.trim();
+        if trimmed.len() != segment.len() {
+            *segment = trimmed.to_owned();
+        }
+    }
     let parts: Vec<&str> = segments.iter().map(String::as_str).collect();
     let [
         "projects",

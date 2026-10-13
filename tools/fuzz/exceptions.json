@@ -60,6 +60,53 @@
    "kinds": ["status"],
    "official": {"status": 200},
    "hidane": {"status": 400, "code": "^INVALID_ARGUMENT$", "message": "^(Nested arrays are not allowed|Vector cannot contain NaN values\\.)"}
+  },
+  {
+   "id": "lone-surrogate",
+   "exception": "D083",
+   "why": "A string with an unpaired surrogate cannot be held in hidane's UTF-8 strings, so the body does not parse; the official emulator stores it, or refuses the request for another reason. Matched on the request: the same answers for a number given as a string would be a bug.",
+   "kinds": ["status", "message"],
+   "hidane": {"status": 400, "code": "^INVALID_ARGUMENT$", "message": "^Payload isn't valid for request\\.$"},
+   "request": {"predicates": ["lone-surrogate"]}
+  },
+  {
+   "id": "lenient-timestamp",
+   "exception": "D084",
+   "why": "A timestamp that is not RFC 3339 (month 13, hour 24, a field of another width) is refused by hidane; the official emulator rolls it over and stores it, or answers what the time it read gives (a precondition, a read time). Matched on the request, as above.",
+   "kinds": ["status", "message"],
+   "hidane": {"status": 400, "code": "^INVALID_ARGUMENT$", "message": "^Payload isn't valid for request\\.$"},
+   "request": {"predicates": ["lenient-timestamp"]}
+  },
+  {
+   "id": "failed-query-lock",
+   "exception": "D085",
+   "why": "A query that began a read-write transaction and failed a later check leaves that transaction's lock on the official emulator, so a later write waits and times out; hidane began nothing. Matched on such a query earlier in the case: a lock timeout without one would be a lock hidane misses.",
+   "kinds": ["status"],
+   "official": {"status": 409, "code": "^ABORTED$", "message": "^Transaction lock timeout\\.$"},
+   "hidane": {"status": 200},
+   "earlier": {"method": "^POST$", "path": ":run(Aggregation)?Query$", "predicates": ["read-write-transaction"], "status": 400}
+  },
+  {
+   "id": "form-encoded-post",
+   "exception": "D086",
+   "why": "The official emulator answers a bare 404 to every form-encoded POST; hidane reads the body as JSON. Matched on the request's method and content type.",
+   "official": {"status": 404, "code": "^$"},
+   "request": {"method": "^POST$", "headers": {"Content-Type": "(?i)^(application/x-www-form-urlencoded|multipart/form-data)"}}
+  },
+  {
+   "id": "long-request-line",
+   "exception": "D087",
+   "why": "The official emulator answers a bare 404 to a request line longer than 4096 bytes; hidane serves it. Matched on the request line's length.",
+   "official": {"status": 404, "code": "^$"},
+   "request": {"predicates": ["long-request-line"]}
+  },
+  {
+   "id": "collection-group-under-document",
+   "exception": "D088",
+   "why": "The official emulator refuses a collection group query under a document unless it is an ascending key scan; production's documented API allows it, and hidane runs it (or refuses it for another reason, as production would). Matched on a query whose parent is a document.",
+   "kinds": ["status", "message"],
+   "official": {"status": 400, "code": "^FAILED_PRECONDITION$", "message": "^collection group queries are only allowed if they're at the root or they're an ascending primary key scan$"},
+   "request": {"method": "^POST$", "path": "/documents/[^?]+:run(Aggregation)?Query$"}
   }
  ]
 }

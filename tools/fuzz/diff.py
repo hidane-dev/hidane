@@ -14,7 +14,9 @@ first step whose answers differ and classifies that difference:
 Each difference gets a signature that does not depend on the seed: the same problem found by
 other inputs gets the same one, so issues and reports deduplicate on it. `Exceptions` drops the
 differences `docs/parity-exceptions.md` accepts, by the rules in `exceptions.json`, each tied
-to an entry of `docs/parity-exceptions.json`. Stdlib only.
+to an entry of `docs/parity-exceptions.json`; a rule can look at the request too, since one
+signature (an official 200 against hidane's `Payload isn't valid for request.`) can come from
+an accepted difference and from a bug. Stdlib only.
 """
 
 import hashlib
@@ -23,7 +25,7 @@ import re
 import sys
 import uuid
 from pathlib import Path
-from urllib.parse import quote
+from urllib.parse import parse_qsl, quote
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools" / "oracle"))
@@ -345,6 +347,100 @@ def hidane_reasons_subset(official, hidane):
 RELATIONS = {"hidane-reasons-subset": hidane_reasons_subset}
 
 
+def body_of(step):
+    """A step's body as JSON values: `body`, or `raw` when it parses (a raw body can hold escapes
+    such as `\\ud800` that only exist once parsed), else None."""
+    if "body" in step:
+        return step["body"]
+    try:
+        return json.loads(step["raw"]) if "raw" in step else None
+    except ValueError:
+        return None
+
+
+def strings(value, keys=True):
+    """Every string in a JSON value, its object keys too unless `keys` is false."""
+    if isinstance(value, str):
+        yield value
+    elif isinstance(value, list):
+        for item in value:
+            yield from strings(item, keys)
+    elif isinstance(value, dict):
+        for key, item in value.items():
+            if keys:
+                yield key
+            yield from strings(item, keys)
+
+
+def query_values(step):
+    """The values of the query parameters of a step's path, decoded."""
+    _, _, query = step["path"].partition("?")
+    return [value for _, value in parse_qsl(query, keep_blank_values=True)]
+
+
+def lone_surrogate(step):
+    """A string of the body, a key or a value, holds an unpaired surrogate (`\\ud800`). JSON can
+    escape one; once parsed, a pair is one character, so what is left in U+D800 to U+DFFF is
+    unpaired."""
+    return any(any(0xD800 <= ord(c) <= 0xDFFF for c in s) for s in strings(body_of(step)))
+
+
+LOOSE_TIME = re.compile(r"(\d+)-(\d+)-(\d+)T(\d+):(\d+):(\d+)(\.\d*)?(Z|[+-](\d+):(\d+))")
+STRICT_TIME = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})")
+
+
+def strict_time(text):
+    """Whether `text` is an RFC 3339 timestamp: four digits for the year and two for each other
+    field, each in range (a second of 60 is a leap second), an offset of at most 23:59."""
+    match = LOOSE_TIME.fullmatch(text)
+    if not match or not STRICT_TIME.fullmatch(text):
+        return False
+    year, month, day, hour, minute, second = (int(match.group(n)) for n in range(1, 7))
+    leap = year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
+    days = [31, 29 if leap else 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    offset = (0, 0) if match.group(8) == "Z" else (int(match.group(9)), int(match.group(10)))
+    return (1 <= month <= 12 and 1 <= day <= days[month - 1] and hour <= 23 and minute <= 59
+            and second <= 60 and offset[0] <= 23 and offset[1] <= 59)
+
+
+def lenient_timestamp(step):
+    """A string value of the body, or a query parameter's value, is shaped like a timestamp
+    (digits, `-`, `T`, `:`, an optional fraction, `Z` or an offset) but is not RFC 3339: a field
+    out of range (month 13, hour 24, an offset of 24 hours) or of another width (`2020-1-01`,
+    `00.Z`)."""
+    texts = list(strings(body_of(step), keys=False)) + query_values(step)
+    return any(LOOSE_TIME.fullmatch(t) and not strict_time(t) for t in texts)
+
+
+# The length of the fuzzer's project IDs (`project()`), which replace `{project}` in a path.
+PROJECT_LENGTH = len("rest-000000")
+
+
+def long_request_line(step):
+    """The request line (`METHOD /path?query HTTP/1.1`) is longer than 4096 bytes, each
+    `{project}` of the path counted as a project ID of the fuzzer's. Paths are ASCII
+    (percent-encoded)."""
+    path = step["path"].replace("{project}", "p" * PROJECT_LENGTH)
+    return len(f"{step['method']} {path} HTTP/1.1") > 4096
+
+
+def read_write_transaction(step):
+    """The body begins a read-write transaction (`newTransaction: {readWrite: …}`)."""
+    body = body_of(step)
+    new = body.get("newTransaction") if isinstance(body, dict) else None
+    return isinstance(new, dict) and "readWrite" in new
+
+
+# Named predicates on a request (a step of a case: its method, path, headers and body), which a
+# rule's `request` and `earlier` list under `predicates`.
+PREDICATES = {
+    "lone-surrogate": lone_surrogate,
+    "lenient-timestamp": lenient_timestamp,
+    "long-request-line": long_request_line,
+    "read-write-transaction": read_write_transaction,
+}
+
+
 class Exceptions:
     """The differences docs/parity-exceptions.md accepts, as rules (`exceptions.json`).
 
@@ -353,11 +449,20 @@ class Exceptions:
     regular expression on the step's verb), `detail` (one on where the answers differ), for
     `official` and `hidane` the `status` (a number or a list of them, `null` for no answer), the
     error `code` and `message`, and the `value` where a `data` difference is (regular
-    expressions), and a `relation` between the two answers (`RELATIONS`). Everything a rule
-    gives must match."""
+    expressions), and a `relation` between the two answers (`RELATIONS`).
 
-    KEYS = {"id", "exception", "why", "kinds", "areas", "verbs", "detail", "official", "hidane", "relation"}
+    `request` says what the request of the step that differs is: its `method` and `path`
+    (regular expressions; the path as the case gives it, with `{project}` and the other
+    placeholders), `headers` (a regular expression per header, names in any case; a header the
+    step does not set is the empty string) and `predicates` (names from `PREDICATES`, each of
+    which must hold). `earlier` says the same of some step before that one, and the `status` of
+    its answer (the same on both sides: the answers differ only later). Everything a rule gives
+    must match; a rule with `request` or `earlier` never matches without the case."""
+
+    KEYS = {"id", "exception", "why", "kinds", "areas", "verbs", "detail", "official", "hidane", "relation",
+            "request", "earlier"}
     SIDE_KEYS = {"status", "code", "message", "value"}
+    REQUEST_KEYS = {"method", "path", "headers", "predicates"}
 
     def __init__(self, rules):
         self.rules = rules
@@ -392,24 +497,56 @@ class Exceptions:
                     problems.append(f"rule {rid}: unknown keys in `{side}`: {sorted(set(spec) - self.SIDE_KEYS)}")
                 for key in ("code", "message", "value"):
                     if key in spec:
-                        try:
-                            re.compile(spec[key])
-                        except re.error as err:
-                            problems.append(f"rule {rid}: `{side}.{key}` is not a regular expression ({err})")
+                        problems += self.regex(rid, f"{side}.{key}", spec[key])
             for key in ("verbs", "detail"):
                 if key in rule:
-                    try:
-                        re.compile(rule[key])
-                    except re.error as err:
-                        problems.append(f"rule {rid}: `{key}` is not a regular expression ({err})")
+                    problems += self.regex(rid, key, rule[key])
+            for key in ("request", "earlier"):
+                if key in rule:
+                    problems += self.check_request(rid, key, rule[key])
             if "relation" in rule and rule["relation"] not in RELATIONS:
                 problems.append(f"rule {rid}: unknown relation {rule['relation']!r}")
             if not any(k in rule for k in ("official", "hidane", "verbs")):
                 problems.append(f"rule {rid}: too broad; give `official`, `hidane` or `verbs`")
         return problems
 
-    def match(self, area, difference):
-        """The first rule that accepts the difference, or None."""
+    @staticmethod
+    def regex(rid, where, pattern):
+        try:
+            re.compile(pattern)
+        except (re.error, TypeError) as err:
+            return [f"rule {rid}: `{where}` is not a regular expression ({err})"]
+        return []
+
+    def check_request(self, rid, key, spec):
+        if not isinstance(spec, dict):
+            return [f"rule {rid}: `{key}` must be an object"]
+        allowed = self.REQUEST_KEYS | ({"status"} if key == "earlier" else set())
+        problems = []
+        if set(spec) - allowed:
+            problems.append(f"rule {rid}: unknown keys in `{key}`: {sorted(set(spec) - allowed)}")
+        for field in ("method", "path"):
+            if field in spec:
+                problems += self.regex(rid, f"{key}.{field}", spec[field])
+        headers = spec.get("headers", {})
+        if not isinstance(headers, dict):
+            problems.append(f"rule {rid}: `{key}.headers` must map header names to regular expressions")
+        else:
+            for name, pattern in headers.items():
+                problems += self.regex(rid, f"{key}.headers.{name}", pattern)
+        predicates = spec.get("predicates", [])
+        if not isinstance(predicates, list):
+            problems.append(f"rule {rid}: `{key}.predicates` must be a list of names")
+        else:
+            for name in predicates:
+                if name not in PREDICATES:
+                    problems.append(f"rule {rid}: unknown predicate {name!r} in `{key}`")
+        return problems
+
+    def match(self, area, difference, case=None, official=None):
+        """The first rule that accepts the difference, or None. `case` is the case whose step
+        `difference["step"]` differs and `official` the official emulator's answers to its
+        steps, for the rules that look at the requests."""
         for rule in self.rules:
             if "kinds" in rule and difference["kind"] not in rule["kinds"]:
                 continue
@@ -421,8 +558,11 @@ class Exceptions:
                 continue
             if "relation" in rule and not RELATIONS[rule["relation"]](difference["official"], difference["hidane"]):
                 continue
-            if all(self.side(rule.get(side, {}), difference[side]) for side in ("official", "hidane")):
-                return rule
+            if not all(self.side(rule.get(side, {}), difference[side]) for side in ("official", "hidane")):
+                continue
+            if ("request" in rule or "earlier" in rule) and not self.requests(rule, difference, case, official):
+                continue
+            return rule
         return None
 
     @staticmethod
@@ -435,6 +575,37 @@ class Exceptions:
             if key in spec and not re.search(spec[key], answer.get(key) or ""):
                 return False
         return True
+
+    @classmethod
+    def requests(cls, rule, difference, case, official):
+        """Whether the case's requests are those `rule` gives (`request`, `earlier`)."""
+        steps = (case or {}).get("steps", [])
+        at = difference.get("step")
+        if not isinstance(at, int) or at >= len(steps):
+            return False
+        if "request" in rule and not cls.request(rule["request"], steps[at]):
+            return False
+        if "earlier" in rule:
+            spec, answers = rule["earlier"], official or []
+            wanted = spec.get("status")
+            if wanted is not None and not isinstance(wanted, list):
+                wanted = [wanted]
+            return any(cls.request(spec, steps[n])
+                       and (wanted is None or (n < len(answers) and answers[n].get("status") in wanted))
+                       for n in range(at))
+        return True
+
+    @staticmethod
+    def request(spec, step):
+        if "method" in spec and not re.search(spec["method"], step["method"]):
+            return False
+        if "path" in spec and not re.search(spec["path"], step["path"]):
+            return False
+        headers = {name.lower(): value for name, value in step.get("headers", {}).items()}
+        for name, pattern in spec.get("headers", {}).items():
+            if not re.search(pattern, headers.get(name.lower(), "")):
+                return False
+        return all(PREDICATES[name](step) for name in spec.get("predicates", []))
 
 
 def parity_entries(path=ROOT / "docs" / "parity-exceptions.json"):
