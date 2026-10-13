@@ -157,7 +157,7 @@ action opens them as a pull request. [`docs/migrating.md`](docs/migrating.md) ex
 - [Why hidane](docs/why.md) — the measurements behind the table above, with sources
 - [Compatibility](docs/compatibility.md) — transport per SDK, how each finds the emulator, which RPCs they use
 - [Migrating](docs/migrating.md) — `hidane doctor` and `hidane migrate`: checking a project that used the official emulator, and moving it to hidane
-- [Testcontainers](docs/testcontainers.md) — hidane's image in Testcontainers: in place of the Cloud SDK image in the gcloud modules (Java, Node), or as a generic container
+- [Testcontainers](docs/testcontainers.md) — hidane's image in Testcontainers: in place of the Cloud SDK image in the gcloud modules (Java, Node, Go), or as a generic container (Python too)
 - [Examples](examples/) — projects to copy, which CI runs against hidane: firebase-admin under `firebase emulators:exec`, a Firestore-triggered function, rules-unit-testing, Python, Go, a GitHub Actions workflow
 - [Reporting a bug](docs/bug-reports.md) — `hidane report`: what it collects for a bug report, and what it redacts
 - [Parity](docs/parity.md) — the recorded answers the tests replay, per area and transport, and the SDK transcripts

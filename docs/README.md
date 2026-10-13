@@ -5,7 +5,7 @@
 | [why.md](why.md) | Why replace the official emulator: Java 21, startup / memory, write slowdown — with measurements and sources |
 | [compatibility.md](compatibility.md) | Which SDKs will work with which hidane version, how each finds the emulator, which RPCs they use; at the top, the compatibility report (hidane × firebase-tools × official emulator, and the evidence behind it), generated with [compatibility.json](compatibility.json) |
 | [sdk-certification.md](sdk-certification.md) | The SDK certification matrix: each client and tool, the version that was run, its transport, what was exercised, its status and the recorded results behind it (generated, [JSON](sdk-certification.json)) |
-| [testcontainers.md](testcontainers.md) | hidane's container image in Testcontainers: in place of the Cloud SDK image in the gcloud modules (Java, Node), or as a generic container |
+| [testcontainers.md](testcontainers.md) | hidane's container image in Testcontainers: in place of the Cloud SDK image in the gcloud modules (Java, Node, Go), or as a generic container (Python too) |
 | [../examples/](../examples/) | Projects to copy, each an integration test that CI runs against hidane: firebase-admin under `firebase emulators:exec`, a Firestore-triggered function, rules-unit-testing, Python, Go, a GitHub Actions workflow |
 | [migrating.md](migrating.md) | What `hidane doctor` checks in a Firebase project, and what `hidane migrate` changes to move it from the official emulator to hidane |
 | [bug-reports.md](bug-reports.md) | What `hidane report` collects for a bug report, what it redacts, and what it never reads or sends |

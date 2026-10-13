@@ -3,8 +3,9 @@
 hidane's container image, `ghcr.io/hidane-dev/hidane`, runs in Testcontainers in two ways:
 
 - **In place of the Cloud SDK image** in the Firestore module of Testcontainers' gcloud modules.
-  Tests that use `FirestoreEmulatorContainer` keep their code and change the image name. This
-  needs an image newer than v0.4.0: the release after v0.4.0 is the first to have it.
+  Tests that use the module (`FirestoreEmulatorContainer` in Java and Node, `firestore.Run` in Go)
+  keep their code and change the image name. This needs an image newer than v0.4.0: the release
+  after v0.4.0 is the first to have it.
 - **As a generic container**, with the image's own command and the last line of its banner. This
   works with the published images too (tested with v0.4.0), and in Testcontainers for Python,
   which has no Firestore module.
@@ -21,16 +22,17 @@ which runs the official emulator on a JVM (compressed layers in each registry's 
 [Testcontainers workflow](../.github/workflows/testcontainers.yml) builds the image from each
 commit, with [`packaging/docker/Dockerfile`](../packaging/docker/Dockerfile) as the release
 workflow does, starts it through Testcontainers on GitHub's Ubuntu runners, and writes, reads,
-queries, runs a transaction and a batch, and listens to a query with the SDK. The generic
-container tests also run against the published v0.4.0 image.
+queries, runs a transaction and a batch (a `BulkWriter` in Go, whose write batches are
+deprecated), and listens to a query with the SDK. The generic container tests also run against
+the published v0.4.0 image.
 
 | Language | Testcontainers module | With hidane's image | Tested with |
 |---|---|---|---|
 | Java | `org.testcontainers:testcontainers-gcloud`, `FirestoreEmulatorContainer` | in place of the Cloud SDK image (newer than v0.4.0) | Testcontainers 2.0.5, `google-cloud-firestore` 3.43.0 ([`testcontainers/java`](../testcontainers/java/)) |
 | Node | `@testcontainers/gcloud`, `FirestoreEmulatorContainer` | in place of the Cloud SDK image (newer than v0.4.0) | Testcontainers 12.2.0, `firebase-admin` 14.5.0 ([`testcontainers/node`](../testcontainers/node/)) |
-| Java, Node | `GenericContainer` | the image's own command (published images too) | the same projects, with the image from source and v0.4.0 |
+| Go | `github.com/testcontainers/testcontainers-go/modules/gcloud/firestore`, `firestore.Run` | in place of the Cloud SDK image (newer than v0.4.0) | Testcontainers 0.44.0, `cloud.google.com/go/firestore` 1.26.0 ([`testcontainers/go`](../testcontainers/go/)) |
+| Java, Node, Go | `GenericContainer` (`testcontainers.Run` in Go) | the image's own command (published images too) | the same projects, with the image from source and v0.4.0 |
 | Python | `testcontainers`, `DockerContainer` (no Firestore module: `DatastoreContainer` is for Datastore) | the image's own command (published images too) | Testcontainers 4.15.0, `google-cloud-firestore` 2.34.1, with the image from source and v0.4.0 ([`testcontainers/python`](../testcontainers/python/)) |
-| Go | `modules/gcloud/firestore` | not tested yet: it starts the image with the same command line as Java and Node | |
 | .NET | `Testcontainers.Firestore` | does not work yet: the module replaces the image's entrypoint with `gcloud`, which hidane's image does not have | |
 
 ## Java
@@ -113,6 +115,55 @@ const hidane = await new GenericContainer("ghcr.io/hidane-dev/hidane:0.4")
 process.env.FIRESTORE_EMULATOR_HOST = `${hidane.getHost()}:${hidane.getMappedPort(8080)}`;
 ```
 
+## Go
+
+In place of the Cloud SDK image, in a test:
+
+```go
+import (
+	"cloud.google.com/go/firestore"
+	"github.com/testcontainers/testcontainers-go"
+	tcfirestore "github.com/testcontainers/testcontainers-go/modules/gcloud/firestore"
+)
+
+// latest for brevity: pin a version newer than 0.4.0.
+ctr, err := tcfirestore.Run(ctx, "ghcr.io/hidane-dev/hidane:latest", tcfirestore.WithProjectID("demo-test"))
+testcontainers.CleanupContainer(t, ctr)
+if err != nil {
+	t.Fatal(err)
+}
+t.Setenv("FIRESTORE_EMULATOR_HOST", ctr.URI())
+client, err := firestore.NewClient(ctx, ctr.ProjectID())
+// …
+```
+
+Setting `FIRESTORE_EMULATOR_HOST` also tells the client not to look for credentials. The module's
+own example, a gRPC connection without TLS passed with `option.WithGRPCConn`, connects too; both
+are tested. The module also waits for the port, which testcontainers-go checks from inside the
+container with a shell where there is one: hidane's image has none, so it checks from the host only
+and logs `Shell not found in container`. `WithDatastoreMode()` passes
+`--database-mode=datastore-mode`, which hidane does not support yet
+([#81](https://github.com/hidane-dev/hidane/issues/81)). `gcloud.RunFirestore`, deprecated, passes
+the same command as `firestore.Run`, but is not tested here.
+
+As a generic container, which works with the published v0.4.0 image too:
+
+```go
+import "github.com/testcontainers/testcontainers-go/wait"
+
+ctr, err := testcontainers.Run(ctx, "ghcr.io/hidane-dev/hidane:0.4",
+	testcontainers.WithExposedPorts("8080/tcp"),
+	testcontainers.WithWaitStrategy(wait.ForLog("Dev App Server is now running.")),
+)
+testcontainers.CleanupContainer(t, ctr)
+if err != nil {
+	t.Fatal(err)
+}
+endpoint, err := ctr.PortEndpoint(ctx, "8080/tcp", "")
+// …
+t.Setenv("FIRESTORE_EMULATOR_HOST", endpoint)
+```
+
 ## Python
 
 Testcontainers for Python has no Firestore module. hidane's image runs as a generic container,
@@ -152,7 +203,7 @@ The Firestore modules of Java, Node and Go expose port 8080, start the image wit
 /bin/sh -c "gcloud beta emulators firestore start --host-port 0.0.0.0:8080 <flags>"
 ```
 
-and wait for a log line that contains `running`. hidane's image has no shell: its entrypoint is
+and wait for a log line that contains `running` (Go for the port too). hidane's image has no shell: its entrypoint is
 hidane, which receives that command as its arguments. hidane reads the gcloud command line in the
 script itself (words, single and double quotes and backslashes; no variables, operators,
 redirections or globs), says on stderr which of its own flags it uses, and serves the emulator. Its
@@ -174,6 +225,8 @@ last value, as in gcloud. Any other flag stops the container with exit code 2 an
 a script that is not a `gcloud … emulators firestore start` command line stops it with exit code
 127, as a shell does for a command it cannot find. Files such as a rules file must be in the
 container, for example with `withCopyFileToContainer` (Java) or `withCopyFilesToContainer` (Node).
+The Go module passes `--project=<id>` and, with `WithDatastoreMode()`, `--database-mode`; it has
+no option for other flags.
 
 ## Running the tests
 
@@ -183,9 +236,10 @@ shows how):
 ```sh
 cd testcontainers/java && HIDANE_IMAGE=ghcr.io/hidane-dev/hidane:0.4.0 mvn -B test -Dtest=GenericContainerTest
 cd testcontainers/node && npm ci && HIDANE_IMAGE=ghcr.io/hidane-dev/hidane:0.4.0 GENERIC_ONLY=1 npm test
+cd testcontainers/go && HIDANE_IMAGE=ghcr.io/hidane-dev/hidane:0.4.0 go test -run TestGenericContainer ./...
 cd testcontainers/python && python3 -m venv .venv && .venv/bin/pip install --require-hashes -r requirements.txt \
   && HIDANE_IMAGE=ghcr.io/hidane-dev/hidane:0.4.0 .venv/bin/pytest
 ```
 
-Without `-Dtest` / `GENERIC_ONLY`, the gcloud module tests run too, which need an image newer than
-v0.4.0.
+Without `-Dtest` / `GENERIC_ONLY` / `-run`, the gcloud module tests run too, which need an image
+newer than v0.4.0.

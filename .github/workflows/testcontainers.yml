@@ -1,9 +1,9 @@
 name: Testcontainers
 
-# Starts hidane's container image through Testcontainers for Java and Node, in place of the Cloud
-# SDK image in their gcloud modules' FirestoreEmulatorContainer and as a generic container, and for
-# Python, which has no Firestore module, as a generic container; and runs Firestore operations
-# against it (docs/testcontainers.md, testcontainers/).
+# Starts hidane's container image through Testcontainers for Java, Node and Go, in place of the
+# Cloud SDK image in their gcloud modules' Firestore emulator container and as a generic container,
+# and for Python, which has no Firestore module, as a generic container; and runs Firestore
+# operations against it (docs/testcontainers.md, testcontainers/).
 #
 # The image is built from this commit with packaging/docker/Dockerfile, from the same kind of
 # context as the release workflow's: a change to hidane or to the image is tested before a release
@@ -183,3 +183,34 @@ jobs:
         env:
           HIDANE_IMAGE: ${{ env.PUBLISHED_IMAGE }}
         run: pytest -v
+
+  go:
+    name: Go (modules/gcloud/firestore)
+    needs: image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: testcontainers/go
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: image
+          path: ${{ runner.temp }}
+      - name: Load the image
+        run: docker load --input "$RUNNER_TEMP/image.tar.gz"
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: testcontainers/go/go.mod
+          cache-dependency-path: testcontainers/go/go.sum
+      - name: The image from source, through the gcloud module and as a generic container
+        env:
+          HIDANE_IMAGE: ${{ env.SOURCE_IMAGE }}
+        run: go test -count=1 -v ./...
+      - name: The published v0.4.0 image, as a generic container
+        env:
+          HIDANE_IMAGE: ${{ env.PUBLISHED_IMAGE }}
+        run: go test -count=1 -v -run TestGenericContainer ./...
