@@ -64,3 +64,10 @@ Out of scope: the official Firestore emulator, firebase-tools and the Firebase S
 report those to Google), and what hidane does like the official emulator by design: it accepts
 unsigned ID tokens, and a caller sending `Authorization: Bearer owner` is not subject to Security
 Rules.
+
+## Verifying what you install
+
+Each release lists the SHA-256 of its archives and carries GitHub artifact attestations of their
+build provenance and SBOMs; the container image is attested too, and the binaries can be rebuilt
+byte for byte from the tag. [docs/verifying-releases.md](docs/verifying-releases.md) shows how to
+check each of them. If something does not verify, do not run it, and report it as above.
