@@ -34,6 +34,7 @@ def error(status, message, code="INVALID_ARGUMENT"):
 
 
 STEP = {"method": "POST", "path": "/v1/projects/{project}/databases/(default)/documents:commit"}
+COMMIT = "0123456789abcdef0123456789abcdef01234567"
 
 
 class Generation(unittest.TestCase):
@@ -362,7 +363,8 @@ class EndToEnd(unittest.TestCase):
             stdout = io.StringIO()
             with contextlib.redirect_stdout(stdout):
                 code = fuzz.main(["run", "--official", official, "--hidane", hidane, "--seed", "4", "--cases", "60",
-                                  "--areas", "batches,transforms,documents", "--minimize-budget", "60", "--out", out])
+                                  "--areas", "batches,transforms,documents", "--minimize-budget", "60", "--out", out,
+                                  "--hidane-build", "0.4.0:" + COMMIT])
             self.assertEqual(code, 0)
             summary = json.loads(Path(out, "summary.json").read_text())
             self.assertEqual(summary["cases"], 60)
@@ -385,8 +387,35 @@ class EndToEnd(unittest.TestCase):
             for key in ("name", "date", "target", "official_emulator", "cases", "differences", "unexplained", "evidence"):
                 self.assertIn(key, run)
             self.assertEqual(run["unexplained"], len(unexplained))
+            # The build fuzzed, next to the official emulator's version.
+            build = {"version": "0.4.0", "commit": COMMIT}
+            self.assertEqual((summary["hidane"], run["hidane"]), (build, build))
+            # The entry has the shape docs/compatibility.json's runs take.
+            import corpus  # tools/oracle, which diff.py puts on the path
+            schema = json.loads((diff.ROOT / "docs" / "compatibility.schema.json").read_text())
+            self.assertEqual(corpus.problems(run, {"$ref": "#/$defs/fuzzing_run"}, schema), [])
+            self.assertTrue(corpus.problems(dict(run, hidane={"version": "0.4.0", "commit": "abc"}),
+                                            {"$ref": "#/$defs/fuzzing_run"}, schema))
             self.assertIn("Differential fuzzing, seed 4", Path(out, "summary.md").read_text())
+            self.assertIn(f"and hidane 0.4.0 (commit {COMMIT[:12]})", Path(out, "summary.md").read_text())
             self.assertIn("| batches |", stdout.getvalue())
+
+    def test_a_run_without_its_build_says_unknown_and_a_bad_build_is_refused(self):
+        unknown = {"version": "unknown", "commit": "unknown"}
+        with serving(FakeEmulator) as official, serving(Lenient) as hidane, tempfile.TemporaryDirectory() as out:
+            with contextlib.redirect_stdout(io.StringIO()):
+                code = fuzz.main(["run", "--official", official, "--hidane", hidane, "--seed", "4", "--cases", "1",
+                                  "--out", out])
+            self.assertEqual(code, 0)
+            self.assertEqual(json.loads(Path(out, "summary.json").read_text())["hidane"], unknown)
+            self.assertEqual(json.loads(Path(out, "run.json").read_text())["hidane"], unknown)
+            self.assertIn("and hidane (build unknown) in", Path(out, "summary.md").read_text())
+        for bad in ("0.4.0", "0.4.0:" + COMMIT[:12], "0.4.0:" + COMMIT.upper(), "v0.4.0:" + COMMIT,
+                    "0.4.0 :" + COMMIT, ":" + COMMIT):
+            with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
+                fuzz.main(["run", "--official", "x", "--hidane", "y", "--seed", "1", "--out", "z",
+                           "--hidane-build", bad])
+        self.assertEqual(fuzz.hidane_build("0.5.0-rc.1:" + COMMIT), {"version": "0.5.0-rc.1", "commit": COMMIT})
 
     def test_replay_runs_a_difference_file_again(self):
         case = {"name": "x", "area": "batches", "steps": [

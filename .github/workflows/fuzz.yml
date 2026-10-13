@@ -121,10 +121,23 @@ jobs:
           SEED: ${{ steps.session.outputs.seed }}
           CASES: ${{ steps.session.outputs.cases }}
           MINUTES: ${{ steps.session.outputs.minutes }}
+          COMMIT: ${{ github.sha }}
         run: |
+          # The build fuzzed, recorded in the run's files: hidane's version and the commit.
+          version=$(target/release/hidane --version)
+          version=${version#hidane }
+          if [[ ! "$version" =~ ^[0-9]+(\.[0-9]+)*([-+][0-9A-Za-z.+-]+)?$ ]]; then
+            echo "::error title=Differential fuzzing::hidane --version did not print a version"
+            exit 1
+          fi
+          if [[ ! "$COMMIT" =~ ^[0-9a-f]{40}$ ]]; then
+            echo "::error title=Differential fuzzing::the commit is not 40 hex digits"
+            exit 1
+          fi
           status=0
           python3 -I tools/fuzz/fuzz.py run --official "$OFFICIAL" --hidane 127.0.0.1:8180 \
-            --seed "$SEED" --cases "$CASES" --minutes "$MINUTES" --out "$RUNNER_TEMP/fuzz" > /dev/null || status=$?
+            --seed "$SEED" --cases "$CASES" --minutes "$MINUTES" --hidane-build "$version:$COMMIT" \
+            --out "$RUNNER_TEMP/fuzz" > /dev/null || status=$?
           if [[ -f "$RUNNER_TEMP/fuzz/summary.md" ]]; then
             cat "$RUNNER_TEMP/fuzz/summary.md" >> "$GITHUB_STEP_SUMMARY"
           fi

@@ -5,7 +5,7 @@ Usage (from the repository root; both emulators running, the official one under 
 locale, see tools/oracle/README.md):
 
     python3 -I tools/fuzz/fuzz.py run --official 127.0.0.1:8080 --hidane 127.0.0.1:8180 \\
-        --seed 1 --cases 500 --out "$(mktemp -d)"
+        --seed 1 --cases 500 --out "$(mktemp -d)" [--hidane-build 0.4.0:<commit>]
     python3 -I tools/fuzz/fuzz.py replay --official … --hidane … <out>/differences/<signature>.json
     python3 -I tools/fuzz/fuzz.py show --seed 1 --case 17      # print a case, no emulator needed
     python3 -I tools/fuzz/fuzz.py check                         # exceptions.json against the docs
@@ -50,6 +50,28 @@ def pinned():
     version = re.search(r"^PINNED_VERSION=([0-9.]+)$", text, re.M).group(1)
     sha256 = re.search(r"^PINNED_SHA256=([0-9a-f]{64})$", text, re.M).group(1)
     return version, sha256
+
+
+VERSION = re.compile(r"[0-9]+(\.[0-9]+)*([-+][0-9A-Za-z.+-]+)?")
+COMMIT = re.compile(r"[0-9a-f]{40}")
+UNKNOWN_BUILD = {"version": "unknown", "commit": "unknown"}
+
+
+def hidane_build(value):
+    """`--hidane-build VERSION:COMMIT`: the hidane a run fuzzes, as `hidane --version` names it and
+    the commit it was built from, in full."""
+    version, _, commit = value.partition(":")
+    if not VERSION.fullmatch(version) or not COMMIT.fullmatch(commit):
+        raise argparse.ArgumentTypeError(
+            f"{value!r} is not VERSION:COMMIT (a version such as 0.4.0, and a commit of 40 lowercase hex digits)")
+    return {"version": version, "commit": commit}
+
+
+def build_text(build):
+    """How summary.md names the hidane build."""
+    if build["version"] == "unknown":
+        return "hidane (build unknown)"
+    return f"hidane {build['version']} (commit {build['commit'][:12]})"
 
 
 def answers(host):
@@ -212,6 +234,7 @@ class Session:
         summary = {
             "seed": self.args.seed, "first_case": self.args.first, "next_case": last,
             "official_emulator": {"version": version, "sha256": sha256},
+            "hidane": dict(self.args.hidane_build or UNKNOWN_BUILD),
             "duration_seconds": duration, "stopped": self.stopped,
             "cases": totals["cases"], "differing_cases": totals["differing"],
             "signatures": distinct, "by_area": self.by_area,
@@ -232,6 +255,7 @@ def run_entry(summary, areas):
         "date": datetime.date.today().isoformat(),
         "target": "REST requests to both emulators: " + ", ".join(areas),
         "official_emulator": summary["official_emulator"]["version"],
+        "hidane": summary["hidane"],
         "cases": summary["cases"],
         "differences": sum(summary["signatures"].values()),
         "unexplained": summary["signatures"]["unexplained"],
@@ -256,7 +280,8 @@ def cell(text):
 def markdown(summary):
     lines = [f"## Differential fuzzing, seed {summary['seed']}", ""]
     lines.append(f"{summary['cases']} cases (from case {summary['first_case']}) against the official emulator "
-                 f"v{summary['official_emulator']['version']} and hidane in {summary['duration_seconds']} s; "
+                 f"v{summary['official_emulator']['version']} and {build_text(summary['hidane'])} in "
+                 f"{summary['duration_seconds']} s; "
                  f"{summary['differing_cases']} differed. Distinct differences: "
                  f"{summary['signatures']['unexplained']} unexplained, {summary['signatures']['accepted']} accepted by "
                  f"docs/parity-exceptions.md, {summary['signatures']['flaky']} not reproduced.")
@@ -356,6 +381,9 @@ def main(argv=None):
     run.add_argument("--minimize-seconds", type=float, default=60, help="time to minimise each difference")
     run.add_argument("--official-version", type=lambda v: tuple(v.split(":", 1)), default=pinned(),
                      help="VERSION:SHA256 of the official jar, for the files written (default: pinned.sh's)")
+    run.add_argument("--hidane-build", type=hidane_build, default=None,
+                     help="VERSION:COMMIT of the hidane fuzzed (`hidane --version`, the full commit it was built "
+                          "from), for the files written (default: unknown)")
     run.add_argument("--out", required=True, help="a directory outside the repository")
     replay.add_argument("file")
     show = sub.add_parser("show", help="print a generated case")

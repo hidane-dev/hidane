@@ -14,6 +14,11 @@ out=$(mktemp -d)
 python3 -I tools/fuzz/fuzz.py run --official 127.0.0.1:8086 --hidane 127.0.0.1:8186 --seed 1 --cases 500 --out "$out"
 ```
 
+`--hidane-build VERSION:COMMIT` says which hidane the run fuzzes (the version `hidane --version`
+prints and the full commit it was built from, such as `--hidane-build "0.4.0:$(git rev-parse
+HEAD)"`); the summary and the run's entry record it next to the official emulator's version and
+SHA-256, and say `unknown` without it.
+
 `hidane benchmark --official-download` caches the pinned jar (`~/.cache/hidane-bench`), as does
 firebase-tools (`~/.cache/firebase/emulators`). Start the jar with an English locale, as above
 (tools/oracle/README.md says why). The jar is run and observed only
@@ -105,7 +110,7 @@ committed by it.
   distinct unexplained differences.
 - `run.json`: the run as an entry of `results/differential-fuzzing.json`, the shape
   docs/compatibility.schema.json gives `fuzzing_run` (`cases`; `differences`, the distinct
-  ones; `unexplained`), with the seed, the counts per area and per kind, and the distinct
+  ones; `unexplained`; `hidane`, the build fuzzed), with the seed, the counts per area and per kind, and the distinct
   differences accepted by each entry. `fuzz.py record <out>/run.json` adds it there, for a run
   someone has looked at; `tools/parity/compatibility.py` reports it.
 
@@ -136,7 +141,8 @@ few minutes):
 
 - **fuzz** runs the tests above, builds hidane from the commit, starts it and the pinned jar
   (`.github/actions/official-emulator`), and fuzzes for the time given (25 minutes on the
-  schedule, with a seed from the date). `summary.md` goes to the job summary; the run's
+  schedule, with a seed from the date), naming the build with `--hidane-build` (the version
+  `target/release/hidane --version` prints and `GITHUB_SHA`). `summary.md` goes to the job summary; the run's
   `--out` and both emulators' output go to the `fuzz` artifact.
 - **issues**, on main only, and the only job with `issues: write`: by hand with `issues` on, or
   on the schedule once the repository variable `FUZZ_FILE_ISSUES` is `true` (see below).
