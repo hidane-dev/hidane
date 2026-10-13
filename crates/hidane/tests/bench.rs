@@ -56,18 +56,22 @@ fn validate(result: &Value) {
 }
 
 fn validate_with(schema: &str, result: &Value) {
-    let schema: Value =
-        serde_json::from_str(&std::fs::read_to_string(repo(schema)).unwrap()).unwrap();
-    let validator = jsonschema::validator_for(&schema).expect("the schema compiles");
-    let errors: Vec<String> = validator
-        .iter_errors(result)
-        .map(|e| format!("{} at {}", e, e.instance_path()))
-        .collect();
+    let errors = schema_errors(schema, result);
     assert!(
         errors.is_empty(),
         "schema violations:\n{}",
         errors.join("\n")
     );
+}
+
+fn schema_errors(schema: &str, result: &Value) -> Vec<String> {
+    let schema: Value =
+        serde_json::from_str(&std::fs::read_to_string(repo(schema)).unwrap()).unwrap();
+    let validator = jsonschema::validator_for(&schema).expect("the schema compiles");
+    validator
+        .iter_errors(result)
+        .map(|e| format!("{} at {}", e, e.instance_path()))
+        .collect()
 }
 
 fn strings(value: &Value, out: &mut Vec<String>) {
@@ -307,6 +311,178 @@ fn the_example_result_validates_and_renders_as_committed() {
         "bench/fixtures/example-result.md is stale; regenerate it with \
          `cargo run -p hidane -- benchmark render bench/fixtures/example-result.json > bench/fixtures/example-result.md`"
     );
+}
+
+const FULL_SHA: &str = "8a8106248ecb80b27936f07c49db674ae10cc6bd";
+
+/// A nightly or release result goes into the canonical history, which traces every number to the
+/// commit of the hidane measured and of the engine that measured it: without both, in full, the
+/// engine refuses the run before measuring anything (exit 2, nothing written). Local and
+/// pull-request runs need neither (the command test above runs without them).
+#[test]
+fn canonical_runs_record_full_commits() {
+    let dir = scratch("provenance");
+    std::fs::write(dir.join("tiny.json"), TINY).unwrap();
+    let upper = FULL_SHA.to_uppercase();
+    for kind in ["nightly", "release"] {
+        let cases: [(&[&str], &str); 7] = [
+            (&["--engine-commit", FULL_SHA], "pass --hidane-commit <SHA>"),
+            (&["--hidane-commit", FULL_SHA], "pass --engine-commit <SHA>"),
+            (
+                &[
+                    "--hidane-commit",
+                    "8a8106248ecb",
+                    "--engine-commit",
+                    FULL_SHA,
+                ],
+                "--hidane-commit \"8a8106248ecb\" is not 40 lowercase hexadecimal digits",
+            ),
+            (
+                &[
+                    "--hidane-commit",
+                    upper.as_str(),
+                    "--engine-commit",
+                    FULL_SHA,
+                ],
+                "is not 40 lowercase hexadecimal digits",
+            ),
+            (
+                &["--hidane-commit", FULL_SHA, "--engine-commit", ""],
+                "--engine-commit \"\" is not 40 lowercase hexadecimal digits",
+            ),
+            (&[], "pass --hidane-commit <SHA>"),
+            (
+                &[
+                    "--target",
+                    "official",
+                    "--official-jar",
+                    "missing.jar",
+                    "--hidane-commit",
+                    FULL_SHA,
+                    "--engine-commit",
+                    FULL_SHA,
+                ],
+                "measures hidane",
+            ),
+        ];
+        for (args, message) in cases {
+            let mut all = vec![
+                "--config",
+                "tiny.json",
+                "--scenarios",
+                "startup",
+                "--no-imds",
+                "--kind",
+                kind,
+                "--out",
+                "refused.json",
+            ];
+            all.extend_from_slice(args);
+            let out = benchmark(&all, &dir);
+            let stderr = String::from_utf8_lossy(&out.stderr);
+            assert_eq!(out.status.code(), Some(2), "{kind} {args:?}: {stderr}");
+            assert!(
+                stderr.contains(&format!("hidane benchmark: a {kind} run "))
+                    && stderr.contains(message),
+                "{kind} {args:?}: {stderr}"
+            );
+            assert!(
+                !stderr.contains("checking the machine"),
+                "{kind} {args:?} started measuring: {stderr}"
+            );
+            assert!(!dir.join("refused.json").exists(), "{kind} {args:?}");
+        }
+    }
+
+    // With both commits, a nightly run measures, and its result meets the schema's rule for
+    // canonical results.
+    let out = benchmark(
+        &[
+            "--config",
+            "tiny.json",
+            "--scenarios",
+            "startup",
+            "--no-imds",
+            "--kind",
+            "nightly",
+            "--hidane-commit",
+            FULL_SHA,
+            "--engine-commit",
+            FULL_SHA,
+            "--out",
+            "nightly.json",
+        ],
+        &dir,
+    );
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let result: Value =
+        serde_json::from_str(&std::fs::read_to_string(dir.join("nightly.json")).unwrap()).unwrap();
+    validate(&result);
+    assert_eq!(result["benchmark"]["kind"], "nightly");
+    assert_eq!(result["targets"]["hidane"]["git_commit"], FULL_SHA);
+    assert_eq!(result["benchmark"]["engine"]["git_commit"], FULL_SHA);
+    let _ = std::fs::remove_dir_all(dir);
+}
+
+/// A change made to a result before it is checked.
+type Change = fn(&mut Value);
+
+/// The schema holds a nightly or release result to the same rule: the hidane measured, and both
+/// commits as full SHAs. A local or pull-request result may leave them out.
+#[test]
+fn the_schema_requires_full_commits_of_canonical_results() {
+    let example: Value = serde_json::from_str(
+        &std::fs::read_to_string(repo("bench/fixtures/example-result.json")).unwrap(),
+    )
+    .unwrap();
+    let errors = |kind: &str, change: Change| {
+        let mut result = example.clone();
+        result["benchmark"]["kind"] = Value::from(kind);
+        change(&mut result);
+        schema_errors("bench/schema/result.schema.json", &result)
+    };
+    let untraced: [(&str, Change); 6] = [
+        ("a null hidane commit", |r| {
+            r["targets"]["hidane"]["git_commit"] = Value::Null;
+        }),
+        ("a short hidane commit", |r| {
+            r["targets"]["hidane"]["git_commit"] = Value::from("8a8106248ecb");
+        }),
+        ("an upper-case hidane commit", |r| {
+            r["targets"]["hidane"]["git_commit"] = Value::from(FULL_SHA.to_uppercase());
+        }),
+        ("a null engine commit", |r| {
+            r["benchmark"]["engine"]["git_commit"] = Value::Null;
+        }),
+        ("an empty engine commit", |r| {
+            r["benchmark"]["engine"]["git_commit"] = Value::from("");
+        }),
+        ("no hidane target", |r| {
+            r["targets"].as_object_mut().unwrap().remove("hidane");
+        }),
+    ];
+    for kind in ["nightly", "release"] {
+        assert_eq!(errors(kind, |_| {}), Vec::<String>::new(), "{kind}");
+        for (what, change) in untraced {
+            assert!(
+                !errors(kind, change).is_empty(),
+                "a {kind} result with {what} passes the schema"
+            );
+        }
+    }
+    for kind in ["local", "pull-request"] {
+        for (what, change) in untraced {
+            assert_eq!(
+                errors(kind, change),
+                Vec::<String>::new(),
+                "a {kind} result with {what}"
+            );
+        }
+    }
 }
 
 /// `hidane benchmark savings`: a result's difference as CI time saved, read from a file or from

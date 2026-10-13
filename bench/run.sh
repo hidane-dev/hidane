@@ -27,6 +27,7 @@ usage: bench/run.sh [options]
   --hidane-commit SHA      the commit it was built from
                            Without --engine, the engine is built from this checkout
                            (cargo build --release) and the commits are read from git.
+                           A nightly or release run needs both commits, in full.
 
   --official-jar PATH      the official emulator's jar (default: download the pinned
                            v1.22.0 jar into the cache and check its SHA-256)
