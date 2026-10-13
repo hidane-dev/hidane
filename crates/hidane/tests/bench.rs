@@ -7,8 +7,9 @@
 //! `HIDANE_BENCH_JAVA` names (CI has neither, so that test returns early there).
 
 use std::{
+    io::Write as _,
     path::{Path, PathBuf},
-    process::{Command, Output},
+    process::{Command, Output, Stdio},
 };
 
 use serde_json::Value;
@@ -50,10 +51,12 @@ fn benchmark(args: &[&str], dir: &Path) -> Output {
 }
 
 fn validate(result: &Value) {
-    let schema: Value = serde_json::from_str(
-        &std::fs::read_to_string(repo("bench/schema/result.schema.json")).unwrap(),
-    )
-    .unwrap();
+    validate_with("bench/schema/result.schema.json", result);
+}
+
+fn validate_with(schema: &str, result: &Value) {
+    let schema: Value =
+        serde_json::from_str(&std::fs::read_to_string(repo(schema)).unwrap()).unwrap();
     let validator = jsonschema::validator_for(&schema).expect("the schema compiles");
     let errors: Vec<String> = validator
         .iter_errors(result)
@@ -288,6 +291,106 @@ fn the_example_result_validates_and_renders_as_committed() {
         "bench/fixtures/example-result.md is stale; regenerate it with \
          `cargo run -p hidane -- benchmark render bench/fixtures/example-result.json > bench/fixtures/example-result.md`"
     );
+}
+
+/// `hidane benchmark savings`: a result's difference as CI time saved, read from a file or from
+/// stdin, as JSON matching `bench/schema/savings.schema.json` and as the Markdown case study
+/// that bench/README.md shows.
+#[test]
+fn savings_turn_a_result_into_ci_time() {
+    let dir = scratch("savings");
+    // The synthetic example result, with medians that differ for the command scenario.
+    let mut result: Value = serde_json::from_str(
+        &std::fs::read_to_string(repo("bench/fixtures/example-result.json")).unwrap(),
+    )
+    .unwrap();
+    let command = &mut result["results"]["command"];
+    command["official"]["total"]["stats"]["median"] = 61_500.0.into();
+    command["hidane"]["total"]["stats"]["median"] = 21_250.0.into();
+    result["benchmark"]["scenarios"]["command"]["command"] = "npm (1 argument)".into();
+    let text = result.to_string();
+    std::fs::write(dir.join("result.json"), &text).unwrap();
+    let rate = ["--cost-per-minute", "0.01", "--currency", "USD"];
+
+    let mut args = vec!["savings", "result.json", "--runs-per-month", "1200"];
+    args.extend(rate);
+    args.extend(["--format", "json"]);
+    let out = benchmark(&args, &dir);
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let savings: Value = serde_json::from_slice(&out.stdout).unwrap();
+    validate_with("bench/schema/savings.schema.json", &savings);
+    assert_private(&savings, &dir);
+    assert_eq!(savings["source"]["scenario"], "command");
+    assert_eq!(savings["saved"]["per_run_ms"], 40_250.0);
+    assert_eq!(savings["saved"]["per_month_ms"], 48_300_000.0);
+    assert_eq!(savings["saved"]["per_month_minutes"], 805.0);
+    assert_eq!(savings["saved"]["per_month_hours"], 13.417);
+    assert_eq!(savings["cost"]["saved_per_month"], 8.05);
+    // The example result is a nightly one: the note says a case study needs your own.
+    assert!(String::from_utf8_lossy(&out.stderr).contains("your own measurement"));
+
+    let mut child = Command::new(BIN)
+        .args(["benchmark", "savings", "-", "--runs-per-month", "1200"])
+        .args(rate)
+        .args(["--format", "markdown"])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(text.as_bytes())
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let md = String::from_utf8(out.stdout).unwrap();
+    assert!(md.starts_with("### CI time with hidane\n"));
+    assert!(!md.contains('×'));
+    let readme = std::fs::read_to_string(repo("bench/README.md")).unwrap();
+    assert!(
+        readme.contains(&format!("```markdown\n{md}```")),
+        "bench/README.md's case-study example is stale; it should read:\n{md}"
+    );
+
+    // A rate needs its currency; a result needs both emulators.
+    let out = benchmark(
+        &[
+            "savings",
+            "result.json",
+            "--runs-per-month",
+            "3",
+            "--cost-per-minute",
+            "1",
+        ],
+        &dir,
+    );
+    assert_eq!(out.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&out.stderr).contains("--currency"));
+    for scenario in ["command", "ci", "ci_firebase"] {
+        result["results"][scenario]
+            .as_object_mut()
+            .unwrap()
+            .remove("official");
+    }
+    std::fs::write(dir.join("hidane-only.json"), result.to_string()).unwrap();
+    let out = benchmark(
+        &["savings", "hidane-only.json", "--runs-per-month", "3"],
+        &dir,
+    );
+    assert_eq!(out.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&out.stderr).contains("--compare-official"));
+    let _ = std::fs::remove_dir_all(dir);
 }
 
 #[test]

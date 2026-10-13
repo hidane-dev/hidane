@@ -9,6 +9,7 @@ and stopping each process. Anyone can rerun it, and every result says where and 
 | `run.sh` | The canonical entry point: builds or takes the binaries, finds the official jar, runs the benchmark with `canonical.json`, writes `<name>.json` and `<name>.md` |
 | `canonical.json` | The canonical parameters, versioned (`benchmark_version`). The engine's built-in defaults are the same values; a test keeps them in step |
 | `schema/result.schema.json` | The JSON Schema of a result (`schema_version` 1); a test validates the engine's output against it |
+| `schema/savings.schema.json` | The JSON Schema of `hidane benchmark savings --format json` ([CI time saved](#ci-time-saved)) |
 | `fixtures/example-result.json`, `.md` | A **synthetic** result (made-up machine, made-up numbers) and its rendering, for the tests and as an example of the format. Not a measurement |
 
 The measuring is done by one engine, the `hidane benchmark` subcommand of the hidane binary
@@ -55,6 +56,70 @@ hidane benchmark --compare-official --official-download -- hidane benchmark work
 The second runs the built-in synthetic workload as the command. A Node.js test suite measured
 this way should pin its toolchain, for example Node.js 22.22.3 and firebase-tools 15.33.0 (the
 versions hidane's parity checks use), so that two runs differ only in the emulator.
+
+### CI time saved
+
+`hidane benchmark savings <result.json>` turns a result that measured both emulators into the
+time a CI job saves, per run and per month, and, at your own rate, into cost. It measures nothing
+itself. It takes the median `total` of the command scenario (your test suite), or else of
+`ci_firebase`, or else of `ci` (`--scenario` picks one), and computes:
+
+| Figure | How |
+|---|---|
+| Saved per run | the official emulator's median minus hidane's |
+| Saved per month | saved per run × `--runs-per-month` |
+| Saved cost per month | saved minutes per month × `--cost-per-minute`, labelled with `--currency` |
+
+No CI price is built in: prices change and differ between providers and plans, so the rate is
+yours to look up and pass. A provider that bills each job in whole minutes can bill a saving of
+seconds per job differently; the output says so whenever a rate is given.
+
+```sh
+hidane benchmark --compare-official --official-download --out result.json -- npm test
+hidane benchmark savings result.json --runs-per-month 600
+hidane benchmark savings result.json --runs-per-month 600 \
+  --cost-per-minute <your rate> --currency USD --format markdown
+# the measurement and the estimate in one go (the result is read from stdin):
+hidane benchmark --compare-official --official-download -- npm test \
+  | hidane benchmark savings - --runs-per-month 600
+```
+
+`--format text` (the default) is for the terminal, `json` for tools
+(`schema/savings.schema.json`), and `markdown` prints a case-study block to paste into a README,
+a post or an issue. The block keeps to the [claim policy](#claim-policy): it gives both medians
+and the number of runs behind them, the date, machine, operating system and tools, says that it
+is the team's own measurement and median-based, and carries the caveats of the run: not stable,
+`--quick`, fewer than three runs, failed runs, an official jar other than the pinned one, or no
+time saved (a negative difference is "none" in the text and the block, and stays negative in the
+JSON). It has no ratio and no "N× faster". When the estimate rests on the synthetic `ci` or
+`ci_firebase` workload, the block says it is not the team's own test suite.
+
+Durations read as milliseconds below a second, seconds with two decimals below a minute, then
+minutes and seconds, then hours and minutes; money has two decimals. The JSON keeps three
+decimals, like a result. With the synthetic `fixtures/example-result.json`, its command
+scenario's medians changed to 61.5 s for the official emulator and 21.25 s for hidane, 1,200 runs
+a month and a placeholder rate of 0.01 per minute, the block reads (a test keeps this copy
+current):
+
+```markdown
+### CI time with hidane
+
+| | |
+|---|---|
+| Before: the official emulator 1.22.0 | 1 min 2 s per run |
+| After: hidane 0.3.0 | 21.25 s per run |
+| Runs per month | 1,200 |
+| Saved per run | 40.25 s |
+| Saved per month | 13 h 25 min |
+| Saved cost per month | 8.05 USD, at 0.01 USD per minute |
+
+This is our own measurement, made with `hidane benchmark` (benchmark definitions v1) on 2026-01-01: our test command (`npm` with 1 argument), timed from the emulator's start to its shutdown, with 3 measured runs per emulator, the emulators taking turns. The figures are medians of those runs. Machine: Example CPU, 2 cores, 4 threads, 8 GiB RAM, instance type c7i.xlarge; Ubuntu 24.04 LTS, x86_64. Tools: Java 21.0.8 (Eclipse Adoptium), Node.js 22.22.3, firebase-tools 15.33.0. Other machines and workloads give other numbers. Method: [hidane's benchmark](https://github.com/hidane-dev/hidane/blob/main/bench/README.md).
+
+Notes:
+
+- The run did not pass the stability checks (synthetic example: these numbers are not measurements), so its numbers are noisy and not fit to cite.
+- The cost is the saved minutes times the given rate. A CI provider that bills each job in whole minutes can bill a saving of seconds per job differently.
+```
 
 ## Methodology
 

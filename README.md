@@ -54,6 +54,16 @@ on 2026-10-13. The [result](https://github.com/hidane-dev/benchmark-results/blob
 comes with every sample in its JSON. The methodology is in [`bench/`](bench/README.md), and anyone
 can rerun it; other machines give other numbers.
 
+What the difference is worth in your own CI depends on your tests and your runners, so measure
+it there: `hidane benchmark` runs your test command against both emulators, and
+`hidane benchmark savings` turns the medians into time saved per month, and into cost at your
+own rate, with a case-study block to share ([how](bench/README.md#ci-time-saved)):
+
+```sh
+hidane benchmark --compare-official --official-download -- npm test \
+  | hidane benchmark savings - --runs-per-month 600
+```
+
 One cost the benchmark does not measure yet (#50) is writing while a listener is attached. In
 that case, the official emulator's batch writes slow down as documents accumulate
 ([firebase-tools#3477](https://github.com/firebase/firebase-tools/issues/3477)), while hidane's
