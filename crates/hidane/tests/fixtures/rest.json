@@ -3725,6 +3725,271 @@
     "contentType": "application/json",
     "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
    }
+  },
+  {
+   "name": "PATCH a collection",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\\" lacks \\\"\\/\\\" at index 53.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH a path with an empty ID",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz//d",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/\\/d\\\" lacks a resource id at index 54.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH a path starting with a slash",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents//fz/d",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/\\/fz\\/d\\\" lacks a collection id at index 51.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH a path ending with a slash",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/d/",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/d\\/\\\" has invalid trailing \\\"\\/\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH a subcollection",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/d/e",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/d\\/e\\\" lacks \\\"\\/\\\" at index 57.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH a collection, with a null body",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "null",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "DELETE a collection",
+   "method": "DELETE",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\\" lacks \\\"\\/\\\" at index 53.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "DELETE a path with an empty ID",
+   "method": "DELETE",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz//d",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/\\/d\\\" lacks a resource id at index 54.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "DELETE a path starting with a slash",
+   "method": "DELETE",
+   "path": "/v1/projects/{project}/databases/(default)/documents//fz/d",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/\\/fz\\/d\\\" lacks a collection id at index 51.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "DELETE a path ending with a slash",
+   "method": "DELETE",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/d/",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/d\\/\\\" has invalid trailing \\\"\\/\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "DELETE a subcollection",
+   "method": "DELETE",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/d/e",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/d\\/e\\\" lacks \\\"\\/\\\" at index 57.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST to a document",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/d",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\\" lacks \\\"\\/\\\" at index 53.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST to a document with an empty documentId",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/d?documentId=",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\\" lacks \\\"\\/\\\" at index 53.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST to a path with an empty ID",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz//d",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/\\\" has invalid trailing \\\"\\/\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST to a path starting with a slash",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents//fz",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/\\\" is invalid: Omit trailing \\\"\\/\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST to a path ending with a slash",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/d/",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"collectionId is the empty string.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST to a document, with a null body",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/d",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "null",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH under a reserved collection ID",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/__x__/d",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Collection id \\\"__x__\\\" is invalid because it is reserved.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
   }
  ]
 }

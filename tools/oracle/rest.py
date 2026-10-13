@@ -283,6 +283,27 @@ case("a number as a string in a filter", "POST", B + ":runQuery", raw='{"structu
 case("an object as a string", "PATCH", B + "/fz/num2", raw='{"fields": {"a": {"stringValue": {}}}}')
 case("a number as bytes", "PATCH", B + "/fz/num2", raw='{"fields": {"a": {"bytesValue": 1}}}')
 case("a boolean as an integer", "PATCH", B + "/fz/num2", raw='{"fields": {"a": {"integerValue": true}}}')
+# PATCH and DELETE take any path below `documents` as a document name (`documents/*/**`), POST
+# any as a parent and a collection ID (`documents/**/{collection_id}`): a path that names no
+# document is refused by the name's checks, not with a bare 404.
+case("PATCH a collection", "PATCH", B + "/fz", {})
+case("PATCH a path with an empty ID", "PATCH", B + "/fz//d", {})
+case("PATCH a path starting with a slash", "PATCH", B + "//fz/d", {})
+case("PATCH a path ending with a slash", "PATCH", B + "/fz/d/", {})
+case("PATCH a subcollection", "PATCH", B + "/fz/d/e", {})
+case("PATCH a collection, with a null body", "PATCH", B + "/fz", raw="null")
+case("DELETE a collection", "DELETE", B + "/fz")
+case("DELETE a path with an empty ID", "DELETE", B + "/fz//d")
+case("DELETE a path starting with a slash", "DELETE", B + "//fz/d")
+case("DELETE a path ending with a slash", "DELETE", B + "/fz/d/")
+case("DELETE a subcollection", "DELETE", B + "/fz/d/e")
+case("POST to a document", "POST", B + "/fz/d", {})
+case("POST to a document with an empty documentId", "POST", B + "/fz/d?documentId=", {})
+case("POST to a path with an empty ID", "POST", B + "/fz//d", {})
+case("POST to a path starting with a slash", "POST", B + "//fz", {})
+case("POST to a path ending with a slash", "POST", B + "/fz/d/", {})
+case("POST to a document, with a null body", "POST", B + "/fz/d", raw="null")
+case("PATCH under a reserved collection ID", "PATCH", B + "/__x__/d", {})
 
 
 def norm(text):

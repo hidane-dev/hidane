@@ -176,7 +176,7 @@ async fn dispatch(service: &FirestoreService, call: Call) -> Option<Response> {
     let even = !call.path.is_empty() && call.path.len().is_multiple_of(2);
     let odd = call.path.len() % 2 == 1;
     let parent_and_collection = || {
-        let (collection, parent) = call.path.split_last().expect("odd length");
+        let (collection, parent) = call.path.split_last().expect("a path below documents");
         let parent = if parent.is_empty() {
             format!("{}/documents", call.database)
         } else {
@@ -239,7 +239,10 @@ async fn dispatch(service: &FirestoreService, call: Call) -> Option<Response> {
                 Err(e) => error(&e),
             }
         }
-        (&Method::PATCH, None) if even => {
+        // PATCH, DELETE and POST take any path below `documents`, as the official emulator's
+        // bindings do (`documents/*/**`, and `documents/**/{collection_id}` for POST): a path that
+        // names no document is refused by the name's checks, not with a bare 404 (#262).
+        (&Method::PATCH, None) if !root => {
             let mut document = call.body.clone();
             if let Json::Object(map) = &mut document {
                 map.insert("name".to_owned(), Json::String(documents));
@@ -249,7 +252,7 @@ async fn dispatch(service: &FirestoreService, call: Call) -> Option<Response> {
                 Err(e) => error(&e),
             }
         }
-        (&Method::DELETE, None) if even => {
+        (&Method::DELETE, None) if !root => {
             match build(
                 &call,
                 "DeleteDocumentRequest",
@@ -263,7 +266,7 @@ async fn dispatch(service: &FirestoreService, call: Call) -> Option<Response> {
                 Err(e) => error(&e),
             }
         }
-        (&Method::POST, None) if odd => {
+        (&Method::POST, None) if !root => {
             let (parent, collection) = parent_and_collection();
             match build_with(
                 &call,
