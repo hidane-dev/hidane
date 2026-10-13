@@ -304,6 +304,12 @@ case("POST to a path starting with a slash", "POST", B + "//fz", {})
 case("POST to a path ending with a slash", "POST", B + "/fz/d/", {})
 case("POST to a document, with a null body", "POST", B + "/fz/d", raw="null")
 case("PATCH under a reserved collection ID", "PATCH", B + "/__x__/d", {})
+# The documents root as a document name has a message of its own.
+case("commit a transform of the documents root", "POST", B + ":commit", {"writes": [{"transform": {"document": NAME}}]})
+case("commit an update of the documents root", "POST", B + ":commit", {"writes": [{"update": {"name": NAME, "fields": {}}}]})
+case("commit a delete of the documents root", "POST", B + ":commit", {"writes": [{"delete": NAME}]})
+case("batchGet the documents root", "POST", B + ":batchGet", {"documents": [NAME]})
+case("batchGet another project's documents root", "POST", B + ":batchGet", {"documents": ["projects/other/databases/(default)/documents"]})
 
 
 def norm(text):

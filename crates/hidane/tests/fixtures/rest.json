@@ -3990,6 +3990,112 @@
     "contentType": "application/json",
     "body": "{\"error\":{\"code\":400,\"message\":\"Collection id \\\"__x__\\\" is invalid because it is reserved.\",\"status\":\"INVALID_ARGUMENT\"}}"
    }
+  },
+  {
+   "name": "commit a transform of the documents root",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "transform": {
+       "document": "projects/{project}/databases/(default)/documents"
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\\" is invalid: Omit \\\"\\/documents\\\" when referencing a database (except as the parent of a document).\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit an update of the documents root",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\\" is invalid: Omit \\\"\\/documents\\\" when referencing a database (except as the parent of a document).\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a delete of the documents root",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "delete": "projects/{project}/databases/(default)/documents"
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\\" is invalid: Omit \\\"\\/documents\\\" when referencing a database (except as the parent of a document).\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "batchGet the documents root",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/{project}/databases/(default)/documents"
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\\" is invalid: Omit \\\"\\/documents\\\" when referencing a database (except as the parent of a document).\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "batchGet another project's documents root",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/other/databases/(default)/documents"
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/other\\/databases\\/(default)\\/documents\\\" is invalid: Omit \\\"\\/documents\\\" when referencing a database (except as the parent of a document).\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
   }
  ]
 }

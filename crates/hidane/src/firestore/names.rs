@@ -127,6 +127,13 @@ fn parse(name: &str, shape: Shape) -> Result<Name, Status> {
                 Shape::Parent => complete,
                 Shape::Any => true,
             };
+            // The database's documents root names no document (#262).
+            if shape == Shape::Document && segments.is_empty() {
+                return Err(Status::invalid_argument(format!(
+                    "{what} \"{name}\" is invalid: Omit \"/documents\" when referencing a \
+                     database (except as the parent of a document)."
+                )));
+            }
             if !allowed {
                 return Err(cursor.lacks("/"));
             }
