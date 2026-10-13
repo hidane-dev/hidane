@@ -33,7 +33,9 @@
 
 The first three rows are medians from the canonical benchmark environment, both emulators on one
 quiet machine ([result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-13-release.md)). The listener row comes from Phase 0 and a later run on another
-machine, not side by side (`docs/why.md`); #50 re-measures it.
+machine, not side by side (`docs/why.md`); #50 re-measures it. A workflow checks hidane's first
+three rows against their targets on a GitHub-hosted runner on every push to `main` and nightly
+([`bench/`](../bench/README.md#targets-in-ci), #47).
 
 ## 2. v0.1 — gRPC core, no rules
 

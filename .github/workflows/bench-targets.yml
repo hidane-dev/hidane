@@ -1,0 +1,91 @@
+name: Benchmark targets
+
+# hidane alone, on a GitHub-hosted runner (#47): a release build's startup and memory, measured
+# with `hidane benchmark` and checked against the targets in docs/ROADMAP.md §1
+# (bench/targets.json, bench/check_targets.py). The bounds are the targets themselves, far above
+# what hidane measures, so a runner's noise does not fail the job; a failure is a regression.
+# The store's memory from 1,000 to 1,000,000 documents (the `rss` example) is reported, not
+# checked. Nothing here compares with the official emulator or is published as a number: that is
+# the canonical benchmark's (bench/README.md).
+#
+# It runs on pushes to main, nightly, by hand, and for changes to the check itself.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "47 2 * * *"
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/bench-targets.yml"
+      - "bench/check_targets.py"
+      - "bench/targets.json"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  targets:
+    name: startup and memory against the targets
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - run: python3 -I bench/check_targets.py --self-test
+      # The runner image's rustup; no toolchain action needed.
+      - run: rustup toolchain install stable --profile minimal && rustup default stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - run: cargo build --release --locked -p hidane
+      # Exit status 1 means some runs failed; the result is written all the same, and the check
+      # below reports the failures.
+      - name: Measure startup and memory
+        env:
+          KIND: ${{ github.event_name == 'pull_request' && 'pull-request' || 'local' }}
+        run: |
+          target/release/hidane benchmark --scenarios startup,memory --kind "$KIND" \
+            --machine-id github-hosted-ubuntu-24.04 --no-imds \
+            --hidane-commit "$GITHUB_SHA" --engine-commit "$GITHUB_SHA" \
+            --out "$RUNNER_TEMP/result.json" || [ "$?" -eq 1 ]
+          target/release/hidane benchmark render "$RUNNER_TEMP/result.json" > "$RUNNER_TEMP/result.md"
+      - name: Check against the targets
+        run: |
+          status=0
+          python3 -I bench/check_targets.py bench/targets.json "$RUNNER_TEMP/result.json" \
+            > "$RUNNER_TEMP/targets.md" || status=$?
+          {
+            echo "## hidane against its targets"
+            echo
+            cat "$RUNNER_TEMP/targets.md"
+            echo
+            cat "$RUNNER_TEMP/result.md"
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+      - name: The store's memory by document count
+        if: ${{ !cancelled() }}
+        run: |
+          cargo run --release --locked -p hidane-core --example rss -- 1000000 > "$RUNNER_TEMP/rss.csv"
+          {
+            echo
+            echo "## The in-memory store's RSS by document count (the rss example)"
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/rss.csv"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: bench-targets
+          path: |
+            ${{ runner.temp }}/result.json
+            ${{ runner.temp }}/result.md
+            ${{ runner.temp }}/targets.md
+            ${{ runner.temp }}/rss.csv
+          if-no-files-found: ignore
