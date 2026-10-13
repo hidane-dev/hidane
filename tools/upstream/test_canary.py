@@ -280,6 +280,68 @@ class Report(unittest.TestCase):
         self.assertIn("| npm: `firebase-functions` | `7.4.0` | stable | not-run",
                       canary.summary(data))
 
+    def sdk_report(self, sdk_json=None, version="1.27.0"):
+        key = f"go:cloud.google.com/go/firestore@{version}"
+        if sdk_json is not None:
+            out = self.tree.artifacts / f"sdk-go-cloud.google.com-go-firestore-{version}"
+            out.mkdir(parents=True)
+            (out / "sdk.json").write_text(json.dumps(dict({"key": key, "prepared": True}, **sdk_json)))
+        packages = [{"id": "go:cloud.google.com/go/firestore", "ecosystem": "go",
+                     "name": "cloud.google.com/go/firestore", "watched": "1.26.0", "verified": True,
+                     "new": [{"channel": "stable", "version": version}]}]
+        return self.report(packages=packages)
+
+    def test_sdk_same(self):
+        data = self.sdk_report({"units": [
+            {"unit": "documents", "transcript": "sdk-go-documents", "result": "documented",
+             "differences": 2, "official_changed": False},
+            {"unit": "queries", "transcript": "sdk-go-queries", "result": "identical",
+             "differences": 0, "official_changed": True}]})
+        [sdk] = data["sdks"]
+        self.assertEqual((sdk["result"], sdk["harness"]), ("same", "go"))
+        self.assertEqual(data["findings"], [])
+        self.assertTrue(data["conclusive"])
+        text = canary.summary(data)
+        self.assertIn("| `queries` | `sdk-go-queries-*.json` | identical | changed on the official "
+                      "emulator |", text)
+        self.assertIn("No confirmed difference: no issue.", text)
+
+    def test_sdk_different(self):
+        data = self.sdk_report({"units": [
+            {"unit": "documents", "transcript": "sdk-go-documents", "result": "different",
+             "differences": 1, "official_changed": False}]})
+        [finding] = data["findings"]
+        self.assertEqual(finding["key"], "go:cloud.google.com/go/firestore@1.27.0")
+        self.assertIn("cloud.google.com/go/firestore 1.27.0 (go, stable)", finding["title"])
+        self.assertIn("**different** (1 difference(s))", finding["body"])
+        self.assertIn("`sdk-go-cloud.google.com-go-firestore-1.27.0` artifact", finding["body"])
+
+    def test_sdk_prerelease_runs_only_by_hand(self):
+        packages = [{"id": "go:cloud.google.com/go/firestore", "ecosystem": "go",
+                     "name": "cloud.google.com/go/firestore", "watched": "1.26.0",
+                     "verified": True, "new": [{"channel": "prerelease", "version": "1.27.0-rc.1"}]}]
+        data = self.report(packages=packages)
+        [sdk] = data["sdks"]
+        self.assertEqual(sdk["result"], "not-run")
+        self.assertIn("runs only by hand", sdk["reason"])
+        self.assertIn("`go:cloud.google.com/go/firestore@1.27.0-rc.1`", sdk["reason"])
+        self.assertTrue(data["conclusive"])
+
+    def test_sdk_inconclusive(self):
+        for sdk_json in (None, {"prepared": False, "error": "go get failed"},
+                         {"units": [{"unit": "documents", "result": "error"}]},
+                         {"units": [{"unit": "documents", "result": "unstable"}]},
+                         {"units": [{"unit": "documents", "result": "made up"}]},
+                         {"units": []}):
+            with self.subTest(sdk_json=sdk_json):
+                tree = Tree()
+                self.addCleanup(tree.close)
+                self.tree = tree
+                data = self.sdk_report(sdk_json)
+                self.assertEqual(data["sdks"][0]["result"], "inconclusive")
+                self.assertFalse(data["conclusive"])
+                self.assertEqual(data["findings"], [])
+
     def test_marker(self):
         self.assertEqual(canary.marker("npm:@google-cloud/firestore@9.4.0"),
                          '<!-- hidane-upstream-canary key="npm:@google-cloud/firestore@9.4.0" -->')

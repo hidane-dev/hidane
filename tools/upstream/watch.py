@@ -6,11 +6,12 @@ Usage (from the repository root):
         docs/sdk-certification.json (or, without it, crates/hidane/src/project/verified.rs),
         .github/actions/official-emulator/pinned.sh and docs/compatibility.json. Offline.
     python3 tools/upstream/watch.py detect [--report FILE] [--summary FILE] [--outputs FILE]
-            [--emulator VERSION SHA256]...
+            [--emulator VERSION SHA256]... [--sdk ECOSYSTEM:NAME[@VERSION]]...
         Reads the public metadata of each watched package's registry and of firebase-tools, and
         writes what it found: the report (JSON), a Markdown summary, and the inputs of the
         compatibility canary as GitHub Actions outputs (`name=value` lines). `--emulator` also
-        hands the canary an official emulator jar by hand (the pinned one too), as `requested`.
+        hands the canary an official emulator jar by hand (the pinned one too), and `--sdk` a
+        release of a watched package (its watched one without a version), as `requested`.
 
 Only public metadata is read, never a page meant for people: npm's dist-tags and version
 documents, PyPI's JSON API, the Go module proxy, Maven Central's maven-metadata.xml, pub.dev's
@@ -543,8 +544,23 @@ def optional_json(rel):
 
 # Detection --------------------------------------------------------------------------------------
 
-def detect(watch, fetch, requested=()):
-    """The report: every package's channels and new releases, and the official emulator's."""
+def requested_sdk(watch, key):
+    """(package id, version) of a release requested by hand: `ecosystem:name@version`, or
+    `ecosystem:name` for the watched version."""
+    ids = {f"{p['ecosystem']}:{p['name']}": p["version"] for p in watch["packages"]}
+    if key in ids:
+        return key, ids[key]
+    ident, _, version = key.rpartition("@")
+    if ident not in ids or not valid(VERSION, version):
+        raise Stop(f"a requested release is `ecosystem:name@version` of a watched package, not "
+                   f"{shown(key)}")
+    return ident, version
+
+
+def detect(watch, fetch, requested=(), requested_sdks=()):
+    """The report: every package's channels and new releases, and the official emulator's.
+    Releases requested by hand are added as new, on the `requested` channel."""
+    wanted = [requested_sdk(watch, key) for key in requested_sdks]
     tags = watch.get("npm_prerelease_tags", [])
     packages, errors = [], []
     tools_channels = None
@@ -562,6 +578,15 @@ def detect(watch, fetch, requested=()):
             version = entry["channels"].get(channel)
             if version is not None and newer(version, package["version"]):
                 entry["new"].append({"channel": channel, "version": version})
+        for ident, version in wanted:
+            if ident != entry["id"]:
+                continue
+            same = [n for n in entry["new"] if n["version"] == version]
+            for new in same:  # a new release asked for by hand keeps its channel
+                new["requested"] = True
+            if not same:
+                entry["new"].append({"channel": REQUESTED, "version": version,
+                                     "requested": True})
         if package["ecosystem"] == "npm" and package["name"] == FIREBASE_TOOLS:
             tools_channels = entry["channels"]
         packages.append(entry)
@@ -595,6 +620,7 @@ def canary_inputs(report):
             sdks.append({"key": f"{package['id']}@{new['version']}",
                          "ecosystem": package["ecosystem"], "name": package["name"],
                          "version": new["version"], "channel": new["channel"],
+                         "requested": new.get("requested", False),
                          "verified": package["verified"]})
     return emulators, sdks
 
@@ -687,6 +713,9 @@ def main(argv=None):
     run.add_argument("--emulator", nargs=2, action="append", default=[],
                      metavar=("VERSION", "SHA256"),
                      help="also give the canary this official emulator jar, new or not")
+    run.add_argument("--sdk", action="append", default=[], metavar="ECOSYSTEM:NAME[@VERSION]",
+                     help="also give the canary this release of a watched package (without a "
+                          "version: the watched one)")
     args = parser.parse_args(argv)
     try:
         watch = load_watch()
@@ -698,7 +727,7 @@ def main(argv=None):
                 raise Stop("\n".join(problems))
             print(f"{WATCH}: in step with what the repository says is verified.")
             return 0
-        report = detect(watch, http_get, args.emulator)
+        report = detect(watch, http_get, args.emulator, args.sdk)
     except Stop as err:
         print(f"error: {err}", file=sys.stderr)
         return 1

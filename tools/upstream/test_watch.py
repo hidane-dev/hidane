@@ -288,6 +288,23 @@ class Detect(unittest.TestCase):
         [candidate] = report["emulator"]["candidates"]
         self.assertEqual(candidate["channels"], ["unreleased", "requested"])
 
+    def test_requested_sdks(self):
+        report = watch.detect(WATCH, Fetch(registry()), (), [
+            "go:cloud.google.com/go/firestore", "npm:@google-cloud/firestore@9.4.0",
+            "go:cloud.google.com/go/firestore@1.27.0-rc.1"])
+        # A new release asked for keeps its channel; another release is `requested`.
+        self.assertEqual(package(report, "go:cloud.google.com/go/firestore")["new"], [
+            {"channel": "prerelease", "version": "1.27.0-rc.1", "requested": True},
+            {"channel": "requested", "version": "1.26.0", "requested": True}])
+        self.assertEqual(package(report, "npm:@google-cloud/firestore")["new"],
+                         [{"channel": "requested", "version": "9.4.0", "requested": True}])
+        _, sdks = watch.canary_inputs(report)
+        self.assertEqual([(s["version"], s["requested"]) for s in sdks
+                          if s["ecosystem"] == "pypi"], [("2.36.0b1", False)])
+        for bad in ("npm:left-pad@1.0.0", "npm:@google-cloud/firestore@x y", "go:", ""):
+            with self.assertRaises(watch.Stop):
+                watch.detect(WATCH, Fetch(registry()), (), [bad])
+
     def test_go_module_escape(self):
         self.assertEqual(watch.go_escape("github.com/Azure/azure-sdk"),
                          "github.com/!azure/azure-sdk")

@@ -60,9 +60,9 @@ next release will download).
 It runs daily, by hand (`workflow_dispatch`), and on pull requests that change the watcher, the
 canary or what they run; CI runs their tests and `watch.py check` on every pull request:
 
-- **watch list** runs the tests (`test_watch.py`, `test_canary.py`, offline) and
-  `python3 tools/upstream/watch.py check`, which fails when `watch.json` does not name the
-  versions the repository says are verified: `docs/sdk-certification.json`'s
+- **watch list** runs the tests (`test_watch.py`, `test_canary.py`, `test_sdk_canary.py`,
+  offline) and `python3 tools/upstream/watch.py check`, which fails when `watch.json` does not
+  name the versions the repository says are verified: `docs/sdk-certification.json`'s
   `verified_packages` (generated from the recorded results; `verified.rs` is generated from it),
   or `verified.rs` itself where that file is not there yet; `pinned.sh`, and
   `docs/compatibility.json`'s `official_emulator` where it is there; and the Emulator UI in
@@ -108,22 +108,72 @@ For each new official emulator jar, whichever channel pins it:
      difference was not confirmed, or hidane's tests fail with the committed fixtures too). The
      job fails, and the next run tries again.
 
-   New SDK and tool releases are listed with what the canary ran for each. Today that is nothing:
-   each is listed as **not run**, with the reason. The jar a new firebase-tools release pins is
-   checked as above when it is a new jar, but firebase-tools' CLI (`hidane exec`, exports) is not
-   run; `tools/oracle/functions/` (firebase-functions) and `tools/oracle/flutter_web/`
-   (`cloud_firestore`) need tools the runners do not set up; the SDK harnesses in
-   `tools/oracle/` are run by hand ([When something is new](#when-something-is-new)).
+   New SDK and tool releases are listed with what the canary ran for each (below).
 
-A verdict covers the recordings the canary re-recorded and hidane's tests, nothing more: the
-other fixtures are not recorded against the new release, so **same** is not "verified". The
-report says how many fixtures were re-recorded.
+For each new **stable** release of a verified SDK that has a harness in `tools/oracle/`, the
+**build hidane** job builds hidane once, and a job per release runs
+`python3 tools/upstream/sdk_canary.py run`. A prerelease (and a `latest` that is not the stable
+release) is listed in the report as not run, and runs only when asked for by hand: the workflow's
+`sdk` input, with that release (see [Running new SDK code](#running-new-sdk-code)).
+
+| Package | Harness | Units |
+|---|---|---|
+| `go:cloud.google.com/go/firestore` | `tools/oracle/sdk_go/` (`go get` the release, then build) | the sections `documents`, `queries`, `transactions`, `listen` |
+| `pypi:google-cloud-firestore` | `tools/oracle/sdk_python/` (a venv from `requirements.txt`, then the release; wheels only) | the same sections |
+| `maven:com.google.cloud:google-cloud-firestore` | `tools/oracle/sdk_java/` (a copy of `pom.xml` naming the release) | the same sections |
+| `npm:@google-cloud/firestore`, `npm:firebase`, `npm:@firebase/rules-unit-testing` | the `tools/oracle/sdk_*.mjs` scripts that import the package (`npm install --ignore-scripts`; the other two packages at their verified versions) | each script, but `sdk_export_import.mjs` (it runs under firebase-tools) |
+
+Each unit runs once on a freshly started official emulator (the pinned jar, started and stopped by
+the action's own scripts) and once on a freshly started hidane, and the two transcripts are
+compared: **identical**; **documented** when every difference is one the verified release shows
+too, in its committed pair in `results/` (`results/README.md` and `docs/parity-exceptions.md`
+explain those) or, when that does not explain it, in a pair of the verified release run the same
+way on the same runner (some steps depend on timing: on a runner, `sdk_transactions.mjs` counts 4
+attempts against the official emulator where the committed transcript has 3, with the verified
+release too). Otherwise the unit runs again on two fresh emulators, and is **different** when the
+same unexplained differences come back (a finding, which gets an issue), **unstable** when they do
+not. A harness that fails, or prints something that is not JSON, is an **error**. The report also says when the SDK's own transcript on the official emulator changed from
+the committed one: its transcripts need recording again before moving to it. The release's verdict
+is **same** (every unit identical or documented), **different** or **inconclusive**, as for an
+emulator.
+
+Not run, with the reason in the report: firebase-tools' CLI (`hidane exec`, exports; the jar a
+new firebase-tools release pins is checked as above when it is a new jar), firebase-functions
+(`tools/oracle/functions/` needs firebase-tools and both emulators), `cloud_firestore`
+(`tools/oracle/flutter_web/` needs Flutter and a browser), and the packages watched without being
+verified (`firebase-admin`). Run those by hand ([When something is new](#when-something-is-new)).
+
+A verdict covers what the canary ran, nothing more: the other fixtures are not recorded against a
+new emulator, and a harness covers the steps it has, so **same** is not "verified". The report
+says how many fixtures were re-recorded and lists every unit.
 
 The canary runs once for each set of new releases: the report job saves a cache entry named by
 the set's fingerprint (`upstream-canary-<sha256>`), and a later run with the same set skips the
 canary unless it is run by hand with **force**. A run that was inconclusive saves nothing. A pull
-request runs the canary against the pinned emulator instead, whose recordings must come out as
-committed (verdict **same**).
+request runs the canary against the pinned emulator and the verified release of the Go, Python,
+Java and `firebase` harnesses instead, whose results must come out as committed (verdict **same**
+for each). Not `@google-cloud/firestore`: run as the verified release itself, it has nothing but
+the committed pair to compare with, and its transactions script counts attempts that depend on
+timing.
+
+### Running new SDK code
+
+The SDK jobs install and run an SDK release published hours or minutes earlier, with whatever it
+depends on. They get as little as possible: no credential (`persist-credentials: false`, no
+secret), a read-only `GITHUB_TOKEN`, no cache restored or saved by a toolchain,
+`npm install --ignore-scripts`, wheels only for pip, and hidane as a binary built by another job.
+
+What remains: code running in a job can reach what the runner gives that job, among it the
+token the runner uses for the job's artifacts and for the Actions cache, which on the schedule is
+`main`'s cache. A malicious release could therefore upload artifacts to the run or write cache
+entries that later runs on `main` restore (Rust builds, the jar's entry, whose SHA-256 is checked
+again when it is restored). It cannot push, open pull requests or issues, or read a secret.
+
+So the schedule runs the SDK harnesses for **stable** releases only: the ones users install by
+default, published through each project's release process. A prerelease or an unreleased build
+runs only when a maintainer asks for it by hand (Run workflow, `sdk`: `ecosystem:name@version`),
+after looking at what it is. Releases watched without being verified, and packages without a
+harness, never run.
 
 ## Issues
 
@@ -144,13 +194,19 @@ By hand (Actions → Upstream → Run workflow):
 - **dry-run** (on by default): only say which issues would be opened or updated;
 - **force**: run the canary even if it already ran for these releases;
 - **emulator-version** and **emulator-sha256**: also run the canary against this jar, new or not
-  (the pinned one, `1.22.0` and `9b6498b7…`, should come out **same**).
+  (the pinned one, `1.22.0` and `9b6498b7…`, should come out **same**);
+- **sdk**: also run the canary for this release of a watched package, `ecosystem:name@version`
+  (for example `pypi:google-cloud-firestore@2.34.1`, the verified one, which should come out
+  **same**); the only way a prerelease's harness runs.
 
 ### Acting on a canary issue
 
-1. Open the run the issue links, and download the `canary-<release>-*` artifacts: each holds the
-   recording (`out/<recorder>.json`, and `.again.json` from the second emulator), `result.json`
-   and the emulator's output. Compare them with the committed fixtures (`diff -u`).
+1. Open the run the issue links, and download its artifacts. For an emulator, each
+   `canary-<release>-<recorder>` holds the recording (`out/<recorder>.json`, and `.again.json` from
+   the second emulator), `result.json` and the emulator's output: compare them with the committed
+   fixtures (`diff -u`). For an SDK, `sdk-<release>` holds `sdk.json` (the differing paths of each
+   unit), the transcripts of both emulators (`transcripts/`) and the logs: compare them with the
+   committed pair in `results/`.
 2. Decide what the difference is: a fix or a new behaviour of the official emulator that hidane
    should follow, or something hidane should not follow (a bug), to be recorded in
    `docs/parity-exceptions.md`. The canary does not decide: hidane follows the official emulator
