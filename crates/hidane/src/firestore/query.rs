@@ -22,7 +22,7 @@ use hidane_core::{
     normalize::normalize_value,
     order::{compare, is_vector, type_rank},
     path::ResourcePath,
-    store::{ReadTime, Store, StoredDocument},
+    store::{ReadTime, Store, StoredDocument, identical},
 };
 use hidane_proto::google::firestore::v1::{
     Cursor, StructuredQuery, Value,
@@ -989,19 +989,19 @@ pub fn check_operators(query: &StructuredQuery) -> Result<(), Status> {
 fn check_filter(filter: &Filter) -> Result<(), Status> {
     let mut leaves = Vec::new();
     collect_leaves(filter, &mut leaves);
-    if array_filters(filter) > 1 {
+    let normalized = normalize(filter);
+    if array_filters(&normalized) > 1 {
         return Err(Status::failed_precondition(
             "Only a single array-contains clause is allowed in a query",
         ));
     }
     check_key_equality(&leaves)?;
-    let disjunctions = disjunctions(filter);
     // Past twice the maximum, the official emulator stops counting.
-    if disjunctions > 2 * MAX_DISJUNCTIONS {
+    let Some(disjunctions) = disjunctions(&normalized).map(|dnf| dnf.len()) else {
         return Err(Status::invalid_argument(format!(
             "Too many disjunctions after normalization, the maximum is {MAX_DISJUNCTIONS}"
         )));
-    }
+    };
     if disjunctions > MAX_DISJUNCTIONS {
         return Err(Status::invalid_argument(format!(
             "Too many disjunctions after normalization. Result had {disjunctions} disjunctions \
@@ -1064,25 +1064,174 @@ fn array_filters(filter: &Filter) -> usize {
     }
 }
 
-/// How many conjunctions the filter becomes in disjunctive normal form, where `in` and
-/// `array-contains-any` count one per value.
-fn disjunctions(filter: &Filter) -> usize {
-    match filter {
-        Filter::Or(filters) => filters.iter().map(disjunctions).sum(),
-        Filter::And(filters) => filters
-            .iter()
-            .map(disjunctions)
-            .fold(1, usize::saturating_mul),
-        Filter::Compare {
-            op: Op::In | Op::ArrayContainsAny,
-            value,
-            ..
-        } => match &value.value_type {
-            Some(ValueType::ArrayValue(array)) => array.values.len(),
-            _ => 1,
-        },
-        Filter::Compare { .. } | Filter::Unary { .. } => 1,
+/// The filter as the official emulator normalizes it before counting array-contains filters
+/// and disjunctions (`tools/oracle/queries.py`, #262): an `and` in an `and` and an `or` in an
+/// `or` flattened into it, a filter that is the same as one before it in its composite left
+/// out (an `in`, `not-in` or `array-contains-any` compares its values as a set), and a
+/// composite of one filter that filter.
+fn normalize(filter: &Filter) -> Filter {
+    let (children, and) = match filter {
+        Filter::And(children) => (children, true),
+        Filter::Or(children) => (children, false),
+        leaf => return leaf.clone(),
+    };
+    let mut flat: Vec<Filter> = Vec::with_capacity(children.len());
+    let mut push = |filter: Filter| {
+        if !flat.iter().any(|seen| same_filter(seen, &filter)) {
+            flat.push(filter);
+        }
+    };
+    for child in children {
+        match normalize(child) {
+            Filter::And(grandchildren) if and => grandchildren.into_iter().for_each(&mut push),
+            Filter::Or(grandchildren) if !and => grandchildren.into_iter().for_each(&mut push),
+            other => push(other),
+        }
     }
+    match flat.len() {
+        1 => flat.pop().expect("one filter"),
+        _ if and => Filter::And(flat),
+        _ => Filter::Or(flat),
+    }
+}
+
+fn same_filter(a: &Filter, b: &Filter) -> bool {
+    match (a, b) {
+        (
+            Filter::Compare {
+                field: fa,
+                op: oa,
+                value: va,
+            },
+            Filter::Compare {
+                field: fb,
+                op: ob,
+                value: vb,
+            },
+        ) => {
+            fa == fb
+                && oa == ob
+                && if matches!(oa, Op::In | Op::NotIn | Op::ArrayContainsAny) {
+                    let (a, b) = (array(va), array(vb));
+                    a.iter().all(|v| b.iter().any(|w| identical(v, w)))
+                        && b.iter().all(|v| a.iter().any(|w| identical(v, w)))
+                } else {
+                    identical(va, vb)
+                }
+        }
+        (Filter::Unary { field: fa, op: oa }, Filter::Unary { field: fb, op: ob }) => {
+            fa == fb && oa == ob
+        }
+        (Filter::And(a), Filter::And(b)) | (Filter::Or(a), Filter::Or(b)) => {
+            a.iter().all(|f| b.iter().any(|g| same_filter(f, g)))
+                && b.iter().all(|f| a.iter().any(|g| same_filter(f, g)))
+        }
+        _ => false,
+    }
+}
+
+/// One condition of a conjunction in disjunctive normal form: an `in` is an equality per
+/// value, an `array-contains-any` an `array-contains` per value.
+#[derive(Clone, Copy)]
+struct Atom<'a> {
+    field: &'a Field,
+    kind: Leaf,
+    value: Option<&'a Value>,
+}
+
+impl Atom<'_> {
+    fn same(&self, other: &Self) -> bool {
+        self.field == other.field
+            && self.kind == other.kind
+            && match (self.value, other.value) {
+                (Some(a), Some(b)) => identical(a, b),
+                (None, None) => true,
+                _ => false,
+            }
+    }
+}
+
+/// A conjunction: a set of atoms.
+type Conjunction<'a> = Vec<Atom<'a>>;
+
+fn same_conjunction(a: &Conjunction<'_>, b: &Conjunction<'_>) -> bool {
+    a.len() == b.len() && a.iter().all(|x| b.iter().any(|y| x.same(y)))
+}
+
+/// The conjunctions a normalized filter becomes in disjunctive normal form, each once (as sets
+/// of atoms), or `None` once an `and` would combine more than twice the maximum of them, where
+/// the official emulator stops counting (`tools/oracle/queries.py`, #262).
+fn disjunctions(filter: &Filter) -> Option<Vec<Conjunction<'_>>> {
+    fn add<'a>(out: &mut Vec<Conjunction<'a>>, conjunction: Conjunction<'a>) {
+        if !out.iter().any(|seen| same_conjunction(seen, &conjunction)) {
+            out.push(conjunction);
+        }
+    }
+    let mut out: Vec<Conjunction<'_>> = Vec::new();
+    match filter {
+        Filter::Or(children) => {
+            for child in children {
+                for conjunction in disjunctions(child)? {
+                    add(&mut out, conjunction);
+                }
+            }
+        }
+        Filter::And(children) => {
+            let (first, rest) = children.split_first()?;
+            out = disjunctions(first)?;
+            for child in rest {
+                let terms = disjunctions(child)?;
+                if out.len() * terms.len() > 2 * MAX_DISJUNCTIONS {
+                    return None;
+                }
+                let mut product = Vec::new();
+                for left in &out {
+                    for right in &terms {
+                        let mut conjunction: Conjunction<'_> = Vec::new();
+                        for atom in left.iter().chain(right) {
+                            if !conjunction.iter().any(|seen| seen.same(atom)) {
+                                conjunction.push(*atom);
+                            }
+                        }
+                        add(&mut product, conjunction);
+                    }
+                }
+                out = product;
+            }
+        }
+        Filter::Compare {
+            field,
+            op: op @ (Op::In | Op::ArrayContainsAny),
+            value,
+        } => {
+            let kind = Leaf::Compare(if *op == Op::In {
+                Op::Equal
+            } else {
+                Op::ArrayContains
+            });
+            for value in array(value) {
+                add(
+                    &mut out,
+                    vec![Atom {
+                        field,
+                        kind,
+                        value: Some(value),
+                    }],
+                );
+            }
+        }
+        Filter::Compare { field, op, value } => out.push(vec![Atom {
+            field,
+            kind: Leaf::Compare(*op),
+            value: Some(value),
+        }]),
+        Filter::Unary { field, op } => out.push(vec![Atom {
+            field,
+            kind: Leaf::Unary(*op),
+            value: None,
+        }]),
+    }
+    Some(out)
 }
 
 /// Fields that need an implicit ordering: those of range, `!=`, `not-in`, `is not null` and

@@ -401,6 +401,37 @@ case("a filter on a path into a vector", q("t", where_=ff("v.value", "EQUAL", ar
 case("an order by a path into a vector", q("t", order=[asc("v.value")]))
 case("a projection of a path into a vector", q("t", where_=ff("v", "EQUAL", vec(1, 2)), select={"fields": [f("v.value"), f("v")]}))
 case("a projection of a path into a vector alone", q("t", where_=ff("v", "EQUAL", vec(1, 2)), select={"fields": [f("v.value")]}))
+# How disjunctions are counted: the filter is normalized first (an `and` in an `and` and an `or`
+# in an `or` flattened, a filter the same as one before it in its composite left out, an `in`'s
+# values compared as a set), then put in disjunctive normal form as a set of conjunctions, each
+# a set of conditions (an `in` is an equality per value, an `array-contains-any` an
+# `array-contains` per value; values the same bit for bit are one). An `and` that would combine
+# more than 60 conjunctions stops the count. Array-contains filters are counted on the
+# normalized filter.
+def ints(lo, hi): return [i(n) for n in range(lo, hi)]
+XY = ff("b", "IN", arr(s("x"), s("y")))
+case("in with a value twice, and in 2", q("p", where_=AND(ff("a", "IN", arr(*ints(0, 15), i(0))), XY)))
+case("in with 1 and 1.0, and in 2", q("p", where_=AND(ff("a", "IN", arr(*ints(0, 15), d(1.0))), XY)))
+case("in with NaN twice, and in 2", q("p", where_=AND(ff("a", "IN", arr(*ints(0, 14), NAN, NAN)), XY)))
+case("in with an empty array twice, and in 2", q("p", where_=AND(ff("a", "IN", arr(*ints(0, 14), arr(), arr())), XY)))
+case("array-contains-any with a value twice, and in 2", q("p", where_=AND(ff("tags", "ARRAY_CONTAINS_ANY", arr(*ints(0, 15), i(0))), XY)))
+case("an or of one equality 31 times", q("p", where_=OR(*[ff("a", "EQUAL", i(1))] * 31)))
+case("an or of 61 equalities", q("p", where_=OR(*[ff("a", "EQUAL", i(n)) for n in range(61)])))
+case("an or of 61 equalities and an equality", q("p", where_=AND(OR(*[ff("a", "EQUAL", i(n)) for n in range(61)]), ff("b", "EQUAL", s("x")))))
+case("an or of an in and an equality it holds, and in 2", q("p", where_=AND(OR(ff("a", "IN", arr(*ints(0, 15))), ff("a", "EQUAL", i(0))), XY)))
+case("an or of array-contains-any and an array-contains it holds, and in 2", q("p", where_=AND(OR(ff("tags", "ARRAY_CONTAINS_ANY", arr(*ints(0, 15))), ff("tags", "ARRAY_CONTAINS", i(0))), XY)))
+case("an or of in and array-contains-any of one value, and in 2", q("p", where_=AND(OR(ff("a", "IN", arr(*ints(0, 15))), ff("a", "ARRAY_CONTAINS_ANY", arr(i(0)))), XY)))
+case("one in twice, its values in another order", q("p", where_=AND(ff("a", "IN", arr(*ints(0, 10))), ff("a", "IN", arr(*reversed(ints(0, 10)))))))
+case("one in twice, once in a nested and", q("p", where_=AND(ff("a", "IN", arr(*ints(0, 10))), AND(ff("b", "EQUAL", s("x")), ff("a", "IN", arr(*reversed(ints(0, 10))))))))
+case("two ins on one field", q("p", where_=AND(ff("a", "IN", arr(*ints(0, 8))), ff("a", "IN", arr(*ints(0, 7), i(99))))))
+case("in 6 and in 10", q("p", where_=AND(ff("a", "IN", arr(*ints(0, 6))), ff("b", "IN", arr(*ints(0, 10))))))
+case("in 8 and in 8", q("p", where_=AND(ff("a", "IN", arr(*ints(0, 8))), ff("b", "IN", arr(*ints(0, 8))))))
+case("one conjunction in two orders, and in 2", q("p", where_=AND(OR(AND(ff("a", "EQUAL", i(1)), ff("m.x", "EQUAL", i(1))), AND(ff("m.x", "EQUAL", i(1)), ff("a", "EQUAL", i(1))), *[ff("a", "EQUAL", i(n)) for n in range(2, 16)]), XY)))
+case("a conjunction and a part of it, and in 2", q("p", where_=AND(OR(ff("a", "EQUAL", i(1)), AND(ff("a", "EQUAL", i(1)), ff("m.x", "EQUAL", i(1))), *[ff("a", "EQUAL", i(n)) for n in range(2, 16)]), XY)))
+case("an equality twice in an and", q("p", where_=AND(OR(AND(ff("a", "EQUAL", i(1)), ff("a", "EQUAL", i(1))), *[ff("a", "EQUAL", i(n)) for n in range(1, 16)]), XY)))
+case("one array-contains twice", q("p", where_=AND(ff("tags", "ARRAY_CONTAINS", s("red")), ff("tags", "ARRAY_CONTAINS", s("red")))))
+case("one array-contains-any twice, its values in another order", q("p", where_=AND(ff("tags", "ARRAY_CONTAINS_ANY", arr(s("red"), s("blue"))), ff("tags", "ARRAY_CONTAINS_ANY", arr(s("blue"), s("red"))))))
+case("an array-contains and an or holding it", q("p", where_=AND(ff("tags", "ARRAY_CONTAINS", s("red")), OR(ff("tags", "ARRAY_CONTAINS", s("red")), ff("b", "EQUAL", s("x"))))))
 
 # --- equality on __name__ next to inequalities (#74) -----------------------------------------
 # Refused unless __name__ has an inequality too; checked after the other filter checks, and
