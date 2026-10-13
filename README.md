@@ -38,17 +38,26 @@ command only ([ADR 0006](docs/adr/0006-launch-under-firebase-tools.md)).
 The official emulator is a closed-source Java application shipped as a jar. Three things about
 it hurt everyday local development and CI (details and raw logs: [`docs/why.md`](docs/why.md)):
 
-| | Official emulator v1.22.0 | hidane on `main` |
+| | Official emulator v1.22.0 | hidane v0.4.0 |
 |---|---|---|
 | Runtime | Java 21 or newer ([required since firebase-tools 15.0.0](https://github.com/firebase/firebase-tools/releases/tag/v15.0.0)) | none, single binary |
-| Time until the port accepts | 0.74 s directly, 2.5 s through `firebase emulators:start` | 5.5 ms (median of 10) |
-| Resident memory | 95 MiB idle, 456 MiB after 1,000 documents | 7.4 MiB idle, 21 MiB after 1,000 documents |
-| 100,000 documents in batches of 500, a listener on the collection | 121 s, each batch slower as documents accumulate ([firebase-tools#3477](https://github.com/firebase/firebase-tools/issues/3477)) | 4.9 s, flat per batch |
+| Time until the port accepts | 941 ms | 1.56 ms |
+| Resident memory, idle | 148 MiB | 7.8 MiB |
+| Resident memory after 1,000 documents | 268 MiB | 10.1 MiB |
+| 100,000 documents written in commits of 500 | 17.1 s | 1.46 s |
+| `firebase emulators:exec` around a CI-style workload (100 documents seeded, 200 tests) | 6.75 s | 1.67 s |
 
-All numbers are measurements, but not side by side: the official emulator's were taken in Phase 0
-on a loaded workstation (see the caveat in `docs/why.md`), hidane's later on a quiet one
-(`results/startup-memory-hidane.txt`, `results/listen-batch-writes-hidane.csv`). A same-machine
-comparison is #50; its harness, which anyone can rerun, is [`bench/`](bench/README.md).
+In our canonical benchmark environment, these are the medians for both emulators on the same
+machine: an AWS c7i.xlarge (Intel Xeon Platinum 8488C, 4 vCPUs, 8 GiB), Ubuntu 24.04, Java
+21.0.12.1, firebase-tools 15.33.0, and hidane v0.4.0's published binary (commit `8a81062`), measured
+on 2026-10-13. The [result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-13-release.md)
+comes with every sample in its JSON. The methodology is in [`bench/`](bench/README.md), and anyone
+can rerun it; other machines give other numbers.
+
+One cost the benchmark does not measure yet (#50) is writing while a listener is attached. In
+that case, the official emulator's batch writes slow down as documents accumulate
+([firebase-tools#3477](https://github.com/firebase/firebase-tools/issues/3477)), while hidane's
+stay flat per batch ([`docs/why.md`](docs/why.md#3-writes-slow-down-while-a-listener-is-attached)).
 
 ## What works today
 

@@ -104,10 +104,10 @@
 <a class="src" href="https://github.com/firebase/firebase-tools/releases/tag/v15.0.0">Source: firebase-tools v15.0.0 release notes</a>
 </article>
 <article class="card">
-<div class="card-num">0.74 s · 95 MiB</div>
-<h3>0.74 s to start, 95 MiB idle</h3>
-<p>The official emulator takes 0.74 s to open its port (2.5 s through the CLI) and sits at 95 MiB idle. hidane on main: 5.5 ms and 7.4 MiB.</p>
-<a class="src" href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md#2-startup-and-memory">Source: measurements and raw logs</a>
+<div class="card-num">941 ms · 148 MiB</div>
+<h3>941 ms to start, 148 MiB idle</h3>
+<p>In our canonical benchmark environment, the official emulator takes a median 941 ms to open its port and sits at 148 MiB idle. hidane v0.4.0 on the same machine: 1.56 ms and 7.8 MiB.</p>
+<a class="src" href="https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-13-release.md">Source: benchmark result, every sample included</a>
 </article>
 <article class="card">
 <div class="card-num">11× slower</div>
@@ -116,7 +116,7 @@
 <a class="src" href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md#3-writes-slow-down-while-a-listener-is-attached">Source: measurements and raw logs</a>
 </article>
 </div>
-<p class="fine">All figures are measurements, but not side by side: hidane's were taken later on a quieter machine, and a same-machine comparison is coming. Context: <a href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md">why hidane</a>.</p>
+<p class="fine">Startup and memory: medians for both emulators on one AWS c7i.xlarge (Ubuntu 24.04, Java 21, firebase-tools 15.33.0), 2026-10-13; methodology in <a href="https://github.com/hidane-dev/hidane/blob/main/bench/README.md">bench/</a>. Writes with a listener: Phase 0 measurements, not side by side, as the benchmark does not cover that case yet. Context: <a href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md">why hidane</a>.</p>
 </div>
 </section>
 
