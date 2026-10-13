@@ -2270,6 +2270,248 @@
    ]
   },
   {
+   "name": "the transaction of a query is checked before the query",
+   "steps": [
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQEAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "rollback",
+     "label": "rollback T",
+     "txn": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "query",
+     "label": "ended T queries without a query",
+     "txn": "T",
+     "structuredQuery": null,
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "query",
+     "label": "ended T queries with a filter of no kind",
+     "txn": "T",
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "where": {}
+     },
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "query",
+     "label": "ended T queries with an unknown field filter operator",
+     "txn": "T",
+     "structuredQuery": {
+      "where": {
+       "fieldFilter": {}
+      }
+     },
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "aggregate",
+     "label": "ended T aggregates without a query",
+     "txn": "T",
+     "structuredAggregationQuery": null,
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "aggregate",
+     "label": "ended T aggregates nothing",
+     "txn": "T",
+     "structuredAggregationQuery": {},
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "aggregate",
+     "label": "ended T sums without a collection",
+     "txn": "T",
+     "structuredAggregationQuery": {
+      "structuredQuery": {},
+      "aggregations": [
+       {
+        "sum": {
+         "field": {
+          "fieldPath": "a"
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "query",
+     "label": "ended T queries with two negations",
+     "txn": "T",
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "where": {
+       "compositeFilter": {
+        "op": "AND",
+        "filters": [
+         {
+          "fieldFilter": {
+           "op": "NOT_EQUAL"
+          }
+         },
+         {
+          "unaryFilter": {
+           "op": "IS_NOT_NAN"
+          }
+         }
+        ]
+       }
+      }
+     },
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Only a single 'NOT_EQUAL', 'NOT_IN', 'IS_NOT_NAN', or 'IS_NOT_NULL' filter allowed per query.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "aggregate",
+     "label": "ended T counts with not-in in an or",
+     "txn": "T",
+     "structuredAggregationQuery": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "compositeFilter": {
+         "op": "OR",
+         "filters": [
+          {
+           "fieldFilter": {
+            "op": "NOT_IN"
+           }
+          }
+         ]
+        }
+       }
+      },
+      "aggregations": [
+       {
+        "count": {}
+       }
+      ]
+     },
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "'NOT_IN' cannot be used in the same query with 'IN', 'ARRAY_CONTAINS_ANY' or 'OR'.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin U",
+     "as": "U",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "query",
+     "label": "U queries without a query",
+     "txn": "U",
+     "structuredQuery": null,
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "only structured queries are supported",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "aggregate",
+     "label": "U aggregates without a query",
+     "txn": "U",
+     "structuredAggregationQuery": null,
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Only structured aggregation queries are supported.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "aggregate",
+     "label": "U aggregates nothing",
+     "txn": "U",
+     "structuredAggregationQuery": {},
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Aggregations can not be empty.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "rollback",
+     "label": "rollback U",
+     "txn": "U",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    }
+   ]
+  },
+  {
    "name": "BatchGetDocuments can start a transaction",
    "steps": [
     {

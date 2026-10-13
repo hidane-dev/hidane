@@ -911,11 +911,22 @@ impl Firestore for FirestoreService {
         let database = parent.database;
         // `explain_options` is ignored, as on the official emulator: the same results, no
         // explain metrics.
-        // An absent query is the empty one, as on the official emulator.
-        let default = StructuredQuery::default();
-        let structured = match &req.query_type {
-            Some(run_query_request::QueryType::StructuredQuery(structured)) => structured,
-            None => &default,
+        // The operators of the query's filter come first, then the transaction the request
+        // reads in: a malformed or ended one is reported before anything else about the query
+        // (`tools/oracle/transactions.py`, `tools/oracle/queries.py`, #262).
+        if let Some(run_query_request::QueryType::StructuredQuery(structured)) = &req.query_type {
+            query::check_operators(structured)?;
+        }
+        if let Some(run_query_request::ConsistencySelector::Transaction(t)) =
+            &req.consistency_selector
+        {
+            self.read_in(&database, t, &[], None)?;
+        }
+        let Some(run_query_request::QueryType::StructuredQuery(structured)) = &req.query_type
+        else {
+            return Err(Status::invalid_argument(
+                "only structured queries are supported",
+            ));
         };
         let query = Query::parse(parent.path, structured)?;
         self.check_list(&caller, &database, &query)?;
@@ -991,20 +1002,42 @@ impl Firestore for FirestoreService {
         let database = parent.database;
         // `explain_options` is ignored, as on the official emulator: the same results, no
         // explain metrics.
+        // As for RunQuery, the operators of the query's filter, then the transaction. Then the
+        // aggregations are read, the query's parts read, the aggregations checked as a list,
+        // and the rest of the query checked (`tools/oracle/aggregations.py`, #262). An
+        // aggregation query without a query aggregates the empty one.
         let default = StructuredQuery::default();
-        let (structured, aggregations) = match &req.query_type {
-            Some(run_aggregation_query_request::QueryType::StructuredAggregationQuery(q)) => (
+        let structured = match &req.query_type {
+            Some(run_aggregation_query_request::QueryType::StructuredAggregationQuery(q)) => {
                 match &q.query_type {
                     Some(structured_aggregation_query::QueryType::StructuredQuery(s)) => s,
                     None => &default,
-                },
-                q.aggregations.as_slice(),
-            ),
-            None => (&default, &[][..]),
+                }
+            }
+            None => &default,
         };
-        let mut query = Query::parse(parent.path, structured)?;
+        query::check_operators(structured)?;
+        if let Some(run_aggregation_query_request::ConsistencySelector::Transaction(t)) =
+            &req.consistency_selector
+        {
+            self.read_in(&database, t, &[], None)?;
+        }
+        let Some(run_aggregation_query_request::QueryType::StructuredAggregationQuery(q)) =
+            &req.query_type
+        else {
+            return Err(Status::invalid_argument(
+                "Only structured aggregation queries are supported.",
+            ));
+        };
+        let read = Aggregations::read(&q.aggregations)?;
+        let reads_fields = read.reads_fields();
+        let mut checked = None;
+        let mut query = Query::parse_aggregated(parent.path, structured, || {
+            checked = Some(read.check()?);
+            Ok(reads_fields)
+        })?;
+        let aggregations = checked.expect("checked while parsing the query");
         self.check_list(&caller, &database, &query)?;
-        let aggregations = Aggregations::parse(aggregations)?;
         query.require(aggregations.fields());
         let consistency = match &req.consistency_selector {
             Some(run_aggregation_query_request::ConsistencySelector::Transaction(t)) => {

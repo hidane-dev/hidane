@@ -123,6 +123,39 @@ case("sum of an invalid field path", q("ints"), [total("a..b", "s")])
 case("sum without a field", q("ints"), [{"sum": {}, "alias": "s"}])
 case("aggregation without an operator", q("ints"), [{"alias": "x"}])
 case("invalid query", q("ints", limit=-1), [count("n")])
+# Found by the differential fuzzer (tools/fuzz/, #262): `sum` and `avg` need a collection, as an
+# order by a field does; `count` does not. The aggregations are checked before the query, and
+# this after the query's limit and before its filter.
+case("sum without a collection", {}, [total("v", "s")])
+case("avg without a collection", {}, [avg("v", "a")])
+case("count and sum of every collection", {"from": [{"collectionId": ""}]}, [count("n"), total("v", "s")])
+case("sum of every descendant", {"from": [{"collectionId": "", "allDescendants": True}]}, [total("v", "s")])
+case("avg under a document without a collection", {}, [avg("v", "a")], parent="mixed/i1")
+case("count under a document without a collection", {}, [count("n")], parent="mixed/i1")
+case("sum without a collection, with a filter", {"where": {"fieldFilter": {"field": f("v"), "op": "EQUAL", "value": i(1)}}}, [total("v", "s")])
+case("sum without a collection, with a negative limit", {"limit": -1}, [total("v", "s")])
+case("sum without a collection, and a count up to -1", {}, [total("v", "s"), count("n", up_to=-1)])
+case("no aggregations and an invalid query", q("ints", limit=-1), [])
+case("a count up to -1 and an invalid query", q("ints", orderBy=[{"field": f("v")}, {"field": f("v")}]), [count("n", up_to=-1)])
+# Which comes first, an aggregation's problem or its query's: the operators of the query's
+# filter; then each aggregation as it is read (its operator, `up_to`, the path it reads); then
+# what the query names (its collection, filter kinds and paths); then the list of aggregations
+# (empty, more than five, `__name__`, aliases); then the rest of the query.
+NEGATIONS = {"compositeFilter": {"op": "AND", "filters": [
+    {"fieldFilter": {"field": f("a"), "op": "NOT_EQUAL", "value": i(1)}},
+    {"fieldFilter": {"field": f("b"), "op": "NOT_EQUAL", "value": i(1)}}]}}
+case("a sum of an invalid path and two negations", q("ints", where=NEGATIONS), [total("a..b", "s")])
+case("a count up to -1 and a reserved collection ID", q("__x__"), [count("n", up_to=-1)])
+case("an aggregation without an operator and an empty filter", q("ints", where={}), [{"alias": "x"}])
+case("a sum of an invalid path and a reserved collection ID", q("__x__"), [total("a..b", "s")])
+case("no aggregations and a reserved collection ID", q("__x__"), [])
+case("six aggregations and an empty filter", q("ints", where={}), [count("a"), count("b"), count("c"), count("d"), count("e"), count("f")])
+case("a sum of __name__ and an invalid filter path", q("ints", where={"fieldFilter": {"field": f("a..b"), "op": "EQUAL", "value": i(1)}}), [total("__name__", "s")])
+case("a duplicate alias and a negative limit", q("ints", limit=-1), [count("x"), count("x")])
+case("a reserved alias and an order without a collection", {"orderBy": [{"field": f("v")}]}, [count("__x__")])
+case("a sum of __name__ and duplicate orders", q("ints", orderBy=[{"field": f("v")}, {"field": f("v")}]), [total("__name__", "s")])
+case("a query vector that is not a vector and no aggregations", {"findNearest": {"queryVector": {"arrayValue": {}}}}, [])
+case("a cursor with too many values and a duplicate alias", {"startAt": {"values": [i(1)]}}, [count("a"), count("a")])
 
 
 def fill(value):

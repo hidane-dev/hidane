@@ -314,6 +314,47 @@ case("not-in on __name__ with a string", q("p", where_=ff("__name__", "NOT_IN", 
 case("__name__ < a collection path", q("p", where_=ff("__name__", "LESS_THAN", {"referenceValue": "{documents}/p"})))
 case("two array-contains", q("p", where_=AND(ff("tags", "ARRAY_CONTAINS", s("red")), ff("tags", "ARRAY_CONTAINS", s("blue")))))
 
+# --- found by the differential fuzzer (tools/fuzz/, #262) ------------------------------------
+# A filter of no kind is refused, wherever it is. array-contains and array-contains-any count
+# once per disjunction of the filter in disjunctive normal form: two of them in different
+# branches of an `or` are allowed, two that end up in one conjunction are not.
+case("empty filter", q("p", where_={}))
+case("empty filter in an and", q("p", where_=AND(ff("a", "EQUAL", i(1)), {})))
+case("empty filter in an or", q("p", where_=OR(ff("a", "EQUAL", i(1)), {})))
+case("empty filter without a collection", {"where": {}})
+case("array-contains in two branches of an or", q("p", where_=OR(ff("tags", "ARRAY_CONTAINS", s("red")), ff("tags", "ARRAY_CONTAINS", s("blue")))))
+case("array-contains or array-contains-any", q("p", where_=OR(ff("tags", "ARRAY_CONTAINS", s("red")), ff("tags", "ARRAY_CONTAINS_ANY", arr(s("blue"), s("x"))))))
+case("array-contains-any in two branches of an or", q("p", where_=OR(ff("tags", "ARRAY_CONTAINS_ANY", arr(s("red"))), ff("tags", "ARRAY_CONTAINS_ANY", arr(s("blue"))))))
+case("array-contains and array-contains-any", q("p", where_=AND(ff("tags", "ARRAY_CONTAINS", s("red")), ff("tags", "ARRAY_CONTAINS_ANY", arr(s("blue"))))))
+case("an or of array-contains, and array-contains", q("p", where_=AND(OR(ff("tags", "ARRAY_CONTAINS", s("red")), ff("tags", "ARRAY_CONTAINS", s("blue"))), ff("tags", "ARRAY_CONTAINS", s("x")))))
+case("array-contains, or an and of two", q("p", where_=OR(ff("tags", "ARRAY_CONTAINS", s("red")), AND(ff("tags", "ARRAY_CONTAINS", s("blue")), ff("tags", "ARRAY_CONTAINS", s("x"))))))
+# Which problem of a query comes first: the operators of its filter (negations, not-in next to
+# in, array-contains-any or an or, even an or of one filter), whatever their fields; then what
+# each part names (the collection, the filter's kinds, paths and values, the orders' and the
+# projection's paths); then the orders (the key before other fields, then duplicates) and the
+# cursors; then the limit; then whether the orders need a collection; then the filter as a whole.
+case("two negations and a reserved collection ID", {"from": [{"collectionId": "__x__"}], "where": AND(ff("a", "NOT_EQUAL", i(1)), uf("b", "IS_NOT_NULL"))})
+case("two negations without fields", q("p", where_=AND({"fieldFilter": {"op": "NOT_EQUAL"}}, {"unaryFilter": {"op": "IS_NOT_NULL"}})))
+case("not-in in an or of one filter", q("p", where_=OR(ff("a", "NOT_IN", arr(i(1))))))
+case("not-in in an and of one filter", q("p", where_=AND(ff("a", "NOT_IN", arr(i(1))))))
+case("not-in in an or, and a negative limit", q("p", where_=OR(ff("a", "NOT_IN", arr(i(1)))), limit=-1))
+case("duplicate orders and a negative limit", q("p", order=[asc("b"), asc("b")], limit=-1))
+case("__name__ twice in the order", q("p", order=[asc("__name__"), asc("__name__")]))
+case("an inequality, an order by __name__ then b, and a negative limit", q("p", where_=ff("a", "GREATER_THAN", i(1)), order=[asc("__name__"), asc("b")], limit=-1))
+case("a cursor with too many values and a negative limit", q("p", order=[asc("a")], start=cur(i(1), i(2), i(3), before=True), limit=-1))
+case("an invalid projection path and duplicate orders", q("p", select={"fields": [f("a..b")]}, order=[asc("a"), asc("a")]))
+case("an order without a collection and a negative limit", {"orderBy": [asc("b")], "limit": -1})
+case("a filter and an order without a collection", {"where": ff("a", "EQUAL", i(1)), "orderBy": [asc("b")]})
+case("array-contains on m and m.x without a collection", {"where": AND(ff("m", "ARRAY_CONTAINS", i(1)), ff("m.x", "ARRAY_CONTAINS", i(1)))})
+case("duplicate orders and a __name__ filter that is not a key", q("p", where_=ff("__name__", "LESS_THAN_OR_EQUAL", d("Infinity")), order=[asc("a"), asc("a")]))
+# The key's equalities (`is null` and `is NaN` on __name__ among them) come with the filter,
+# before the orders; array membership and unary filters on __name__ come last.
+case("an equality on the key next to an inequality, and duplicate orders", q("p", where_=OR(AND(ff("__name__", "EQUAL", ref("p/p3")), ff("a", "GREATER_THAN_OR_EQUAL", i(2)))), order=[asc("tags"), asc("tags")]))
+case("is-null on __name__ next to an inequality", q("p", where_=OR(ff("tags", "LESS_THAN", mp()), uf("__name__", "IS_NULL"))))
+case("is-nan on __name__ and an order after the key", q("p", where_=uf("__name__", "IS_NAN"), order=[asc("__name__"), asc("b")]))
+case("array-contains on __name__ and duplicate orders", q("p", where_=ff("__name__", "ARRAY_CONTAINS", ref("p/p1")), order=[asc("a"), asc("a")]))
+case("array-contains-any on __name__ and a negative limit", q("p", where_=ff("__name__", "ARRAY_CONTAINS_ANY", arr(ref("p/p1"))), limit=-1))
+
 # --- equality on __name__ next to inequalities (#74) -----------------------------------------
 # Refused unless __name__ has an inequality too; checked after the other filter checks, and
 # before a __name__ value that is not a reference is refused.

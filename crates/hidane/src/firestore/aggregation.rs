@@ -18,7 +18,10 @@ use hidane_core::{
 };
 use hidane_proto::google::firestore::v1::{
     Value,
-    structured_aggregation_query::{Aggregation, aggregation::Operator},
+    structured_aggregation_query::{
+        Aggregation,
+        aggregation::{Avg, Operator, Sum},
+    },
     structured_query::FieldReference,
     value::ValueType,
 };
@@ -36,22 +39,17 @@ enum Kind {
 #[derive(Debug, Clone)]
 pub struct Aggregations(Vec<(String, Kind)>);
 
+/// Aggregations read but not yet checked as a list: see [`Aggregations::read`].
+pub struct Unchecked(Vec<(String, Kind, bool)>);
+
 impl Aggregations {
-    /// Validates `aggregations`, with the official messages, and names the unnamed ones
-    /// `field_1`, `field_2`, … in order.
-    pub fn parse(aggregations: &[Aggregation]) -> Result<Self, Status> {
-        if aggregations.is_empty() {
-            return Err(Status::invalid_argument("Aggregations can not be empty."));
-        }
-        if aggregations.len() > MAX_AGGREGATIONS {
-            return Err(Status::invalid_argument(format!(
-                "The maximum number of aggregations allowed in an aggregation query is \
-                 {MAX_AGGREGATIONS}. Received: {}",
-                aggregations.len()
-            )));
-        }
-        let mut parsed = Vec::with_capacity(aggregations.len());
-        let mut unnamed = 0;
+    /// The official emulator checks an aggregation query in two passes around its query's
+    /// (`tools/oracle/aggregations.py`, #262): this one, before the query, reads each
+    /// aggregation (its operator, a `count`'s `up_to`, the path a `sum` or an `avg` reads);
+    /// [`Unchecked::check`], after what the query names, checks the list (not empty, at most
+    /// five, no `__name__`, the aliases).
+    pub fn read(aggregations: &[Aggregation]) -> Result<Unchecked, Status> {
+        let mut read = Vec::with_capacity(aggregations.len());
         for aggregation in aggregations {
             let kind = match &aggregation.operator {
                 None => {
@@ -70,14 +68,57 @@ impl Aggregations {
                         })?),
                     },
                 },
-                Some(Operator::Sum(sum)) => Kind::Sum(field(sum.field.as_ref())?),
-                Some(Operator::Avg(avg)) => Kind::Avg(field(avg.field.as_ref())?),
+                Some(Operator::Sum(sum)) => Kind::Sum(path(sum.field.as_ref())?),
+                Some(Operator::Avg(avg)) => Kind::Avg(path(avg.field.as_ref())?),
             };
-            let alias = if aggregation.alias.is_empty() {
+            // `__name__` itself, refused with the list.
+            let key = match &aggregation.operator {
+                Some(Operator::Sum(Sum { field }) | Operator::Avg(Avg { field })) => {
+                    field.as_ref().is_some_and(|f| f.field_path == "__name__")
+                }
+                _ => false,
+            };
+            read.push((aggregation.alias.clone(), kind, key));
+        }
+        Ok(Unchecked(read))
+    }
+}
+
+impl Unchecked {
+    /// Whether a `sum` or an `avg` is among them, which orders by its field.
+    pub fn reads_fields(&self) -> bool {
+        self.0
+            .iter()
+            .any(|(_, kind, _)| matches!(kind, Kind::Sum(_) | Kind::Avg(_)))
+    }
+
+    /// The checks of the list (see [`Aggregations::read`]), with the official messages, and the
+    /// names of the unnamed ones: `field_1`, `field_2`, … in order.
+    pub fn check(self) -> Result<Aggregations, Status> {
+        let aggregations = self.0;
+        if aggregations.is_empty() {
+            return Err(Status::invalid_argument("Aggregations can not be empty."));
+        }
+        if aggregations.len() > MAX_AGGREGATIONS {
+            return Err(Status::invalid_argument(format!(
+                "The maximum number of aggregations allowed in an aggregation query is \
+                 {MAX_AGGREGATIONS}. Received: {}",
+                aggregations.len()
+            )));
+        }
+        let mut parsed = Vec::with_capacity(aggregations.len());
+        let mut unnamed = 0;
+        for (alias, kind, key) in aggregations {
+            if key {
+                return Err(Status::invalid_argument(
+                    "Aggregations are not supported for the property: __key__",
+                ));
+            }
+            let alias = if alias.is_empty() {
                 unnamed += 1;
                 format!("field_{unnamed}")
             } else {
-                aggregation.alias.clone()
+                alias
             };
             parsed.push((alias, kind));
         }
@@ -93,9 +134,11 @@ impl Aggregations {
                 )));
             }
         }
-        Ok(Self(parsed))
+        Ok(Aggregations(parsed))
     }
+}
 
+impl Aggregations {
     /// The fields `sum` and `avg` read: documents without them do not take part at all.
     pub fn fields(&self) -> impl Iterator<Item = FieldPath> + '_ {
         self.0.iter().filter_map(|(_, kind)| match kind {
@@ -141,14 +184,12 @@ impl Aggregations {
     }
 }
 
-fn field(reference: Option<&FieldReference>) -> Result<FieldPath, Status> {
+/// The path a `sum` or an `avg` reads; `__name__` is refused with the list's checks.
+fn path(reference: Option<&FieldReference>) -> Result<FieldPath, Status> {
     let path = reference.map_or("", |r| r.field_path.as_str());
     match path {
         "" => Err(Status::invalid_argument(
             "Invalid empty property path string.",
-        )),
-        "__name__" => Err(Status::invalid_argument(
-            "Aggregations are not supported for the property: __key__",
         )),
         _ => FieldPath::parse(path).map_err(Status::invalid_argument),
     }
