@@ -35,7 +35,7 @@ pub enum Mode {
     Exec(Vec<OsString>),
     /// `hidane benchmark …`, with the arguments after `benchmark` (bench/README.md).
     Benchmark(Vec<OsString>),
-    /// `hidane doctor …`: the subcommand and its arguments.
+    /// `hidane doctor …`, `hidane migrate …`: the subcommand and its arguments.
     Project(Vec<OsString>),
     /// Invoked as `java`, with its arguments.
     Java(Vec<OsString>),
@@ -416,6 +416,9 @@ mod tests {
         ));
         assert!(
             matches!(mode(args(&["hidane", "doctor", "--path", "x"])), Mode::Project(a) if a == args(&["doctor", "--path", "x"]))
+        );
+        assert!(
+            matches!(mode(args(&["hidane", "migrate", "--apply"])), Mode::Project(a) if a == args(&["migrate", "--apply"]))
         );
         assert!(matches!(
             mode(args(&["hidane", "--port", "1", "doctor"])),

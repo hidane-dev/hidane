@@ -1,0 +1,44 @@
+diff --git a/.github/workflows/test.yaml b/.github/workflows/test.yaml
+--- a/.github/workflows/test.yaml
++++ b/.github/workflows/test.yaml
+@@ -11,10 +11,7 @@
+     - uses: actions/setup-node@v4
+       with:
+         node-version: 22
+-    - uses: actions/setup-java@v4
+-      with:
+-        distribution: zulu
+-        java-version: 21
++    - uses: hidane-dev/setup-hidane@v1
+     - run: npm ci
+     - run: npm run test:emulator
+     - run: npm run e2e
+diff --git a/package.json b/package.json
+--- a/package.json
++++ b/package.json
+@@ -3,11 +3,11 @@
+   "private": true,
+   "scripts": {
+     "build": "tsc -p .",
+-    "emulators": "firebase emulators:start --only firestore,auth",
++    "emulators": "hidane exec -- firebase emulators:start --only firestore,auth",
+     "test": "vitest run",
+-    "test:emulator": "firebase emulators:exec --only firestore 'npm test'",
+-    "ci": "npm run build && firebase emulators:exec --project demo-app --only firestore,auth \"vitest run --coverage\"",
+-    "seed": "firebase emulators:start --only firestore --import ./seed --export-on-exit",
++    "test:emulator": "hidane exec -- firebase emulators:exec --only firestore 'npm test'",
++    "ci": "npm run build && hidane exec -- firebase emulators:exec --project demo-app --only firestore,auth \"vitest run --coverage\"",
++    "seed": "hidane exec -- firebase emulators:start --only firestore --import ./seed --export-on-exit",
+     "e2e": "bash scripts/e2e.sh"
+   },
+   "devDependencies": {
+diff --git a/scripts/e2e.sh b/scripts/e2e.sh
+--- a/scripts/e2e.sh
++++ b/scripts/e2e.sh
+@@ -2,5 +2,5 @@
+ # Runs the end-to-end tests against the emulators.
+ set -euo pipefail
+ 
+-npx firebase emulators:exec --only firestore,auth \
++hidane exec -- npx firebase emulators:exec --only firestore,auth \
+   "npx playwright test"

@@ -124,6 +124,9 @@
       "status": "info",
       "severity": "warning",
       "title": ".github/workflows/test.yml, job `test`: actions/setup-java is there only for the Firestore emulator; with hidane the job needs no Java",
+      "details": [
+        "`hidane migrate` replaces it with hidane-dev/setup-hidane@v1 when it can"
+      ],
       "file": ".github/workflows/test.yml",
       "line": 9
     },

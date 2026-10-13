@@ -848,7 +848,8 @@ fn workflow_findings(facts: &Facts, ci: &ci::Ci, out: &mut Vec<Finding>) {
                             g,
                             format!("{file}, job `{}`: actions/setup-java is there only for the Firestore emulator; with hidane the job needs no Java", job.id),
                         )
-                        .at(file, Some(job.line)),
+                        .at(file, Some(job.line))
+                        .detail("`hidane migrate` replaces it with hidane-dev/setup-hidane@v1 when it can"),
                     ),
                     ci::Java::Needed(reasons) => out.push(
                         Finding::info(
