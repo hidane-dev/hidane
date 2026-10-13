@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/hidane-dev/hidane/blob/main/bench/schema/savings.schema.json",
+  "title": "hidane benchmark savings",
+  "description": "`hidane benchmark savings <result.json> --format json` (bench/README.md, \"CI time saved\"): the medians of one CI-shaped scenario's `total` in a result that measured both emulators, their difference, and that difference times the runs per month and, when a rate was given, times the rate. Values in milliseconds, minutes, hours and the currency keep three decimals. A negative saving means hidane's median was longer.",
+  "type": "object",
+  "required": ["schema_version", "source", "workload", "environment", "before", "after", "runs_per_month", "saved", "cost", "notes"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "description": "Version of this format. Bumped when a field changes meaning or is removed.",
+      "const": 1
+    },
+    "source": {
+      "description": "The result the estimate comes from (bench/schema/result.schema.json).",
+      "type": "object",
+      "required": ["schema_version", "benchmark_version", "kind", "canonical", "quick", "timestamp", "stable", "scenario", "metric", "command", "warmup"],
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": { "const": 1 },
+        "benchmark_version": { "type": ["string", "null"] },
+        "kind": { "enum": ["local", "pull-request", "nightly", "release", null] },
+        "canonical": { "type": "boolean" },
+        "quick": { "type": "boolean" },
+        "timestamp": { "type": ["string", "null"] },
+        "stable": { "type": "boolean" },
+        "scenario": { "enum": ["command", "ci_firebase", "ci"] },
+        "metric": { "const": "total" },
+        "command": {
+          "description": "The command scenario's program name and number of arguments; null for the other scenarios.",
+          "type": ["string", "null"]
+        },
+        "warmup": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "workload": { "description": "What ran, in words.", "type": "string" },
+    "environment": {
+      "description": "The machine, operating system and tools, as the text and Markdown state them.",
+      "type": "object",
+      "required": ["machine", "os", "tools"],
+      "additionalProperties": false,
+      "properties": {
+        "machine": { "type": "string" },
+        "os": { "type": "string" },
+        "tools": { "type": "string" }
+      }
+    },
+    "before": { "$ref": "#/$defs/side", "properties": { "target": { "const": "official" } } },
+    "after": { "$ref": "#/$defs/side", "properties": { "target": { "const": "hidane" } } },
+    "runs_per_month": { "type": "integer", "minimum": 1 },
+    "saved": {
+      "type": "object",
+      "required": ["per_run_ms", "per_month_ms", "per_month_minutes", "per_month_hours"],
+      "additionalProperties": false,
+      "properties": {
+        "per_run_ms": { "description": "before.median_ms - after.median_ms.", "type": "number" },
+        "per_month_ms": { "description": "per_run_ms × runs_per_month.", "type": "number" },
+        "per_month_minutes": { "type": "number" },
+        "per_month_hours": { "type": "number" }
+      }
+    },
+    "cost": {
+      "description": "Only with --cost-per-minute and --currency: no price is built in.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["per_minute", "currency", "saved_per_month"],
+          "additionalProperties": false,
+          "properties": {
+            "per_minute": { "type": "number", "minimum": 0 },
+            "currency": { "type": "string", "minLength": 1, "maxLength": 16 },
+            "saved_per_month": { "description": "saved.per_month_minutes × per_minute.", "type": "number" }
+          }
+        }
+      ]
+    },
+    "notes": {
+      "description": "Caveats a reader of the numbers needs: an unstable run, quick parameters, few or failed runs, an unpinned jar, no time saved, billing in whole minutes.",
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "$defs": {
+    "side": {
+      "type": "object",
+      "required": ["target", "version", "median_ms", "runs"],
+      "additionalProperties": false,
+      "properties": {
+        "target": { "enum": ["official", "hidane"] },
+        "version": { "type": "string" },
+        "median_ms": { "description": "The median of the scenario's `total` over the measured runs.", "type": "number" },
+        "runs": { "description": "How many measured runs the median is of.", "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

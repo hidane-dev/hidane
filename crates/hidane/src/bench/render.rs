@@ -46,7 +46,7 @@ pub fn format_value(value: f64, unit: &str) -> String {
     }
 }
 
-fn thousands(n: u64) -> String {
+pub fn thousands(n: u64) -> String {
     let digits = n.to_string();
     let mut out = String::new();
     for (i, c) in digits.chars().enumerate() {

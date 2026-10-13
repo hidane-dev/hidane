@@ -11,6 +11,7 @@
 mod client;
 mod config;
 mod render;
+mod savings;
 mod scenarios;
 mod stats;
 mod system;
@@ -93,7 +94,9 @@ enum Format {
 /// Measures hidane and the official Cloud Firestore emulator on this machine.
 ///
 /// Also: `hidane benchmark render <result.json>` prints the Markdown report of a saved result,
-/// and `hidane benchmark workload` runs the synthetic CI tests against FIRESTORE_EMULATOR_HOST.
+/// `hidane benchmark savings <result.json> --runs-per-month N` turns its difference into CI time
+/// saved, and `hidane benchmark workload` runs the synthetic CI tests against
+/// FIRESTORE_EMULATOR_HOST.
 #[derive(Debug, Parser)]
 #[command(
     name = "hidane benchmark",
@@ -197,6 +200,9 @@ struct Args {
 pub fn main(args: Vec<OsString>) -> ExitCode {
     if args.first().is_some_and(|a| a == "workload") {
         return workload(&args[1..]);
+    }
+    if args.first().is_some_and(|a| a == "savings") {
+        return savings::main(&args[1..]);
     }
     if args.first().is_some_and(|a| a == "render") {
         return match args.get(1) {
