@@ -122,12 +122,14 @@ job builds hidane once, and a job per release runs `python3 tools/upstream/sdk_c
 
 Each unit runs once on a freshly started official emulator (the pinned jar, started and stopped by
 the action's own scripts) and once on a freshly started hidane, and the two transcripts are
-compared with the committed pair in `results/`: **identical**; **documented** when they differ
-exactly as the committed pair of the verified release does (`results/README.md` and
-`docs/parity-exceptions.md` explain those); otherwise the unit runs again on two fresh emulators,
-and is **different** when the same differences come back (a finding, which gets an issue),
-**unstable** when they do not. A harness that fails, or prints something that is not JSON, is an
-**error**. The report also says when the SDK's own transcript on the official emulator changed from
+compared: **identical**; **documented** when every difference is one the verified release shows
+too, in its committed pair in `results/` (`results/README.md` and `docs/parity-exceptions.md`
+explain those) or, when that does not explain it, in a pair of the verified release run the same
+way on the same runner (some steps depend on timing: on a runner, `sdk_transactions.mjs` counts 4
+attempts against the official emulator where the committed transcript has 3, with the verified
+release too). Otherwise the unit runs again on two fresh emulators, and is **different** when the
+same unexplained differences come back (a finding, which gets an issue), **unstable** when they do
+not. A harness that fails, or prints something that is not JSON, is an **error**. The report also says when the SDK's own transcript on the official emulator changed from
 the committed one: its transcripts need recording again before moving to it. The release's verdict
 is **same** (every unit identical or documented), **different** or **inconclusive**, as for an
 emulator.
@@ -150,8 +152,11 @@ another job.
 The canary runs once for each set of new releases: the report job saves a cache entry named by
 the set's fingerprint (`upstream-canary-<sha256>`), and a later run with the same set skips the
 canary unless it is run by hand with **force**. A run that was inconclusive saves nothing. A pull
-request runs the canary against the pinned emulator and the verified release of each SDK harness
-instead, whose results must come out as committed (verdict **same** for each).
+request runs the canary against the pinned emulator and the verified release of the Go, Python,
+Java and `firebase` harnesses instead, whose results must come out as committed (verdict **same**
+for each). Not `@google-cloud/firestore`: run as the verified release itself, it has nothing but
+the committed pair to compare with, and its transactions script counts attempts that depend on
+timing.
 
 ## Issues
 

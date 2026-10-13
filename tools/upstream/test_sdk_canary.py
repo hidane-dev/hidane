@@ -128,16 +128,19 @@ class Compare(unittest.TestCase):
             ("$[0].ok.n", "1", "1.0"), ("$[0].ok.t", '"<absent>"', "true"),
             ("$[1]", '{"name": "y"}', '"<absent>"')])
 
-    def test_classify(self):
+    def test_unexplained(self):
         same = [{"ok": 1}]
-        self.assertEqual(sdk_canary.classify(same, same, same, same)[0], "identical")
-        committed = ([{"error": "Datastore key 1"}], [{"error": "path a"}])
-        new = ([{"error": "Datastore key 1"}], [{"error": "path a"}])
-        self.assertEqual(sdk_canary.classify(*new, *committed)[0], "documented")
-        other = ([{"error": "Datastore key 1"}], [{"error": "path b"}])
-        verdict, found = sdk_canary.classify(*other, *committed)
-        self.assertIsNone(verdict)
-        self.assertEqual(found, [("$[0].error", '"Datastore key 1"', '"path b"')])
+        self.assertEqual(sdk_canary.unexplained((same, same), set()), [])
+        committed = ([{"error": "key 1"}, {"a": 1}], [{"error": "path"}, {"a": 2}])
+        allowed = set(sdk_canary.differences(*committed))
+        # The same differences, or fewer of them: explained.
+        self.assertEqual(sdk_canary.unexplained(committed, allowed), [])
+        self.assertEqual(sdk_canary.unexplained(([{"error": "key 1"}, {"a": 1}],
+                                                 [{"error": "path"}, {"a": 1}]), allowed), [])
+        # Another value at a known path is not.
+        self.assertEqual(sdk_canary.unexplained(([{"error": "key 1"}], [{"error": "other"}]),
+                                                allowed),
+                         [("$[0].error", '"key 1"', '"other"')])
 
 
 class Run(unittest.TestCase):
@@ -150,24 +153,31 @@ class Run(unittest.TestCase):
         (self.work).mkdir()
         (self.work / "harness.py").write_text(HARNESS)
         self.official, self.hidane = FakeEmulator("official"), FakeEmulator("hidane")
+        self.prepared = []
+        self.fail_verified = False
         for section in sdk_canary.SECTIONS:
             commit_pair(self.root, f"sdk-go-{section}", [{"ok": 1}], [{"ok": 1}])
 
     def prepare(self, harness, name, version, work, logs, watched, root):
-        self.assertEqual((harness, name, version), ("go", "cloud.google.com/go/firestore",
-                                                    "1.27.0"))
+        self.assertEqual((harness, name), ("go", "cloud.google.com/go/firestore"))
         self.assertEqual(watched["npm:firebase"], "13.0.0")
-        return lambda unit: ([sys.executable, "-I", str(work / "harness.py")], work)
+        self.prepared.append((version, work.name))
+        if version == "1.26.0" and self.fail_verified:
+            raise sdk_canary.Stop("preparing the harness: `go get` failed")
+        # Both releases run the same stand-in, which answers from scenario.json in turn.
+        return lambda unit: ([sys.executable, "-I", str(self.work / "harness.py")], self.work)
 
     def scenario(self, official, hidane):
+        """The transcripts each emulator gives, run after run (the last one repeats)."""
         for count in self.work.glob("count-*"):
             count.unlink()
         (self.work / "scenario.json").write_text(json.dumps({"official": official,
                                                              "hidane": hidane}))
 
-    def run_release(self):
-        return sdk_canary.run_release("go:cloud.google.com/go/firestore@1.27.0", self.official,
-                                      self.hidane, self.work, self.out, self.root, self.prepare)
+    def run_release(self, version="1.27.0"):
+        return sdk_canary.run_release(f"go:cloud.google.com/go/firestore@{version}",
+                                      self.official, self.hidane, self.work, self.out, self.root,
+                                      self.prepare)
 
     def results(self, result):
         return [(u["unit"], u["result"]) for u in result["units"]]
@@ -176,39 +186,69 @@ class Run(unittest.TestCase):
         self.scenario([[{"ok": 1}]], [[{"ok": 1}]])
         result = self.run_release()
         self.assertTrue(result["prepared"])
+        self.assertEqual(result["verified"], "1.26.0")
         self.assertEqual(self.results(result), [(s, "identical") for s in sdk_canary.SECTIONS])
         self.assertFalse(result["units"][0]["official_changed"])
         self.assertTrue((self.out / "transcripts" / "sdk-go-documents-hidane.json").is_file())
-        # One fresh emulator of each per unit.
+        # One fresh emulator of each per unit, and the verified release never needed.
         self.assertEqual(len(self.official.started), 4)
+        self.assertEqual(self.prepared, [("1.27.0", "release")])
 
-    def test_documented_and_official_changed(self):
+    def test_documented_by_the_committed_pair(self):
         commit_pair(self.root, "sdk-go-documents", [{"error": "key 1"}], [{"error": "path"}])
         self.scenario([[{"error": "key 1"}, {"extra": True}]], [[{"error": "path"}, {"extra": True}]])
-        result = self.run_release()
-        unit = result["units"][0]
+        unit = self.run_release()["units"][0]
         self.assertEqual((unit["result"], unit["differences"]), ("documented", 1))
         self.assertTrue(unit["official_changed"])
+        self.assertNotIn("explained_by_verified_run", unit)
 
-    def test_different_is_confirmed_by_a_second_run(self):
-        self.scenario([[{"ok": 1}]], [[{"ok": 2}]])
+    def test_documented_by_the_verified_release_on_the_runner(self):
+        # A step that depends on timing: both releases give 4 against 3 here.
+        self.scenario([[{"attempts": 4}]], [[{"attempts": 3}]])
         result = self.run_release()
         unit = result["units"][0]
+        self.assertEqual((unit["result"], unit["explained_by_verified_run"]), ("documented", True))
+        self.assertEqual(self.prepared, [("1.27.0", "release"), ("1.26.0", "verified")])
+        self.assertEqual(self.official.started[:2],
+                         ["sdk-go-documents", "sdk-go-documents.verified"])
+
+    def test_different_is_confirmed_by_a_second_run(self):
+        # The new release differs, the verified one does not, the new one differs again.
+        self.scenario([[{"ok": 1}]], [[{"ok": 2}], [{"ok": 1}], [{"ok": 2}]])
+        unit = self.run_release()["units"][0]
         self.assertEqual((unit["result"], unit["paths"]), ("different", ["$[0].ok"]))
-        self.assertEqual(self.official.started[:2], ["sdk-go-documents", "sdk-go-documents.again"])
-        self.assertTrue((self.out / "transcripts" / "sdk-go-documents-hidane.again.json").is_file())
+        self.assertFalse(unit["explained_by_verified_run"])
+        self.assertEqual(self.official.started[:3], [
+            "sdk-go-documents", "sdk-go-documents.verified", "sdk-go-documents.again"])
+        self.assertTrue((self.out / "transcripts" / "sdk-go-documents.again-hidane.json").is_file())
 
     def test_unstable_when_the_second_run_differs(self):
-        self.scenario([[{"ok": 1}]], [[{"ok": 2}], [{"ok": 1}]])
+        self.scenario([[{"ok": 1}]], [[{"ok": 2}], [{"ok": 1}], [{"ok": 1}]])
         self.assertEqual(self.run_release()["units"][0]["result"], "unstable")
+
+    def test_the_verified_release_against_the_committed_pair_only(self):
+        # Asked for the verified release itself: no run to compare with but the committed pair.
+        self.scenario([[{"ok": 1}]], [[{"ok": 2}]])
+        unit = self.run_release("1.26.0")["units"][0]
+        self.assertEqual(unit["result"], "different")
+        self.assertEqual(self.prepared, [("1.26.0", "release")])
 
     def test_errors(self):
         self.scenario(["fail"], [[{"ok": 1}]])
         unit = self.run_release()["units"][0]
         self.assertEqual((unit["result"], unit["why"]), ("error", "official: exited with 3"))
         self.scenario(["not json"], [[{"ok": 1}]])
-        self.assertEqual(self.run_release()["units"][0]["why"],
-                         "official: printed something that is not JSON")
+        unit = self.run_release()["units"][0]
+        self.assertEqual(unit["why"], "official: printed something that is not JSON")
+        self.assertEqual((self.out / "logs" / "sdk-go-documents.official.stdout").read_text(),
+                         "not json\n")
+
+    def test_a_verified_release_that_cannot_be_installed(self):
+        self.fail_verified = True
+        self.scenario([[{"ok": 1}]], [[{"ok": 2}]])
+        unit = self.run_release()["units"][0]
+        self.assertEqual(unit["result"], "error")
+        self.assertIn("the verified release", unit["why"])
 
     def test_a_harness_that_cannot_be_installed(self):
         def fails(*args):

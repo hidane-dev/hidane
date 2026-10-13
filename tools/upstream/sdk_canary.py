@@ -12,12 +12,13 @@ Usage (from the repository root; the Upstream workflow's sdk jobs run it):
         jar) and once on a freshly started hidane, and compares the two transcripts with the
         committed pair in results/. Writes sdk.json, the transcripts and the logs to --out.
 
-A unit is `identical` when both emulators give the same transcript; `documented` when they differ
-exactly as the committed pair of the verified release does (results/ and
-docs/parity-exceptions.md explain those); otherwise it is run again on two fresh emulators, and is
-`different` when the same differences come back, `unstable` when they do not. A harness that
-fails, or prints something that is not JSON, is an `error`. Whether the SDK's own transcript on the
-official emulator changed from the committed one is recorded too.
+A unit is `identical` when both emulators give the same transcript, and `documented` when every
+difference is one the verified release shows too: in the committed pair (results/ and
+docs/parity-exceptions.md explain those) or, run the same way on the same runner, in a pair of the
+verified release (some steps depend on timing, which a runner changes). Otherwise the unit runs
+again, and is `different` when the same unexplained differences come back, `unstable` when they
+do not. A harness that fails, or prints something that is not JSON, is an `error`. Whether the
+SDK's own transcript on the official emulator changed from the committed one is recorded too.
 
 The harnesses: tools/oracle/sdk_go/, sdk_python/, sdk_java/ (sections documents, queries,
 transactions, listen) and the tools/oracle/sdk_*.mjs scripts that import the npm package (but
@@ -57,6 +58,8 @@ HARNESSES = {
 SECTIONS = ("documents", "queries", "transactions", "listen")
 NODE_PACKAGES = ("firebase", "@google-cloud/firestore", "@firebase/rules-unit-testing")
 NODE_SKIPPED = ("sdk_export_import.mjs",)  # runs under firebase-tools
+DEPENDENCY_PLUGIN = "org.apache.maven.plugins:maven-dependency-plugin:3.11.0"
+JAVA_MAIN = "dev.hidane.oracle.SdkTranscript"
 POM_VERSION = re.compile(
     r"(<artifactId>google-cloud-firestore</artifactId>\s*<version>)[^<]+(</version>)")
 
@@ -155,14 +158,10 @@ def differences(a, b, path="$"):
     return [] if left == right else [(path, left, right)]
 
 
-def classify(official, hidane, committed_official, committed_hidane):
-    """identical, documented, or None (different, to be confirmed)."""
-    found = differences(official, hidane)
-    if not found:
-        return IDENTICAL, found
-    if found == differences(committed_official, committed_hidane):
-        return DOCUMENTED, found
-    return None, found
+def unexplained(pair, allowed):
+    """The differences of a pair (official, hidane) that are not among `allowed`: [] when it is
+    identical or differs only as the verified release does."""
+    return [d for d in differences(*pair) if d not in allowed]
 
 
 # Emulators --------------------------------------------------------------------------------------
@@ -248,10 +247,12 @@ def transcript(emulator, side, name, command, cwd, logs):
         emulator.stop(handle)
     (logs / f"{name}.{side}.stderr").write_bytes(done.stderr)
     if done.returncode != 0:
+        (logs / f"{name}.{side}.stdout").write_bytes(done.stdout)
         return None, f"exited with {done.returncode}"
     try:
         return json.loads(done.stdout), None
     except ValueError:
+        (logs / f"{name}.{side}.stdout").write_bytes(done.stdout)
         return None, "printed something that is not JSON"
 
 
@@ -295,7 +296,13 @@ def prepare(harness, name, version, work, logs, watched, root=ROOT, run=run_tool
                        "not found once")
         pom.write_text(text, encoding="utf-8")
         run(["mvn", "-q", "-B", "compile"], source, logs, "mvn-compile")
-        return lambda unit: (["mvn", "-q", "-B", "exec:java", f"-Dexec.args={unit}"], source)
+        # Run the class with `java`, not through `mvn exec:java`: nothing but the transcript on
+        # standard output, and no Maven start-up per unit.
+        run(["mvn", "-q", "-B", f"{DEPENDENCY_PLUGIN}:build-classpath",
+             "-Dmdep.outputFile=classpath.txt"], source, logs, "mvn-classpath")
+        classpath = os.pathsep.join([str(source / "target" / "classes"),
+                                     (source / "classpath.txt").read_text().strip()])
+        return lambda unit: (["java", "-cp", classpath, JAVA_MAIN, unit], source)
     if harness == "node":
         source = work / "node"
         source.mkdir()
@@ -314,6 +321,23 @@ def prepare(harness, name, version, work, logs, watched, root=ROOT, run=run_tool
     raise Stop(f"{harness}: not a harness")
 
 
+class Control:
+    """The harness with the verified release, prepared the first time a unit needs it."""
+
+    def __init__(self, prepare_once):
+        self.prepare_once, self.command, self.error = prepare_once, None, None
+
+    def get(self):
+        if self.command is None and self.error is None:
+            try:
+                self.command = self.prepare_once()
+            except (Stop, OSError) as err:
+                self.error = str(err) if isinstance(err, Stop) else type(err).__name__
+        if self.error is not None:
+            raise Stop(f"the verified release: {self.error}")
+        return self.command
+
+
 def run_release(key, official, hidane, work, out, root=ROOT, prepare_harness=prepare):
     """Runs every unit of the release's harness on both emulators; the result for sdk.json."""
     ecosystem, name, version = parse_key(key)
@@ -321,23 +345,32 @@ def run_release(key, official, hidane, work, out, root=ROOT, prepare_harness=pre
     watch_list = watch.load_watch(root / watch.WATCH)
     watched = {f"{p['ecosystem']}:{p['name']}": p["version"] for p in watch_list["packages"]}
     pinned = watch_list["emulator"]["version"]
+    verified = watched[f"{ecosystem}:{name}"]
     result = {"key": key, "ecosystem": ecosystem, "name": name, "version": version,
-              "harness": harness, "prepared": False, "error": None, "units": []}
+              "harness": harness, "verified": verified, "prepared": False, "error": None,
+              "units": []}
     logs = out / "logs"
     transcripts = out / "transcripts"
     for directory in (work, logs, transcripts):
         directory.mkdir(parents=True, exist_ok=True)
     try:
-        command = prepare_harness(harness, name, version, work, logs, watched, root)
+        (work / "release").mkdir(exist_ok=True)
+        command = prepare_harness(harness, name, version, work / "release", logs, watched, root)
     except (Stop, OSError) as err:
         result["error"] = str(err) if isinstance(err, Stop) else type(err).__name__
         return result
     result["prepared"] = True
+    control = None
+    if version != verified:
+        def prepare_control():
+            (work / "verified").mkdir(exist_ok=True)
+            return prepare_harness(harness, name, verified, work / "verified", logs, watched, root)
+        control = Control(prepare_control)
     for unit, name_in_results in units(harness, name, root):
         entry = {"unit": unit, "transcript": name_in_results}
         try:
-            entry.update(run_unit(unit, name_in_results, command, official, hidane, logs,
-                                  transcripts, pinned, root))
+            entry.update(run_unit(unit, name_in_results, command, control, official, hidane,
+                                  logs, transcripts, pinned, root))
         except (Stop, OSError, subprocess.CalledProcessError) as err:
             entry.update(result=ERROR, why=str(err) if isinstance(err, Stop)
                          else type(err).__name__)
@@ -345,31 +378,44 @@ def run_release(key, official, hidane, work, out, root=ROOT, prepare_harness=pre
     return result
 
 
-def run_unit(unit, name, command, official, hidane, logs, transcripts, pinned, root):
-    committed_official, committed_hidane = committed(name, pinned, root)
+def run_pair(unit, name, command, official, hidane, logs, transcripts):
+    """A unit on a fresh official emulator and a fresh hidane: (official, hidane)."""
     args, cwd = command(unit)
-    pairs = []
-    for attempt in ("", ".again"):
-        found = {}
-        for emulator, side in ((official, "official"), (hidane, "hidane")):
-            data, why = transcript(emulator, side, f"{name}{attempt}", args, cwd, logs)
-            if data is None:
-                return {"result": ERROR, "why": f"{side}: {why}"}
-            (transcripts / f"{name}-{side}{attempt}.json").write_text(
-                json.dumps(data, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
-            found[side] = data
-        verdict, diffs = classify(found["official"], found["hidane"], committed_official,
-                                  committed_hidane)
-        pairs.append((verdict, found, diffs))
-        if verdict is not None:
-            break
-    verdict, found, diffs = pairs[-1]
-    if len(pairs) == 2:
-        # Different the first time: confirmed only when the same differences come back.
-        verdict = DIFFERENT if verdict is None and diffs == pairs[0][2] else UNSTABLE
-    return {"result": verdict, "differences": len(diffs),
-            "paths": [path for path, _, _ in diffs][:20],
-            "official_changed": bool(differences(found["official"], committed_official))}
+    found = []
+    for emulator, side in ((official, "official"), (hidane, "hidane")):
+        data, why = transcript(emulator, side, name, args, cwd, logs)
+        if data is None:
+            raise Stop(f"{side}: {why}")
+        (transcripts / f"{name}-{side}.json").write_text(
+            json.dumps(data, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        found.append(data)
+    return tuple(found)
+
+
+def run_unit(unit, name, command, control, official, hidane, logs, transcripts, pinned, root):
+    committed_pair = committed(name, pinned, root)
+    allowed = set(differences(*committed_pair))
+    pair = run_pair(unit, name, command, official, hidane, logs, transcripts)
+    found = differences(*pair)
+    outcome = {"differences": len(found),
+               "official_changed": bool(differences(pair[0], committed_pair[0]))}
+    if not found:
+        return dict(outcome, result=IDENTICAL)
+    left = unexplained(pair, allowed)
+    if left and control is not None:
+        # The verified release, the same way on the same runner.
+        verified = run_pair(unit, f"{name}.verified", control.get(), official, hidane, logs,
+                            transcripts)
+        allowed |= set(differences(*verified))
+        left = unexplained(pair, allowed)
+        outcome["explained_by_verified_run"] = not left
+    if not left:
+        return dict(outcome, result=DOCUMENTED)
+    # Unexplained differences count once the same ones come back.
+    again = run_pair(unit, f"{name}.again", command, official, hidane, logs, transcripts)
+    confirmed = unexplained(again, allowed) == left
+    return dict(outcome, result=DIFFERENT if confirmed else UNSTABLE,
+                paths=[path for path, _, _ in left][:20])
 
 
 def write_outputs(path, runs):

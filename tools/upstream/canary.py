@@ -276,7 +276,8 @@ def sdk_entry(sdk, artifacts):
             "result": result if result in SDK_UNIT_RESULTS else sdk_canary.ERROR,
             "differences": unit.get("differences") if isinstance(unit.get("differences"), int)
             else None,
-            "official_changed": unit.get("official_changed") is True})
+            "official_changed": unit.get("official_changed") is True,
+            "explained_by_verified_run": unit.get("explained_by_verified_run") is True})
     results = [u["result"] for u in entry["units"]]
     if not results or sdk_canary.ERROR in results:
         verdict = INCONCLUSIVE
@@ -305,6 +306,8 @@ def units_table(entry):
             else f"**{u['result']}**"
         if u["differences"]:
             result += f" ({u['differences']} difference(s))"
+        if u.get("explained_by_verified_run"):
+            result += ", as the verified release on this runner"
         own = "changed on the official emulator" if u["official_changed"] else "unchanged"
         lines.append(f"| `{u['unit']}` | `{u['transcript']}-*.json` | {result} | {own} |")
     return lines
@@ -318,8 +321,9 @@ def finding_for_sdk(entry, url):
         f"The Upstream workflow's compatibility canary ran the {entry['harness']} harness of "
         f"`tools/oracle/` with **{entry['name']} {entry['version']}** against a freshly started "
         "official emulator (the pinned release) and a freshly started hidane, unit by unit. A "
-        "unit is `documented` when the two differ exactly as the committed transcripts of the "
-        "verified release do; `different` when they differ otherwise, the same way twice.",
+        "unit is `documented` when every difference is one the verified release shows too (in "
+        "its committed transcripts, or run the same way on the same runner); `different` when "
+        "other differences come back on a second run.",
         "",
         *units_table(entry),
         "",

@@ -107,12 +107,12 @@ jobs:
         run: |
           args=()
           if [[ "$EVENT" == pull_request ]]; then
-            # The pinned emulator and the verified SDK release of each harness.
+            # The pinned emulator and the verified SDK release of each harness (not
+            # @google-cloud/firestore: tools/upstream/README.md says why).
             . .github/actions/official-emulator/pinned.sh
             args=(--emulator "$PINNED_VERSION" "$PINNED_SHA256"
               --sdk go:cloud.google.com/go/firestore --sdk pypi:google-cloud-firestore
-              --sdk maven:com.google.cloud:google-cloud-firestore
-              --sdk npm:@google-cloud/firestore --sdk npm:firebase)
+              --sdk maven:com.google.cloud:google-cloud-firestore --sdk npm:firebase)
           fi
           # watch.py refuses anything but a version and a SHA-256, and a watched package.
           if [[ -n "$EMULATOR_VERSION$EMULATOR_SHA256" ]]; then
