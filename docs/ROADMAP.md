@@ -23,17 +23,17 @@
 
 ## 1. Targets (proposed)
 
-| Metric | Official (measured) | hidane target | hidane v0.4.0 (measured) |
+| Metric | Official (measured) | hidane target | hidane v0.5.1 (measured) |
 |---|---|---|---|
-| Time until the port accepts | 941 ms | < 100 ms | 1.56 ms |
-| RSS idle | 148 MiB | < 50 MiB | 7.8 MiB |
-| RSS after 1,000 documents | 268 MiB | < 100 MiB | 10.1 MiB |
-| A commit of 500 writes | 69.2 ms | < 25 ms | 8.01 ms |
+| Time until the port accepts | 852 ms | < 100 ms | 1.53 ms |
+| RSS idle | 148 MiB | < 50 MiB | 9.3 MiB |
+| RSS after 1,000 documents | 276 MiB | < 100 MiB | 11.9 MiB |
+| A commit of 500 writes | 65.4 ms | < 25 ms | 10.2 ms |
 | Write cost with a listener attached | grows with total document count | O(changed documents), independent of total | flat per batch: 100k documents in 4.9 s |
 | Java | 21+ required | not required (single binary) | not required |
 
 The first four rows are medians from the canonical benchmark environment, both emulators on one
-quiet machine ([result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-13-release.md)). The listener row comes from Phase 0 and a later run on another
+quiet machine ([result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-13-release-150328.md)). The listener row comes from Phase 0 and a later run on another
 machine, not side by side (`docs/why.md`); #50 re-measures it. A workflow checks hidane's first
 four rows against their targets on a GitHub-hosted runner on every push to `main` and nightly
 ([`bench/`](../bench/README.md#targets-in-ci), #47).
