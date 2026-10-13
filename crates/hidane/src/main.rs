@@ -1,9 +1,14 @@
-use std::{ffi::OsString, io::ErrorKind, process::ExitCode};
+use std::{
+    ffi::{OsStr, OsString},
+    io::ErrorKind,
+    process::ExitCode,
+};
 
 use clap::Parser;
 use hidane::cli::{self, Cli};
 
 mod bench;
+mod gcloud;
 mod launch;
 mod project_cli;
 
@@ -21,7 +26,35 @@ fn main() -> ExitCode {
             ),
             Err(code) => code,
         },
+        launch::Mode::Shell(script) => shell(&script),
         launch::Mode::Emulator(args) => emulator(args),
+    }
+}
+
+/// `sh -c <script>`: the emulator, when the script is a `gcloud … emulators firestore start`
+/// command line that hidane serves (docs/testcontainers.md).
+fn shell(script: &OsStr) -> ExitCode {
+    let flags = script
+        .to_str()
+        .ok_or_else(|| gcloud::Refusal::NotGcloud("the script is not UTF-8".into()))
+        .and_then(gcloud::from_script);
+    match flags {
+        Ok(flags) => {
+            eprintln!(
+                "hidane: in place of `gcloud emulators firestore start`, with: hidane {}",
+                flags.join(" ")
+            );
+            emulator(
+                std::iter::once("hidane".to_owned())
+                    .chain(flags)
+                    .map(OsString::from)
+                    .collect(),
+            )
+        }
+        Err(refusal) => {
+            eprintln!("ERROR: {}", refusal.message());
+            ExitCode::from(refusal.exit_code())
+        }
     }
 }
 

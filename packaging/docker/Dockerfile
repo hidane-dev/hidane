@@ -5,6 +5,10 @@
 #   LICENSE-MIT, LICENSE-APACHE, THIRD-PARTY-LICENSES.txt
 #
 #   docker run --rm -p 8080:8080 ghcr.io/hidane-dev/hidane
+#
+# Testcontainers' gcloud modules start the image in place of the Cloud SDK image, with the command
+# `/bin/sh -c "gcloud beta emulators firestore start …"`; hidane reads it as its arguments, without
+# a shell (docs/testcontainers.md). The Testcontainers workflow builds and tests this file.
 FROM scratch
 ARG TARGETARCH
 COPY ${TARGETARCH}/hidane /hidane

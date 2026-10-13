@@ -9,7 +9,7 @@ the same binaries, built once per release. `docs/releasing.md` has the release s
 | `npm/` | npm: `hidane`, with `@hidane-dev/darwin-arm64`, `darwin-x64`, `linux-arm64`, `linux-x64` and `win32-x64` as optional dependencies, so npm installs only the binary for the machine | `npm/assemble.mjs <version> <dist> <out>` builds the six packages from the release archives |
 | `pub/` | pub.dev: `hidane`, a Dart launcher. Its first run downloads the release archive for the machine, checks it against `sha256sums.txt` and caches the binary | Published as it is; its version must be the release's |
 | `homebrew/` | `brew install hidane-dev/tap/hidane` | `homebrew/formula.mjs <version> <sha256sums.txt>` prints `Formula/hidane.rb` for hidane-dev/homebrew-tap |
-| `docker/` | `ghcr.io/hidane-dev/hidane` (linux/amd64, linux/arm64): the static Linux binary on an empty base | `docker/Dockerfile`, with the two musl binaries as the context |
+| `docker/` | `ghcr.io/hidane-dev/hidane` (linux/amd64, linux/arm64): the static Linux binary on an empty base, also for Testcontainers ([`docs/testcontainers.md`](../docs/testcontainers.md)) | `docker/Dockerfile`, with the two musl binaries as the context |
 
 `check-versions.mjs` checks that the workspace `Cargo.toml`, its `=` pins and the pub launcher agree
 on the version (CI runs it, and the release workflow checks the tag with it).

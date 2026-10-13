@@ -39,6 +39,9 @@ pub enum Mode {
     Project(Vec<OsString>),
     /// Invoked as `java`, with its arguments.
     Java(Vec<OsString>),
+    /// `sh -c <script>` (or `bash`): in hidane's container image, the command Testcontainers'
+    /// gcloud modules give the Cloud SDK image, after the entrypoint (`crate::gcloud`).
+    Shell(OsString),
     /// The emulator, with its own arguments.
     Emulator(Vec<OsString>),
 }
@@ -50,6 +53,14 @@ pub fn mode(args: Vec<OsString>) -> Mode {
         .map(OsStr::to_os_string);
     if invoked_as.as_deref() == Some(OsStr::new("java")) {
         return Mode::Java(args.into_iter().skip(1).collect());
+    }
+    if let [_, shell, c, script] = args.as_slice()
+        && c == "-c"
+        && Path::new(shell)
+            .file_name()
+            .is_some_and(|name| name == "sh" || name == "bash")
+    {
+        return Mode::Shell(script.clone());
     }
     if args.get(1).map(OsString::as_os_str) == Some(OsStr::new("benchmark")) {
         return Mode::Benchmark(args.into_iter().skip(2).collect());
@@ -422,6 +433,23 @@ mod tests {
         );
         assert!(matches!(
             mode(args(&["hidane", "--port", "1", "doctor"])),
+            Mode::Emulator(_)
+        ));
+        // What Testcontainers' gcloud modules start the image with, after the entrypoint.
+        assert!(
+            matches!(mode(args(&["/hidane", "/bin/sh", "-c", "gcloud x"])), Mode::Shell(s) if s == "gcloud x")
+        );
+        assert!(matches!(
+            mode(args(&["hidane", "bash", "-c", "gcloud x"])),
+            Mode::Shell(_)
+        ));
+        // Only that shape: the emulator ignores other positional arguments, as before.
+        assert!(matches!(
+            mode(args(&["hidane", "/bin/sh", "-c", "gcloud x", "sh"])),
+            Mode::Emulator(_)
+        ));
+        assert!(matches!(
+            mode(args(&["hidane", "zsh", "-c", "gcloud x"])),
             Mode::Emulator(_)
         ));
     }
