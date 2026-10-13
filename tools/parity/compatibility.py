@@ -19,7 +19,7 @@ with the official Cloud Firestore emulator and the tools around it:
 - the integration test files `cargo test` runs (`crates/*/tests/*.rs`), and the recordings each
   replays;
 - differential fuzzing, once a run is recorded in results/differential-fuzzing.json;
-- the intentional differences (docs/parity-exceptions.md);
+- the official emulator difference database (docs/parity-exceptions.json), by kind;
 
 and the compatibility matrix, hidane × firebase-tools × the official emulator. A row exists only
 where results cover the combination: the official emulator releases the corpus was recorded
@@ -28,7 +28,8 @@ against, the firebase-tools versions transcripts ran under (the SDK certificatio
 `0.4.x`), which CI tests on every pull request and on `main`. Writes `docs/compatibility.json`,
 validated against `docs/compatibility.schema.json`, and the section of `docs/compatibility.md`
 between `<!-- compatibility:start -->` and `<!-- compatibility:end -->`. Run it after
-tools/parity/table.py, tools/oracle/corpus.py and tools/parity/sdk_certification.py. Stdlib only.
+tools/parity/table.py, tools/oracle/corpus.py, tools/parity/sdk_certification.py and
+tools/parity/differences.py. Stdlib only.
 """
 
 import json
@@ -48,6 +49,10 @@ OUTPUT = "docs/compatibility.json"
 SCHEMA = "docs/compatibility.schema.json"
 PAGE = "docs/compatibility.md"
 FUZZING = "results/differential-fuzzing.json"
+DIFFERENCES = "docs/parity-exceptions.json"
+# The kinds of docs/parity-exceptions.json, as the report names them.
+KINDS = {"bug-for-bug": "bug-for-bug", "more-correct": "more correct",
+         "equivalent": "equivalent", "limitation": "limitation"}
 SUITE = "js-sdk-browser"
 SUITE_WORKFLOW = ".github/workflows/js-sdk-browser.yml"
 SCHEMA_VERSION = 1
@@ -271,9 +276,22 @@ def output():
         "functions": functions(rows, pairs),
         "integration_tests": integration_tests(rows),
         "differential_fuzzing": fuzzing(),
-        "intentional_differences": dict(count=table.intentional_differences(),
-                                        where="docs/parity-exceptions.md"),
+        "differences": differences(),
     }
+
+
+def differences():
+    """The official emulator difference database, by table and by kind."""
+    entries = load(DIFFERENCES)["differences"]
+    out = dict(where=DIFFERENCES, page="docs/parity-exceptions.md")
+    for name in ("intentional", "production"):
+        kinds = Counter(e["kind"] for e in entries if e["table"] == name)
+        out[name] = dict(count=sum(kinds.values()),
+                         by_kind={key: kinds[key] for key in KINDS if kinds[key]})
+    if out["intentional"]["count"] != table.intentional_differences():
+        raise Stop(f"{DIFFERENCES} and docs/parity-exceptions.md count different intentional "
+                   "differences; run python3 tools/parity/differences.py.")
+    return out
 
 
 def markdown(data):
@@ -336,7 +354,14 @@ def markdown(data):
                    f"[`{Path(FUZZING).name}`](../{FUZZING}) |")
     else:
         out.append("| Differential fuzzing | not run yet | — |")
-    out.append(f"| Intentional differences | {data['intentional_differences']['count']} | "
+    diffs = data["differences"]
+
+    def kinds(part):
+        return ", ".join(f"{count} {KINDS[key]}" for key, count in part["by_kind"].items())
+
+    out.append(f"| Differences | {diffs['intentional']['count']} intentional differences "
+               f"({kinds(diffs['intentional'])}); {diffs['production']['count']} places where the "
+               f"official emulator departs from production ({kinds(diffs['production'])}) | "
                "[parity-exceptions.md](parity-exceptions.md) |")
     out += ["", END]
     return "\n".join(out)

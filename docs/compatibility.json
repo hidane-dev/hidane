@@ -560,8 +560,24 @@
   "where": null,
   "runs": []
  },
- "intentional_differences": {
-  "count": 68,
-  "where": "docs/parity-exceptions.md"
+ "differences": {
+  "where": "docs/parity-exceptions.json",
+  "page": "docs/parity-exceptions.md",
+  "intentional": {
+   "count": 68,
+   "by_kind": {
+    "bug-for-bug": 1,
+    "more-correct": 43,
+    "equivalent": 18,
+    "limitation": 6
+   }
+  },
+  "production": {
+   "count": 14,
+   "by_kind": {
+    "bug-for-bug": 12,
+    "more-correct": 2
+   }
+  }
  }
 }

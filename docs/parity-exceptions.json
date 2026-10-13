@@ -1,0 +1,1089 @@
+{
+ "$schema": "./parity-exceptions.schema.json",
+ "name": "hidane official emulator difference database",
+ "description": "Every place where the official Cloud Firestore emulator, production Firestore and hidane do not all behave the same: what each does, why, the references, and whether hidane reproduces the official emulator or departs from it. Edited by hand; tools/parity/differences.py checks it and writes the tables of docs/parity-exceptions.md.",
+ "schema_version": 1,
+ "kinds": [
+  {
+   "key": "bug-for-bug",
+   "meaning": "hidane does what the official emulator does, where production Firestore differs."
+  },
+  {
+   "key": "more-correct",
+   "meaning": "hidane departs from the official emulator to do what production Firestore or the documented contract does, or to fix what is a bug whatever production does."
+  },
+  {
+   "key": "equivalent",
+   "meaning": "hidane departs in a detail clients do not observe or cannot rely on (wording, transport, timing, order, opaque formats), with the same outcome."
+  },
+  {
+   "key": "limitation",
+   "meaning": "hidane departs because it does less, or bounds what the official emulator does not."
+  }
+ ],
+ "differences": [
+  {
+   "id": "D001",
+   "table": "intentional",
+   "area": "streams",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "Batch writes slow down in proportion to the number of stored documents while a listener is attached (reproduced in Phase 0; firebase-tools [#3477](https://github.com/firebase/firebase-tools/issues/3477)). The cause shows on the Listen stream: after its first answer, every write to a watched collection, even one that changes nothing, is answered with `RESET` and the whole result again",
+   "firestore": "Listen sends only the documents that entered, changed in or left each target, then one `NO_CHANGE` (the hidane column: \"as production does\")",
+   "hidane": "A commit costs O(number of changed documents): Listen sends only the documents that entered, changed in or left each target, then one `NO_CHANGE`, as production does, and nothing for writes that change nothing. 100,000 documents with a whole-collection listener: 4.9 s, flat per batch (`results/listen-batch-writes-hidane.csv`). The SDKs build the same snapshots (`results/sdk-listen-*.json`)",
+   "reason": "Performance bug, not a semantic contract. See [why.md](why.md) §3",
+   "references": [
+    "firebase/firebase-tools#3477",
+    "docs/why.md",
+    "results/listen-batch-writes-hidane.csv",
+    "results/sdk-listen-*.json"
+   ]
+  },
+  {
+   "id": "D002",
+   "table": "intentional",
+   "area": "streams",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "A batch that changes a limit query can reach a web SDK listener as two snapshots, the first one showing a document that the same commit deleted",
+   "firestore": null,
+   "hidane": "One snapshot per commit",
+   "reason": "Bug (snapshots must be atomic)",
+   "references": []
+  },
+  {
+   "id": "D003",
+   "table": "intentional",
+   "area": "streams",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "`POST /reset` tells attached listeners nothing, and they receive no later changes either",
+   "firestore": null,
+   "hidane": "Listeners see every document go, then later writes as usual",
+   "reason": "Bug (listeners keep stale data)",
+   "references": []
+  },
+  {
+   "id": "D004",
+   "table": "intentional",
+   "area": "streams",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "A cleared database (`DELETE /emulator/v1/…/documents`, rules-unit-testing's `clearFirestore()`) reaches a web SDK query listener as several snapshots",
+   "firestore": null,
+   "hidane": "One snapshot with every document gone",
+   "reason": "Follows from answering with `RESET`",
+   "references": []
+  },
+  {
+   "id": "D005",
+   "table": "intentional",
+   "area": "streams",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "After a reconnect, the web SDK sees a resumed query in several snapshots: the first still shows the documents deleted or changed away while it was offline, later ones drop them one by one",
+   "firestore": "Resuming a target sends only what changed since the token (the production table: \"Resuming a Listen target\")",
+   "hidane": "One snapshot with everything that changed since the token",
+   "reason": "Follows from resuming with `RESET` (see the production table below); the SDK then looks up each document it can no longer place. A limit query whose window moved while offline gets one snapshot on both (#146)",
+   "references": [
+    "hidane-dev/hidane#146"
+   ]
+  },
+  {
+   "id": "D006",
+   "table": "intentional",
+   "area": "streams",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "Adding a Listen target with an ID that is in use ends the stream with `UNKNOWN` and no message",
+   "firestore": null,
+   "hidane": "Ends it with `INVALID_ARGUMENT` \"Target ID … is already in use.\"",
+   "reason": "Bug (an internal error)",
+   "references": []
+  },
+  {
+   "id": "D007",
+   "table": "intentional",
+   "area": "streams",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "A Listen query whose parent names another database reads the stream's database",
+   "firestore": null,
+   "hidane": "Refuses the target (`REMOVE` with an `INVALID_ARGUMENT` cause)",
+   "reason": "Bug",
+   "references": []
+  },
+  {
+   "id": "D008",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "Rules conditions are evaluated in two passes, and a denial lists the reasons of both. In the first pass `resource.data` and lookups (`get()`, `exists()`) fail (`evaluation error at L5:22`), the `request.resource` of a write with an update mask or transforms is not computed yet (`debug(request)` shows it as `undefined`, and so does the coverage report's value of `request`, even when the first pass decides), and its lookups count against the limits of 10 and 20 (firebase-tools [#6252](https://github.com/firebase/firebase-tools/issues/6252), open since 2023). `debug()` prints in both passes, and the coverage report (`:ruleCoverage`) counts both, the first pass's failures as `{\"undefined\": {}}`",
+   "firestore": null,
+   "hidane": "Evaluate once: a denial lists each statement's reason once, only the conditions' own lookups count, and `debug()` and the coverage report see one evaluation, with `request.resource` always the document as the write leaves it",
+   "reason": "Bug",
+   "references": [
+    "firebase/firebase-tools#6252"
+   ]
+  },
+  {
+   "id": "D009",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "A commit's `verify` write (which the SDKs send for a document a transaction read without writing it) is checked as a `get` in the same two passes, with a different `request` in each: in the first it has the keys of a read (`fields`, null), in the second those of a write (`transforms`, `writeFields`, `readFields`, all null, and `resource`, the stored document). Where the first pass decides, `debug(request)` and the coverage report show the keys of a read",
+   "firestore": null,
+   "hidane": "One evaluation, with the keys of the second pass: `request.resource` is the stored document, and `request.fields` is undefined",
+   "reason": "Follows from evaluating once, with everything the second pass computes",
+   "references": []
+  },
+  {
+   "id": "D010",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "The Emulator UI's request monitor (the WebSocket feed on `--websocket_port`) gets a record for each pass of that evaluation: a first one where `resource` is undefined and conditions reading it fail, then, unless that decided, one with the stored document. An upsert's first pass evaluates `create` and `update`, and if they disagree a third record evaluates the method that applies; `granularAllowOutcomes` grows over all of them",
+   "firestore": null,
+   "hidane": "One record per method evaluated: a read, a document of a batchGet or of a Listen target, a way of a list's filter, a write (an upsert: `create`, then `update`). `resource` holds the stored document (null when there is none)",
+   "reason": "Follows from evaluating once",
+   "references": []
+  },
+  {
+   "id": "D011",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "A client of the request monitor that stops reading holds up every request checked against rules until it reads again or disconnects (recorded: a 256 KiB write did not answer within 5 s)",
+   "firestore": null,
+   "hidane": "Records wait in a queue per client, never the request; a client more than 16 MiB behind is disconnected, and the Emulator UI reconnects and gets the last 50 records",
+   "reason": "A monitor must not slow down the emulator",
+   "references": []
+  },
+  {
+   "id": "D012",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "A request monitor client that connects while its backlog cannot be sent at once (a large backlog) gets it, but no record after it (`BlockingOperationException` in the log)",
+   "firestore": null,
+   "hidane": "Gets the backlog, then every record",
+   "reason": "Bug",
+   "references": []
+  },
+  {
+   "id": "D013",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "The WebSocket port does not answer a request for another path than `/requests`, or with a query string",
+   "firestore": null,
+   "hidane": "`404 Not Found`",
+   "reason": "A request should be answered",
+   "references": []
+  },
+  {
+   "id": "D014",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "A Listen query target is checked against the rules again, and recorded, whenever a write changes a document the stream listens to",
+   "firestore": null,
+   "hidane": "Checked once, when it is added (a listened document is checked again when it changes, as on the official emulator)",
+   "reason": "A query is decided by the query",
+   "references": []
+  },
+  {
+   "id": "D015",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "In the coverage report, a `?:` that takes its second branch shows its own value as the value of its first branch (the expressions inside that branch as not evaluated)",
+   "firestore": null,
+   "hidane": "The first branch and everything in it as not evaluated (`{}`)",
+   "reason": "Bug (a value the branch never had)",
+   "references": []
+  },
+  {
+   "id": "D016",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "limitation",
+   "official": "The coverage report keeps every distinct value of every expression, for as long as the ruleset is loaded; a `request` is a new value each time (it holds the time)",
+   "firestore": null,
+   "hidane": "The first 100 distinct values of each expression are kept and counted; a value that differs from all of them is not counted",
+   "reason": "Bounded memory: over a long test run the report would otherwise grow without end",
+   "references": []
+  },
+  {
+   "id": "D017",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "`GET :ruleCoverage.html` answers a page whose script comes with the official emulator; for an empty project ID, a `500` with an HTML error page",
+   "firestore": null,
+   "hidane": "A page of hidane's own around the same data (`const data = …`, the report's JSON with `<`, `>`, `&`, `=` and `'` escaped as on the official page); for an empty project ID, the `500` of the JSON endpoints",
+   "reason": "The official page is not redistributable; the data is the same",
+   "references": []
+  },
+  {
+   "id": "D018",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "A denied list lists `false` for each way of the filter that was allowed before the denied one (`n == 1` under `n in [1, 2]`: `false for 'list' @ L5, false for 'list' @ L5`)",
+   "firestore": null,
+   "hidane": "The denied way's reasons only",
+   "reason": "A message reporting allowed ways as `false` misleads",
+   "references": []
+  },
+  {
+   "id": "D019",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "A denied commit lists, before the reasons of the write that was denied, the statements of every write checked before it, as `false` even where they allowed it (`c/y` written, then `c/b` verified, under `allow get: if d == 'a'` and `allow create, update: if d == 'y'`: `false for 'create' @ L6, false for 'update' @ L6, false for 'get' @ L5`)",
+   "firestore": null,
+   "hidane": "The denied write's reasons only: the writes are checked in order and the first denied one decides, as on the official emulator",
+   "reason": "A message reporting allowed writes as `false` misleads",
+   "references": []
+  },
+  {
+   "id": "D020",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "Whether a document that a commit writes costs a lookup when another of its writes reads it with `get()` or `exists()` varies from one project to another (commits of the same shape were allowed in some projects and denied in others); through `getAfter()` or `existsAfter()` it never does. A document the commit verifies always costs one through `get()` or `exists()`, and in a verify's condition so does every document the commit writes",
+   "firestore": null,
+   "hidane": "Every document a commit writes is free for its writes' conditions; the rest as on the official emulator",
+   "reason": "The official result cannot be predicted",
+   "references": []
+  },
+  {
+   "id": "D021",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "`replace()` with a replacement Java's regular expressions refuse (`$` alone, a group that does not exist, a trailing `\\`) answers `500 UNKNOWN`",
+   "firestore": null,
+   "hidane": "An evaluation error, `Invalid replacement string: <replacement>.`, which denies unless `&&` or `\\|\\|` absorbs it",
+   "reason": "Bug (an internal error)",
+   "references": []
+  },
+  {
+   "id": "D022",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "limitation",
+   "official": "A string index or slice that cuts a surrogate pair (`'😀'[0]`) gives a string holding half of it",
+   "firestore": null,
+   "hidane": "U+FFFD in its place; sizes and indexes still count UTF-16 code units",
+   "reason": "A Rust string cannot hold half a pair",
+   "references": []
+  },
+  {
+   "id": "D023",
+   "table": "intentional",
+   "area": "transactions",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "Transaction conflict detection regressed in v1.22.0 (firebase-tools [#11241](https://github.com/firebase/firebase-tools/issues/11241))",
+   "firestore": "Conflicting transactions are detected, as the documented contract says",
+   "hidane": "Detect conflicts: every document a transaction reads and every collection ID it lists stays locked until it ends; queries will lock the same way (#21)",
+   "reason": "Bug; parity target is the documented contract",
+   "references": [
+    "firebase/firebase-tools#11241",
+    "hidane-dev/hidane#21"
+   ]
+  },
+  {
+   "id": "D024",
+   "table": "intentional",
+   "area": "transactions",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "A transaction ID is spent on every non-transactional request too, and the count restarts at 1 on `POST /reset`",
+   "firestore": null,
+   "hidane": "Same 9-byte encoding, counted per database, but only transactions take an ID and the count continues across a reset",
+   "reason": "IDs are opaque to clients. Continuing the count means an ID from before a reset reads as expired instead of naming a new transaction",
+   "references": []
+  },
+  {
+   "id": "D025",
+   "table": "intentional",
+   "area": "transactions",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "A commit or read with a well-formed transaction ID that was never issued (or was forgotten by a reset) fails with `UNKNOWN` and no message; a rollback answers `INVALID_ARGUMENT` \"Transaction is invalid or expired.\"",
+   "firestore": null,
+   "hidane": "`INVALID_ARGUMENT` \"Transaction is invalid or expired.\" everywhere; an ID that has ended answers `ABORTED` \"The referenced transaction has expired or is no longer valid.\", as on the official emulator",
+   "reason": "Bug (an internal error)",
+   "references": []
+  },
+  {
+   "id": "D026",
+   "table": "intentional",
+   "area": "transactions",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "A write that starts waiting for a lock shortly before the holding transaction expires still times out after 2 s: the expiry is only noticed at the next request",
+   "firestore": null,
+   "hidane": "The write proceeds when the holding transaction expires",
+   "reason": "Timing detail with the same outcome a moment later",
+   "references": []
+  },
+  {
+   "id": "D027",
+   "table": "intentional",
+   "area": "streams",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "The Write stream fails with `UNKNOWN` and no message unless the call carries `google-cloud-resource-prefix` or `x-goog-request-params` metadata (every SDK sends one)",
+   "firestore": null,
+   "hidane": "Accepts the stream either way; the database comes from the first request",
+   "reason": "Bug (an internal error)",
+   "references": []
+  },
+  {
+   "id": "D028",
+   "table": "intentional",
+   "area": "streams",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "The Write stream handshake accepts any database name",
+   "firestore": null,
+   "hidane": "`INVALID_ARGUMENT` for a malformed name, as other RPCs answer",
+   "reason": "Bug",
+   "references": []
+  },
+  {
+   "id": "D029",
+   "table": "intentional",
+   "area": "documents",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "A write to a document of another database or project is acknowledged, with a write result and a commit time, over gRPC `Commit`, REST `:commit`, `:batchWrite`, a transaction's commit and the Write stream. The document is kept in the request's database under the other name: no read of either database finds it (`GET`, queries), only a batchGet in the request's database that names it, and an export of the request's database holds it, which an import into a database of the other name brings back (`tests/fixtures/commit_checks.json`)",
+   "firestore": null,
+   "hidane": "`INVALID_ARGUMENT` \"Document \"…\" is not in database \"…\".\", for the whole commit; a batchGet that names a document of another database is refused the same way",
+   "reason": "Bug (silent data loss)",
+   "references": [
+    "crates/hidane/tests/fixtures/commit_checks.json"
+   ]
+  },
+  {
+   "id": "D030",
+   "table": "intentional",
+   "area": "documents",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "An array union (`appendMissingElements`) whose operand holds an array or a vector with NaN is stored as it is",
+   "firestore": null,
+   "hidane": "Refused when the transform is applied, with the message the value gets in a field (\"Nested arrays are not allowed\", \"Vector cannot contain NaN values.\")",
+   "reason": "Bug (values a document may not hold)",
+   "references": []
+  },
+  {
+   "id": "D031",
+   "table": "intentional",
+   "area": "export",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "An export lists its documents in no particular order",
+   "firestore": null,
+   "hidane": "In name order",
+   "reason": "The same documents either way ([export-format.md](export-format.md))",
+   "references": [
+    "docs/export-format.md"
+   ]
+  },
+  {
+   "id": "D032",
+   "table": "intentional",
+   "area": "export",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "A seed's documents of another database are kept in the seeded database, where no read finds them, and written into its exports",
+   "firestore": null,
+   "hidane": "Left out",
+   "reason": "Bug (unreadable data that resurfaces in exports)",
+   "references": []
+  },
+  {
+   "id": "D033",
+   "table": "intentional",
+   "area": "queries",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "`find_nearest` reads a vector field path such as `m.v` as one field named `m.v`",
+   "firestore": "A vector field path such as `m.v` is resolved, the field `v` of the map `m` (the hidane column: \"as production and the SDKs do\")",
+   "hidane": "Resolves the path (the field `v` of the map `m`), as production and the SDKs do; `` `m.v` `` names the field `m.v`",
+   "reason": "Bug (nested vector fields could not be searched)",
+   "references": []
+  },
+  {
+   "id": "D034",
+   "table": "intentional",
+   "area": "values",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "A gRPC message over 100 MiB fails with `RESOURCE_EXHAUSTED` \"gRPC message exceeds maximum size 104857600: …\"",
+   "firestore": null,
+   "hidane": "Same limit, but tonic answers `OUT_OF_RANGE` \"Error, decoded message length too large: …\"",
+   "reason": "Wording of a transport error",
+   "references": []
+  },
+  {
+   "id": "D035",
+   "table": "intentional",
+   "area": "admin",
+   "topic": null,
+   "kind": "limitation",
+   "official": "Server reflection lists `google.firestore.v1beta1.Firestore` (and cannot describe it), `google.firestore.emulator.v1.FirestoreEmulator` and `google.datastore.v1.Datastore`",
+   "firestore": null,
+   "hidane": "Lists `google.firestore.v1.Firestore` and reflection; v1beta1 answers without being listed; the emulator admin API (#36) and Datastore mode (#81) are not served yet",
+   "reason": "Reflection is for tools; v1beta1 has no descriptors here",
+   "references": [
+    "hidane-dev/hidane#36",
+    "hidane-dev/hidane#81"
+   ]
+  },
+  {
+   "id": "D036",
+   "table": "intentional",
+   "area": "values",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "A document's size is its Datastore entity's encoded size: two string fields pass up to 1,048,486 bytes together",
+   "firestore": "Firestore's storage size rules: name, field names and values, plus 32 bytes",
+   "hidane": "Firestore's storage size rules (name, field names and values, plus 32 bytes), which allow a few tens of bytes more",
+   "reason": "Same limit and message; the exact boundary is an internal encoding",
+   "references": []
+  },
+  {
+   "id": "D037",
+   "table": "intentional",
+   "area": "webchannel",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "WebChannel handshakes and forward-channel answers are chunked and the connection is closed after each",
+   "firestore": null,
+   "hidane": "A content length, and the connection stays open",
+   "reason": "Transport detail; the client reads the same frames",
+   "references": []
+  },
+  {
+   "id": "D038",
+   "table": "intentional",
+   "area": "webchannel",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "A long-polling back channel puts `noop`s around its first data depending on timing, and ends after one message",
+   "firestore": null,
+   "hidane": "A `noop` while waiting; ends after the messages queued when data comes",
+   "reason": "Timing; each message arrives once, in order",
+   "references": []
+  },
+  {
+   "id": "D039",
+   "table": "intentional",
+   "area": "webchannel",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "WebChannel sessions are never dropped: each one keeps a thread (firebase-tools [#11124](https://github.com/firebase/firebase-tools/issues/11124))",
+   "firestore": null,
+   "hidane": "A session with no back channel and no request for 5 minutes is dropped",
+   "reason": "Bug (resource leak)",
+   "references": [
+    "firebase/firebase-tools#11124"
+   ]
+  },
+  {
+   "id": "D040",
+   "table": "intentional",
+   "area": "webchannel",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "WebChannel answers carry no `Access-Control-Allow-Methods`",
+   "firestore": null,
+   "hidane": "The CORS headers of every HTTP path, that one included",
+   "reason": "Harmless",
+   "references": []
+  },
+  {
+   "id": "D041",
+   "table": "intentional",
+   "area": "admin",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "JWT segments in `Authorization` are read with a lenient JSON parser (an unquoted key such as `{a:1}` passes)",
+   "firestore": null,
+   "hidane": "Strict JSON: such a token is `invalid jwt`",
+   "reason": "Clients only send JSON",
+   "references": []
+  },
+  {
+   "id": "D042",
+   "table": "intentional",
+   "area": "admin",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "`DELETE /emulator/v1/…/documents/{path}` with an empty path segment names the parent in its error (`Document parent name \"…/c/\" has invalid trailing \"/\".`)",
+   "firestore": null,
+   "hidane": "Names the whole path (`Resource name \"…\" lacks a resource id at index ….`), same status",
+   "reason": "Wording only",
+   "references": []
+  },
+  {
+   "id": "D043",
+   "table": "intentional",
+   "area": "queries",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "RunAggregationQuery responses carry `done: true`, a field the published protos do not define (visible over REST)",
+   "firestore": null,
+   "hidane": "Not sent over gRPC, where clients built from the published protos would drop it; the REST layer (#34) will add it",
+   "reason": "Not part of the published API",
+   "references": [
+    "hidane-dev/hidane#34"
+   ]
+  },
+  {
+   "id": "D044",
+   "table": "intentional",
+   "area": "rest",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "REST `GET` of a document or collection with `?transaction=` never answers (gRPC works)",
+   "firestore": null,
+   "hidane": "Follows the gRPC behaviour (#34)",
+   "reason": "Bug",
+   "references": [
+    "hidane-dev/hidane#34"
+   ]
+  },
+  {
+   "id": "D045",
+   "table": "intentional",
+   "area": "rest",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "A REST query parameter that does not parse (`pageSize=abc`, `showMissing=maybe`) leaves the request unanswered",
+   "firestore": null,
+   "hidane": "`400` \"Payload isn't valid for request.\", the answer to a body that does not parse",
+   "reason": "Bug",
+   "references": []
+  },
+  {
+   "id": "D046",
+   "table": "intentional",
+   "area": "rest",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "A `:listCollectionIds` body that names a `parent` as the path does leaves the request unanswered",
+   "firestore": null,
+   "hidane": "The path wins",
+   "reason": "Bug",
+   "references": []
+  },
+  {
+   "id": "D047",
+   "table": "intentional",
+   "area": "rest",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "REST page tokens (`nextPageToken`) are an encoded internal message",
+   "firestore": null,
+   "hidane": "The last name returned, encoded; both are opaque to clients",
+   "reason": "Internal format",
+   "references": []
+  },
+  {
+   "id": "D048",
+   "table": "intentional",
+   "area": "values",
+   "topic": null,
+   "kind": "limitation",
+   "official": "ProtoJSON (REST, WebChannel) reads a double through `BigDecimal`: a literal zero such as `-0.0`, `-0` or `\"-0\"` is `0.0`, but a literal that only rounds to zero, such as `-1e-400`, is `-0.0` (`tools/oracle/negative_zero.py`)",
+   "firestore": null,
+   "hidane": "Every `-0.0` read from ProtoJSON is `0.0`, that one included; gRPC keeps `-0.0` on both",
+   "reason": "No client writes such a literal, and telling it from `-0.0` would need the number's text, which the JSON parser does not keep",
+   "references": [
+    "tools/oracle/negative_zero.py"
+   ]
+  },
+  {
+   "id": "D049",
+   "table": "intentional",
+   "area": "streams",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "iOS clients receive `GOAWAY too_many_pings` after about 90 s (firebase-tools [#11238](https://github.com/firebase/firebase-tools/issues/11238))",
+   "firestore": "Pinging clients stay connected (the production table: \"HTTP/2 keepalive pings\")",
+   "hidane": "Keepalive settings that do not trip the client",
+   "reason": "Bug",
+   "references": [
+    "firebase/firebase-tools#11238"
+   ]
+  },
+  {
+   "id": "D050",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "`PUT :securityRules` without files (`{}`, `{\"rules\": {\"files\": []}}`) answers `500` `UNKNOWN` with no message",
+   "firestore": null,
+   "hidane": "`400` \"Payload isn't valid for request.\"",
+   "reason": "Bug (an internal error)",
+   "references": []
+  },
+  {
+   "id": "D051",
+   "table": "intentional",
+   "area": "admin",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "A Firestore trigger registration (`…/triggers/{key}`, `…/eventarcTrigger`) with a query parameter that names a field of the trigger (`?eventTrigger.service=…`, `?eventarcTrigger.database=…`) leaves the request unanswered",
+   "firestore": null,
+   "hidane": "The parameter is ignored, as other parameters are",
+   "reason": "Bug",
+   "references": []
+  },
+  {
+   "id": "D052",
+   "table": "intentional",
+   "area": "admin",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "A v2 Firestore event's `ce-source` (a function's `event.source`) names the project twice: `//firestore.googleapis.com/projects/projects/{p}/databases/{d}`",
+   "firestore": "`//firestore.googleapis.com/projects/{p}/databases/{d}` (the hidane column: \"as production\")",
+   "hidane": "`//firestore.googleapis.com/projects/{p}/databases/{d}`, as production (`tests/fixtures/function_events.json`, `results/functions-triggers-*.json`)",
+   "reason": "Bug (a malformed resource name)",
+   "references": [
+    "crates/hidane/tests/fixtures/function_events.json",
+    "results/functions-triggers-*.json"
+   ]
+  },
+  {
+   "id": "D053",
+   "table": "intentional",
+   "area": "admin",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "A write that changes nothing sends v2 `updated` and `written` events whose value and old value are the same, and the delete of a document that does not exist sends v2 `created` and `written` events with neither; v1 triggers get no event for either",
+   "firestore": "Events only for changes (the why column: \"production sends events only for changes\")",
+   "hidane": "No event, for v1 or v2 triggers",
+   "reason": "Bug: production sends events only for changes, as the official emulator does to v1 triggers",
+   "references": []
+  },
+  {
+   "id": "D054",
+   "table": "intentional",
+   "area": "admin",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "`POST /reset` forgets every Firestore trigger the Functions emulator registered: no event reaches it afterwards, and firebase-tools registers triggers only when functions load",
+   "firestore": null,
+   "hidane": "The triggers stay registered, and their events keep reaching the Functions emulator, as after a clear (`DELETE …/documents`), which keeps them on both",
+   "reason": "Bug (functions stop firing, silently)",
+   "references": []
+  },
+  {
+   "id": "D055",
+   "table": "intentional",
+   "area": "admin",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "A v2 trigger registered without a database (firebase-tools always sends one) makes every write to its project answer `500` \"Found corrupted Eventarc triggers that have different database\", after committing it and sending its v1 events",
+   "firestore": null,
+   "hidane": "The trigger watches `(default)`",
+   "reason": "Bug (an internal error)",
+   "references": []
+  },
+  {
+   "id": "D056",
+   "table": "intentional",
+   "area": "admin",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "The delete events of a deleted path (`DELETE /emulator/v1/…/documents/{path}`) or a cleared database come in no particular order",
+   "firestore": null,
+   "hidane": "In name order",
+   "reason": "The same events",
+   "references": []
+  },
+  {
+   "id": "D057",
+   "table": "intentional",
+   "area": "admin",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "Events go out through Google's HTTP client for Java (`User-Agent: Google-HTTP-Java-Client/…`, `Accept-Encoding: gzip`, kept-alive connections)",
+   "firestore": null,
+   "hidane": "`User-Agent: hidane/<version>`, a connection per event",
+   "reason": "Transport detail: the Functions emulator reads the path, the content type, the `ce-*` headers and the body",
+   "references": []
+  },
+  {
+   "id": "D058",
+   "table": "intentional",
+   "area": "admin",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "Trigger registration bodies are read with a lenient JSON parser: single quotes, unquoted keys, a byte order mark and anything after the first value pass, and a number given for a string keeps its spelling (`1e3`)",
+   "firestore": null,
+   "hidane": "Strict JSON, `400` \"Payload isn't valid for request.\" for the rest; a number as serde_json prints it (`1000.0`)",
+   "reason": "The Functions emulator sends JSON, with strings (`tests/fixtures/function_triggers.json`)",
+   "references": [
+    "crates/hidane/tests/fixtures/function_triggers.json"
+   ]
+  },
+  {
+   "id": "D059",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "After a syntax error in a ruleset, the error lines that follow the first come from ANTLR's error recovery, which depends on its prediction",
+   "firestore": null,
+   "hidane": "The same first line; the lines after it follow the official recovery where it is simple (every case of `crates/hidane/tests/fixtures/rules_compile.json` matches in full), and can differ elsewhere, such as an unclosed `exists(` around a path literal. Where ANTLR's prediction fails at an earlier token than the lexer's (`{'k':1e+0}` after `==`) or its recovery reads a path (`(…)/-1`), the first line differs too (`crates/hidane-rules/tests/warnings.rs` lists the recorded cases)",
+   "reason": "Recovery detail; the first error is the one to fix",
+   "references": [
+    "crates/hidane/tests/fixtures/rules_compile.json",
+    "crates/hidane-rules/tests/warnings.rs"
+   ]
+  },
+  {
+   "id": "D060",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "limitation",
+   "official": "A rule may chain any number of member accesses and indexes (`a.b.c…`, `a[0][0]…`); past about 6,500 the compiler fails with `500` `UNKNOWN`",
+   "firestore": null,
+   "hidane": "More than 2,000 are \"Expression is too complex to evaluate safely.\", the compiler's message for its other depth limits",
+   "reason": "Bounds the stack of the parser and the evaluator",
+   "references": []
+  },
+  {
+   "id": "D061",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "bug-for-bug",
+   "official": "The `issues[].severity` returned by `:securityRules` is a string (`\"ERROR\"`) while firebase-tools compares it against a numeric enum, so invalid rules still print \"Rules updated.\"",
+   "firestore": null,
+   "hidane": "hidane returns the same string the official emulator does; the CLI-side comparison is an upstream bug",
+   "reason": "Keep wire parity; report upstream",
+   "references": []
+  },
+  {
+   "id": "D062",
+   "table": "intentional",
+   "area": "admin",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "gRPC reflection lists services but `grpcurl describe` fails on a `google.api.api_visibility` extension",
+   "firestore": null,
+   "hidane": "Full reflection that works with `grpcurl`",
+   "reason": "Developer convenience",
+   "references": []
+  },
+  {
+   "id": "D063",
+   "table": "intentional",
+   "area": "rest",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "`GET //` never answers (the connection hangs)",
+   "firestore": null,
+   "hidane": "`404 Not Found`",
+   "reason": "Bug",
+   "references": []
+  },
+  {
+   "id": "D064",
+   "table": "intentional",
+   "area": "documents",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "Precondition failures print the emulator's internal Datastore key: `entity already exists: EntityRef[partitionRef=dev~p, path=/c/d]`, and a protobuf text dump of the key for `no entity to update`",
+   "firestore": "`Document already exists: <name>` and `No document to update: <name>`",
+   "hidane": "Production Firestore's wording, `Document already exists: <name>` and `No document to update: <name>`; same status codes (`ALREADY_EXISTS`, `NOT_FOUND`)",
+   "reason": "Internal detail; applications see the production wording in production",
+   "references": []
+  },
+  {
+   "id": "D065",
+   "table": "intentional",
+   "area": "documents",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "`read_time` older than at least two hours is still served (the exact limit is #86)",
+   "firestore": "`read_time` up to one hour old (the hidane column: \"like production Firestore\")",
+   "hidane": "Up to one hour old, like production Firestore; older answers `FAILED_PRECONDITION` \"The requested 'read_time' is too old.\" with the official message",
+   "reason": "Bounded memory for old versions (ADR 0002)",
+   "references": [
+    "hidane-dev/hidane#86",
+    "docs/adr/0002-storage-engine.md"
+   ]
+  },
+  {
+   "id": "D066",
+   "table": "intentional",
+   "area": "rest",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "The REST `readTime` parameter always fails with \"Only timestamps past epoch are supported.\", even for the latest commit time (gRPC works)",
+   "firestore": null,
+   "hidane": "Follows the gRPC behaviour (#34)",
+   "reason": "Bug",
+   "references": [
+    "hidane-dev/hidane#34"
+   ]
+  },
+  {
+   "id": "D067",
+   "table": "intentional",
+   "area": "admin",
+   "topic": null,
+   "kind": "limitation",
+   "official": "With `--single_project_mode` (which firebase-tools passes unless `emulators.singleProjectMode` is `false`), a request for a project ID other than `--project_id` is served and a warning is logged, as the flag's `--help` text says (`crates/hidane/src/cli.rs`); with `--single_project_mode_error`, its help says the mismatch is an error instead. The warning's wording is not recorded",
+   "firestore": null,
+   "hidane": "Accepts both flags and requires `--project_id` with `--single_project_mode`, as the official emulator does, then serves every project ID without a warning or an error",
+   "reason": "Not implemented: firebase-tools does not pass `--single_project_mode_error` (it is not among the Firestore emulator's arguments in its `src/emulator/downloadableEmulators.ts`), so under it the difference is a log line, and requests are answered the same. `hidane doctor` reports it for projects in single project mode",
+   "references": [
+    "crates/hidane/src/cli.rs"
+   ]
+  },
+  {
+   "id": "D068",
+   "table": "intentional",
+   "area": "documents",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "`serverTimestamp()` stores the time the request was received, truncated to milliseconds, a few milliseconds before the commit time",
+   "firestore": null,
+   "hidane": "The commit time truncated to milliseconds",
+   "reason": "Same precision and the same value for every field of a commit; tests cannot depend on which instant inside the request is used",
+   "references": []
+  },
+  {
+   "id": "D069",
+   "table": "production",
+   "area": "transactions",
+   "topic": "Transactions",
+   "kind": "bug-for-bug",
+   "official": "Locks, measured in #17: a read-write transaction holds a shared lock on every document it reads (found or not) and on every collection with a collection ID it lists or queries, whatever the parent. A write, in a transaction or not, waits for other transactions' locks for up to 2 s, then fails with `ABORTED` \"Transaction lock timeout.\" (which ends a waiting transaction). An unused transaction expires 60 s after its last request (the [docs](https://docs.cloud.google.com/firestore/native/docs/emulator) say 30 s). `concurrency_mode: OPTIMISTIC` is accepted and ignored. Read-only transactions lock nothing and read the snapshot of their start",
+   "firestore": "Contention is resolved by aborting a transaction with `ABORTED` rather than by a fixed wait, and optimistic concurrency can be selected",
+   "hidane": "As the official emulator: the same lock scope, waits, expiry and messages",
+   "reason": "Follow the official emulator: same lock scope, waits, expiry and messages (`tests/fixtures/transactions.json`, replayed by `crates/hidane/tests/transactions.rs`)",
+   "references": [
+    "https://docs.cloud.google.com/firestore/native/docs/emulator",
+    "hidane-dev/hidane#17",
+    "crates/hidane/tests/fixtures/transactions.json",
+    "crates/hidane/tests/transactions.rs"
+   ]
+  },
+  {
+   "id": "D070",
+   "table": "production",
+   "area": "queries",
+   "topic": "Composite indexes",
+   "kind": "bug-for-bug",
+   "official": "Not tracked or required",
+   "firestore": "Required for many queries",
+   "hidane": "As the official emulator: no index enforcement",
+   "reason": "Follow the emulator (no index enforcement)",
+   "references": []
+  },
+  {
+   "id": "D071",
+   "table": "production",
+   "area": "streams",
+   "topic": "Listen `once`",
+   "kind": "bug-for-bug",
+   "official": "Ignored: the target stays after `CURRENT`",
+   "firestore": "The target is removed once it is current",
+   "hidane": "As the official emulator: the target stays after `CURRENT`",
+   "reason": "Follow the emulator, measured in #18 (no SDK sets it)",
+   "references": [
+    "hidane-dev/hidane#18"
+   ]
+  },
+  {
+   "id": "D072",
+   "table": "production",
+   "area": "streams",
+   "topic": "Resuming a Listen target (`resume_token` / `read_time`)",
+   "kind": "more-correct",
+   "official": "Starts over: `ADD`, `RESET`, the whole result",
+   "firestore": "Sends only what changed since the token",
+   "hidane": "As production: only what entered, changed in or left the target since the token",
+   "reason": "Follow production (#19): what entered, changed in or left the target since the token. From before the versions kept (one hour), the documents updated since then and an `ExistenceFilter` with the count. Tokens from before the process started or the store was reset, or that do not parse, start over with `RESET`",
+   "references": [
+    "hidane-dev/hidane#19"
+   ]
+  },
+  {
+   "id": "D073",
+   "table": "production",
+   "area": "queries",
+   "topic": "Query cursors",
+   "kind": "bug-for-bug",
+   "official": "At most one value per explicit `order_by`; values for the implicit orderings (inequality fields, `__name__`) fail with \"Cursor has too many values.\"",
+   "firestore": "Cursors are positions in the query's full ordering",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator, measured in #21. The SDKs add explicit orderings when they build a cursor from a snapshot, so they are not affected",
+   "references": [
+    "hidane-dev/hidane#21"
+   ]
+  },
+  {
+   "id": "D074",
+   "table": "production",
+   "area": "queries",
+   "topic": "Descending document order",
+   "kind": "bug-for-bug",
+   "official": "`order_by __name__ desc` as the only ordering, without a filter on another field, fails with `FAILED_PRECONDITION` \"Firestore does not support descending key scans\"",
+   "firestore": "Served",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator, measured in #21",
+   "references": [
+    "hidane-dev/hidane#21"
+   ]
+  },
+  {
+   "id": "D075",
+   "table": "production",
+   "area": "values",
+   "topic": "Limits",
+   "kind": "bug-for-bug",
+   "official": "Per document, with Datastore's messages: 1,048,487 bytes for a string or bytes value, 1,500 bytes for a field name (nested names count their dotted path, an array as `array`) and for a collection or document ID, 20 levels of maps and arrays, 1 MiB for the document. Not per request: a 64 MB gRPC commit is accepted (firebase-tools [#8649](https://github.com/firebase/firebase-tools/issues/8649)); gRPC messages up to 100 MiB, REST bodies up to 16 MiB",
+   "firestore": "Enforced, per document and per request",
+   "hidane": "As the official emulator, except the document-size boundary (D036)",
+   "reason": "Follow the emulator (#121, #25), except the document-size boundary below",
+   "references": [
+    "firebase/firebase-tools#8649",
+    "hidane-dev/hidane#121",
+    "hidane-dev/hidane#25"
+   ]
+  },
+  {
+   "id": "D076",
+   "table": "production",
+   "area": "queries",
+   "topic": "`PartitionQuery`",
+   "kind": "bug-for-bug",
+   "official": "501 `UNIMPLEMENTED`",
+   "firestore": "Supported",
+   "hidane": "As the official emulator: 501 `UNIMPLEMENTED`",
+   "reason": "Follow the emulator (issue #26)",
+   "references": [
+    "hidane-dev/hidane#26"
+   ]
+  },
+  {
+   "id": "D077",
+   "table": "production",
+   "area": "streams",
+   "topic": "HTTP/2 keepalive pings",
+   "kind": "more-correct",
+   "official": "A client pinging an idle connection every 10 s is sent `GOAWAY` (`ENHANCE_YOUR_CALM`, `too_many_pings`) after 30 s, likely the iOS SDK's 90 s GOAWAY (firebase-tools [#11238](https://github.com/firebase/firebase-tools/issues/11238))",
+   "firestore": "Pinging clients stay connected",
+   "hidane": "As production: pings are answered and never close the connection",
+   "reason": "Follow production (#25): pings are answered and never close the connection (`results/keepalive-*.txt`)",
+   "references": [
+    "firebase/firebase-tools#11238",
+    "hidane-dev/hidane#25",
+    "results/keepalive-*.txt"
+   ]
+  },
+  {
+   "id": "D078",
+   "table": "production",
+   "area": "queries",
+   "topic": "`ExecutePipeline`",
+   "kind": "bug-for-bug",
+   "official": "Only with `--database-edition enterprise`; on a standard database `INVALID_ARGUMENT` \"ExecutePipeline requires the Database Edition to be \\`enterprise\\`.\"",
+   "firestore": "Enterprise edition only",
+   "hidane": "As the official emulator on standard databases; enterprise pipelines are not implemented yet (`UNIMPLEMENTED`, #80)",
+   "reason": "Follow the emulator on standard databases (#26); enterprise pipelines are not implemented in hidane yet (`UNIMPLEMENTED`, #80)",
+   "references": [
+    "hidane-dev/hidane#80",
+    "hidane-dev/hidane#26"
+   ]
+  },
+  {
+   "id": "D079",
+   "table": "production",
+   "area": "queries",
+   "topic": "`explain_options` (RunQuery, RunAggregationQuery)",
+   "kind": "bug-for-bug",
+   "official": "Ignored: the same results, no explain metrics",
+   "firestore": "Explain metrics (plan summary, and execution stats with `analyze`)",
+   "hidane": "As the official emulator: ignored",
+   "reason": "Follow the emulator (#26)",
+   "references": [
+    "hidane-dev/hidane#26"
+   ]
+  },
+  {
+   "id": "D080",
+   "table": "production",
+   "area": "queries",
+   "topic": "`find_nearest`",
+   "kind": "bug-for-bug",
+   "official": "Runs vector search: the query's results nearest first (largest dot product first), ties in the query's order, NaN distances last; the distance field is a literal name (`a.b` is one field); a NaN in the query vector is accepted",
+   "firestore": "Runs vector search",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator (#118, `tests/fixtures/find_nearest.json`)",
+   "references": [
+    "hidane-dev/hidane#118",
+    "crates/hidane/tests/fixtures/find_nearest.json"
+   ]
+  },
+  {
+   "id": "D081",
+   "table": "production",
+   "area": "export",
+   "topic": "Persistence",
+   "kind": "bug-for-bug",
+   "official": "In-memory; export / import only",
+   "firestore": "Durable",
+   "hidane": "As the official emulator: in memory, export and import only",
+   "reason": "Follow the emulator (ADR 0002)",
+   "references": [
+    "docs/adr/0002-storage-engine.md"
+   ]
+  },
+  {
+   "id": "D082",
+   "table": "production",
+   "area": "export",
+   "topic": "Import",
+   "kind": "bug-for-bug",
+   "official": "`createTime` / `updateTime` are overwritten with the import time; `--seed_from_export` seeds every project's databases on first access, again after `POST /reset`",
+   "firestore": "n/a",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator ([export-format.md](export-format.md))",
+   "references": [
+    "docs/export-format.md"
+   ]
+  }
+ ]
+}

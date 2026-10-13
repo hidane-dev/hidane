@@ -32,6 +32,9 @@ jobs:
       - run: python3 tools/parity/sdk_certification.py --check
       # docs/compatibility.json and the tables at the top of docs/compatibility.md sum up the
       # above, the browser and Functions results and the integration tests for this tree.
+      # docs/parity-exceptions.json, the official emulator difference database, is valid and its
+      # references exist; the tables of docs/parity-exceptions.md follow it.
+      - run: python3 tools/parity/differences.py --check
       - run: python3 tools/parity/compatibility.py --check
       - uses: dtolnay/rust-toolchain@stable
         with:
