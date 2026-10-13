@@ -4,6 +4,7 @@ The end-to-end test runs `fuzz.py run` against two small HTTP servers in this pr
 standing in for each emulator; nothing here needs Java, hidane or the network.
 """
 
+import argparse
 import contextlib
 import io
 import json
@@ -130,7 +131,14 @@ class Classification(unittest.TestCase):
     def test_status(self):
         self.assertEqual(diff.classify(STEP, error(400, "x"), answer(200, "{}"))["kind"], "status")
         found = diff.classify(STEP, error(400, "x"), error(400, "x", "FAILED_PRECONDITION"))
-        self.assertEqual((found["kind"], found["detail"]), ("status", "INVALID_ARGUMENT/FAILED_PRECONDITION"))
+        self.assertEqual((found["kind"], found["detail"]), ("status", "INVALID_ARGUMENT/FAILED_PRECONDITION: x | x"))
+        # The refusals' templates tell refusals of different things apart, not their values.
+        unset = diff.compare({"steps": [STEP]}, [error(400, "Cannot convert a 'v' value.")], [answer(200, "{}")])
+        nested = diff.compare({"steps": [STEP]}, [error(400, "Cannot transform property m")], [answer(200, "{}")])
+        other = diff.compare({"steps": [STEP]}, [error(400, "Cannot convert a 'w' value.")], [answer(200, "{}")])
+        self.assertEqual(unset["detail"], "INVALID_ARGUMENT/None: Cannot convert a '…' value.")
+        self.assertNotEqual(unset["signature"], nested["signature"])
+        self.assertEqual(unset["signature"], other["signature"])
 
     def test_message(self):
         found = diff.classify(STEP, error(400, "Bad 'a' at 3"), error(400, "Wrong"))
@@ -280,6 +288,28 @@ class Shrinking(unittest.TestCase):
         self.assertGreater(tests, 0)
         _, tests = shrink.minimize(case, 2, reproduces, budget=3)
         self.assertLessEqual(tests, 3)
+
+
+class Minimising(unittest.TestCase):
+    def test_a_smaller_case_that_a_rule_accepts_does_not_reproduce(self):
+        # The same signature (one message template), but a rule accepts the smaller case's
+        # wording: minimising to it would report a difference the run does not report.
+        rule = {"id": "x", "exception": "D008", "why": "w", "kinds": ["message"],
+                "hidane": {"message": "accepted"}}
+        args = argparse.Namespace(areas="", minutes=0, official="o", hidane="h", timeout=1)
+        session = fuzz.Session(args, diff.Exceptions([rule]), Path("."))
+
+        def both(case):
+            word = "accepted" if len(case["steps"]) == 1 else "refused"
+            return [error(400, "bad 'x'")], [error(400, f"bad '{word}'")]
+        session.both = both
+        big, small = {"steps": [STEP, STEP]}, {"steps": [STEP]}
+        found = diff.compare(big, *both(big))
+        self.assertEqual(diff.compare(small, *both(small))["signature"], found["signature"])
+        test = session.reproduces("batches", found["signature"])
+        self.assertTrue(test(big))
+        self.assertFalse(test(small))
+        self.assertFalse(session.unexplained("batches", found["signature"], None))
 
 
 class FakeEmulator(BaseHTTPRequestHandler):
