@@ -7,8 +7,9 @@
 pub struct Verified {
     pub ecosystem: &'static str,
     pub name: &'static str,
-    /// The version that was verified. Another version with the same major version counts as
-    /// verified; any other does not.
+    /// The version that was verified. A known version with the same major and minor versions
+    /// counts as verified (`compatible`); one with only the same major version is
+    /// `likely-compatible`; any other is not verified.
     pub version: &'static str,
     /// What was verified with it.
     pub what: &'static str,
