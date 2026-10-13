@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# The README's write demo: starts an emulator with the command given, waits until its port accepts
+# a TCP connection, writes 100,000 documents to it with write.mjs, then stops it. Bash 5
+# (/dev/tcp); port 8080.
+set -euo pipefail
+"$@" > /dev/null 2>&1 &
+pid=$!
+trap 'kill "$pid" 2> /dev/null || true; wait "$pid" 2> /dev/null || true' EXIT
+until (exec 3<> /dev/tcp/127.0.0.1/8080) 2> /dev/null; do
+  kill -0 "$pid" 2> /dev/null || { echo "the emulator exited" >&2; exit 1; }
+  sleep 0.05
+done
+# METADATA_SERVER_DETECTION: firebase-admin does not look for a Google Cloud metadata server, and
+# does not warn when it finds none.
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 METADATA_SERVER_DETECTION=none node "$(dirname "$0")/write.mjs"

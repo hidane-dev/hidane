@@ -1,10 +1,11 @@
 name: Demo
 
-# Records the README's demo (docs/assets/demo/demo.tape) on a GitHub-hosted runner: how long the
-# official emulator and hidane's latest release each take to open their port, then 200
-# firebase-admin tests through `hidane exec` in a shell without Java. It uploads demo.gif as an artifact, which a
-# maintainer copies to docs/assets/demo.gif; nothing is pushed or published. Each command runs
-# once before the recording, so the jar is downloaded and both start from the same warm caches.
+# Records the README's demos on a GitHub-hosted runner, one GIF per tape in docs/assets/demo:
+# demo.tape, 200 firebase-admin tests through `hidane exec` in a shell without Java;
+# demo-startup.tape, how long the official emulator and hidane's latest release each take to open
+# their port; demo-writes.tape, 100,000 documents written to each. It uploads the GIFs as an
+# artifact, which a maintainer copies to docs/assets/; nothing is pushed or published. Each command
+# runs once before the recording, so the jar is downloaded and both start from the same warm caches.
 
 on:
   pull_request:
@@ -65,7 +66,7 @@ jobs:
           install -m 0755 ttyd tools/ttyd
           echo "$RUNNER_TEMP/tools" >> "$GITHUB_PATH"
       # The runner image's own Java goes, so that setup-java's, first on PATH, is the only one:
-      # the tape's second part takes it off PATH for a shell without Java.
+      # demo.tape takes it off PATH for a shell without Java.
       - name: Only setup-java's Java
         run: |
           sudo update-alternatives --remove-all java
@@ -77,6 +78,8 @@ jobs:
           firebase emulators:exec "npm test" > /dev/null 2>&1
           ./ready java -jar ~/.cache/firebase/emulators/cloud-firestore-emulator-*.jar --host 127.0.0.1 --port 8080
           ./ready hidane --host 127.0.0.1 --port 8080
+          ./write java -jar ~/.cache/firebase/emulators/cloud-firestore-emulator-*.jar --host 127.0.0.1 --port 8080
+          ./write hidane --host 127.0.0.1 --port 8080
           (
             PATH="$(printf %s "$PATH" | tr : '\n' | grep -vxF "$JAVA_HOME/bin" | paste -sd: -)"
             if command -v java; then exit 1; fi
@@ -95,11 +98,14 @@ jobs:
           cat machine.txt
           { echo "## The recording's machine"; echo; echo '```'; cat machine.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
       - name: Record
-        run: vhs demo.tape
+        run: |
+          for tape in demo demo-startup demo-writes; do
+            vhs "$tape.tape"
+          done
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: demo
           path: |
-            docs/assets/demo/demo.gif
+            docs/assets/demo/*.gif
             docs/assets/demo/machine.txt
           if-no-files-found: error
