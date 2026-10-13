@@ -36,6 +36,9 @@ jobs:
       # references exist; the tables of docs/parity-exceptions.md follow it.
       - run: python3 tools/parity/differences.py --check
       - run: python3 tools/parity/compatibility.py --check
+      # website/public/data/*.json, the data hidane.dev can show (compatibility, benchmarks,
+      # adopters), follow the report, the site's benchmark links and ADOPTERS.md.
+      - run: python3 tools/parity/site_data.py --check
       # tools/upstream/watch.json, what the Upstream workflow watches, names the verified
       # versions above and the pinned official emulator (tools/upstream/README.md).
       - run: python3 -I -B -m unittest discover -s tools/upstream -p "test_*.py"

@@ -1,0 +1,16 @@
+{
+ "schema_version": 1,
+ "generated_by": "tools/parity/site_data.py",
+ "about": "Where hidane's canonical benchmark results are: hidane and the official emulator measured on one dedicated machine, nightly and for each release. The index lists every result with its kind, time, environment revision, versions and stability; compare only within one environment revision, and quote medians of stable runs.",
+ "repository": "https://github.com/hidane-dev/benchmark-results",
+ "index": "https://raw.githubusercontent.com/hidane-dev/benchmark-results/main/index.json",
+ "license": "CC BY 4.0",
+ "attribution": "hidane canonical benchmark (hidane-dev/benchmark-results)",
+ "methodology": "https://github.com/hidane-dev/hidane/blob/main/bench/README.md",
+ "cited": [
+  {
+   "path": "results/release/2026/10/2026-10-13-release.md",
+   "url": "https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-13-release.md"
+  }
+ ]
+}

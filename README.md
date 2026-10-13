@@ -219,7 +219,8 @@ on it are welcome as corporate sponsors. Organizations interested in priority su
 help or long-term compatibility support can contact the maintainers too; paid support is not
 offered yet. Sponsorship supports the project; it does not decide what gets built, which is
 discussed in the open. To get in touch, start a
-[discussion](https://github.com/hidane-dev/hidane/discussions).
+[discussion](https://github.com/hidane-dev/hidane/discussions). If your organization uses
+hidane, you can list it in [ADOPTERS.md](ADOPTERS.md).
 
 ## License
 

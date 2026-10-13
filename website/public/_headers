@@ -15,3 +15,5 @@
   Cache-Control: public, max-age=86400
 /og.png
   Cache-Control: public, max-age=86400
+/data/*
+  Cache-Control: public, max-age=300

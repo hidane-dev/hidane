@@ -1,0 +1,7 @@
+{
+ "schema_version": 1,
+ "generated_by": "tools/parity/site_data.py",
+ "about": "Organizations that use hidane and listed themselves in ADOPTERS.md.",
+ "source": "https://github.com/hidane-dev/hidane/blob/main/ADOPTERS.md",
+ "adopters": []
+}
