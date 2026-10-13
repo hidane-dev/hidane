@@ -48,6 +48,12 @@ The Official emulator workflow (`.github/workflows/official-emulator.yml`) re-re
 fixtures against a freshly downloaded jar every week and fails when one differs from the
 committed recording by a byte, so the recordings stay reproducible.
 
+The Upstream workflow's compatibility canary ([`tools/upstream/README.md`](../../tools/upstream/README.md))
+observes the releases firebase-tools pins next, the same way and under the same rules: the jar is
+downloaded from the URL firebase-tools names and checked against the SHA-256 it names, run on a
+runner, and recorded by the same scripts. Those recordings are workflow artifacts only; nothing in
+the repository changes until hidane moves to that release and re-records every fixture.
+
 ## What a recording may hold
 
 - The requests the script sent (method, path, body, the headers that matter) and the answers it

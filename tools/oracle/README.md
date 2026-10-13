@@ -219,11 +219,15 @@ weekly, by hand, and on pull requests that change the action or the workflow:
   document limits and rules paths, take seconds, need nothing beyond the Python standard library,
   and come out the same on every run: they wait on no stream, and the server times and IDs the
   emulator chooses are masked or absent in what they record. (`rules_eval.py` does not: under
-  Java 21 two of its batch lookup cases are allowed on some runs and denied on others.) Each
-  recording and the emulator's output are uploaded, and each job's summary gives the emulator's
-  start-up time and peak resident memory. Run by hand with a `version` and `sha256`, it
-  records against that release instead and shows which answers it changes; the recordings'
-  `oracle` field still names the pinned version, since the scripts write it.
+  Java 21 two of its batch lookup cases are allowed on some runs and denied on others.) A
+  recording that differs is made again against a second fresh emulator, which tells a confirmed
+  difference (both recordings agree) from an unstable one. Each recording, a `result.json` and
+  the emulator's output are uploaded, and each job's summary gives the emulator's start-up time
+  and peak resident memory. Run by hand with a `version` and `sha256`, it records against that
+  release instead and shows which answers it changes; the recordings' `oracle` field still names
+  the pinned version, since the scripts write it. The jobs live in the reusable
+  `.github/workflows/official-recordings.yml`, which the Upstream workflow's compatibility canary
+  calls for new releases ([`tools/upstream/README.md`](../upstream/README.md)).
 - **newer** reads which Firestore emulator firebase-tools' latest release pins and fails when it
   is not the one in `pinned.sh`. Its job summary says what to do: run the workflow by hand with
   the new version and SHA-256 to see which recordings change, then re-record every fixture
