@@ -1,0 +1,53 @@
+name: Scorecard
+
+# OpenSSF Scorecard (https://scorecard.dev) checks the repository's supply-chain practices: pinned
+# actions, token permissions, branch protection, dangerous workflow patterns, signed releases and
+# more. Its findings go to code scanning (Security → Code scanning, tool "Scorecard"), and the
+# results are published to the Scorecard API, which serves the badge
+# https://api.scorecard.dev/projects/github.com/hidane-dev/hidane/badge.
+#
+# Publishing requires this workflow to stay plain: no workflow-level env, defaults or write
+# permissions, and only the approved actions in the job (github.com/ossf/scorecard-action,
+# "Workflow Restrictions"). Results are published from pushes to main and the weekly run only; a
+# pull request that changes the workflow, or a run by hand, analyses without publishing.
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "27 4 * * 1"
+  pull_request:
+    paths: [".github/workflows/scorecard.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analysis:
+    name: Scorecard analysis
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      # The SARIF upload to code scanning.
+      security-events: write
+      # The OIDC token that signs the published results.
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ossf/scorecard-action@fa7117db83c52d787ae5a89f350999701505d78e # v2.5.0
+        with:
+          results_file: results.sarif
+          results_format: sarif
+          publish_results: ${{ github.event_name == 'push' || github.event_name == 'schedule' }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: scorecard-sarif
+          path: results.sarif
+          retention-days: 5
+      - uses: github/codeql-action/upload-sarif@24c54180a607b1449ed407dd24f251e4e9147c8d # v4.38.3
+        if: github.event_name != 'pull_request'
+        with:
+          sarif_file: results.sarif
