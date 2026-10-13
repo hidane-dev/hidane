@@ -1,10 +1,11 @@
-# The README's demo: the same 200 tests under `firebase emulators:exec`, first with the official
-# emulator, then with hidane standing in for Java and the jar.
+# The README's demo: the same 200 firebase-admin tests under `firebase emulators:exec`, first with
+# the official emulator, then with hidane standing in for Java and the jar.
 #
-# To record it again: copy this directory outside the repository and run `npm install` there; put
-# Java 21, firebase-tools and hidane on PATH; on a quiet machine, run `vhs demo.tape`; copy
-# demo.gif to docs/assets/. stderr goes through grep too, so firebase-tools' warnings about the
-# machine stay out of the recording.
+# The Demo workflow (.github/workflows/demo.yml) records it on a GitHub-hosted runner and uploads
+# demo.gif, which goes to docs/assets/demo.gif. To record it elsewhere: run `npm ci` here, put Java
+# 21, hidane and node_modules/.bin on PATH, run each command once so that the emulator's jar is
+# downloaded, then `vhs demo.tape` on a quiet machine. stderr goes through grep too, so
+# firebase-tools' warnings about the machine stay out of the recording.
 
 Output demo.gif
 
@@ -31,7 +32,7 @@ Show
 Type "# 200 Firestore tests, on the official emulator"
 Sleep 400ms
 Enter
-Type `time firebase emulators:exec "npm test" 2>&1 | grep -E " (pass|fail) [0-9]+$"`
+Type `time firebase emulators:exec --only firestore "npm test" 2>&1 | grep -E " (pass|fail) [0-9]+$"`
 Sleep 400ms
 Enter
 Wait
@@ -40,7 +41,7 @@ Sleep 1.5s
 Type "# the same tests, with hidane in place of Java and the jar"
 Sleep 400ms
 Enter
-Type `time hidane exec -- firebase emulators:exec "npm test" 2>&1 | grep -E " (pass|fail) [0-9]+$"`
+Type `time hidane exec -- firebase emulators:exec --only firestore "npm test" 2>&1 | grep -E " (pass|fail) [0-9]+$"`
 Sleep 400ms
 Enter
 Wait

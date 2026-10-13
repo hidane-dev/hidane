@@ -1,4 +1,4 @@
-# Recording the demo (demo.tape) happens in a copy of this directory; these never belong here.
+# What `npm ci` and `vhs demo.tape` leave here; the GIF that is kept is docs/assets/demo.gif.
 node_modules/
 demo.gif
 *.log
