@@ -96,9 +96,9 @@ The macOS archives are rebuilt the same way on a Mac, and the Windows archive un
 - **Compression.** `archive.py` writes the same entries everywhere, but the compressed bytes come
   from the zlib that Python uses, which differs between versions. Compare the binaries when the
   archives differ, and check the archive's contents (`tar -tvzf`) for the rest.
-- **macOS signing.** The macOS binaries are not signed with a Developer ID yet. If they are
-  ([macos-signing.md](macos-signing.md)), the signature, which holds Apple's timestamp, will make
-  each signed binary unique; a rebuild would then be compared with the signature removed.
+- **macOS signing.** The macOS binaries are not signed with a Developer ID yet. If they are, the
+  signature, which holds Apple's timestamp, will make each signed binary unique; a rebuild would
+  then be compared with the signature removed (`codesign --remove-signature`).
 - **Other channels.** The npm packages, the Homebrew formula and the pub.dev launcher carry or
   fetch the release's binaries, so they are covered through the archives. The container image
   holds the two static Linux binaries, which are, but its layers are built by BuildKit and not

@@ -46,8 +46,7 @@ rebuild a release and compare, what CI checks, and where it stops.
 
 The macOS binaries are not signed or notarized yet. Archives fetched with `curl`, Homebrew or
 `gh` run as they are; one downloaded through a browser carries the quarantine attribute, which
-`xattr -d com.apple.quarantine hidane` removes. [macos-signing.md](macos-signing.md) records what
-signing and notarizing them would take.
+`xattr -d com.apple.quarantine hidane` removes ([verifying-releases.md](verifying-releases.md#macos-a-binary-downloaded-with-a-browser)).
 
 ## Cutting a release
 
@@ -129,8 +128,9 @@ it can be configured. The registries and the GitHub settings below are set up on
 ## setup-hidane
 
 The GitHub Action [`hidane-dev/setup-hidane`](https://github.com/hidane-dev/setup-hidane) is
-released from its own repository, with a moving `v1` tag. Listing its releases on GitHub
-Marketplace, and releasing it later, is described in [setup-hidane-marketplace.md](setup-hidane-marketplace.md).
+released from its own repository: an annotated tag `v1.x.y` on its `main`, the moving tag `v1`
+moved to it, and a GitHub Release created in the web form, which is where a release is listed on
+GitHub Marketplace.
 Its `migrate` sub-action runs `hidane migrate`, which is in the releases after 0.4.0; until the
 first of them, setup-hidane's test workflow builds hidane from a commit of `main`. After that
 release, point the test at it and drop the build.

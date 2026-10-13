@@ -121,7 +121,33 @@ digest you verified: `ghcr.io/hidane-dev/hidane@sha256:<digest>`.
 | `install.sh` | Checks the archive against the release's `sha256sums.txt` |
 | setup-hidane | Checks `sha256sums.txt` and verifies the build provenance as above |
 
-The macOS binaries are not signed with a Developer ID or notarized; see
-[macos-signing.md](macos-signing.md) for what that means for a browser download.
+## macOS: a binary downloaded with a browser
+
+The macOS binaries are not signed with a Developer ID or notarized yet. macOS checks a program
+with Gatekeeper only when the file carries the quarantine attribute (`com.apple.quarantine`),
+which browsers and some other apps add to what they download. Command-line downloads do not add
+it, so most channels are not affected:
+
+| Channel | Quarantined | Runs as is |
+|---|---|---|
+| `brew install hidane-dev/tap/hidane` | No (a formula, downloaded with `curl`) | Yes |
+| `curl -fsSL https://hidane.dev/install.sh \| sh`, `curl` or `gh release download` | No | Yes |
+| `npm install hidane` (and the `@hidane-dev/darwin-*` binaries) | No | Yes |
+| `cargo install hidane`, `cargo binstall hidane` | No | Yes |
+| `dart pub global activate hidane` (the launcher downloads the binary) | No | Yes |
+| setup-hidane on a macOS runner | No | Yes |
+| An archive downloaded with a browser | Yes | No: Gatekeeper refuses to open it |
+
+For a browser download, remove the attribute after unpacking, once you have checked the archive
+as above:
+
+```sh
+xattr -d com.apple.quarantine hidane
+```
+
+After the first refusal, *System Settings → Privacy & Security* also offers to open the blocked
+file anyway, one file at a time. The arm64 binary carries only the ad-hoc signature that Apple's
+linker adds to every arm64 executable (`codesign -dv` shows `Signature=adhoc`, `linker-signed`);
+it says nothing about who built it. The x86_64 binary is not signed.
 
 Something does not verify? Do not run it, and report it privately ([SECURITY.md](../SECURITY.md)).
