@@ -35,7 +35,8 @@ gh attestation verify hidane-<version>-<target>.tar.gz --repo hidane-dev/hidane
 
 The macOS binaries are not signed or notarized yet. Archives fetched with `curl`, Homebrew or
 `gh` run as they are; one downloaded through a browser carries the quarantine attribute, which
-`xattr -d com.apple.quarantine hidane` removes.
+`xattr -d com.apple.quarantine hidane` removes. [macos-signing.md](macos-signing.md) records what
+signing and notarizing them would take.
 
 ## Cutting a release
 
