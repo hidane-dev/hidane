@@ -17,9 +17,9 @@
   <img alt="hidane. One binary. No JDK. Milliseconds to start. A Firestore emulator that speaks the official one's gRPC, REST and WebChannel protocols and Security Rules, tested against it as the oracle." src="https://raw.githubusercontent.com/hidane-dev/hidane/main/docs/assets/readme-banner-light.png" width="100%">
 </picture>
 
-<img alt="A terminal recording: the same 200 Firestore tests under firebase emulators:exec, first on the official emulator, then with hidane exec in front; both pass, and the hidane run finishes sooner." src="https://raw.githubusercontent.com/hidane-dev/hidane/main/docs/assets/demo.gif" width="100%">
+<img alt="A terminal recording. Each emulator on its own: the official emulator's port opens after 1608 ms, hidane's after 2.8 ms. Then a shell without Java: firebase-tools cannot start the official emulator, and through hidane exec the same command passes 200 tests." src="https://raw.githubusercontent.com/hidane-dev/hidane/main/docs/assets/demo.gif" width="100%">
 
-<sub>Recorded by the <a href=".github/workflows/demo.yml">Demo workflow</a> on a GitHub-hosted runner (4 vCPUs; Java 21, firebase-tools 15.33.0, hidane v0.5.0), so its timings are that machine's. The figures below are medians from the canonical benchmark.</sub>
+<sub>Recorded by the <a href=".github/workflows/demo.yml">Demo workflow</a> on a GitHub-hosted runner (4 vCPUs; Java 21, firebase-tools 15.33.0, hidane v0.5.1), so its timings are that machine's, from a single run. The figures below are medians from the canonical benchmark.</sub>
 
 <p><strong>Run your Firestore tests under <code>firebase-tools</code> without installing Java.</strong></p>
 
