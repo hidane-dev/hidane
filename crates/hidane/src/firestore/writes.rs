@@ -479,6 +479,7 @@ impl Touched {
         writes: &[Write],
         results: &mut [WriteResult],
     ) {
+        let mut update_times = HashMap::with_capacity(self.0.len());
         for (path, (before, deleted)) in &self.0 {
             let update_time = match (before, batch.get(path)) {
                 (_, None) => None,
@@ -488,10 +489,13 @@ impl Touched {
                 }
                 (_, Some(after)) => Some(after.update_time),
             };
-            for (write, result) in writes.iter().zip(results.iter_mut()) {
-                if written(write).as_ref() == Some(path) {
-                    result.update_time = update_time;
-                }
+            update_times.insert(path, update_time);
+        }
+        // One pass over the writes: a commit of 500 writes names each document once here, not
+        // once per document it touches.
+        for (write, result) in writes.iter().zip(results.iter_mut()) {
+            if let Some(update_time) = written(write).and_then(|path| update_times.get(&path)) {
+                result.update_time = *update_time;
             }
         }
     }

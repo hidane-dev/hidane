@@ -1,6 +1,6 @@
 name: Benchmark targets
 
-# hidane alone, on a GitHub-hosted runner (#47): a release build's startup and memory, measured
+# hidane alone, on a GitHub-hosted runner (#47): a release build's startup, memory and write time, measured
 # with `hidane benchmark` and checked against the targets in docs/ROADMAP.md §1
 # (bench/targets.json, bench/check_targets.py). The bounds are the targets themselves, far above
 # what hidane measures, so a runner's noise does not fail the job; a failure is a regression.
@@ -31,7 +31,7 @@ concurrency:
 
 jobs:
   targets:
-    name: startup and memory against the targets
+    name: startup, memory and writes against the targets
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -45,11 +45,11 @@ jobs:
       - run: cargo build --release --locked -p hidane
       # Exit status 1 means some runs failed; the result is written all the same, and the check
       # below reports the failures.
-      - name: Measure startup and memory
+      - name: Measure startup, memory and writes
         env:
           KIND: ${{ github.event_name == 'pull_request' && 'pull-request' || 'local' }}
         run: |
-          target/release/hidane benchmark --scenarios startup,memory --kind "$KIND" \
+          target/release/hidane benchmark --scenarios startup,memory,operations --kind "$KIND" \
             --machine-id github-hosted-ubuntu-24.04 --no-imds \
             --hidane-commit "$GITHUB_SHA" --engine-commit "$GITHUB_SHA" \
             --out "$RUNNER_TEMP/result.json" || [ "$?" -eq 1 ]

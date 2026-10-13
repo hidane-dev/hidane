@@ -28,13 +28,14 @@
 | Time until the port accepts | 941 ms | < 100 ms | 1.56 ms |
 | RSS idle | 148 MiB | < 50 MiB | 7.8 MiB |
 | RSS after 1,000 documents | 268 MiB | < 100 MiB | 10.1 MiB |
+| A commit of 500 writes | 69.2 ms | < 25 ms | 8.01 ms |
 | Write cost with a listener attached | grows with total document count | O(changed documents), independent of total | flat per batch: 100k documents in 4.9 s |
 | Java | 21+ required | not required (single binary) | not required |
 
-The first three rows are medians from the canonical benchmark environment, both emulators on one
+The first four rows are medians from the canonical benchmark environment, both emulators on one
 quiet machine ([result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-13-release.md)). The listener row comes from Phase 0 and a later run on another
 machine, not side by side (`docs/why.md`); #50 re-measures it. A workflow checks hidane's first
-three rows against their targets on a GitHub-hosted runner on every push to `main` and nightly
+four rows against their targets on a GitHub-hosted runner on every push to `main` and nightly
 ([`bench/`](../bench/README.md#targets-in-ci), #47).
 
 ## 2. v0.1 — gRPC core, no rules

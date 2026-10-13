@@ -21,6 +21,13 @@
       "below": 104857600,
       "unit": "bytes",
       "what": "RSS after 1,000 documents"
+    },
+    {
+      "scenario": "operations",
+      "metric": "batch_write",
+      "below": 25,
+      "unit": "ms",
+      "what": "A commit of 500 writes"
     }
   ]
 }
