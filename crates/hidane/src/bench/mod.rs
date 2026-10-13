@@ -670,11 +670,13 @@ fn stability(
                 )
             },
         ),
+        // Recorded, not judged: the last minute before this reading is the end of the run itself,
+        // so its load is the benchmark's own (on four vCPUs it is always above the limit).
         check(
             "load_1m",
             "after",
             after.load.map(|l| l[0]),
-            limits.max_load_1m,
+            None,
             true,
             |v, l| format!("load average {v:.2} over the last minute after the run, above {l}"),
         ),
@@ -1050,6 +1052,17 @@ mod tests {
         assert!(reasons[2].contains("steal 9.00 %"));
         assert!(reasons[3].contains("rustc"));
         assert!(reasons[4].contains("steal 6.50 % over the run"));
+        // The load right after the run is the run's own: recorded, not judged.
+        let busy_after = system::Snapshot {
+            load: Some([3.2, 1.5, 0.8]),
+            ..system::Snapshot::default()
+        };
+        let quiet_before = system::Snapshot {
+            load: Some([0.1, 0.1, 0.1]),
+            ..system::Snapshot::default()
+        };
+        let s = stability(&params, &quiet_before, &busy_after, None, &results, &[]);
+        assert_eq!(s["stable"], true, "{s:#}");
         // Not measurable: recorded, not failed.
         let unknown = system::Snapshot::default();
         let s = stability(&params, &unknown, &unknown, None, &results, &[]);
