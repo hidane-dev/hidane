@@ -146,7 +146,24 @@ Parity exceptions (#70): `ce-source` names the project once, a write that change
 the delete of a missing document send no v2 event, `POST /reset` keeps the triggers, and a v2
 trigger without a database watches `(default)` ([parity-exceptions.md](parity-exceptions.md)).
 
-## 6. Backlog
+## 6. v0.5 — tooling
+
+**Goal**: the tools around the emulator — checking a project before it moves, moving it,
+measuring what that saves, and reporting a bug — and the quality work behind them.
+
+Released in v0.5.0 (2026-10-13):
+
+| Priority | Item | Status |
+|---|---|---|
+| P1 | `hidane doctor`: a project's `firebase.json`, rules, SDK and firebase-tools versions and CI, against what was verified | Done (#217, #221) |
+| P1 | `hidane migrate`: the changes as a diff, applied with `--apply` | Done (#219, #222) |
+| P1 | `hidane benchmark` (both emulators, your command) and `hidane benchmark savings` | Done (#213, #238) |
+| P1 | `hidane report`: a redacted diagnostic bundle | Done (#253) |
+| P1 | Testcontainers: the gcloud modules (Java, Node, Go) and generic containers (Python) | Done (#240, #264, #268) |
+| P2 | Differential fuzzing against the official emulator, first two batches of fixes | Done (#259, #273, #276); the rest in #262 |
+| P2 | Reproducible builds, SBOMs and image attestations | Done (#246, #254) |
+
+## 7. Backlog
 
 - Enterprise edition pipelines (`ExecutePipeline`, #80)
 - Datastore mode (`--database-mode datastore-mode`), `--index_file` / `--require_indexes` (#81)
@@ -156,13 +173,13 @@ trigger without a database watches `(default)` ([parity-exceptions.md](parity-ex
 
 The distribution channels and the license decision listed here before shipped in v0.1.0.
 
-## 7. Out of scope
+## 8. Out of scope
 
 - Realtime Database, Cloud Storage and Auth emulators (no maintained RTDB-compatible server has existed since 2021; a separate project's problem)
 - Production use. hidane is a local-development and CI emulator and must not be exposed without authentication (`SECURITY.md`)
 - Decompiling or reusing the official jar. Clean-room only: public protos, public docs, black-box observation
 
-## 8. Biggest risks (as of Phase 0)
+## 9. Biggest risks (as of Phase 0)
 
 1. **No Web support until v0.3.** Browser development is the most common local-development case and a gRPC-only v0.1 does nothing for it. Mitigation: pull REST unary into v0.1, keep the Listen / Write core transport-agnostic, and revisit the WebChannel timing in ADR 0004.
 2. **No supported replacement hook in firebase-tools.** The `java` shim works but is an awkward distribution story; an upstream PR may or may not be accepted.

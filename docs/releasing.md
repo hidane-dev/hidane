@@ -131,9 +131,9 @@ The GitHub Action [`hidane-dev/setup-hidane`](https://github.com/hidane-dev/setu
 released from its own repository: an annotated tag `v1.x.y` on its `main`, the moving tag `v1`
 moved to it, and a GitHub Release created in the web form, which is where a release is listed on
 GitHub Marketplace.
-Its `migrate` sub-action runs `hidane migrate`, which is in the releases after 0.4.0; until the
-first of them, setup-hidane's test workflow builds hidane from a commit of `main`. After that
-release, point the test at it and drop the build.
+Its `migrate` sub-action runs `hidane migrate`, which is in 0.5.0 and newer. Until 0.5.0 was
+released, setup-hidane's test workflow built hidane from a commit of `main`; after it, the test
+installs the release and setup-hidane v1.1.0 moves `v1`.
 
 [cargo-dist](https://github.com/axodotdev/cargo-dist) was considered (#56) and not adopted: the
 workflow above is about one hundred lines that the project controls, with no generator to keep in

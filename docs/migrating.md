@@ -268,7 +268,7 @@ plan: the changes, what it leaves to you, the diff, and `hidane doctor`'s report
 The workflow's `GITHUB_TOKEN` cannot push changes to `.github/workflows/`, and the pull requests it
 opens start no workflow; the action's README shows how to give it a GitHub App token or a
 fine-grained personal access token instead. The action needs a hidane release with
-`hidane migrate`, that is, a release after 0.4.0.
+`hidane migrate`, that is, 0.5.0 or newer.
 
 ### One engine
 

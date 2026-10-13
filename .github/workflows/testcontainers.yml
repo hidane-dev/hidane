@@ -7,7 +7,7 @@ name: Testcontainers
 #
 # The image is built from this commit with packaging/docker/Dockerfile, from the same kind of
 # context as the release workflow's: a change to hidane or to the image is tested before a release
-# publishes it, and the gcloud modules need an image newer than v0.4.0. The generic container
+# publishes it, and the gcloud modules need hidane 0.5.0 or newer. The generic container
 # tests also run against the published v0.4.0 image, pinned by digest, which users can pull today.
 
 on:

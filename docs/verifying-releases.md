@@ -21,7 +21,7 @@ From the quickest check to the strongest:
 | `ghcr.io/hidane-dev/hidane:<version>` | The container image (linux/amd64, linux/arm64), with its own provenance and SBOM attestations |
 
 Every archive since 0.1.0 has a build provenance attestation. The SBOMs, their attestations, the
-provenance bundle and the image's attestations start with the first release after 0.4.0.
+provenance bundle and the image's attestations start with 0.5.0.
 
 ## Checksums
 
