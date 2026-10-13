@@ -8,7 +8,9 @@ name: Differential fuzzing
 #   and both emulators' output to the `fuzz` artifact. It fails only when it could not run.
 # - issues: one issue per unexplained difference, labelled `fuzz` and found again by the
 #   signature in its marker, so later runs update it (and leave it closed once closed). Only on
-#   main, on the schedule or by hand with `issues` on; the only job that can write issues.
+#   main: by hand with `issues` on, or on the schedule once the repository variable
+#   FUZZ_FILE_ISSUES is "true" (unset, scheduled runs only say what they would file). The only
+#   job that can write issues.
 # - issues (dry run): on pull requests and other runs, what `issues` would do, read-only.
 #
 # GitHub-hosted runners only. Daily, by hand (seed, cases, minutes), and for changes to the
@@ -154,7 +156,8 @@ jobs:
     needs: fuzz
     if: >-
       ${{ github.ref == 'refs/heads/main' &&
-      (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.issues)) }}
+      ((github.event_name == 'schedule' && vars.FUZZ_FILE_ISSUES == 'true') ||
+      (github.event_name == 'workflow_dispatch' && inputs.issues)) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
@@ -179,7 +182,8 @@ jobs:
     needs: fuzz
     if: >-
       ${{ !(github.ref == 'refs/heads/main' &&
-      (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.issues))) }}
+      ((github.event_name == 'schedule' && vars.FUZZ_FILE_ISSUES == 'true') ||
+      (github.event_name == 'workflow_dispatch' && inputs.issues))) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
