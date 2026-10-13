@@ -1,0 +1,1480 @@
+{
+  "schema_version": 1,
+  "benchmark": {
+    "version": "1",
+    "kind": "nightly",
+    "canonical": false,
+    "quick": false,
+    "config_sha256": null,
+    "overrides": [
+      "--warmup",
+      "--runs",
+      "--iterations",
+      "--dataset-sizes",
+      "--ci-tests"
+    ],
+    "engine": {
+      "version": "0.3.0",
+      "git_commit": "0000000000000000000000000000000000000000",
+      "build_profile": "release",
+      "binary_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "scenarios": {
+      "startup": {
+        "warmup": 0,
+        "runs": 3
+      },
+      "memory": {
+        "warmup": 0,
+        "runs": 3,
+        "idle_ms": 1000,
+        "documents": 1000,
+        "batch": 500
+      },
+      "operations": {
+        "warmup": 0,
+        "iterations": 3,
+        "batch": 500,
+        "seed_documents": 100
+      },
+      "datasets": {
+        "sizes": [
+          {
+            "documents": 100,
+            "warmup": 0,
+            "runs": 3
+          }
+        ],
+        "batch": 500,
+        "query_warmup": 3,
+        "query_runs": 10
+      },
+      "ci": {
+        "warmup": 0,
+        "runs": 3,
+        "tests": 2,
+        "seed_documents": 100
+      },
+      "ci_firebase": {
+        "warmup": 0,
+        "runs": 3,
+        "tests": 2,
+        "seed_documents": 100
+      },
+      "command": {
+        "warmup": 0,
+        "runs": 3,
+        "command": "hidane (6 arguments)"
+      }
+    },
+    "skipped": []
+  },
+  "timestamp": "2026-01-01T00:00:00Z",
+  "duration_s": 1.0,
+  "environment_revision": 1,
+  "machine": {
+    "id": "example",
+    "os": "linux",
+    "arch": "x86_64",
+    "cpu_model": "Example CPU",
+    "cpu_cores": 2,
+    "cpu_threads": 4,
+    "ram_bytes": 8589934592,
+    "kernel": "6.8.0-example",
+    "distribution": "Ubuntu 24.04 LTS",
+    "filesystem": "ext4",
+    "cpu_frequency": {
+      "driver": null,
+      "governor": null,
+      "no_turbo": null,
+      "note": "cpufreq is not exposed (common on virtual machines such as EC2, where the hypervisor controls frequency)"
+    },
+    "virtualization": "amazon",
+    "cloud": {
+      "provider": "aws-ec2",
+      "instance_type": "c7i.xlarge",
+      "availability_zone": "us-east-1a"
+    },
+    "instance_type": "c7i.xlarge",
+    "ami_id": "ami-00000000000000000",
+    "ebs": {
+      "type": "gp3",
+      "size_gib": 30,
+      "iops": 3000,
+      "throughput_mibps": 125
+    },
+    "os_image": "ubuntu-24.04-amd64-server-example"
+  },
+  "environment": {
+    "java": "21.0.8 (Eclipse Adoptium)",
+    "node": "22.22.3",
+    "firebase_tools": "15.33.0",
+    "docker": null,
+    "rustc": "1.90.0 (example)"
+  },
+  "stability": {
+    "stable": false,
+    "reasons": [
+      "synthetic example: these numbers are not measurements"
+    ],
+    "limits": {
+      "max_load_1m": 2.0,
+      "min_available_memory_mib": 4096.0,
+      "max_cpu_steal_percent": 5.0,
+      "max_cpu_temperature_c": 85.0,
+      "max_startup_cv": 0.25,
+      "max_known_job_cpu_percent": 10.0,
+      "allow_battery": false
+    },
+    "checks": [
+      {
+        "name": "load_1m",
+        "phase": "before",
+        "value": 0.1,
+        "limit": 2.0,
+        "passed": true
+      },
+      {
+        "name": "available_memory_mib",
+        "phase": "before",
+        "value": 7168,
+        "limit": 4096.0,
+        "passed": true
+      },
+      {
+        "name": "cpu_steal_percent",
+        "phase": "before",
+        "value": 0.1,
+        "limit": 5.0,
+        "passed": true
+      },
+      {
+        "name": "cpu_temperature_c",
+        "phase": "before",
+        "value": null,
+        "limit": 85.0,
+        "passed": null
+      },
+      {
+        "name": "known_job_cpu_percent",
+        "phase": "before",
+        "value": 0.0,
+        "limit": 10.0,
+        "passed": true
+      },
+      {
+        "name": "load_1m",
+        "phase": "after",
+        "value": 0.1,
+        "limit": 2.0,
+        "passed": true
+      },
+      {
+        "name": "cpu_temperature_c",
+        "phase": "after",
+        "value": null,
+        "limit": 85.0,
+        "passed": null
+      },
+      {
+        "name": "cpu_steal_percent",
+        "phase": "run",
+        "value": 0.1,
+        "limit": 5.0,
+        "passed": true
+      },
+      {
+        "name": "power_source",
+        "phase": "before",
+        "value": null,
+        "limit": "ac",
+        "passed": null
+      },
+      {
+        "name": "power_source",
+        "phase": "after",
+        "value": null,
+        "limit": "ac",
+        "passed": null
+      },
+      {
+        "name": "startup_cv_official",
+        "phase": "run",
+        "value": 0.5,
+        "limit": 0.25,
+        "passed": false
+      },
+      {
+        "name": "startup_cv_hidane",
+        "phase": "run",
+        "value": 0.5,
+        "limit": 0.25,
+        "passed": false
+      }
+    ],
+    "before": {
+      "load_average": [
+        0.1,
+        0.1,
+        0.1
+      ],
+      "available_memory_bytes": 7516192768,
+      "cpu_temperature_c": null,
+      "cpu_busy_percent": 1.0,
+      "cpu_steal_percent": 0.1,
+      "power_source": null,
+      "known_jobs": [],
+      "other_busy_processes": 0,
+      "other_busy_cpu_percent": 0.0
+    },
+    "after": {
+      "load_average": [
+        0.1,
+        0.1,
+        0.1
+      ],
+      "available_memory_bytes": 7516192768,
+      "cpu_temperature_c": null,
+      "cpu_busy_percent": 1.0,
+      "cpu_steal_percent": 0.1,
+      "power_source": null,
+      "known_jobs": [],
+      "other_busy_processes": 0,
+      "other_busy_cpu_percent": 0.0
+    },
+    "cpu_steal": {
+      "available": true,
+      "note": null,
+      "pre_run_percent": 0.1,
+      "run_percent": 0.1,
+      "scenarios": {
+        "startup": 0.1,
+        "memory": 0.1,
+        "operations": 0.1,
+        "datasets": 0.1,
+        "ci": 0.1,
+        "ci_firebase": 0.1,
+        "command": 0.1
+      }
+    }
+  },
+  "targets": {
+    "official": {
+      "version": "1.22.0",
+      "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+      "jar_verified": true,
+      "java": "21.0.8",
+      "java_vendor": "Eclipse Adoptium",
+      "java_options": [
+        "-Duser.language=en",
+        "-Duser.country=US"
+      ],
+      "command": "java -Duser.language=en -Duser.country=US -jar cloud-firestore-emulator-v1.22.0.jar --host 127.0.0.1 --port <port>"
+    },
+    "hidane": {
+      "version": "0.3.0",
+      "git_commit": "0000000000000000000000000000000000000000",
+      "git_dirty": false,
+      "build_profile": "release",
+      "binary_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "command": "hidane --host 127.0.0.1 --port <port>"
+    }
+  },
+  "results": {
+    "startup": {
+      "official": {
+        "time_to_port": {
+          "unit": "ms",
+          "description": "Process start until a TCP connection to the port is accepted",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "time_to_first_request": {
+          "unit": "ms",
+          "description": "Process start until a gRPC GetDocument of a missing document is answered (NOT_FOUND)",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "time_to_exit": {
+          "unit": "ms",
+          "description": "POST /shutdown until the process has exited",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        }
+      },
+      "hidane": {
+        "time_to_port": {
+          "unit": "ms",
+          "description": "Process start until a TCP connection to the port is accepted",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "time_to_first_request": {
+          "unit": "ms",
+          "description": "Process start until a gRPC GetDocument of a missing document is answered (NOT_FOUND)",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "time_to_exit": {
+          "unit": "ms",
+          "description": "POST /shutdown until the process has exited",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        }
+      }
+    },
+    "memory": {
+      "official": {
+        "rss_at_ready": {
+          "unit": "bytes",
+          "description": "RSS when the port first accepts",
+          "stats": {
+            "n": 3,
+            "median": 20971520.0,
+            "p95": 30408704.0,
+            "min": 10485760.0,
+            "max": 31457280.0,
+            "mean": 20971520.0,
+            "stddev": 10485760.0
+          },
+          "samples": [
+            10485760.0,
+            20971520.0,
+            31457280.0
+          ]
+        },
+        "rss_idle": {
+          "unit": "bytes",
+          "description": "RSS after the port is ready and 1000 ms idle",
+          "stats": {
+            "n": 3,
+            "median": 20971520.0,
+            "p95": 30408704.0,
+            "min": 10485760.0,
+            "max": 31457280.0,
+            "mean": 20971520.0,
+            "stddev": 10485760.0
+          },
+          "samples": [
+            10485760.0,
+            20971520.0,
+            31457280.0
+          ]
+        },
+        "rss_during_workload": {
+          "unit": "bytes",
+          "description": "Highest RSS sampled while writing 1000 documents in commits of 500 over gRPC (sampled every 50 ms)",
+          "stats": {
+            "n": 3,
+            "median": 20971520.0,
+            "p95": 30408704.0,
+            "min": 10485760.0,
+            "max": 31457280.0,
+            "mean": 20971520.0,
+            "stddev": 10485760.0
+          },
+          "samples": [
+            10485760.0,
+            20971520.0,
+            31457280.0
+          ]
+        },
+        "rss_after_workload": {
+          "unit": "bytes",
+          "description": "RSS right after writing 1000 documents in commits of 500 over gRPC",
+          "stats": {
+            "n": 3,
+            "median": 20971520.0,
+            "p95": 30408704.0,
+            "min": 10485760.0,
+            "max": 31457280.0,
+            "mean": 20971520.0,
+            "stddev": 10485760.0
+          },
+          "samples": [
+            10485760.0,
+            20971520.0,
+            31457280.0
+          ]
+        },
+        "rss_peak": {
+          "unit": "bytes",
+          "description": "Peak RSS of the process up to the end of the workload (highest periodic sample)",
+          "stats": {
+            "n": 3,
+            "median": 20971520.0,
+            "p95": 30408704.0,
+            "min": 10485760.0,
+            "max": 31457280.0,
+            "mean": 20971520.0,
+            "stddev": 10485760.0
+          },
+          "samples": [
+            10485760.0,
+            20971520.0,
+            31457280.0
+          ]
+        },
+        "cpu_time_to_ready": {
+          "unit": "ms",
+          "description": "CPU time (user + system) from process start until the port accepts",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "cpu_time_idle": {
+          "unit": "ms",
+          "description": "CPU time (user + system) during the 1000 ms idle period",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "cpu_time_workload": {
+          "unit": "ms",
+          "description": "CPU time (user + system) while writing 1000 documents in commits of 500 over gRPC",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "workload_time": {
+          "unit": "ms",
+          "description": "Wall-clock time of writing 1000 documents in commits of 500 over gRPC",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        }
+      },
+      "hidane": {
+        "rss_at_ready": {
+          "unit": "bytes",
+          "description": "RSS when the port first accepts",
+          "stats": {
+            "n": 3,
+            "median": 20971520.0,
+            "p95": 30408704.0,
+            "min": 10485760.0,
+            "max": 31457280.0,
+            "mean": 20971520.0,
+            "stddev": 10485760.0
+          },
+          "samples": [
+            10485760.0,
+            20971520.0,
+            31457280.0
+          ]
+        },
+        "rss_idle": {
+          "unit": "bytes",
+          "description": "RSS after the port is ready and 1000 ms idle",
+          "stats": {
+            "n": 3,
+            "median": 20971520.0,
+            "p95": 30408704.0,
+            "min": 10485760.0,
+            "max": 31457280.0,
+            "mean": 20971520.0,
+            "stddev": 10485760.0
+          },
+          "samples": [
+            10485760.0,
+            20971520.0,
+            31457280.0
+          ]
+        },
+        "rss_during_workload": {
+          "unit": "bytes",
+          "description": "Highest RSS sampled while writing 1000 documents in commits of 500 over gRPC (sampled every 50 ms)",
+          "stats": {
+            "n": 3,
+            "median": 20971520.0,
+            "p95": 30408704.0,
+            "min": 10485760.0,
+            "max": 31457280.0,
+            "mean": 20971520.0,
+            "stddev": 10485760.0
+          },
+          "samples": [
+            10485760.0,
+            20971520.0,
+            31457280.0
+          ]
+        },
+        "rss_after_workload": {
+          "unit": "bytes",
+          "description": "RSS right after writing 1000 documents in commits of 500 over gRPC",
+          "stats": {
+            "n": 3,
+            "median": 20971520.0,
+            "p95": 30408704.0,
+            "min": 10485760.0,
+            "max": 31457280.0,
+            "mean": 20971520.0,
+            "stddev": 10485760.0
+          },
+          "samples": [
+            10485760.0,
+            20971520.0,
+            31457280.0
+          ]
+        },
+        "rss_peak": {
+          "unit": "bytes",
+          "description": "Peak RSS of the process up to the end of the workload (highest periodic sample)",
+          "stats": {
+            "n": 3,
+            "median": 20971520.0,
+            "p95": 30408704.0,
+            "min": 10485760.0,
+            "max": 31457280.0,
+            "mean": 20971520.0,
+            "stddev": 10485760.0
+          },
+          "samples": [
+            10485760.0,
+            20971520.0,
+            31457280.0
+          ]
+        },
+        "cpu_time_to_ready": {
+          "unit": "ms",
+          "description": "CPU time (user + system) from process start until the port accepts",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "cpu_time_idle": {
+          "unit": "ms",
+          "description": "CPU time (user + system) during the 1000 ms idle period",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "cpu_time_workload": {
+          "unit": "ms",
+          "description": "CPU time (user + system) while writing 1000 documents in commits of 500 over gRPC",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "workload_time": {
+          "unit": "ms",
+          "description": "Wall-clock time of writing 1000 documents in commits of 500 over gRPC",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        }
+      }
+    },
+    "operations": {
+      "official": {
+        "single_read": {
+          "unit": "ms",
+          "description": "GetDocument of an existing document",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "single_write": {
+          "unit": "ms",
+          "description": "Commit with one write (a new document)",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "delete": {
+          "unit": "ms",
+          "description": "Commit with one delete of an existing document",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "query": {
+          "unit": "ms",
+          "description": "RunQuery with an equality filter matching 10 of 100 documents, read to the end",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "batch_write": {
+          "unit": "ms",
+          "description": "Commit with 500 writes (the same 500 documents each time)",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "transaction": {
+          "unit": "ms",
+          "description": "Read-modify-write transaction: BeginTransaction, GetDocument in it, Commit",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        }
+      },
+      "hidane": {
+        "single_read": {
+          "unit": "ms",
+          "description": "GetDocument of an existing document",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "single_write": {
+          "unit": "ms",
+          "description": "Commit with one write (a new document)",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "delete": {
+          "unit": "ms",
+          "description": "Commit with one delete of an existing document",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "query": {
+          "unit": "ms",
+          "description": "RunQuery with an equality filter matching 10 of 100 documents, read to the end",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "batch_write": {
+          "unit": "ms",
+          "description": "Commit with 500 writes (the same 500 documents each time)",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "transaction": {
+          "unit": "ms",
+          "description": "Read-modify-write transaction: BeginTransaction, GetDocument in it, Commit",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        }
+      }
+    },
+    "datasets": {
+      "official": {
+        "seed_100": {
+          "unit": "ms",
+          "description": "Writing 100 documents in commits of 500 over gRPC",
+          "parameters": {
+            "documents": 100
+          },
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "rss_after_seed_100": {
+          "unit": "bytes",
+          "description": "RSS right after writing 100 documents",
+          "parameters": {
+            "documents": 100
+          },
+          "stats": {
+            "n": 3,
+            "median": 20971520.0,
+            "p95": 30408704.0,
+            "min": 10485760.0,
+            "max": 31457280.0,
+            "mean": 20971520.0,
+            "stddev": 10485760.0
+          },
+          "samples": [
+            10485760.0,
+            20971520.0,
+            31457280.0
+          ]
+        },
+        "query_100": {
+          "unit": "ms",
+          "description": "RunQuery with an equality filter matching 1 of the 100 documents, read to the end (10 per process after 3 warm-up)",
+          "parameters": {
+            "documents": 100
+          },
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        }
+      },
+      "hidane": {
+        "seed_100": {
+          "unit": "ms",
+          "description": "Writing 100 documents in commits of 500 over gRPC",
+          "parameters": {
+            "documents": 100
+          },
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "rss_after_seed_100": {
+          "unit": "bytes",
+          "description": "RSS right after writing 100 documents",
+          "parameters": {
+            "documents": 100
+          },
+          "stats": {
+            "n": 3,
+            "median": 20971520.0,
+            "p95": 30408704.0,
+            "min": 10485760.0,
+            "max": 31457280.0,
+            "mean": 20971520.0,
+            "stddev": 10485760.0
+          },
+          "samples": [
+            10485760.0,
+            20971520.0,
+            31457280.0
+          ]
+        },
+        "query_100": {
+          "unit": "ms",
+          "description": "RunQuery with an equality filter matching 1 of the 100 documents, read to the end (10 per process after 3 warm-up)",
+          "parameters": {
+            "documents": 100
+          },
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        }
+      }
+    },
+    "ci": {
+      "official": {
+        "total": {
+          "unit": "ms",
+          "description": "Process start until exit: ready, seed 100 documents, 2 tests, shutdown",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "ready": {
+          "unit": "ms",
+          "description": "Process start until the port accepts",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "seed": {
+          "unit": "ms",
+          "description": "Connecting and writing 100 documents",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "tests": {
+          "unit": "ms",
+          "description": "2 tests, each: one commit of 3 writes, 2 reads, 1 query, then a reset (DELETE …/documents)",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "shutdown": {
+          "unit": "ms",
+          "description": "POST /shutdown until the process has exited",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        }
+      },
+      "hidane": {
+        "total": {
+          "unit": "ms",
+          "description": "Process start until exit: ready, seed 100 documents, 2 tests, shutdown",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "ready": {
+          "unit": "ms",
+          "description": "Process start until the port accepts",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "seed": {
+          "unit": "ms",
+          "description": "Connecting and writing 100 documents",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "tests": {
+          "unit": "ms",
+          "description": "2 tests, each: one commit of 3 writes, 2 reads, 1 query, then a reset (DELETE …/documents)",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "shutdown": {
+          "unit": "ms",
+          "description": "POST /shutdown until the process has exited",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        }
+      }
+    },
+    "ci_firebase": {
+      "official": {
+        "total": {
+          "unit": "ms",
+          "description": "`firebase emulators:exec --only firestore` from start to exit: the emulator starts, 100 documents are seeded, 2 tests run, the emulator stops",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "workload": {
+          "unit": "ms",
+          "description": "The seeding and tests inside, as the workload times them",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        }
+      },
+      "hidane": {
+        "total": {
+          "unit": "ms",
+          "description": "`firebase emulators:exec --only firestore` from start to exit: the emulator starts, 100 documents are seeded, 2 tests run, the emulator stops",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "workload": {
+          "unit": "ms",
+          "description": "The seeding and tests inside, as the workload times them",
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        }
+      }
+    },
+    "command": {
+      "official": {
+        "total": {
+          "unit": "ms",
+          "description": "Process start until exit: ready, the command, shutdown",
+          "parameters": {
+            "command": "hidane (6 arguments)"
+          },
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "command": {
+          "unit": "ms",
+          "description": "Wall-clock time of the command, with FIRESTORE_EMULATOR_HOST set to the target",
+          "parameters": {
+            "command": "hidane (6 arguments)"
+          },
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "ready": {
+          "unit": "ms",
+          "description": "Process start until the port accepts",
+          "parameters": {
+            "command": "hidane (6 arguments)"
+          },
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        }
+      },
+      "hidane": {
+        "total": {
+          "unit": "ms",
+          "description": "Process start until exit: ready, the command, shutdown",
+          "parameters": {
+            "command": "hidane (6 arguments)"
+          },
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "command": {
+          "unit": "ms",
+          "description": "Wall-clock time of the command, with FIRESTORE_EMULATOR_HOST set to the target",
+          "parameters": {
+            "command": "hidane (6 arguments)"
+          },
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        },
+        "ready": {
+          "unit": "ms",
+          "description": "Process start until the port accepts",
+          "parameters": {
+            "command": "hidane (6 arguments)"
+          },
+          "stats": {
+            "n": 3,
+            "median": 20.0,
+            "p95": 29.0,
+            "min": 10.0,
+            "max": 30.0,
+            "mean": 20.0,
+            "stddev": 10.0
+          },
+          "samples": [
+            10.0,
+            20.0,
+            30.0
+          ]
+        }
+      }
+    }
+  },
+  "errors": []
+}

@@ -27,7 +27,8 @@ axum.workspace = true
 base64.workspace = true
 clap.workspace = true
 hidane-core.workspace = true
-hidane-proto.workspace = true
+# `client`: `hidane benchmark` drives both emulators with the generated gRPC client.
+hidane-proto = { workspace = true, features = ["client"] }
 hidane-rules.workspace = true
 hyper = { workspace = true, features = ["client", "http1"] }
 hyper-util.workspace = true
@@ -37,20 +38,20 @@ prost-reflect.workspace = true
 prost-types.workspace = true
 serde_json.workspace = true
 sha1.workspace = true
+sha2.workspace = true
 tokio.workspace = true
 tokio-stream.workspace = true
-tonic.workspace = true
+tonic = { workspace = true, features = ["channel"] }
 tonic-reflection.workspace = true
 tower.workspace = true
 
 [dev-dependencies]
 bytes.workspace = true
 chrono.workspace = true
-hidane-proto = { workspace = true, features = ["client"] }
 http-body-util.workspace = true
 hyper-util = { workspace = true, features = ["client-legacy", "http1"] }
+jsonschema.workspace = true
 tokio = { workspace = true, features = ["test-util"] }
-tonic = { workspace = true, features = ["channel"] }
 
 [lints]
 workspace = true

@@ -3,11 +3,13 @@ use std::{ffi::OsString, io::ErrorKind, process::ExitCode};
 use clap::Parser;
 use hidane::cli::{self, Cli};
 
+mod bench;
 mod launch;
 
 fn main() -> ExitCode {
     match launch::mode(std::env::args_os().collect()) {
         launch::Mode::Exec(command) => launch::exec(&command),
+        launch::Mode::Benchmark(args) => bench::main(args),
         // firebase-tools running "java" in a `hidane exec` command (ADR 0006).
         launch::Mode::Java(args) => match launch::java(&args) {
             Ok(flags) => emulator(

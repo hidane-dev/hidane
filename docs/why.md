@@ -43,8 +43,9 @@ hidane is a single Rust binary. No JVM, no `PATH` juggling.
 
 hidane on `main` (release build, M1 Max, measured later on a quiet machine, so not side by side):
 5.5 ms median until the port accepts (10 runs), 7.4 MiB idle and 21 MiB after the same 1,000
-documents (`results/startup-memory-hidane.txt`, from `tools/bench/startup_memory.py`). The
-targets were under 100 ms and under 50 MiB. A same-machine comparison is #50.
+documents (`results/startup-memory-hidane.txt`, from a script `hidane benchmark` has since
+replaced). The targets were under 100 ms and under 50 MiB. A same-machine comparison is #50; its
+harness is [`bench/`](../bench/README.md).
 
 ## 3. Writes slow down while a listener is attached
 

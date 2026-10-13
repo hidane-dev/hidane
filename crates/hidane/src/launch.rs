@@ -33,6 +33,8 @@ const MIN_JAVA: u32 = 21;
 pub enum Mode {
     /// `hidane exec [--] <command…>`.
     Exec(Vec<OsString>),
+    /// `hidane benchmark …`, with the arguments after `benchmark` (bench/README.md).
+    Benchmark(Vec<OsString>),
     /// Invoked as `java`, with its arguments.
     Java(Vec<OsString>),
     /// The emulator, with its own arguments.
@@ -46,6 +48,9 @@ pub fn mode(args: Vec<OsString>) -> Mode {
         .map(OsStr::to_os_string);
     if invoked_as.as_deref() == Some(OsStr::new("java")) {
         return Mode::Java(args.into_iter().skip(1).collect());
+    }
+    if args.get(1).map(OsString::as_os_str) == Some(OsStr::new("benchmark")) {
+        return Mode::Benchmark(args.into_iter().skip(2).collect());
     }
     if args.get(1).map(OsString::as_os_str) == Some(OsStr::new("exec")) {
         let mut command: Vec<OsString> = args.into_iter().skip(2).collect();
@@ -390,6 +395,14 @@ mod tests {
         );
         assert!(matches!(
             mode(args(&["hidane", "--port", "1"])),
+            Mode::Emulator(_)
+        ));
+        assert!(
+            matches!(mode(args(&["hidane", "benchmark", "--quick"])), Mode::Benchmark(a) if a == args(&["--quick"]))
+        );
+        // Flags before it belong to the emulator, which ignores positional arguments.
+        assert!(matches!(
+            mode(args(&["hidane", "--port", "1", "benchmark"])),
             Mode::Emulator(_)
         ));
     }

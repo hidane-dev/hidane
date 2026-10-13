@@ -24,6 +24,8 @@ clap = { version = "4.6.7", features = ["derive"] }
 http-body-util = "0.1.5"
 hyper = "1.12.0"
 indexmap = "2.14.2"
+# Dev-only: validates `hidane benchmark` output against bench/schema/result.schema.json.
+jsonschema = { version = "0.58.6", default-features = false }
 hyper-util = { version = "0.1.21", features = ["server-auto", "server-graceful", "service", "tokio"] }
 md-5 = { version = "0.11.0", default-features = false }
 proptest = "1.11.0"
