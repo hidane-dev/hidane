@@ -130,7 +130,7 @@ result `stable: false`, with the reasons, when:
 
 | Check | Limit (`canonical.json`, `stability`) |
 |---|---|
-| Load average over the last minute, before and after the run | at most 2.0 |
+| Load average over the last minute before the run (after the run it is recorded only: that minute is the run's own load) | at most 2.0 |
 | Available memory before the run | at least 4,096 MiB |
 | CPU steal before the run and over the run (Linux) | at most 5 % |
 | CPU temperature before and after the run (where readable) | at most 85 °C |
