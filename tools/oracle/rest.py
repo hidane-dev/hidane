@@ -20,9 +20,12 @@ official emulator (a `parent` in a `:listCollectionIds` body, unparsable query p
 
 import http.client
 import json
-import re
 import sys
 import time
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from harness import mask  # noqa: E402
 
 HOST = sys.argv[1] if len(sys.argv) > 1 else "127.0.0.1:8080"
 PROJECT = f"rest-{time.strftime('%H%M%S')}"
@@ -140,12 +143,7 @@ case("GET with a verb", "GET", B + ":commit")
 
 
 def norm(text):
-    text = text.replace(PROJECT, "{project}")
-    text = re.sub(r'"(createTime|updateTime|readTime|commitTime)": "[^"]*"', r'"\1": "<time>"', text)
-    text = re.sub(r'"transaction": "[^"]*"', '"transaction": "<id>"', text)
-    text = re.sub(r'"nextPageToken": "[^"]*"', '"nextPageToken": "<token>"', text)
-    text = re.sub(r'documents/gen/[A-Za-z0-9]{20}"', 'documents/gen/<auto>"', text)
-    return text
+    return mask(text, PROJECT)
 
 
 def run():

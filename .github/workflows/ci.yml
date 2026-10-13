@@ -43,6 +43,10 @@ jobs:
       # versions above and the pinned official emulator (tools/upstream/README.md).
       - run: python3 -I -B -m unittest discover -s tools/upstream -p "test_*.py"
       - run: python3 -I -B tools/upstream/watch.py check
+      # The differential fuzzer (tools/fuzz/): its rules for accepted differences name entries
+      # of docs/parity-exceptions.json that exist, and its offline tests pass.
+      - run: python3 -I -B -m unittest discover -s tools/fuzz -p "test_*.py"
+      - run: python3 -I -B tools/fuzz/fuzz.py check
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy

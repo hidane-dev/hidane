@@ -774,6 +774,7 @@ for _sdk, _client in (("go", "Go SDK"), ("java", "Java SDK"), ("python", "Python
 # JSON files in results/ that are neither a transcript nor a replayed recording.
 IGNORED = {
     "results/issues-firebase-tools-metadata.json": "metadata of firebase-tools issues",
+    "results/differential-fuzzing.json": "differential fuzzing runs (tools/fuzz/), reported by compatibility.py",
 }
 
 IDENTICAL, DOCUMENTED, UNEXPLAINED = "identical", "documented", "unexplained"

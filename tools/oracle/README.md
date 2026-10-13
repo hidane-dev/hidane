@@ -179,6 +179,12 @@ its transcripts are in `results/sdk-rest-*.json`.
 transactions use preconditions and `verify` writes instead. Their transcripts are in
 `results/sdk-transactions-*.json` and `results/sdk-web-transactions-*.json`.
 
+`tools/fuzz/` asks the questions nobody wrote down: it sends generated REST requests to both
+emulators through `harness.py`'s `send`, compares the answers after its `mask` (the
+normalisation `rest.py` records with), and writes each difference it cannot explain, minimised,
+in `rest.py`'s fixture format for a person to turn into a case of a recorder here. Its README says
+how.
+
 ## The official emulator in CI
 
 CI replays the fixtures without Java. To run the official emulator on a runner, the composite

@@ -1,0 +1,142 @@
+# Differential fuzzing
+
+The oracle scripts (`tools/oracle/`) ask the official emulator questions someone thought of. The
+fuzzer asks the ones nobody did: it generates REST requests from a seed, sends each case to the
+official emulator and to hidane, and compares the answers. Python 3 standard library only; it
+sends requests with the oracle's transport and normalises answers with the oracle's
+normalisation (`tools/oracle/harness.py`'s `send` and `mask`), so a difference it reports is one
+the recordings would show.
+
+```sh
+java -Duser.language=en -Duser.country=US -jar cloud-firestore-emulator-v1.22.0.jar --host 127.0.0.1 --port 8086 &
+hidane --host 127.0.0.1 --port 8186 &
+out=$(mktemp -d)
+python3 -I tools/fuzz/fuzz.py run --official 127.0.0.1:8086 --hidane 127.0.0.1:8186 --seed 1 --cases 500 --out "$out"
+```
+
+`hidane benchmark --official-download` caches the pinned jar (`~/.cache/hidane-bench`), as does
+firebase-tools (`~/.cache/firebase/emulators`). Start the jar with an English locale, as above
+(tools/oracle/README.md says why). The jar is run and observed only
+([docs/clean-room/](../../docs/clean-room/README.md)).
+
+## Cases
+
+Case `n` of seed `s` is always the same case (`fuzz.py show --seed s --case n` prints it), and
+runs in a project of its own, a fresh one each time, so cases are independent and every one can
+be run again alone. Areas take turns (`--areas` picks some):
+
+| Area | What a case does |
+|---|---|
+| `documents` | Writes a document of random values (every type; NaN, ±0, ±infinity, the largest and smallest integers, long and Unicode strings, bytes, references, geo points, vectors, nested maps and arrays) by PATCH, create, commit or with a generated ID, then reads it, reads it with a mask, lists, batch-gets, updates with a mask, deletes, lists collection IDs |
+| `queries` | Writes a small collection (and a collection group), then runs queries (field, unary and nested `AND`/`OR` filters with every operator, `in`/`not-in`/`array-contains-any`, `__name__`, orderings, cursors, limits, offsets, projections, under a document) and aggregations (`count` with `upTo`, `sum`, `avg`) |
+| `transactions` | Begins a transaction (read-write, read-only, at a read time, or with `newTransaction` on a read), reads, queries and aggregates in it, commits or rolls it back, uses it again, writes outside it to what it read, or names a transaction that does not exist |
+| `batches` | Commits and `batchWrite`s of up to six writes, several to one document: sets, masked updates, deletes, transforms, preconditions |
+| `transforms` | Field transforms (server time, increment, maximum, minimum, array union and removal) on stored values of every kind, nested and missing fields |
+| `rules` | Loads generated Security Rules (`allow` statements with random conditions over `request`, `resource`, lookups and the path) through `PUT …:securityRules`, then reads and writes as no one, users with unsigned tokens, a user with a custom claim, and the owner |
+| `malformed` | Bad values (unknown types, wrong JSON types, out-of-range numbers and coordinates, bad base64, nested arrays, reserved and empty keys, bad vectors, too deep, too long), bad paths and names, bodies that do not parse, bad masks, queries and aggregations, oversized documents and commits, bad transforms |
+
+The generators leave out the requests the official emulator never answers
+([docs/parity-exceptions.md](../../docs/parity-exceptions.md)): `GET` with `?transaction=`, query
+parameters that do not parse, a `parent` in a `:listCollectionIds` body, `GET //`.
+
+## Differences
+
+`diff.py` finds the first step whose answers differ, after normalising both: the oracle's
+normalisation (project ID, server times, transaction IDs, page tokens, generated IDs), the values
+the run captured (transaction IDs, page tokens and times named by later steps), timestamps of the
+years 2021 to 2099 (the generators never write one, so these are the servers'), and versions of
+those years in microseconds (precondition messages). It classifies the difference:
+
+| Kind | |
+|---|---|
+| `crash` | one side answered 5xx or nothing (a timeout, a closed connection), the other did not |
+| `status` | different HTTP statuses, or the same one with a different error status |
+| `message` | the same error, worded differently |
+| `order` | the same values in another order: list elements, or the fields of an object |
+| `data` | anything else: values, how JSON is written, the content type |
+
+Its signature (`message-commit-0123456789ab`) is the kind, the request (`:commit`,
+`GET document`), both statuses and where or how the answers differ, without the inputs' values:
+messages are compared as templates (`Document "…" has N […]`), a denial as the kinds of reasons
+it lists, a data difference as a path such as `document.fields.*.doubleValue`. Other seeds and
+other areas that hit the same problem get the same signature, which is what the summary, the
+artifacts and the issues deduplicate on.
+
+### Accepted differences
+
+[`exceptions.json`](exceptions.json) holds rules for the differences docs/parity-exceptions.md
+accepts. Each rule names the entry of
+[`docs/parity-exceptions.json`](../../docs/parity-exceptions.json) that accepts what it matches
+(`exception`: `D008`, …), says `why`, and matches on the kind, the area, the request (`verbs`),
+where the answers differ (`detail`), each side's status, error code, message and differing
+`value` (regular expressions), and a `relation` between the answers (`hidane-reasons-subset`: a
+denial listing some of the official one's reasons and nothing else, the official emulator's two
+passes). A difference a rule matches is counted under its entry and not reported. `fuzz.py
+check` fails when a rule names an entry that is gone or is malformed; keep the rules as narrow as
+the entry's text.
+
+### Minimising
+
+A new difference is run again first: one that does not show twice is reported as not
+reproduced (timing, the lookups docs/parity-exceptions.md calls unpredictable) and goes no
+further. Then `shrink.py` keeps only what it needs, checking each candidate on both emulators
+for the same signature: the steps after the one that differs go, ddmin removes the earlier steps
+it does not need, then each body is reduced top down (list elements by ddmin, object keys one at
+a time, long strings halved), repeated while a pass removes something (a smaller body can make an
+earlier step unneeded). `--minimize-budget` and `--minimize-seconds` bound it.
+
+## Output
+
+Everything goes to `--out`, which must be outside the repository: nothing the fuzzer finds is
+committed by it.
+
+- `differences/<signature>.json`: one per unexplained difference. `case` is the minimised case
+  (`fuzz.py replay --official … --hidane … <file>` runs it again), `original` the case as found;
+  `cases` holds its steps in the format of `tools/oracle/rest.py`'s fixture, with the official
+  emulator's answers as `outcome`, and `hidane_outcomes` hidane's answers, next to the
+  `oracle` and `generated_by` fields the recordings carry.
+- `summary.json` and `summary.md`: the distinct differences (unexplained, accepted by each
+  entry, not reproduced) with how often each was seen; per area, the cases run, those that
+  differed and how many of those were accepted, unexplained or not reproduced; per kind, the
+  distinct unexplained differences.
+- `run.json`: the run as an entry of `results/differential-fuzzing.json`, the shape
+  docs/compatibility.schema.json gives `fuzzing_run` (`cases`; `differences`, the distinct
+  ones; `unexplained`), with the seed, the counts per area and per kind, and the distinct
+  differences accepted by each entry. `fuzz.py record <out>/run.json` adds it there, for a run
+  someone has looked at; `tools/parity/compatibility.py` reports it.
+
+`run` exits 0 when it ran: differences are results, not failures. It stops early, and fails,
+when an emulator stops answering.
+
+### From a difference to a fixture
+
+A difference file is input for a person, not a fixture:
+
+1. Run it again (`fuzz.py replay`) and read both answers. Decide which side is right: the
+   official emulator is the oracle, but some of its answers are bugs hidane does not reproduce.
+2. If hidane is wrong, add the minimised request to the recorder of its area (`rest.py`,
+   `document_writes.py`, `queries.py`, `transforms.py`, `same_document_writes.py`, …) and record
+   the fixture again against the pinned jar, as tools/oracle/README.md says; the test that
+   replays the fixture then fails until hidane is fixed. Steps in `cases` that name `{tx}`,
+   `{token}`, `{commitTime}` or `{updateTime}` need a recorder that carries the value over,
+   such as `harness.case`.
+3. If hidane is right on purpose, add the difference to docs/parity-exceptions.md (and
+   `docs/parity-exceptions.json`) and a rule here that names the new entry.
+
+## Limits
+
+REST only: gRPC answers with the same codes and messages (the recordings check that), but the
+Listen and Write streams, WebChannel and the WebSocket feed are not fuzzed. Requests run one at
+a time, so lock waits are covered (a write outside a transaction to what it read) but not races.
+Server-chosen times are masked by year, and the order of masked or transformed fields (a Java
+`HashMap`'s) is left to `tools/oracle/field_order.py`; such differences tend to show as not
+reproduced.
+
+## Tests
+
+```sh
+python3 -m unittest discover -s tools/fuzz
+```
+
+They need neither emulator: the end-to-end test runs `fuzz.py run` against two small HTTP
+servers that stand in for them.

@@ -102,7 +102,10 @@ vendored protos ([`docs/cla/README.md`](../cla/README.md#what-the-cla-does-not-c
   publishes while it runs (the services gRPC server reflection lists). Nothing inside the jar.
 - **How**: [OBSERVATION_POLICY.md](OBSERVATION_POLICY.md). The scripts that record it are in
   [`tools/oracle/`](../../tools/oracle/), and what each recording says about its provenance is in
-  [ORACLE_PROVENANCE.md](ORACLE_PROVENANCE.md).
+  [ORACLE_PROVENANCE.md](ORACLE_PROVENANCE.md). The differential fuzzer
+  ([`tools/fuzz/`](../../tools/fuzz/)) observes it the same way: it sends generated REST
+  requests to it and to hidane and compares the answers, and what it finds becomes a recording
+  only through a recorder, after a person has looked at it.
 - **Used by**: every recording in `crates/*/tests/fixtures/` and `results/`, replayed or compared
   by the tests and listed in [`docs/parity.md`](../parity.md); the baseline in
   `results/official-v1.22.0-baseline.md`.

@@ -54,6 +54,13 @@ downloaded from the URL firebase-tools names and checked against the SHA-256 it 
 runner, and recorded by the same scripts. Those recordings are workflow artifacts only; nothing in
 the repository changes until hidane moves to that release and re-records every fixture.
 
+The differential fuzzer ([`tools/fuzz/`](../../tools/fuzz/)) follows the same rules, except that
+one jar serves a whole session: each case runs in a project of its own, which is what a fresh jar
+gives a recording (transaction IDs are counted per database). What it writes is not a recording:
+it stays in the run's output (a workflow artifact in CI) and becomes one only as a case of a
+recorder in `tools/oracle/`, recorded against a freshly started jar, after a person has looked at
+it.
+
 ## What a recording may hold
 
 - The requests the script sent (method, path, body, the headers that matter) and the answers it
