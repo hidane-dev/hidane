@@ -142,6 +142,13 @@ Notes:
   `google.firestore.v1` client over one HTTP/2 connection), sending the same requests in the same
   order. The documents have the Phase 0 baseline's shape (`{mykey, myid}`, plus a `bucket` field
   for filters).
+  It sends no credential, as a signed-out client SDK does, so Security Rules apply to every
+  request on both. The Admin SDKs send an emulator `Authorization: Bearer owner`, which skips the
+  Rules, and with it the official emulator's writes are about four times as fast: 100,000
+  documents in commits of 500 over REST took 3.39 s with it and 13.78 s without, while hidane
+  took 1.72 s and 1.71 s (single local runs). An SDK's own work adds to both: through
+  firebase-admin, the same writes took 2.2 s and 1.1 s. The write scenarios and the CI workloads
+  here are therefore a signed-out app's; measuring the owner's too is #286.
 - **Same data and workload.** Every scenario writes the same documents and runs the same queries
   against both.
 - **Pinned versions.** The official jar is the one firebase-tools 15.33.0 downloads, checked
