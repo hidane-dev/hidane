@@ -1,0 +1,200 @@
+name: Differential fuzzing
+
+# Sends generated REST requests to the official Cloud Firestore emulator (the pinned jar, through
+# .github/actions/official-emulator) and to hidane built from this commit, and reports what
+# differs (tools/fuzz/README.md):
+#
+# - fuzz: a time-boxed session. Its summary goes to the job summary, the minimised differences
+#   and both emulators' output to the `fuzz` artifact. It fails only when it could not run.
+# - issues: one issue per unexplained difference, labelled `fuzz` and found again by the
+#   signature in its marker, so later runs update it (and leave it closed once closed). Only on
+#   main, on the schedule or by hand with `issues` on; the only job that can write issues.
+# - issues (dry run): on pull requests and other runs, what `issues` would do, read-only.
+#
+# GitHub-hosted runners only. Daily, by hand (seed, cases, minutes), and for changes to the
+# fuzzer, the oracle transport it uses, or this file (a short session with a fixed seed).
+
+on:
+  schedule:
+    - cron: "41 2 * * *"
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: Seed (empty for one from today's date)
+        required: false
+        default: ""
+      cases:
+        description: Cases to run at most
+        required: false
+        default: "100000"
+      minutes:
+        description: Minutes to send new cases for
+        required: false
+        default: "25"
+      issues:
+        description: Open or update issues (main only)
+        type: boolean
+        required: false
+        default: false
+  pull_request:
+    paths:
+      - "tools/fuzz/**"
+      - "tools/oracle/harness.py"
+      - ".github/workflows/fuzz.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fuzz:
+    name: fuzz
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test the fuzzer
+        run: |
+          python3 -I -B -m unittest discover -s tools/fuzz -p "test_*.py"
+          python3 -I -B tools/fuzz/fuzz.py check
+      - name: Choose the session
+        id: session
+        env:
+          EVENT: ${{ github.event_name }}
+          SEED: ${{ inputs.seed }}
+          CASES: ${{ inputs.cases }}
+          MINUTES: ${{ inputs.minutes }}
+        run: |
+          case "$EVENT" in
+            pull_request) seed=1 cases=1500 minutes=4 ;;
+            schedule) seed=$(date -u +%Y%m%d) cases=100000 minutes=25 ;;
+            *) seed=${SEED:-$(date -u +%Y%m%d)} cases=${CASES:-100000} minutes=${MINUTES:-25} ;;
+          esac
+          for value in "$seed" "$cases" "$minutes"; do
+            if [[ ! "$value" =~ ^[0-9]{1,12}$ ]]; then
+              echo "::error title=Differential fuzzing::seed, cases and minutes must be whole numbers"
+              exit 1
+            fi
+          done
+          if ((minutes > 40)); then
+            echo "::error title=Differential fuzzing::at most 40 minutes, so the job ends within its timeout"
+            exit 1
+          fi
+          {
+            echo "seed=$seed"
+            echo "cases=$cases"
+            echo "minutes=$minutes"
+          } >> "$GITHUB_OUTPUT"
+      - name: Set up Rust
+        run: rustup toolchain install stable --profile minimal --no-self-update && rustup default stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - name: Build hidane
+        run: cargo build --release --locked -p hidane
+      - name: Start hidane
+        run: |
+          target/release/hidane --host 127.0.0.1 --port 8180 < /dev/null > "$RUNNER_TEMP/hidane.log" 2>&1 &
+          echo "HIDANE_PID=$!" >> "$GITHUB_ENV"
+          for _ in $(seq 60); do
+            if curl --fail --silent --max-time 2 --output /dev/null http://127.0.0.1:8180/; then
+              exit 0
+            fi
+            sleep 0.5
+          done
+          echo "::error title=hidane::It did not answer on http://127.0.0.1:8180/"
+          cat "$RUNNER_TEMP/hidane.log"
+          exit 1
+      - name: Start the official emulator
+        id: emulator
+        uses: ./.github/actions/official-emulator
+        with:
+          port: "8080"
+      - name: Fuzz
+        env:
+          OFFICIAL: ${{ steps.emulator.outputs.address }}
+          SEED: ${{ steps.session.outputs.seed }}
+          CASES: ${{ steps.session.outputs.cases }}
+          MINUTES: ${{ steps.session.outputs.minutes }}
+        run: |
+          status=0
+          python3 -I tools/fuzz/fuzz.py run --official "$OFFICIAL" --hidane 127.0.0.1:8180 \
+            --seed "$SEED" --cases "$CASES" --minutes "$MINUTES" --out "$RUNNER_TEMP/fuzz" > /dev/null || status=$?
+          if [[ -f "$RUNNER_TEMP/fuzz/summary.md" ]]; then
+            cat "$RUNNER_TEMP/fuzz/summary.md" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$status"
+      - name: Stop the emulators
+        if: ${{ always() }}
+        env:
+          ADDRESS: ${{ steps.emulator.outputs.address }}
+          PID: ${{ steps.emulator.outputs.pid }}
+        run: |
+          if [[ -n "$PID" ]]; then
+            curl --fail --silent --show-error --request POST "http://$ADDRESS/shutdown" || kill "$PID" || true
+          fi
+          if [[ -n "${HIDANE_PID:-}" ]]; then
+            kill "$HIDANE_PID" || true
+          fi
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: fuzz
+          path: |
+            ${{ runner.temp }}/fuzz/
+            ${{ runner.temp }}/hidane.log
+            ${{ steps.emulator.outputs.log }}
+          if-no-files-found: ignore
+
+  issues:
+    name: issues
+    needs: fuzz
+    if: >-
+      ${{ github.ref == 'refs/heads/main' &&
+      (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.issues)) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: tools/fuzz
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: fuzz
+          path: ${{ runner.temp }}/artifact
+      - name: Open or update issues
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -I tools/fuzz/issues.py "$RUNNER_TEMP/artifact/fuzz" --summary "$GITHUB_STEP_SUMMARY"
+
+  dry-run:
+    name: issues (dry run)
+    needs: fuzz
+    if: >-
+      ${{ !(github.ref == 'refs/heads/main' &&
+      (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.issues))) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: tools/fuzz
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: fuzz
+          path: ${{ runner.temp }}/artifact
+      - name: Say what issues would be opened or updated
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 -I tools/fuzz/issues.py "$RUNNER_TEMP/artifact/fuzz" --dry-run --summary "$GITHUB_STEP_SUMMARY"
