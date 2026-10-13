@@ -1,17 +1,18 @@
-//! `hidane doctor` and `hidane migrate`: the command line of [`hidane::project`] and
-//! [`hidane::migrate`]. The engines do the work; this parses the flags, prints the report or the
-//! plan, applies it when asked, and chooses the exit code.
+//! `hidane doctor`, `hidane migrate` and `hidane report`: the command line of
+//! [`hidane::project`], [`hidane::migrate`] and [`hidane::diagnostic`]. The engines do the work;
+//! this parses the flags, prints the report or the plan, applies it when asked, and chooses the
+//! exit code.
 
 use std::{ffi::OsString, path::PathBuf, process::ExitCode};
 
 use clap::{Parser, ValueEnum};
 use hidane::{
-    migrate,
+    diagnostic, migrate,
     project::{self, files::Dir},
 };
 
 /// The subcommands this module runs, after `hidane`.
-pub const SUBCOMMANDS: [&str; 2] = ["doctor", "migrate"];
+pub const SUBCOMMANDS: [&str; 3] = ["doctor", "migrate", "report"];
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
 enum Format {
@@ -96,11 +97,56 @@ struct Migrate {
     format: PlanFormat,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, ValueEnum)]
+enum ReportFormat {
+    Markdown,
+    Text,
+    Json,
+}
+
+/// Writes what a bug report needs about hidane, this machine and a Firebase project, with
+/// secrets and identifiers redacted. It sends nothing anywhere.
+#[derive(Debug, Parser)]
+#[command(
+    name = "report",
+    bin_name = "hidane report",
+    version,
+    long_about = "Writes what a maintainer needs to reproduce a bug report: hidane's version, \
+                  commit, build profile and target; the OS and architecture; Java, Node.js and \
+                  firebase-tools; the official emulator versions firebase-tools has cached (from \
+                  file names only); the environment variables the emulators read (values only \
+                  where they are safe); and `hidane doctor`'s scan of the project with its \
+                  firebase.json, sanitized.\n\n\
+                  Project IDs (other than demo-* ones), API keys, tokens, passwords, e-mail \
+                  addresses, credentials in URLs, host and user names, and paths in the home \
+                  directory and the project become placeholders such as <project-id-1> and \
+                  <home>; the report counts them at its end. No document data is read. It runs \
+                  `java -version` and `node --version`, reads files, and makes no network \
+                  request. It prints the report, or writes it to --output: nothing leaves this \
+                  machine unless you share it, so read it first.",
+    after_help = "Exit codes: 0 when the report was written, 1 when --output could not be \
+                  written, 2 for a usage error or a path that is not a directory.\n\nSee \
+                  docs/bug-reports.md: \
+                  https://github.com/hidane-dev/hidane/blob/main/docs/bug-reports.md"
+)]
+struct Report {
+    /// The project's root directory.
+    #[arg(long, value_name = "DIR", default_value = ".")]
+    path: PathBuf,
+    /// markdown: for a GitHub issue; text: for a terminal; json: for tools.
+    #[arg(long, value_enum, default_value_t = ReportFormat::Markdown)]
+    format: ReportFormat,
+    /// Write the report to this file instead of stdout.
+    #[arg(long, short, value_name = "FILE")]
+    output: Option<PathBuf>,
+}
+
 /// Runs `hidane <subcommand> …`; `args` starts with the subcommand.
 pub fn run(args: Vec<OsString>) -> ExitCode {
     match args.first().and_then(|a| a.to_str()) {
         Some("doctor") => doctor(args),
         Some("migrate") => migrate(args),
+        Some("report") => report(args),
         _ => ExitCode::from(2),
     }
 }
@@ -239,6 +285,78 @@ fn migrate(args: Vec<OsString>) -> ExitCode {
             ExitCode::SUCCESS
         }
     }
+}
+
+fn report(args: Vec<OsString>) -> ExitCode {
+    let cli: Report = match parse(args) {
+        Ok(cli) => cli,
+        Err(code) => return code,
+    };
+    if !cli.path.is_dir() {
+        eprintln!("hidane report: {} is not a directory", cli.path.display());
+        return ExitCode::from(2);
+    }
+    let input = diagnostic::machine::read(&cli.path);
+    let report = diagnostic::build(&input, &Dir::new(&cli.path));
+    let text = match cli.format {
+        ReportFormat::Markdown => diagnostic::render::markdown(&report),
+        ReportFormat::Text => diagnostic::render::text(&report),
+        ReportFormat::Json => match serde_json::to_string_pretty(&report) {
+            Ok(json) => format!("{json}\n"),
+            Err(err) => {
+                eprintln!("hidane report: {err}");
+                return ExitCode::FAILURE;
+            }
+        },
+    };
+    let Some(output) = &cli.output else {
+        emit(&text);
+        eprintln!(
+            "hidane report: nothing was sent anywhere. Read the report before you share it; \
+             what was redacted is counted at its end."
+        );
+        return ExitCode::SUCCESS;
+    };
+    if let Err(err) = std::fs::write(output, &text) {
+        eprintln!("hidane report: could not write {}: {err}", output.display());
+        return ExitCode::from(1);
+    }
+    let p = &report.project;
+    let mut contents = vec![
+        "hidane's version and build".to_owned(),
+        "the OS and architecture".to_owned(),
+        "the Java, Node.js and firebase-tools versions".to_owned(),
+        "the official emulator versions firebase-tools has cached".to_owned(),
+        format!(
+            "{} environment variable{} (values only where safe)",
+            report.environment.len(),
+            if report.environment.len() == 1 {
+                ""
+            } else {
+                "s"
+            }
+        ),
+        "hidane doctor's findings for the project".to_owned(),
+    ];
+    if !p.firebase_json.is_empty() {
+        contents.push(format!(
+            "{} firebase.json, sanitized",
+            p.firebase_json.len()
+        ));
+    }
+    if !p.firebaserc.is_empty() {
+        contents.push(".firebaserc's aliases, with the project IDs redacted".to_owned());
+    }
+    let redacted: usize = report.redacted.values().sum();
+    eprintln!(
+        "hidane report: wrote {} ({} bytes): {}. {redacted} value{} redacted. Nothing was sent \
+         anywhere: read the file before you attach it to an issue.",
+        output.display(),
+        text.len(),
+        contents.join("; "),
+        if redacted == 1 { " was" } else { "s were" }
+    );
+    ExitCode::SUCCESS
 }
 
 /// A path as a shell word.

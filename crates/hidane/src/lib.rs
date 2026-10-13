@@ -15,6 +15,7 @@
 //! `/google.firestore.v1.Firestore/Listen/channel` sit under the gRPC service prefix.
 
 pub mod cli;
+pub mod diagnostic;
 pub mod export;
 mod firestore;
 pub mod migrate;

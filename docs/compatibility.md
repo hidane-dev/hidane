@@ -33,7 +33,7 @@ firebase-tools that launches it and the official emulator it is compared with.
 | SDK certification | 16 clients and tools: 10 verified, 1 partially verified, 5 not verified | [sdk-certification.md](sdk-certification.md) |
 | Browser | firebase-js-sdk's browser suite at `8a7e7fd`: 1,183 passed, 0 failed, 739 skipped on hidane; 1,183 passed, 0 failed on the official emulator (identical). 3 transcripts in Chromium: browser-webchannel (identical), flutter-web (documented), browser-rules (documented) | [`js-sdk-browser.yml`](../.github/workflows/js-sdk-browser.yml) |
 | Functions events | `function_events.json`: 133 recorded answers, `function_triggers.json`: 342 recorded answers; functions-triggers: 37 events on hidane, 43 on the official emulator (documented) | [parity-exceptions.md](parity-exceptions.md) |
-| Integration tests | 47 test files (`crates/*/tests/*.rs`), 32 of them replaying recordings, run on every pull request and push to main | [`crates/`](../crates/) |
+| Integration tests | 48 test files (`crates/*/tests/*.rs`), 32 of them replaying recordings, run on every pull request and push to main | [`crates/`](../crates/) |
 | Differential fuzzing | 1 run | [`differential-fuzzing.json`](../results/differential-fuzzing.json) |
 | Differences | 68 intentional differences (1 bug-for-bug, 43 more correct, 18 equivalent, 6 limitation); 14 places where the official emulator departs from production (12 bug-for-bug, 2 more correct) | [parity-exceptions.md](parity-exceptions.md) |
 

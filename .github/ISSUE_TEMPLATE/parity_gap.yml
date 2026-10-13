@@ -70,6 +70,15 @@ body:
     validations:
       required: true
   - type: textarea
+    id: report
+    attributes:
+      label: hidane report
+      description: >-
+        Optional: the output of `hidane report`, run in your project's directory. It lists
+        hidane's build, the official emulator versions firebase-tools has cached, the Java and
+        firebase-tools versions and the emulator configuration, with secrets and identifiers
+        replaced by placeholders (https://github.com/hidane-dev/hidane/blob/main/docs/bug-reports.md).
+  - type: textarea
     id: reproduction
     attributes:
       label: Minimal reproduction

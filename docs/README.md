@@ -8,6 +8,7 @@
 | [testcontainers.md](testcontainers.md) | hidane's container image in Testcontainers: in place of the Cloud SDK image in the gcloud modules (Java, Node), or as a generic container |
 | [../examples/](../examples/) | Projects to copy, each an integration test that CI runs against hidane: firebase-admin under `firebase emulators:exec`, a Firestore-triggered function, rules-unit-testing, Python, Go, a GitHub Actions workflow |
 | [migrating.md](migrating.md) | What `hidane doctor` checks in a Firebase project, and what `hidane migrate` changes to move it from the official emulator to hidane |
+| [bug-reports.md](bug-reports.md) | What `hidane report` collects for a bug report, what it redacts, and what it never reads or sends |
 | [parity.md](parity.md) | How many of the official emulator's recorded answers the tests replay against hidane, per area and transport, and which SDK transcripts are identical (generated) |
 | [oracle-corpus.md](oracle-corpus.md) | The Hidane Oracle Corpus: every recording of the official emulator, listed with its provenance in a generated manifest ([oracle-corpus.json](oracle-corpus.json), [schema](oracle-corpus.schema.json)) |
 | [parity-exceptions.md](parity-exceptions.md) | Where hidane intentionally differs from the official emulator, and where the official emulator differs from production, each entry with its kind (bug-for-bug, more correct, equivalent, limitation), generated from a database ([parity-exceptions.json](parity-exceptions.json), [schema](parity-exceptions.schema.json)) |
