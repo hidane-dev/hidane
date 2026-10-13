@@ -6,8 +6,10 @@ local development and CI. Every number below comes from Phase 0 measurements of 
 emulator v1.22.0; the numbers are in [`results/official-v1.22.0-baseline.md`](../results/official-v1.22.0-baseline.md).
 
 > Measurement caveat: the Phase 0 numbers were taken on an M1 Max **while other heavy jobs were
-> running** (load average 12–58). They are indicative, not final; a quiet-runner re-measurement
-> is tracked in [#50](https://github.com/hidane-dev/hidane/issues/50).
+> running** (load average 12–58). They are indicative, not final. Startup, memory and plain writes
+> have since been measured side by side on a quiet machine, in the canonical benchmark
+> environment ([section 2](#2-startup-and-memory)); re-measuring the rest is tracked in
+> [#50](https://github.com/hidane-dev/hidane/issues/50).
 
 ## 1. You need Java 21 to run a local database
 
@@ -41,11 +43,19 @@ hidane is a single Rust binary. No JVM, no `PATH` juggling.
 | RSS after writing 500,000 documents | 2.18 GiB | `results/official-v1.22.0-baseline.md` |
 | JVM default heap limit | 25 % of physical RAM (16 GiB on the test machine) | `results/official-v1.22.0-baseline.md` |
 
-hidane on `main` (release build, M1 Max, measured later on a quiet machine, so not side by side):
-5.5 ms median until the port accepts (10 runs), 7.4 MiB idle and 21 MiB after the same 1,000
-documents (`results/startup-memory-hidane.txt`, from a script `hidane benchmark` has since
-replaced). The targets were under 100 ms and under 50 MiB. A same-machine comparison is #50; its
-harness is [`bench/`](../bench/README.md).
+Side by side, in the canonical benchmark environment (an AWS c7i.xlarge, Ubuntu 24.04, Java
+21.0.12.1, firebase-tools 15.33.0, both emulators on the same quiet machine, 2026-10-13), the
+medians were:
+
+| Measurement | Official emulator v1.22.0 | hidane v0.4.0 |
+|---|---|---|
+| Time until the port accepts | 941 ms | 1.56 ms |
+| RSS idle | 148 MiB | 7.8 MiB |
+| RSS after writing 1,000 documents | 268 MiB | 10.1 MiB |
+| `firebase emulators:exec` around 100 seeded documents and 200 tests | 6.75 s | 1.67 s |
+
+Every sample is in the [result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-13-release.md); the harness, which anyone can rerun, is
+[`bench/`](../bench/README.md). The targets were under 100 ms and under 50 MiB.
 
 ## 3. Writes slow down while a listener is attached
 

@@ -104,10 +104,10 @@
 <a class="src" href="https://github.com/firebase/firebase-tools/releases/tag/v15.0.0">出典: firebase-tools v15.0.0 リリースノート</a>
 </article>
 <article class="card">
-<div class="card-num">0.74 s · 95 MiB</div>
-<h3>起動に 0.74 秒、アイドルで 95 MiB</h3>
-<p>公式エミュレータは、ポートを開くまでに 0.74 秒（CLI 経由では 2.5 秒）かかり、アイドル時に 95 MiB を使います。main の hidane は 5.5 ms、7.4 MiB です。</p>
-<a class="src" href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md#2-startup-and-memory">出典: 実測値と生ログ（英語）</a>
+<div class="card-num">941 ms · 148 MiB</div>
+<h3>起動に 941 ms、アイドルで 148 MiB</h3>
+<p>正式なベンチマーク環境での中央値で、公式エミュレータはポートを開くまでに 941 ms かかり、アイドル時に 148 MiB を使います。同じマシンで、hidane v0.4.0 は 1.56 ms、7.8 MiB です。</p>
+<a class="src" href="https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-13-release.md">出典: ベンチマーク結果（全サンプル付き、英語）</a>
 </article>
 <article class="card">
 <div class="card-num">11 倍</div>
@@ -116,7 +116,7 @@
 <a class="src" href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md#3-writes-slow-down-while-a-listener-is-attached">出典: 実測値と生ログ（英語）</a>
 </article>
 </div>
-<p class="fine">数値はすべて実測値ですが、同じ条件での比較ではありません。hidane はのちに負荷の少ないマシンで測りました。同一マシンでの比較は今後行います。背景は <a href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md">Why hidane</a>（英語）にまとめています。</p>
+<p class="fine">起動とメモリ: AWS c7i.xlarge 1 台（Ubuntu 24.04、Java 21、firebase-tools 15.33.0）で両方を測った中央値です（2026-10-13）。測り方は <a href="https://github.com/hidane-dev/hidane/blob/main/bench/README.md">bench/</a>（英語）にあります。リスナー接続時の書き込み: Phase 0 の実測値で、同じ条件での比較ではありません。この条件はまだベンチマークに含まれていません。背景は <a href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md">Why hidane</a>（英語）にまとめています。</p>
 </div>
 </section>
 

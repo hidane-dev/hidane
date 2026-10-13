@@ -23,16 +23,17 @@
 
 ## 1. Targets (proposed)
 
-| Metric | Official (measured) | hidane target | hidane on `main` (measured) |
+| Metric | Official (measured) | hidane target | hidane v0.4.0 (measured) |
 |---|---|---|---|
-| Time until the port accepts | 0.74 s (2.5 s via firebase-tools) | < 100 ms | 5.5 ms (direct) |
-| RSS idle | 95 MiB | < 50 MiB | 7.4 MiB |
-| RSS after 1,000 documents | 456 MiB | < 100 MiB | 21 MiB |
+| Time until the port accepts | 941 ms | < 100 ms | 1.56 ms |
+| RSS idle | 148 MiB | < 50 MiB | 7.8 MiB |
+| RSS after 1,000 documents | 268 MiB | < 100 MiB | 10.1 MiB |
 | Write cost with a listener attached | grows with total document count | O(changed documents), independent of total | flat per batch: 100k documents in 4.9 s |
 | Java | 21+ required | not required (single binary) | not required |
 
-The measurements were not taken side by side (see `docs/why.md`); #50 re-measures both on one
-quiet machine.
+The first three rows are medians from the canonical benchmark environment, both emulators on one
+quiet machine ([result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-13-release.md)). The listener row comes from Phase 0 and a later run on another
+machine, not side by side (`docs/why.md`); #50 re-measures it.
 
 ## 2. v0.1 — gRPC core, no rules
 
