@@ -8,7 +8,10 @@
 | [parity.md](parity.md) | How many of the official emulator's recorded answers the tests replay against hidane, per area and transport, and which SDK transcripts are identical (generated) |
 | [oracle-corpus.md](oracle-corpus.md) | The Hidane Oracle Corpus: every recording of the official emulator, listed with its provenance in a generated manifest ([oracle-corpus.json](oracle-corpus.json), [schema](oracle-corpus.schema.json)) |
 | [parity-exceptions.md](parity-exceptions.md) | Where hidane intentionally differs from the official emulator, and where the official emulator differs from production |
+| [versioning.md](versioning.md) | What a version number promises: the stable surfaces (flags, exit codes, JSON schemas, export format, ports, assets), what patch / minor / major may change, what each release was verified against, and deprecation |
+| [release-channels.md](release-channels.md) | Where releases go, how to pin a version on each channel, and the stable / latest / LTS model hidane could adopt later (not offered today) |
 | [releasing.md](releasing.md) | How a release is built, what it contains, and how a maintainer cuts and publishes one |
+| [project-assets.md](project-assets.md) | The official repositories, packages, image, website and accounts; anything else using the name is not the project's |
 | [setup-hidane-marketplace.md](setup-hidane-marketplace.md) | How a maintainer lists the `hidane-dev/setup-hidane` Action on GitHub Marketplace, and releases it later |
 | [ROADMAP.md](ROADMAP.md) | Tentative scope of v0.1 / v0.2 / v0.3, targets, risks |
 | [clean-room/](clean-room/README.md) | Where hidane's behaviour comes from: the allowed sources, how the official emulator is observed, the provenance of its recordings, and what contributors must not use |
