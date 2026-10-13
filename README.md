@@ -159,6 +159,7 @@ action opens them as a pull request. [`docs/migrating.md`](docs/migrating.md) ex
 - [Migrating](docs/migrating.md) — `hidane doctor` and `hidane migrate`: checking a project that used the official emulator, and moving it to hidane
 - [Testcontainers](docs/testcontainers.md) — hidane's image in Testcontainers: in place of the Cloud SDK image in the gcloud modules (Java, Node), or as a generic container
 - [Examples](examples/) — projects to copy, which CI runs against hidane: firebase-admin under `firebase emulators:exec`, a Firestore-triggered function, rules-unit-testing, Python, Go, a GitHub Actions workflow
+- [Reporting a bug](docs/bug-reports.md) — `hidane report`: what it collects for a bug report, and what it redacts
 - [Parity](docs/parity.md) — the recorded answers the tests replay, per area and transport, and the SDK transcripts
 - [Parity exceptions](docs/parity-exceptions.md) — where hidane and the official emulator intentionally differ
 - [Roadmap](docs/ROADMAP.md) — scope of v0.1 / v0.2 / v0.3, targets, risks
@@ -174,7 +175,10 @@ action opens them as a pull request. [`docs/migrating.md`](docs/migrating.md) ex
 hidane is built issue by issue, each one measured against the official emulator first. Please
 open an issue before sending a pull request; the code you would touch may be about to change
 shape. Parity-gap reports (a request whose answer differs from the official emulator's) are
-especially welcome.
+especially welcome. With a bug report, please include the output of `hidane report`: hidane's
+build, the Java and firebase-tools versions, the emulator configuration and `hidane doctor`'s
+findings, with secrets and identifiers redacted; it sends nothing anywhere
+([`docs/bug-reports.md`](docs/bug-reports.md)).
 See [CONTRIBUTING.md](CONTRIBUTING.md), the [issue templates](.github/ISSUE_TEMPLATE/) and
 [Discussions](https://github.com/hidane-dev/hidane/discussions). Security issues go through
 [private vulnerability reporting](SECURITY.md).

@@ -37,6 +37,18 @@ body:
     validations:
       required: true
   - type: textarea
+    id: report
+    attributes:
+      label: hidane report
+      description: >-
+        Paste the output of `hidane report`, run in your project's directory (`--path DIR` for
+        another one). It lists hidane's build, your OS, the Java and firebase-tools versions, the
+        official emulator versions firebase-tools has cached, the emulator configuration and what
+        `hidane doctor` finds. Secrets, project IDs, e-mail addresses, paths and names are
+        replaced with placeholders, and it sends nothing anywhere; read it before you post it.
+        What it holds: https://github.com/hidane-dev/hidane/blob/main/docs/bug-reports.md
+      placeholder: "### hidane report …"
+  - type: textarea
     id: official-behavior
     attributes:
       label: Behaviour on the official emulator
@@ -50,6 +62,7 @@ body:
     id: platform
     attributes:
       label: OS / architecture
+      description: Not needed if you pasted `hidane report` above.
       placeholder: "macOS 15 (arm64), Ubuntu 24.04 (x86_64), Windows 11 ..."
   - type: textarea
     id: logs

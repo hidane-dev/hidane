@@ -59,17 +59,17 @@ notes as a change.
 |---|---|---|
 | Emulator flags | Every flag of the official emulator's `--help` (v1.22.0), with its spelling, its value forms (`--single_project_mode` and `--single_project_mode true`) and its default: `--host localhost`, `--port 8080`. Unknown flags are rejected | `crates/hidane/src/cli.rs` (tests), `crates/hidane/tests/process.rs` (the argument set firebase-tools passes) |
 | Startup and shutdown | The banner on stdout, with `API endpoint: http://<host>:<port>`, `export FIRESTORE_EMULATOR_HOST=<host>:<port>` and `Dev App Server is now running.`; `address already in use` on stderr when the port is taken; `POST /shutdown` | `crates/hidane/tests/process.rs` |
-| Exit codes | The codes in [the table below](#exit-codes) | `process.rs`, `launch.rs`, `doctor.rs`, `migrate.rs` and `bench.rs` in `crates/hidane/tests/` |
+| Exit codes | The codes in [the table below](#exit-codes) | `process.rs`, `launch.rs`, `doctor.rs`, `migrate.rs`, `report.rs` and `bench.rs` in `crates/hidane/tests/` |
 | Ports | gRPC, REST and WebChannel on the one port `--port`; the Emulator UI's request feed on `--websocket_port`, when given; the container image listens on `0.0.0.0:8080` | `crates/hidane/tests/single_port.rs`, `websocket_requests.rs`; the container job of `.github/workflows/install.yml` |
 | The Firestore API and the emulator's endpoints | What the official emulator answers over gRPC, REST and WebChannel, and on `/emulator/v1/…`, except the [parity exceptions](parity-exceptions.md) | The recorded answers in the [oracle corpus](oracle-corpus.md), replayed by the test suite and counted in [parity.md](parity.md) |
 | `hidane exec -- <command>` | Runs the command with hidane standing in for `java` and the official jar ([ADR 0006](adr/0006-launch-under-firebase-tools.md)); returns the command's exit code | `crates/hidane/tests/launch.rs`; the firebase-tools versions are in [compatibility.md](compatibility.md) |
-| `doctor`, `migrate` and `benchmark` command lines | The subcommand names and their flags: `--path`, `--format`, `--apply`, `--force` (and `hidane benchmark`'s, in [bench/README.md](../bench/README.md)) | `doctor.rs`, `migrate.rs`, `bench.rs` in `crates/hidane/tests/` |
+| `doctor`, `migrate`, `report` and `benchmark` command lines | The subcommand names and their flags: `--path`, `--format`, `--apply`, `--force`, `--output` (and `hidane benchmark`'s, in [bench/README.md](../bench/README.md)) | `doctor.rs`, `migrate.rs`, `report.rs`, `bench.rs` in `crates/hidane/tests/` |
 | JSON output | The shapes in [the section below](#json-output), versioned by their schema field | Golden reports, golden patches and a JSON Schema, below |
 | Export format | The official emulator's export files: hidane reads the official emulator's exports, and the official emulator reads hidane's ([export-format.md](export-format.md)) | `crates/hidane/tests/export_import.rs`, against exports recorded from the official emulator |
 | Release assets | Archive names (`hidane-<version>-<target>.tar.gz`, `.zip` on Windows), their layout, `sha256sums.txt`; the package names on each registry; the image tags `<version>`, `<major>.<minor>` and `latest` ([releasing.md](releasing.md#assets)). `install.sh`, setup-hidane, cargo-binstall and mise find the archives by these names | `.github/workflows/install.yml`, which installs every release through every channel; setup-hidane's own CI |
 
-`hidane doctor`, `hidane migrate` and `hidane benchmark` are first released after v0.4.0; their
-schemas start at version 1 there.
+`hidane doctor`, `hidane migrate`, `hidane report` and `hidane benchmark` are first released
+after v0.4.0; their schemas start at version 1 there.
 
 ### Exit codes
 
@@ -79,6 +79,7 @@ schemas start at version 1 there.
 | `hidane exec -- <command>` | The command's own exit code, or 128 + the number of the signal that ended it; 1 when hidane cannot run the command | | | |
 | `hidane doctor` | No finding is incompatible | A finding is incompatible | A usage error, or `--path` is not a directory | |
 | `hidane migrate` | The plan was printed or applied, or there was nothing to change | `--apply` refused (uncommitted changes, files changed meanwhile) or failed | A usage error, or `--path` is not a directory | |
+| `hidane report` | The report was printed or written | `--output` could not be written | A usage error, or `--path` is not a directory | |
 | `hidane benchmark` | The run completed, stable or not | The run completed, but some runs failed (`errors` in the result) | The benchmark could not run (no result is written), or a usage error | |
 
 ### JSON output
@@ -88,6 +89,7 @@ schemas start at version 1 there.
 | `hidane doctor --format json` | `"schema": "hidane.doctor/1"` | [migrating.md](migrating.md#json) | The golden reports `crates/hidane/tests/fixtures/projects/*.doctor.json` (`tests/doctor.rs`) |
 | `hidane migrate --format json` | `"schema": "hidane.migrate/1"` | [migrating.md](migrating.md#json-1) | `crates/hidane/tests/migrate.rs` |
 | `hidane migrate --format patch` | A unified diff that `git apply` reads | [migrating.md](migrating.md) | The golden patches in `crates/hidane/tests/fixtures/projects/` (`tests/migrate.rs`) |
+| `hidane report --format json` | `"schema": "hidane.report/1"`; its `project.doctor` is a `hidane.doctor/1` report | [bug-reports.md](bug-reports.md#json) | `crates/hidane/tests/report.rs` |
 | `hidane benchmark` | `"schema_version": 1`; the canonical parameters are versioned apart, by `benchmark.version` | [bench/schema/result.schema.json](../bench/schema/result.schema.json) | `crates/hidane/tests/bench.rs` validates the output against the schema |
 
 Within one schema version:
@@ -100,7 +102,8 @@ Within one schema version:
 
 Any other change is a new schema version (`hidane.doctor/2`), made in a minor release before 1.0
 and a major release after, and named in the release notes. The text formats (`--format text`,
-the Markdown of `hidane benchmark render`) are for people and can change in any release.
+`hidane report`'s Markdown, the Markdown of `hidane benchmark render`) are for people and can
+change in any release.
 
 ## Not covered
 

@@ -23,6 +23,9 @@ What this means for contributions right now:
   label, or start a thread in GitHub Discussions.
 - Observed differences between hidane and the official emulator should be
   filed with the **Parity gap** issue template.
+- Bug reports are easiest to reproduce with the output of `hidane report`, which
+  redacts secrets and identifiers and sends nothing anywhere
+  ([docs/bug-reports.md](docs/bug-reports.md)).
 
 ## Development environment
 
