@@ -350,7 +350,8 @@ def markdown(data):
                f"{tests['replaying_files']} of them replaying recordings, run on {tests['runs']} "
                "| [`crates/`](../crates/) |")
     if fuzz["status"] == "run":
-        out.append(f"| Differential fuzzing | {len(fuzz['runs'])} runs | "
+        runs = len(fuzz["runs"])
+        out.append(f"| Differential fuzzing | {runs} run{'' if runs == 1 else 's'} | "
                    f"[`{Path(FUZZING).name}`](../{FUZZING}) |")
     else:
         out.append("| Differential fuzzing | not run yet | — |")
