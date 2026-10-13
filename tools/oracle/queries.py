@@ -396,6 +396,11 @@ case("a unary filter with an empty path", q("p", where_=uf("", "IS_NULL")))
 case("a filter with an empty path", q("p", where_=ff("", "EQUAL", i(1))))
 case("an order with an empty path", q("p", order=[{"field": {}}]))
 case("a projection with an empty path", q("p", select={"fields": [{}]}))
+# A vector is one value: no field path goes into it, in a filter, an order or a projection.
+case("a filter on a path into a vector", q("t", where_=ff("v.value", "EQUAL", arr(d(1), d(2)))))
+case("an order by a path into a vector", q("t", order=[asc("v.value")]))
+case("a projection of a path into a vector", q("t", where_=ff("v", "EQUAL", vec(1, 2)), select={"fields": [f("v.value"), f("v")]}))
+case("a projection of a path into a vector alone", q("t", where_=ff("v", "EQUAL", vec(1, 2)), select={"fields": [f("v.value")]}))
 
 # --- equality on __name__ next to inequalities (#74) -----------------------------------------
 # Refused unless __name__ has an inequality too; checked after the other filter checks, and

@@ -3223,6 +3223,359 @@
     "contentType": "application/json",
     "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/a1) not found.\",\"status\":\"NOT_FOUND\"}}"
    }
+  },
+  {
+   "name": "a vector",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "v": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1.0
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec\",\n  \"fields\": {\n    \"v\": {\n      \"mapValue\": {\n        \"fields\": {\n          \"__type__\": {\n            \"stringValue\": \"__vector__\"\n          },\n          \"value\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"doubleValue\": 1.0\n              }]\n            }\n          }\n        }\n      }\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an update mask path into a vector, nothing given",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec?updateMask.fieldPaths=v.value",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec\",\n  \"fields\": {\n    \"v\": {\n      \"mapValue\": {\n        \"fields\": {\n          \"__type__\": {\n            \"stringValue\": \"__vector__\"\n          },\n          \"value\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"doubleValue\": 1.0\n              }]\n            }\n          }\n        }\n      }\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an update mask path deeper into a vector, nothing given",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec?updateMask.fieldPaths=v.value.x",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec\",\n  \"fields\": {\n    \"v\": {\n      \"mapValue\": {\n        \"fields\": {\n          \"__type__\": {\n            \"stringValue\": \"__vector__\"\n          },\n          \"value\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"doubleValue\": 1.0\n              }]\n            }\n          }\n        }\n      }\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a read mask path into a vector",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec?mask.fieldPaths=v.value",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an update mask path into a vector, a map given",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec?updateMask.fieldPaths=v.value",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "v": {
+      "mapValue": {
+       "fields": {
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 2.0
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec\",\n  \"fields\": {\n    \"v\": {\n      \"mapValue\": {\n        \"fields\": {\n          \"value\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"doubleValue\": 2.0\n              }]\n            }\n          }\n        }\n      }\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an update mask path into a map, a vector given",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec?updateMask.fieldPaths=v.value",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "v": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1.0
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec\",\n  \"fields\": {\n    \"v\": {\n      \"mapValue\": {\n      }\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an update mask path into a vector given for a new document",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec2?updateMask.fieldPaths=_.value&updateMask.fieldPaths=n",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "n": {
+      "integerValue": "1"
+     },
+     "_": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1.0
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec2\",\n  \"fields\": {\n    \"n\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an update mask path into a vector in a commit",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/vec3",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        },
+        "v": {
+         "mapValue": {
+          "fields": {
+           "__type__": {
+            "stringValue": "__vector__"
+           },
+           "value": {
+            "arrayValue": {
+             "values": [
+              {
+               "doubleValue": 1.0
+              }
+             ]
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "v.value",
+        "n"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an update mask path into a vector in a commit, the document",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec3",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec3\",\n  \"fields\": {\n    \"n\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a map",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec4",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "v": {
+      "mapValue": {
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec4\",\n  \"fields\": {\n    \"v\": {\n      \"mapValue\": {\n        \"fields\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          }\n        }\n      }\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an update mask path into a map left as it is, a vector given",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec4?updateMask.fieldPaths=v.value",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "v": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1.0
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec4\",\n  \"fields\": {\n    \"v\": {\n      \"mapValue\": {\n        \"fields\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          }\n        }\n      }\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a read mask path into a vector written",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec5?mask.fieldPaths=v.value",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "v": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1.0
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec5\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
   }
  ]
 }

@@ -255,6 +255,23 @@ case("an array removal holding a value without a type", "POST", B + ":commit", c
 case("an invalid transform path before an operand without a type", "POST", B + ":commit", commit(upd("fz/a1", {}, updateTransforms=[{"fieldPath": "a..b", "increment": U}])))
 case("an operand without a type before nested transforms", "POST", B + ":commit", commit(upd("fz/a1", {}, updateTransforms=[{"fieldPath": "a", "increment": i(1)}, {"fieldPath": "a.b", "increment": U}])))
 case("values without a type write nothing", "GET", B + "/fz/a1")
+# A vector is one value, not a map: no field path goes into it. An update mask path into one
+# finds nothing in the request's vector (the stored field is deleted there, if it is a map) and
+# leaves a stored vector as it is, unless the request puts a map there, which replaces it.
+VEC = {"mapValue": {"fields": {"__type__": s("__vector__"), "value": {"arrayValue": {"values": [d(1.0)]}}}}}
+case("a vector", "PATCH", B + "/fz/vec", {"fields": {"v": VEC}})
+case("an update mask path into a vector, nothing given", "PATCH", B + "/fz/vec?updateMask.fieldPaths=v.value", {})
+case("an update mask path deeper into a vector, nothing given", "PATCH", B + "/fz/vec?updateMask.fieldPaths=v.value.x", {})
+case("a read mask path into a vector", "GET", B + "/fz/vec?mask.fieldPaths=v.value")
+case("an update mask path into a vector, a map given", "PATCH", B + "/fz/vec?updateMask.fieldPaths=v.value", {"fields": {"v": {"mapValue": {"fields": {"value": {"arrayValue": {"values": [d(2.0)]}}}}}}})
+case("an update mask path into a map, a vector given", "PATCH", B + "/fz/vec?updateMask.fieldPaths=v.value", {"fields": {"v": VEC}})
+case("an update mask path into a vector given for a new document", "PATCH", B + "/fz/vec2?updateMask.fieldPaths=_.value&updateMask.fieldPaths=n", {"fields": {"n": i(1), "_": VEC}})
+case("an update mask path into a vector in a commit", "POST", B + ":commit", {"writes": [
+    {"update": {"name": NAME + "/fz/vec3", "fields": {"n": i(1), "v": VEC}}, "updateMask": {"fieldPaths": ["v.value", "n"]}}]})
+case("an update mask path into a vector in a commit, the document", "GET", B + "/fz/vec3")
+case("a map", "PATCH", B + "/fz/vec4", {"fields": {"v": {"mapValue": {"fields": {"a": i(1)}}}}})
+case("an update mask path into a map left as it is, a vector given", "PATCH", B + "/fz/vec4?updateMask.fieldPaths=v.value", {"fields": {"v": VEC}})
+case("a read mask path into a vector written", "PATCH", B + "/fz/vec5?mask.fieldPaths=v.value", {"fields": {"v": VEC}})
 
 
 def norm(text):

@@ -14833,6 +14833,215 @@
    }
   },
   {
+   "name": "a filter on a path into a vector",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v.value"
+      },
+      "op": "EQUAL",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "doubleValue": 1
+         },
+         {
+          "doubleValue": 2
+         }
+        ]
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "an order by a path into a vector",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v.value"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection of a path into a vector",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "mapValue": {
+        "fields": {
+         "__type__": {
+          "stringValue": "__vector__"
+         },
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "doubleValue": 1
+            },
+            {
+             "doubleValue": 2
+            }
+           ]
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "v.value"
+      },
+      {
+       "fieldPath": "v"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "document": "t/vec",
+      "done": true
+     }
+    ],
+    "fields": {
+     "t/vec": {
+      "v": {
+       "mapValue": {
+        "fields": {
+         "__type__": {
+          "stringValue": "__vector__"
+         },
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "doubleValue": 1.0
+            },
+            {
+             "doubleValue": 2.0
+            }
+           ]
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "a projection of a path into a vector alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "mapValue": {
+        "fields": {
+         "__type__": {
+          "stringValue": "__vector__"
+         },
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "doubleValue": 1
+            },
+            {
+             "doubleValue": 2
+            }
+           ]
+          }
+         }
+        }
+       }
+      }
+     }
+    },
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "v.value"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "document": "t/vec",
+      "done": true
+     }
+    ],
+    "fields": {
+     "t/vec": {}
+    }
+   }
+  },
+  {
    "name": "a != 1 and __name__ == p3",
    "parent": "",
    "query": {
