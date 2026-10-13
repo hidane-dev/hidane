@@ -119,6 +119,9 @@ recordings ([parity.md](parity.md)).
 **Goal**: Firestore-triggered Cloud Functions fire under `firebase emulators:start` with the
 Functions emulator, as they do with the official emulator.
 
+Released in v0.4.0 (2026-10-13), with the commit checks in the official emulator's order
+(#202, #203) and the Go, Python and Java server SDKs verified against both emulators (#187).
+
 The Functions emulator registers its triggers (accepted since v0.2.3, #185), and every commit
 sends an event to each trigger that watches a document it changed (#70), recorded from the
 official emulator by `tools/oracle/function_events.py` and replayed by

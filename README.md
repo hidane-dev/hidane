@@ -11,13 +11,14 @@ evaluates the same Security Rules, reads and writes the same import / export dir
 under `firebase-tools`. No JDK to install. Starts in milliseconds. Tested for parity against the
 official emulator as the oracle.
 
-> **v0.3.0 completes Web support.** hidane serves the Firestore API over gRPC, REST and
-> WebChannel: documents, queries, aggregations, vector search, transactions, listeners, exports
-> and imports, and the emulator's own endpoints, each checked against the official emulator;
-> `firebase-tools` launches it in place of the official one. Since v0.2.0 it evaluates
-> `firestore.rules` as the official emulator does, with its denial messages, `:ruleCoverage` and
-> `debug()` output, and feeds the Emulator UI's request monitor. In v0.3.0, firebase-js-sdk's own
-> browser test suite passes on hidane as on the official emulator, and Flutter Web is verified.
+> **v0.4.0 delivers Firestore events to Cloud Functions.** hidane serves the Firestore API over
+> gRPC, REST and WebChannel: documents, queries, aggregations, vector search, transactions,
+> listeners, exports and imports, and the emulator's own endpoints, each checked against the
+> official emulator; `firebase-tools` launches it in place of the official one. It evaluates
+> `firestore.rules` as the official emulator does (since v0.2.0), firebase-js-sdk's own browser
+> test suite passes on it (v0.3.0), and in v0.4.0 Firestore-triggered functions, v1 and v2, fire
+> under the Functions emulator with the same data as with the official one. The Go, Python and Java
+> server SDKs are verified too.
 > The plan is in
 > [`docs/ROADMAP.md`](docs/ROADMAP.md), the work in
 > [issues](https://github.com/hidane-dev/hidane/issues).
@@ -55,7 +56,7 @@ Which clients can use hidane depends on the transport their SDK speaks to an emu
 ([`docs/compatibility.md`](docs/compatibility.md)). "Verified" means the client's results were
 compared with the official emulator's (`results/`):
 
-| Client | Transport | In v0.3.0 |
+| Client | Transport | In v0.4.0 |
 |---|---|---|
 | firebase-admin (Node) / `@google-cloud/firestore` | gRPC | verified: documents, queries, aggregations, vector search, transactions, listeners |
 | firebase-js-sdk in Node | gRPC | verified: writes, transactions, listeners, offline and resume |
