@@ -501,9 +501,66 @@ pub(crate) fn read_json(desc: MessageDescriptor, json: Json) -> Option<DynamicMe
             _ => {}
         }
     }
+    let mut json = json;
+    primitive_strings(&mut json, &desc);
     let mut message = DynamicMessage::deserialize(desc, json).ok()?;
     positive_zeros(&mut message);
     Some(message)
+}
+
+/// protobuf-java's `JsonFormat` reads a string field from any JSON primitive, so a number or a
+/// boolean given for one is its text: `{"stringValue": 1}` is `"1"`, a document name `1` is
+/// the name `"1"` (`tools/oracle/rest.py`, #262). A number is written back from its value, so
+/// a literal in another form than the shortest (`1e5`, `1.50`, `-0`) is not kept as written,
+/// which the official emulator does.
+fn primitive_strings(json: &mut Json, desc: &MessageDescriptor) {
+    fn text(value: &mut Json) {
+        match value {
+            Json::Number(n) => *value = Json::String(n.to_string()),
+            Json::Bool(b) => *value = Json::String(b.to_string()),
+            _ => {}
+        }
+    }
+    if desc.full_name().starts_with("google.protobuf.") {
+        return;
+    }
+    let Json::Object(object) = json else {
+        return;
+    };
+    for (key, value) in object.iter_mut() {
+        let Some(field) = desc
+            .get_field_by_json_name(key)
+            .or_else(|| desc.get_field_by_name(key))
+        else {
+            continue;
+        };
+        match field.kind() {
+            Kind::String if field.is_list() => {
+                if let Json::Array(items) = value {
+                    items.iter_mut().for_each(text);
+                }
+            }
+            Kind::String => text(value),
+            Kind::Message(message) if field.is_map() => {
+                if let (Kind::Message(entry), Json::Object(entries)) =
+                    (message.map_entry_value_field().kind(), value)
+                {
+                    for entry_value in entries.values_mut() {
+                        primitive_strings(entry_value, &entry);
+                    }
+                }
+            }
+            Kind::Message(message) if field.is_list() => {
+                if let Json::Array(items) = value {
+                    for item in items {
+                        primitive_strings(item, &message);
+                    }
+                }
+            }
+            Kind::Message(message) => primitive_strings(value, &message),
+            _ => {}
+        }
+    }
 }
 
 /// Sets `key` (`mask.fieldPaths`, `currentDocument.exists`, …) from a query parameter, as JSON

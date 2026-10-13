@@ -272,6 +272,17 @@ case("an update mask path into a vector in a commit, the document", "GET", B + "
 case("a map", "PATCH", B + "/fz/vec4", {"fields": {"v": {"mapValue": {"fields": {"a": i(1)}}}}})
 case("an update mask path into a map left as it is, a vector given", "PATCH", B + "/fz/vec4?updateMask.fieldPaths=v.value", {"fields": {"v": VEC}})
 case("a read mask path into a vector written", "PATCH", B + "/fz/vec5?mask.fieldPaths=v.value", {"fields": {"v": VEC}})
+# protobuf-java's JsonFormat reads a string field from any JSON primitive: a number or a boolean
+# is its text (as written; these are written the way hidane writes them back).
+case("numbers and booleans as strings", "PATCH", B + "/fz/num", raw='{"fields": {"a": {"stringValue": 1}, "b": {"stringValue": -3}, "c": {"stringValue": 1.5}, "d": {"stringValue": 0.1}, "e": {"stringValue": 12345678901234567890}, "f": {"stringValue": true}, "g": {"stringValue": false}}}')
+case("a number as a document name", "POST", B + ":batchWrite", raw='{"writes": [{"update": {"name": 1}}]}')
+case("a number as a document to get", "POST", B + ":batchGet", raw='{"documents": [1]}')
+case("a number as a collection ID", "POST", B + ":runQuery", raw='{"structuredQuery": {"from": [{"collectionId": 1}]}}')
+case("a number as a field path", "POST", B + ":commit", {"writes": [{"update": {"name": NAME + "/fz/num", "fields": {}}, "updateMask": {"fieldPaths": [1]}}]})
+case("a number as a string in a filter", "POST", B + ":runQuery", raw='{"structuredQuery": {"where": {"fieldFilter": {"field": {"fieldPath": "v"}, "op": "NOT_IN", "value": {"mapValue": {"fields": {"k": {"stringValue": 1}}}}}}}}')
+case("an object as a string", "PATCH", B + "/fz/num2", raw='{"fields": {"a": {"stringValue": {}}}}')
+case("a number as bytes", "PATCH", B + "/fz/num2", raw='{"fields": {"a": {"bytesValue": 1}}}')
+case("a boolean as an integer", "PATCH", B + "/fz/num2", raw='{"fields": {"a": {"integerValue": true}}}')
 
 
 def norm(text):

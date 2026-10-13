@@ -3576,6 +3576,155 @@
     "contentType": "application/json",
     "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec5\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
    }
+  },
+  {
+   "name": "numbers and booleans as strings",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/num",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"a\": {\"stringValue\": 1}, \"b\": {\"stringValue\": -3}, \"c\": {\"stringValue\": 1.5}, \"d\": {\"stringValue\": 0.1}, \"e\": {\"stringValue\": 12345678901234567890}, \"f\": {\"stringValue\": true}, \"g\": {\"stringValue\": false}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/num\",\n  \"fields\": {\n    \"a\": {\n      \"stringValue\": \"1\"\n    },\n    \"b\": {\n      \"stringValue\": \"-3\"\n    },\n    \"c\": {\n      \"stringValue\": \"1.5\"\n    },\n    \"d\": {\n      \"stringValue\": \"0.1\"\n    },\n    \"e\": {\n      \"stringValue\": \"12345678901234567890\"\n    },\n    \"f\": {\n      \"stringValue\": \"true\"\n    },\n    \"g\": {\n      \"stringValue\": \"false\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a number as a document name",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchWrite",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"writes\": [{\"update\": {\"name\": 1}}]}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"1\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a number as a document to get",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"documents\": [1]}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"1\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a number as a collection ID",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"structuredQuery\": {\"from\": [{\"collectionId\": 1}]}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "a number as a field path",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/num",
+       "fields": {}
+      },
+      "updateMask": {
+       "fieldPaths": [
+        1
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"1\\\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\\\\\]|(?:\\\\\\\\.))+`)\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a number as a string in a filter",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"structuredQuery\": {\"where\": {\"fieldFilter\": {\"field\": {\"fieldPath\": \"v\"}, \"op\": \"NOT_IN\", \"value\": {\"mapValue\": {\"fields\": {\"k\": {\"stringValue\": 1}}}}}}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"'NOT_IN' requires an ArrayValue.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an object as a string",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/num2",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"a\": {\"stringValue\": {}}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a number as bytes",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/num2",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"a\": {\"bytesValue\": 1}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a boolean as an integer",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/num2",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"a\": {\"integerValue\": true}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
   }
  ]
 }
