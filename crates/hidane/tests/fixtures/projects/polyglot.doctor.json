@@ -88,7 +88,7 @@
       "details": [
         "functions/src/index.ts:4: onDocumentCreated"
       ],
-      "source": "docs/compatibility.md; results/functions-triggers-*.json"
+      "source": "docs/sdk-certification.md"
     },
     {
       "code": "dependency.sdk",
@@ -108,7 +108,7 @@
       "status": "likely-compatible",
       "severity": "info",
       "title": "FlutterFire cloud_firestore ^6.10.0 (app/pubspec.yaml) on the web: likely compatible — the same major version as the verified 6.10.0; the version it resolves to is not known and is not verified itself",
-      "source": "docs/compatibility.md; results/flutter-web-*.json",
+      "source": "docs/sdk-certification.md",
       "file": "app/pubspec.yaml",
       "line": 10
     },
@@ -129,8 +129,8 @@
       "group": "dependencies",
       "status": "compatible",
       "severity": "info",
-      "title": "google-cloud-firestore (Python) 2.34.1 (backend/requirements.txt): verified with hidane (documents, queries, aggregations, transactions, listeners)",
-      "source": "docs/compatibility.md; results/sdk-python-*.json",
+      "title": "google-cloud-firestore (Python) 2.34.1 (backend/requirements.txt): verified with hidane (documents and writes, queries, aggregation queries, vector search, transactions, listeners)",
+      "source": "docs/sdk-certification.md",
       "file": "backend/requirements.txt",
       "line": 1
     },
@@ -163,8 +163,8 @@
       "group": "dependencies",
       "status": "compatible",
       "severity": "info",
-      "title": "google-cloud-firestore (Java) 3.49.0 (service/pom.xml): verified with hidane (documents, queries, aggregations, transactions, listeners)",
-      "source": "docs/compatibility.md; results/sdk-java-*.json",
+      "title": "google-cloud-firestore (Java) 3.49.0 (service/pom.xml): verified with hidane (documents and writes, queries, aggregation queries, vector search, transactions, listeners)",
+      "source": "docs/sdk-certification.md",
       "file": "service/pom.xml",
       "line": 11
     },
@@ -173,8 +173,8 @@
       "group": "dependencies",
       "status": "compatible",
       "severity": "info",
-      "title": "cloud.google.com/go/firestore 1.26.0 (worker/go.mod): verified with hidane (documents, queries, aggregations, transactions, listeners)",
-      "source": "docs/compatibility.md; results/sdk-go-*.json",
+      "title": "cloud.google.com/go/firestore 1.26.0 (worker/go.mod): verified with hidane (documents and writes, queries, aggregation queries, vector search, transactions, listeners)",
+      "source": "docs/sdk-certification.md",
       "file": "worker/go.mod",
       "line": 6
     },
@@ -183,8 +183,8 @@
       "group": "dependencies",
       "status": "compatible",
       "severity": "info",
-      "title": "Firebase Admin SDK for Go 4.18.0 (worker/go.mod), whose Firestore client is cloud.google.com/go/firestore 1.26.0: verified with hidane (documents, queries, aggregations, transactions, listeners)",
-      "source": "docs/compatibility.md; results/sdk-go-*.json",
+      "title": "Firebase Admin SDK for Go 4.18.0 (worker/go.mod), whose Firestore client is cloud.google.com/go/firestore 1.26.0: verified with hidane (documents and writes, queries, aggregation queries, vector search, transactions, listeners)",
+      "source": "docs/sdk-certification.md",
       "file": "worker/go.mod",
       "line": 7
     },

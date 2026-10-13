@@ -63,7 +63,9 @@ stay flat per batch ([`docs/why.md`](docs/why.md#3-writes-slow-down-while-a-list
 
 Which clients can use hidane depends on the transport their SDK speaks to an emulator
 ([`docs/compatibility.md`](docs/compatibility.md)). "Verified" means the client's results were
-compared with the official emulator's (`results/`):
+compared with the official emulator's (`results/`); the version of each client that was run, what
+was compared and the evidence are in the
+[SDK certification matrix](docs/sdk-certification.md), generated from those results:
 
 | Client | Transport | In v0.4.0 |
 |---|---|---|

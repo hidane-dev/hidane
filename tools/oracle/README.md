@@ -74,7 +74,10 @@ while the table is stale.
 [Hidane Oracle Corpus](../../docs/oracle-corpus.md) (`docs/oracle-corpus.json`): the script that
 made each, the client it used, the official emulator release it was made against and how that is
 known, when it was recorded, its SHA-256, and how the tests compare it. Run
-`python3 tools/oracle/corpus.py` after `table.py`; CI fails while the manifest is stale. Where
+`python3 tools/oracle/corpus.py` after `table.py`; CI fails while the manifest is stale. A new
+pair of SDK transcripts then needs an entry in `EVIDENCE` of `tools/parity/sdk_certification.py`,
+which writes the [SDK certification matrix](../../docs/sdk-certification.md) from the transcripts
+(run it after `corpus.py`; CI fails while it is stale). Where
 these recordings may come from and how they are made is in
 [`docs/clean-room/`](../../docs/clean-room/README.md).
 

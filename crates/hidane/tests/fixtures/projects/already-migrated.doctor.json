@@ -62,8 +62,8 @@
       "group": "dependencies",
       "status": "compatible",
       "severity": "info",
-      "title": "firebase-tools 15.33.0 (package.json): verified with hidane (emulators:start and emulators:exec through hidane exec, without Java)",
-      "source": "docs/adr/0006-launch-under-firebase-tools.md; results/export-import-*.json",
+      "title": "firebase-tools 15.33.0 (package.json): verified with hidane (export and import, launch under firebase emulators:exec)",
+      "source": "docs/sdk-certification.md",
       "file": "package.json",
       "line": 10
     },

@@ -71,8 +71,8 @@
       "group": "dependencies",
       "status": "compatible",
       "severity": "info",
-      "title": "Firebase JS SDK (firebase) 13.0.0 (package.json): verified with hidane (in Node over gRPC, Lite over REST, and in Chromium over WebChannel)",
-      "source": "docs/compatibility.md; results/sdk-web-writes-*.json, results/sdk-rest-*.json, results/browser-webchannel-*.json",
+      "title": "Firebase JS SDK (firebase) 13.0.0 (package.json): verified with hidane (Lite over REST, in Chromium over WebChannel, and partially in Node over gRPC)",
+      "source": "docs/sdk-certification.md",
       "file": "package.json",
       "line": 8
     },
@@ -81,8 +81,8 @@
       "group": "dependencies",
       "status": "compatible",
       "severity": "info",
-      "title": "Firebase Admin SDK (firebase-admin) 13.6.0 (package.json), whose Firestore client is @google-cloud/firestore 9.3.1: verified with hidane (documents, queries, aggregations, transactions, listeners)",
-      "source": "docs/compatibility.md; results/sdk-documents-*.json, results/sdk-queries-*.json, results/sdk-listen-*.json",
+      "title": "Firebase Admin SDK (firebase-admin) 13.6.0 (package.json), whose Firestore client is @google-cloud/firestore 9.3.1: verified with hidane (over gRPC, with the default settings: documents and writes, queries, aggregation queries, vector search, transactions, listeners)",
+      "source": "docs/sdk-certification.md",
       "file": "package.json",
       "line": 9
     },
@@ -91,8 +91,8 @@
       "group": "dependencies",
       "status": "compatible",
       "severity": "info",
-      "title": "@firebase/rules-unit-testing 6.0.0 (package.json): verified with hidane (assertSucceeds / assertFails under Security Rules, clearFirestore())",
-      "source": "docs/compatibility.md; results/sdk-rules-unit-testing-*.json, results/browser-rules-*.json",
+      "title": "@firebase/rules-unit-testing 6.0.0 (package.json): verified with hidane (Security Rules as signed-in, signed-out and rules-disabled users, clearing data)",
+      "source": "docs/sdk-certification.md",
       "file": "package.json",
       "line": 12
     },
@@ -101,8 +101,8 @@
       "group": "dependencies",
       "status": "compatible",
       "severity": "info",
-      "title": "firebase-tools 15.33.0 (package.json): verified with hidane (emulators:start and emulators:exec through hidane exec, without Java)",
-      "source": "docs/adr/0006-launch-under-firebase-tools.md; results/export-import-*.json",
+      "title": "firebase-tools 15.33.0 (package.json): verified with hidane (export and import, launch under firebase emulators:exec)",
+      "source": "docs/sdk-certification.md",
       "file": "package.json",
       "line": 13
     },

@@ -67,7 +67,7 @@
       "status": "likely-compatible",
       "severity": "info",
       "title": "@firebase/rules-unit-testing ^6.0.0 (package.json): likely compatible — the same major version as the verified 6.0.0; the version it resolves to is not known and is not verified itself",
-      "source": "docs/compatibility.md; results/sdk-rules-unit-testing-*.json, results/browser-rules-*.json",
+      "source": "docs/sdk-certification.md",
       "file": "package.json",
       "line": 8
     },
@@ -77,7 +77,7 @@
       "status": "likely-compatible",
       "severity": "info",
       "title": "Firebase JS SDK (firebase) ^13.0.0 (package.json): likely compatible — the same major version as the verified 13.0.0; the version it resolves to is not known and is not verified itself",
-      "source": "docs/compatibility.md; results/sdk-web-writes-*.json, results/sdk-rest-*.json, results/browser-webchannel-*.json",
+      "source": "docs/sdk-certification.md",
       "file": "package.json",
       "line": 9
     },
@@ -87,7 +87,7 @@
       "status": "likely-compatible",
       "severity": "info",
       "title": "firebase-tools ^15.0.0 (package.json): likely compatible — the same major version as the verified 15.33.0; the version it resolves to is not known and is not verified itself",
-      "source": "docs/adr/0006-launch-under-firebase-tools.md; results/export-import-*.json",
+      "source": "docs/sdk-certification.md",
       "file": "package.json",
       "line": 10
     },

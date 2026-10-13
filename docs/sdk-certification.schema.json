@@ -1,0 +1,150 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "hidane SDK certification matrix",
+  "description": "docs/sdk-certification.json, written by tools/parity/sdk_certification.py from the recorded results in results/: every client and tool hidane may be used with, the version that was run, its transport, what was exercised, a status and the evidence. docs/sdk-certification.md explains each field.",
+  "type": "object",
+  "required": ["name", "description", "schema_version", "generated_by", "statuses", "features", "totals", "clients", "verified_packages"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {"type": "string"},
+    "name": {"const": "hidane SDK certification matrix"},
+    "description": {"type": "string"},
+    "schema_version": {"type": "integer", "const": 1, "description": "The version of this format; it changes when a field is removed or changes meaning."},
+    "generated_by": {"const": "tools/parity/sdk_certification.py"},
+    "statuses": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["key", "label", "meaning"],
+        "additionalProperties": false,
+        "properties": {
+          "key": {"$ref": "#/$defs/status"},
+          "label": {"type": "string"},
+          "meaning": {"type": "string"}
+        }
+      }
+    },
+    "features": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["key", "label"],
+        "additionalProperties": false,
+        "properties": {
+          "key": {"$ref": "#/$defs/feature"},
+          "label": {"type": "string"}
+        }
+      }
+    },
+    "totals": {
+      "type": "object",
+      "required": ["clients", "verified", "partially-verified", "not-verified"],
+      "additionalProperties": false,
+      "properties": {
+        "clients": {"$ref": "#/$defs/count"},
+        "verified": {"$ref": "#/$defs/count"},
+        "partially-verified": {"$ref": "#/$defs/count"},
+        "not-verified": {"$ref": "#/$defs/count"}
+      }
+    },
+    "clients": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/client"}},
+    "verified_packages": {"type": "array", "items": {"$ref": "#/$defs/verified_package"}}
+  },
+  "$defs": {
+    "count": {"type": "integer", "minimum": 0},
+    "date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "release": {"type": "string", "pattern": "^v[0-9]+(\\.[0-9]+)+$", "description": "A release of the official emulator, such as v1.22.0."},
+    "path": {"type": "string", "pattern": "^[A-Za-z0-9_.\\-]+(/[A-Za-z0-9_.\\-]+)*/?$", "description": "A path in the repository; a directory ends with /."},
+    "status": {"enum": ["verified", "partially-verified", "not-verified"]},
+    "result": {"enum": ["identical", "documented", "unexplained"], "description": "How hidane's transcript compares with the official one (tools/parity/table.py): identical as JSON, a difference the documentation explains, or an unexplained difference."},
+    "feature": {"enum": ["documents", "queries", "aggregations", "vector-search", "transactions", "listeners", "reconnect", "security-rules", "clear", "triggers", "export-import", "launch"]},
+    "features": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/feature"}},
+    "transport": {"enum": ["gRPC", "REST", "WebChannel", "CLI"]},
+    "recorded": {
+      "type": "object",
+      "required": ["first_recorded", "last_changed"],
+      "additionalProperties": false,
+      "properties": {
+        "first_recorded": {"$ref": "#/$defs/date"},
+        "last_changed": {"$ref": "#/$defs/date"}
+      }
+    },
+    "package": {
+      "type": "object",
+      "required": ["name", "version", "source", "where"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"type": "string"},
+        "version": {"type": ["string", "null"]},
+        "source": {"enum": ["pinned", "recorded", "stated", "unknown"], "description": "How the version is known: pinned by the script that made the transcript, recorded in the transcript, stated by the transcript's row in results/README.md, or not known."},
+        "where": {"oneOf": [{"$ref": "#/$defs/path"}, {"type": "null"}]}
+      }
+    },
+    "compared": {
+      "type": "object",
+      "required": ["path", "result", "sha256", "recorded"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {"$ref": "#/$defs/path"},
+        "result": {"$ref": "#/$defs/result"},
+        "explained_in": {"$ref": "#/$defs/path"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "recorded": {"$ref": "#/$defs/recorded"}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["transcript", "official", "official_emulator", "official_recorded", "compared", "result", "packages", "features"],
+      "additionalProperties": false,
+      "properties": {
+        "transcript": {"type": "string", "pattern": "^[a-z0-9-]+$", "description": "The pair's name in tools/parity/table.py (TRANSCRIPTS)."},
+        "official": {"$ref": "#/$defs/path"},
+        "official_emulator": {"$ref": "#/$defs/release"},
+        "official_recorded": {"$ref": "#/$defs/recorded"},
+        "compared": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/compared"}},
+        "result": {"$ref": "#/$defs/result"},
+        "packages": {"type": "array", "items": {"$ref": "#/$defs/package"}},
+        "features": {"$ref": "#/$defs/features"}
+      }
+    },
+    "client": {
+      "type": "object",
+      "required": ["id", "client", "ecosystem", "package", "platform", "transport", "status", "version", "official_emulator", "core", "exercised", "not_exercised", "gaps", "last_recorded", "tracking", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9-]+$"},
+        "client": {"type": "string"},
+        "ecosystem": {"enum": ["npm", "pypi", "go", "maven", "pub", "swiftpm", "other"]},
+        "package": {"type": "string"},
+        "platform": {"type": "string"},
+        "transport": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/transport"}},
+        "status": {"$ref": "#/$defs/status"},
+        "version": {"type": ["string", "null"], "description": "The version of the package the recorded results ran, when one of them states it."},
+        "official_emulator": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/release"}},
+        "core": {"$ref": "#/$defs/features"},
+        "exercised": {"$ref": "#/$defs/features"},
+        "not_exercised": {"$ref": "#/$defs/features"},
+        "gaps": {"type": "array", "items": {"type": "string"}},
+        "last_recorded": {"oneOf": [{"$ref": "#/$defs/date"}, {"type": "null"}]},
+        "tracking": {"type": ["string", "null"]},
+        "evidence": {"type": "array", "items": {"$ref": "#/$defs/evidence"}}
+      }
+    },
+    "verified_package": {
+      "type": "object",
+      "required": ["ecosystem", "name", "version", "what", "source", "clients"],
+      "additionalProperties": false,
+      "properties": {
+        "ecosystem": {"type": "string"},
+        "name": {"type": "string"},
+        "version": {"type": "string"},
+        "what": {"type": "string"},
+        "source": {"$ref": "#/$defs/path"},
+        "clients": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      }
+    }
+  }
+}

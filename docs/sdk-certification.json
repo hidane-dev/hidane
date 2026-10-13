@@ -1,0 +1,2068 @@
+{
+ "$schema": "./sdk-certification.schema.json",
+ "name": "hidane SDK certification matrix",
+ "description": "Every client and tool hidane may be used with: the version that was run, the transport, what was exercised, a status and the recorded results behind it. Generated from results/ only. See docs/sdk-certification.md.",
+ "schema_version": 1,
+ "generated_by": "tools/parity/sdk_certification.py",
+ "statuses": [
+  {
+   "key": "verified",
+   "label": "Verified",
+   "meaning": "Every feature the client is expected to offer was exercised by a transcript pair whose two sides are identical or differ only as the documentation explains, and the version it ran with is known."
+  },
+  {
+   "key": "partially-verified",
+   "label": "Partially verified",
+   "meaning": "Some recorded results cover the client, but a feature it is expected to offer was not exercised, or the version it ran with is not known, or a difference is unexplained."
+  },
+  {
+   "key": "not-verified",
+   "label": "Not verified",
+   "meaning": "No recorded result covers the client. hidane may serve its transport; nobody has compared its results yet."
+  }
+ ],
+ "features": [
+  {
+   "key": "documents",
+   "label": "documents and writes"
+  },
+  {
+   "key": "queries",
+   "label": "queries"
+  },
+  {
+   "key": "aggregations",
+   "label": "aggregation queries"
+  },
+  {
+   "key": "vector-search",
+   "label": "vector search"
+  },
+  {
+   "key": "transactions",
+   "label": "transactions"
+  },
+  {
+   "key": "listeners",
+   "label": "listeners"
+  },
+  {
+   "key": "reconnect",
+   "label": "going offline and resuming"
+  },
+  {
+   "key": "security-rules",
+   "label": "Security Rules as signed-in, signed-out and rules-disabled users"
+  },
+  {
+   "key": "clear",
+   "label": "clearing data"
+  },
+  {
+   "key": "triggers",
+   "label": "Firestore triggers, v1 and v2"
+  },
+  {
+   "key": "export-import",
+   "label": "export and import"
+  },
+  {
+   "key": "launch",
+   "label": "launch under firebase emulators:exec"
+  }
+ ],
+ "totals": {
+  "clients": 16,
+  "verified": 10,
+  "partially-verified": 1,
+  "not-verified": 5
+ },
+ "clients": [
+  {
+   "id": "firebase-js-node",
+   "client": "firebase-js-sdk imported in Node",
+   "ecosystem": "npm",
+   "package": "firebase",
+   "platform": "Node.js",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "partially-verified",
+   "version": "13.0.0",
+   "official_emulator": [
+    "v1.22.0"
+   ],
+   "core": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "exercised": [
+    "documents",
+    "queries",
+    "transactions",
+    "listeners",
+    "reconnect"
+   ],
+   "not_exercised": [
+    "aggregations"
+   ],
+   "gaps": [
+    "aggregation queries not compared"
+   ],
+   "last_recorded": "2026-10-13",
+   "tracking": null,
+   "evidence": [
+    {
+     "transcript": "sdk-find-nearest",
+     "official": "results/sdk-find-nearest-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-10",
+      "last_changed": "2026-10-10"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-find-nearest-hidane.json",
+       "result": "identical",
+       "sha256": "484fb05b01ed8e33f5ba9039f2a5b6ff4fe3f9814ca407e8b055db492ac6b520",
+       "recorded": {
+        "first_recorded": "2026-10-10",
+        "last_changed": "2026-10-10"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "@google-cloud/firestore",
+       "version": null,
+       "source": "unknown",
+       "where": null
+      },
+      {
+       "name": "firebase",
+       "version": null,
+       "source": "unknown",
+       "where": null
+      }
+     ],
+     "features": [
+      "documents"
+     ]
+    },
+    {
+     "transcript": "sdk-listen",
+     "official": "results/sdk-listen-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-10",
+      "last_changed": "2026-10-10"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-listen-hidane.json",
+       "result": "documented",
+       "explained_in": "results/README.md",
+       "sha256": "ff32cc472d581b734ac6229969ab8942cd587ee0e3d40084e437fe426406b354",
+       "recorded": {
+        "first_recorded": "2026-10-10",
+        "last_changed": "2026-10-10"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "@google-cloud/firestore",
+       "version": null,
+       "source": "unknown",
+       "where": null
+      },
+      {
+       "name": "firebase",
+       "version": null,
+       "source": "unknown",
+       "where": null
+      }
+     ],
+     "features": [
+      "documents",
+      "queries",
+      "listeners"
+     ]
+    },
+    {
+     "transcript": "sdk-listen-resume",
+     "official": "results/sdk-listen-resume-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-10",
+      "last_changed": "2026-10-11"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-listen-resume-hidane.json",
+       "result": "documented",
+       "explained_in": "results/README.md",
+       "sha256": "3710e5a6fff021868d90aed0a27185fc24bc64b17ab37d8f35debe9538e795fd",
+       "recorded": {
+        "first_recorded": "2026-10-10",
+        "last_changed": "2026-10-11"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "@google-cloud/firestore",
+       "version": null,
+       "source": "unknown",
+       "where": null
+      },
+      {
+       "name": "firebase",
+       "version": null,
+       "source": "unknown",
+       "where": null
+      }
+     ],
+     "features": [
+      "listeners",
+      "reconnect"
+     ]
+    },
+    {
+     "transcript": "sdk-rules-unit-testing",
+     "official": "results/sdk-rules-unit-testing-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-rules-unit-testing-hidane.json",
+       "result": "documented",
+       "explained_in": "results/README.md",
+       "sha256": "cc75f4e58ee8f8b7aa66f5036d58fc0bd989ddbe0c87e6b3cc7405a7783fbb00",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "@firebase/rules-unit-testing",
+       "version": "6.0.0",
+       "source": "recorded",
+       "where": "results/sdk-rules-unit-testing-official-v1.22.0.json"
+      },
+      {
+       "name": "firebase",
+       "version": "13.0.0",
+       "source": "recorded",
+       "where": "results/sdk-rules-unit-testing-official-v1.22.0.json"
+      }
+     ],
+     "features": [
+      "documents",
+      "queries",
+      "transactions",
+      "listeners"
+     ]
+    },
+    {
+     "transcript": "sdk-web-transactions",
+     "official": "results/sdk-web-transactions-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-10",
+      "last_changed": "2026-10-10"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-web-transactions-hidane.json",
+       "result": "identical",
+       "sha256": "9fd2087e026e7ae35e668086e7d32549d772505adce7d7f39ca70a84a92d8d68",
+       "recorded": {
+        "first_recorded": "2026-10-10",
+        "last_changed": "2026-10-10"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "firebase",
+       "version": "13.0.0",
+       "source": "stated",
+       "where": "results/README.md"
+      }
+     ],
+     "features": [
+      "transactions"
+     ]
+    },
+    {
+     "transcript": "sdk-web-writes",
+     "official": "results/sdk-web-writes-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-10",
+      "last_changed": "2026-10-10"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-web-writes-hidane.json",
+       "result": "identical",
+       "sha256": "8505450287579f98ea11c5ef0b9125fddfe9dbfb9c4dd030fdad60506980f781",
+       "recorded": {
+        "first_recorded": "2026-10-10",
+        "last_changed": "2026-10-10"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "firebase",
+       "version": "13.0.0",
+       "source": "stated",
+       "where": "results/README.md"
+      }
+     ],
+     "features": [
+      "documents"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "firebase-js-lite",
+   "client": "firebase-js-sdk Lite",
+   "ecosystem": "npm",
+   "package": "firebase",
+   "platform": "Node.js",
+   "transport": [
+    "REST"
+   ],
+   "status": "verified",
+   "version": "13.0.0",
+   "official_emulator": [
+    "v1.22.0"
+   ],
+   "core": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions"
+   ],
+   "exercised": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-10",
+   "tracking": null,
+   "evidence": [
+    {
+     "transcript": "sdk-rest",
+     "official": "results/sdk-rest-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-10",
+      "last_changed": "2026-10-10"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-rest-hidane.json",
+       "result": "identical",
+       "sha256": "c5ce131a102f126441c6238f08bd6dc3d4581059ae405d9253b7cb06d85cf04f",
+       "recorded": {
+        "first_recorded": "2026-10-10",
+        "last_changed": "2026-10-10"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "firebase",
+       "version": "13.0.0",
+       "source": "stated",
+       "where": "results/README.md"
+      }
+     ],
+     "features": [
+      "documents",
+      "queries",
+      "aggregations",
+      "transactions"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "firebase-js-browser",
+   "client": "firebase-js-sdk in the browser",
+   "ecosystem": "npm",
+   "package": "firebase",
+   "platform": "Chromium",
+   "transport": [
+    "WebChannel",
+    "REST"
+   ],
+   "status": "verified",
+   "version": "13.0.0",
+   "official_emulator": [
+    "v1.22.0"
+   ],
+   "core": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "exercised": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-13",
+   "tracking": null,
+   "evidence": [
+    {
+     "transcript": "browser-rules",
+     "official": "results/browser-rules-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/browser-rules-hidane.json",
+       "result": "documented",
+       "explained_in": "results/README.md",
+       "sha256": "fc598954706d35ae6ab72b0b89aeb2c4d8442893db08863747275420c00894b1",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "@firebase/rules-unit-testing",
+       "version": "6.0.0",
+       "source": "recorded",
+       "where": "results/browser-rules-official-v1.22.0.json"
+      },
+      {
+       "name": "firebase",
+       "version": "13.0.0",
+       "source": "recorded",
+       "where": "results/browser-rules-official-v1.22.0.json"
+      }
+     ],
+     "features": [
+      "documents",
+      "queries",
+      "transactions",
+      "listeners"
+     ]
+    },
+    {
+     "transcript": "browser-webchannel",
+     "official": "results/browser-webchannel-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-10",
+      "last_changed": "2026-10-10"
+     },
+     "compared": [
+      {
+       "path": "results/browser-webchannel-hidane.json",
+       "result": "identical",
+       "sha256": "22476f097c91598397174de6a5c3ce162e34b08161dc2e94327d57b71afdd31b",
+       "recorded": {
+        "first_recorded": "2026-10-10",
+        "last_changed": "2026-10-10"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "firebase",
+       "version": "13.0.0",
+       "source": "stated",
+       "where": "results/README.md"
+      }
+     ],
+     "features": [
+      "documents",
+      "queries",
+      "listeners"
+     ]
+    },
+    {
+     "transcript": "js-sdk-browser",
+     "official": "results/js-sdk-browser-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/js-sdk-browser-hidane.json",
+       "result": "identical",
+       "sha256": "80663f64567ae8e838ac5021ca7774bfe1ea10e5a0da04de4ed8fcce76d3b9d5",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "firebase-js-sdk",
+       "version": "8a7e7fda925c7355f98cb3c4dca1bfaed73ab787",
+       "source": "pinned",
+       "where": ".github/workflows/js-sdk-browser.yml"
+      },
+      {
+       "name": "firebase",
+       "version": null,
+       "source": "unknown",
+       "where": null
+      }
+     ],
+     "features": [
+      "documents",
+      "queries",
+      "aggregations",
+      "transactions",
+      "listeners"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "admin-node",
+   "client": "firebase-admin (Node) / @google-cloud/firestore",
+   "ecosystem": "npm",
+   "package": "@google-cloud/firestore",
+   "platform": "Node.js",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "verified",
+   "version": "9.3.1",
+   "official_emulator": [
+    "v1.22.0"
+   ],
+   "core": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "exercised": [
+    "documents",
+    "queries",
+    "aggregations",
+    "vector-search",
+    "transactions",
+    "listeners"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-10",
+   "tracking": null,
+   "evidence": [
+    {
+     "transcript": "sdk-aggregations",
+     "official": "results/sdk-aggregations-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-10",
+      "last_changed": "2026-10-10"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-aggregations-hidane.json",
+       "result": "identical",
+       "sha256": "56229456fc639cbcbeca853b8798770ae7c56ec033bf3ba56a611c6958b0d9fe",
+       "recorded": {
+        "first_recorded": "2026-10-10",
+        "last_changed": "2026-10-10"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "@google-cloud/firestore",
+       "version": "9.3.1",
+       "source": "stated",
+       "where": "results/README.md"
+      }
+     ],
+     "features": [
+      "aggregations"
+     ]
+    },
+    {
+     "transcript": "sdk-documents",
+     "official": "results/sdk-documents-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-10",
+      "last_changed": "2026-10-10"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-documents-hidane.json",
+       "result": "documented",
+       "explained_in": "docs/parity-exceptions.md",
+       "sha256": "cdc430de9ae6e0654a807250d5a018e3f68e49ac2bba18b2d1172eb6abdc54b7",
+       "recorded": {
+        "first_recorded": "2026-10-10",
+        "last_changed": "2026-10-10"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "@google-cloud/firestore",
+       "version": "9.3.1",
+       "source": "stated",
+       "where": "results/README.md"
+      }
+     ],
+     "features": [
+      "documents"
+     ]
+    },
+    {
+     "transcript": "sdk-find-nearest",
+     "official": "results/sdk-find-nearest-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-10",
+      "last_changed": "2026-10-10"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-find-nearest-hidane.json",
+       "result": "identical",
+       "sha256": "484fb05b01ed8e33f5ba9039f2a5b6ff4fe3f9814ca407e8b055db492ac6b520",
+       "recorded": {
+        "first_recorded": "2026-10-10",
+        "last_changed": "2026-10-10"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "@google-cloud/firestore",
+       "version": null,
+       "source": "unknown",
+       "where": null
+      },
+      {
+       "name": "firebase",
+       "version": null,
+       "source": "unknown",
+       "where": null
+      }
+     ],
+     "features": [
+      "vector-search"
+     ]
+    },
+    {
+     "transcript": "sdk-listen",
+     "official": "results/sdk-listen-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-10",
+      "last_changed": "2026-10-10"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-listen-hidane.json",
+       "result": "documented",
+       "explained_in": "results/README.md",
+       "sha256": "ff32cc472d581b734ac6229969ab8942cd587ee0e3d40084e437fe426406b354",
+       "recorded": {
+        "first_recorded": "2026-10-10",
+        "last_changed": "2026-10-10"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "@google-cloud/firestore",
+       "version": null,
+       "source": "unknown",
+       "where": null
+      },
+      {
+       "name": "firebase",
+       "version": null,
+       "source": "unknown",
+       "where": null
+      }
+     ],
+     "features": [
+      "listeners"
+     ]
+    },
+    {
+     "transcript": "sdk-queries",
+     "official": "results/sdk-queries-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-10",
+      "last_changed": "2026-10-10"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-queries-hidane.json",
+       "result": "identical",
+       "sha256": "76d8f36f53c050a97036881945b2073fddfd52cafe62044d85cac2bc0574cc52",
+       "recorded": {
+        "first_recorded": "2026-10-10",
+        "last_changed": "2026-10-10"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "@google-cloud/firestore",
+       "version": "9.3.1",
+       "source": "stated",
+       "where": "results/README.md"
+      }
+     ],
+     "features": [
+      "queries"
+     ]
+    },
+    {
+     "transcript": "sdk-transactions",
+     "official": "results/sdk-transactions-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-10",
+      "last_changed": "2026-10-10"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-transactions-hidane.json",
+       "result": "identical",
+       "sha256": "c6d901a88f915c6c3c44670f69996a81588882525cdeb095773ade8820fd8b87",
+       "recorded": {
+        "first_recorded": "2026-10-10",
+        "last_changed": "2026-10-10"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "@google-cloud/firestore",
+       "version": "9.3.1",
+       "source": "stated",
+       "where": "results/README.md"
+      }
+     ],
+     "features": [
+      "transactions"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "admin-node-prefer-rest",
+   "client": "@google-cloud/firestore with preferRest",
+   "ecosystem": "npm",
+   "package": "@google-cloud/firestore",
+   "platform": "Node.js",
+   "transport": [
+    "REST",
+    "gRPC"
+   ],
+   "status": "not-verified",
+   "version": null,
+   "official_emulator": [],
+   "core": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "exercised": [],
+   "not_exercised": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "gaps": [],
+   "last_recorded": null,
+   "tracking": null,
+   "evidence": []
+  },
+  {
+   "id": "rules-unit-testing",
+   "client": "@firebase/rules-unit-testing",
+   "ecosystem": "npm",
+   "package": "@firebase/rules-unit-testing",
+   "platform": "Node.js, Chromium",
+   "transport": [
+    "gRPC",
+    "WebChannel",
+    "REST"
+   ],
+   "status": "verified",
+   "version": "6.0.0",
+   "official_emulator": [
+    "v1.22.0"
+   ],
+   "core": [
+    "security-rules",
+    "clear"
+   ],
+   "exercised": [
+    "security-rules",
+    "clear"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-13",
+   "tracking": null,
+   "evidence": [
+    {
+     "transcript": "browser-rules",
+     "official": "results/browser-rules-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/browser-rules-hidane.json",
+       "result": "documented",
+       "explained_in": "results/README.md",
+       "sha256": "fc598954706d35ae6ab72b0b89aeb2c4d8442893db08863747275420c00894b1",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "@firebase/rules-unit-testing",
+       "version": "6.0.0",
+       "source": "recorded",
+       "where": "results/browser-rules-official-v1.22.0.json"
+      },
+      {
+       "name": "firebase",
+       "version": "13.0.0",
+       "source": "recorded",
+       "where": "results/browser-rules-official-v1.22.0.json"
+      }
+     ],
+     "features": [
+      "security-rules"
+     ]
+    },
+    {
+     "transcript": "sdk-auth",
+     "official": "results/sdk-auth-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-10",
+      "last_changed": "2026-10-10"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-auth-hidane.json",
+       "result": "identical",
+       "sha256": "bfaf7d792c45f30b39fbbb3140207b839739a3b11b642442301705da1405c523",
+       "recorded": {
+        "first_recorded": "2026-10-10",
+        "last_changed": "2026-10-10"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "@google-cloud/firestore",
+       "version": null,
+       "source": "unknown",
+       "where": null
+      },
+      {
+       "name": "@firebase/rules-unit-testing",
+       "version": null,
+       "source": "unknown",
+       "where": null
+      },
+      {
+       "name": "firebase",
+       "version": null,
+       "source": "unknown",
+       "where": null
+      }
+     ],
+     "features": [
+      "security-rules"
+     ]
+    },
+    {
+     "transcript": "sdk-clear",
+     "official": "results/sdk-clear-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-10",
+      "last_changed": "2026-10-10"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-clear-hidane.json",
+       "result": "documented",
+       "explained_in": "results/README.md",
+       "sha256": "315385b4c4354f83c3b6430166558e513f38dd551e5c8e86b3984cdfab831ad2",
+       "recorded": {
+        "first_recorded": "2026-10-10",
+        "last_changed": "2026-10-10"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "@google-cloud/firestore",
+       "version": null,
+       "source": "unknown",
+       "where": null
+      },
+      {
+       "name": "@firebase/rules-unit-testing",
+       "version": "6.0.0",
+       "source": "stated",
+       "where": "results/README.md"
+      },
+      {
+       "name": "firebase",
+       "version": null,
+       "source": "unknown",
+       "where": null
+      }
+     ],
+     "features": [
+      "clear"
+     ]
+    },
+    {
+     "transcript": "sdk-rules-unit-testing",
+     "official": "results/sdk-rules-unit-testing-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-rules-unit-testing-hidane.json",
+       "result": "documented",
+       "explained_in": "results/README.md",
+       "sha256": "cc75f4e58ee8f8b7aa66f5036d58fc0bd989ddbe0c87e6b3cc7405a7783fbb00",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "@firebase/rules-unit-testing",
+       "version": "6.0.0",
+       "source": "recorded",
+       "where": "results/sdk-rules-unit-testing-official-v1.22.0.json"
+      },
+      {
+       "name": "firebase",
+       "version": "13.0.0",
+       "source": "recorded",
+       "where": "results/sdk-rules-unit-testing-official-v1.22.0.json"
+      }
+     ],
+     "features": [
+      "security-rules",
+      "clear"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "firebase-tools",
+   "client": "firebase-tools",
+   "ecosystem": "npm",
+   "package": "firebase-tools",
+   "platform": "Node.js",
+   "transport": [
+    "CLI"
+   ],
+   "status": "verified",
+   "version": "15.33.0",
+   "official_emulator": [
+    "v1.22.0"
+   ],
+   "core": [
+    "launch",
+    "export-import"
+   ],
+   "exercised": [
+    "export-import",
+    "launch"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-13",
+   "tracking": null,
+   "evidence": [
+    {
+     "transcript": "export-import",
+     "official": "results/export-import-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-10",
+      "last_changed": "2026-10-10"
+     },
+     "compared": [
+      {
+       "path": "results/export-import-hidane-to-official.json",
+       "result": "identical",
+       "sha256": "a6385d4a8a99f78670c9b256f42f2516da01c49fe381e31fa39c5acf162adea7",
+       "recorded": {
+        "first_recorded": "2026-10-10",
+        "last_changed": "2026-10-10"
+       }
+      },
+      {
+       "path": "results/export-import-hidane.json",
+       "result": "identical",
+       "sha256": "a6385d4a8a99f78670c9b256f42f2516da01c49fe381e31fa39c5acf162adea7",
+       "recorded": {
+        "first_recorded": "2026-10-10",
+        "last_changed": "2026-10-10"
+       }
+      },
+      {
+       "path": "results/export-import-official-to-hidane.json",
+       "result": "identical",
+       "sha256": "a6385d4a8a99f78670c9b256f42f2516da01c49fe381e31fa39c5acf162adea7",
+       "recorded": {
+        "first_recorded": "2026-10-10",
+        "last_changed": "2026-10-10"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "@google-cloud/firestore",
+       "version": null,
+       "source": "unknown",
+       "where": null
+      },
+      {
+       "name": "firebase-tools",
+       "version": "15.33.0",
+       "source": "stated",
+       "where": "results/README.md"
+      }
+     ],
+     "features": [
+      "export-import",
+      "launch"
+     ]
+    },
+    {
+     "transcript": "functions-triggers",
+     "official": "results/functions-triggers-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/functions-triggers-hidane.json",
+       "result": "documented",
+       "explained_in": "docs/parity-exceptions.md",
+       "sha256": "90b4b73f42b2ec0cb444dde7d15626aacd9ea237ee489b20321ac13c988318cb",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "firebase-admin",
+       "version": "13.10.0",
+       "source": "stated",
+       "where": "results/README.md"
+      },
+      {
+       "name": "firebase-functions",
+       "version": "6.6.0",
+       "source": "stated",
+       "where": "results/README.md"
+      },
+      {
+       "name": "firebase-tools",
+       "version": "15.33.0",
+       "source": "stated",
+       "where": "results/README.md"
+      }
+     ],
+     "features": [
+      "launch"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "firebase-functions",
+   "client": "firebase-functions under the Functions emulator",
+   "ecosystem": "npm",
+   "package": "firebase-functions",
+   "platform": "Node.js",
+   "transport": [
+    "CLI"
+   ],
+   "status": "verified",
+   "version": "6.6.0",
+   "official_emulator": [
+    "v1.22.0"
+   ],
+   "core": [
+    "triggers"
+   ],
+   "exercised": [
+    "triggers"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-13",
+   "tracking": null,
+   "evidence": [
+    {
+     "transcript": "functions-triggers",
+     "official": "results/functions-triggers-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/functions-triggers-hidane.json",
+       "result": "documented",
+       "explained_in": "docs/parity-exceptions.md",
+       "sha256": "90b4b73f42b2ec0cb444dde7d15626aacd9ea237ee489b20321ac13c988318cb",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "firebase-admin",
+       "version": "13.10.0",
+       "source": "stated",
+       "where": "results/README.md"
+      },
+      {
+       "name": "firebase-functions",
+       "version": "6.6.0",
+       "source": "stated",
+       "where": "results/README.md"
+      },
+      {
+       "name": "firebase-tools",
+       "version": "15.33.0",
+       "source": "stated",
+       "where": "results/README.md"
+      }
+     ],
+     "features": [
+      "triggers"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "python",
+   "client": "google-cloud-firestore (Python)",
+   "ecosystem": "pypi",
+   "package": "google-cloud-firestore",
+   "platform": "Python",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "verified",
+   "version": "2.34.1",
+   "official_emulator": [
+    "v1.22.0"
+   ],
+   "core": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "exercised": [
+    "documents",
+    "queries",
+    "aggregations",
+    "vector-search",
+    "transactions",
+    "listeners"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-13",
+   "tracking": null,
+   "evidence": [
+    {
+     "transcript": "sdk-python-documents",
+     "official": "results/sdk-python-documents-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-python-documents-hidane.json",
+       "result": "documented",
+       "explained_in": "docs/parity-exceptions.md",
+       "sha256": "b2a8b8d92078f41530080dc54ab776ec4e91439cf35ac341ce5d45a52e0ffdac",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "google-cloud-firestore",
+       "version": "2.34.1",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_python/requirements.txt"
+      }
+     ],
+     "features": [
+      "documents"
+     ]
+    },
+    {
+     "transcript": "sdk-python-listen",
+     "official": "results/sdk-python-listen-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-python-listen-hidane.json",
+       "result": "identical",
+       "sha256": "b72b1ac542c90fc174b489051e458cded659ad134079ab1e715b421b37fb61b3",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "google-cloud-firestore",
+       "version": "2.34.1",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_python/requirements.txt"
+      }
+     ],
+     "features": [
+      "listeners"
+     ]
+    },
+    {
+     "transcript": "sdk-python-queries",
+     "official": "results/sdk-python-queries-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-python-queries-hidane.json",
+       "result": "identical",
+       "sha256": "0efaf570b2e7b5b610f9f16f56378c897cdbdb72aad43e6d84249967545d7d71",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "google-cloud-firestore",
+       "version": "2.34.1",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_python/requirements.txt"
+      }
+     ],
+     "features": [
+      "queries",
+      "aggregations",
+      "vector-search"
+     ]
+    },
+    {
+     "transcript": "sdk-python-transactions",
+     "official": "results/sdk-python-transactions-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-python-transactions-hidane.json",
+       "result": "documented",
+       "explained_in": "docs/parity-exceptions.md",
+       "sha256": "644f3a776fd382db96d89c9b82f145c09cd09f5fcc2c6b765b94c1d8afb48f0f",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "google-cloud-firestore",
+       "version": "2.34.1",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_python/requirements.txt"
+      }
+     ],
+     "features": [
+      "transactions"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "go",
+   "client": "google-cloud-go firestore",
+   "ecosystem": "go",
+   "package": "cloud.google.com/go/firestore",
+   "platform": "Go",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "verified",
+   "version": "1.26.0",
+   "official_emulator": [
+    "v1.22.0"
+   ],
+   "core": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "exercised": [
+    "documents",
+    "queries",
+    "aggregations",
+    "vector-search",
+    "transactions",
+    "listeners"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-13",
+   "tracking": null,
+   "evidence": [
+    {
+     "transcript": "sdk-go-documents",
+     "official": "results/sdk-go-documents-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-go-documents-hidane.json",
+       "result": "documented",
+       "explained_in": "docs/parity-exceptions.md",
+       "sha256": "37c972642589b0371e2f69f31eb520482264084a5fdbc1a2fabff4589d971b01",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "cloud.google.com/go/firestore",
+       "version": "1.26.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_go/go.mod"
+      }
+     ],
+     "features": [
+      "documents"
+     ]
+    },
+    {
+     "transcript": "sdk-go-listen",
+     "official": "results/sdk-go-listen-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-go-listen-hidane.json",
+       "result": "identical",
+       "sha256": "35a4abf7aade74564e0056779cc5f61763c4b47b4f7ecf2ec0105de6b891a307",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "cloud.google.com/go/firestore",
+       "version": "1.26.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_go/go.mod"
+      }
+     ],
+     "features": [
+      "listeners"
+     ]
+    },
+    {
+     "transcript": "sdk-go-queries",
+     "official": "results/sdk-go-queries-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-go-queries-hidane.json",
+       "result": "identical",
+       "sha256": "547ed3249931cec3921ffdef84793361918cf86c40c62d4d6a944cf3265ee98b",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "cloud.google.com/go/firestore",
+       "version": "1.26.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_go/go.mod"
+      }
+     ],
+     "features": [
+      "queries",
+      "aggregations",
+      "vector-search"
+     ]
+    },
+    {
+     "transcript": "sdk-go-transactions",
+     "official": "results/sdk-go-transactions-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-go-transactions-hidane.json",
+       "result": "documented",
+       "explained_in": "docs/parity-exceptions.md",
+       "sha256": "5563748e7798cfd11f6d607c90ae9255cff88fb01e6d972a5dfe717d8c2e21e6",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "cloud.google.com/go/firestore",
+       "version": "1.26.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_go/go.mod"
+      }
+     ],
+     "features": [
+      "transactions"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "java",
+   "client": "java-firestore",
+   "ecosystem": "maven",
+   "package": "com.google.cloud:google-cloud-firestore",
+   "platform": "JVM",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "verified",
+   "version": "3.49.0",
+   "official_emulator": [
+    "v1.22.0"
+   ],
+   "core": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "exercised": [
+    "documents",
+    "queries",
+    "aggregations",
+    "vector-search",
+    "transactions",
+    "listeners"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-13",
+   "tracking": null,
+   "evidence": [
+    {
+     "transcript": "sdk-java-documents",
+     "official": "results/sdk-java-documents-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-java-documents-hidane.json",
+       "result": "documented",
+       "explained_in": "docs/parity-exceptions.md",
+       "sha256": "8bcc4bdabc5650c629db8aa86c1fc55d3058a7054c13549c5acaed111777be91",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "com.google.cloud:google-cloud-firestore",
+       "version": "3.49.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_java/pom.xml"
+      }
+     ],
+     "features": [
+      "documents"
+     ]
+    },
+    {
+     "transcript": "sdk-java-listen",
+     "official": "results/sdk-java-listen-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-java-listen-hidane.json",
+       "result": "identical",
+       "sha256": "35a4abf7aade74564e0056779cc5f61763c4b47b4f7ecf2ec0105de6b891a307",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "com.google.cloud:google-cloud-firestore",
+       "version": "3.49.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_java/pom.xml"
+      }
+     ],
+     "features": [
+      "listeners"
+     ]
+    },
+    {
+     "transcript": "sdk-java-queries",
+     "official": "results/sdk-java-queries-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-java-queries-hidane.json",
+       "result": "identical",
+       "sha256": "6c91ee40ff1454e26c06c0afa82c721f99359512328246fdbd552d66b8e4c807",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "com.google.cloud:google-cloud-firestore",
+       "version": "3.49.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_java/pom.xml"
+      }
+     ],
+     "features": [
+      "queries",
+      "aggregations",
+      "vector-search"
+     ]
+    },
+    {
+     "transcript": "sdk-java-transactions",
+     "official": "results/sdk-java-transactions-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-java-transactions-hidane.json",
+       "result": "documented",
+       "explained_in": "docs/parity-exceptions.md",
+       "sha256": "d740af1f5ba9a9911cbd39afdf7ce625dda5fc6a2533767ef00b61caea3114de",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "com.google.cloud:google-cloud-firestore",
+       "version": "3.49.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_java/pom.xml"
+      }
+     ],
+     "features": [
+      "transactions"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flutter-web",
+   "client": "FlutterFire cloud_firestore on the web",
+   "ecosystem": "pub",
+   "package": "cloud_firestore",
+   "platform": "Chromium",
+   "transport": [
+    "WebChannel",
+    "REST"
+   ],
+   "status": "verified",
+   "version": "6.10.0",
+   "official_emulator": [
+    "v1.22.0"
+   ],
+   "core": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "exercised": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-13",
+   "tracking": null,
+   "evidence": [
+    {
+     "transcript": "flutter-web",
+     "official": "results/flutter-web-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-13",
+      "last_changed": "2026-10-13"
+     },
+     "compared": [
+      {
+       "path": "results/flutter-web-hidane.json",
+       "result": "documented",
+       "explained_in": "results/README.md",
+       "sha256": "783ea72f691c132db018fc8ff8fc96ceeccedd553b46e326a44055f5470046c4",
+       "recorded": {
+        "first_recorded": "2026-10-13",
+        "last_changed": "2026-10-13"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "firebase_core",
+       "version": "4.15.0",
+       "source": "pinned",
+       "where": "tools/oracle/flutter_web/pubspec.yaml"
+      },
+      {
+       "name": "cloud_firestore",
+       "version": "6.10.0",
+       "source": "pinned",
+       "where": "tools/oracle/flutter_web/pubspec.yaml"
+      },
+      {
+       "name": "cloud_firestore_web",
+       "version": "5.7.3",
+       "source": "pinned",
+       "where": "tools/oracle/flutter_web/pubspec.yaml"
+      },
+      {
+       "name": "firebase_core_web",
+       "version": "3.12.0",
+       "source": "pinned",
+       "where": "tools/oracle/flutter_web/pubspec.yaml"
+      },
+      {
+       "name": "firebase-js-sdk",
+       "version": "12.19.0",
+       "source": "recorded",
+       "where": "results/flutter-web-official-v1.22.0.json"
+      }
+     ],
+     "features": [
+      "documents",
+      "queries",
+      "aggregations",
+      "transactions",
+      "listeners"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "flutter-native",
+   "client": "FlutterFire cloud_firestore on Android, iOS, macOS, Windows",
+   "ecosystem": "pub",
+   "package": "cloud_firestore",
+   "platform": "Android, iOS, macOS, Windows",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "not-verified",
+   "version": null,
+   "official_emulator": [],
+   "core": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "exercised": [],
+   "not_exercised": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "gaps": [],
+   "last_recorded": null,
+   "tracking": "https://github.com/hidane-dev/hidane/issues/187",
+   "evidence": []
+  },
+  {
+   "id": "ios",
+   "client": "firebase-ios-sdk",
+   "ecosystem": "swiftpm",
+   "package": "FirebaseFirestore",
+   "platform": "iOS, macOS, tvOS, watchOS",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "not-verified",
+   "version": null,
+   "official_emulator": [],
+   "core": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "exercised": [],
+   "not_exercised": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "gaps": [],
+   "last_recorded": null,
+   "tracking": "https://github.com/hidane-dev/hidane/issues/187",
+   "evidence": []
+  },
+  {
+   "id": "android",
+   "client": "firebase-android-sdk",
+   "ecosystem": "maven",
+   "package": "com.google.firebase:firebase-firestore",
+   "platform": "Android",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "not-verified",
+   "version": null,
+   "official_emulator": [],
+   "core": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "exercised": [],
+   "not_exercised": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "gaps": [],
+   "last_recorded": null,
+   "tracking": "https://github.com/hidane-dev/hidane/issues/187",
+   "evidence": []
+  },
+  {
+   "id": "cpp-unity",
+   "client": "Firebase C++ SDK / Unity",
+   "ecosystem": "other",
+   "package": "firebase-cpp-sdk",
+   "platform": "iOS, Android, desktop",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "not-verified",
+   "version": null,
+   "official_emulator": [],
+   "core": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "exercised": [],
+   "not_exercised": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions",
+    "listeners"
+   ],
+   "gaps": [],
+   "last_recorded": null,
+   "tracking": null,
+   "evidence": []
+  }
+ ],
+ "verified_packages": [
+  {
+   "ecosystem": "npm",
+   "name": "firebase",
+   "version": "13.0.0",
+   "what": "Lite over REST, in Chromium over WebChannel, and partially in Node over gRPC",
+   "source": "docs/sdk-certification.md",
+   "clients": [
+    "firebase-js-node",
+    "firebase-js-lite",
+    "firebase-js-browser"
+   ]
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@google-cloud/firestore",
+   "version": "9.3.1",
+   "what": "over gRPC, with the default settings: documents and writes, queries, aggregation queries, vector search, transactions, listeners",
+   "source": "docs/sdk-certification.md",
+   "clients": [
+    "admin-node"
+   ]
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@firebase/rules-unit-testing",
+   "version": "6.0.0",
+   "what": "Security Rules as signed-in, signed-out and rules-disabled users, clearing data",
+   "source": "docs/sdk-certification.md",
+   "clients": [
+    "rules-unit-testing"
+   ]
+  },
+  {
+   "ecosystem": "npm",
+   "name": "firebase-tools",
+   "version": "15.33.0",
+   "what": "export and import, launch under firebase emulators:exec",
+   "source": "docs/sdk-certification.md",
+   "clients": [
+    "firebase-tools"
+   ]
+  },
+  {
+   "ecosystem": "npm",
+   "name": "firebase-functions",
+   "version": "6.6.0",
+   "what": "Firestore triggers, v1 and v2",
+   "source": "docs/sdk-certification.md",
+   "clients": [
+    "firebase-functions"
+   ]
+  },
+  {
+   "ecosystem": "pypi",
+   "name": "google-cloud-firestore",
+   "version": "2.34.1",
+   "what": "documents and writes, queries, aggregation queries, vector search, transactions, listeners",
+   "source": "docs/sdk-certification.md",
+   "clients": [
+    "python"
+   ]
+  },
+  {
+   "ecosystem": "go",
+   "name": "cloud.google.com/go/firestore",
+   "version": "1.26.0",
+   "what": "documents and writes, queries, aggregation queries, vector search, transactions, listeners",
+   "source": "docs/sdk-certification.md",
+   "clients": [
+    "go"
+   ]
+  },
+  {
+   "ecosystem": "maven",
+   "name": "com.google.cloud:google-cloud-firestore",
+   "version": "3.49.0",
+   "what": "documents and writes, queries, aggregation queries, vector search, transactions, listeners",
+   "source": "docs/sdk-certification.md",
+   "clients": [
+    "java"
+   ]
+  },
+  {
+   "ecosystem": "pub",
+   "name": "cloud_firestore",
+   "version": "6.10.0",
+   "what": "Flutter Web in Chromium: documents and writes, queries, aggregation queries, transactions, listeners",
+   "source": "docs/sdk-certification.md",
+   "clients": [
+    "flutter-web"
+   ]
+  }
+ ]
+}
