@@ -1,0 +1,65 @@
+<!doctype html>
+<!-- The README banner. Rendered at 2x to docs/assets/readme-banner-{dark,light}.png:
+     open with ?theme=dark or ?theme=light in a 2560x940 viewport and screenshot #banner. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>hidane README banner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+JP:wght@400;500;700&display=block" rel="stylesheet">
+<style>
+  :root {
+    --bg: #141210; --line: #322D28; --ring: #2A2622; --text: #EDE6DC; --muted: #A69D91; --dim: #8C8479;
+    --accent: #E2553D; --ember: #E2553D; --mark: #0A0908; --mark-ring: #3A342E; --pill: #1B1815;
+  }
+  :root[data-theme="light"] {
+    --bg: #F4EFE6; --line: #D9D0C2; --ring: #DCD3C5; --text: #1E1B18; --muted: #5F574E; --dim: #6F675D;
+    --accent: #B23A22; --ember: #E2553D; --mark: #1E1B18; --mark-ring: #1E1B18; --pill: #FBF8F2;
+  }
+  html { zoom: 2; }
+  body { margin: 0; background: var(--bg); }
+  .banner {
+    position: relative; overflow: hidden; width: 1280px; height: 470px; box-sizing: border-box;
+    padding: 52px 72px; background: var(--bg); color: var(--text);
+    font-family: "IBM Plex Sans JP", system-ui, sans-serif; -webkit-font-smoothing: antialiased;
+  }
+  .rings { position: absolute; right: -120px; top: 50%; width: 600px; height: 600px; transform: translateY(-50%); }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand svg { width: 40px; height: 40px; }
+  .wordmark { font-size: 28px; font-weight: 700; letter-spacing: -0.01em; }
+  .reading { margin-left: 6px; font-family: "IBM Plex Mono", monospace; font-size: 15px; color: var(--dim); }
+  h1 { margin: 38px 0 0; font-size: 58px; line-height: 1.12; font-weight: 700; letter-spacing: -0.02em; }
+  h1 .soft { color: var(--muted); font-weight: 500; }
+  p { margin: 20px 0 0; max-width: 720px; font-size: 20px; line-height: 1.5; color: var(--muted); }
+  .cmd {
+    margin-top: 30px; display: inline-flex; align-items: center; gap: 14px;
+    padding: 12px 20px; border: 1px solid var(--line); border-radius: 10px; background: var(--pill);
+    font-family: "IBM Plex Mono", monospace; font-size: 17px; color: var(--text);
+  }
+  .cmd .prompt { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="banner" id="banner">
+  <svg class="rings" viewBox="0 0 600 600" aria-hidden="true">
+    <circle cx="300" cy="300" r="290" fill="none" stroke="var(--ring)" stroke-width="1.5"/>
+    <circle cx="300" cy="300" r="205" fill="none" stroke="var(--ring)" stroke-width="1.5"/>
+    <circle cx="300" cy="300" r="120" fill="none" stroke="var(--ring)" stroke-width="1.5"/>
+    <circle cx="300" cy="300" r="42" fill="var(--ember)" opacity="0.18"/>
+    <circle cx="300" cy="300" r="17" fill="var(--ember)"/>
+  </svg>
+  <div class="brand">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15.5" fill="var(--mark)" stroke="var(--mark-ring)" stroke-width="1"/><circle cx="16" cy="18" r="8.5" fill="#E2553D" opacity="0.2"/><circle cx="16" cy="18" r="5" fill="#E2553D"/></svg>
+    <span class="wordmark">hidane</span><span class="reading">火種 · hi-da-ne</span>
+  </div>
+  <h1>One binary. No JDK.<br><span class="soft">Milliseconds to start.</span></h1>
+  <p>A Firestore emulator that speaks the official one's gRPC, REST and WebChannel protocols and Security Rules, tested against it as the oracle.</p>
+  <div class="cmd"><span class="prompt">$</span><span>hidane exec -- firebase emulators:start --only firestore</span></div>
+</div>
+<script>
+  const theme = new URLSearchParams(location.search).get("theme");
+  if (theme === "light") document.documentElement.dataset.theme = "light";
+</script>
+</body>
+</html>

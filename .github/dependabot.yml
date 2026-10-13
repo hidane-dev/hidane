@@ -18,13 +18,14 @@ updates:
     schedule: { interval: weekly }
 
   # The examples pin every dependency; .github/workflows/examples.yml runs each update against
-  # hidane.
+  # hidane. The README's demo pins the same as examples/admin-node; demo.yml records it again.
   - package-ecosystem: npm
     directories:
       - /examples/admin-node
       - /examples/functions
       - /examples/functions/functions
       - /examples/rules-unit-testing
+      - /docs/assets/demo
     schedule: { interval: weekly }
     groups:
       examples-npm: { patterns: ["*"] }

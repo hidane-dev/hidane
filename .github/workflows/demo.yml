@@ -1,0 +1,93 @@
+name: Demo
+
+# Records the README's demo (docs/assets/demo/demo.tape) on a GitHub-hosted runner: the same 200
+# firebase-admin tests under `firebase emulators:exec`, with the official emulator and with hidane's
+# latest release. It uploads demo.gif as an artifact, which a maintainer copies to
+# docs/assets/demo.gif; nothing is pushed or published. Each command runs once before the
+# recording, so the jar is downloaded and both start from the same warm caches.
+
+on:
+  pull_request:
+    paths:
+      - "docs/assets/demo/**"
+      - ".github/workflows/demo.yml"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  record:
+    name: record the demo
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    env:
+      VHS_VERSION: 0.12.1
+      VHS_SHA256: eb33787a5b1cebf91fe0b18bd231e2d71d36c1ff4babd99ddac1a6ab411efd10
+      TTYD_VERSION: 1.7.7
+      TTYD_SHA256: 8a217c968aba172e0dbf3f34447218dc015bc4d5e59bf51db2f2cd12b7be4f55
+      # Chrome's sandbox needs user namespaces, which Ubuntu 24.04's AppArmor restricts.
+      VHS_NO_SANDBOX: "true"
+    defaults:
+      run:
+        working-directory: docs/assets/demo
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@de7274f081f381c8f8158605e0321c36c376e2e6 # v6.0.1
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: docs/assets/demo/package-lock.json
+      - uses: hidane-dev/setup-hidane@f0bdb68d1e28100cd5b445456455e1108f370987 # v1.0.0
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: VHS, ttyd, ffmpeg and the font
+        working-directory: ${{ runner.temp }}
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-jetbrains-mono > /dev/null
+          curl -fsSLo vhs.tar.gz "https://github.com/charmbracelet/vhs/releases/download/v${VHS_VERSION}/vhs_${VHS_VERSION}_Linux_x86_64.tar.gz"
+          echo "$VHS_SHA256  vhs.tar.gz" | sha256sum --check --strict
+          curl -fsSLo ttyd "https://github.com/tsl0922/ttyd/releases/download/${TTYD_VERSION}/ttyd.x86_64"
+          echo "$TTYD_SHA256  ttyd" | sha256sum --check --strict
+          mkdir -p tools
+          tar -xzf vhs.tar.gz -C tools --strip-components=1 "vhs_${VHS_VERSION}_Linux_x86_64/vhs"
+          install -m 0755 ttyd tools/ttyd
+          echo "$RUNNER_TEMP/tools" >> "$GITHUB_PATH"
+      - name: Each command once, before the recording
+        run: |
+          echo "$PWD/node_modules/.bin" >> "$GITHUB_PATH"
+          export PATH="$PWD/node_modules/.bin:$PATH"
+          firebase emulators:exec "npm test" 2>&1 | grep -w pass
+          hidane exec -- firebase emulators:exec "npm test" 2>&1 | grep -w pass
+      - name: The machine and the versions
+        run: |
+          {
+            echo "runner: $ImageOS $ImageVersion, $(nproc) vCPUs, $(free -g | awk '/^Mem:/ { print $2 }') GiB"
+            grep -m1 'model name' /proc/cpuinfo
+            java -version 2>&1 | head -1
+            echo "node $(node --version), firebase-tools $(firebase --version)"
+            hidane --version
+            vhs --version
+          } > machine.txt
+          cat machine.txt
+          { echo "## The recording's machine"; echo; echo '```'; cat machine.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+      - name: Record
+        run: vhs demo.tape
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: demo
+          path: |
+            docs/assets/demo/demo.gif
+            docs/assets/demo/machine.txt
+          if-no-files-found: error

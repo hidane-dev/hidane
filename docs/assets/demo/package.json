@@ -1,0 +1,23 @@
+{
+  "name": "hidane-demo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The README's demo: 200 firebase-admin tests under firebase emulators:exec",
+  "license": "MIT OR Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test --test-reporter=spec"
+  },
+  "devDependencies": {
+    "firebase-admin": "14.5.0",
+    "firebase-tools": "15.33.0"
+  },
+  "overrides": {
+    "gaxios": {
+      "uuid": "11.1.1"
+    }
+  }
+}
