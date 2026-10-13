@@ -1,0 +1,567 @@
+{
+ "$schema": "./compatibility.schema.json",
+ "name": "hidane compatibility report",
+ "description": "What the recorded results and the tests show about hidane's compatibility with the official Cloud Firestore emulator, its SDKs and firebase-tools, for this tree. Generated from the results only. See docs/compatibility.md.",
+ "schema_version": 1,
+ "generated_by": "tools/parity/compatibility.py",
+ "hidane": {
+  "version": "0.4.0",
+  "series": "0.4.x"
+ },
+ "official_emulator": {
+  "product": "cloud-firestore-emulator",
+  "release": "1.22.0",
+  "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c"
+ },
+ "matrix": [
+  {
+   "hidane": "0.4.x",
+   "firebase_tools": "15.33.0",
+   "official_emulator": "1.22.0",
+   "status": "verified",
+   "evidence": [
+    {
+     "kind": "replay",
+     "count": 20224,
+     "description": "20,224 recorded answers of the official emulator v1.22.0 in 41 fixtures, replayed against hidane by cargo test",
+     "where": "docs/parity.md",
+     "runs": "every pull request and push to main",
+     "last_recorded": null
+    },
+    {
+     "kind": "transcripts",
+     "count": 33,
+     "description": "33 comparisons of SDK transcripts with the official emulator v1.22.0's: 19 identical, 14 documented differences",
+     "where": "docs/parity.md",
+     "runs": "recorded",
+     "last_recorded": null
+    },
+    {
+     "kind": "firebase-tools",
+     "count": 2,
+     "description": "2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers",
+     "where": "docs/sdk-certification.md",
+     "runs": "recorded",
+     "last_recorded": "2026-10-13"
+    }
+   ]
+  }
+ ],
+ "oracle_corpus": {
+  "where": "docs/oracle-corpus.json",
+  "digest": "sha256:62a3c5ef398bfc572cf939f1ff9e5ca0a5a97cac30eb1863147e4c38cd02105a",
+  "releases": [
+   "1.22.0"
+  ],
+  "files": 72,
+  "fixtures": 41,
+  "transcripts": 31,
+  "answers": 20224,
+  "bytes": 10721462
+ },
+ "replay": {
+  "fixtures": 41,
+  "answers": 20224,
+  "levels": {
+   "full": 12029,
+   "reasons": 3912,
+   "part": 731,
+   "status": 3401,
+   "codes": 30,
+   "none": 1,
+   "differs": 120
+  },
+  "by_area": {
+   "documents": {
+    "fixtures": 6,
+    "answers": 5208,
+    "full": 4845,
+    "transports": [
+     "gRPC",
+     "REST"
+    ]
+   },
+   "queries": {
+    "fixtures": 4,
+    "answers": 444,
+    "full": 403,
+    "transports": [
+     "gRPC",
+     "REST"
+    ]
+   },
+   "transactions": {
+    "fixtures": 1,
+    "answers": 177,
+    "full": 172,
+    "transports": [
+     "gRPC",
+     "REST"
+    ]
+   },
+   "streams": {
+    "fixtures": 1,
+    "answers": 49,
+    "full": 48,
+    "transports": [
+     "gRPC"
+    ]
+   },
+   "rest": {
+    "fixtures": 2,
+    "answers": 79,
+    "full": 75,
+    "transports": [
+     "REST"
+    ]
+   },
+   "webchannel": {
+    "fixtures": 1,
+    "answers": 34,
+    "full": 31,
+    "transports": [
+     "REST",
+     "WebChannel"
+    ]
+   },
+   "rules": {
+    "fixtures": 17,
+    "answers": 13264,
+    "full": 5541,
+    "transports": [
+     "gRPC",
+     "REST",
+     "WebSocket",
+     "in-process"
+    ]
+   },
+   "export": {
+    "fixtures": 1,
+    "answers": 70,
+    "full": 67,
+    "transports": [
+     "REST",
+     "CLI"
+    ]
+   },
+   "admin": {
+    "fixtures": 3,
+    "answers": 621,
+    "full": 573,
+    "transports": [
+     "gRPC",
+     "REST"
+    ]
+   },
+   "values": {
+    "fixtures": 5,
+    "answers": 278,
+    "full": 274,
+    "transports": [
+     "gRPC",
+     "REST",
+     "WebChannel",
+     "in-process"
+    ]
+   }
+  },
+  "replayed_by": "cargo test",
+  "runs": "every pull request and push to main",
+  "where": "docs/parity.md"
+ },
+ "transcripts": {
+  "pairs": 31,
+  "comparisons": 33,
+  "identical": 19,
+  "documented": 14,
+  "unexplained": 0,
+  "where": "docs/parity.md"
+ },
+ "sdk_certification": {
+  "where": "docs/sdk-certification.json",
+  "totals": {
+   "clients": 16,
+   "verified": 10,
+   "partially-verified": 1,
+   "not-verified": 5
+  },
+  "by_status": {
+   "verified": [
+    "firebase-js-lite",
+    "firebase-js-browser",
+    "admin-node",
+    "rules-unit-testing",
+    "firebase-tools",
+    "firebase-functions",
+    "python",
+    "go",
+    "java",
+    "flutter-web"
+   ],
+   "partially-verified": [
+    "firebase-js-node"
+   ],
+   "not-verified": [
+    "admin-node-prefer-rest",
+    "flutter-native",
+    "ios",
+    "android",
+    "cpp-unity"
+   ]
+  }
+ },
+ "browser": {
+  "suite": {
+   "workflow": ".github/workflows/js-sdk-browser.yml",
+   "result": "identical",
+   "official": {
+    "path": "results/js-sdk-browser-official-v1.22.0.json",
+    "passed": 1183,
+    "failed": 0,
+    "skipped": 739
+   },
+   "commit": "8a7e7fda925c7355f98cb3c4dca1bfaed73ab787",
+   "hidane": {
+    "path": "results/js-sdk-browser-hidane.json",
+    "passed": 1183,
+    "failed": 0,
+    "skipped": 739
+   }
+  },
+  "transcripts": [
+   {
+    "name": "browser-webchannel",
+    "client": "firebase in Chromium",
+    "transport": "WebChannel",
+    "result": "identical"
+   },
+   {
+    "name": "flutter-web",
+    "client": "Flutter Web (cloud_firestore) in Chromium",
+    "transport": "WebChannel, REST",
+    "result": "documented",
+    "explained_in": "results/README.md"
+   },
+   {
+    "name": "browser-rules",
+    "client": "firebase + rules-unit-testing in Chromium",
+    "transport": "WebChannel, REST",
+    "result": "documented",
+    "explained_in": "results/README.md"
+   }
+  ]
+ },
+ "functions": {
+  "fixtures": [
+   {
+    "path": "crates/hidane/tests/fixtures/function_events.json",
+    "answers": 133,
+    "levels": {
+     "full": 85,
+     "differs": 48
+    },
+    "tests": [
+     "crates/hidane/tests/function_events.rs::events_reach_the_functions_emulator_as_on_the_official_emulator"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/fixtures/function_triggers.json",
+    "answers": 342,
+    "levels": {
+     "full": 342
+    },
+    "tests": [
+     "crates/hidane/tests/function_triggers.rs::registrations_answer_like_the_official_emulator"
+    ]
+   }
+  ],
+  "transcripts": [
+   {
+    "name": "functions-triggers",
+    "client": "firebase-tools Functions emulator (firebase-functions v1 and v2), Admin SDK",
+    "official_events": 43,
+    "hidane_events": 37,
+    "result": "documented",
+    "explained_in": "docs/parity-exceptions.md"
+   }
+  ]
+ },
+ "integration_tests": {
+  "files": 47,
+  "replaying_files": 32,
+  "runs": "every pull request and push to main",
+  "suites": [
+   {
+    "path": "crates/hidane/tests/admin_http.rs",
+    "replays": []
+   },
+   {
+    "path": "crates/hidane/tests/aggregations.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/aggregations.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/auth.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/auth.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/bench.rs",
+    "replays": []
+   },
+   {
+    "path": "crates/hidane/tests/clear.rs",
+    "replays": []
+   },
+   {
+    "path": "crates/hidane/tests/commit_checks.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/commit_checks.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/cors.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/cors.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/doctor.rs",
+    "replays": []
+   },
+   {
+    "path": "crates/hidane/tests/documents.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/document_writes.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/export_import.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/export_import.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/field_order.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/field_order.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/find_nearest.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/find_nearest.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/function_events.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/function_events.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/function_triggers.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/function_triggers.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/grpc_settings.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/grpc_settings.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/launch.rs",
+    "replays": []
+   },
+   {
+    "path": "crates/hidane/tests/limits.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/limits.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/list_documents.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/list_documents.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/listen.rs",
+    "replays": []
+   },
+   {
+    "path": "crates/hidane/tests/migrate.rs",
+    "replays": []
+   },
+   {
+    "path": "crates/hidane/tests/negative_zero.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/negative_zero.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/process.rs",
+    "replays": []
+   },
+   {
+    "path": "crates/hidane/tests/queries.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/queries.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/rest.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/json_escapes.json",
+     "crates/hidane/tests/fixtures/rest.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/rules_compile.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/rules_compile.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/rules_coverage.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/rules_coverage.json",
+     "crates/hidane/tests/fixtures/rules_coverage_flag.json",
+     "crates/hidane/tests/fixtures/rules_request_fields.json",
+     "crates/hidane/tests/fixtures/rules_verify.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/rules_server.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/rules_auth.json",
+     "crates/hidane/tests/fixtures/rules_denials.json",
+     "crates/hidane/tests/fixtures/rules_list.json",
+     "crates/hidane/tests/fixtures/rules_lookups.json",
+     "crates/hidane/tests/fixtures/rules_request.json",
+     "crates/hidane/tests/fixtures/rules_writes.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/rules_streams.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/rules_streams.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/same_document_writes.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/same_document_writes.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/single_port.rs",
+    "replays": []
+   },
+   {
+    "path": "crates/hidane/tests/transactions.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/transactions.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/transforms.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/transforms.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/unsupported.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/unsupported.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/webchannel.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/json_escapes.json",
+     "crates/hidane/tests/fixtures/webchannel.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/websocket_requests.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/websocket_requests.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/write_stream.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/write_stream.json"
+    ]
+   },
+   {
+    "path": "crates/hidane-core/tests/official_order.rs",
+    "replays": [
+     "crates/hidane-core/tests/fixtures/value_order.json"
+    ]
+   },
+   {
+    "path": "crates/hidane-core/tests/properties.rs",
+    "replays": []
+   },
+   {
+    "path": "crates/hidane-rules/tests/auth.rs",
+    "replays": []
+   },
+   {
+    "path": "crates/hidane-rules/tests/conditions.rs",
+    "replays": [
+     "results/rules-conditions-official-v1.22.0.json"
+    ]
+   },
+   {
+    "path": "crates/hidane-rules/tests/deep.rs",
+    "replays": []
+   },
+   {
+    "path": "crates/hidane-rules/tests/denials.rs",
+    "replays": []
+   },
+   {
+    "path": "crates/hidane-rules/tests/library.rs",
+    "replays": [
+     "crates/hidane-rules/tests/fixtures/rules_eval.json"
+    ]
+   },
+   {
+    "path": "crates/hidane-rules/tests/list.rs",
+    "replays": []
+   },
+   {
+    "path": "crates/hidane-rules/tests/lookups.rs",
+    "replays": []
+   },
+   {
+    "path": "crates/hidane-rules/tests/paths.rs",
+    "replays": [
+     "crates/hidane-rules/tests/fixtures/rules_paths.json"
+    ]
+   },
+   {
+    "path": "crates/hidane-rules/tests/warnings.rs",
+    "replays": [
+     "crates/hidane-rules/tests/fixtures/rules_warnings.json"
+    ]
+   }
+  ]
+ },
+ "differential_fuzzing": {
+  "status": "not-run",
+  "where": null,
+  "runs": []
+ },
+ "intentional_differences": {
+  "count": 68,
+  "where": "docs/parity-exceptions.md"
+ }
+}

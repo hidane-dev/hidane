@@ -142,6 +142,9 @@ shows what that release was tested with, and a tag does not move.
   as verified ([migrating.md](migrating.md#findings)) follow it.
 - **Parity.** [parity.md](parity.md) counts the recorded answers the tests replay, per area and
   transport, at that commit.
+- **The compatibility report.** The top of [compatibility.md](compatibility.md) and
+  [compatibility.json](compatibility.json) give hidane × firebase-tools × official emulator for
+  that commit, each combination with the results behind it.
 - **The release notes** name the official emulator and firebase-tools versions the release was
   verified with, and list breaking changes and deprecations under their own headings.
 

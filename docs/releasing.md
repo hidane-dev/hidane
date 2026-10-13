@@ -47,7 +47,8 @@ The macOS binaries are not signed or notarized yet. Archives fetched with `curl`
    `[workspace.dependencies]`; `version` in `packaging/pub/pubspec.yaml` and `hidaneVersion` in
    `packaging/pub/lib/hidane.dart`, with a `packaging/pub/CHANGELOG.md` entry.
    `mise run release:check` (`node packaging/check-versions.mjs`) checks that they agree, and CI
-   runs it.
+   runs it. Run `python3 tools/parity/compatibility.py` too: the compatibility report names the
+   workspace version, and CI fails while it is stale.
 3. Push the tag `v<version>` on that commit. The workflow checks the tag against those versions,
    builds every target, writes `sha256sums.txt`, attests the archives and creates a **draft**
    release with all of them.
