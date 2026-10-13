@@ -1,0 +1,193 @@
+name: Official emulator recordings
+
+# Re-records a set of fixtures, each against a freshly started official Cloud Firestore emulator
+# (.github/actions/official-emulator), and compares each recording with the committed fixture
+# byte for byte (tools/oracle/README.md). A recording that differs is made once more against
+# another fresh emulator: the difference is confirmed when both recordings agree, and unstable
+# when they do not.
+#
+# Called by the Official emulator workflow (drift: the pinned release, or one given by hand;
+# fails on a difference) and by the Upstream workflow (canary: a new release; reports the
+# differences instead of failing). Each recorder's job uploads `<artifact-prefix>-<recorder>`:
+# result.json (recorder, fixture, release, result), the recordings and the emulator's output.
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: Official emulator version to record against (empty for the pinned one)
+        type: string
+        required: false
+        default: ""
+      sha256:
+        description: Its jar's SHA-256 (expectedChecksumSHA256), with a version
+        type: string
+        required: false
+        default: ""
+      artifact-prefix:
+        description: The uploaded artifacts are named <artifact-prefix>-<recorder>
+        type: string
+        required: false
+        default: official
+      fail-on-difference:
+        description: Fail a recorder's job when its recording is not the committed fixture
+        type: boolean
+        required: false
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  jar:
+    name: fetch the jar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/actions/official-emulator
+      # Fills the cache once, so the recorders' jobs do not each download the jar.
+      - uses: ./.github/actions/official-emulator
+        with:
+          version: ${{ inputs.version }}
+          sha256: ${{ inputs.sha256 }}
+          start: "false"
+
+  record:
+    name: re-record ${{ matrix.recorder }}
+    needs: jar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        # Python standard library only, request and answer (no streams, no waits), with the
+        # server times and IDs the emulator chooses masked or absent. Not rules_eval.py: under
+        # Java 21 its batches of lookups ("batches/a document the batch writes, before" and the
+        # next case) are allowed on some runs and denied on others.
+        include:
+          - recorder: value_order
+            fixture: crates/hidane-core/tests/fixtures/value_order.json
+          - recorder: queries
+            fixture: crates/hidane/tests/fixtures/queries.json
+          - recorder: aggregations
+            fixture: crates/hidane/tests/fixtures/aggregations.json
+          - recorder: rest
+            fixture: crates/hidane/tests/fixtures/rest.json
+          - recorder: limits
+            fixture: crates/hidane/tests/fixtures/limits.json
+          - recorder: rules_paths
+            fixture: crates/hidane-rules/tests/fixtures/rules_paths.json
+    env:
+      RECORDER: ${{ matrix.recorder }}
+      FIXTURE: ${{ matrix.fixture }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Start the official emulator
+        id: emulator
+        uses: ./.github/actions/official-emulator
+        with:
+          version: ${{ inputs.version }}
+          sha256: ${{ inputs.sha256 }}
+          port: "8080"
+      - name: Record
+        id: record
+        continue-on-error: true
+        env:
+          ADDRESS: ${{ steps.emulator.outputs.address }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/out"
+          python3 -I "tools/oracle/$RECORDER.py" "$ADDRESS" > "$RUNNER_TEMP/out/$RECORDER.json"
+      - name: Stop the official emulator
+        if: ${{ always() && steps.emulator.outputs.pid != '' }}
+        env:
+          ADDRESS: ${{ steps.emulator.outputs.address }}
+          PID: ${{ steps.emulator.outputs.pid }}
+        run: bash .github/actions/official-emulator/stop.sh
+      - name: Compare with the committed fixture
+        id: compare
+        if: ${{ !cancelled() && steps.emulator.outcome == 'success' }}
+        env:
+          RECORDED: ${{ steps.record.outcome }}
+        run: |
+          if [[ "$RECORDED" != success ]]; then
+            echo "result=error" >> "$GITHUB_OUTPUT"
+          elif cmp -s "$FIXTURE" "$RUNNER_TEMP/out/$RECORDER.json"; then
+            echo "result=identical" >> "$GITHUB_OUTPUT"
+          else
+            diff -u "$FIXTURE" "$RUNNER_TEMP/out/$RECORDER.json" | head -n 300 || true
+            echo "result=differs" >> "$GITHUB_OUTPUT"
+          fi
+      # A difference counts once a second fresh emulator gives the same recording.
+      - name: Start another official emulator
+        id: again
+        if: ${{ !cancelled() && steps.compare.outputs.result == 'differs' }}
+        uses: ./.github/actions/official-emulator
+        with:
+          version: ${{ inputs.version }}
+          sha256: ${{ inputs.sha256 }}
+          port: "8081"
+      - name: Record again
+        id: record-again
+        if: ${{ !cancelled() && steps.again.outcome == 'success' }}
+        continue-on-error: true
+        env:
+          ADDRESS: ${{ steps.again.outputs.address }}
+        run: python3 -I "tools/oracle/$RECORDER.py" "$ADDRESS" > "$RUNNER_TEMP/out/$RECORDER.again.json"
+      - name: Stop the other official emulator
+        if: ${{ always() && steps.again.outputs.pid != '' }}
+        env:
+          ADDRESS: ${{ steps.again.outputs.address }}
+          PID: ${{ steps.again.outputs.pid }}
+        run: bash .github/actions/official-emulator/stop.sh
+      - name: Decide
+        if: ${{ !cancelled() }}
+        env:
+          VERSION: ${{ steps.emulator.outputs.version }}
+          COMPARED: ${{ steps.compare.outputs.result }}
+          AGAIN: ${{ steps.record-again.outcome }}
+          FAIL_ON_DIFFERENCE: ${{ inputs.fail-on-difference }}
+        run: |
+          out="$RUNNER_TEMP/out"
+          mkdir -p "$out"
+          case "$COMPARED" in
+            identical | error) result=$COMPARED ;;
+            differs)
+              if [[ "$AGAIN" == success ]] && cmp -s "$out/$RECORDER.json" "$out/$RECORDER.again.json"; then
+                result=different
+              else
+                result=unstable
+              fi
+              ;;
+            *) result=error ;;
+          esac
+          jq -n --arg recorder "$RECORDER" --arg fixture "$FIXTURE" --arg version "$VERSION" \
+            --arg result "$result" \
+            '{recorder: $recorder, fixture: $fixture, version: $version, result: $result}' \
+            > "$out/result.json"
+          case "$result" in
+            identical) echo "\`$RECORDER.py\` against v$VERSION recorded \`$FIXTURE\` byte for byte." ;;
+            different) echo "\`$RECORDER.py\` against v$VERSION recorded something else than \`$FIXTURE\`, the same on two fresh emulators: see the log and the uploaded recording." ;;
+            unstable) echo "\`$RECORDER.py\` against v$VERSION recorded something else than \`$FIXTURE\`, and something else again on a second fresh emulator: see the uploaded recordings." ;;
+            *) echo "\`$RECORDER.py\` against v$VERSION did not record: see the log." ;;
+          esac >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$result" == error || ( "$result" != identical && "$FAIL_ON_DIFFERENCE" == true ) ]]; then
+            echo "::error file=$FIXTURE,title=Recording $result::$RECORDER.py against the official emulator v$VERSION: $result"
+            exit 1
+          elif [[ "$result" != identical ]]; then
+            echo "::warning file=$FIXTURE,title=Recording $result::$RECORDER.py against the official emulator v$VERSION: $result"
+          fi
+      # The result, the recordings and the emulators' output.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: ${{ inputs.artifact-prefix }}-${{ matrix.recorder }}
+          path: |
+            ${{ runner.temp }}/out/
+            ${{ steps.emulator.outputs.log }}
+            ${{ steps.again.outputs.log }}
+          if-no-files-found: ignore

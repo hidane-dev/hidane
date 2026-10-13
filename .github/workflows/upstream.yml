@@ -1,21 +1,51 @@
 name: Upstream
 
-# Watches the upstream releases hidane is verified against (tools/upstream/README.md): new
-# releases of firebase-tools, the Firestore SDKs and the official emulator, on their stable,
-# latest and prerelease channels, read from the registries' public metadata only. The job summary
-# lists what is new, and the report is uploaded.
+# Watches the upstream releases hidane is verified against, and checks hidane against new ones
+# (tools/upstream/README.md):
 #
-# It runs daily, by hand, and for changes to the watcher (CI checks the watch list against the
-# verified versions on every pull request). It only reads: it never pushes, and needs no secret.
+# - detect: new releases of firebase-tools, the Firestore SDKs and the official emulator, on their
+#   stable, latest and prerelease channels, read from the registries' public metadata only.
+# - canary: for each new official emulator jar (one a firebase-tools release or its default
+#   branch pins), re-records the drift recordings against it (official-recordings.yml), runs
+#   hidane's tests with the recordings that differ in place of the fixtures, and writes a
+#   compatibility report (job summary and the `compatibility-report` artifact). New SDK releases
+#   are listed in it with what was run for them. It runs once per set of new releases.
+# - issues: opens one issue per release whose difference is confirmed, or updates the open one
+#   (found by a marker in its body). Only on main, on the schedule or by hand without dry-run.
+#
+# It runs daily, by hand, and for changes to the watcher, the canary and what they run (CI checks
+# the watch list against the verified versions on every pull request); a pull request runs the
+# canary against the pinned emulator, whose recordings must come out as committed, and only says
+# which issues it would open. Nothing here pushes or needs a secret: every job reads the
+# repository, and the issues job alone may write issues.
 
 on:
   schedule:
     - cron: "37 5 * * *"
   workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Only say which issues would be opened or updated
+        type: boolean
+        default: true
+      force:
+        description: Run the canary even if it already ran for these new releases
+        type: boolean
+        default: false
+      emulator-version:
+        description: Also run the canary against this official emulator (for example the pinned one)
+        required: false
+        default: ""
+      emulator-sha256:
+        description: Its jar's SHA-256 (expectedChecksumSHA256), with emulator-version
+        required: false
+        default: ""
   pull_request:
     paths:
       - "tools/upstream/**"
       - ".github/workflows/upstream.yml"
+      - ".github/workflows/official-recordings.yml"
+      - ".github/actions/official-emulator/**"
 
 permissions:
   contents: read
@@ -33,7 +63,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Test the watcher
+      - name: Test the watcher and the canary
         run: python3 -I -B -m unittest discover -s tools/upstream -p "test_*.py" -v
       # tools/upstream/watch.json names the versions docs/sdk-certification.json (or
       # crates/hidane/src/project/verified.rs), docs/compatibility.json and
@@ -48,27 +78,67 @@ jobs:
     timeout-minutes: 10
     outputs:
       emulators: ${{ steps.detect.outputs.emulators }}
-      sdks: ${{ steps.detect.outputs.sdks }}
       fingerprint: ${{ steps.detect.outputs.fingerprint }}
-      errors: ${{ steps.detect.outputs.errors }}
+      run: ${{ steps.decide.outputs.run }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          sparse-checkout: tools/upstream
+          sparse-checkout: |
+            tools/upstream
+            .github/actions/official-emulator
       - name: Read the registries
         id: detect
+        env:
+          EVENT: ${{ github.event_name }}
+          EMULATOR_VERSION: ${{ inputs.emulator-version }}
+          EMULATOR_SHA256: ${{ inputs.emulator-sha256 }}
         run: |
-          python3 -I -B tools/upstream/watch.py detect --report "$RUNNER_TEMP/upstream.json" \
-            --summary "$GITHUB_STEP_SUMMARY" --outputs "$GITHUB_OUTPUT"
+          args=()
+          if [[ "$EVENT" == pull_request ]]; then
+            . .github/actions/official-emulator/pinned.sh
+            args=(--emulator "$PINNED_VERSION" "$PINNED_SHA256")
+          elif [[ -n "$EMULATOR_VERSION$EMULATOR_SHA256" ]]; then
+            # watch.py refuses anything but a version and a SHA-256.
+            args=(--emulator "$EMULATOR_VERSION" "$EMULATOR_SHA256")
+          fi
+          mkdir -p "$RUNNER_TEMP/upstream"
+          python3 -I -B tools/upstream/watch.py detect --report "$RUNNER_TEMP/upstream/upstream.json" \
+            --summary "$GITHUB_STEP_SUMMARY" --outputs "$GITHUB_OUTPUT" "${args[@]}"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: ${{ !cancelled() }}
         with:
           name: upstream
-          path: ${{ runner.temp }}/upstream.json
+          path: ${{ runner.temp }}/upstream/upstream.json
           if-no-files-found: ignore
+      # The report job saves this key once it has checked a set of new releases.
+      - name: Look for an earlier canary of these releases
+        id: seen
+        if: ${{ steps.detect.outputs.new != '0' }}
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/canary-seen
+          key: upstream-canary-${{ steps.detect.outputs.fingerprint }}
+          lookup-only: true
+      - name: Decide whether the canary runs
+        id: decide
+        env:
+          NEW: ${{ steps.detect.outputs.new }}
+          SEEN: ${{ steps.seen.outputs.cache-hit }}
+          FORCE: ${{ inputs.force }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          if [[ "$NEW" == 0 ]]; then
+            run=false
+          elif [[ "$EVENT" == pull_request || "$FORCE" == true || "$SEEN" != true ]]; then
+            run=true
+          else
+            run=false
+            echo "The canary already ran for these releases; run this workflow by hand with \`force\` to run it again." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
       # A registry that did not answer, or answered something the watcher refuses, is listed in
-      # the summary; the run fails so that it is seen.
+      # the summary; the job fails so that it is seen, and the canary still runs for the rest.
       - name: Fail on errors
         env:
           ERRORS: ${{ steps.detect.outputs.errors }}
@@ -77,3 +147,153 @@ jobs:
             echo "::error title=Upstream::$ERRORS registries or pins could not be read; see the job summary"
             exit 1
           fi
+
+  record:
+    name: record v${{ matrix.emulator.version }}
+    needs: detect
+    if: ${{ !cancelled() && needs.detect.outputs.run == 'true' && needs.detect.outputs.emulators != '[]' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        emulator: ${{ fromJSON(needs.detect.outputs.emulators) }}
+    uses: ./.github/workflows/official-recordings.yml
+    with:
+      version: ${{ matrix.emulator.version }}
+      sha256: ${{ matrix.emulator.sha256 }}
+      artifact-prefix: canary-${{ matrix.emulator.slug }}
+      fail-on-difference: false
+
+  replay:
+    name: hidane against v${{ matrix.emulator.version }}
+    needs: [detect, record]
+    if: ${{ !cancelled() && needs.detect.outputs.run == 'true' && needs.detect.outputs.emulators != '[]' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        emulator: ${{ fromJSON(needs.detect.outputs.emulators) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: canary-${{ matrix.emulator.slug }}-*
+          path: ${{ runner.temp }}/recordings
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      # The recordings confirmed to differ take the fixtures' place; a test that then fails is
+      # run again with the committed fixtures.
+      - name: Run hidane's tests with the new recordings
+        run: |
+          mkdir -p "$RUNNER_TEMP/hidane"
+          python3 -I -B tools/upstream/canary.py replay --recordings "$RUNNER_TEMP/recordings" \
+            --out "$RUNNER_TEMP/hidane/replay.json" --log "$RUNNER_TEMP/hidane/cargo-test.log"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: canary-${{ matrix.emulator.slug }}-hidane
+          path: ${{ runner.temp }}/hidane/
+          if-no-files-found: ignore
+
+  report:
+    name: compatibility report
+    needs: [detect, record, replay]
+    if: ${{ !cancelled() && needs.detect.outputs.run == 'true' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      findings: ${{ steps.report.outputs.findings }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: upstream
+          path: ${{ runner.temp }}/upstream
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        if: ${{ needs.detect.outputs.emulators != '[]' }}
+        with:
+          pattern: canary-*
+          path: ${{ runner.temp }}/canary
+      - name: Write the report
+        id: report
+        run: |
+          mkdir -p "$RUNNER_TEMP/canary" "$RUNNER_TEMP/report"
+          python3 -I -B tools/upstream/canary.py report --upstream "$RUNNER_TEMP/upstream/upstream.json" \
+            --artifacts "$RUNNER_TEMP/canary" --out "$RUNNER_TEMP/report/compatibility-report.json" \
+            --summary "$GITHUB_STEP_SUMMARY" --outputs "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: compatibility-report
+          path: ${{ runner.temp }}/report/compatibility-report.json
+      # Remembers that these releases were checked, so that the next runs skip them. A run that
+      # could not conclude is not remembered, and the next one tries again.
+      - uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        if: ${{ steps.report.outputs.conclusive == 'true' && github.event_name != 'pull_request' }}
+        with:
+          path: ${{ runner.temp }}/report/compatibility-report.json
+          key: upstream-canary-${{ needs.detect.outputs.fingerprint }}
+      - name: Fail when something could not be checked
+        if: ${{ steps.report.outputs.conclusive != 'true' }}
+        run: |
+          echo "::error title=Compatibility canary::A release could not be checked to the end; see the job summary"
+          exit 1
+
+  issues:
+    name: open or update issues
+    needs: report
+    if: >-
+      ${{ !cancelled() && needs.report.outputs.findings != '' && needs.report.outputs.findings != '0'
+      && github.ref == 'refs/heads/main'
+      && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry-run)) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: tools/upstream
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: compatibility-report
+          path: ${{ runner.temp }}/report
+      - name: Open or update one issue per finding
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 -I -B tools/upstream/canary.py issues --report "$RUNNER_TEMP/report/compatibility-report.json" \
+            --summary "$GITHUB_STEP_SUMMARY"
+
+  issues-dry-run:
+    name: issues (dry run)
+    needs: report
+    if: >-
+      ${{ !cancelled() && needs.report.outputs.findings != '' && needs.report.outputs.findings != '0'
+      && !(github.ref == 'refs/heads/main'
+      && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.dry-run))) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      issues: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: tools/upstream
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: compatibility-report
+          path: ${{ runner.temp }}/report
+      - name: Say which issues would be opened or updated
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 -I -B tools/upstream/canary.py issues --dry-run \
+            --report "$RUNNER_TEMP/report/compatibility-report.json" --summary "$GITHUB_STEP_SUMMARY"

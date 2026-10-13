@@ -6,9 +6,11 @@ Usage (from the repository root):
         docs/sdk-certification.json (or, without it, crates/hidane/src/project/verified.rs),
         .github/actions/official-emulator/pinned.sh and docs/compatibility.json. Offline.
     python3 tools/upstream/watch.py detect [--report FILE] [--summary FILE] [--outputs FILE]
+            [--emulator VERSION SHA256]...
         Reads the public metadata of each watched package's registry and of firebase-tools, and
         writes what it found: the report (JSON), a Markdown summary, and the inputs of the
-        compatibility canary as GitHub Actions outputs (`name=value` lines).
+        compatibility canary as GitHub Actions outputs (`name=value` lines). `--emulator` also
+        hands the canary an official emulator jar by hand (the pinned one too), as `requested`.
 
 Only public metadata is read, never a page meant for people: npm's dist-tags and version
 documents, PyPI's JSON API, the Go module proxy, Maven Central's maven-metadata.xml, pub.dev's
@@ -54,6 +56,8 @@ SCHEMA_VERSION = 1
 
 ECOSYSTEMS = ("npm", "pypi", "go", "maven", "pub")
 STABLE, LATEST, PRERELEASE, UNRELEASED = "stable", "latest", "prerelease", "unreleased"
+REQUESTED = "requested"  # a jar the canary was asked to run against by hand
+REQUEST_SOURCE = "a request by hand"
 CHANNELS = (STABLE, LATEST, PRERELEASE)
 
 # Strict patterns for every string read from a registry.
@@ -365,11 +369,20 @@ def emulator_pins(tools_channels, fetch):
     return pins, errors
 
 
-def emulator_candidates(pins, pinned):
-    """The jars the pins name that are not the pinned one, each once, with who pins it."""
+def emulator_candidates(pins, pinned, requested=()):
+    """The jars the pins name that are not the pinned one, each once, with who pins it, and the
+    ones requested by hand (any jar, the pinned one too)."""
     found = {}
+    for version, sha256 in requested:
+        if not valid(EMULATOR_VERSION, version) or not valid(SHA256, sha256):
+            raise Stop("a requested emulator needs a version (1.22.0) and its jar's SHA-256 (64 "
+                       "lower-case hexadecimal digits)")
+        pins = [*pins, {"version": version, "sha256": sha256, "url_ok": True,
+                        "url": JAR_URL.format(version=version), "source": REQUEST_SOURCE,
+                        "channels": [REQUESTED]}]
     for pin in pins:
-        if (pin["version"], pin["sha256"]) == (pinned["version"], pinned["sha256"]):
+        if ((pin["version"], pin["sha256"]) == (pinned["version"], pinned["sha256"])
+                and REQUESTED not in pin["channels"]):
             continue
         entry = found.setdefault((pin["version"], pin["sha256"]), {
             "version": pin["version"], "sha256": pin["sha256"], "url": pin["url"],
@@ -379,14 +392,25 @@ def emulator_candidates(pins, pinned):
         for channel in pin["channels"]:
             if channel not in entry["channels"]:
                 entry["channels"].append(channel)
-    order = [STABLE, LATEST, PRERELEASE, UNRELEASED]
+    order = [STABLE, LATEST, PRERELEASE, UNRELEASED, REQUESTED]
     out = []
     for entry in found.values():
         entry["channels"].sort(key=order.index)
         entry["channel"] = entry["channels"][0]
         entry["key"] = f"emulator:{entry['version']}:{entry['sha256'][:12]}"
+        # Names its artifacts in the canary.
+        entry["slug"] = f"v{entry['version']}-{entry['sha256'][:12]}"
         out.append(entry)
     return sorted(out, key=lambda e: key(e["version"]))
+
+
+def origin(pinned_by):
+    """Who names a jar, as a phrase: `pinned by firebase-tools 15.34.0; requested by hand`."""
+    pins = [p for p in pinned_by if p != REQUEST_SOURCE]
+    parts = [f"pinned by {', '.join(pins)}"] if pins else []
+    if REQUEST_SOURCE in pinned_by:
+        parts.append("requested by hand")
+    return "; ".join(parts) or "named by nothing"
 
 
 def shown_error(err):
@@ -519,7 +543,7 @@ def optional_json(rel):
 
 # Detection --------------------------------------------------------------------------------------
 
-def detect(watch, fetch):
+def detect(watch, fetch, requested=()):
     """The report: every package's channels and new releases, and the official emulator's."""
     tags = watch.get("npm_prerelease_tags", [])
     packages, errors = [], []
@@ -544,7 +568,7 @@ def detect(watch, fetch):
     pinned = dict(watch["emulator"])
     pins, pin_errors = emulator_pins(tools_channels or {}, fetch)
     errors += pin_errors
-    candidates = emulator_candidates(pins, pinned)
+    candidates = emulator_candidates(pins, pinned, requested)
     ui = sorted({pin["ui"] for pin in pins if pin["ui"] and pin["ui"] != pinned["ui"]}, key=key)
     for candidate in candidates:
         if not candidate["url_ok"]:
@@ -562,7 +586,8 @@ def detect(watch, fetch):
 
 def canary_inputs(report):
     """What the compatibility canary runs: the new jars it can fetch, and the new packages."""
-    emulators = [{k: c[k] for k in ("key", "version", "sha256", "url", "channel")}
+    emulators = [{k: c[k] for k in ("key", "slug", "version", "sha256", "url", "channel",
+                                     "pinned_by")}
                  for c in report["emulator"]["candidates"] if c["url_ok"]]
     sdks = []
     for package in report["packages"]:
@@ -623,8 +648,8 @@ def summary(report):
         for c in candidates:
             fetchable = ("the canary can fetch it" if c["url_ok"]
                          else "**not fetched**: firebase-tools names another URL")
-            lines.append(f"- v{c['version']} (SHA-256 `{c['sha256']}`), {c['channel']}, pinned "
-                         f"by {', '.join(c['pinned_by'])}; {fetchable}.")
+            lines.append(f"- v{c['version']} (SHA-256 `{c['sha256']}`), {c['channel']}, "
+                         f"{origin(c['pinned_by'])}; {fetchable}.")
     if emulator["new_ui"]:
         lines += ["", "Another Emulator UI is pinned: "
                   + ", ".join(f"v{v}" for v in emulator["new_ui"])
@@ -659,6 +684,9 @@ def main(argv=None):
     run.add_argument("--report", help="write the report (JSON) here")
     run.add_argument("--summary", help="append the Markdown summary here")
     run.add_argument("--outputs", help="append the canary's inputs here (GITHUB_OUTPUT)")
+    run.add_argument("--emulator", nargs=2, action="append", default=[],
+                     metavar=("VERSION", "SHA256"),
+                     help="also give the canary this official emulator jar, new or not")
     args = parser.parse_args(argv)
     try:
         watch = load_watch()
@@ -670,7 +698,7 @@ def main(argv=None):
                 raise Stop("\n".join(problems))
             print(f"{WATCH}: in step with what the repository says is verified.")
             return 0
-        report = detect(watch, http_get)
+        report = detect(watch, http_get, args.emulator)
     except Stop as err:
         print(f"error: {err}", file=sys.stderr)
         return 1

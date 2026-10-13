@@ -268,6 +268,26 @@ class Detect(unittest.TestCase):
         self.assertEqual(lines["errors"], "0")
         self.assertEqual(lines["fingerprint"], watch.fingerprint(*watch.canary_inputs(report)))
 
+    def test_requested_emulator(self):
+        report = watch.detect(WATCH, Fetch(registry()), [("1.22.0", PINNED_SHA)])
+        [candidate] = report["emulator"]["candidates"]
+        self.assertEqual((candidate["channel"], candidate["slug"], candidate["pinned_by"]),
+                         ("requested", "v1.22.0-9b6498b7f627", [watch.REQUEST_SOURCE]))
+        self.assertEqual(watch.origin(candidate["pinned_by"]), "requested by hand")
+        self.assertEqual(watch.origin(["firebase-tools 1.0.0", watch.REQUEST_SOURCE]),
+                         "pinned by firebase-tools 1.0.0; requested by hand")
+        [emulator], _ = watch.canary_inputs(report)
+        self.assertEqual(emulator["url"], watch.JAR_URL.format(version="1.22.0"))
+        for bad in (("1.22.0; x", PINNED_SHA), ("1.22.0", "B" * 64), ("", "")):
+            with self.assertRaises(watch.Stop):
+                watch.detect(WATCH, Fetch(registry()), [bad])
+
+    def test_requested_and_pinned_by_a_release(self):
+        answers = registry(main_info=emulator_info("1.23.0", NEW_SHA))
+        report = watch.detect(WATCH, Fetch(answers), [("1.23.0", NEW_SHA)])
+        [candidate] = report["emulator"]["candidates"]
+        self.assertEqual(candidate["channels"], ["unreleased", "requested"])
+
     def test_go_module_escape(self):
         self.assertEqual(watch.go_escape("github.com/Azure/azure-sdk"),
                          "github.com/!azure/azure-sdk")
