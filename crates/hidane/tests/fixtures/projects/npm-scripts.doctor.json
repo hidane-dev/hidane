@@ -1,0 +1,398 @@
+{
+  "schema": "hidane.doctor/1",
+  "hidane": "<version>",
+  "summary": {
+    "compatible": 2,
+    "likely_compatible": 1,
+    "ok": 4,
+    "info": 9,
+    "unknown": 0,
+    "incompatible": 0
+  },
+  "findings": [
+    {
+      "code": "firebase-json.found",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "firebase.json found",
+      "file": "firebase.json"
+    },
+    {
+      "code": "firestore-emulator.configured",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "Firestore emulator configured: localhost:8085",
+      "details": [
+        "Under `hidane exec`, hidane listens where firebase-tools tells it to: FIRESTORE_EMULATOR_HOST stays as it is"
+      ],
+      "file": "firebase.json"
+    },
+    {
+      "code": "emulators.single-project-mode",
+      "group": "firebase",
+      "status": "info",
+      "severity": "info",
+      "title": "Single project mode (the default): hidane accepts --single_project_mode but does not log the official emulator's warning for requests to other project IDs",
+      "details": [
+        "docs/parity-exceptions.md lists this difference"
+      ],
+      "file": "firebase.json"
+    },
+    {
+      "code": "java.firestore-only",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "Only the Firestore emulator needs Java here: under `hidane exec`, firebase-tools needs no Java",
+      "file": "firebase.json"
+    },
+    {
+      "code": "emulators.others",
+      "group": "firebase",
+      "status": "info",
+      "severity": "info",
+      "title": "Other emulators: auth",
+      "details": [
+        "auth (port 9099): runs without Java; hidane does not change it"
+      ],
+      "file": "firebase.json"
+    },
+    {
+      "code": "rules.compile",
+      "group": "rules",
+      "status": "compatible",
+      "severity": "info",
+      "title": "firestore.rules compiles with hidane's rules compiler",
+      "source": "crates/hidane/tests/fixtures/rules_compile.json; docs/parity-exceptions.md",
+      "file": "firestore.rules"
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "likely-compatible",
+      "severity": "info",
+      "title": "firebase-tools ^15.30.0 (package.json): likely compatible — the same major version as the verified 15.33.0; the version it resolves to is not known and is not verified itself",
+      "source": "docs/adr/0006-launch-under-firebase-tools.md; results/export-import-*.json",
+      "file": "package.json",
+      "line": 14
+    },
+    {
+      "code": "workflow.emulators",
+      "group": "workflows",
+      "status": "info",
+      "severity": "info",
+      "title": ".github/workflows/test.yaml, job `emulator-tests`: starts the emulators",
+      "details": [
+        "package.json:8: firebase emulators:exec --only firestore 'npm test'",
+        "scripts/e2e.sh:5: npx firebase emulators:exec --only firestore,auth \"npx playwright test\""
+      ],
+      "file": ".github/workflows/test.yaml",
+      "line": 5
+    },
+    {
+      "code": "workflow.setup-java",
+      "group": "workflows",
+      "status": "info",
+      "severity": "warning",
+      "title": ".github/workflows/test.yaml, job `emulator-tests`: actions/setup-java is there only for the Firestore emulator; with hidane the job needs no Java",
+      "file": ".github/workflows/test.yaml",
+      "line": 5
+    },
+    {
+      "code": "workflow.emulator-host",
+      "group": "workflows",
+      "status": "ok",
+      "severity": "info",
+      "title": ".github/workflows/test.yaml, job `emulator-tests`: FIRESTORE_EMULATOR_HOST=localhost:8085 stays as it is: hidane serves the same address",
+      "file": ".github/workflows/test.yaml",
+      "line": 5
+    },
+    {
+      "code": "emulators.import-export",
+      "group": "scripts",
+      "status": "compatible",
+      "severity": "info",
+      "title": "Imports and exports: --import and --export-on-exit read and write the official emulator's format",
+      "source": "docs/export-format.md; results/export-import-*.json"
+    },
+    {
+      "code": "script.emulators",
+      "group": "scripts",
+      "status": "info",
+      "severity": "info",
+      "title": "package.json: script `emulators` starts the emulators",
+      "details": [
+        "firebase emulators:start --only firestore,auth"
+      ],
+      "file": "package.json",
+      "line": 6
+    },
+    {
+      "code": "script.emulators",
+      "group": "scripts",
+      "status": "info",
+      "severity": "info",
+      "title": "package.json: script `test:emulator` starts the emulators",
+      "details": [
+        "firebase emulators:exec --only firestore 'npm test'"
+      ],
+      "file": "package.json",
+      "line": 8
+    },
+    {
+      "code": "script.emulators",
+      "group": "scripts",
+      "status": "info",
+      "severity": "info",
+      "title": "package.json: script `ci` starts the emulators",
+      "details": [
+        "npm run build && firebase emulators:exec --project demo-app --only firestore,auth \"vitest run --coverage\""
+      ],
+      "file": "package.json",
+      "line": 9
+    },
+    {
+      "code": "script.emulators",
+      "group": "scripts",
+      "status": "info",
+      "severity": "info",
+      "title": "package.json: script `seed` starts the emulators",
+      "details": [
+        "firebase emulators:start --only firestore --import ./seed --export-on-exit"
+      ],
+      "file": "package.json",
+      "line": 10
+    },
+    {
+      "code": "script.emulators",
+      "group": "scripts",
+      "status": "info",
+      "severity": "info",
+      "title": "scripts/e2e.sh:5: starts the emulators",
+      "details": [
+        "npx firebase emulators:exec --only firestore,auth \"npx playwright test\""
+      ],
+      "file": "scripts/e2e.sh",
+      "line": 5
+    }
+  ],
+  "facts": {
+    "firebase": [
+      {
+        "file": "firebase.json",
+        "firestore": {
+          "host": "localhost",
+          "port": 8085,
+          "websocket_port": null,
+          "edition": null,
+          "databases": [
+            {
+              "database": null,
+              "rules": "firestore.rules",
+              "indexes": null
+            }
+          ]
+        },
+        "emulators": [
+          {
+            "name": "auth",
+            "host": null,
+            "port": 9099,
+            "java": false
+          }
+        ],
+        "single_project_mode": true,
+        "ui": true,
+        "functions": []
+      }
+    ],
+    "rules": [
+      {
+        "file": "firestore.rules",
+        "database": null,
+        "found": true,
+        "compiles": true,
+        "errors": [],
+        "warnings": []
+      }
+    ],
+    "functions": [],
+    "dependencies": [
+      {
+        "ecosystem": "npm",
+        "name": "firebase-tools",
+        "file": "package.json",
+        "line": 14,
+        "declared": "^15.30.0",
+        "resolved": null,
+        "lockfile": null,
+        "engine": null,
+        "platforms": []
+      }
+    ],
+    "emulator_commands": [
+      {
+        "file": "package.json",
+        "line": 8,
+        "command": "firebase emulators:exec --only firestore 'npm test'",
+        "subcommand": "emulators:exec",
+        "only": [
+          "firestore"
+        ],
+        "starts": [
+          "firestore"
+        ],
+        "config": "firebase.json",
+        "under_hidane": false,
+        "editable": true,
+        "import": false,
+        "export": false
+      },
+      {
+        "file": "scripts/e2e.sh",
+        "line": 5,
+        "command": "npx firebase emulators:exec --only firestore,auth \"npx playwright test\"",
+        "subcommand": "emulators:exec",
+        "only": [
+          "firestore",
+          "auth"
+        ],
+        "starts": [
+          "auth",
+          "firestore"
+        ],
+        "config": "firebase.json",
+        "under_hidane": false,
+        "editable": true,
+        "import": false,
+        "export": false
+      },
+      {
+        "file": "package.json",
+        "line": 6,
+        "command": "firebase emulators:start --only firestore,auth",
+        "subcommand": "emulators:start",
+        "only": [
+          "firestore",
+          "auth"
+        ],
+        "starts": [
+          "auth",
+          "firestore"
+        ],
+        "config": "firebase.json",
+        "under_hidane": false,
+        "editable": true,
+        "import": false,
+        "export": false
+      },
+      {
+        "file": "package.json",
+        "line": 9,
+        "command": "firebase emulators:exec --project demo-app --only firestore,auth \"vitest run --coverage\"",
+        "subcommand": "emulators:exec",
+        "only": [
+          "firestore",
+          "auth"
+        ],
+        "starts": [
+          "auth",
+          "firestore"
+        ],
+        "config": "firebase.json",
+        "under_hidane": false,
+        "editable": true,
+        "import": false,
+        "export": false
+      },
+      {
+        "file": "package.json",
+        "line": 10,
+        "command": "firebase emulators:start --only firestore --import ./seed --export-on-exit",
+        "subcommand": "emulators:start",
+        "only": [
+          "firestore"
+        ],
+        "starts": [
+          "firestore"
+        ],
+        "config": "firebase.json",
+        "under_hidane": false,
+        "editable": true,
+        "import": true,
+        "export": true
+      }
+    ],
+    "workflows": [
+      {
+        "file": ".github/workflows/test.yaml",
+        "parsed": true,
+        "jobs": [
+          {
+            "id": "emulator-tests",
+            "line": 5,
+            "runs_on": "ubuntu-latest",
+            "setup_java": [
+              2
+            ],
+            "setup_hidane": false,
+            "emulators": [
+              0,
+              1
+            ],
+            "first_emulator_step": 4,
+            "java": {
+              "verdict": "not-needed"
+            },
+            "emulator_host": [
+              "localhost:8085"
+            ],
+            "caches_emulators": false,
+            "other_shell": false
+          }
+        ]
+      }
+    ],
+    "scripts": [
+      {
+        "file": "package.json",
+        "name": "emulators",
+        "line": 6,
+        "command": "firebase emulators:start --only firestore,auth",
+        "emulators": [
+          2
+        ]
+      },
+      {
+        "file": "package.json",
+        "name": "test:emulator",
+        "line": 8,
+        "command": "firebase emulators:exec --only firestore 'npm test'",
+        "emulators": [
+          0
+        ]
+      },
+      {
+        "file": "package.json",
+        "name": "ci",
+        "line": 9,
+        "command": "npm run build && firebase emulators:exec --project demo-app --only firestore,auth \"vitest run --coverage\"",
+        "emulators": [
+          3
+        ]
+      },
+      {
+        "file": "package.json",
+        "name": "seed",
+        "line": 10,
+        "command": "firebase emulators:start --only firestore --import ./seed --export-on-exit",
+        "emulators": [
+          4
+        ]
+      }
+    ],
+    "unread": []
+  }
+}

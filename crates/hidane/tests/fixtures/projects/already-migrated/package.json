@@ -1,0 +1,14 @@
+{
+  "name": "already-migrated",
+  "private": true,
+  "scripts": {
+    "emulators": "hidane exec -- firebase emulators:start --only firestore",
+    "test": "vitest run",
+    "test:emulator": "hidane exec -- firebase emulators:exec --only firestore 'npm test'"
+  },
+  "devDependencies": {
+    "firebase-tools": "15.33.0",
+    "hidane": "^0.3.0",
+    "vitest": "^3.2.0"
+  }
+}

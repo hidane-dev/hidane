@@ -1,0 +1,13 @@
+name: Test
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hidane-dev/setup-hidane@v1
+      - run: npm ci
+      - run: hidane exec -- npx firebase emulators:exec --only firestore "npm test"
+      - run: npm run test:emulator

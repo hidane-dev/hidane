@@ -1,0 +1,374 @@
+{
+  "schema": "hidane.doctor/1",
+  "hidane": "<version>",
+  "summary": {
+    "compatible": 0,
+    "likely_compatible": 1,
+    "ok": 3,
+    "info": 5,
+    "unknown": 7,
+    "incompatible": 0
+  },
+  "findings": [
+    {
+      "code": "firebase-json.found",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "firebase.json found",
+      "file": "firebase.json"
+    },
+    {
+      "code": "firestore-emulator.configured",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "Firestore emulator configured: localhost:8080",
+      "details": [
+        "Under `hidane exec`, hidane listens where firebase-tools tells it to: FIRESTORE_EMULATOR_HOST stays as it is"
+      ],
+      "file": "firebase.json"
+    },
+    {
+      "code": "emulators.single-project-mode",
+      "group": "firebase",
+      "status": "info",
+      "severity": "info",
+      "title": "Single project mode (the default): hidane accepts --single_project_mode but does not log the official emulator's warning for requests to other project IDs",
+      "details": [
+        "docs/parity-exceptions.md lists this difference"
+      ],
+      "file": "firebase.json"
+    },
+    {
+      "code": "java.firestore-only",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "Only the Firestore emulator needs Java here: under `hidane exec`, firebase-tools needs no Java",
+      "file": "firebase.json"
+    },
+    {
+      "code": "rules.none",
+      "group": "rules",
+      "status": "info",
+      "severity": "info",
+      "title": "No Firestore rules file in firebase.json: both emulators allow every request",
+      "file": "firebase.json"
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "likely-compatible",
+      "severity": "info",
+      "title": "firebase-tools ^15.0.0 (package.json): likely compatible — the same major version as the verified 15.33.0; the version it resolves to is not known and is not verified itself",
+      "source": "docs/adr/0006-launch-under-firebase-tools.md; results/export-import-*.json",
+      "file": "package.json",
+      "line": 9
+    },
+    {
+      "code": "workflow.emulators",
+      "group": "workflows",
+      "status": "info",
+      "severity": "info",
+      "title": ".github/workflows/unusual.yml, job `quoted`: starts the emulators",
+      "details": [
+        ".github/workflows/unusual.yml:14: npx firebase emulators:exec --only firestore 'npm test'"
+      ],
+      "file": ".github/workflows/unusual.yml",
+      "line": 7
+    },
+    {
+      "code": "workflow.setup-java",
+      "group": "workflows",
+      "status": "info",
+      "severity": "warning",
+      "title": ".github/workflows/unusual.yml, job `quoted`: actions/setup-java is there only for the Firestore emulator; with hidane the job needs no Java",
+      "file": ".github/workflows/unusual.yml",
+      "line": 7
+    },
+    {
+      "code": "workflow.emulators",
+      "group": "workflows",
+      "status": "info",
+      "severity": "info",
+      "title": ".github/workflows/unusual.yml, job `windows`: starts the emulators",
+      "details": [
+        ".github/workflows/unusual.yml:24: npx firebase emulators:exec --only firestore \"npm test\""
+      ],
+      "file": ".github/workflows/unusual.yml",
+      "line": 17
+    },
+    {
+      "code": "workflow.shell",
+      "group": "workflows",
+      "status": "unknown",
+      "severity": "warning",
+      "title": ".github/workflows/unusual.yml, job `windows`: starts the emulators on Windows or in a shell other than bash or sh, where hidane exec is not verified — manual verification required",
+      "source": "docs/adr/0006-launch-under-firebase-tools.md (Consequences)",
+      "file": ".github/workflows/unusual.yml",
+      "line": 17
+    },
+    {
+      "code": "workflow.setup-java",
+      "group": "workflows",
+      "status": "unknown",
+      "severity": "warning",
+      "title": ".github/workflows/unusual.yml, job `windows`: whether the job still needs Java is not known — manual verification required",
+      "details": [
+        "the job runs on Windows, where hidane exec is not verified"
+      ],
+      "file": ".github/workflows/unusual.yml",
+      "line": 17
+    },
+    {
+      "code": "manual",
+      "group": "workflows",
+      "status": "unknown",
+      "severity": "warning",
+      "title": ".github/workflows/unusual.yml:14: the command is inside a quoted string or a shell hidane migrate does not read — manual change suggested",
+      "details": [
+        "- run: bash -c \"npx firebase emulators:exec --only firestore 'npm test'\""
+      ],
+      "file": ".github/workflows/unusual.yml",
+      "line": 14
+    },
+    {
+      "code": "manual",
+      "group": "workflows",
+      "status": "unknown",
+      "severity": "warning",
+      "title": ".github/workflows/unusual.yml:24: the command is inside a quoted string or a shell hidane migrate does not read — manual change suggested",
+      "details": [
+        "- run: npx firebase emulators:exec --only firestore \"npm test\""
+      ],
+      "file": ".github/workflows/unusual.yml",
+      "line": 24
+    },
+    {
+      "code": "manual",
+      "group": "workflows",
+      "status": "unknown",
+      "severity": "warning",
+      "title": ".github/workflows/unusual.yml:30: an action runs the emulators; hidane exec cannot wrap it — manual change suggested",
+      "details": [
+        "- uses: w9jds/firebase-action@v14.10.1"
+      ],
+      "file": ".github/workflows/unusual.yml",
+      "line": 30
+    },
+    {
+      "code": "manual",
+      "group": "workflows",
+      "status": "unknown",
+      "severity": "warning",
+      "title": ".github/workflows/unusual.yml:43: the emulators are started in a way hidane migrate does not read — manual change suggested",
+      "details": [
+        "- run: npx concurrently --kill-others \"firebase emulators:start --only firestore\" \"npm run test:watch\""
+      ],
+      "file": ".github/workflows/unusual.yml",
+      "line": 43
+    },
+    {
+      "code": "manual",
+      "group": "scripts",
+      "status": "unknown",
+      "severity": "warning",
+      "title": "package.json:6: the emulators are started in a way hidane migrate does not read — manual change suggested",
+      "details": [
+        "\"dev\": \"concurrently \\\"firebase emulators:start --only firestore\\\" \\\"vite\\\"\""
+      ],
+      "file": "package.json",
+      "line": 6
+    }
+  ],
+  "facts": {
+    "firebase": [
+      {
+        "file": "firebase.json",
+        "firestore": {
+          "host": "localhost",
+          "port": 8080,
+          "websocket_port": null,
+          "edition": null,
+          "databases": [
+            {
+              "database": null,
+              "rules": null,
+              "indexes": null
+            }
+          ]
+        },
+        "emulators": [],
+        "single_project_mode": true,
+        "ui": true,
+        "functions": []
+      }
+    ],
+    "rules": [],
+    "functions": [],
+    "dependencies": [
+      {
+        "ecosystem": "npm",
+        "name": "firebase-tools",
+        "file": "package.json",
+        "line": 9,
+        "declared": "^15.0.0",
+        "resolved": null,
+        "lockfile": null,
+        "engine": null,
+        "platforms": []
+      }
+    ],
+    "emulator_commands": [
+      {
+        "file": ".github/workflows/unusual.yml",
+        "line": 14,
+        "command": "npx firebase emulators:exec --only firestore 'npm test'",
+        "subcommand": "emulators:exec",
+        "only": [
+          "firestore"
+        ],
+        "starts": [
+          "firestore"
+        ],
+        "config": "firebase.json",
+        "under_hidane": false,
+        "editable": false,
+        "import": false,
+        "export": false
+      },
+      {
+        "file": ".github/workflows/unusual.yml",
+        "line": 24,
+        "command": "npx firebase emulators:exec --only firestore \"npm test\"",
+        "subcommand": "emulators:exec",
+        "only": [
+          "firestore"
+        ],
+        "starts": [
+          "firestore"
+        ],
+        "config": "firebase.json",
+        "under_hidane": false,
+        "editable": false,
+        "import": false,
+        "export": false
+      }
+    ],
+    "workflows": [
+      {
+        "file": ".github/workflows/unusual.yml",
+        "parsed": true,
+        "jobs": [
+          {
+            "id": "quoted",
+            "line": 7,
+            "runs_on": "ubuntu-latest",
+            "setup_java": [
+              0
+            ],
+            "setup_hidane": false,
+            "emulators": [
+              0
+            ],
+            "first_emulator_step": null,
+            "java": {
+              "verdict": "not-needed"
+            },
+            "emulator_host": [],
+            "caches_emulators": false,
+            "other_shell": false
+          },
+          {
+            "id": "windows",
+            "line": 17,
+            "runs_on": "windows-latest",
+            "setup_java": [
+              0
+            ],
+            "setup_hidane": false,
+            "emulators": [
+              1
+            ],
+            "first_emulator_step": null,
+            "java": {
+              "verdict": "unknown",
+              "reasons": [
+                "the job runs on Windows, where hidane exec is not verified"
+              ]
+            },
+            "emulator_host": [],
+            "caches_emulators": false,
+            "other_shell": true
+          },
+          {
+            "id": "action",
+            "line": 27,
+            "runs_on": "ubuntu-latest",
+            "setup_java": [],
+            "setup_hidane": false,
+            "emulators": [],
+            "first_emulator_step": null,
+            "java": {
+              "verdict": "not-applicable"
+            },
+            "emulator_host": [],
+            "caches_emulators": false,
+            "other_shell": false
+          },
+          {
+            "id": "concurrently",
+            "line": 35,
+            "runs_on": "ubuntu-latest",
+            "setup_java": [
+              0
+            ],
+            "setup_hidane": false,
+            "emulators": [],
+            "first_emulator_step": null,
+            "java": {
+              "verdict": "not-applicable"
+            },
+            "emulator_host": [],
+            "caches_emulators": false,
+            "other_shell": false
+          }
+        ]
+      }
+    ],
+    "scripts": [],
+    "unread": [
+      {
+        "file": ".github/workflows/unusual.yml",
+        "line": 14,
+        "text": "- run: bash -c \"npx firebase emulators:exec --only firestore 'npm test'\"",
+        "reason": "the command is inside a quoted string or a shell hidane migrate does not read"
+      },
+      {
+        "file": ".github/workflows/unusual.yml",
+        "line": 24,
+        "text": "- run: npx firebase emulators:exec --only firestore \"npm test\"",
+        "reason": "the command is inside a quoted string or a shell hidane migrate does not read"
+      },
+      {
+        "file": ".github/workflows/unusual.yml",
+        "line": 30,
+        "text": "- uses: w9jds/firebase-action@v14.10.1",
+        "reason": "an action runs the emulators; hidane exec cannot wrap it"
+      },
+      {
+        "file": ".github/workflows/unusual.yml",
+        "line": 43,
+        "text": "- run: npx concurrently --kill-others \"firebase emulators:start --only firestore\" \"npm run test:watch\"",
+        "reason": "the emulators are started in a way hidane migrate does not read"
+      },
+      {
+        "file": "package.json",
+        "line": 6,
+        "text": "\"dev\": \"concurrently \\\"firebase emulators:start --only firestore\\\" \\\"vite\\\"\"",
+        "reason": "the emulators are started in a way hidane migrate does not read"
+      }
+    ]
+  }
+}

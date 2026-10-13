@@ -1,0 +1,211 @@
+{
+  "schema": "hidane.doctor/1",
+  "hidane": "<version>",
+  "summary": {
+    "compatible": 0,
+    "likely_compatible": 3,
+    "ok": 3,
+    "info": 2,
+    "unknown": 0,
+    "incompatible": 1
+  },
+  "findings": [
+    {
+      "code": "firebase-json.found",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "firebase.json found",
+      "file": "firebase.json"
+    },
+    {
+      "code": "firestore-emulator.configured",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "Firestore emulator configured: localhost:8080",
+      "details": [
+        "Under `hidane exec`, hidane listens where firebase-tools tells it to: FIRESTORE_EMULATOR_HOST stays as it is"
+      ],
+      "file": "firebase.json"
+    },
+    {
+      "code": "emulators.single-project-mode",
+      "group": "firebase",
+      "status": "info",
+      "severity": "info",
+      "title": "Single project mode (the default): hidane accepts --single_project_mode but does not log the official emulator's warning for requests to other project IDs",
+      "details": [
+        "docs/parity-exceptions.md lists this difference"
+      ],
+      "file": "firebase.json"
+    },
+    {
+      "code": "java.firestore-only",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "Only the Firestore emulator needs Java here: under `hidane exec`, firebase-tools needs no Java",
+      "file": "firebase.json"
+    },
+    {
+      "code": "rules.compile",
+      "group": "rules",
+      "status": "incompatible",
+      "severity": "error",
+      "title": "firestore.rules does not compile: hidane would start without these rules",
+      "details": [
+        "error: L5:19 Missing 'if' before conditional expression.",
+        "hidane's compiler gives the official emulator's errors; if the official emulator accepts this file, please report it (https://github.com/hidane-dev/hidane/issues)"
+      ],
+      "source": "crates/hidane/tests/fixtures/rules_compile.json; docs/parity-exceptions.md",
+      "file": "firestore.rules"
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "likely-compatible",
+      "severity": "info",
+      "title": "@firebase/rules-unit-testing ^6.0.0 (package.json): likely compatible — the same major version as the verified 6.0.0; the version it resolves to is not known and is not verified itself",
+      "source": "docs/compatibility.md; results/sdk-rules-unit-testing-*.json, results/browser-rules-*.json",
+      "file": "package.json",
+      "line": 8
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "likely-compatible",
+      "severity": "info",
+      "title": "Firebase JS SDK (firebase) ^13.0.0 (package.json): likely compatible — the same major version as the verified 13.0.0; the version it resolves to is not known and is not verified itself",
+      "source": "docs/compatibility.md; results/sdk-web-writes-*.json, results/sdk-rest-*.json, results/browser-webchannel-*.json",
+      "file": "package.json",
+      "line": 9
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "likely-compatible",
+      "severity": "info",
+      "title": "firebase-tools ^15.0.0 (package.json): likely compatible — the same major version as the verified 15.33.0; the version it resolves to is not known and is not verified itself",
+      "source": "docs/adr/0006-launch-under-firebase-tools.md; results/export-import-*.json",
+      "file": "package.json",
+      "line": 10
+    },
+    {
+      "code": "script.emulators",
+      "group": "scripts",
+      "status": "info",
+      "severity": "info",
+      "title": "package.json: script `test:rules` starts the emulators",
+      "details": [
+        "firebase emulators:exec --only firestore 'node --test rules.test.mjs'"
+      ],
+      "file": "package.json",
+      "line": 5
+    }
+  ],
+  "facts": {
+    "firebase": [
+      {
+        "file": "firebase.json",
+        "firestore": {
+          "host": "localhost",
+          "port": 8080,
+          "websocket_port": null,
+          "edition": null,
+          "databases": [
+            {
+              "database": null,
+              "rules": "firestore.rules",
+              "indexes": null
+            }
+          ]
+        },
+        "emulators": [],
+        "single_project_mode": true,
+        "ui": true,
+        "functions": []
+      }
+    ],
+    "rules": [
+      {
+        "file": "firestore.rules",
+        "database": null,
+        "found": true,
+        "compiles": false,
+        "errors": [
+          "L5:19 Missing 'if' before conditional expression."
+        ],
+        "warnings": []
+      }
+    ],
+    "functions": [],
+    "dependencies": [
+      {
+        "ecosystem": "npm",
+        "name": "@firebase/rules-unit-testing",
+        "file": "package.json",
+        "line": 8,
+        "declared": "^6.0.0",
+        "resolved": null,
+        "lockfile": null,
+        "engine": null,
+        "platforms": []
+      },
+      {
+        "ecosystem": "npm",
+        "name": "firebase",
+        "file": "package.json",
+        "line": 9,
+        "declared": "^13.0.0",
+        "resolved": null,
+        "lockfile": null,
+        "engine": null,
+        "platforms": []
+      },
+      {
+        "ecosystem": "npm",
+        "name": "firebase-tools",
+        "file": "package.json",
+        "line": 10,
+        "declared": "^15.0.0",
+        "resolved": null,
+        "lockfile": null,
+        "engine": null,
+        "platforms": []
+      }
+    ],
+    "emulator_commands": [
+      {
+        "file": "package.json",
+        "line": 5,
+        "command": "firebase emulators:exec --only firestore 'node --test rules.test.mjs'",
+        "subcommand": "emulators:exec",
+        "only": [
+          "firestore"
+        ],
+        "starts": [
+          "firestore"
+        ],
+        "config": "firebase.json",
+        "under_hidane": false,
+        "editable": true,
+        "import": false,
+        "export": false
+      }
+    ],
+    "workflows": [],
+    "scripts": [
+      {
+        "file": "package.json",
+        "name": "test:rules",
+        "line": 5,
+        "command": "firebase emulators:exec --only firestore 'node --test rules.test.mjs'",
+        "emulators": [
+          0
+        ]
+      }
+    ],
+    "unread": []
+  }
+}

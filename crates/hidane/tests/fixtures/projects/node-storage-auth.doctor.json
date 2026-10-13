@@ -1,0 +1,247 @@
+{
+  "schema": "hidane.doctor/1",
+  "hidane": "<version>",
+  "summary": {
+    "compatible": 3,
+    "likely_compatible": 0,
+    "ok": 2,
+    "info": 6,
+    "unknown": 1,
+    "incompatible": 0
+  },
+  "findings": [
+    {
+      "code": "firebase-json.found",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "firebase.json found",
+      "file": "firebase.json"
+    },
+    {
+      "code": "firestore-emulator.configured",
+      "group": "firebase",
+      "status": "ok",
+      "severity": "info",
+      "title": "Firestore emulator configured: localhost:8080",
+      "details": [
+        "Under `hidane exec`, hidane listens where firebase-tools tells it to: FIRESTORE_EMULATOR_HOST stays as it is",
+        "websocketPort 9150: hidane serves the Emulator UI's request monitor there"
+      ],
+      "file": "firebase.json"
+    },
+    {
+      "code": "emulators.single-project-mode",
+      "group": "firebase",
+      "status": "info",
+      "severity": "info",
+      "title": "Single project mode (the default): hidane accepts --single_project_mode but does not log the official emulator's warning for requests to other project IDs",
+      "details": [
+        "docs/parity-exceptions.md lists this difference"
+      ],
+      "file": "firebase.json"
+    },
+    {
+      "code": "java.other-emulators",
+      "group": "firebase",
+      "status": "info",
+      "severity": "warning",
+      "title": "The storage emulator still needs Java: hidane serves only Firestore, and `hidane exec` runs the others with the Java on PATH",
+      "file": "firebase.json"
+    },
+    {
+      "code": "emulators.others",
+      "group": "firebase",
+      "status": "info",
+      "severity": "info",
+      "title": "Other emulators: auth, storage",
+      "details": [
+        "auth (port 9099): runs without Java; hidane does not change it",
+        "storage (port 9199): runs on Java, which hidane does not replace"
+      ],
+      "file": "firebase.json"
+    },
+    {
+      "code": "emulators.ui",
+      "group": "firebase",
+      "status": "compatible",
+      "severity": "info",
+      "title": "Emulator UI: verified with hidane (Emulator UI v1.15.0: browse, create and delete documents, Clear all data, the request monitor)",
+      "source": "docs/compatibility.md",
+      "file": "firebase.json"
+    },
+    {
+      "code": "rules.compile",
+      "group": "rules",
+      "status": "compatible",
+      "severity": "info",
+      "title": "firestore.rules compiles with hidane's rules compiler",
+      "source": "crates/hidane/tests/fixtures/rules_compile.json; docs/parity-exceptions.md",
+      "file": "firestore.rules"
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "unknown",
+      "severity": "warning",
+      "title": "Firebase JS SDK (firebase) ^12.4.0 (package.json): not verified with hidane — manual verification required",
+      "details": [
+        "hidane verified firebase 13.0.0"
+      ],
+      "file": "package.json",
+      "line": 8
+    },
+    {
+      "code": "dependency.sdk",
+      "group": "dependencies",
+      "status": "compatible",
+      "severity": "info",
+      "title": "firebase-tools 15.33.0 (.github/workflows/ci.yml): verified with hidane (emulators:start and emulators:exec through hidane exec, without Java)",
+      "source": "docs/adr/0006-launch-under-firebase-tools.md; results/export-import-*.json",
+      "file": ".github/workflows/ci.yml",
+      "line": 18
+    },
+    {
+      "code": "workflow.emulators",
+      "group": "workflows",
+      "status": "info",
+      "severity": "info",
+      "title": ".github/workflows/ci.yml, job `test`: starts the emulators",
+      "details": [
+        ".github/workflows/ci.yml:22: firebase emulators:exec \"npm test\" --project demo-storage-auth"
+      ],
+      "file": ".github/workflows/ci.yml",
+      "line": 6
+    },
+    {
+      "code": "workflow.setup-java",
+      "group": "workflows",
+      "status": "info",
+      "severity": "info",
+      "title": ".github/workflows/ci.yml, job `test`: keep actions/setup-java: the storage emulator still needs Java",
+      "file": ".github/workflows/ci.yml",
+      "line": 6
+    },
+    {
+      "code": "workflow.emulator-cache",
+      "group": "workflows",
+      "status": "info",
+      "severity": "info",
+      "title": ".github/workflows/ci.yml, job `test`: caches ~/.cache/firebase/emulators; under hidane exec, firebase-tools no longer downloads the Firestore emulator (the Emulator UI and other emulators still are)",
+      "file": ".github/workflows/ci.yml",
+      "line": 6
+    }
+  ],
+  "facts": {
+    "firebase": [
+      {
+        "file": "firebase.json",
+        "firestore": {
+          "host": "localhost",
+          "port": 8080,
+          "websocket_port": 9150,
+          "edition": null,
+          "databases": [
+            {
+              "database": null,
+              "rules": "firestore.rules",
+              "indexes": null
+            }
+          ]
+        },
+        "emulators": [
+          {
+            "name": "auth",
+            "host": null,
+            "port": 9099,
+            "java": false
+          },
+          {
+            "name": "storage",
+            "host": null,
+            "port": 9199,
+            "java": true
+          }
+        ],
+        "single_project_mode": true,
+        "ui": true,
+        "functions": []
+      }
+    ],
+    "rules": [
+      {
+        "file": "firestore.rules",
+        "database": null,
+        "found": true,
+        "compiles": true,
+        "errors": [],
+        "warnings": []
+      }
+    ],
+    "functions": [],
+    "dependencies": [
+      {
+        "ecosystem": "npm",
+        "name": "firebase",
+        "file": "package.json",
+        "line": 8,
+        "declared": "^12.4.0",
+        "resolved": null,
+        "lockfile": null,
+        "engine": null,
+        "platforms": []
+      }
+    ],
+    "emulator_commands": [
+      {
+        "file": ".github/workflows/ci.yml",
+        "line": 22,
+        "command": "firebase emulators:exec \"npm test\" --project demo-storage-auth",
+        "subcommand": "emulators:exec",
+        "only": null,
+        "starts": [
+          "auth",
+          "firestore",
+          "storage"
+        ],
+        "config": "firebase.json",
+        "under_hidane": false,
+        "editable": true,
+        "import": false,
+        "export": false
+      }
+    ],
+    "workflows": [
+      {
+        "file": ".github/workflows/ci.yml",
+        "parsed": true,
+        "jobs": [
+          {
+            "id": "test",
+            "line": 6,
+            "runs_on": "ubuntu-24.04",
+            "setup_java": [
+              1
+            ],
+            "setup_hidane": false,
+            "emulators": [
+              0
+            ],
+            "first_emulator_step": 5,
+            "java": {
+              "verdict": "needed",
+              "reasons": [
+                "the storage emulator"
+              ]
+            },
+            "emulator_host": [],
+            "caches_emulators": true,
+            "other_shell": false
+          }
+        ]
+      }
+    ],
+    "scripts": [],
+    "unread": []
+  }
+}

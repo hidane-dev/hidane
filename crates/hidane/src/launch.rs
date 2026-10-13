@@ -35,6 +35,8 @@ pub enum Mode {
     Exec(Vec<OsString>),
     /// `hidane benchmark …`, with the arguments after `benchmark` (bench/README.md).
     Benchmark(Vec<OsString>),
+    /// `hidane doctor …`: the subcommand and its arguments.
+    Project(Vec<OsString>),
     /// Invoked as `java`, with its arguments.
     Java(Vec<OsString>),
     /// The emulator, with its own arguments.
@@ -58,6 +60,13 @@ pub fn mode(args: Vec<OsString>) -> Mode {
             command.remove(0);
         }
         return Mode::Exec(command);
+    }
+    if args
+        .get(1)
+        .and_then(|a| a.to_str())
+        .is_some_and(|a| crate::project_cli::SUBCOMMANDS.contains(&a))
+    {
+        return Mode::Project(args.into_iter().skip(1).collect());
     }
     Mode::Emulator(args)
 }
@@ -403,6 +412,13 @@ mod tests {
         // Flags before it belong to the emulator, which ignores positional arguments.
         assert!(matches!(
             mode(args(&["hidane", "--port", "1", "benchmark"])),
+            Mode::Emulator(_)
+        ));
+        assert!(
+            matches!(mode(args(&["hidane", "doctor", "--path", "x"])), Mode::Project(a) if a == args(&["doctor", "--path", "x"]))
+        );
+        assert!(matches!(
+            mode(args(&["hidane", "--port", "1", "doctor"])),
             Mode::Emulator(_)
         ));
     }

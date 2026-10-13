@@ -1,0 +1,11 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+    match /notes/{note} {
+      allow read, write: if signedIn() && resource.data.owner == request.auth.uid;
+    }
+  }
+}
