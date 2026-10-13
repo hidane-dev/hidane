@@ -57,6 +57,11 @@ medians were:
 Every sample is in the [result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-13-release-150328.md); the harness, which anyone can rerun, is
 [`bench/`](../bench/README.md). The targets were under 100 ms and under 50 MiB.
 
+The benchmark's client sends no credential, as a signed-out app does, so Security Rules apply to
+its requests, the last row's workload included. With the owner credential that the Admin SDKs
+send, which skips the Rules, the official emulator's writes are about four times as fast and
+hidane's take the same time ([`bench/`](../bench/README.md#fairness-rules), #286).
+
 ## 3. Writes slow down while a listener is attached
 
 firebase-tools [#3477](https://github.com/firebase/firebase-tools/issues/3477) (and the older
