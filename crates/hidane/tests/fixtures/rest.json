@@ -4098,6 +4098,436 @@
    }
   },
   {
+   "name": "PATCH a document ID with whitespace around it",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws/%20a%09",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "n": {
+      "integerValue": "1"
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/ws/a\",\n  \"fields\": {\n    \"n\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "GET it without the whitespace",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws/a",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/ws/a\",\n  \"fields\": {\n    \"n\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "GET it with other whitespace around it",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws/%E3%80%80a%C2%A0%0A",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/ws/a\",\n  \"fields\": {\n    \"n\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "GET with whitespace around the collection ID",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/%E2%80%A8ws%20/a",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/ws/a\",\n  \"fields\": {\n    \"n\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "GET with whitespace around every segment",
+   "method": "GET",
+   "path": "/v1/projects%20/%20{project}/databases%0D/%E2%80%80(default)/documents%E2%80%AF/ws/a%C2%85",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/ws/a\",\n  \"fields\": {\n    \"n\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "whitespace inside an ID is kept",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws/a%20b",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/ws\\/a b) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "a control character is not whitespace",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws/a%01",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/ws\\/a\\u0001) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "a zero width space is not whitespace",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws/a%E2%80%8B",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/ws\\/a\\u200B) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "a byte order mark is not whitespace",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws/%EF%BB%BFa",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/ws\\/﻿a) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "PATCH a document under it",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws/a/sub/x",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {}
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/ws/a/sub/x\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "list a collection with whitespace around its ID",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws%20",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/ws/a\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "create in a collection with whitespace around its ID, a documentId with a space",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/%20ws?documentId=b%20",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {}
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/ws/b \",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "list it again",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/ws/a\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/ws/b \",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "GET with whitespace around a documentId that has a space",
+   "method": "GET",
+   "path": "/v1beta1/projects/{project}/databases/(default)/documents/ws%20/b%20",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/ws\\/b) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "runQuery under a document with whitespace around its ID",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws/a%20:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "sub"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/ws/a/sub/x\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "listCollectionIds under a document with whitespace around its ID",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws/%20a:listCollectionIds",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"collectionIds\": [\"sub\"]\n}\n"
+   }
+  },
+  {
+   "name": "runQuery at the root, documents with whitespace",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents%20:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "ws"
+      }
+     ],
+     "select": {
+      "fields": []
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/ws/a\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/ws/b \",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "an ID of whitespace only is an empty ID",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws/%20",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/ws\\/\\\" has invalid trailing \\\"\\/\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "DELETE an ID of whitespace only",
+   "method": "DELETE",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws/%09",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/ws\\/\\\" has invalid trailing \\\"\\/\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "DELETE with whitespace around the ID",
+   "method": "DELETE",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws/a%20",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "the document is gone",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws/a",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/ws\\/a) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "PATCH another document",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws/c",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {}
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/ws/c\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "the emulator's delete with whitespace around its segments",
+   "method": "DELETE",
+   "path": "/emulator/v1/projects/%20{project}/databases/(default)%09/documents/ws%20/c%E3%80%80",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "that document is gone",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws/c",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/ws\\/c) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "the emulator's delete of a collection with whitespace around its ID",
+   "method": "DELETE",
+   "path": "/emulator/v1/projects/{project}/databases/(default)/documents/%20ws/a%20/sub",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "the document under it is gone",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws/a/sub/x",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/ws\\/a\\/sub\\/x) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "the emulator's clear with whitespace around the project and the database",
+   "method": "DELETE",
+   "path": "/emulator/v1/projects/{project}%20/databases/%E3%80%80(default)/documents",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "the database is empty",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/ws",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
    "name": "a transform of __name__ writes the field __key__",
    "method": "POST",
    "path": "/v1/projects/{project}/databases/(default)/documents:commit",

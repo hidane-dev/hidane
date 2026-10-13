@@ -380,19 +380,25 @@ async fn clear_database(
     }
     admin
         .firestore()
-        .clear_database(&format!("projects/{project}/databases/{database}"))
+        .clear_database(&format!(
+            "projects/{}/databases/{}",
+            project.trim(),
+            database.trim()
+        ))
         .await;
     empty_json()
 }
 
 /// `DELETE /emulator/v1/projects/{p}/databases/{d}/documents/{path}`: the Emulator UI's
-/// recursive delete of a document or collection.
+/// recursive delete of a document or collection. Whitespace around each segment is trimmed, as
+/// in REST paths.
 async fn delete_tree(
     State(admin): State<Admin>,
     Path((project, database, path)): Path<(String, String, String)>,
     headers: HeaderMap,
 ) -> Response {
-    let database = format!("projects/{project}/databases/{database}");
+    let database = format!("projects/{}/databases/{}", project.trim(), database.trim());
+    let path = path.split('/').map(str::trim).collect::<Vec<_>>().join("/");
     match admin
         .firestore()
         .delete_tree(&database, &path, authorization(&headers))

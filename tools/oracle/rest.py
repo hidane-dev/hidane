@@ -310,6 +310,40 @@ case("commit an update of the documents root", "POST", B + ":commit", {"writes":
 case("commit a delete of the documents root", "POST", B + ":commit", {"writes": [{"delete": NAME}]})
 case("batchGet the documents root", "POST", B + ":batchGet", {"documents": [NAME]})
 case("batchGet another project's documents root", "POST", B + ":batchGet", {"documents": ["projects/other/databases/(default)/documents"]})
+# Whitespace around each segment of a REST path is trimmed: the characters Unicode calls
+# White_Space (tab to carriage return, space, U+0085, U+00A0, U+1680, U+2000 to U+200A, U+2028,
+# U+2029, U+202F, U+205F, U+3000), in every segment, `projects`, `databases` and `documents`
+# included, before a verb, and in the emulator's delete path. Not other control characters,
+# U+200B or U+FEFF, not inside an ID, not a `documentId`, not a name in a body; a segment of
+# whitespace only is an empty one.
+case("PATCH a document ID with whitespace around it", "PATCH", B + "/ws/%20a%09", {"fields": {"n": i(1)}})
+case("GET it without the whitespace", "GET", B + "/ws/a")
+case("GET it with other whitespace around it", "GET", B + "/ws/%E3%80%80a%C2%A0%0A")
+case("GET with whitespace around the collection ID", "GET", B + "/%E2%80%A8ws%20/a")
+case("GET with whitespace around every segment", "GET", "/v1/projects%20/%20{project}/databases%0D/%E2%80%80(default)/documents%E2%80%AF/ws/a%C2%85")
+case("whitespace inside an ID is kept", "GET", B + "/ws/a%20b")
+case("a control character is not whitespace", "GET", B + "/ws/a%01")
+case("a zero width space is not whitespace", "GET", B + "/ws/a%E2%80%8B")
+case("a byte order mark is not whitespace", "GET", B + "/ws/%EF%BB%BFa")
+case("PATCH a document under it", "PATCH", B + "/ws/a/sub/x", {"fields": {}})
+case("list a collection with whitespace around its ID", "GET", B + "/ws%20")
+case("create in a collection with whitespace around its ID, a documentId with a space", "POST", B + "/%20ws?documentId=b%20", {"fields": {}})
+case("list it again", "GET", B + "/ws")
+case("GET with whitespace around a documentId that has a space", "GET", "/v1beta1/projects/{project}/databases/(default)/documents/ws%20/b%20")
+case("runQuery under a document with whitespace around its ID", "POST", B + "/ws/a%20:runQuery", {"structuredQuery": {"from": [{"collectionId": "sub"}]}})
+case("listCollectionIds under a document with whitespace around its ID", "POST", B + "/ws/%20a:listCollectionIds", {})
+case("runQuery at the root, documents with whitespace", "POST", B + "%20:runQuery", {"structuredQuery": {"from": [{"collectionId": "ws"}], "select": {"fields": []}}})
+case("an ID of whitespace only is an empty ID", "GET", B + "/ws/%20")
+case("DELETE an ID of whitespace only", "DELETE", B + "/ws/%09")
+case("DELETE with whitespace around the ID", "DELETE", B + "/ws/a%20")
+case("the document is gone", "GET", B + "/ws/a")
+case("PATCH another document", "PATCH", B + "/ws/c", {"fields": {}})
+case("the emulator's delete with whitespace around its segments", "DELETE", "/emulator/v1/projects/%20{project}/databases/(default)%09/documents/ws%20/c%E3%80%80")
+case("that document is gone", "GET", B + "/ws/c")
+case("the emulator's delete of a collection with whitespace around its ID", "DELETE", "/emulator/v1/projects/{project}/databases/(default)/documents/%20ws/a%20/sub")
+case("the document under it is gone", "GET", B + "/ws/a/sub/x")
+case("the emulator's clear with whitespace around the project and the database", "DELETE", "/emulator/v1/projects/{project}%20/databases/%E3%80%80(default)/documents")
+case("the database is empty", "GET", B + "/ws")
 # A transform of `__name__` writes the field `__key__` (`transforms.py`), which a read mask or an
 # update mask of `__name__` does not name, and which reads and queries return.
 case("a transform of __name__ writes the field __key__", "POST", B + ":commit", {"writes": [
