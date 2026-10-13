@@ -188,6 +188,31 @@ case("runAggregationQuery without a query, in a new transaction", "POST", B + ":
 case("runAggregationQuery without a query, with a malformed transaction", "POST", B + ":runAggregationQuery", {"transaction": "AAAA"})
 case("runAggregationQuery with no aggregations and a malformed transaction", "POST", B + ":runAggregationQuery", {"structuredAggregationQuery": {}, "transaction": "AAAA"})
 case("runAggregationQuery with a count and no query", "POST", B + ":runAggregationQuery", {"structuredAggregationQuery": {"aggregations": [{"count": {}}]}})
+# Doubles are read correctly rounded (protobuf-java reads them through BigDecimal): these geo
+# point coordinates lose their last digit when a double is read with a faster, inexact parser.
+case("doubles read correctly rounded", "PATCH", B + "/fz/geo", {"fields": {
+    "a": {"geoPointValue": {"latitude": 38.141717608275684, "longitude": -20.053480988037194}},
+    "b": {"arrayValue": {"values": [{"geoPointValue": {"longitude": 117.96957752590589}}]}},
+    "c": d(0.1234567890123456789), "e": d(9007199254740993), "f": d(5e-324)}})
+case("doubles read correctly rounded, in a commit", "POST", B + ":commit", {"writes": [
+    {"update": {"name": NAME + "/fz/geo2", "fields": {"g": {"geoPointValue": {"latitude": -89.99999999999997, "longitude": -20.053480988037194}}}}}]})
+case("doubles read correctly rounded, read back", "POST", B + ":batchGet", {"documents": [NAME + "/fz/geo2"]})
+# A body of JSON `null` is not valid for any request that reads a body (POST and PATCH), once the
+# request is routed; GET and DELETE ignore their bodies.
+case("batchGet with a null body", "POST", B + ":batchGet", raw="null")
+case("runQuery with a null body", "POST", B + ":runQuery", raw="null")
+case("runAggregationQuery with a null body", "POST", B + ":runAggregationQuery", raw="null")
+case("commit with a null body", "POST", B + ":commit", raw="null")
+case("batchWrite with a null body", "POST", B + ":batchWrite", raw="null")
+case("beginTransaction with a null body", "POST", B + ":beginTransaction", raw=" null\n")
+case("rollback with a null body", "POST", B + ":rollback", raw="null")
+case("listCollectionIds with a null body", "POST", B + "/fz/b:listCollectionIds", raw="null")
+case("PATCH with a null body", "PATCH", B + "/fz/null", raw="null")
+case("POST with a null body", "POST", B + "/fz?documentId=null", raw="null")
+case("a null body writes nothing", "GET", B + "/fz/null")
+case("GET with a null body", "GET", B + "/fz/b", raw="null")
+case("DELETE with a null body", "DELETE", B + "/fz/null", raw="null")
+case("an unknown verb with a null body", "POST", B + ":nosuchverb", raw="null")
 
 
 def norm(text):

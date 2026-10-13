@@ -9,7 +9,8 @@
 //! server streams as a JSON array with one message per element. Errors are one line, escaped
 //! by another writer ([`error`]). Unknown query parameters (such as `key`) are ignored, the
 //! content type is not checked, and an empty body is `{}`, all as on the official emulator; a
-//! body that is not valid for the request answers 400 "Payload isn't valid for request.".
+//! body that is not valid for the request (`null` among them) answers 400 "Payload isn't valid
+//! for request.".
 //!
 //! WebChannel prints its messages with the same printer, in a compact layout that also escapes
 //! characters for HTML ([`Layout::WebChannel`]).
@@ -450,6 +451,11 @@ fn finish<T: Message + Default>(
     path: &[(&str, String)],
 ) -> Result<tonic::Request<T>, Status> {
     let invalid = || Status::invalid_argument(INVALID_PAYLOAD);
+    // A body of JSON `null` is not a message, for every request that reads its body (`POST`
+    // and `PATCH`); `GET` and `DELETE` ignore their bodies (#262).
+    if matches!(call.method, Method::POST | Method::PATCH) && call.body.is_null() {
+        return Err(invalid());
+    }
     let desc = descriptor(name);
     let Json::Object(map) = json else {
         return Err(invalid());
