@@ -1,0 +1,186 @@
+name: Examples
+
+# Runs each project in examples/ (examples/README.md) the way its README says to run it: the Node.js
+# projects with `npm test`, which starts hidane under `firebase emulators:exec` through
+# `hidane exec`, and the Python and Go projects against hidane started on its own. Each runs twice:
+# against hidane built from this commit, and against the published release in PUBLISHED_VERSION,
+# installed by hidane-dev/setup-hidane.
+#
+# It runs for changes to hidane or the examples, and weekly, for changes in the runners; the
+# examples pin their dependencies.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "crates/**"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "examples/**"
+      - ".github/workflows/examples.yml"
+  pull_request:
+    paths:
+      - "crates/**"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - "examples/**"
+      - ".github/workflows/examples.yml"
+  schedule:
+    - cron: "41 4 * * 4"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The published release the examples also run against.
+  PUBLISHED_VERSION: 0.4.0
+
+jobs:
+  build:
+    name: hidane from source
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Rust
+        run: |
+          rustup toolchain install stable --profile minimal
+          rustup default stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - name: Build
+        run: cargo build --release --locked -p hidane
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: hidane
+          path: target/release/hidane
+          if-no-files-found: error
+          retention-days: 3
+
+  admin-node:
+    name: admin-node (hidane ${{ matrix.hidane }})
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        hidane: [source, published]
+    defaults:
+      run:
+        working-directory: examples/admin-node
+    steps:
+      - &checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # hidane on PATH: the binary the build job made, or the published release. The steps below
+      # are the same in every job (YAML aliases).
+      - &source-download
+        if: matrix.hidane == 'source'
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: hidane
+          path: ${{ runner.temp }}/hidane
+      - &source-path
+        name: hidane from source on PATH
+        if: matrix.hidane == 'source'
+        run: |
+          chmod +x "$RUNNER_TEMP/hidane/hidane"
+          "$RUNNER_TEMP/hidane/hidane" --version
+          echo "$RUNNER_TEMP/hidane" >> "$GITHUB_PATH"
+      - &published
+        if: matrix.hidane == 'published'
+        uses: hidane-dev/setup-hidane@f0bdb68d1e28100cd5b445456455e1108f370987 # v1.0.0
+        with:
+          version: ${{ env.PUBLISHED_VERSION }}
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: examples/admin-node/package-lock.json
+      - run: npm ci --ignore-scripts --no-audit --no-fund
+      - run: npm test
+      - name: firebase-tools ran hidane, not the official emulator
+        run: |
+          # `hidane exec` names a placeholder as the emulator's jar, so firebase-tools downloads none.
+          # A jar in its cache would mean that the official emulator ran.
+          if compgen -G "$HOME/.cache/firebase/emulators/cloud-firestore-emulator-*" > /dev/null; then
+            echo "::error::firebase-tools downloaded the official emulator: the tests did not run against hidane"
+            exit 1
+          fi
+      - &logs
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: logs-${{ github.job }}-${{ matrix.hidane }}
+          path: |
+            examples/*/*.log
+            ${{ runner.temp }}/hidane.log
+          if-no-files-found: ignore
+
+  admin-python:
+    name: admin-python (hidane ${{ matrix.hidane }})
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        hidane: [source, published]
+    defaults:
+      run:
+        working-directory: examples/admin-python
+    steps:
+      - *checkout
+      - *source-download
+      - *source-path
+      - *published
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: examples/admin-python/requirements.txt
+      - run: pip install --require-hashes -r requirements.txt
+      - &start
+        name: Start hidane on its own
+        run: |
+          hidane --host 127.0.0.1 --port 8080 > "$RUNNER_TEMP/hidane.log" 2>&1 &
+          curl -fsS --retry 30 --retry-connrefused --retry-delay 1 http://127.0.0.1:8080/
+      - run: pytest
+        env:
+          FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080
+      - *logs
+
+  go:
+    name: go (hidane ${{ matrix.hidane }})
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        hidane: [source, published]
+    defaults:
+      run:
+        working-directory: examples/go
+    steps:
+      - *checkout
+      - *source-download
+      - *source-path
+      - *published
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: examples/go/go.mod
+          cache-dependency-path: examples/go/go.sum
+      - *start
+      - run: go test ./...
+        env:
+          FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080
+      - *logs

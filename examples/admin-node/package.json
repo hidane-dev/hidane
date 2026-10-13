@@ -1,0 +1,18 @@
+{
+  "name": "hidane-example-admin-node",
+  "version": "0.0.0",
+  "private": true,
+  "description": "firebase-admin and node:test against hidane, started by firebase emulators:exec through hidane exec",
+  "license": "MIT OR Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "hidane exec -- firebase emulators:exec --only firestore --project demo-hidane \"node --test\""
+  },
+  "devDependencies": {
+    "firebase-admin": "14.5.0",
+    "firebase-tools": "15.33.0"
+  }
+}

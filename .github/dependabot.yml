@@ -11,3 +11,21 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: weekly }
+
+  # The examples pin every dependency; .github/workflows/examples.yml runs each update against
+  # hidane.
+  - package-ecosystem: npm
+    directories: ["/examples/admin-node"]
+    schedule: { interval: weekly }
+    groups:
+      examples-npm: { patterns: ["*"] }
+  - package-ecosystem: pip
+    directory: /examples/admin-python
+    schedule: { interval: weekly }
+    groups:
+      examples-pip: { patterns: ["*"] }
+  - package-ecosystem: gomod
+    directory: /examples/go
+    schedule: { interval: weekly }
+    groups:
+      examples-go: { patterns: ["*"] }
