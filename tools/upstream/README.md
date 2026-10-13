@@ -56,11 +56,15 @@ next release will download).
 ## The workflow
 
 It runs daily, by hand (`workflow_dispatch`), and on pull requests that change the watcher, the
-watch list, `verified.rs` or `pinned.sh`:
+watch list, or what it is checked against:
 
 - **watch list** runs the watcher's tests (`test_watch.py`, offline) and
   `python3 tools/upstream/watch.py check`, which fails when `watch.json` does not name the
-  versions `verified.rs` and `pinned.sh` name.
+  versions the repository says are verified: `docs/sdk-certification.json`'s
+  `verified_packages` (generated from the recorded results; `verified.rs` is generated from it),
+  or `verified.rs` itself where that file is not there yet; `pinned.sh`, and
+  `docs/compatibility.json`'s `official_emulator` where it is there; and the Emulator UI in
+  `verified.rs`.
 - **detect new releases** runs `python3 tools/upstream/watch.py detect`: the job summary has a
   table of every package's channels with what is new, and which emulator each firebase-tools
   channel pins; the report (`upstream.json`) is uploaded. It fails when a registry did not answer
@@ -96,9 +100,10 @@ transcript in the repository shows its results on both emulators.
 - **An SDK or tool**: record its transcripts again with the new release
   ([`tools/oracle/README.md`](../oracle/README.md)) and commit them in `results/`; update the
   harness's pin (`tools/oracle/sdk_go/go.mod`, `sdk_python/requirements.txt`,
-  `sdk_java/pom.xml`, or the `npm i` line), the entry in
-  `crates/hidane/src/project/verified.rs`, `docs/compatibility.md` where it names the version, and
-  its `version` in `watch.json`.
+  `sdk_java/pom.xml`, or the `npm i` line), regenerate what is generated from the recorded
+  results (`docs/sdk-certification.json` and the `VERIFIED` entries of
+  `crates/hidane/src/project/verified.rs`, with `tools/parity/`), update `docs/compatibility.md`
+  where it names the version, and its `version` in `watch.json`.
 - **The official emulator**: re-record every fixture and official transcript against the new jar
   ([`docs/oracle-corpus.md`](../../docs/oracle-corpus.md#versions) says how), change hidane where
   the answers changed, and set the new version and SHA-256 in

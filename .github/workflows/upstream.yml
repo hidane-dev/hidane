@@ -17,6 +17,8 @@ on:
       - "tools/upstream/**"
       - ".github/workflows/upstream.yml"
       - "crates/hidane/src/project/verified.rs"
+      - "docs/sdk-certification.json"
+      - "docs/compatibility.json"
       - ".github/actions/official-emulator/pinned.sh"
 
 permissions:
@@ -37,7 +39,8 @@ jobs:
           persist-credentials: false
       - name: Test the watcher
         run: python3 -I -B -m unittest discover -s tools/upstream -p "test_*.py" -v
-      # tools/upstream/watch.json names the versions crates/hidane/src/project/verified.rs and
+      # tools/upstream/watch.json names the versions docs/sdk-certification.json (or
+      # crates/hidane/src/project/verified.rs), docs/compatibility.json and
       # .github/actions/official-emulator/pinned.sh name.
       - name: Check the watch list
         run: python3 -I -B tools/upstream/watch.py check

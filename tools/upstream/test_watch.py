@@ -330,6 +330,22 @@ class Check(unittest.TestCase):
         self.assertIn("emulator: tools/upstream/watch.json says 1.23.0", problems)
         self.assertIn("emulator ui", problems)
 
+    def test_certification_and_compatibility(self):
+        certification = {"verified_packages": [
+            {"ecosystem": "npm", "name": "firebase-tools", "version": "15.33.0"},
+            {"ecosystem": "go", "name": "cloud.google.com/go/firestore", "version": "1.27.0"}]}
+        compatibility = {"official_emulator": {"product": "cloud-firestore-emulator",
+                                               "release": "1.22.0", "jar_sha256": PINNED_SHA}}
+        # sdk-certification.json wins over verified.rs.
+        problems = watch.check(self.watch_list(), VERIFIED_RS, PINNED_SH, certification,
+                               compatibility)
+        self.assertEqual(problems, ["go:cloud.google.com/go/firestore: tools/upstream/watch.json "
+                                    "says 1.26.0, docs/sdk-certification.json says 1.27.0"])
+        compatibility["official_emulator"]["release"] = "1.23.0"
+        problems = watch.check(self.watch_list(), VERIFIED_RS, PINNED_SH, None, compatibility)
+        self.assertEqual(len(problems), 1)
+        self.assertIn("docs/compatibility.json", problems[0])
+
     def test_missing_from_watch_list(self):
         data = self.watch_list()
         del data["packages"][1]
@@ -356,7 +372,9 @@ class Check(unittest.TestCase):
         """The committed watch list is in step with verified.rs and pinned.sh."""
         data = watch.load_watch()
         problems = watch.check(data, (watch.ROOT / watch.VERIFIED_RS).read_text(),
-                               (watch.ROOT / watch.PINNED_SH).read_text())
+                               (watch.ROOT / watch.PINNED_SH).read_text(),
+                               watch.optional_json(watch.SDK_CERTIFICATION),
+                               watch.optional_json(watch.COMPATIBILITY))
         self.assertEqual(problems, [])
         entries, ui = watch.verified_rs((watch.ROOT / watch.VERIFIED_RS).read_text())
         self.assertGreaterEqual(len(entries), 9)

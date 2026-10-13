@@ -2,8 +2,9 @@
 
 Usage (from the repository root):
     python3 tools/upstream/watch.py check
-        Checks tools/upstream/watch.json against crates/hidane/src/project/verified.rs and
-        .github/actions/official-emulator/pinned.sh. Offline.
+        Checks tools/upstream/watch.json against what the repository says is verified:
+        docs/sdk-certification.json (or, without it, crates/hidane/src/project/verified.rs),
+        .github/actions/official-emulator/pinned.sh and docs/compatibility.json. Offline.
     python3 tools/upstream/watch.py detect [--report FILE] [--summary FILE] [--outputs FILE]
         Reads the public metadata of each watched package's registry and of firebase-tools, and
         writes what it found: the report (JSON), a Markdown summary, and the inputs of the
@@ -46,6 +47,9 @@ ROOT = Path(__file__).resolve().parents[2]
 WATCH = "tools/upstream/watch.json"
 VERIFIED_RS = "crates/hidane/src/project/verified.rs"
 PINNED_SH = ".github/actions/official-emulator/pinned.sh"
+# Generated from the recorded results by tools/parity/; read when they are there.
+SDK_CERTIFICATION = "docs/sdk-certification.json"
+COMPATIBILITY = "docs/compatibility.json"
 SCHEMA_VERSION = 1
 
 ECOSYSTEMS = ("npm", "pypi", "go", "maven", "pub")
@@ -448,38 +452,69 @@ def pinned_sh(text):
     return (version.group(1) if version else None), (sha256.group(1) if sha256 else None)
 
 
-def check(watch, verified_text, pinned_text):
-    """What is out of step between the watch list, verified.rs and pinned.sh."""
+def certified(data):
+    """{(ecosystem, name): version} of docs/sdk-certification.json's `verified_packages`."""
+    entries = {}
+    for package in data.get("verified_packages", []) if isinstance(data, dict) else []:
+        if isinstance(package, dict) and {"ecosystem", "name", "version"} <= package.keys():
+            entries[(package["ecosystem"], package["name"])] = package["version"]
+    return entries
+
+
+def check(watch, verified_text, pinned_text, certification=None, compatibility=None):
+    """What is out of step between the watch list and what the repository says is verified:
+    docs/sdk-certification.json's `verified_packages` when there is one (verified.rs is
+    generated from it), verified.rs otherwise; pinned.sh, and docs/compatibility.json's
+    `official_emulator` when there is one; the Emulator UI in verified.rs."""
     problems = []
     entries, ui = verified_rs(verified_text)
+    source = VERIFIED_RS
+    if certification is not None:
+        entries, source = certified(certification), SDK_CERTIFICATION
     if not entries:
-        problems.append(f"{VERIFIED_RS}: no Verified entries found; update verified_rs()")
+        problems.append(f"{source}: no verified packages found; update check()")
     listed = {}
     for package in watch["packages"]:
         listed[(package["ecosystem"], package["name"])] = package
     for (ecosystem, name), version in sorted(entries.items()):
         package = listed.get((ecosystem, name))
         if package is None:
-            problems.append(f"{ecosystem}:{name} is verified ({VERIFIED_RS}) but not watched; "
+            problems.append(f"{ecosystem}:{name} is verified ({source}) but not watched; "
                             f"add it to {WATCH}")
         elif not package["verified"]:
-            problems.append(f"{ecosystem}:{name} is verified ({VERIFIED_RS}); set verified: true")
+            problems.append(f"{ecosystem}:{name} is verified ({source}); set verified: true")
         elif package["version"] != version:
             problems.append(f"{ecosystem}:{name}: {WATCH} says {package['version']}, "
-                            f"{VERIFIED_RS} says {version}")
+                            f"{source} says {version}")
     for (ecosystem, name), package in sorted(listed.items()):
         if package["verified"] and (ecosystem, name) not in entries:
-            problems.append(f"{ecosystem}:{name}: verified in {WATCH} but not in {VERIFIED_RS}")
+            problems.append(f"{ecosystem}:{name}: verified in {WATCH} but not in {source}")
     emulator = watch["emulator"]
     version, sha256 = pinned_sh(pinned_text)
     if (emulator["version"], emulator["sha256"]) != (version, sha256):
         problems.append(f"emulator: {WATCH} says {emulator['version']} "
                         f"({emulator['sha256'][:12]}…), {PINNED_SH} says {version} "
                         f"({(sha256 or '')[:12]}…)")
+    if compatibility is not None:
+        official = compatibility.get("official_emulator") if isinstance(compatibility, dict) \
+            else None
+        if not isinstance(official, dict) or (official.get("release"),
+                                              official.get("jar_sha256")) != (
+                emulator["version"], emulator["sha256"]):
+            problems.append(f"emulator: {WATCH} says {emulator['version']}, {COMPATIBILITY} "
+                            "(official_emulator) says otherwise")
     if emulator["ui"] != ui:
         problems.append(f"emulator ui: {WATCH} says {emulator['ui']}, {VERIFIED_RS} "
                         f"(EMULATOR_UI_VERSION) says {ui}")
     return problems
+
+
+def optional_json(rel):
+    path = ROOT / rel
+    if not path.is_file():
+        return None
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
 
 
 # Detection --------------------------------------------------------------------------------------
@@ -629,10 +664,11 @@ def main(argv=None):
         watch = load_watch()
         if args.command == "check":
             problems = check(watch, (ROOT / VERIFIED_RS).read_text(encoding="utf-8"),
-                             (ROOT / PINNED_SH).read_text(encoding="utf-8"))
+                             (ROOT / PINNED_SH).read_text(encoding="utf-8"),
+                             optional_json(SDK_CERTIFICATION), optional_json(COMPATIBILITY))
             if problems:
                 raise Stop("\n".join(problems))
-            print(f"{WATCH}: in step with {VERIFIED_RS} and {PINNED_SH}.")
+            print(f"{WATCH}: in step with what the repository says is verified.")
             return 0
         report = detect(watch, http_get)
     except Stop as err:
