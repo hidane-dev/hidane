@@ -11,6 +11,7 @@ and stopping each process. Anyone can rerun it, and every result says where and 
 | `schema/result.schema.json` | The JSON Schema of a result (`schema_version` 1); a test validates the engine's output against it |
 | `schema/savings.schema.json` | The JSON Schema of `hidane benchmark savings --format json` ([CI time saved](#ci-time-saved)) |
 | `fixtures/example-result.json`, `.md` | A **synthetic** result (made-up machine, made-up numbers) and its rendering, for the tests and as an example of the format. Not a measurement |
+| `targets.json`, `check_targets.py` | hidane's targets (docs/ROADMAP.md §1) and the check of a result against them, run on GitHub-hosted runners ([Targets in CI](#targets-in-ci)) |
 
 The measuring is done by one engine, the `hidane benchmark` subcommand of the hidane binary
 (`crates/hidane/src/bench/`). `run.sh` is a thin wrapper around it, so a user's own run and the
@@ -336,6 +337,32 @@ version when it runs after the existing ones (scenarios run in a fixed order), b
 change the conditions they are measured under; its history starts with the first result that has
 it. `listen_writes` was added this way to definitions v1. The run-level readings (`duration_s`,
 the stability readings after the run, CPU steal over the run) cover every scenario that ran.
+
+## Targets in CI
+
+The workflow `.github/workflows/bench-targets.yml` checks hidane alone against its targets on a
+GitHub-hosted runner (ubuntu-24.04), on every push to `main`, nightly and by hand (#47). It
+builds a release binary, runs `hidane benchmark --scenarios startup,memory` with the canonical
+runs, and `check_targets.py` compares hidane's medians with `targets.json`:
+
+| Metric | Bound |
+|---|---|
+| `startup.time_to_port` | below 100 ms |
+| `memory.rss_idle` | below 50 MiB |
+| `memory.rss_after_workload` (1,000 documents) | below 100 MiB |
+
+The bounds are the targets themselves, not hidane's current values: a shared runner's noise is
+far smaller than the distance between the two, so the job fails only for a regression, a
+missing metric or a failed run. The job summary shows the check, the rendered result and the
+in-memory store's RSS from 1,000 to 1,000,000 documents (the `hidane-core` example `rss`,
+reported, not checked); the files are kept as an artifact. These numbers come from a shared
+machine and are not cited (claim policy below). Writes with a listener attached have their own
+check in `cargo test` (#49).
+
+```sh
+python3 -I bench/check_targets.py bench/targets.json result.json   # any result with startup and memory
+python3 -I bench/check_targets.py --self-test
+```
 
 ## Claim policy
 

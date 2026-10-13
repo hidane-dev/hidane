@@ -1,0 +1,26 @@
+{
+  "$comment": "hidane's targets (docs/ROADMAP.md §1), checked against the medians of a `hidane benchmark` result by bench/check_targets.py, on GitHub-hosted runners (.github/workflows/bench-targets.yml). The bounds are the targets themselves, far above what hidane measures, so a runner's noise does not cross them; a crossing is a regression.",
+  "targets": [
+    {
+      "scenario": "startup",
+      "metric": "time_to_port",
+      "below": 100,
+      "unit": "ms",
+      "what": "Time until the port accepts"
+    },
+    {
+      "scenario": "memory",
+      "metric": "rss_idle",
+      "below": 52428800,
+      "unit": "bytes",
+      "what": "RSS idle"
+    },
+    {
+      "scenario": "memory",
+      "metric": "rss_after_workload",
+      "below": 104857600,
+      "unit": "bytes",
+      "what": "RSS after 1,000 documents"
+    }
+  ]
+}
