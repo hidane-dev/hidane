@@ -47,14 +47,14 @@ Side by side, in the canonical benchmark environment (an AWS c7i.xlarge, Ubuntu 
 21.0.12.1, firebase-tools 15.33.0, both emulators on the same quiet machine, 2026-10-13), the
 medians were:
 
-| Measurement | Official emulator v1.22.0 | hidane v0.4.0 |
+| Measurement | Official emulator v1.22.0 | hidane v0.5.1 |
 |---|---|---|
-| Time until the port accepts | 941 ms | 1.56 ms |
-| RSS idle | 148 MiB | 7.8 MiB |
-| RSS after writing 1,000 documents | 268 MiB | 10.1 MiB |
-| `firebase emulators:exec` around 100 seeded documents and 200 tests | 6.75 s | 1.67 s |
+| Time until the port accepts | 852 ms | 1.53 ms |
+| RSS idle | 148 MiB | 9.3 MiB |
+| RSS after writing 1,000 documents | 276 MiB | 11.9 MiB |
+| `firebase emulators:exec` around 100 seeded documents and 200 tests | 6.47 s | 1.56 s |
 
-Every sample is in the [result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-13-release.md); the harness, which anyone can rerun, is
+Every sample is in the [result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-13-release-150328.md); the harness, which anyone can rerun, is
 [`bench/`](../bench/README.md). The targets were under 100 ms and under 50 MiB.
 
 ## 3. Writes slow down while a listener is attached

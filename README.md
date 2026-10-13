@@ -83,21 +83,21 @@ it hurt everyday local development and CI (details and raw logs: [`docs/why.md`]
 
 <div align="center">
 
-| | Official emulator v1.22.0 | hidane v0.4.0 |
+| | Official emulator v1.22.0 | hidane v0.5.1 |
 |---|---|---|
 | Runtime | Java 21 or newer ([required since firebase-tools 15.0.0](https://github.com/firebase/firebase-tools/releases/tag/v15.0.0)) | none, single binary |
-| Time until the port accepts | 941 ms | 1.56 ms |
-| Resident memory, idle | 148 MiB | 7.8 MiB |
-| Resident memory after 1,000 documents | 268 MiB | 10.1 MiB |
-| 100,000 documents written in commits of 500 | 17.1 s | 1.46 s |
-| `firebase emulators:exec` around a CI-style workload (100 documents seeded, 200 tests) | 6.75 s | 1.67 s |
+| Time until the port accepts | 852 ms | 1.53 ms |
+| Resident memory, idle | 148 MiB | 9.3 MiB |
+| Resident memory after 1,000 documents | 276 MiB | 11.9 MiB |
+| 100,000 documents written in commits of 500 | 15.6 s | 1.54 s |
+| `firebase emulators:exec` around a CI-style workload (100 documents seeded, 200 tests) | 6.47 s | 1.56 s |
 
 </div>
 
 In our canonical benchmark environment, these are the medians for both emulators on the same
 machine: an AWS c7i.xlarge (Intel Xeon Platinum 8488C, 4 vCPUs, 8 GiB), Ubuntu 24.04, Java
-21.0.12.1, firebase-tools 15.33.0, and hidane v0.4.0's published binary (commit `8a81062`), measured
-on 2026-10-13. The [result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-13-release.md)
+21.0.12.1, firebase-tools 15.33.0, and hidane v0.5.1's published binary (commit `ce708a3`), measured
+on 2026-10-13. The [result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-13-release-150328.md)
 comes with every sample in its JSON. The methodology is in [`bench/`](bench/README.md), and anyone
 can rerun it; other machines give other numbers.
 
