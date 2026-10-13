@@ -20,13 +20,16 @@ It is observed only as a running program, through what it offers any user:
 - what it prints to standard output while it runs (`debug()` values, warnings, start-up lines),
   as firebase-tools writes it to `firestore-debug.log`;
 - the files it writes (exports), and the exit code and output of a start;
+- its `--help` output, and what it publishes while it runs, such as the services gRPC server
+  reflection lists;
 - how long it takes and how much memory it uses.
 
-Nothing inside the jar is used. It is not decompiled, disassembled or patched, its classes and
-resources are not read, and no debugger, profiler or agent is attached to read its internals.
-The one exception is its license notice (`FIRESTORE_EMULATOR_LICENSES`), read only to learn the
-terms it comes under ([`docs/ROADMAP.md`](../ROADMAP.md), "The jar grants no redistribution
-rights").
+From 2026-10-13 on, the jar is observed as a black box only: it is run, and what it answers,
+prints and publishes while it runs is recorded. It is not listed (`unzip -l`, `jar tf`),
+unpacked, searched with `strings`, disassembled, decompiled or patched, no file inside it is read,
+and no debugger, profiler or agent is attached to read its internals. Before then its contents
+were inspected statically, without a decompiler or a disassembler
+([History](#history-before-this-policy)).
 
 ## How it is observed
 
@@ -97,3 +100,30 @@ tables:
 
 A new difference gets its row in the pull request that introduces it, and the pull request's
 "Parity impact" section says so.
+
+## History: before this policy
+
+This policy was written down on 2026-10-13. The project's own records show what was done with the
+jar before then:
+
+1. **2026-10-09, Phase 0 research.** The research task on the jar was allowed to list its entries
+   (`unzip -l`), to run `strings` over class files and resources unpacked one by one with `unzip`,
+   to run `java -jar … --help`, and to run the emulator. Decompiling was not allowed, and was not
+   done. The outputs were an entry listing; `strings` output of the emulator's classes and of its
+   WebChannel server classes; and black-box probes: REST, gRPC and WebSocket probes, gRPC
+   reflection listings, start-up logs and export samples. They stayed in the gitignored
+   `research/` directory and informed internal research notes, from which the roadmap and the
+   issues were written.
+2. **2026-10-10, the import and export endpoints.** While implementing them, the AI coding
+   assistant working on the change unpacked `FirestoreEmulatorProto.class` and other
+   `com/google/firestore/emulator/v1/*` classes from the jar, and read the printable string
+   constants of the generated protobuf descriptor, and `strings` of `ImportDataRequest` and
+   `ExportDataRequest`, to find the field names of those two requests. No decompiler or
+   disassembler was used. One unpacked class file remains in `research/jarx/`, which is not
+   committed.
+3. **Since then**, no other inspection of the jar's contents is recorded: the jar has only been
+   run.
+
+The kinds of facts that may have come from these inspections, and where the same facts can also
+be seen, are listed in [SOURCES.md](SOURCES.md#7-before-this-policy). This section records what
+happened; it draws no conclusion from it.

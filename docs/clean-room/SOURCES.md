@@ -1,9 +1,11 @@
 # Allowed sources
 
-Every behaviour hidane implements comes from one of the sources below. Each section says what the
-source is, what hidane takes from it, and where it is used. A source that is not on this page is
-not used until an issue has agreed to add it here; the sources that must never be used are in
-[CONTRIBUTOR_GUIDE.md](CONTRIBUTOR_GUIDE.md).
+Under this policy, every behaviour hidane implements comes from one of the sources below. Each
+section says what the source is, what hidane takes from it, and where it is used. A source that is
+not on this page is not used until an issue has agreed to add it here; the sources that must never
+be used are in [CONTRIBUTOR_GUIDE.md](CONTRIBUTOR_GUIDE.md). The kinds of facts that may instead
+have come from the inspections of the jar made before the policy are in
+[section 7](#7-before-this-policy).
 
 The licenses named are the ones each project publishes. Naming them records where the material
 came from; it is not a legal opinion on what they permit.
@@ -96,7 +98,8 @@ vendored protos ([`docs/cla/README.md`](../cla/README.md#what-the-cla-does-not-c
 - **What hidane takes**: its answers over gRPC, REST, WebChannel, the WebSocket feed on
   `--websocket_port` and its own endpoints (`/emulator/v1/…`, `/reset`, `:securityRules`,
   `:ruleCoverage`); what it prints while it runs (`debug()` output, warnings); the files it writes
-  (exports); its start-up output, exit codes, timing and memory.
+  (exports); its start-up output, exit codes, timing and memory; its `--help` output and what it
+  publishes while it runs (the services gRPC server reflection lists). Nothing inside the jar.
 - **How**: [OBSERVATION_POLICY.md](OBSERVATION_POLICY.md). The scripts that record it are in
   [`tools/oracle/`](../../tools/oracle/), and what each recording says about its provenance is in
   [ORACLE_PROVENANCE.md](ORACLE_PROVENANCE.md).
@@ -128,3 +131,23 @@ vendored protos ([`docs/cla/README.md`](../cla/README.md#what-the-cla-does-not-c
 | [googleapis/conformance-tests](https://github.com/googleapis/conformance-tests) (Apache-2.0), `firestore/v1` | The request shapes the client libraries' shared tests send | Planned (#44) |
 | firebase-tools' public issue tracker and release notes | Known bugs of the official emulator and their status (#6252, #11241, #3477 and others) | [`docs/parity-exceptions.md`](../parity-exceptions.md), [`docs/why.md`](../why.md) |
 | Production Cloud Firestore and the production Rules API (`projects:test`), observed from the outside with a project of the maintainers' own | Production behaviour, where the documentation does not settle it. Planned (#82); the rules of [OBSERVATION_POLICY.md](OBSERVATION_POLICY.md) apply | Not used yet |
+
+## 7. Before this policy
+
+Before 2026-10-13 the jar's contents were inspected statically, without a decompiler or a
+disassembler: its entries were listed and `strings` run over files unpacked from it in Phase 0
+research, and on 2026-10-10 the field names of the emulator's import and export requests were read
+from the string constants of its classes
+([OBSERVATION_POLICY.md](OBSERVATION_POLICY.md#history-before-this-policy)). Those outputs informed
+internal research notes, and through them the roadmap and the issues. The kinds of facts that may
+have come from them:
+
+| Kind of fact | Examples | Where the same kind of fact can also be seen |
+|---|---|---|
+| Flag and environment variable names | The emulator's command-line flags (`--host`, `--port`, `--websocket_port`, `--seed_from_export`, `--functions_emulator` and the others `crates/hidane/src/cli.rs` accepts) | The emulator's `--help`; the flags firebase-tools passes, in its public source ([ADR 0006](../adr/0006-launch-under-firebase-tools.md)) |
+| Endpoint and service names | The paths of the emulator's own endpoints (`/emulator/v1/…`), the gRPC services it serves | Its answers to requests; gRPC server reflection; firebase-tools' public source |
+| Message and field names | The fields of the emulator's import and export requests (`ImportDataRequest`, `ExportDataRequest`: `database`, `export_directory`, `export_name`), read from the jar on 2026-10-10 | The export request firebase-tools sends, in its public source ([`docs/export-format.md`](../export-format.md)); the emulator's error messages, which name some fields |
+| Names in the WebChannel server | Phase 0 `strings` output of its WebChannel server classes | firebase-js-sdk's public source and the wire captured between it and the emulator ([`docs/webchannel.md`](../webchannel.md)) |
+
+Most of these facts can also be observed at runtime or read in firebase-tools' public source, as
+the last column says. The project has not re-verified each of them from those sources.

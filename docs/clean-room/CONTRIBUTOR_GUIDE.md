@@ -6,10 +6,13 @@ behaviour came from.
 
 ## Never use
 
-- **Decompiled or disassembled proprietary code**, the official emulator's jar first of all:
-  decompiler or disassembler output, `javap -c` listings, class files or resources taken out of
-  the jar, and descriptions of its internals written by someone who read them. The same goes for
-  any other closed-source Google or Firebase binary.
+- **Anything from inside the official emulator's jar**: listing its entries (`unzip -l`,
+  `jar tf`), unpacking it, running `strings` over it or over files taken out of it, disassembling
+  it (`javap -c`) or decompiling it, and anything derived from those, including descriptions of its
+  internals written by someone who did them. Running the jar and observing it from the outside is
+  what [OBSERVATION_POLICY.md](OBSERVATION_POLICY.md) allows: its answers, `--help`, logs, and what
+  it publishes while it runs, such as gRPC reflection. The same goes for any other closed-source
+  Google or Firebase binary.
 - **Leaked source code** of the official emulator or of any other Google or Firebase product,
   whatever the place it was found.
 - **Confidential Google or Firebase material**: internal documents, design documents, bug
@@ -34,8 +37,8 @@ Having read something prohibited does not by itself keep you from contributing, 
 handled openly:
 
 1. **Do not work on the parts it touches.** If you have read the official emulator's decompiled
-   code, its leaked source, or confidential material about it, do not write or review hidane code
-   for the behaviour it covered.
+   or disassembled code, the contents of its jar, its leaked source, or confidential material about
+   it, do not write or review hidane code for the behaviour it covered.
 2. **Tell the maintainers before you contribute in that area.** Open an issue titled "Clean-room
    review" with no details in it, and a maintainer will arrange a private conversation. Say what
    kind of material you saw and which area it covered; never share the material itself.
@@ -75,8 +78,9 @@ Before opening a pull request that adds or changes behaviour:
 
 - [ ] The behaviour comes from allowed sources ([SOURCES.md](SOURCES.md)), cited in the pull
       request.
-- [ ] Nothing in it comes from the official emulator's jar other than its answers: no decompiled,
-      disassembled or extracted code, classes or resources.
+- [ ] Nothing in it comes from inside the official emulator's jar: no entry listing, unpacked
+      files, `strings` output, disassembly or decompilation; only what the running emulator
+      answers, prints and publishes.
 - [ ] Nothing in it comes from leaked or confidential material, or from code under an
       incompatible license.
 - [ ] New recordings were made by a committed script in `tools/oracle/`, against a freshly

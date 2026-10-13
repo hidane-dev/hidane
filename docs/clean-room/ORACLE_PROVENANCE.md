@@ -5,6 +5,14 @@ Every behaviour hidane takes from the official emulator rests on a recording: a 
 compared with hidane's. This page says what each recording records about where it came from:
 which script made it, against which release of the official emulator, and when.
 
+Every recording was made by running the emulator. Some facts hidane relies on are not in a
+recording: the emulator's flag and environment variable names, the names of its endpoints and
+messages, such as the fields of its import and export requests. Some of these may have come from
+the static inspections of the jar made before this policy
+([OBSERVATION_POLICY.md](OBSERVATION_POLICY.md#history-before-this-policy)); most are also
+observable at runtime or in firebase-tools' public source, but not each has been re-verified
+([SOURCES.md](SOURCES.md#7-before-this-policy)).
+
 ## What a recording says about itself today
 
 | Recordings | Script | Official emulator | When |
