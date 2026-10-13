@@ -183,25 +183,31 @@ impl Measure {
 }
 
 impl Nearest {
-    /// Validates `find` in the official emulator's order, after the rest of `query`.
-    fn parse(find: &FindNearest, query: &StructuredQuery) -> Result<Self, Status> {
-        let target = match find
+    /// The query vector, read with the rest of what the query names, before an aggregation's
+    /// list is checked (#262).
+    fn target(find: &FindNearest) -> Result<Vec<f64>, Status> {
+        match find
             .query_vector
             .as_ref()
             .and_then(|v| v.value_type.as_ref())
         {
-            None => {
-                return Err(Status::invalid_argument(
-                    "Cannot convert firestore.v1.Value with type unset.",
-                ));
-            }
-            Some(ValueType::MapValue(map)) if is_vector(map) => validate::vector(map)?,
-            Some(_) => {
-                return Err(Status::invalid_argument(
-                    "Query Value must be of type vector.",
-                ));
-            }
-        };
+            None => Err(Status::invalid_argument(
+                "Cannot convert firestore.v1.Value with type unset.",
+            )),
+            Some(ValueType::MapValue(map)) if is_vector(map) => validate::vector(map),
+            Some(_) => Err(Status::invalid_argument(
+                "Query Value must be of type vector.",
+            )),
+        }
+    }
+
+    /// Validates the rest of `find` in the official emulator's order, after the rest of
+    /// `query`; `target` is its vector ([`Nearest::target`]).
+    fn parse(
+        find: &FindNearest,
+        target: Vec<f64>,
+        query: &StructuredQuery,
+    ) -> Result<Self, Status> {
         let limit = match find.limit {
             Some(n @ 1..=1000) => usize::try_from(n).unwrap_or(0),
             _ => {
@@ -320,11 +326,13 @@ impl Query {
     /// Validates `query` under `parent` in the official emulator's order
     /// (`tools/oracle/queries.py`, `tools/oracle/aggregations.py`, #262): the operators of its
     /// filter ([`check_operators`]); then what each part names and holds (the collection, the
-    /// filter's kinds, paths and values, the orders' and the projection's paths); then
-    /// `aggregations`, an aggregation's own checks, which say whether it has a `sum` or an
-    /// `avg`; then the orders (a key before other fields, duplicates) and the cursors, the
-    /// limit and the offset, whether the orders need a collection (a `sum` or an `avg` orders by
-    /// its field), and the filter as a whole.
+    /// filter's kinds, paths and values, the orders' and the projection's paths, the cursors,
+    /// the query vector); then `aggregations`, an aggregation's own checks, which say whether
+    /// it has a `sum` or an `avg`; then the filter as a whole (array-contains, equalities on
+    /// the key, disjunctions); then the orders (a key before other fields, duplicates), the
+    /// limit and the offset, whether the orders need a collection (a `sum` or an `avg` orders
+    /// by its field), whether the filter does, the filters on `__name__`, and the rest of
+    /// `find_nearest`.
     pub fn parse_aggregated(
         parent: ResourcePath,
         query: &StructuredQuery,
@@ -385,13 +393,22 @@ impl Query {
             })
             .transpose()?;
 
-        let orders_fields = aggregations()?;
-
-        let orders = complete_orders(&explicit, filter.as_ref())?;
         let bound =
             |cursor: Option<&Cursor>| cursor.map(|c| parse_cursor(c, &explicit)).transpose();
         let start = bound(query.start_at.as_ref())?;
         let end = bound(query.end_at.as_ref())?;
+        let target = query
+            .find_nearest
+            .as_ref()
+            .map(Nearest::target)
+            .transpose()?;
+
+        let orders_fields = aggregations()?;
+
+        if let Some(filter) = &filter {
+            check_filter(filter)?;
+        }
+        let orders = complete_orders(&explicit, filter.as_ref())?;
         let limit = match query.limit {
             Some(n) if n < 0 => return Err(Status::invalid_argument("limit is negative")),
             Some(n) => Some(usize::try_from(n).unwrap_or(0)),
@@ -407,12 +424,13 @@ impl Query {
             ));
         }
         if let Some(filter) = &filter {
-            check_filter(filter, kindless)?;
+            check_filter_late(filter, kindless)?;
         }
         let nearest = query
             .find_nearest
             .as_ref()
-            .map(|find| Nearest::parse(find, query))
+            .zip(target)
+            .map(|(find, target)| Nearest::parse(find, target, query))
             .transpose()?;
 
         Ok(Self {
@@ -736,11 +754,9 @@ fn parse_filter(filter: &structured_query::Filter) -> Result<Option<Filter>, Sta
                 }
             }
             if field == Field::Name {
-                if matches!(op, Op::ArrayContains | Op::ArrayContainsAny) {
-                    return Err(Status::invalid_argument("the name __key__ is reserved"));
-                }
-                // A reference's name is read here; a value that is not a reference is refused
-                // after the checks on the whole filter (`check_keys`).
+                // A reference's name is read here; array membership on `__name__` and a value
+                // that is not a reference are refused after the orders and the limit
+                // (`check_key_values`).
                 for value in key_values(op, &value) {
                     if let Some(ValueType::ReferenceValue(name)) = &value.value_type {
                         names::parent(name)?;
@@ -764,10 +780,9 @@ fn parse_filter(filter: &structured_query::Filter) -> Result<Option<Filter>, Sta
                 .operand_type
                 .as_ref()
                 .ok_or_else(|| Status::invalid_argument("Unknown UnaryFilter operator."))?;
+            // A unary filter on `__name__` is refused late, as a key value
+            // (`check_key_values`); until then it is an equality or an inequality on the key.
             let field = Field::parse(Some(reference))?;
-            if field == Field::Name {
-                return Err(key_value_required());
-            }
             Ok(Some(Filter::Unary { field, op }))
         }
     }
@@ -800,10 +815,10 @@ fn key_values(op: Op, value: &Value) -> &[Value] {
     }
 }
 
-/// Checks on `__name__` filters, after the others (`tools/oracle/queries.py`): an equality
-/// (`==`, `in`) needs an inequality on `__name__` too when another field has one, and every
-/// value must be a reference.
-fn check_keys(filter: &Filter, leaves: &[(&Field, Leaf)]) -> Result<(), Status> {
+/// An equality on `__name__` (`==`, `in`, `is null`, `is NaN`) needs an inequality on
+/// `__name__` too when another field has one (`tools/oracle/queries.py`), checked with the
+/// filter, before the orders (#262).
+fn check_key_equality(leaves: &[(&Field, Leaf)]) -> Result<(), Status> {
     let inequality = |kind: &Leaf| {
         matches!(
             kind,
@@ -818,7 +833,11 @@ fn check_keys(filter: &Filter, leaves: &[(&Field, Leaf)]) -> Result<(), Status> 
         )
     };
     let key_equality = leaves.iter().any(|(field, kind)| {
-        **field == Field::Name && matches!(kind, Leaf::Compare(Op::Equal | Op::In))
+        **field == Field::Name
+            && matches!(
+                kind,
+                Leaf::Compare(Op::Equal | Op::In) | Leaf::Unary(UnaryOp::Null | UnaryOp::Nan)
+            )
     });
     let key_inequality = leaves
         .iter()
@@ -831,6 +850,24 @@ fn check_keys(filter: &Filter, leaves: &[(&Field, Leaf)]) -> Result<(), Status> 
             "Equality on key is not allowed if there are other inequality fields and key does \
              not appear in inequalities.",
         ));
+    }
+    Ok(())
+}
+
+/// The filters on `__name__`, last (#262): no array membership, no unary filter, and every
+/// value a reference.
+fn check_key_values(filter: &Filter, leaves: &[(&Field, Leaf)]) -> Result<(), Status> {
+    for (field, kind) in leaves {
+        if **field != Field::Name {
+            continue;
+        }
+        match kind {
+            Leaf::Compare(Op::ArrayContains | Op::ArrayContainsAny) => {
+                return Err(Status::invalid_argument("the name __key__ is reserved"));
+            }
+            Leaf::Unary(_) => return Err(key_value_required()),
+            Leaf::Compare(_) => {}
+        }
     }
     let mut keys = Ok(());
     visit_compares(filter, &mut |field, op, value| {
@@ -915,9 +952,10 @@ pub fn check_operators(query: &StructuredQuery) -> Result<(), Status> {
     Ok(())
 }
 
-/// The filter as a whole, once the orders and the limit are checked; its operators were
-/// checked first ([`check_operators`]).
-fn check_filter(filter: &Filter, kindless: bool) -> Result<(), Status> {
+/// The filter as a whole, before the orders: at most one array-contains per conjunction, the
+/// key's equalities, the disjunctions. Its operators were checked first ([`check_operators`]),
+/// the rest comes last ([`check_filter_late`]).
+fn check_filter(filter: &Filter) -> Result<(), Status> {
     let mut leaves = Vec::new();
     collect_leaves(filter, &mut leaves);
     if array_filters(filter) > 1 {
@@ -925,17 +963,7 @@ fn check_filter(filter: &Filter, kindless: bool) -> Result<(), Status> {
             "Only a single array-contains clause is allowed in a query",
         ));
     }
-    if kindless
-        && let Some(field) = leaves
-            .iter()
-            .map(|leaf| leaf.0)
-            .find(|field| **field != Field::Name)
-    {
-        return Err(Status::invalid_argument(format!(
-            "kind is required for filter: {}",
-            field.display()
-        )));
-    }
+    check_key_equality(&leaves)?;
     let disjunctions = disjunctions(filter);
     // Past twice the maximum, the official emulator stops counting.
     if disjunctions > 2 * MAX_DISJUNCTIONS {
@@ -949,7 +977,27 @@ fn check_filter(filter: &Filter, kindless: bool) -> Result<(), Status> {
              which is more than the maximum of {MAX_DISJUNCTIONS}"
         )));
     }
-    check_keys(filter, &leaves)
+    Ok(())
+}
+
+/// The last checks of a filter, after the orders, the limit and whether the orders need a
+/// collection (`tools/oracle/queries.py`, #262): whether it needs a collection, then the values
+/// on `__name__` (`check_key_values`).
+fn check_filter_late(filter: &Filter, kindless: bool) -> Result<(), Status> {
+    let mut leaves = Vec::new();
+    collect_leaves(filter, &mut leaves);
+    if kindless
+        && let Some(field) = leaves
+            .iter()
+            .map(|leaf| leaf.0)
+            .find(|field| **field != Field::Name)
+    {
+        return Err(Status::invalid_argument(format!(
+            "kind is required for filter: {}",
+            field.display()
+        )));
+    }
+    check_key_values(filter, &leaves)
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

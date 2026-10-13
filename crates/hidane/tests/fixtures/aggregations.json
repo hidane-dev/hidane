@@ -3255,6 +3255,49 @@
     "status": "INVALID_ARGUMENT",
     "message": "Aggregations are not supported for the property: __key__"
    }
+  },
+  {
+   "name": "a query vector that is not a vector and no aggregations",
+   "parent": "",
+   "query": {
+    "findNearest": {
+     "queryVector": {
+      "arrayValue": {}
+     }
+    }
+   },
+   "aggregations": [],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Query Value must be of type vector."
+   }
+  },
+  {
+   "name": "a cursor with too many values and a duplicate alias",
+   "parent": "",
+   "query": {
+    "startAt": {
+     "values": [
+      {
+       "integerValue": "1"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "a"
+    },
+    {
+     "count": {},
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Cursor has too many values."
+   }
   }
  ]
 }

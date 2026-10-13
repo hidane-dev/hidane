@@ -13735,6 +13735,222 @@
    }
   },
   {
+   "name": "an equality on the key next to an inequality, and duplicate orders",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "OR",
+      "filters": [
+       {
+        "compositeFilter": {
+         "op": "AND",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "__name__"
+            },
+            "op": "EQUAL",
+            "value": {
+             "referenceValue": "{documents}/p/p3"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "a"
+            },
+            "op": "GREATER_THAN_OR_EQUAL",
+            "value": {
+             "integerValue": "2"
+            }
+           }
+          }
+         ]
+        }
+       }
+      ]
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "tags"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "tags"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Equality on key is not allowed if there are other inequality fields and key does not appear in inequalities."
+   }
+  },
+  {
+   "name": "is-null on __name__ next to an inequality",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "OR",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "tags"
+         },
+         "op": "LESS_THAN",
+         "value": {
+          "mapValue": {}
+         }
+        }
+       },
+       {
+        "unaryFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "IS_NULL"
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Equality on key is not allowed if there are other inequality fields and key does not appear in inequalities."
+   }
+  },
+  {
+   "name": "is-nan on __name__ and an order after the key",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "unaryFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "IS_NAN"
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "b"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain more fields after the key"
+   }
+  },
+  {
+   "name": "array-contains on __name__ and duplicate orders",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "ARRAY_CONTAINS",
+      "value": {
+       "referenceValue": "{documents}/p/p1"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain duplicate fields a"
+   }
+  },
+  {
+   "name": "array-contains-any on __name__ and a negative limit",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "ARRAY_CONTAINS_ANY",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "referenceValue": "{documents}/p/p1"
+         }
+        ]
+       }
+      }
+     }
+    },
+    "limit": -1
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "limit is negative"
+   }
+  },
+  {
    "name": "a != 1 and __name__ == p3",
    "parent": "",
    "query": {

@@ -154,6 +154,8 @@ case("a sum of __name__ and an invalid filter path", q("ints", where={"fieldFilt
 case("a duplicate alias and a negative limit", q("ints", limit=-1), [count("x"), count("x")])
 case("a reserved alias and an order without a collection", {"orderBy": [{"field": f("v")}]}, [count("__x__")])
 case("a sum of __name__ and duplicate orders", q("ints", orderBy=[{"field": f("v")}, {"field": f("v")}]), [total("__name__", "s")])
+case("a query vector that is not a vector and no aggregations", {"findNearest": {"queryVector": {"arrayValue": {}}}}, [])
+case("a cursor with too many values and a duplicate alias", {"startAt": {"values": [i(1)]}}, [count("a"), count("a")])
 
 
 def fill(value):

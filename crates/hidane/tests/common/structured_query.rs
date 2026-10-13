@@ -9,7 +9,7 @@ use hidane_proto::google::firestore::v1::{
     structured_query::{
         CollectionSelector, CompositeFilter, Direction, FieldFilter, FieldReference, Filter,
         FindNearest, Order, Projection, UnaryFilter, composite_filter, field_filter,
-        filter::FilterType, unary_filter,
+        filter::FilterType, find_nearest, unary_filter,
     },
 };
 use serde_json::Value as Json;
@@ -149,6 +149,15 @@ pub fn structured_query(json: &Json) -> StructuredQuery {
             .as_i64()
             .map_or(0, |n| i32::try_from(n).unwrap()),
         limit: json["limit"].as_i64().map(|n| i32::try_from(n).unwrap()),
-        find_nearest: json.get("findNearest").map(|_| FindNearest::default()),
+        find_nearest: json.get("findNearest").map(|f| FindNearest {
+            vector_field: f.get("vectorField").map(field),
+            query_vector: f.get("queryVector").map(value),
+            distance_measure: f["distanceMeasure"]
+                .as_str()
+                .and_then(find_nearest::DistanceMeasure::from_str_name)
+                .map_or(0, |m| m as i32),
+            limit: f["limit"].as_i64().map(|n| i32::try_from(n).unwrap()),
+            ..FindNearest::default()
+        }),
     }
 }

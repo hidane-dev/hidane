@@ -347,6 +347,13 @@ case("an order without a collection and a negative limit", {"orderBy": [asc("b")
 case("a filter and an order without a collection", {"where": ff("a", "EQUAL", i(1)), "orderBy": [asc("b")]})
 case("array-contains on m and m.x without a collection", {"where": AND(ff("m", "ARRAY_CONTAINS", i(1)), ff("m.x", "ARRAY_CONTAINS", i(1)))})
 case("duplicate orders and a __name__ filter that is not a key", q("p", where_=ff("__name__", "LESS_THAN_OR_EQUAL", d("Infinity")), order=[asc("a"), asc("a")]))
+# The key's equalities (`is null` and `is NaN` on __name__ among them) come with the filter,
+# before the orders; array membership and unary filters on __name__ come last.
+case("an equality on the key next to an inequality, and duplicate orders", q("p", where_=OR(AND(ff("__name__", "EQUAL", ref("p/p3")), ff("a", "GREATER_THAN_OR_EQUAL", i(2)))), order=[asc("tags"), asc("tags")]))
+case("is-null on __name__ next to an inequality", q("p", where_=OR(ff("tags", "LESS_THAN", mp()), uf("__name__", "IS_NULL"))))
+case("is-nan on __name__ and an order after the key", q("p", where_=uf("__name__", "IS_NAN"), order=[asc("__name__"), asc("b")]))
+case("array-contains on __name__ and duplicate orders", q("p", where_=ff("__name__", "ARRAY_CONTAINS", ref("p/p1")), order=[asc("a"), asc("a")]))
+case("array-contains-any on __name__ and a negative limit", q("p", where_=ff("__name__", "ARRAY_CONTAINS_ANY", arr(ref("p/p1"))), limit=-1))
 
 # --- equality on __name__ next to inequalities (#74) -----------------------------------------
 # Refused unless __name__ has an inequality too; checked after the other filter checks, and
