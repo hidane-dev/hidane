@@ -1,0 +1,160 @@
+name: Reproducible build
+
+# Builds every release binary twice, the way the release workflow does
+# (packaging/release/build.sh, packaging/release/archive.py), on two runners, from checkouts in
+# directories of different lengths and with different Cargo homes, and fails unless the two
+# binaries and the two archives are the same bytes (docs/reproducible-builds.md).
+#
+# The builds leave the third-party notices out (`hidane --licenses` then says where to find them):
+# the release embeds one file, generated once, into every binary, so it cannot make two builds of
+# one commit differ.
+
+on:
+  pull_request:
+    paths:
+      - Cargo.lock
+      - Cargo.toml
+      - "crates/*/Cargo.toml"
+      - "crates/*/build.rs"
+      - "crates/hidane-proto/proto/**"
+      - "packaging/release/**"
+      - .github/workflows/reproducible.yml
+      - .github/workflows/release.yml
+  push:
+    branches: [main]
+    paths:
+      - Cargo.lock
+      - Cargo.toml
+      - "crates/*/Cargo.toml"
+      - "crates/*/build.rs"
+      - "crates/hidane-proto/proto/**"
+      - "packaging/release/**"
+      - .github/workflows/reproducible.yml
+      - .github/workflows/release.yml
+  schedule:
+    # Weekly, for changes on the runners (images, linkers) rather than in the repository.
+    - cron: "41 5 * * 3"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build ${{ matrix.target }} (${{ matrix.copy }})
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-musl
+          - aarch64-apple-darwin
+          - x86_64-apple-darwin
+          - x86_64-pc-windows-msvc
+        copy: [first, second]
+        include:
+          # The runners the release workflow builds each target on.
+          - { target: x86_64-unknown-linux-musl, os: ubuntu-24.04 }
+          - { target: aarch64-unknown-linux-musl, os: ubuntu-24.04-arm }
+          - { target: aarch64-apple-darwin, os: macos-14 }
+          - { target: x86_64-apple-darwin, os: macos-14 }
+          - { target: x86_64-pc-windows-msvc, os: windows-2022 }
+          # The first copy is checked out where the release workflow checks out, with the
+          # runner's Cargo home; the second elsewhere, with a Cargo home of its own.
+          - { copy: first, dir: ".", cargo-home: "" }
+          - { copy: second, dir: elsewhere/a-longer-checkout-directory, cargo-home: other-cargo-home }
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+        working-directory: ${{ matrix.dir }}
+    env:
+      TARGET: ${{ matrix.target }}
+      CARGO_HOME_DIR: ${{ matrix.cargo-home }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          path: ${{ matrix.dir }}
+      - name: Install musl
+        if: contains(matrix.target, 'musl')
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+      - name: Environment
+        run: |
+          echo "SOURCE_DATE_EPOCH=$(git log -1 --format=%ct)" >> "$GITHUB_ENV"
+          if [[ -n "$CARGO_HOME_DIR" ]]; then
+            echo "CARGO_HOME=$RUNNER_TEMP/$CARGO_HOME_DIR" >> "$GITHUB_ENV"
+          fi
+      - name: Build
+        run: packaging/release/build.sh "$TARGET"
+      - name: Package
+        run: |
+          name="hidane-check-$TARGET"
+          mkdir "$name"
+          ext=""
+          [[ "$TARGET" == *windows* ]] && ext=".exe"
+          cp "target/$TARGET/release/hidane$ext" LICENSE-MIT LICENSE-APACHE README.md "$name/"
+          printf 'notices\n' > "$name/THIRD-PARTY-LICENSES.txt"
+          if [[ "$TARGET" == *windows* ]]; then
+            python packaging/release/archive.py "$name" "$name.zip"
+            archive="$name.zip"
+          else
+            python3 packaging/release/archive.py "$name" "$name.tar.gz"
+            archive="$name.tar.gz"
+          fi
+          mkdir -p "$RUNNER_TEMP/out"
+          cp "target/$TARGET/release/hidane$ext" "$archive" "$RUNNER_TEMP/out/"
+          echo "Built in $PWD with CARGO_HOME=${CARGO_HOME:-$HOME/.cargo}"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ matrix.target }}-${{ matrix.copy }}
+          path: ${{ runner.temp }}/out
+          if-no-files-found: error
+
+  compare:
+    name: compare
+    needs: build
+    if: ${{ !cancelled() }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          path: builds
+      - name: Compare
+        working-directory: builds
+        run: |
+          status=0
+          echo "| Target | File | SHA-256 of both builds |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|---|---|---|" >> "$GITHUB_STEP_SUMMARY"
+          for first in *-first; do
+            target="${first%-first}"
+            second="$target-second"
+            if [[ ! -d "$second" ]]; then
+              echo "::error::$target: one of the two builds is missing"
+              status=1
+              continue
+            fi
+            for path in "$first"/*; do
+              file=$(basename "$path")
+              a=$(sha256sum < "$first/$file" | cut -d' ' -f1)
+              b=$(sha256sum < "$second/$file" | cut -d' ' -f1)
+              if [[ "$a" == "$b" ]]; then
+                echo "| $target | \`$file\` | \`$a\` |" >> "$GITHUB_STEP_SUMMARY"
+              else
+                echo "::error::$target: $file differs between the two builds ($a, $b)"
+                echo "| $target | \`$file\` | **differ**: \`$a\`, \`$b\` |" >> "$GITHUB_STEP_SUMMARY"
+                echo "Bytes that differ: $(cmp -l "$first/$file" "$second/$file" | wc -l)"
+                diff <(strings -n 8 "$first/$file") <(strings -n 8 "$second/$file") | head -40 || true
+                status=1
+              fi
+            done
+          done
+          if [[ $(find . -maxdepth 1 -name '*-first' | wc -l) -ne 5 ]]; then
+            echo "::error::expected the builds of five targets"
+            status=1
+          fi
+          exit "$status"

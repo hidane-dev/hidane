@@ -10,6 +10,7 @@ the same binaries, built once per release. `docs/releasing.md` has the release s
 | `pub/` | pub.dev: `hidane`, a Dart launcher. Its first run downloads the release archive for the machine, checks it against `sha256sums.txt` and caches the binary | Published as it is; its version must be the release's |
 | `homebrew/` | `brew install hidane-dev/tap/hidane` | `homebrew/formula.mjs <version> <sha256sums.txt>` prints `Formula/hidane.rb` for hidane-dev/homebrew-tap |
 | `docker/` | `ghcr.io/hidane-dev/hidane` (linux/amd64, linux/arm64): the static Linux binary on an empty base, also for Testcontainers ([`docs/testcontainers.md`](../docs/testcontainers.md)) | `docker/Dockerfile`, with the two musl binaries as the context |
+| `release/` | The GitHub Release archives, which every channel above is built from | `release/build.sh <target> [<notices>]` builds a target's binary with the Rust pinned in `release/rust-toolchain.toml` and remapped paths; `release/archive.py <dir> <archive>` packs it with fixed dates, owners and modes (docs/reproducible-builds.md) |
 
 `check-versions.mjs` checks that the workspace `Cargo.toml`, its `=` pins and the pub launcher agree
 on the version (CI runs it, and the release workflow checks the tag with it).

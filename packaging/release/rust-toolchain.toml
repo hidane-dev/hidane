@@ -1,0 +1,6 @@
+# The Rust toolchain that builds the release binaries (build.sh). An exact version, so that a
+# release can be rebuilt byte for byte later (docs/reproducible-builds.md); Dependabot proposes
+# each new one. CI tests with the latest stable and the MSRV; this file is for release builds only.
+[toolchain]
+channel = "1.99.0"
+profile = "minimal"

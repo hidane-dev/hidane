@@ -5,6 +5,10 @@ updates:
     schedule: { interval: weekly }
     groups:
       cargo-workspace: { patterns: ["*"] }
+  # The Rust that builds the release binaries (docs/reproducible-builds.md).
+  - package-ecosystem: rust-toolchain
+    directory: /packaging/release
+    schedule: { interval: weekly }
   - package-ecosystem: pub
     directory: /packaging/pub
     schedule: { interval: weekly }
