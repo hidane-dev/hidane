@@ -22,7 +22,7 @@ use hidane_core::{
     normalize::normalize_value,
     order::{compare, is_vector, type_rank},
     path::ResourcePath,
-    store::{ReadTime, Store, StoredDocument},
+    store::{ReadTime, Store, StoredDocument, identical},
 };
 use hidane_proto::google::firestore::v1::{
     Cursor, StructuredQuery, Value,
@@ -57,6 +57,11 @@ impl Field {
         let path = reference.map_or("", |r| r.field_path.as_str());
         if path == "__name__" {
             return Ok(Self::Name);
+        }
+        if path.is_empty() {
+            return Err(Status::invalid_argument(
+                "Invalid empty property path string.",
+            ));
         }
         FieldPath::parse(path)
             .map(Self::Path)
@@ -186,14 +191,10 @@ impl Nearest {
     /// The query vector, read with the rest of what the query names, before an aggregation's
     /// list is checked (#262).
     fn target(find: &FindNearest) -> Result<Vec<f64>, Status> {
-        match find
-            .query_vector
-            .as_ref()
-            .and_then(|v| v.value_type.as_ref())
-        {
-            None => Err(Status::invalid_argument(
-                "Cannot convert firestore.v1.Value with type unset.",
-            )),
+        let vector = find.query_vector.clone().unwrap_or_default();
+        validate::typed(&vector)?;
+        match vector.value_type.as_ref() {
+            None => Err(validate::unset()),
             Some(ValueType::MapValue(map)) if is_vector(map) => validate::vector(map),
             Some(_) => Err(Status::invalid_argument(
                 "Query Value must be of type vector.",
@@ -451,7 +452,31 @@ impl Query {
 
     /// Leaves out documents without `fields`, before `offset` and `limit` apply. Aggregating a
     /// field does this on the official emulator, also for the `count` next to it.
+    ///
+    /// The fields also order the query, as on the official emulator (`tools/oracle/
+    /// aggregations.py`, #262): in path order, after the orders the query gives and those its
+    /// inequalities imply, before the key, in the direction of the last order it gives; not
+    /// at all when the query orders by the key itself. `offset` and `limit` take documents in
+    /// that order.
     pub fn require(&mut self, fields: impl IntoIterator<Item = FieldPath>) {
+        let mut fields: Vec<FieldPath> = fields.into_iter().collect();
+        fields.sort();
+        fields.dedup();
+        if !self.given_orders.iter().any(|o| o.field == Field::Name) {
+            let descending = self.given_orders.last().is_some_and(|o| o.descending);
+            let key = self
+                .orders
+                .iter()
+                .position(|o| o.field == Field::Name)
+                .unwrap_or(self.orders.len());
+            let added: Vec<Order> = fields
+                .iter()
+                .map(|path| Field::Path(path.clone()))
+                .filter(|field| !self.orders.iter().any(|o| o.field == *field))
+                .map(|field| Order { field, descending })
+                .collect();
+            self.orders.splice(key..key, added);
+        }
         self.required.extend(fields);
     }
 
@@ -712,8 +737,12 @@ fn parse_filter(filter: &structured_query::Filter) -> Result<Option<Filter>, Sta
             }
             Ok((!filters.is_empty()).then(|| combine(filters)))
         }
+        // Its field, then its value (which has a type, #262), then its operator.
         Some(FilterType::FieldFilter(field_filter)) => {
             use field_filter::Operator as F;
+            let field = Field::parse(field_filter.field.as_ref())?;
+            let value = field_filter.value.clone().unwrap_or_default();
+            validate::typed(&value)?;
             let op = match F::try_from(field_filter.op) {
                 Ok(F::LessThan) => Op::Less,
                 Ok(F::LessThanOrEqual) => Op::LessOrEqual,
@@ -729,8 +758,7 @@ fn parse_filter(filter: &structured_query::Filter) -> Result<Option<Filter>, Sta
                     return Err(Status::invalid_argument("Unknown FieldFilter operator."));
                 }
             };
-            let field = Field::parse(field_filter.field.as_ref())?;
-            let value = normalized(field_filter.value.clone().unwrap_or_default());
+            let value = normalized(value);
             if let Some((name, limit)) = match op {
                 Op::In => Some(("IN", MAX_IN)),
                 Op::ArrayContainsAny => Some(("ARRAY_CONTAINS_ANY", MAX_IN)),
@@ -765,8 +793,18 @@ fn parse_filter(filter: &structured_query::Filter) -> Result<Option<Filter>, Sta
             }
             Ok(Some(Filter::Compare { field, op, value }))
         }
+        // Its field, then its operator (#262).
         Some(FilterType::UnaryFilter(unary)) => {
             use unary_filter::Operator as U;
+            let Some(unary_filter::OperandType::Field(reference)) = unary.operand_type.as_ref()
+            else {
+                return Err(Status::invalid_argument(
+                    "Unsupported UnaryFilter operand type (non-FIELD).",
+                ));
+            };
+            // A unary filter on `__name__` is refused late, as a key value
+            // (`check_key_values`); until then it is an equality or an inequality on the key.
+            let field = Field::parse(Some(reference))?;
             let op = match U::try_from(unary.op) {
                 Ok(U::IsNan) => UnaryOp::Nan,
                 Ok(U::IsNull) => UnaryOp::Null,
@@ -776,13 +814,6 @@ fn parse_filter(filter: &structured_query::Filter) -> Result<Option<Filter>, Sta
                     return Err(Status::invalid_argument("Unknown UnaryFilter operator."));
                 }
             };
-            let unary_filter::OperandType::Field(reference) = unary
-                .operand_type
-                .as_ref()
-                .ok_or_else(|| Status::invalid_argument("Unknown UnaryFilter operator."))?;
-            // A unary filter on `__name__` is refused late, as a key value
-            // (`check_key_values`); until then it is an equality or an inequality on the key.
-            let field = Field::parse(Some(reference))?;
             Ok(Some(Filter::Unary { field, op }))
         }
     }
@@ -958,19 +989,19 @@ pub fn check_operators(query: &StructuredQuery) -> Result<(), Status> {
 fn check_filter(filter: &Filter) -> Result<(), Status> {
     let mut leaves = Vec::new();
     collect_leaves(filter, &mut leaves);
-    if array_filters(filter) > 1 {
+    let normalized = normalize(filter);
+    if array_filters(&normalized) > 1 {
         return Err(Status::failed_precondition(
             "Only a single array-contains clause is allowed in a query",
         ));
     }
     check_key_equality(&leaves)?;
-    let disjunctions = disjunctions(filter);
     // Past twice the maximum, the official emulator stops counting.
-    if disjunctions > 2 * MAX_DISJUNCTIONS {
+    let Some(disjunctions) = disjunctions(&normalized).map(|dnf| dnf.len()) else {
         return Err(Status::invalid_argument(format!(
             "Too many disjunctions after normalization, the maximum is {MAX_DISJUNCTIONS}"
         )));
-    }
+    };
     if disjunctions > MAX_DISJUNCTIONS {
         return Err(Status::invalid_argument(format!(
             "Too many disjunctions after normalization. Result had {disjunctions} disjunctions \
@@ -1033,25 +1064,174 @@ fn array_filters(filter: &Filter) -> usize {
     }
 }
 
-/// How many conjunctions the filter becomes in disjunctive normal form, where `in` and
-/// `array-contains-any` count one per value.
-fn disjunctions(filter: &Filter) -> usize {
-    match filter {
-        Filter::Or(filters) => filters.iter().map(disjunctions).sum(),
-        Filter::And(filters) => filters
-            .iter()
-            .map(disjunctions)
-            .fold(1, usize::saturating_mul),
-        Filter::Compare {
-            op: Op::In | Op::ArrayContainsAny,
-            value,
-            ..
-        } => match &value.value_type {
-            Some(ValueType::ArrayValue(array)) => array.values.len(),
-            _ => 1,
-        },
-        Filter::Compare { .. } | Filter::Unary { .. } => 1,
+/// The filter as the official emulator normalizes it before counting array-contains filters
+/// and disjunctions (`tools/oracle/queries.py`, #262): an `and` in an `and` and an `or` in an
+/// `or` flattened into it, a filter that is the same as one before it in its composite left
+/// out (an `in`, `not-in` or `array-contains-any` compares its values as a set), and a
+/// composite of one filter that filter.
+fn normalize(filter: &Filter) -> Filter {
+    let (children, and) = match filter {
+        Filter::And(children) => (children, true),
+        Filter::Or(children) => (children, false),
+        leaf => return leaf.clone(),
+    };
+    let mut flat: Vec<Filter> = Vec::with_capacity(children.len());
+    let mut push = |filter: Filter| {
+        if !flat.iter().any(|seen| same_filter(seen, &filter)) {
+            flat.push(filter);
+        }
+    };
+    for child in children {
+        match normalize(child) {
+            Filter::And(grandchildren) if and => grandchildren.into_iter().for_each(&mut push),
+            Filter::Or(grandchildren) if !and => grandchildren.into_iter().for_each(&mut push),
+            other => push(other),
+        }
     }
+    match flat.len() {
+        1 => flat.pop().expect("one filter"),
+        _ if and => Filter::And(flat),
+        _ => Filter::Or(flat),
+    }
+}
+
+fn same_filter(a: &Filter, b: &Filter) -> bool {
+    match (a, b) {
+        (
+            Filter::Compare {
+                field: fa,
+                op: oa,
+                value: va,
+            },
+            Filter::Compare {
+                field: fb,
+                op: ob,
+                value: vb,
+            },
+        ) => {
+            fa == fb
+                && oa == ob
+                && if matches!(oa, Op::In | Op::NotIn | Op::ArrayContainsAny) {
+                    let (a, b) = (array(va), array(vb));
+                    a.iter().all(|v| b.iter().any(|w| identical(v, w)))
+                        && b.iter().all(|v| a.iter().any(|w| identical(v, w)))
+                } else {
+                    identical(va, vb)
+                }
+        }
+        (Filter::Unary { field: fa, op: oa }, Filter::Unary { field: fb, op: ob }) => {
+            fa == fb && oa == ob
+        }
+        (Filter::And(a), Filter::And(b)) | (Filter::Or(a), Filter::Or(b)) => {
+            a.iter().all(|f| b.iter().any(|g| same_filter(f, g)))
+                && b.iter().all(|f| a.iter().any(|g| same_filter(f, g)))
+        }
+        _ => false,
+    }
+}
+
+/// One condition of a conjunction in disjunctive normal form: an `in` is an equality per
+/// value, an `array-contains-any` an `array-contains` per value.
+#[derive(Clone, Copy)]
+struct Atom<'a> {
+    field: &'a Field,
+    kind: Leaf,
+    value: Option<&'a Value>,
+}
+
+impl Atom<'_> {
+    fn same(&self, other: &Self) -> bool {
+        self.field == other.field
+            && self.kind == other.kind
+            && match (self.value, other.value) {
+                (Some(a), Some(b)) => identical(a, b),
+                (None, None) => true,
+                _ => false,
+            }
+    }
+}
+
+/// A conjunction: a set of atoms.
+type Conjunction<'a> = Vec<Atom<'a>>;
+
+fn same_conjunction(a: &Conjunction<'_>, b: &Conjunction<'_>) -> bool {
+    a.len() == b.len() && a.iter().all(|x| b.iter().any(|y| x.same(y)))
+}
+
+/// The conjunctions a normalized filter becomes in disjunctive normal form, each once (as sets
+/// of atoms), or `None` once an `and` would combine more than twice the maximum of them, where
+/// the official emulator stops counting (`tools/oracle/queries.py`, #262).
+fn disjunctions(filter: &Filter) -> Option<Vec<Conjunction<'_>>> {
+    fn add<'a>(out: &mut Vec<Conjunction<'a>>, conjunction: Conjunction<'a>) {
+        if !out.iter().any(|seen| same_conjunction(seen, &conjunction)) {
+            out.push(conjunction);
+        }
+    }
+    let mut out: Vec<Conjunction<'_>> = Vec::new();
+    match filter {
+        Filter::Or(children) => {
+            for child in children {
+                for conjunction in disjunctions(child)? {
+                    add(&mut out, conjunction);
+                }
+            }
+        }
+        Filter::And(children) => {
+            let (first, rest) = children.split_first()?;
+            out = disjunctions(first)?;
+            for child in rest {
+                let terms = disjunctions(child)?;
+                if out.len() * terms.len() > 2 * MAX_DISJUNCTIONS {
+                    return None;
+                }
+                let mut product = Vec::new();
+                for left in &out {
+                    for right in &terms {
+                        let mut conjunction: Conjunction<'_> = Vec::new();
+                        for atom in left.iter().chain(right) {
+                            if !conjunction.iter().any(|seen| seen.same(atom)) {
+                                conjunction.push(*atom);
+                            }
+                        }
+                        add(&mut product, conjunction);
+                    }
+                }
+                out = product;
+            }
+        }
+        Filter::Compare {
+            field,
+            op: op @ (Op::In | Op::ArrayContainsAny),
+            value,
+        } => {
+            let kind = Leaf::Compare(if *op == Op::In {
+                Op::Equal
+            } else {
+                Op::ArrayContains
+            });
+            for value in array(value) {
+                add(
+                    &mut out,
+                    vec![Atom {
+                        field,
+                        kind,
+                        value: Some(value),
+                    }],
+                );
+            }
+        }
+        Filter::Compare { field, op, value } => out.push(vec![Atom {
+            field,
+            kind: Leaf::Compare(*op),
+            value: Some(value),
+        }]),
+        Filter::Unary { field, op } => out.push(vec![Atom {
+            field,
+            kind: Leaf::Unary(*op),
+            value: None,
+        }]),
+    }
+    Some(out)
 }
 
 /// Fields that need an implicit ordering: those of range, `!=`, `not-in`, `is not null` and
@@ -1143,7 +1323,8 @@ fn filters_a_property(filter: &Filter) -> bool {
     }
 }
 
-/// A cursor holds at most one value per explicit ordering; `__name__` takes references.
+/// A cursor holds at most one value per explicit ordering, each with a type (#262);
+/// `__name__` takes references.
 fn parse_cursor(cursor: &Cursor, explicit: &[Order]) -> Result<Bound, Status> {
     if cursor.values.len() > explicit.len() {
         return Err(Status::invalid_argument("Cursor has too many values."));
@@ -1153,6 +1334,7 @@ fn parse_cursor(cursor: &Cursor, explicit: &[Order]) -> Result<Bound, Status> {
         .iter()
         .zip(explicit)
         .map(|(value, order)| {
+            validate::typed(value)?;
             if order.field == Field::Name {
                 if !matches!(value.value_type, Some(ValueType::ReferenceValue(_))) {
                     return Err(Status::invalid_argument(

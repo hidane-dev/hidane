@@ -320,7 +320,12 @@ impl FirestoreService {
         guard: Option<&guard::Guard>,
         verifies: writes::Verifies,
     ) -> Result<Option<(ReadTime, Vec<WriteResult>)>, Status> {
-        // Invalid writes fail before waiting for any lock, as on the official emulator.
+        // The transaction comes first, then invalid writes, before waiting for any lock, as on
+        // the official emulator.
+        if let Some(transaction) = transaction {
+            self.transactions
+                .check_commit(database, transaction, !writes.is_empty())?;
+        }
         let targets = writes::check(database, writes, verifies)?;
         self.transactions
             .commit(database, transaction, &targets, || {

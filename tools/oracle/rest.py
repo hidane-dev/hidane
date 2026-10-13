@@ -188,6 +188,128 @@ case("runAggregationQuery without a query, in a new transaction", "POST", B + ":
 case("runAggregationQuery without a query, with a malformed transaction", "POST", B + ":runAggregationQuery", {"transaction": "AAAA"})
 case("runAggregationQuery with no aggregations and a malformed transaction", "POST", B + ":runAggregationQuery", {"structuredAggregationQuery": {}, "transaction": "AAAA"})
 case("runAggregationQuery with a count and no query", "POST", B + ":runAggregationQuery", {"structuredAggregationQuery": {"aggregations": [{"count": {}}]}})
+# Doubles are read correctly rounded (protobuf-java reads them through BigDecimal): these geo
+# point coordinates lose their last digit when a double is read with a faster, inexact parser.
+case("doubles read correctly rounded", "PATCH", B + "/fz/geo", {"fields": {
+    "a": {"geoPointValue": {"latitude": 38.141717608275684, "longitude": -20.053480988037194}},
+    "b": {"arrayValue": {"values": [{"geoPointValue": {"longitude": 117.96957752590589}}]}},
+    "c": d(0.1234567890123456789), "e": d(9007199254740993), "f": d(5e-324)}})
+case("doubles read correctly rounded, in a commit", "POST", B + ":commit", {"writes": [
+    {"update": {"name": NAME + "/fz/geo2", "fields": {"g": {"geoPointValue": {"latitude": -89.99999999999997, "longitude": -20.053480988037194}}}}}]})
+case("doubles read correctly rounded, read back", "POST", B + ":batchGet", {"documents": [NAME + "/fz/geo2"]})
+# A body of JSON `null` is not valid for any request that reads a body (POST and PATCH), once the
+# request is routed; GET and DELETE ignore their bodies.
+case("batchGet with a null body", "POST", B + ":batchGet", raw="null")
+case("runQuery with a null body", "POST", B + ":runQuery", raw="null")
+case("runAggregationQuery with a null body", "POST", B + ":runAggregationQuery", raw="null")
+case("commit with a null body", "POST", B + ":commit", raw="null")
+case("batchWrite with a null body", "POST", B + ":batchWrite", raw="null")
+case("beginTransaction with a null body", "POST", B + ":beginTransaction", raw=" null\n")
+case("rollback with a null body", "POST", B + ":rollback", raw="null")
+case("listCollectionIds with a null body", "POST", B + "/fz/b:listCollectionIds", raw="null")
+case("PATCH with a null body", "PATCH", B + "/fz/null", raw="null")
+case("POST with a null body", "POST", B + "/fz?documentId=null", raw="null")
+case("a null body writes nothing", "GET", B + "/fz/null")
+case("GET with a null body", "GET", B + "/fz/b", raw="null")
+case("DELETE with a null body", "DELETE", B + "/fz/null", raw="null")
+case("an unknown verb with a null body", "POST", B + ":nosuchverb", raw="null")
+# A value without a type (`{}`) cannot be converted, over every way of writing, in a field, an
+# array, a map or a transform's operand. It is found with the names of a write: in the order of
+# the fields, depth first, next to reserved names (a special map's values are all read before
+# its `__type__`), after the write's document name and before its update mask, its transforms
+# and every later check (sequences, values, preconditions, verifies).
+U = {}
+def upd(name, fields, **extra):
+    return dict({"update": {"name": NAME + "/" + name, "fields": fields}}, **extra)
+def commit(*writes):
+    return {"writes": list(writes)}
+case("PATCH a value without a type", "PATCH", B + "/fz/unset", {"fields": {"v": U}})
+case("POST a value without a type", "POST", B + "/fz?documentId=unset", {"fields": {"m": {"mapValue": {"fields": {"k": U}}}}})
+case("batchWrite a value without a type", "POST", B + ":batchWrite", commit(upd("fz/unset", {"v": U})))
+case("commit a value without a type in an array", "POST", B + ":commit", commit(upd("fz/unset", {"v": {"arrayValue": {"values": [U]}}})))
+case("a value without a type writes nothing", "GET", B + "/fz/unset")
+case("a reserved name, then a value without a type", "POST", B + ":commit", commit(upd("fz/unset", {"__x__": i(1), "v": U})))
+case("a value without a type, then a reserved name", "POST", B + ":commit", commit(upd("fz/unset", {"v": U, "__x__": i(1)})))
+case("a nested reserved name, then a value without a type", "POST", B + ":commit", commit(upd("fz/unset", {"m": {"mapValue": {"fields": {"__x__": i(1)}}}, "v": U})))
+case("a value without a type, then a nested reserved name", "POST", B + ":commit", commit(upd("fz/unset", {"m": {"mapValue": {"fields": {"a": U, "__x__": i(1)}}}})))
+case("a reserved name in a write before a value without a type", "POST", B + ":commit", commit(upd("fz/a1", {"__x__": i(1)}), upd("fz/a2", {"v": U})))
+case("a value without a type before an invalid document name", "POST", B + ":commit", commit(upd("fz/a1", {"v": U}), upd("fz", {})))
+case("a value without a type before the update mask", "POST", B + ":commit", commit(upd("fz/a1", {"v": U}, updateMask={"fieldPaths": ["a..b"]})))
+case("a value without a type outside the update mask", "POST", B + ":commit", commit(upd("fz/a1", {"v": U, "w": i(1)}, updateMask={"fieldPaths": ["w"]})))
+case("a value without a type before nested arrays", "POST", B + ":commit", commit(upd("fz/a1", {"a": {"arrayValue": {"values": [{"arrayValue": {}}]}}, "v": U})))
+case("a value without a type in a nested array", "POST", B + ":batchWrite", commit(upd("fz/a1", {"v": {"arrayValue": {"values": [{"arrayValue": {"values": [U]}}]}}})))
+case("a value without a type before an empty field name", "POST", B + ":commit", commit(upd("fz/a1", {"": U})))
+case("a value without a type before a transform path", "POST", B + ":commit", commit(upd("fz/a1", {"v": U}, updateTransforms=[{"fieldPath": "a.__x__", "increment": i(1)}])))
+case("a value without a type before the sequence of writes", "POST", B + ":commit", commit(upd("fz/a1", {"v": U}), upd("fz/a1", {}, currentDocument={"exists": False}), {"delete": NAME + "/fz/a1"}))
+case("a value without a type before a precondition", "POST", B + ":commit", commit(upd("fz/a1", {"v": U}, currentDocument={"updateTime": "2001-01-01T00:00:00Z"})))
+case("a value without a type before a verify", "POST", B + ":commit", commit({"verify": NAME + "/fz/zz", "currentDocument": {"exists": True}}, upd("fz/a1", {"v": U})))
+case("a vector holding a value without a type", "POST", B + ":commit", commit(upd("fz/a1", {"v": {"mapValue": {"fields": {"__type__": s("__vector__"), "value": {"arrayValue": {"values": [i(1), U]}}}}}})))
+case("a __type__ without a type", "POST", B + ":commit", commit(upd("fz/a1", {"v": {"mapValue": {"fields": {"__type__": U}}}})))
+case("a value without a type after a __type__ that is not a string", "POST", B + ":commit", commit(upd("fz/a1", {"v": {"mapValue": {"fields": {"__type__": i(1), "x": U}}}})))
+case("a value without a type next to an unknown __type__", "POST", B + ":commit", commit(upd("fz/a1", {"v": {"mapValue": {"fields": {"__type__": s("other"), "x": U}}}})))
+case("an increment without a type", "POST", B + ":commit", commit(upd("fz/a1", {}, updateTransforms=[{"fieldPath": "x", "increment": U}])))
+case("an increment holding a value without a type", "POST", B + ":commit", commit(upd("fz/a1", {}, updateTransforms=[{"fieldPath": "x", "increment": {"mapValue": {"fields": {"k": U}}}}])))
+case("a maximum without a type", "POST", B + ":commit", commit({"transform": {"document": NAME + "/fz/a1", "fieldTransforms": [{"fieldPath": "x", "maximum": U}]}}))
+case("an array union holding a value without a type", "POST", B + ":commit", commit(upd("fz/a1", {}, updateTransforms=[{"fieldPath": "x", "appendMissingElements": {"values": [U]}}])))
+case("an array removal holding a value without a type", "POST", B + ":commit", commit({"transform": {"document": NAME + "/fz/a1", "fieldTransforms": [{"fieldPath": "x", "removeAllFromArray": {"values": [i(1), U]}}]}}))
+case("an invalid transform path before an operand without a type", "POST", B + ":commit", commit(upd("fz/a1", {}, updateTransforms=[{"fieldPath": "a..b", "increment": U}])))
+case("an operand without a type before nested transforms", "POST", B + ":commit", commit(upd("fz/a1", {}, updateTransforms=[{"fieldPath": "a", "increment": i(1)}, {"fieldPath": "a.b", "increment": U}])))
+case("values without a type write nothing", "GET", B + "/fz/a1")
+# A vector is one value, not a map: no field path goes into it. An update mask path into one
+# finds nothing in the request's vector (the stored field is deleted there, if it is a map) and
+# leaves a stored vector as it is, unless the request puts a map there, which replaces it.
+VEC = {"mapValue": {"fields": {"__type__": s("__vector__"), "value": {"arrayValue": {"values": [d(1.0)]}}}}}
+case("a vector", "PATCH", B + "/fz/vec", {"fields": {"v": VEC}})
+case("an update mask path into a vector, nothing given", "PATCH", B + "/fz/vec?updateMask.fieldPaths=v.value", {})
+case("an update mask path deeper into a vector, nothing given", "PATCH", B + "/fz/vec?updateMask.fieldPaths=v.value.x", {})
+case("a read mask path into a vector", "GET", B + "/fz/vec?mask.fieldPaths=v.value")
+case("an update mask path into a vector, a map given", "PATCH", B + "/fz/vec?updateMask.fieldPaths=v.value", {"fields": {"v": {"mapValue": {"fields": {"value": {"arrayValue": {"values": [d(2.0)]}}}}}}})
+case("an update mask path into a map, a vector given", "PATCH", B + "/fz/vec?updateMask.fieldPaths=v.value", {"fields": {"v": VEC}})
+case("an update mask path into a vector given for a new document", "PATCH", B + "/fz/vec2?updateMask.fieldPaths=_.value&updateMask.fieldPaths=n", {"fields": {"n": i(1), "_": VEC}})
+case("an update mask path into a vector in a commit", "POST", B + ":commit", {"writes": [
+    {"update": {"name": NAME + "/fz/vec3", "fields": {"n": i(1), "v": VEC}}, "updateMask": {"fieldPaths": ["v.value", "n"]}}]})
+case("an update mask path into a vector in a commit, the document", "GET", B + "/fz/vec3")
+case("a map", "PATCH", B + "/fz/vec4", {"fields": {"v": {"mapValue": {"fields": {"a": i(1)}}}}})
+case("an update mask path into a map left as it is, a vector given", "PATCH", B + "/fz/vec4?updateMask.fieldPaths=v.value", {"fields": {"v": VEC}})
+case("a read mask path into a vector written", "PATCH", B + "/fz/vec5?mask.fieldPaths=v.value", {"fields": {"v": VEC}})
+# protobuf-java's JsonFormat reads a string field from any JSON primitive: a number or a boolean
+# is its text (as written; these are written the way hidane writes them back).
+case("numbers and booleans as strings", "PATCH", B + "/fz/num", raw='{"fields": {"a": {"stringValue": 1}, "b": {"stringValue": -3}, "c": {"stringValue": 1.5}, "d": {"stringValue": 0.1}, "e": {"stringValue": 12345678901234567890}, "f": {"stringValue": true}, "g": {"stringValue": false}}}')
+case("a number as a document name", "POST", B + ":batchWrite", raw='{"writes": [{"update": {"name": 1}}]}')
+case("a number as a document to get", "POST", B + ":batchGet", raw='{"documents": [1]}')
+case("a number as a collection ID", "POST", B + ":runQuery", raw='{"structuredQuery": {"from": [{"collectionId": 1}]}}')
+case("a number as a field path", "POST", B + ":commit", {"writes": [{"update": {"name": NAME + "/fz/num", "fields": {}}, "updateMask": {"fieldPaths": [1]}}]})
+case("a number as a string in a filter", "POST", B + ":runQuery", raw='{"structuredQuery": {"where": {"fieldFilter": {"field": {"fieldPath": "v"}, "op": "NOT_IN", "value": {"mapValue": {"fields": {"k": {"stringValue": 1}}}}}}}}')
+case("an object as a string", "PATCH", B + "/fz/num2", raw='{"fields": {"a": {"stringValue": {}}}}')
+case("a number as bytes", "PATCH", B + "/fz/num2", raw='{"fields": {"a": {"bytesValue": 1}}}')
+case("a boolean as an integer", "PATCH", B + "/fz/num2", raw='{"fields": {"a": {"integerValue": true}}}')
+# PATCH and DELETE take any path below `documents` as a document name (`documents/*/**`), POST
+# any as a parent and a collection ID (`documents/**/{collection_id}`): a path that names no
+# document is refused by the name's checks, not with a bare 404.
+case("PATCH a collection", "PATCH", B + "/fz", {})
+case("PATCH a path with an empty ID", "PATCH", B + "/fz//d", {})
+case("PATCH a path starting with a slash", "PATCH", B + "//fz/d", {})
+case("PATCH a path ending with a slash", "PATCH", B + "/fz/d/", {})
+case("PATCH a subcollection", "PATCH", B + "/fz/d/e", {})
+case("PATCH a collection, with a null body", "PATCH", B + "/fz", raw="null")
+case("DELETE a collection", "DELETE", B + "/fz")
+case("DELETE a path with an empty ID", "DELETE", B + "/fz//d")
+case("DELETE a path starting with a slash", "DELETE", B + "//fz/d")
+case("DELETE a path ending with a slash", "DELETE", B + "/fz/d/")
+case("DELETE a subcollection", "DELETE", B + "/fz/d/e")
+case("POST to a document", "POST", B + "/fz/d", {})
+case("POST to a document with an empty documentId", "POST", B + "/fz/d?documentId=", {})
+case("POST to a path with an empty ID", "POST", B + "/fz//d", {})
+case("POST to a path starting with a slash", "POST", B + "//fz", {})
+case("POST to a path ending with a slash", "POST", B + "/fz/d/", {})
+case("POST to a document, with a null body", "POST", B + "/fz/d", raw="null")
+case("PATCH under a reserved collection ID", "PATCH", B + "/__x__/d", {})
+# The documents root as a document name has a message of its own.
+case("commit a transform of the documents root", "POST", B + ":commit", {"writes": [{"transform": {"document": NAME}}]})
+case("commit an update of the documents root", "POST", B + ":commit", {"writes": [{"update": {"name": NAME, "fields": {}}}]})
+case("commit a delete of the documents root", "POST", B + ":commit", {"writes": [{"delete": NAME}]})
+case("batchGet the documents root", "POST", B + ":batchGet", {"documents": [NAME]})
+case("batchGet another project's documents root", "POST", B + ":batchGet", {"documents": ["projects/other/databases/(default)/documents"]})
 
 
 def norm(text):

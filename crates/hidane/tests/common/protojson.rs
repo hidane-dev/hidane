@@ -28,6 +28,10 @@ pub fn timestamp(text: &str) -> Timestamp {
 }
 
 pub fn value(json: &Json) -> Value {
+    // `{}`: a value without a type.
+    if json.as_object().is_some_and(serde_json::Map::is_empty) {
+        return Value { value_type: None };
+    }
     let (kind, inner) = json
         .as_object()
         .and_then(|o| o.iter().next())

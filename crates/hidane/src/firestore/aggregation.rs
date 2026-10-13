@@ -7,7 +7,8 @@
 //!   Values that are not numbers are skipped; nothing to add gives the integer 0.
 //! - `avg` is always a double, or null when no number was found.
 //! - Documents without a field that a `sum` or `avg` reads are left out of the whole query,
-//!   `count` included, before `offset` and `limit`.
+//!   `count` included, before `offset` and `limit`; those fields order the query, so `offset`
+//!   and `limit` take the smallest values first (`Query::require`).
 
 use std::sync::Arc;
 

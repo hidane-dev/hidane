@@ -9,7 +9,8 @@
 //! server streams as a JSON array with one message per element. Errors are one line, escaped
 //! by another writer ([`error`]). Unknown query parameters (such as `key`) are ignored, the
 //! content type is not checked, and an empty body is `{}`, all as on the official emulator; a
-//! body that is not valid for the request answers 400 "Payload isn't valid for request.".
+//! body that is not valid for the request (`null` among them) answers 400 "Payload isn't valid
+//! for request.".
 //!
 //! WebChannel prints its messages with the same printer, in a compact layout that also escapes
 //! characters for HTML ([`Layout::WebChannel`]).
@@ -175,7 +176,7 @@ async fn dispatch(service: &FirestoreService, call: Call) -> Option<Response> {
     let even = !call.path.is_empty() && call.path.len().is_multiple_of(2);
     let odd = call.path.len() % 2 == 1;
     let parent_and_collection = || {
-        let (collection, parent) = call.path.split_last().expect("odd length");
+        let (collection, parent) = call.path.split_last().expect("a path below documents");
         let parent = if parent.is_empty() {
             format!("{}/documents", call.database)
         } else {
@@ -238,7 +239,10 @@ async fn dispatch(service: &FirestoreService, call: Call) -> Option<Response> {
                 Err(e) => error(&e),
             }
         }
-        (&Method::PATCH, None) if even => {
+        // PATCH, DELETE and POST take any path below `documents`, as the official emulator's
+        // bindings do (`documents/*/**`, and `documents/**/{collection_id}` for POST): a path that
+        // names no document is refused by the name's checks, not with a bare 404 (#262).
+        (&Method::PATCH, None) if !root => {
             let mut document = call.body.clone();
             if let Json::Object(map) = &mut document {
                 map.insert("name".to_owned(), Json::String(documents));
@@ -248,7 +252,7 @@ async fn dispatch(service: &FirestoreService, call: Call) -> Option<Response> {
                 Err(e) => error(&e),
             }
         }
-        (&Method::DELETE, None) if even => {
+        (&Method::DELETE, None) if !root => {
             match build(
                 &call,
                 "DeleteDocumentRequest",
@@ -262,7 +266,7 @@ async fn dispatch(service: &FirestoreService, call: Call) -> Option<Response> {
                 Err(e) => error(&e),
             }
         }
-        (&Method::POST, None) if odd => {
+        (&Method::POST, None) if !root => {
             let (parent, collection) = parent_and_collection();
             match build_with(
                 &call,
@@ -450,6 +454,11 @@ fn finish<T: Message + Default>(
     path: &[(&str, String)],
 ) -> Result<tonic::Request<T>, Status> {
     let invalid = || Status::invalid_argument(INVALID_PAYLOAD);
+    // A body of JSON `null` is not a message, for every request that reads its body (`POST`
+    // and `PATCH`); `GET` and `DELETE` ignore their bodies (#262).
+    if matches!(call.method, Method::POST | Method::PATCH) && call.body.is_null() {
+        return Err(invalid());
+    }
     let desc = descriptor(name);
     let Json::Object(map) = json else {
         return Err(invalid());
@@ -495,9 +504,66 @@ pub(crate) fn read_json(desc: MessageDescriptor, json: Json) -> Option<DynamicMe
             _ => {}
         }
     }
+    let mut json = json;
+    primitive_strings(&mut json, &desc);
     let mut message = DynamicMessage::deserialize(desc, json).ok()?;
     positive_zeros(&mut message);
     Some(message)
+}
+
+/// protobuf-java's `JsonFormat` reads a string field from any JSON primitive, so a number or a
+/// boolean given for one is its text: `{"stringValue": 1}` is `"1"`, a document name `1` is
+/// the name `"1"` (`tools/oracle/rest.py`, #262). A number is written back from its value, so
+/// a literal in another form than the shortest (`1e5`, `1.50`, `-0`) is not kept as written,
+/// which the official emulator does.
+fn primitive_strings(json: &mut Json, desc: &MessageDescriptor) {
+    fn text(value: &mut Json) {
+        match value {
+            Json::Number(n) => *value = Json::String(n.to_string()),
+            Json::Bool(b) => *value = Json::String(b.to_string()),
+            _ => {}
+        }
+    }
+    if desc.full_name().starts_with("google.protobuf.") {
+        return;
+    }
+    let Json::Object(object) = json else {
+        return;
+    };
+    for (key, value) in object.iter_mut() {
+        let Some(field) = desc
+            .get_field_by_json_name(key)
+            .or_else(|| desc.get_field_by_name(key))
+        else {
+            continue;
+        };
+        match field.kind() {
+            Kind::String if field.is_list() => {
+                if let Json::Array(items) = value {
+                    items.iter_mut().for_each(text);
+                }
+            }
+            Kind::String => text(value),
+            Kind::Message(message) if field.is_map() => {
+                if let (Kind::Message(entry), Json::Object(entries)) =
+                    (message.map_entry_value_field().kind(), value)
+                {
+                    for entry_value in entries.values_mut() {
+                        primitive_strings(entry_value, &entry);
+                    }
+                }
+            }
+            Kind::Message(message) if field.is_list() => {
+                if let Json::Array(items) = value {
+                    for item in items {
+                        primitive_strings(item, &message);
+                    }
+                }
+            }
+            Kind::Message(message) => primitive_strings(value, &message),
+            _ => {}
+        }
+    }
 }
 
 /// Sets `key` (`mask.fieldPaths`, `currentDocument.exists`, …) from a query parameter, as JSON

@@ -3286,6 +3286,250 @@
    ]
   },
   {
+   "name": "a commit's transaction is checked before its writes",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/d",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin R",
+     "as": "R",
+     "options": {
+      "readOnly": {}
+     },
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "commit",
+     "label": "R writes a reserved field name",
+     "txn": "R",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 1,
+       "reserved": true
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Cannot modify entities in a read-only transaction.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "R writes to a collection's name",
+     "txn": "R",
+     "writes": [
+      {
+       "update": "c"
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Cannot modify entities in a read-only transaction.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "R updates then creates c/d",
+     "txn": "R",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1,
+       "exists": true
+      },
+      {
+       "update": "c/d",
+       "n": 2,
+       "exists": false
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Cannot modify entities in a read-only transaction.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "R writes with an invalid mask",
+     "txn": "R",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1,
+       "mask": [
+        "a..b"
+       ]
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Cannot modify entities in a read-only transaction.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "R verifies c/d",
+     "txn": "R",
+     "writes": [
+      {
+       "verify": "c/d",
+       "exists": true
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Cannot modify entities in a read-only transaction.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "R deletes c/d",
+     "txn": "R",
+     "writes": [
+      {
+       "delete": "c/d"
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Cannot modify entities in a read-only transaction.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "R commits nothing",
+     "txn": "R",
+     "writes": [],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQMAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "rollback",
+     "label": "rollback T",
+     "txn": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "ended T writes a reserved field name",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 1,
+       "reserved": true
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "ended T updates then creates c/d",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/d",
+       "n": 1,
+       "exists": true
+      },
+      {
+       "update": "c/d",
+       "n": 2,
+       "exists": false
+      }
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "malformed bytes and a reserved field name",
+     "raw": "AAAA",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 1,
+       "reserved": true
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid transaction.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "get",
+     "label": "c/d as it was",
+     "document": "c/d",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "name": "c/d",
+       "n": 1
+      }
+     }
+    }
+   ]
+  },
+  {
    "name": "an idle transaction expires after 60 seconds",
    "steps": [
     {

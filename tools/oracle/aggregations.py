@@ -54,6 +54,17 @@ DATASET += [
     {"name": "other/y/sub/z", "fields": {"v": i(20)}},
     {"name": "nested/a", "fields": {"m": {"mapValue": {"fields": {"x": i(5)}}}}},
     {"name": "nested/b", "fields": {"m": {"mapValue": {"fields": {"x": d(1.5)}}}}},
+    # Names in another order than `v` and `u` (#262).
+    {"name": "ordered/a", "fields": {"v": i(5), "u": i(1), "k": i(1)}},
+    {"name": "ordered/b", "fields": {"v": i(1), "u": i(3), "k": i(1)}},
+    {"name": "ordered/c", "fields": {"v": i(3), "u": i(2), "k": i(0)}},
+    {"name": "ordered/d", "fields": {"v": s("s"), "u": i(0), "k": i(2)}},
+    {"name": "ordered/e", "fields": {"u": i(9), "k": i(1)}},
+    {"name": "bytes_first/d1", "fields": {"b": {"bytesValue": "AQ=="}}},
+    {"name": "bytes_first/d2", "fields": {"b": d(-0.0)}},
+    {"name": "time_first/d0", "fields": {"b": {"timestampValue": "2020-01-01T00:00:00Z"}}},
+    {"name": "time_first/d1", "fields": {"b": d(1.0)}},
+    {"name": "time_first/d2", "fields": {"b": i(0)}},
 ]
 
 
@@ -156,6 +167,24 @@ case("a reserved alias and an order without a collection", {"orderBy": [{"field"
 case("a sum of __name__ and duplicate orders", q("ints", orderBy=[{"field": f("v")}, {"field": f("v")}]), [total("__name__", "s")])
 case("a query vector that is not a vector and no aggregations", {"findNearest": {"queryVector": {"arrayValue": {}}}}, [])
 case("a cursor with too many values and a duplicate alias", {"startAt": {"values": [i(1)]}}, [count("a"), count("a")])
+# A filter value without a type is refused with what the query names, before the list (#262).
+case("a filter without a value and no aggregations", q("ints", where={"fieldFilter": {"field": f("v"), "op": "EQUAL"}}), [])
+# The fields `sum` and `avg` read order the query, so `offset` and `limit` take documents in
+# that order (#262): in path order, after the query's orders and its inequalities' fields,
+# before the name, in the direction of the query's last order.
+case("sum with limit 1 takes the smallest value", q("ordered", limit=1), [total("v", "s")])
+case("avg with limit 1 takes the smallest value", q("ordered", limit=1), [avg("v", "a")])
+case("count and sum with limit 2", q("ordered", limit=2), [count("n"), total("v", "s")])
+case("count and sum with offset 3 (a value that is not a number)", q("ordered", offset=3), [count("n"), total("v", "s")])
+case("avg with offset 2", q("ordered", offset=2), [avg("v", "a")])
+case("sums of v and u, limit 1 (u first)", q("ordered", limit=1), [total("v", "sv"), total("u", "su")])
+case("sums of u and v, limit 1 (u first)", q("ordered", limit=1), [total("u", "su"), total("v", "sv")])
+case("an inequality's field comes before the summed field", q("ordered", where={"fieldFilter": {"field": f("k"), "op": "GREATER_THAN", "value": i(0)}}, limit=1), [total("v", "s")])
+case("the summed field in the direction of the last order", q("ordered", orderBy=[{"field": f("k"), "direction": "DESCENDING"}], limit=2), [total("v", "s")])
+case("the summed field after an ascending order", q("ordered", orderBy=[{"field": f("k"), "direction": "ASCENDING"}], offset=1, limit=1), [total("v", "s")])
+case("an order by the summed field", q("ordered", orderBy=[{"field": f("v"), "direction": "DESCENDING"}], limit=1), [total("v", "s")])
+case("avg with limit 1: bytes after numbers", q("bytes_first", limit=1), [avg("b")])
+case("avg with offset 2: a timestamp after numbers", q("time_first", offset=2), [avg("b")])
 
 
 def fill(value):

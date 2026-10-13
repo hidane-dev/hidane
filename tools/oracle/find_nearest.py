@@ -102,6 +102,10 @@ QUERIES = [
     ("a query vector with NaN", {**E, "queryVector": vec("NaN", 1)}, {}),
     ("a query vector with an extra key", {**E, "queryVector": typed(S("__vector__"), arr(D(1)), x=D(1))}, {}),
     ("a query vector without values", {**E, "queryVector": typed(S("__vector__"))}, {}),
+    # A value without a type anywhere in the query vector comes before its shape (#262).
+    ("a query vector holding a value without a type", {**E, "queryVector": typed(S("__vector__"), arr({}))}, {}),
+    ("a query vector of an array holding a value without a type", {**E, "queryVector": arr(D(1), {})}, {}),
+    ("a query vector with a type without a type", {**E, "queryVector": typed({}, arr(D(1)))}, {}),
     ("no distance measure", {k: v for k, v in E.items() if k != "distanceMeasure"}, {}),
     ("no vector field", {k: v for k, v in E.items() if k != "vectorField"}, {}),
     ("a vector field that is not a path", {**E, "vectorField": {"fieldPath": "a..b"}}, {}),

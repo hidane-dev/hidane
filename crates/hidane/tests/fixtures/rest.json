@@ -1920,6 +1920,2182 @@
     "contentType": "application/json",
     "body": "[\n{\n  \"result\": {\n    \"aggregateFields\": {\n      \"field_1\": {\n        \"integerValue\": \"10\"\n      }\n    }\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
    }
+  },
+  {
+   "name": "doubles read correctly rounded",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/geo",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "a": {
+      "geoPointValue": {
+       "latitude": 38.141717608275684,
+       "longitude": -20.053480988037194
+      }
+     },
+     "b": {
+      "arrayValue": {
+       "values": [
+        {
+         "geoPointValue": {
+          "longitude": 117.96957752590589
+         }
+        }
+       ]
+      }
+     },
+     "c": {
+      "doubleValue": 0.12345678901234568
+     },
+     "e": {
+      "doubleValue": 9007199254740993
+     },
+     "f": {
+      "doubleValue": 5e-324
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/geo\",\n  \"fields\": {\n    \"a\": {\n      \"geoPointValue\": {\n        \"latitude\": 38.141717608275684,\n        \"longitude\": -20.053480988037194\n      }\n    },\n    \"b\": {\n      \"arrayValue\": {\n        \"values\": [{\n          \"geoPointValue\": {\n            \"longitude\": 117.96957752590589\n          }\n        }]\n      }\n    },\n    \"c\": {\n      \"doubleValue\": 0.12345678901234568\n    },\n    \"e\": {\n      \"doubleValue\": 9.007199254740992E15\n    },\n    \"f\": {\n      \"doubleValue\": 4.9E-324\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "doubles read correctly rounded, in a commit",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/geo2",
+       "fields": {
+        "g": {
+         "geoPointValue": {
+          "latitude": -89.99999999999997,
+          "longitude": -20.053480988037194
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "doubles read correctly rounded, read back",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/{project}/databases/(default)/documents/fz/geo2"
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"found\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/fz/geo2\",\n    \"fields\": {\n      \"g\": {\n        \"geoPointValue\": {\n          \"latitude\": -89.99999999999997,\n          \"longitude\": -20.053480988037194\n        }\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n}\n]\n"
+   }
+  },
+  {
+   "name": "batchGet with a null body",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "null",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "runQuery with a null body",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "null",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "runAggregationQuery with a null body",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runAggregationQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "null",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit with a null body",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "null",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "batchWrite with a null body",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchWrite",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "null",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "beginTransaction with a null body",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:beginTransaction",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": " null\n",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "rollback with a null body",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:rollback",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "null",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "listCollectionIds with a null body",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/b:listCollectionIds",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "null",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH with a null body",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/null",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "null",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST with a null body",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz?documentId=null",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "null",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a null body writes nothing",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/null",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/null) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "GET with a null body",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/b",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "null",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/b\",\n  \"fields\": {\n    \"a\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "DELETE with a null body",
+   "method": "DELETE",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/null",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "null",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "an unknown verb with a null body",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:nosuchverb",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "null",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "PATCH a value without a type",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/unset",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "v": {}
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST a value without a type",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz?documentId=unset",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "m": {
+      "mapValue": {
+       "fields": {
+        "k": {}
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "batchWrite a value without a type",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchWrite",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/unset",
+       "fields": {
+        "v": {}
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a value without a type in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/unset",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {}
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a value without a type writes nothing",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/unset",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/unset) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "a reserved name, then a value without a type",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/unset",
+       "fields": {
+        "__x__": {
+         "integerValue": "1"
+        },
+        "v": {}
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"field name __x__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a value without a type, then a reserved name",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/unset",
+       "fields": {
+        "v": {},
+        "__x__": {
+         "integerValue": "1"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a nested reserved name, then a value without a type",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/unset",
+       "fields": {
+        "m": {
+         "mapValue": {
+          "fields": {
+           "__x__": {
+            "integerValue": "1"
+           }
+          }
+         }
+        },
+        "v": {}
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"field name '__x__' is reserved.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a value without a type, then a nested reserved name",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/unset",
+       "fields": {
+        "m": {
+         "mapValue": {
+          "fields": {
+           "a": {},
+           "__x__": {
+            "integerValue": "1"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a reserved name in a write before a value without a type",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {
+        "__x__": {
+         "integerValue": "1"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a2",
+       "fields": {
+        "v": {}
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"field name __x__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a value without a type before an invalid document name",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {
+        "v": {}
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a value without a type before the update mask",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {
+        "v": {}
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a..b"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a value without a type outside the update mask",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {
+        "v": {},
+        "w": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "w"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a value without a type before nested arrays",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {
+        "a": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        },
+        "v": {}
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a value without a type in a nested array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchWrite",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {
+             "values": [
+              {}
+             ]
+            }
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a value without a type before an empty field name",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {
+        "": {}
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a value without a type before a transform path",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {
+        "v": {}
+       }
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a.__x__",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a value without a type before the sequence of writes",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {
+        "v": {}
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {}
+      },
+      "currentDocument": {
+       "exists": false
+      }
+     },
+     {
+      "delete": "projects/{project}/databases/(default)/documents/fz/a1"
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a value without a type before a precondition",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {
+        "v": {}
+       }
+      },
+      "currentDocument": {
+       "updateTime": "2001-01-01T00:00:00Z"
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a value without a type before a verify",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "verify": "projects/{project}/databases/(default)/documents/fz/zz",
+      "currentDocument": {
+       "exists": true
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {
+        "v": {}
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a vector holding a value without a type",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {
+        "v": {
+         "mapValue": {
+          "fields": {
+           "__type__": {
+            "stringValue": "__vector__"
+           },
+           "value": {
+            "arrayValue": {
+             "values": [
+              {
+               "integerValue": "1"
+              },
+              {}
+             ]
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a __type__ without a type",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {
+        "v": {
+         "mapValue": {
+          "fields": {
+           "__type__": {}
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a value without a type after a __type__ that is not a string",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {
+        "v": {
+         "mapValue": {
+          "fields": {
+           "__type__": {
+            "integerValue": "1"
+           },
+           "x": {}
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a value without a type next to an unknown __type__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {
+        "v": {
+         "mapValue": {
+          "fields": {
+           "__type__": {
+            "stringValue": "other"
+           },
+           "x": {}
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an increment without a type",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "x",
+        "increment": {}
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an increment holding a value without a type",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "x",
+        "increment": {
+         "mapValue": {
+          "fields": {
+           "k": {}
+          }
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a maximum without a type",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "transform": {
+       "document": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fieldTransforms": [
+        {
+         "fieldPath": "x",
+         "maximum": {}
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an array union holding a value without a type",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "x",
+        "appendMissingElements": {
+         "values": [
+          {}
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an array removal holding a value without a type",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "transform": {
+       "document": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fieldTransforms": [
+        {
+         "fieldPath": "x",
+         "removeAllFromArray": {
+          "values": [
+           {
+            "integerValue": "1"
+           },
+           {}
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an invalid transform path before an operand without a type",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a..b",
+        "increment": {}
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"a..b\\\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\\\\\]|(?:\\\\\\\\.))+`)\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an operand without a type before nested transforms",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/a1",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a",
+        "increment": {
+         "integerValue": "1"
+        }
+       },
+       {
+        "fieldPath": "a.b",
+        "increment": {}
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "values without a type write nothing",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/a1",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/a1) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "a vector",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "v": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1.0
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec\",\n  \"fields\": {\n    \"v\": {\n      \"mapValue\": {\n        \"fields\": {\n          \"__type__\": {\n            \"stringValue\": \"__vector__\"\n          },\n          \"value\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"doubleValue\": 1.0\n              }]\n            }\n          }\n        }\n      }\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an update mask path into a vector, nothing given",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec?updateMask.fieldPaths=v.value",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec\",\n  \"fields\": {\n    \"v\": {\n      \"mapValue\": {\n        \"fields\": {\n          \"__type__\": {\n            \"stringValue\": \"__vector__\"\n          },\n          \"value\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"doubleValue\": 1.0\n              }]\n            }\n          }\n        }\n      }\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an update mask path deeper into a vector, nothing given",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec?updateMask.fieldPaths=v.value.x",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec\",\n  \"fields\": {\n    \"v\": {\n      \"mapValue\": {\n        \"fields\": {\n          \"__type__\": {\n            \"stringValue\": \"__vector__\"\n          },\n          \"value\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"doubleValue\": 1.0\n              }]\n            }\n          }\n        }\n      }\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a read mask path into a vector",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec?mask.fieldPaths=v.value",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an update mask path into a vector, a map given",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec?updateMask.fieldPaths=v.value",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "v": {
+      "mapValue": {
+       "fields": {
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 2.0
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec\",\n  \"fields\": {\n    \"v\": {\n      \"mapValue\": {\n        \"fields\": {\n          \"value\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"doubleValue\": 2.0\n              }]\n            }\n          }\n        }\n      }\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an update mask path into a map, a vector given",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec?updateMask.fieldPaths=v.value",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "v": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1.0
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec\",\n  \"fields\": {\n    \"v\": {\n      \"mapValue\": {\n      }\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an update mask path into a vector given for a new document",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec2?updateMask.fieldPaths=_.value&updateMask.fieldPaths=n",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "n": {
+      "integerValue": "1"
+     },
+     "_": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1.0
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec2\",\n  \"fields\": {\n    \"n\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an update mask path into a vector in a commit",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/vec3",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        },
+        "v": {
+         "mapValue": {
+          "fields": {
+           "__type__": {
+            "stringValue": "__vector__"
+           },
+           "value": {
+            "arrayValue": {
+             "values": [
+              {
+               "doubleValue": 1.0
+              }
+             ]
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "v.value",
+        "n"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an update mask path into a vector in a commit, the document",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec3",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec3\",\n  \"fields\": {\n    \"n\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a map",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec4",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "v": {
+      "mapValue": {
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec4\",\n  \"fields\": {\n    \"v\": {\n      \"mapValue\": {\n        \"fields\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          }\n        }\n      }\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an update mask path into a map left as it is, a vector given",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec4?updateMask.fieldPaths=v.value",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "v": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1.0
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec4\",\n  \"fields\": {\n    \"v\": {\n      \"mapValue\": {\n        \"fields\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          }\n        }\n      }\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a read mask path into a vector written",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/vec5?mask.fieldPaths=v.value",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "v": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1.0
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/vec5\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "numbers and booleans as strings",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/num",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"a\": {\"stringValue\": 1}, \"b\": {\"stringValue\": -3}, \"c\": {\"stringValue\": 1.5}, \"d\": {\"stringValue\": 0.1}, \"e\": {\"stringValue\": 12345678901234567890}, \"f\": {\"stringValue\": true}, \"g\": {\"stringValue\": false}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fz/num\",\n  \"fields\": {\n    \"a\": {\n      \"stringValue\": \"1\"\n    },\n    \"b\": {\n      \"stringValue\": \"-3\"\n    },\n    \"c\": {\n      \"stringValue\": \"1.5\"\n    },\n    \"d\": {\n      \"stringValue\": \"0.1\"\n    },\n    \"e\": {\n      \"stringValue\": \"12345678901234567890\"\n    },\n    \"f\": {\n      \"stringValue\": \"true\"\n    },\n    \"g\": {\n      \"stringValue\": \"false\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a number as a document name",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchWrite",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"writes\": [{\"update\": {\"name\": 1}}]}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"1\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a number as a document to get",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"documents\": [1]}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"1\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a number as a collection ID",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"structuredQuery\": {\"from\": [{\"collectionId\": 1}]}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "a number as a field path",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fz/num",
+       "fields": {}
+      },
+      "updateMask": {
+       "fieldPaths": [
+        1
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"1\\\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\\\\\]|(?:\\\\\\\\.))+`)\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a number as a string in a filter",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"structuredQuery\": {\"where\": {\"fieldFilter\": {\"field\": {\"fieldPath\": \"v\"}, \"op\": \"NOT_IN\", \"value\": {\"mapValue\": {\"fields\": {\"k\": {\"stringValue\": 1}}}}}}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"'NOT_IN' requires an ArrayValue.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an object as a string",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/num2",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"a\": {\"stringValue\": {}}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a number as bytes",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/num2",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"a\": {\"bytesValue\": 1}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a boolean as an integer",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/num2",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"a\": {\"integerValue\": true}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH a collection",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\\" lacks \\\"\\/\\\" at index 53.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH a path with an empty ID",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz//d",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/\\/d\\\" lacks a resource id at index 54.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH a path starting with a slash",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents//fz/d",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/\\/fz\\/d\\\" lacks a collection id at index 51.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH a path ending with a slash",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/d/",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/d\\/\\\" has invalid trailing \\\"\\/\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH a subcollection",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/d/e",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/d\\/e\\\" lacks \\\"\\/\\\" at index 57.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH a collection, with a null body",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "null",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "DELETE a collection",
+   "method": "DELETE",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\\" lacks \\\"\\/\\\" at index 53.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "DELETE a path with an empty ID",
+   "method": "DELETE",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz//d",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/\\/d\\\" lacks a resource id at index 54.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "DELETE a path starting with a slash",
+   "method": "DELETE",
+   "path": "/v1/projects/{project}/databases/(default)/documents//fz/d",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/\\/fz\\/d\\\" lacks a collection id at index 51.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "DELETE a path ending with a slash",
+   "method": "DELETE",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/d/",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/d\\/\\\" has invalid trailing \\\"\\/\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "DELETE a subcollection",
+   "method": "DELETE",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/d/e",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/d\\/e\\\" lacks \\\"\\/\\\" at index 57.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST to a document",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/d",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\\" lacks \\\"\\/\\\" at index 53.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST to a document with an empty documentId",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/d?documentId=",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\\" lacks \\\"\\/\\\" at index 53.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST to a path with an empty ID",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz//d",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/fz\\/\\\" has invalid trailing \\\"\\/\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST to a path starting with a slash",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents//fz",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/\\\" is invalid: Omit trailing \\\"\\/\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST to a path ending with a slash",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/d/",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"collectionId is the empty string.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST to a document, with a null body",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fz/d",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "null",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH under a reserved collection ID",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/__x__/d",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Collection id \\\"__x__\\\" is invalid because it is reserved.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a transform of the documents root",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "transform": {
+       "document": "projects/{project}/databases/(default)/documents"
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\\" is invalid: Omit \\\"\\/documents\\\" when referencing a database (except as the parent of a document).\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit an update of the documents root",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\\" is invalid: Omit \\\"\\/documents\\\" when referencing a database (except as the parent of a document).\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a delete of the documents root",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "delete": "projects/{project}/databases/(default)/documents"
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\\" is invalid: Omit \\\"\\/documents\\\" when referencing a database (except as the parent of a document).\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "batchGet the documents root",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/{project}/databases/(default)/documents"
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\\" is invalid: Omit \\\"\\/documents\\\" when referencing a database (except as the parent of a document).\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "batchGet another project's documents root",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/other/databases/(default)/documents"
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"projects\\/other\\/databases\\/(default)\\/documents\\\" is invalid: Omit \\\"\\/documents\\\" when referencing a database (except as the parent of a document).\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
   }
  ]
 }

@@ -9,7 +9,7 @@ use std::fmt;
 use hidane_proto::google::firestore::v1::{MapValue, Value, value::ValueType};
 pub use hidane_proto::ordered::Fields;
 
-use crate::{hash_order::hash_order, store::identical};
+use crate::{hash_order::hash_order, order::is_vector, store::identical};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct FieldPath(Vec<String>);
@@ -113,20 +113,19 @@ impl fmt::Display for FieldPath {
     }
 }
 
-/// The value at `path`, if every segment but the last names a map.
+/// The value at `path`, if every segment but the last names a map. A vector is one value, not
+/// a map: no path goes into it, as on the official emulator (#262).
 pub fn get<'a>(fields: &'a Fields, path: &FieldPath) -> Option<&'a Value> {
     let (last, parents) = path.0.split_last()?;
     let mut current = fields;
     for segment in parents {
-        match &current.get(segment)?.value_type {
-            Some(ValueType::MapValue(map)) => current = &map.fields,
-            _ => return None,
-        }
+        current = map_fields(current.get(segment)?)?;
     }
     current.get(last)
 }
 
-/// Sets `path` to `value`, creating (or replacing non-map values with) intermediate maps.
+/// Sets `path` to `value`, creating (or replacing non-map values, vectors among them, with)
+/// intermediate maps.
 pub fn set(fields: &mut Fields, path: &FieldPath, value: Value) {
     let Some((last, parents)) = path.0.split_last() else {
         return;
@@ -134,7 +133,7 @@ pub fn set(fields: &mut Fields, path: &FieldPath, value: Value) {
     let mut current = fields;
     for segment in parents {
         let entry = current.entry(segment.clone()).or_insert_with(empty_map);
-        if !matches!(entry.value_type, Some(ValueType::MapValue(_))) {
+        if map_fields(entry).is_none() {
             *entry = empty_map();
         }
         let Some(ValueType::MapValue(map)) = &mut entry.value_type else {
@@ -153,7 +152,7 @@ pub fn delete(fields: &mut Fields, path: &FieldPath) {
     let mut current = fields;
     for segment in parents {
         match current.get_mut(segment).and_then(|v| v.value_type.as_mut()) {
-            Some(ValueType::MapValue(map)) => current = &mut map.fields,
+            Some(ValueType::MapValue(map)) if !is_vector(map) => current = &mut map.fields,
             _ => return,
         }
     }
@@ -237,9 +236,10 @@ fn in_hash_order<T>(mut entries: Vec<(String, T)>) -> impl Iterator<Item = (Stri
     order.into_iter().filter_map(move |i| taken[i].take())
 }
 
+/// The fields of a map a path can go into: not those of a vector, which is one value.
 fn map_fields(value: &Value) -> Option<&Fields> {
     match &value.value_type {
-        Some(ValueType::MapValue(map)) => Some(&map.fields),
+        Some(ValueType::MapValue(map)) if !is_vector(map) => Some(&map.fields),
         _ => None,
     }
 }

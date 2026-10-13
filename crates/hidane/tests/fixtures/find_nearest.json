@@ -2055,6 +2055,111 @@
    }
   },
   {
+   "name": "a query vector holding a value without a type",
+   "query": {
+    "from": [
+     {
+      "collectionId": "v"
+     }
+    ],
+    "findNearest": {
+     "vectorField": {
+      "fieldPath": "v"
+     },
+     "queryVector": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {}
+          ]
+         }
+        }
+       }
+      }
+     },
+     "distanceMeasure": "EUCLIDEAN",
+     "limit": 10
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "message": "Cannot convert firestore.v1.Value with type unset."
+   }
+  },
+  {
+   "name": "a query vector of an array holding a value without a type",
+   "query": {
+    "from": [
+     {
+      "collectionId": "v"
+     }
+    ],
+    "findNearest": {
+     "vectorField": {
+      "fieldPath": "v"
+     },
+     "queryVector": {
+      "arrayValue": {
+       "values": [
+        {
+         "doubleValue": 1
+        },
+        {}
+       ]
+      }
+     },
+     "distanceMeasure": "EUCLIDEAN",
+     "limit": 10
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "message": "Cannot convert firestore.v1.Value with type unset."
+   }
+  },
+  {
+   "name": "a query vector with a type without a type",
+   "query": {
+    "from": [
+     {
+      "collectionId": "v"
+     }
+    ],
+    "findNearest": {
+     "vectorField": {
+      "fieldPath": "v"
+     },
+     "queryVector": {
+      "mapValue": {
+       "fields": {
+        "__type__": {},
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     "distanceMeasure": "EUCLIDEAN",
+     "limit": 10
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "message": "Cannot convert firestore.v1.Value with type unset."
+   }
+  },
+  {
    "name": "no distance measure",
    "query": {
     "from": [

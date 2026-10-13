@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:dd51bf8bbbaae03ca23a8cf5e05264481bc38948c992716f4fa211e68145f4b8",
+ "digest": "sha256:d3ce6d924c35467f7c3b3d0869a27fbdeb34c4c26d8915532c25fc9a6384b15e",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -17,12 +17,12 @@
   "files": 72,
   "fixtures": 41,
   "transcripts": 31,
-  "answers": 20368,
-  "bytes": 10810983,
+  "answers": 20548,
+  "bytes": 10990572,
   "levels": {
-   "full": 12163,
+   "full": 12330,
    "reasons": 3912,
-   "part": 738,
+   "part": 751,
    "status": 3404,
    "codes": 30,
    "none": 1,
@@ -37,12 +37,12 @@
    "queries": {
     "fixtures": 4,
     "transcripts": 6,
-    "answers": 496
+    "answers": 568
    },
    "transactions": {
     "fixtures": 1,
     "transcripts": 5,
-    "answers": 192
+    "answers": 207
    },
    "streams": {
     "fixtures": 1,
@@ -52,7 +52,7 @@
    "rest": {
     "fixtures": 2,
     "transcripts": 1,
-    "answers": 118
+    "answers": 211
    },
    "webchannel": {
     "fixtures": 1,
@@ -84,7 +84,7 @@
    "v1.22.0": {
     "fixtures": 41,
     "transcripts": 31,
-    "answers": 20368
+    "answers": 20548
    }
   },
   "by_release_source": {
@@ -349,12 +349,12 @@
     "first_recorded": "2026-10-10",
     "last_changed": "2026-10-13"
    },
-   "bytes": 49590,
-   "sha256": "b7fcdeb00d6ab0f811ffdcc93921c63d34103e82ce0755ec6e8235d0029ea16b",
-   "answers": 75,
+   "bytes": 59681,
+   "sha256": "e77250fbd4608cd118aa15c386c2b90aff790f716f364b169302e3bb5237d5a3",
+   "answers": 89,
    "levels": {
-    "full": 33,
-    "part": 42
+    "full": 34,
+    "part": 55
    },
    "replayed_over": [
     "gRPC"
@@ -384,13 +384,13 @@
    },
    "recorded": {
     "first_recorded": "2026-10-10",
-    "last_changed": "2026-10-10"
+    "last_changed": "2026-10-13"
    },
-   "bytes": 509922,
-   "sha256": "51d7ab7bce5aa14701ac367cd1bb2ed8d51086b99cee581177bc4d5e6cd741cf",
-   "answers": 87,
+   "bytes": 511785,
+   "sha256": "1c80c87bc7533b45748ea8312290a9f2a2e6cce6b254b2c63c411c50afe7c40d",
+   "answers": 90,
    "levels": {
-    "full": 87
+    "full": 90
    },
    "replayed_over": [
     "REST"
@@ -422,11 +422,11 @@
     "first_recorded": "2026-10-10",
     "last_changed": "2026-10-13"
    },
-   "bytes": 257031,
-   "sha256": "b16c469392343e96f0f35199460af5fd5999e0ec07ece163ef7cc04ec62cf94f",
-   "answers": 320,
+   "bytes": 356969,
+   "sha256": "88cee8c49708e57d4d3ad0a977805d11aee1040039e5ca7aae162045d8315b2b",
+   "answers": 375,
    "levels": {
-    "full": 320
+    "full": 375
    },
    "replayed_over": [
     "gRPC"
@@ -497,11 +497,11 @@
     "first_recorded": "2026-10-10",
     "last_changed": "2026-10-13"
    },
-   "bytes": 61065,
-   "sha256": "91a06be76c1b599b36b6b19ced48f0d786da2b293340c052aa901b7aded0356a",
-   "answers": 192,
+   "bytes": 65724,
+   "sha256": "51e9ac56ccd57173063704924c2362ac45b4992096dab29f45fe61385bcc2444",
+   "answers": 207,
    "levels": {
-    "full": 187,
+    "full": 202,
     "status": 3,
     "codes": 1,
     "none": 1
@@ -623,11 +623,11 @@
     "first_recorded": "2026-10-10",
     "last_changed": "2026-10-13"
    },
-   "bytes": 67323,
-   "sha256": "be2a20a776f8851695b731ab58850f16dc8f54911c0015862a193d3ffcfd85c9",
-   "answers": 96,
+   "bytes": 130361,
+   "sha256": "4fba6464731a2629ddc7ac479bb7608b29fb2fd3a0827e467e5f5c4c6401bf74",
+   "answers": 189,
    "levels": {
-    "full": 92,
+    "full": 185,
     "status": 4
    },
    "replayed_over": [

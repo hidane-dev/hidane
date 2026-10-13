@@ -200,6 +200,22 @@ async fn rest_answers_like_the_official_emulator() {
     );
 }
 
+/// Doubles are read correctly rounded (`doubles read correctly rounded` in `fixtures/rest.json`)
+/// only with serde_json's `float_roundtrip`. The replay above cannot tell: jsonschema, a
+/// dev-dependency, turns that feature on in every test build, so this checks that the build
+/// that ships asks for it too (#262).
+#[test]
+fn shipped_builds_read_doubles_correctly_rounded() {
+    let manifest =
+        std::fs::read_to_string(concat!(env!("CARGO_MANIFEST_DIR"), "/../../Cargo.toml"))
+            .expect("the workspace manifest");
+    let serde_json = manifest
+        .lines()
+        .find(|line| line.starts_with("serde_json = "))
+        .expect("serde_json among the workspace dependencies");
+    assert!(serde_json.contains("\"float_roundtrip\""), "{serde_json}");
+}
+
 /// Strings escaped as the official emulator escapes them, in bodies and in errors
 /// (`fixtures/json_escapes.json`, from `tools/oracle/json_escapes.py`, #191).
 #[tokio::test]
