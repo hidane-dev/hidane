@@ -109,6 +109,12 @@ it can be configured. The registries and the GitHub settings below are set up on
 5. **ghcr.io**: after the first image is pushed, set the `hidane` package's visibility to public
    (organization *Packages → hidane → Package settings*).
 
+## setup-hidane
+
+The GitHub Action [`hidane-dev/setup-hidane`](https://github.com/hidane-dev/setup-hidane) is
+released from its own repository, with a moving `v1` tag. Listing its releases on GitHub
+Marketplace, and releasing it later, is described in [setup-hidane-marketplace.md](setup-hidane-marketplace.md).
+
 [cargo-dist](https://github.com/axodotdev/cargo-dist) was considered (#56) and not adopted: the
 workflow above is about one hundred lines that the project controls, with no generator to keep in
 step and no installer it does not need yet.
