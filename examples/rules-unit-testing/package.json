@@ -1,0 +1,19 @@
+{
+  "name": "hidane-example-rules-unit-testing",
+  "version": "0.0.0",
+  "private": true,
+  "description": "firestore.rules tested with @firebase/rules-unit-testing against hidane, started by firebase emulators:exec through hidane exec",
+  "license": "MIT OR Apache-2.0",
+  "type": "module",
+  "engines": {
+    "node": ">=24.12"
+  },
+  "scripts": {
+    "test": "hidane exec -- firebase emulators:exec --only firestore --project demo-hidane \"node --test\""
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "6.0.0",
+    "firebase": "13.0.0",
+    "firebase-tools": "15.33.0"
+  }
+}
