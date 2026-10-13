@@ -31,6 +31,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import sdk_canary  # noqa: E402  (tools/upstream/sdk_canary.py)
 import watch  # noqa: E402  (tools/upstream/watch.py)
 
 ROOT = watch.ROOT
@@ -239,23 +240,108 @@ NOT_RUN_REASONS = {
 }
 
 
-def sdk_entry(sdk):
+SDK_UNIT_RESULTS = (sdk_canary.IDENTICAL, sdk_canary.DOCUMENTED, sdk_canary.DIFFERENT,
+                    sdk_canary.UNSTABLE, sdk_canary.ERROR)
+
+
+def sdk_entry(sdk, artifacts):
+    """One new SDK or tool release: what its harness gave on both emulators, or why it was not
+    run."""
     entry = {k: sdk[k] for k in ("key", "ecosystem", "name", "version", "channel", "verified")}
     ident = f"{sdk['ecosystem']}:{sdk['name']}"
     if not sdk["verified"]:
-        reason = "watched without being verified: check the Firestore client it depends on"
+        entry.update(result=NOT_RUN, reason="watched without being verified: check the Firestore "
+                     "client it depends on")
+        return entry
+    if ident not in sdk_canary.HARNESSES:
+        entry.update(result=NOT_RUN,
+                     reason=NOT_RUN_REASONS.get(ident, "the canary does not run its harness yet"))
+        return entry
+    harness = sdk_canary.HARNESSES[ident]
+    entry.update(harness=harness, units=[])
+    path = Path(artifacts) / sdk_canary.slug(sdk["key"]) / "sdk.json"
+    data = load_json(path) if path.is_file() else None
+    if not isinstance(data, dict) or data.get("key") != sdk["key"]:
+        entry.update(result=INCONCLUSIVE, reason=f"the {harness} harness left no result")
+        return entry
+    if not data.get("prepared"):
+        entry.update(result=INCONCLUSIVE, reason=f"the {harness} harness could not install it: "
+                     f"{watch.shown(str(data.get('error')))}")
+        return entry
+    for unit in data.get("units", []):
+        result = unit.get("result")
+        entry["units"].append({
+            "unit": re.sub(r"[^A-Za-z0-9_.-]", "?", str(unit.get("unit")))[:64],
+            "transcript": re.sub(r"[^a-z0-9-]", "?", str(unit.get("transcript")))[:64],
+            "result": result if result in SDK_UNIT_RESULTS else sdk_canary.ERROR,
+            "differences": unit.get("differences") if isinstance(unit.get("differences"), int)
+            else None,
+            "official_changed": unit.get("official_changed") is True})
+    results = [u["result"] for u in entry["units"]]
+    if not results or sdk_canary.ERROR in results:
+        verdict = INCONCLUSIVE
+    elif sdk_canary.DIFFERENT in results:
+        verdict = DIFFERS
+    elif sdk_canary.UNSTABLE in results:
+        verdict = INCONCLUSIVE
     else:
-        reason = NOT_RUN_REASONS.get(ident, "the canary does not run its harness yet")
-    entry.update(result=NOT_RUN, reason=reason)
+        verdict = SAME
+    reasons = {
+        SAME: f"the {harness} harness gives the same results on both emulators as the verified "
+              "release does",
+        DIFFERS: f"the {harness} harness gives other results on hidane than on the official "
+                 "emulator, confirmed",
+        INCONCLUSIVE: f"the {harness} harness could not be compared to the end",
+    }
+    entry.update(result=verdict, reason=reasons[verdict])
     return entry
+
+
+def units_table(entry):
+    lines = ["| Unit | Transcripts in results/ | Result | SDK's own transcript |",
+             "|---|---|---|---|"]
+    for u in entry["units"]:
+        result = u["result"] if u["result"] in (sdk_canary.IDENTICAL, sdk_canary.DOCUMENTED) \
+            else f"**{u['result']}**"
+        if u["differences"]:
+            result += f" ({u['differences']} difference(s))"
+        own = "changed on the official emulator" if u["official_changed"] else "unchanged"
+        lines.append(f"| `{u['unit']}` | `{u['transcript']}-*.json` | {result} | {own} |")
+    return lines
+
+
+def finding_for_sdk(entry, url):
+    title = (f"Upstream canary: {entry['name']} {entry['version']} ({entry['ecosystem']}, "
+             f"{entry['channel']}) gives other results on hidane")
+    body = [
+        marker(entry["key"]),
+        f"The Upstream workflow's compatibility canary ran the {entry['harness']} harness of "
+        f"`tools/oracle/` with **{entry['name']} {entry['version']}** against a freshly started "
+        "official emulator (the pinned release) and a freshly started hidane, unit by unit. A "
+        "unit is `documented` when the two differ exactly as the committed transcripts of the "
+        "verified release do; `different` when they differ otherwise, the same way twice.",
+        "",
+        *units_table(entry),
+        "",
+        f"Run: {url}" if url else "Run: (not recorded)",
+        f"The transcripts are in the run's `{sdk_canary.slug(entry['key'])}` artifact, the report "
+        "in `compatibility-report`.",
+        "",
+        f"What to do: [{README}]({repository_url()}/blob/main/{README}#acting-on-a-canary-issue).",
+        "",
+        "<sub>Filed by the Upstream workflow, which updates this issue while the release stays "
+        "new and files no other for it.</sub>",
+    ]
+    return {"key": entry["key"], "title": title, "body": "\n".join(body) + "\n"}
 
 
 def report(upstream, artifacts, root=ROOT):
     emulators, sdks = watch.canary_inputs(upstream)
     entries = [emulator_entry(c, artifacts, root) for c in emulators]
-    sdk_entries = [sdk_entry(s) for s in sdks]
+    sdk_entries = [sdk_entry(s, artifacts) for s in sdks]
     url = run_url()
     findings = [finding_for_emulator(e, upstream, url) for e in entries if e["verdict"] == DIFFERS]
+    findings += [finding_for_sdk(e, url) for e in sdk_entries if e["result"] == DIFFERS]
     return {
         "schema_version": SCHEMA_VERSION,
         "generated": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -265,7 +351,8 @@ def report(upstream, artifacts, root=ROOT):
         "emulators": entries,
         "sdks": sdk_entries,
         "findings": findings,
-        "conclusive": all(e["verdict"] != INCONCLUSIVE for e in entries),
+        "conclusive": all(e["verdict"] != INCONCLUSIVE for e in entries)
+        and all(e["result"] != INCONCLUSIVE for e in sdk_entries),
     }
 
 
@@ -359,11 +446,15 @@ def summary(data):
             lines.append(f"| {sdk['ecosystem']}: `{sdk['name']}` | `{sdk['version']}` | "
                          f"{sdk['channel']} | {sdk['result']}: {sdk['reason']} |")
         lines.append("")
+        for sdk in data["sdks"]:
+            if sdk.get("units"):
+                lines += [f"#### {sdk['name']} {sdk['version']}: {sdk['result']}", "",
+                          *units_table(sdk), ""]
     if data["findings"]:
         lines += ["### Findings", "", "Each gets an issue (one per release, updated if open):", ""]
         lines += [f"- {f['title']}" for f in data["findings"]]
         lines.append("")
-    elif data["emulators"]:
+    elif data["emulators"] or any(s.get("units") for s in data["sdks"]):
         lines += ["No confirmed difference: no issue.", ""]
     lines.append(f"Nothing here makes a release verified; `{README}` says how to move to one.")
     return "\n".join(lines) + "\n"
