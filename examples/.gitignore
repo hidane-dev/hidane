@@ -1,0 +1,6 @@
+# What installing and running the examples leaves behind.
+node_modules/
+.venv/
+__pycache__/
+.pytest_cache/
+*.log
