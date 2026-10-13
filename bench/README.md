@@ -361,14 +361,15 @@ the stability readings after the run, CPU steal over the run) cover every scenar
 
 The workflow `.github/workflows/bench-targets.yml` checks hidane alone against its targets on a
 GitHub-hosted runner (ubuntu-24.04), on every push to `main`, nightly and by hand (#47). It
-builds a release binary, runs `hidane benchmark --scenarios startup,memory` with the canonical
-runs, and `check_targets.py` compares hidane's medians with `targets.json`:
+builds a release binary, runs `hidane benchmark --scenarios startup,memory,operations` with the
+canonical runs, and `check_targets.py` compares hidane's medians with `targets.json`:
 
 | Metric | Bound |
 |---|---|
 | `startup.time_to_port` | below 100 ms |
 | `memory.rss_idle` | below 50 MiB |
 | `memory.rss_after_workload` (1,000 documents) | below 100 MiB |
+| `operations.batch_write` (a commit of 500 writes) | below 25 ms |
 
 The bounds are the targets themselves, not hidane's current values: a shared runner's noise is
 far smaller than the distance between the two, so the job fails only for a regression, a
@@ -379,7 +380,7 @@ machine and are not cited (claim policy below). Writes with a listener attached 
 check in `cargo test` (#49).
 
 ```sh
-python3 -I bench/check_targets.py bench/targets.json result.json   # any result with startup and memory
+python3 -I bench/check_targets.py bench/targets.json result.json   # any result with startup, memory and operations
 python3 -I bench/check_targets.py --self-test
 ```
 
