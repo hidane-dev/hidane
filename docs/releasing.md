@@ -33,6 +33,12 @@ sha256sum --check --ignore-missing sha256sums.txt
 gh attestation verify hidane-<version>-<target>.tar.gz --repo hidane-dev/hidane
 ```
 
+The binaries and archives are reproducible: `packaging/release/build.sh` builds with the Rust
+pinned in `packaging/release/rust-toolchain.toml` and remaps the paths the binary records, and
+`packaging/release/archive.py` packs them with fixed dates, owners and modes, so a rebuild of
+the tag gives the same bytes. [reproducible-builds.md](reproducible-builds.md) says how to
+rebuild a release and compare, what CI checks, and where it stops.
+
 The macOS binaries are not signed or notarized yet. Archives fetched with `curl`, Homebrew or
 `gh` run as they are; one downloaded through a browser carries the quarantine attribute, which
 `xattr -d com.apple.quarantine hidane` removes.
@@ -49,6 +55,8 @@ The macOS binaries are not signed or notarized yet. Archives fetched with `curl`
    `mise run release:check` (`node packaging/check-versions.mjs`) checks that they agree, and CI
    runs it. Run `python3 tools/parity/compatibility.py` too: the compatibility report names the
    workspace version, and CI fails while it is stale.
+   The Rust the release builds with is `packaging/release/rust-toolchain.toml`; merge
+   Dependabot's pull request for a newer one first if you want it in the release.
 3. Push the tag `v<version>` on that commit. The workflow checks the tag against those versions,
    builds every target, writes `sha256sums.txt`, attests the archives and creates a **draft**
    release with all of them.

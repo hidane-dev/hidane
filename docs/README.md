@@ -20,6 +20,7 @@
 | [clean-room/](clean-room/README.md) | Where hidane's behaviour comes from: the allowed sources, how the official emulator is observed, the provenance of its recordings, and what contributors must not use |
 | [../tools/upstream/](../tools/upstream/README.md) | How new releases of firebase-tools, the SDKs and the official emulator are noticed, and how to move the verified versions to them |
 | [adr/](adr/) | Draft decision records: license, storage, gRPC stack, WebChannel timing, Rules engine |
+| [reproducible-builds.md](reproducible-builds.md) | How a release's binaries and archives come out the same bytes from its tag, how to rebuild one and compare, and what CI checks |
 | [../results/](../results/) | The official emulator baseline, hidane's measurements and the SDK differentials |
 
 Work is tracked in [issues](https://github.com/hidane-dev/hidane/issues) grouped by
