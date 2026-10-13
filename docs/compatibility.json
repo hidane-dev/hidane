@@ -648,19 +648,19 @@
   "where": "docs/parity-exceptions.json",
   "page": "docs/parity-exceptions.md",
   "intentional": {
-   "count": 68,
+   "count": 73,
    "by_kind": {
     "bug-for-bug": 1,
-    "more-correct": 43,
+    "more-correct": 47,
     "equivalent": 18,
-    "limitation": 6
+    "limitation": 7
    }
   },
   "production": {
-   "count": 14,
+   "count": 15,
    "by_kind": {
     "bug-for-bug": 12,
-    "more-correct": 2
+    "more-correct": 3
    }
   }
  }

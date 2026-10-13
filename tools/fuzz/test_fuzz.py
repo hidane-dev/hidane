@@ -252,6 +252,142 @@ class Exceptions(unittest.TestCase):
             self.assertEqual(rules.check(diff.parity_entries(path)), [])
 
 
+BASE = "/v1/projects/{project}/databases/(default)/documents"
+PAYLOAD = "Payload isn't valid for request."
+
+
+def patch(fields, path=BASE + "/c/d", **step):
+    return {"method": "PATCH", "path": path, "headers": {}, "body": {"fields": fields}, **step}
+
+
+class RequestRules(unittest.TestCase):
+    """Rules that look at the request as well as at the answers (`request`, `earlier`)."""
+
+    def test_predicates(self):
+        surrogate = patch({"v": {"stringValue": "a\ud800"}})
+        self.assertTrue(diff.lone_surrogate(surrogate))
+        self.assertTrue(diff.lone_surrogate(patch({"k\udc00": {"nullValue": None}})))
+        self.assertTrue(diff.lone_surrogate({"method": "POST", "path": BASE + ":commit", "raw": '{"s": "\\ud800"}'}))
+        self.assertFalse(diff.lone_surrogate(patch({"v": {"stringValue": "\U0001F600"}})))
+        self.assertFalse(diff.lone_surrogate({"method": "POST", "path": BASE + ":commit", "raw": '{"s": "\\ud83d\\ude00"}'}))
+        self.assertFalse(diff.lone_surrogate({"method": "GET", "path": BASE + "/c/d"}))
+
+        def time(text):
+            return patch({"t": {"timestampValue": text}})
+        for lenient in ("2020-13-01T00:00:00Z", "2020-00-01T00:00:00Z", "2019-02-29T00:00:00Z", "2020-01-01T24:00:00Z",
+                        "2020-01-01T00:60:00Z", "2020-01-01T00:00:61Z", "2020-01-01T00:00:00+24:00",
+                        "2020-1-01T00:00:00Z", "20-01-01T00:00:00Z", "2020-01-01T00:00:00.Z", "2020-01-01T00:00:00+9:00"):
+            self.assertTrue(diff.lenient_timestamp(time(lenient)), lenient)
+        for strict in ("2020-12-31T23:59:59.999999999Z", "2020-02-29T00:00:00Z", "2016-12-31T23:59:60Z",
+                       "2020-01-01T00:00:00+23:59", "2020-01-01T00:00:00.1234567891Z", "not a time",
+                       "2020-01-01T00:00:00", "2020-01-01 00:00:00Z", "13"):
+            self.assertFalse(diff.lenient_timestamp(time(strict)), strict)
+        # In a precondition, a read time, a query parameter; not as a key.
+        self.assertTrue(diff.lenient_timestamp({"method": "POST", "path": BASE + ":runQuery",
+                                                "body": {"readTime": "2020-13-01T00:00:00Z"}}))
+        self.assertTrue(diff.lenient_timestamp({"method": "PATCH", "path": BASE + "/c/d?currentDocument.updateTime="
+                                                "2020-13-01T00%3A00%3A00Z", "body": {}}))
+        self.assertFalse(diff.lenient_timestamp(patch({"2020-13-01T00:00:00Z": {"nullValue": None}})))
+
+        # Each `{project}` counts as the fuzzer's 11 characters: 4096 bytes are served, 4097 are not.
+        prefix = "GET " + BASE.replace("{project}", "p" * 11) + "/c/"
+        fits = 4096 - len(prefix) - len(" HTTP/1.1")
+        self.assertFalse(diff.long_request_line({"method": "GET", "path": BASE + "/c/" + "x" * fits}))
+        self.assertTrue(diff.long_request_line({"method": "GET", "path": BASE + "/c/" + "x" * (fits + 1)}))
+
+        query = {"method": "POST", "path": BASE + ":runQuery", "body": {"newTransaction": {"readWrite": {}}}}
+        self.assertTrue(diff.read_write_transaction(query))
+        self.assertFalse(diff.read_write_transaction({**query, "body": {"newTransaction": {"readOnly": {}}}}))
+        self.assertFalse(diff.read_write_transaction({**query, "body": {"transaction": "x"}}))
+        self.assertFalse(diff.read_write_transaction({**query, "raw": "null", "body": None}))
+
+    def test_a_request_rule_matches_on_the_step_that_differs(self):
+        rule = {"id": "r", "exception": "D001", "why": "w", "official": {"status": 404},
+                "request": {"method": "^POST$", "path": ":commit$", "headers": {"content-type": "(?i)^text/"}}}
+        rules = diff.Exceptions([rule])
+        posted = {"method": "POST", "path": BASE + ":commit", "headers": {"Content-Type": "TEXT/plain"}, "raw": "{}"}
+        case = {"steps": [patch({}), posted]}
+        found = diff.compare(case, [answer(200, "{}"), answer(404, "Not Found", None)], [answer(200, "{}"), answer(200, "{}")])
+        self.assertEqual(found["step"], 1)
+        self.assertEqual(rules.match("malformed", found, case)["id"], "r")
+        # Not without the case, nor for another step, method, path or content type.
+        self.assertIsNone(rules.match("malformed", found))
+        for other in ({**posted, "headers": {}}, {**posted, "method": "PUT"}, {**posted, "path": BASE + ":batchGet"}):
+            self.assertIsNone(rules.match("malformed", found, {"steps": [patch({}), other]}), other)
+        self.assertIsNone(rules.match("malformed", {**found, "step": 0}, case))
+
+    def test_an_earlier_rule_needs_an_earlier_step_and_its_answer(self):
+        rule = {"id": "e", "exception": "D001", "why": "w", "official": {"status": 409},
+                "earlier": {"path": ":runQuery$", "predicates": ["read-write-transaction"], "status": 400}}
+        rules = diff.Exceptions([rule])
+        query = {"method": "POST", "path": BASE + ":runQuery", "body": {"newTransaction": {"readWrite": {}}}}
+        case = {"steps": [query, patch({})]}
+        found = diff.compare(case, [error(400, "limit is negative"), error(409, "lock", "ABORTED")],
+                             [error(400, "limit is negative"), answer(200, "{}")])
+        self.assertEqual(rules.match("transactions", found, case, [error(400, "x"), error(409, "y")])["id"], "e")
+        self.assertIsNone(rules.match("transactions", found, case, [answer(200, "[]"), error(409, "y")]))
+        self.assertIsNone(rules.match("transactions", found, case))
+        self.assertIsNone(rules.match("transactions", found, {"steps": [patch({}), patch({})]}, [error(400, "x")] * 2))
+
+    def test_check_finds_bad_request_rules(self):
+        bad = diff.Exceptions([{"id": "bad", "exception": "D008", "why": "w", "official": {"status": 1},
+                                "request": {"path": "(", "headers": {"x": "["}, "predicates": ["nope"], "status": 400},
+                                "earlier": {"method": "(", "extra": 1}},
+                               {"id": "shape", "exception": "D008", "why": "w", "official": {"status": 1},
+                                "request": [], "earlier": {"headers": [], "predicates": "lone-surrogate"}}])
+        problems = "\n".join(bad.check({"D008"}))
+        for expected in ("`request.path`", "`request.headers.x`", "unknown predicate 'nope'",
+                         "unknown keys in `request`: ['status']", "`earlier.method`", "unknown keys in `earlier`: ['extra']",
+                         "`request` must be an object", "`earlier.headers` must map", "`earlier.predicates` must be a list"):
+            self.assertIn(expected, problems)
+
+    def test_the_rules_in_use_accept_what_their_entries_say_and_not_the_bugs_next_to_them(self):
+        rules = diff.Exceptions.load()
+
+        def accepted(case, official, hidane):
+            found = diff.compare(case, official, hidane)
+            rule = rules.match(case["area"], found, case, official)
+            return rule and rule["exception"]
+
+        refused = error(400, PAYLOAD)
+        stored = answer(200, '{"name": "x"}')
+        # D083 and D084: the same answers, a lone surrogate or a lenient time against a number
+        # given as a string (a bug).
+        for value, entry in (({"stringValue": "\ud800"}, "D083"), ({"timestampValue": "2020-13-01T00:00:00Z"}, "D084"),
+                             ({"stringValue": 1}, None), ({"timestampValue": "2020-12-01T00:00:00Z"}, None)):
+            case = {"area": "malformed", "steps": [patch({"v": value})]}
+            self.assertEqual(accepted(case, [stored], [refused]), entry, value)
+        # D085: a lock timeout after a failed query that began a read-write transaction; not
+        # after one that succeeded (a lock hidane would miss), nor without one.
+        query = {"method": "POST", "path": BASE + ":runQuery", "headers": {},
+                 "body": {"structuredQuery": {"from": [{"collectionId": "c"}], "limit": -1}, "newTransaction": {"readWrite": {}}}}
+        write = patch({"a": {"integerValue": "1"}})
+        timeout = error(409, "Transaction lock timeout.", "ABORTED")
+        for first, entry in ((error(400, "limit is negative"), "D085"), (answer(200, "[]"), None)):
+            case = {"area": "transactions", "steps": [query, write]}
+            self.assertEqual(accepted(case, [first, timeout], [first, stored]), entry)
+        self.assertIsNone(accepted({"area": "transactions", "steps": [write]}, [timeout], [stored]))
+        # D086 and D087: a bare 404 for a form-encoded POST and for a long request line, not for
+        # other requests.
+        bare = answer(404, "Not Found", None)
+        form = {"method": "POST", "path": BASE + ":commit", "headers": {"Content-Type": "application/x-www-form-urlencoded"},
+                "raw": "{}"}
+        self.assertEqual(accepted({"area": "malformed", "steps": [form]}, [bare], [answer(200, "{}")]), "D086")
+        self.assertIsNone(accepted({"area": "malformed", "steps": [{**form, "headers": {}}]}, [bare], [answer(200, "{}")]))
+        long = {"method": "GET", "path": BASE + "/c/" + "%C3%A9" * 751, "headers": {}}
+        self.assertEqual(accepted({"area": "malformed", "steps": [long]}, [bare], [error(400, "x")]), "D087")
+        self.assertIsNone(accepted({"area": "malformed", "steps": [{**long, "path": BASE + "/c/d"}]}, [bare],
+                                   [error(400, "x")]))
+        # D088: a collection group query under a document.
+        group = {"method": "POST", "path": BASE + "/c/d:runQuery", "headers": {},
+                 "body": {"structuredQuery": {"from": [{"collectionId": "q", "allDescendants": True}]}}}
+        refusal = error(400, "collection group queries are only allowed if they're at the root or they're an ascending "
+                             "primary key scan", "FAILED_PRECONDITION")
+        self.assertEqual(accepted({"area": "queries", "steps": [group]}, [refusal], [answer(200, "[]")]), "D088")
+        self.assertIsNone(accepted({"area": "queries", "steps": [{**group, "path": BASE + ":runQuery"}]}, [refusal],
+                                   [answer(200, "[]")]))
+
+
 class Shrinking(unittest.TestCase):
     def test_ddmin_finds_the_needed_elements(self):
         calls = []
@@ -311,6 +447,27 @@ class Minimising(unittest.TestCase):
         self.assertTrue(test(big))
         self.assertFalse(test(small))
         self.assertFalse(session.unexplained("batches", found["signature"], None))
+
+    def test_one_signature_accepted_for_one_request_and_not_for_another(self):
+        # An official 200 against `Payload isn't valid for request.`: a lone surrogate (D083)
+        # and a number given as a string (a bug) have one signature, and are two entries.
+        rule = {"id": "lone", "exception": "D083", "why": "w", "hidane": {"message": "^Payload"},
+                "request": {"predicates": ["lone-surrogate"]}}
+        with tempfile.TemporaryDirectory() as out:
+            args = argparse.Namespace(areas="", minutes=0, official="o", hidane="h", timeout=1, minimize_seconds=5,
+                                      minimize_budget=5, official_version=("1.22.0", "0" * 64))
+            session = fuzz.Session(args, diff.Exceptions([rule]), Path(out))
+            session.both = lambda case: ([answer(200, "{}")], [error(400, PAYLOAD)])
+            cases = [{"name": f"case {n}", "area": "malformed", "seed": 1, "index": n, "steps": [patch({"v": value})]}
+                     for n, value in enumerate([{"stringValue": "\ud800"}, {"stringValue": 1}, {"stringValue": "\udc00"}])]
+            for case in cases:
+                official, hidane = session.both(case)
+                session.record(case, diff.compare(case, official, hidane), official)
+            entries = sorted(session.signatures.values(), key=lambda e: e["outcome"])
+            self.assertEqual([(e["outcome"], e["occurrences"]) for e in entries], [("accepted", 2), ("unexplained", 1)])
+            self.assertEqual(entries[0]["signature"], entries[1]["signature"])
+            self.assertEqual(entries[1]["found"]["case"], 1)
+            self.assertEqual(session.by_area["malformed"]["accepted"], 2)
 
 
 class FakeEmulator(BaseHTTPRequestHandler):

@@ -82,6 +82,34 @@ passes). A difference a rule matches is counted under its entry and not reported
 check` fails when a rule names an entry that is gone or is malformed; keep the rules as narrow as
 the entry's text.
 
+Answers alone are often not narrow enough: an official `200` against hidane's `Payload isn't
+valid for request.` is a lone surrogate (D083), which hidane cannot store, but until #280 it
+was also a number given for a string, which was a bug. A rule can then say what the request
+was:
+
+| Key | Matches |
+|---|---|
+| `request.method`, `request.path` | the method and path of the step whose answers differ (regular expressions; the path as the case gives it, with `{project}` and the other placeholders, and its query string) |
+| `request.headers` | `{"Content-Type": "(?i)^text/"}`: a regular expression per header, names in any case; a header the step does not set is the empty string |
+| `request.predicates` | names of checks on the request (`PREDICATES` in `diff.py`), each of which must hold: `lone-surrogate` (a string of the body, key or value, holds an unpaired surrogate), `lenient-timestamp` (a string value of the body or a query parameter is shaped like a timestamp but is not RFC 3339: month 13, `2020-1-01`), `long-request-line` (the request line is longer than 4096 bytes), `read-write-transaction` (the body begins one with `newTransaction`) |
+| `earlier` | the same keys for some step before that one, and the `status` of its answer (a number or a list; both sides answered it alike, since the first difference comes later) |
+
+```json
+{
+ "id": "failed-query-lock",
+ "exception": "D085",
+ "why": "…",
+ "official": {"status": 409, "code": "^ABORTED$", "message": "^Transaction lock timeout\\.$"},
+ "hidane": {"status": 200},
+ "earlier": {"path": ":run(Aggregation)?Query$", "predicates": ["read-write-transaction"], "status": 400}
+}
+```
+
+A rule with `request` or `earlier` matches only with the case at hand, and the run records each
+difference under its signature and the rule that accepts it: one signature can be accepted in
+one case and unexplained in another, and is then two entries of the summary. A new predicate is
+a function of a step in `diff.py`, with a test in `test_fuzz.py`.
+
 ### Minimising
 
 A new difference is run again first: one that does not show twice is reported as not

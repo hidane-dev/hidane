@@ -130,17 +130,19 @@ class Session:
         hidane = diff.run(self.args.hidane, case, self.args.timeout)
         return official, hidane
 
-    def unexplained(self, area, signature, found):
-        """Whether `found` is the difference `signature` and no rule accepts it. A smaller case
-        can keep the signature (a message template, a kind of reason) and yet become one a rule
-        accepts, such as a denial whose reasons are now a subset of the official one's (D008):
-        minimising must not turn a difference into one the run would not have reported."""
+    def unexplained(self, area, signature, found, case=None, official=None):
+        """Whether `found` (a difference of `case`, whose official answers are `official`) is the
+        difference `signature` and no rule accepts it. A smaller case can keep the signature (a
+        message template, a kind of reason) and yet become one a rule accepts, such as a denial
+        whose reasons are now a subset of the official one's (D008): minimising must not turn a
+        difference into one the run would not have reported."""
         return (found is not None and found["signature"] == signature
-                and self.exceptions.match(area, found) is None)
+                and self.exceptions.match(area, found, case, official) is None)
 
     def reproduces(self, area, signature):
         def test(candidate):
-            return self.unexplained(area, signature, diff.compare(candidate, *self.both(candidate)))
+            official, hidane = self.both(candidate)
+            return self.unexplained(area, signature, diff.compare(candidate, official, hidane), candidate, official)
         return test
 
     def check_alive(self, found):
@@ -168,13 +170,18 @@ class Session:
             self.by_area[area]["differing"] += 1
             if not self.check_alive(found):
                 break
-            self.record(case, found)
+            self.record(case, found, official)
         duration = round(time.monotonic() - started, 1)
         return self.summary(version, sha256, last, duration)
 
-    def record(self, case, found):
+    def record(self, case, found, official):
         area, signature = case["area"], found["signature"]
-        known = self.signatures.get(signature)
+        # A rule can look at the request, so one signature can be accepted in one case and not
+        # in another (an official 200 against `Payload isn't valid for request.` for a lone
+        # surrogate, D083, and for a number given as a string, a bug): each is its own entry.
+        rule = self.exceptions.match(area, found, case, official)
+        key = (signature, rule["id"] if rule else None)
+        known = self.signatures.get(key)
         if known:
             known["occurrences"] += 1
             self.by_area[area][known["outcome"]] += 1
@@ -183,8 +190,7 @@ class Session:
                  "detail": found["detail"], "official": found["official"], "hidane": found["hidane"],
                  "found": {"seed": case["seed"], "case": case["index"], "step": found["step"]},
                  "occurrences": 1}
-        rule = self.exceptions.match(area, found)
-        self.signatures[signature] = entry
+        self.signatures[key] = entry
         if rule:
             entry["outcome"] = "accepted"
             entry["rule"] = rule["id"]
@@ -204,7 +210,7 @@ class Session:
                                        self.args.minimize_budget, deadline)
         official, hidane = self.both(small)
         final = diff.compare(small, official, hidane)
-        if not self.unexplained(area, signature, final):
+        if not self.unexplained(area, signature, final, small, official):
             small, (official, hidane) = case, self.both(case)
             final = diff.compare(case, official, hidane) or found
         entry["minimized"] = {"steps": len(small["steps"]), "from_steps": len(case["steps"]), "tests": tests}
@@ -330,7 +336,9 @@ def cmd_replay(args):
     case = data.get("case", data)
     official, hidane = diff.run(args.official, case, args.timeout), diff.run(args.hidane, case, args.timeout)
     found = diff.compare(case, official, hidane)
-    print(json.dumps({"difference": found, "official": official, "hidane": hidane}, ensure_ascii=False, indent=1))
+    rule = diff.Exceptions.load().match(case.get("area"), found, case, official) if found else None
+    print(json.dumps({"difference": found, "accepted_by": rule and {k: rule[k] for k in ("id", "exception")},
+                      "official": official, "hidane": hidane}, ensure_ascii=False, indent=1))
 
 
 def cmd_show(args):
