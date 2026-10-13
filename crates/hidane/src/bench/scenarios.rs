@@ -13,9 +13,9 @@ use std::{
 use serde_json::{Map, Value, json};
 
 use super::{
-    client::{self, Client},
+    client::{self, Client, Listener},
     config::{Ci, Params, Runs},
-    stats,
+    render, stats,
     system::{self, Sampler},
     target::{self, Kind, Target},
 };
@@ -119,6 +119,9 @@ impl Results {
 fn ms(d: Duration) -> f64 {
     d.as_secs_f64() * 1000.0
 }
+
+/// How long the listener may take, after the last commit, to hold every document.
+const DELIVERY_TIMEOUT: Duration = Duration::from_secs(300);
 
 /// The fixed parts of a benchmark run.
 pub struct Ctx {
@@ -613,6 +616,112 @@ impl Bench {
                 let _ = std::fs::remove_dir_all(&dir);
                 let (total, workload) = result?;
                 Ok(vec![(0, ms(total)), (1, workload)])
+            },
+        );
+    }
+
+    /// Writes with a listener attached (firebase-tools#3477, docs/why.md §3): a Listen stream
+    /// on the whole collection, on its own connection and read as it arrives, while the documents
+    /// are written in commits over another connection, one commit at a time. The run ends when
+    /// the listener's snapshot holds every document. Besides the totals, the batches' trend: the
+    /// first and last tenths' medians and the growth per 10,000 documents stored.
+    pub fn listen_writes(&mut self) {
+        let p = self.ctx.params.listen_writes.clone();
+        let work = format!(
+            "{} documents written in commits of {} with a listener on the whole collection",
+            render::thousands(p.documents as u64),
+            p.batch
+        );
+        let metrics = [
+            metric(
+                "listen_writes",
+                "writes",
+                "ms",
+                &format!("{work}: the first commit sent until the last one answered"),
+            ),
+            metric(
+                "listen_writes",
+                "delivered",
+                "ms",
+                &format!(
+                    "{work}: the first commit sent until the listener's snapshot holds every document"
+                ),
+            ),
+            metric(
+                "listen_writes",
+                "batch_first_decile",
+                "ms",
+                "Median commit time of the first tenth of the batches",
+            ),
+            metric(
+                "listen_writes",
+                "batch_last_decile",
+                "ms",
+                "Median commit time of the last tenth of the batches",
+            ),
+            metric(
+                "listen_writes",
+                "batch_growth",
+                "ms",
+                "How much a batch's commit time grows per 10,000 documents already stored, in ms (Theil–Sen: the median slope between every two batches of a run)",
+            ),
+            metric(
+                "listen_writes",
+                "rss_after",
+                "bytes",
+                "RSS once the listener's snapshot holds every document",
+            ),
+        ];
+        self.each_run(
+            "listen_writes",
+            "listen_writes",
+            p.runs,
+            &metrics,
+            |ctx, target, name| {
+                let mut running = target.spawn(ctx.logs.as_deref(), name)?;
+                running.wait_port()?;
+                let (addr, pid) = (running.addr(), running.pid());
+                let values = ctx.rt.block_on(async {
+                    let mut listener = Listener::start(addr, "listened").await?;
+                    listener.wait_for(0, Duration::from_secs(60)).await?;
+                    let mut c = Client::connect(addr).await?;
+                    let mut batches = Vec::new();
+                    let start = Instant::now();
+                    let mut stored = 0;
+                    while stored < p.documents {
+                        let end = (stored + p.batch).min(p.documents);
+                        let writes = (stored..end)
+                            .map(|i| {
+                                Client::update(c.document(&format!("listened/doc-{i}"), i, 100))
+                            })
+                            .collect();
+                        let commit = Instant::now();
+                        c.commit(writes).await?;
+                        batches.push((stored as f64, ms(commit.elapsed())));
+                        stored = end;
+                    }
+                    let writes = start.elapsed();
+                    let snapshot = listener.wait_for(p.documents, DELIVERY_TIMEOUT).await?;
+                    let rss = system::sample(pid).ok_or("could not read the process's memory")?;
+                    drop(listener);
+                    // The official emulator can send the last documents before it answers the
+                    // last commit: then `delivered` is at most `writes`.
+                    let mut values = vec![
+                        (0, ms(writes)),
+                        (1, ms(snapshot.at.saturating_duration_since(start))),
+                    ];
+                    if let Some(trend) = stats::trend(&batches) {
+                        values.extend([
+                            (2, trend.first_decile),
+                            (3, trend.last_decile),
+                            (4, trend.growth_per_10k),
+                        ]);
+                    }
+                    values.push((5, rss.rss_bytes as f64));
+                    Ok::<_, String>(values)
+                })?;
+                running.shutdown()?;
+                Ok(values)
             },
         );
     }

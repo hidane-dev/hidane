@@ -2,22 +2,28 @@
 //! connection, sending the same requests in the same order.
 
 use std::{
+    collections::HashSet,
     net::SocketAddr,
     time::{Duration, Instant},
 };
 
 use hidane_proto::google::firestore::v1::{
-    BeginTransactionRequest, CommitRequest, Document, GetDocumentRequest, RunQueryRequest,
-    StructuredQuery, Value, Write,
+    BeginTransactionRequest, CommitRequest, Document, GetDocumentRequest, ListenRequest,
+    RunQueryRequest, StructuredQuery, Target, Value, Write,
     firestore_client::FirestoreClient,
-    get_document_request, run_query_request,
+    get_document_request, listen_request,
+    listen_response::ResponseType,
+    run_query_request,
     structured_query::{
         CollectionSelector, FieldFilter, FieldReference, Filter, field_filter, filter::FilterType,
     },
+    target::{QueryTarget, TargetType, query_target},
+    target_change::TargetChangeType,
     value::ValueType,
     write::Operation,
 };
-use tokio_stream::StreamExt as _;
+use tokio::sync::{mpsc, watch};
+use tokio_stream::{StreamExt as _, wrappers::ReceiverStream};
 use tonic::{Code, transport::Channel};
 
 use super::system;
@@ -35,18 +41,26 @@ fn grpc(status: &tonic::Status) -> String {
     format!("gRPC {:?}: {}", status.code(), status.message())
 }
 
+async fn channel(addr: SocketAddr) -> Result<FirestoreClient<Channel>, String> {
+    let channel = Channel::from_shared(format!("http://{addr}"))
+        .map_err(|e| e.to_string())?
+        .connect()
+        .await
+        .map_err(|e| format!("could not connect over gRPC ({e})"))?;
+    Ok(FirestoreClient::new(channel)
+        .max_decoding_message_size(64 << 20)
+        .max_encoding_message_size(64 << 20))
+}
+
+fn database() -> String {
+    format!("projects/{PROJECT}/databases/(default)")
+}
+
 impl Client {
     pub async fn connect(addr: SocketAddr) -> Result<Self, String> {
-        let channel = Channel::from_shared(format!("http://{addr}"))
-            .map_err(|e| e.to_string())?
-            .connect()
-            .await
-            .map_err(|e| format!("could not connect over gRPC ({e})"))?;
         Ok(Self {
-            inner: FirestoreClient::new(channel)
-                .max_decoding_message_size(64 << 20)
-                .max_encoding_message_size(64 << 20),
-            database: format!("projects/{PROJECT}/databases/(default)"),
+            inner: channel(addr).await?,
+            database: database(),
             addr,
         })
     }
@@ -237,6 +251,157 @@ impl Client {
             Ok((status, _)) => Err(format!("reset answered HTTP {status}")),
             Err(e) => Err(format!("reset failed ({e})")),
         }
+    }
+}
+
+/// A consistent snapshot of a listened collection: how many documents it held, and when it
+/// arrived.
+#[derive(Debug, Clone, Copy)]
+pub struct Snapshot {
+    pub documents: usize,
+    pub at: Instant,
+}
+
+/// A Listen stream on its own connection, with one target on a whole collection, read in the
+/// background as it arrives. It keeps the target's documents as the SDKs do: a `RESET` empties
+/// them until the target is `CURRENT` again, and each `NO_CHANGE` for all targets after that is a
+/// consistent snapshot.
+pub struct Listener {
+    /// Kept open: the stream lasts while the sender does.
+    _requests: mpsc::Sender<ListenRequest>,
+    snapshots: watch::Receiver<Option<Snapshot>>,
+    task: tokio::task::JoinHandle<Result<(), String>>,
+}
+
+const TARGET_ID: i32 = 1;
+
+impl Listener {
+    pub async fn start(addr: SocketAddr, collection: &str) -> Result<Self, String> {
+        let mut inner = channel(addr).await?;
+        let database = database();
+        let (requests, rx) = mpsc::channel(1);
+        let query = StructuredQuery {
+            from: vec![CollectionSelector {
+                collection_id: collection.to_owned(),
+                all_descendants: false,
+            }],
+            ..StructuredQuery::default()
+        };
+        requests
+            .send(ListenRequest {
+                database: database.clone(),
+                target_change: Some(listen_request::TargetChange::AddTarget(Target {
+                    target_id: TARGET_ID,
+                    target_type: Some(TargetType::Query(QueryTarget {
+                        parent: format!("{database}/documents"),
+                        query_type: Some(query_target::QueryType::StructuredQuery(query)),
+                    })),
+                    ..Target::default()
+                })),
+                ..ListenRequest::default()
+            })
+            .await
+            .map_err(|e| e.to_string())?;
+        // The SDKs name the database in this header; the official emulator's Listen needs it.
+        let mut request = tonic::Request::new(ReceiverStream::new(rx));
+        request.metadata_mut().insert(
+            "google-cloud-resource-prefix",
+            database.parse().map_err(|_| "bad database name")?,
+        );
+        let mut stream = inner
+            .listen(request)
+            .await
+            .map_err(|s| format!("Listen: {}", grpc(&s)))?
+            .into_inner();
+        let (tx, snapshots) = watch::channel(None);
+        let task = tokio::spawn(async move {
+            let mut documents = HashSet::new();
+            let mut current = false;
+            while let Some(response) = stream.next().await {
+                match response
+                    .map_err(|s| format!("Listen: {}", grpc(&s)))?
+                    .response_type
+                {
+                    Some(ResponseType::TargetChange(change)) => {
+                        let ours =
+                            change.target_ids.is_empty() || change.target_ids.contains(&TARGET_ID);
+                        match TargetChangeType::try_from(change.target_change_type) {
+                            Ok(TargetChangeType::Reset) if ours => {
+                                documents.clear();
+                                current = false;
+                            }
+                            Ok(TargetChangeType::Current) if ours => current = true,
+                            Ok(TargetChangeType::NoChange)
+                                if change.target_ids.is_empty() && current =>
+                            {
+                                tx.send_replace(Some(Snapshot {
+                                    documents: documents.len(),
+                                    at: Instant::now(),
+                                }));
+                            }
+                            Ok(TargetChangeType::Remove) if ours => {
+                                return Err(format!(
+                                    "the server removed the Listen target ({})",
+                                    change.cause.map_or_else(String::new, |c| c.message)
+                                ));
+                            }
+                            _ => {}
+                        }
+                    }
+                    Some(ResponseType::DocumentChange(change)) => {
+                        if let Some(document) = change.document {
+                            if change.target_ids.contains(&TARGET_ID) {
+                                documents.insert(document.name);
+                            } else if change.removed_target_ids.contains(&TARGET_ID) {
+                                documents.remove(&document.name);
+                            }
+                        }
+                    }
+                    Some(ResponseType::DocumentDelete(delete)) => {
+                        documents.remove(&delete.document);
+                    }
+                    Some(ResponseType::DocumentRemove(remove)) => {
+                        documents.remove(&remove.document);
+                    }
+                    Some(ResponseType::Filter(_)) | None => {}
+                }
+            }
+            Err("the Listen stream ended".to_owned())
+        });
+        Ok(Self {
+            _requests: requests,
+            snapshots,
+            task,
+        })
+    }
+
+    /// The first consistent snapshot holding at least `documents` documents.
+    pub async fn wait_for(
+        &mut self,
+        documents: usize,
+        timeout: Duration,
+    ) -> Result<Snapshot, String> {
+        let wait = self
+            .snapshots
+            .wait_for(|s| s.is_some_and(|s| s.documents >= documents));
+        match tokio::time::timeout(timeout, wait).await {
+            Ok(Ok(snapshot)) => (*snapshot).ok_or_else(|| "no snapshot".to_owned()),
+            Ok(Err(_)) => Err(match (&mut self.task).await {
+                Ok(Err(e)) => e,
+                Ok(Ok(())) => "the Listen stream ended".to_owned(),
+                Err(e) => format!("the listener failed ({e})"),
+            }),
+            Err(_) => Err(format!(
+                "no snapshot with {documents} documents within {} s",
+                timeout.as_secs()
+            )),
+        }
+    }
+}
+
+impl Drop for Listener {
+    fn drop(&mut self) {
+        self.task.abort();
     }
 }
 

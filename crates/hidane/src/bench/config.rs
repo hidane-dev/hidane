@@ -56,6 +56,14 @@ pub struct Datasets {
     pub query_runs: usize,
 }
 
+/// Writes with a listener on the collection (firebase-tools#3477).
+#[derive(Debug, Clone, PartialEq)]
+pub struct ListenWrites {
+    pub runs: Runs,
+    pub documents: usize,
+    pub batch: usize,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Ci {
     pub runs: Runs,
@@ -85,6 +93,7 @@ pub struct Params {
     pub ci: Ci,
     /// The CI workload through `firebase emulators:exec` (with `--firebase`).
     pub ci_firebase: Ci,
+    pub listen_writes: ListenWrites,
     pub command: Runs,
     pub stability: Stability,
 }
@@ -92,6 +101,11 @@ pub struct Params {
 const fn runs(warmup: usize, runs: usize) -> Runs {
     Runs { warmup, runs }
 }
+
+/// Runs of the listener scenario: one run of the official emulator takes minutes (121 s for
+/// 100,000 documents in Phase 0), and each run starts a fresh process after the other scenarios
+/// have warmed the OS's cache of the binary and the jar.
+pub const LISTEN_WRITES_RUNS: Runs = runs(0, 3);
 
 /// Warm-up and measured runs for a dataset size: the defaults (3 and 10) up to 1,000 documents,
 /// scaled down above, where one run of the official emulator takes seconds.
@@ -145,6 +159,11 @@ impl Default for Params {
                 tests: 200,
                 seed_documents: 100,
             },
+            listen_writes: ListenWrites {
+                runs: LISTEN_WRITES_RUNS,
+                documents: 100_000,
+                batch: 500,
+            },
             command: runs(1, 5),
             stability: Stability {
                 max_load_1m: Some(2.0),
@@ -193,6 +212,8 @@ impl Params {
             tests: 20,
             seed_documents: 20,
         };
+        params.listen_writes.runs = runs(0, 1);
+        params.listen_writes.documents = 10_000;
         params
     }
 
@@ -256,6 +277,7 @@ impl Params {
                 "datasets",
                 "ci",
                 "ci_firebase",
+                "listen_writes",
                 "command",
             ],
         )?;
@@ -345,6 +367,18 @@ impl Params {
                 read_usize(m, &what, "seed_documents", &mut ci.seed_documents)?;
             }
         }
+        if let Some(v) = map.get("listen_writes") {
+            let what = "scenarios.listen_writes";
+            let m = object(v, what)?;
+            known(m, what, &["warmup", "runs", "documents", "batch"])?;
+            let l = &mut self.listen_writes;
+            read_runs(m, what, &mut l.runs)?;
+            read_usize(m, what, "documents", &mut l.documents)?;
+            read_usize(m, what, "batch", &mut l.batch)?;
+            if l.documents == 0 || l.batch == 0 {
+                return Err(format!("{what}: documents and batch must be at least 1"));
+            }
+        }
         if let Some(v) = map.get("command") {
             let m = object(v, "scenarios.command")?;
             known(m, "scenarios.command", &["warmup", "runs"])?;
@@ -429,6 +463,12 @@ impl Params {
                     "seed_documents": ci.seed_documents,
                 })
             }
+            "listen_writes" => json!({
+                "warmup": self.listen_writes.runs.warmup,
+                "runs": self.listen_writes.runs.runs,
+                "documents": self.listen_writes.documents,
+                "batch": self.listen_writes.batch,
+            }),
             "command" => r(self.command),
             _ => Value::Null,
         }
@@ -598,6 +638,7 @@ mod tests {
             "datasets",
             "ci",
             "ci_firebase",
+            "listen_writes",
             "command",
         ] {
             assert_eq!(scenarios[name], params.scenario_json(name), "{name}");

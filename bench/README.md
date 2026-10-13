@@ -28,8 +28,8 @@ bench/run.sh --firebase "$(command -v firebase)"   # also the CI workload throug
 ```
 
 The result lands in `bench/out/` (ignored by git) as `<UTC date>-<kind>.json` and `.md`. Expect
-about 10 to 15 minutes for a full run, most of it in the official emulator's runs; `--quick`
-takes one or two.
+about 15 to 25 minutes for a full run, most of it in the official emulator's runs (its three
+runs of `listen_writes` take several minutes alone); `--quick` takes one or two.
 
 The engine on its own, with any hidane binary:
 
@@ -166,13 +166,58 @@ first hundred requests see, not a JVM after minutes of load.
 | `datasets` | For 100, 1,000, 10,000 and 100,000 documents: start, write them in commits of 500, read RSS, run a query matching 1 % of them (3 warm-up, 10 measured per process) | `seed_<n>`, `query_<n>` (ms), `rss_after_seed_<n>` (bytes) |
 | `ci` | A CI job in miniature: start, wait for the port, seed 100 documents, 200 tests (each: a commit of 3 writes, 2 reads, a query, then `DELETE /emulator/v1/projects/…/documents`, as `clearFirestore()` does), shut down | `total`, `ready`, `seed`, `tests`, `shutdown` (ms) |
 | `ci_firebase` | The same workload as projects run it: `firebase emulators:exec --only firestore` around `hidane benchmark workload`. firebase-tools starts the official emulator from the same jar and Java, and hidane through `hidane exec`; it runs in a scratch project with its own ports and configuration directory (no login, no usage reporting, no update check). Needs `--firebase` | `total`, `workload` (ms) |
+| `listen_writes` | Writes with a listener attached ([below](#writes-with-a-listener-attached)): start, open a Listen stream on a whole collection, write 100,000 documents to it in commits of 500, one at a time, until the listener's snapshot holds them all | `writes`, `delivered`, `batch_first_decile`, `batch_last_decile`, `batch_growth` (ms); `rss_after` (bytes) |
 | `command` | Your command, with `FIRESTORE_EMULATOR_HOST` set (see above) | `total`, `command`, `ready` (ms) |
 
 Runs per target: 3 warm-up and 10 measured for `startup`, `memory`, `ci` and the dataset sizes up to
 1,000 documents. Larger sizes are scaled down, because one run of the official emulator takes
 seconds there: 1 warm-up and 5 measured runs for 10,000 documents, 1 and 3 for 100,000.
-`ci_firebase` and `command` run 1 warm-up and 5 measured runs. `canonical.json` states every
-value.
+`ci_firebase` and `command` run 1 warm-up and 5 measured runs. `listen_writes` runs no warm-up
+and 3 measured runs: one run of the official emulator takes minutes (121 s in Phase 0), the
+earlier scenarios have already brought the binary and the jar into the OS's cache, and the JVM's
+own warm-up inside a run is part of what the first batches measure; `--warmup` and `--runs`
+are capped at 1 and 3 for it. `canonical.json` states every value.
+
+#### Writes with a listener attached
+
+firebase-tools [#3477](https://github.com/firebase/firebase-tools/issues/3477) reports batch
+writes slowing down as the database grows while a listener is attached; Phase 0 reproduced it on
+the official emulator ([`docs/why.md`](../docs/why.md#3-writes-slow-down-while-a-listener-is-attached)).
+`listen_writes` measures that case for both emulators. A run:
+
+1. starts the target and waits for the port;
+2. opens a Listen stream, on its own HTTP/2 connection, with one target: a query on the whole
+   collection `listened` (the SDKs' Listen protocol, with the `google-cloud-resource-prefix`
+   header they send), and waits for its first consistent snapshot (empty);
+3. writes `listened/doc-0` … `doc-99999` in commits of 500 over a second connection, one commit
+   at a time, timing each commit from request to answer, while the stream is read as it arrives;
+4. waits for the first consistent snapshot holding every document, reads the RSS and shuts down.
+
+The listener keeps the target's documents as the SDKs do: a `RESET` empties them until the target
+is `CURRENT` again (the official emulator answers each write to a watched collection with `RESET`
+and the whole result, [`docs/parity-exceptions.md`](../docs/parity-exceptions.md)), and a
+`NO_CHANGE` for all targets after that is a consistent snapshot.
+
+| Metric | What |
+|---|---|
+| `writes` | The first commit sent until the last one answered |
+| `delivered` | The first commit sent until the listener's snapshot holds every document. The official emulator can send the last documents before it answers the last commit, so this can be at most `writes` |
+| `batch_first_decile`, `batch_last_decile` | The median commit time of the first and of the last tenth of the batches (20 of 200 each) |
+| `batch_growth` | How much a commit's time grows per 10,000 documents already stored: the Theil–Sen estimator, the median of the slopes between every two batches of the run, so a few slow batches (a cold first commit, a pause) do not tilt it. Recorded with unit `ms`; it can be negative |
+| `rss_after` | RSS once the listener holds every document |
+
+Each metric has one sample per run. The same writes without a listener are the `datasets`
+scenario's `seed_100000`. Phase 0 measured this with other clients (the Go client of
+williamhaley/firestore-emulator-slow for the writes, a Node.js `onSnapshot` listener in another
+process) on the official emulator only, and hidane later with the Admin SDK
+(`results/batch-write-degradation-official-v1.22.0.csv`, `results/listen-batch-writes-hidane.csv`);
+this scenario takes both emulators side by side with one client.
+
+The same scenario is hidane's regression check for #49 and #30: a test in
+`crates/hidane/tests/bench.rs` runs it on hidane alone, with the canonical 100,000 documents, on
+every pull request, and fails when the last tenth of the batches takes more than twice the first
+tenth's median, or when the growth over the run exceeds one early batch. Ratios, not
+milliseconds, so a slow runner or a debug build passes them.
 
 Memory and CPU time are read from `/proc/<pid>/status` and `/proc/<pid>/stat` on Linux and from
 `ps` on macOS. Peak RSS is the kernel's high-water mark (`VmHWM`) on Linux and the highest of
@@ -282,6 +327,16 @@ A history plots `results.<scenario>.<target>.<metric>.stats.median` (with p95 as
 `benchmark.version`, and marks where `targets.hidane.version`, `targets.official.version` or
 `environment_revision` changes. `schema_version` changes when a field changes meaning.
 
+### Versions
+
+`benchmark.version` (`benchmark_version` in `canonical.json`) names the benchmark definitions. It
+changes when an existing scenario changes what it does or measures, or one of its canonical
+values changes: numbers of different versions are not compared. A new scenario keeps the
+version when it runs after the existing ones (scenarios run in a fixed order), because it cannot
+change the conditions they are measured under; its history starts with the first result that has
+it. `listen_writes` was added this way to definitions v1. The run-level readings (`duration_s`,
+the stability readings after the run, CPU steal over the run) cover every scenario that ran.
+
 ## Claim policy
 
 - Numbers come from canonical, stable runs on a stated machine, with the environment block
@@ -294,4 +349,6 @@ A history plots `results.<scenario>.<target>.<metric>.stats.median` (with p95 as
 
 This harness replaces `tools/bench/startup_memory.py`: `startup` and `memory` measure the same
 things (time until the port accepts, RSS idle and after the baseline's 1,000 documents), for
-both emulators. `results/startup-memory-hidane.txt` came from that script.
+both emulators. `results/startup-memory-hidane.txt` came from that script. `listen_writes`
+replaces the scripts behind `results/batch-write-degradation-official-v1.22.0.csv` and
+`results/listen-batch-writes-hidane.csv`, which are not in the repository.
