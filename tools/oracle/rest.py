@@ -213,6 +213,48 @@ case("a null body writes nothing", "GET", B + "/fz/null")
 case("GET with a null body", "GET", B + "/fz/b", raw="null")
 case("DELETE with a null body", "DELETE", B + "/fz/null", raw="null")
 case("an unknown verb with a null body", "POST", B + ":nosuchverb", raw="null")
+# A value without a type (`{}`) cannot be converted, over every way of writing, in a field, an
+# array, a map or a transform's operand. It is found with the names of a write: in the order of
+# the fields, depth first, next to reserved names (a special map's values are all read before
+# its `__type__`), after the write's document name and before its update mask, its transforms
+# and every later check (sequences, values, preconditions, verifies).
+U = {}
+def upd(name, fields, **extra):
+    return dict({"update": {"name": NAME + "/" + name, "fields": fields}}, **extra)
+def commit(*writes):
+    return {"writes": list(writes)}
+case("PATCH a value without a type", "PATCH", B + "/fz/unset", {"fields": {"v": U}})
+case("POST a value without a type", "POST", B + "/fz?documentId=unset", {"fields": {"m": {"mapValue": {"fields": {"k": U}}}}})
+case("batchWrite a value without a type", "POST", B + ":batchWrite", commit(upd("fz/unset", {"v": U})))
+case("commit a value without a type in an array", "POST", B + ":commit", commit(upd("fz/unset", {"v": {"arrayValue": {"values": [U]}}})))
+case("a value without a type writes nothing", "GET", B + "/fz/unset")
+case("a reserved name, then a value without a type", "POST", B + ":commit", commit(upd("fz/unset", {"__x__": i(1), "v": U})))
+case("a value without a type, then a reserved name", "POST", B + ":commit", commit(upd("fz/unset", {"v": U, "__x__": i(1)})))
+case("a nested reserved name, then a value without a type", "POST", B + ":commit", commit(upd("fz/unset", {"m": {"mapValue": {"fields": {"__x__": i(1)}}}, "v": U})))
+case("a value without a type, then a nested reserved name", "POST", B + ":commit", commit(upd("fz/unset", {"m": {"mapValue": {"fields": {"a": U, "__x__": i(1)}}}})))
+case("a reserved name in a write before a value without a type", "POST", B + ":commit", commit(upd("fz/a1", {"__x__": i(1)}), upd("fz/a2", {"v": U})))
+case("a value without a type before an invalid document name", "POST", B + ":commit", commit(upd("fz/a1", {"v": U}), upd("fz", {})))
+case("a value without a type before the update mask", "POST", B + ":commit", commit(upd("fz/a1", {"v": U}, updateMask={"fieldPaths": ["a..b"]})))
+case("a value without a type outside the update mask", "POST", B + ":commit", commit(upd("fz/a1", {"v": U, "w": i(1)}, updateMask={"fieldPaths": ["w"]})))
+case("a value without a type before nested arrays", "POST", B + ":commit", commit(upd("fz/a1", {"a": {"arrayValue": {"values": [{"arrayValue": {}}]}}, "v": U})))
+case("a value without a type in a nested array", "POST", B + ":batchWrite", commit(upd("fz/a1", {"v": {"arrayValue": {"values": [{"arrayValue": {"values": [U]}}]}}})))
+case("a value without a type before an empty field name", "POST", B + ":commit", commit(upd("fz/a1", {"": U})))
+case("a value without a type before a transform path", "POST", B + ":commit", commit(upd("fz/a1", {"v": U}, updateTransforms=[{"fieldPath": "a.__x__", "increment": i(1)}])))
+case("a value without a type before the sequence of writes", "POST", B + ":commit", commit(upd("fz/a1", {"v": U}), upd("fz/a1", {}, currentDocument={"exists": False}), {"delete": NAME + "/fz/a1"}))
+case("a value without a type before a precondition", "POST", B + ":commit", commit(upd("fz/a1", {"v": U}, currentDocument={"updateTime": "2001-01-01T00:00:00Z"})))
+case("a value without a type before a verify", "POST", B + ":commit", commit({"verify": NAME + "/fz/zz", "currentDocument": {"exists": True}}, upd("fz/a1", {"v": U})))
+case("a vector holding a value without a type", "POST", B + ":commit", commit(upd("fz/a1", {"v": {"mapValue": {"fields": {"__type__": s("__vector__"), "value": {"arrayValue": {"values": [i(1), U]}}}}}})))
+case("a __type__ without a type", "POST", B + ":commit", commit(upd("fz/a1", {"v": {"mapValue": {"fields": {"__type__": U}}}})))
+case("a value without a type after a __type__ that is not a string", "POST", B + ":commit", commit(upd("fz/a1", {"v": {"mapValue": {"fields": {"__type__": i(1), "x": U}}}})))
+case("a value without a type next to an unknown __type__", "POST", B + ":commit", commit(upd("fz/a1", {"v": {"mapValue": {"fields": {"__type__": s("other"), "x": U}}}})))
+case("an increment without a type", "POST", B + ":commit", commit(upd("fz/a1", {}, updateTransforms=[{"fieldPath": "x", "increment": U}])))
+case("an increment holding a value without a type", "POST", B + ":commit", commit(upd("fz/a1", {}, updateTransforms=[{"fieldPath": "x", "increment": {"mapValue": {"fields": {"k": U}}}}])))
+case("a maximum without a type", "POST", B + ":commit", commit({"transform": {"document": NAME + "/fz/a1", "fieldTransforms": [{"fieldPath": "x", "maximum": U}]}}))
+case("an array union holding a value without a type", "POST", B + ":commit", commit(upd("fz/a1", {}, updateTransforms=[{"fieldPath": "x", "appendMissingElements": {"values": [U]}}])))
+case("an array removal holding a value without a type", "POST", B + ":commit", commit({"transform": {"document": NAME + "/fz/a1", "fieldTransforms": [{"fieldPath": "x", "removeAllFromArray": {"values": [i(1), U]}}]}}))
+case("an invalid transform path before an operand without a type", "POST", B + ":commit", commit(upd("fz/a1", {}, updateTransforms=[{"fieldPath": "a..b", "increment": U}])))
+case("an operand without a type before nested transforms", "POST", B + ":commit", commit(upd("fz/a1", {}, updateTransforms=[{"fieldPath": "a", "increment": i(1)}, {"fieldPath": "a.b", "increment": U}])))
+case("values without a type write nothing", "GET", B + "/fz/a1")
 
 
 def norm(text):

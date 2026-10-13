@@ -354,6 +354,48 @@ case("is-null on __name__ next to an inequality", q("p", where_=OR(ff("tags", "L
 case("is-nan on __name__ and an order after the key", q("p", where_=uf("__name__", "IS_NAN"), order=[asc("__name__"), asc("b")]))
 case("array-contains on __name__ and duplicate orders", q("p", where_=ff("__name__", "ARRAY_CONTAINS", ref("p/p1")), order=[asc("a"), asc("a")]))
 case("array-contains-any on __name__ and a negative limit", q("p", where_=ff("__name__", "ARRAY_CONTAINS_ANY", arr(ref("p/p1"))), limit=-1))
+# A value without a type (`{}`, or no value at all) cannot be converted: in a filter, anywhere in
+# its value, after the filter's field and before its operator; in a cursor, after the count of
+# its values (a query vector's are in find_nearest.py). A field filter reads its field, its
+# value, then its operator; a unary filter its field, then its operator. An empty path is
+# "Invalid empty property path string." wherever a query names a field.
+UNSET = {}
+def ffv(path, op, *value):
+    out = {"op": op}
+    if path is not None:
+        out["field"] = f(path)
+    if value:
+        out["value"] = value[0]
+    return {"fieldFilter": out}
+case("a filter without a value", q("p", where_=ffv("a", "EQUAL")))
+case("a filter with a value without a type", q("p", where_=ffv("a", "EQUAL", UNSET)))
+case("in with an element without a type", q("p", where_=ff("a", "IN", arr(i(1), UNSET))))
+case("a map holding a value without a type", q("p", where_=ff("a", "EQUAL", mp(k=UNSET))))
+case("a nested array holding a value without a type", q("p", where_=ff("a", "EQUAL", arr(arr(UNSET)))))
+case("in without a value", q("p", where_=ffv("a", "IN")))
+case("in with 31 values, the last without a type", q("p", where_=ff("a", "IN", arr(*([i(1)] * 30 + [UNSET])))))
+case("__name__ without a value", q("p", where_=ffv("__name__", "EQUAL")))
+case("an invalid path and no value", q("p", where_=ffv("a..b", "EQUAL")))
+case("no field and no value", q("p", where_=ffv(None, "EQUAL")))
+case("no operator and no value", q("p", where_=ffv("a", "OPERATOR_UNSPECIFIED")))
+case("no operator and an invalid path", q("p", where_=ffv("a..b", "OPERATOR_UNSPECIFIED", i(1))))
+case("no operator and no field", q("p", where_=ffv(None, "OPERATOR_UNSPECIFIED", i(1))))
+case("no value, then an invalid path", q("p", where_=AND(ffv("a", "EQUAL"), ff("b..c", "EQUAL", i(1)))))
+case("no value, then an empty filter", q("p", where_=AND(ffv("a", "EQUAL"), {})))
+case("no value, then an invalid order", q("p", where_=ffv("a", "EQUAL"), order=[asc("a..b")]))
+case("no value and a reserved collection ID", q("__x__", where_=ffv("a", "EQUAL")))
+case("two array-contains, one without a value", q("p", where_=AND(OR(ff("tags", "ARRAY_CONTAINS_ANY", arr(UNSET)), ffv("b", "ARRAY_CONTAINS")))))
+case("a cursor value without a type", q("p", order=[asc("a")], start=cur(UNSET, before=True)))
+case("a cursor value without a type, and too many values", q("p", order=[asc("a")], start=cur(UNSET, i(1), before=True)))
+case("a cursor value without a type on __name__", q("p", order=[asc("__name__")], start=cur(UNSET, before=True)))
+case("a cursor value without a type, and duplicate orders", q("p", order=[asc("a"), asc("a")], start=cur(UNSET, before=True)))
+case("a unary filter without a field", q("p", where_={"unaryFilter": {"op": "IS_NULL"}}))
+case("a unary filter without a field or an operator", q("p", where_={"unaryFilter": {"op": "OPERATOR_UNSPECIFIED"}}))
+case("a unary filter with an invalid path and no operator", q("p", where_=uf("a..b", "OPERATOR_UNSPECIFIED")))
+case("a unary filter with an empty path", q("p", where_=uf("", "IS_NULL")))
+case("a filter with an empty path", q("p", where_=ff("", "EQUAL", i(1))))
+case("an order with an empty path", q("p", order=[{"field": {}}]))
+case("a projection with an empty path", q("p", select={"fields": [{}]}))
 
 # --- equality on __name__ next to inequalities (#74) -----------------------------------------
 # Refused unless __name__ has an inequality too; checked after the other filter checks, and

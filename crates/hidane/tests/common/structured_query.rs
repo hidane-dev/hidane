@@ -54,7 +54,9 @@ fn filter(json: &Json) -> Filter {
                 .as_str()
                 .and_then(unary_filter::Operator::from_str_name)
                 .map_or(0, |op| op as i32),
-            operand_type: Some(unary_filter::OperandType::Field(field(&u["field"]))),
+            operand_type: u
+                .get("field")
+                .map(|f| unary_filter::OperandType::Field(field(f))),
         })
     };
     Filter {

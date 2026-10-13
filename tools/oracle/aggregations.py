@@ -156,6 +156,8 @@ case("a reserved alias and an order without a collection", {"orderBy": [{"field"
 case("a sum of __name__ and duplicate orders", q("ints", orderBy=[{"field": f("v")}, {"field": f("v")}]), [total("__name__", "s")])
 case("a query vector that is not a vector and no aggregations", {"findNearest": {"queryVector": {"arrayValue": {}}}}, [])
 case("a cursor with too many values and a duplicate alias", {"startAt": {"values": [i(1)]}}, [count("a"), count("a")])
+# A filter value without a type is refused with what the query names, before the list (#262).
+case("a filter without a value and no aggregations", q("ints", where={"fieldFilter": {"field": f("v"), "op": "EQUAL"}}), [])
 
 
 def fill(value):

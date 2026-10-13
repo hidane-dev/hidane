@@ -58,6 +58,11 @@ impl Field {
         if path == "__name__" {
             return Ok(Self::Name);
         }
+        if path.is_empty() {
+            return Err(Status::invalid_argument(
+                "Invalid empty property path string.",
+            ));
+        }
         FieldPath::parse(path)
             .map(Self::Path)
             .map_err(Status::invalid_argument)
@@ -186,14 +191,10 @@ impl Nearest {
     /// The query vector, read with the rest of what the query names, before an aggregation's
     /// list is checked (#262).
     fn target(find: &FindNearest) -> Result<Vec<f64>, Status> {
-        match find
-            .query_vector
-            .as_ref()
-            .and_then(|v| v.value_type.as_ref())
-        {
-            None => Err(Status::invalid_argument(
-                "Cannot convert firestore.v1.Value with type unset.",
-            )),
+        let vector = find.query_vector.clone().unwrap_or_default();
+        validate::typed(&vector)?;
+        match vector.value_type.as_ref() {
+            None => Err(validate::unset()),
             Some(ValueType::MapValue(map)) if is_vector(map) => validate::vector(map),
             Some(_) => Err(Status::invalid_argument(
                 "Query Value must be of type vector.",
@@ -712,8 +713,12 @@ fn parse_filter(filter: &structured_query::Filter) -> Result<Option<Filter>, Sta
             }
             Ok((!filters.is_empty()).then(|| combine(filters)))
         }
+        // Its field, then its value (which has a type, #262), then its operator.
         Some(FilterType::FieldFilter(field_filter)) => {
             use field_filter::Operator as F;
+            let field = Field::parse(field_filter.field.as_ref())?;
+            let value = field_filter.value.clone().unwrap_or_default();
+            validate::typed(&value)?;
             let op = match F::try_from(field_filter.op) {
                 Ok(F::LessThan) => Op::Less,
                 Ok(F::LessThanOrEqual) => Op::LessOrEqual,
@@ -729,8 +734,7 @@ fn parse_filter(filter: &structured_query::Filter) -> Result<Option<Filter>, Sta
                     return Err(Status::invalid_argument("Unknown FieldFilter operator."));
                 }
             };
-            let field = Field::parse(field_filter.field.as_ref())?;
-            let value = normalized(field_filter.value.clone().unwrap_or_default());
+            let value = normalized(value);
             if let Some((name, limit)) = match op {
                 Op::In => Some(("IN", MAX_IN)),
                 Op::ArrayContainsAny => Some(("ARRAY_CONTAINS_ANY", MAX_IN)),
@@ -765,8 +769,18 @@ fn parse_filter(filter: &structured_query::Filter) -> Result<Option<Filter>, Sta
             }
             Ok(Some(Filter::Compare { field, op, value }))
         }
+        // Its field, then its operator (#262).
         Some(FilterType::UnaryFilter(unary)) => {
             use unary_filter::Operator as U;
+            let Some(unary_filter::OperandType::Field(reference)) = unary.operand_type.as_ref()
+            else {
+                return Err(Status::invalid_argument(
+                    "Unsupported UnaryFilter operand type (non-FIELD).",
+                ));
+            };
+            // A unary filter on `__name__` is refused late, as a key value
+            // (`check_key_values`); until then it is an equality or an inequality on the key.
+            let field = Field::parse(Some(reference))?;
             let op = match U::try_from(unary.op) {
                 Ok(U::IsNan) => UnaryOp::Nan,
                 Ok(U::IsNull) => UnaryOp::Null,
@@ -776,13 +790,6 @@ fn parse_filter(filter: &structured_query::Filter) -> Result<Option<Filter>, Sta
                     return Err(Status::invalid_argument("Unknown UnaryFilter operator."));
                 }
             };
-            let unary_filter::OperandType::Field(reference) = unary
-                .operand_type
-                .as_ref()
-                .ok_or_else(|| Status::invalid_argument("Unknown UnaryFilter operator."))?;
-            // A unary filter on `__name__` is refused late, as a key value
-            // (`check_key_values`); until then it is an equality or an inequality on the key.
-            let field = Field::parse(Some(reference))?;
             Ok(Some(Filter::Unary { field, op }))
         }
     }
@@ -1143,7 +1150,8 @@ fn filters_a_property(filter: &Filter) -> bool {
     }
 }
 
-/// A cursor holds at most one value per explicit ordering; `__name__` takes references.
+/// A cursor holds at most one value per explicit ordering, each with a type (#262);
+/// `__name__` takes references.
 fn parse_cursor(cursor: &Cursor, explicit: &[Order]) -> Result<Bound, Status> {
     if cursor.values.len() > explicit.len() {
         return Err(Status::invalid_argument("Cursor has too many values."));
@@ -1153,6 +1161,7 @@ fn parse_cursor(cursor: &Cursor, explicit: &[Order]) -> Result<Bound, Status> {
         .iter()
         .zip(explicit)
         .map(|(value, order)| {
+            validate::typed(value)?;
             if order.field == Field::Name {
                 if !matches!(value.value_type, Some(ValueType::ReferenceValue(_))) {
                     return Err(Status::invalid_argument(

@@ -1,8 +1,9 @@
 //! Checks on document contents, with the official emulator's messages.
 //!
 //! The official emulator checks a commit in passes (`tools/oracle/commit_checks.py`): the names
-//! of every write first (`names`, `field_path`, `transform`: reserved names at any depth, the
-//! types of special values and the shapes of vectors, field paths, transforms' operands), the
+//! of every write first (`names`, `field_path`, `transform`: reserved names and values without
+//! a type at any depth, the types of special values and the shapes of vectors, field paths,
+//! transforms' operands), the
 //! values of every write later (`values`: name lengths, nested arrays, vectors' elements, value
 //! lengths, depth), the size of each document when it is applied (`size`).
 
@@ -31,8 +32,8 @@ const MAX_NAME_BYTES: usize = 1500;
 const MAX_DEPTH: usize = 20;
 const MAX_DOCUMENT_BYTES: usize = 1_048_576;
 
-/// The names in `fields`, in order and depth first: reserved names, and the special values
-/// (maps with a `__type__` key) they spell.
+/// The names in `fields`, in order and depth first: reserved names, values without a type
+/// ([`unset`]), and the special values (maps with a `__type__` key) they spell.
 pub fn names(fields: &Fields) -> Result<(), Status> {
     for (name, value) in fields {
         if reserved_name(name) {
@@ -47,11 +48,13 @@ pub fn names(fields: &Fields) -> Result<(), Status> {
 
 fn value_names(value: &Value) -> Result<(), Status> {
     match &value.value_type {
+        None => Err(unset()),
         Some(ValueType::ArrayValue(array)) => array.values.iter().try_for_each(value_names),
         // A `__type__` key spells a special value on the wire; only vectors exist. A vector's
         // shape is checked here, its elements with the values; another type is an invalid
-        // nested entity, also with the values.
+        // nested entity, also with the values. Every value in the map is read first.
         Some(ValueType::MapValue(map)) if map.fields.contains_key(TYPE_KEY) => {
+            map.fields.values().try_for_each(typed)?;
             match map.fields[TYPE_KEY].value_type.as_ref() {
                 Some(ValueType::StringValue(t)) if t == VECTOR_TYPE => vector(map).map(drop),
                 Some(ValueType::StringValue(_)) => Ok(()),
@@ -73,6 +76,22 @@ fn value_names(value: &Value) -> Result<(), Status> {
             Ok(())
         }
         _ => Ok(()),
+    }
+}
+
+/// A value without a type (`{}` in JSON), which the official emulator cannot convert, in a
+/// document, a transform's operand, a filter, a cursor or a query vector (#262).
+pub fn unset() -> Status {
+    Status::invalid_argument("Cannot convert firestore.v1.Value with type unset.")
+}
+
+/// `value` and every value in it have a type ([`unset`]), checked depth first in order.
+pub fn typed(value: &Value) -> Result<(), Status> {
+    match &value.value_type {
+        None => Err(unset()),
+        Some(ValueType::ArrayValue(array)) => array.values.iter().try_for_each(typed),
+        Some(ValueType::MapValue(map)) => map.fields.values().try_for_each(typed),
+        Some(_) => Ok(()),
     }
 }
 

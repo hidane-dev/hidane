@@ -3298,6 +3298,30 @@
     "status": "INVALID_ARGUMENT",
     "message": "Cursor has too many values."
    }
+  },
+  {
+   "name": "a filter without a value and no aggregations",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL"
+     }
+    }
+   },
+   "aggregations": [],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Cannot convert firestore.v1.Value with type unset."
+   }
   }
  ]
 }
