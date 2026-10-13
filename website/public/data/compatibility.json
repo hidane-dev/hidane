@@ -1,0 +1,737 @@
+{
+ "schema_version": 1,
+ "generated_by": "tools/parity/site_data.py",
+ "about": "What hidane's recorded results and tests show about its compatibility with the official Cloud Firestore emulator, its SDKs and firebase-tools. Generated from docs/compatibility.json, docs/sdk-certification.json and docs/parity-exceptions.json; see their pages for how each value is made.",
+ "sources": {
+  "report": "https://github.com/hidane-dev/hidane/blob/main/docs/compatibility.json",
+  "sdk_certification": "https://github.com/hidane-dev/hidane/blob/main/docs/sdk-certification.md",
+  "parity": "https://github.com/hidane-dev/hidane/blob/main/docs/parity.md",
+  "differences": "https://github.com/hidane-dev/hidane/blob/main/docs/parity-exceptions.md"
+ },
+ "hidane": {
+  "version": "0.4.0",
+  "series": "0.4.x"
+ },
+ "official_emulator": {
+  "product": "cloud-firestore-emulator",
+  "release": "1.22.0",
+  "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c"
+ },
+ "matrix": [
+  {
+   "hidane": "0.4.x",
+   "firebase_tools": "15.33.0",
+   "official_emulator": "1.22.0",
+   "status": "verified",
+   "evidence": [
+    "20,224 recorded answers of the official emulator v1.22.0 in 41 fixtures, replayed against hidane by cargo test",
+    "33 comparisons of SDK transcripts with the official emulator v1.22.0's: 19 identical, 14 documented differences",
+    "2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers"
+   ]
+  }
+ ],
+ "statuses": [
+  {
+   "key": "verified",
+   "label": "Verified"
+  },
+  {
+   "key": "partially-verified",
+   "label": "Partially verified"
+  },
+  {
+   "key": "not-verified",
+   "label": "Not verified"
+  }
+ ],
+ "clients": [
+  {
+   "id": "firebase-js-node",
+   "client": "firebase-js-sdk imported in Node",
+   "ecosystem": "npm",
+   "package": "firebase",
+   "platform": "Node.js",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "partially-verified",
+   "version": "13.0.0",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "documents and writes",
+    "queries",
+    "transactions",
+    "listeners",
+    "going offline and resuming"
+   ],
+   "not_exercised": [
+    "aggregation queries"
+   ],
+   "gaps": [
+    "aggregation queries not compared"
+   ],
+   "last_recorded": "2026-10-13",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "sdk-find-nearest",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-find-nearest-hidane.json"
+    },
+    {
+     "name": "sdk-listen",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-listen-hidane.json"
+    },
+    {
+     "name": "sdk-listen-resume",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-listen-resume-hidane.json"
+    },
+    {
+     "name": "sdk-rules-unit-testing",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-rules-unit-testing-hidane.json"
+    },
+    {
+     "name": "sdk-web-transactions",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-web-transactions-hidane.json"
+    },
+    {
+     "name": "sdk-web-writes",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-web-writes-hidane.json"
+    }
+   ]
+  },
+  {
+   "id": "firebase-js-lite",
+   "client": "firebase-js-sdk Lite",
+   "ecosystem": "npm",
+   "package": "firebase",
+   "platform": "Node.js",
+   "transport": [
+    "REST"
+   ],
+   "status": "verified",
+   "version": "13.0.0",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "transactions"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-10",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "sdk-rest",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-rest-hidane.json"
+    }
+   ]
+  },
+  {
+   "id": "firebase-js-browser",
+   "client": "firebase-js-sdk in the browser",
+   "ecosystem": "npm",
+   "package": "firebase",
+   "platform": "Chromium",
+   "transport": [
+    "WebChannel",
+    "REST"
+   ],
+   "status": "verified",
+   "version": "13.0.0",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "transactions",
+    "listeners"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-13",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "browser-rules",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/browser-rules-hidane.json"
+    },
+    {
+     "name": "browser-webchannel",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/browser-webchannel-hidane.json"
+    },
+    {
+     "name": "js-sdk-browser",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/js-sdk-browser-hidane.json"
+    }
+   ]
+  },
+  {
+   "id": "admin-node",
+   "client": "firebase-admin (Node) / @google-cloud/firestore",
+   "ecosystem": "npm",
+   "package": "@google-cloud/firestore",
+   "platform": "Node.js",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "verified",
+   "version": "9.3.1",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "vector search",
+    "transactions",
+    "listeners"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-10",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "sdk-aggregations",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-aggregations-hidane.json"
+    },
+    {
+     "name": "sdk-documents",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-documents-hidane.json"
+    },
+    {
+     "name": "sdk-find-nearest",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-find-nearest-hidane.json"
+    },
+    {
+     "name": "sdk-listen",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-listen-hidane.json"
+    },
+    {
+     "name": "sdk-queries",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-queries-hidane.json"
+    },
+    {
+     "name": "sdk-transactions",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-transactions-hidane.json"
+    }
+   ]
+  },
+  {
+   "id": "admin-node-prefer-rest",
+   "client": "@google-cloud/firestore with preferRest",
+   "ecosystem": "npm",
+   "package": "@google-cloud/firestore",
+   "platform": "Node.js",
+   "transport": [
+    "REST",
+    "gRPC"
+   ],
+   "status": "not-verified",
+   "version": null,
+   "official_emulator": [],
+   "exercised": [],
+   "not_exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "transactions",
+    "listeners"
+   ],
+   "gaps": [],
+   "last_recorded": null,
+   "tracking": null,
+   "evidence": []
+  },
+  {
+   "id": "rules-unit-testing",
+   "client": "@firebase/rules-unit-testing",
+   "ecosystem": "npm",
+   "package": "@firebase/rules-unit-testing",
+   "platform": "Node.js, Chromium",
+   "transport": [
+    "gRPC",
+    "WebChannel",
+    "REST"
+   ],
+   "status": "verified",
+   "version": "6.0.0",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "Security Rules as signed-in, signed-out and rules-disabled users",
+    "clearing data"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-13",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "browser-rules",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/browser-rules-hidane.json"
+    },
+    {
+     "name": "sdk-auth",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-auth-hidane.json"
+    },
+    {
+     "name": "sdk-clear",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-clear-hidane.json"
+    },
+    {
+     "name": "sdk-rules-unit-testing",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-rules-unit-testing-hidane.json"
+    }
+   ]
+  },
+  {
+   "id": "firebase-tools",
+   "client": "firebase-tools",
+   "ecosystem": "npm",
+   "package": "firebase-tools",
+   "platform": "Node.js",
+   "transport": [
+    "CLI"
+   ],
+   "status": "verified",
+   "version": "15.33.0",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "export and import",
+    "launch under firebase emulators:exec"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-13",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "export-import",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/export-import-hidane.json"
+    },
+    {
+     "name": "functions-triggers",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/functions-triggers-hidane.json"
+    }
+   ]
+  },
+  {
+   "id": "firebase-functions",
+   "client": "firebase-functions under the Functions emulator",
+   "ecosystem": "npm",
+   "package": "firebase-functions",
+   "platform": "Node.js",
+   "transport": [
+    "CLI"
+   ],
+   "status": "verified",
+   "version": "6.6.0",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "Firestore triggers, v1 and v2"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-13",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "functions-triggers",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/functions-triggers-hidane.json"
+    }
+   ]
+  },
+  {
+   "id": "python",
+   "client": "google-cloud-firestore (Python)",
+   "ecosystem": "pypi",
+   "package": "google-cloud-firestore",
+   "platform": "Python",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "verified",
+   "version": "2.34.1",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "vector search",
+    "transactions",
+    "listeners"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-13",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "sdk-python-documents",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-python-documents-hidane.json"
+    },
+    {
+     "name": "sdk-python-listen",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-python-listen-hidane.json"
+    },
+    {
+     "name": "sdk-python-queries",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-python-queries-hidane.json"
+    },
+    {
+     "name": "sdk-python-transactions",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-python-transactions-hidane.json"
+    }
+   ]
+  },
+  {
+   "id": "go",
+   "client": "google-cloud-go firestore",
+   "ecosystem": "go",
+   "package": "cloud.google.com/go/firestore",
+   "platform": "Go",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "verified",
+   "version": "1.26.0",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "vector search",
+    "transactions",
+    "listeners"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-13",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "sdk-go-documents",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-go-documents-hidane.json"
+    },
+    {
+     "name": "sdk-go-listen",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-go-listen-hidane.json"
+    },
+    {
+     "name": "sdk-go-queries",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-go-queries-hidane.json"
+    },
+    {
+     "name": "sdk-go-transactions",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-go-transactions-hidane.json"
+    }
+   ]
+  },
+  {
+   "id": "java",
+   "client": "java-firestore",
+   "ecosystem": "maven",
+   "package": "com.google.cloud:google-cloud-firestore",
+   "platform": "JVM",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "verified",
+   "version": "3.49.0",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "vector search",
+    "transactions",
+    "listeners"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-13",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "sdk-java-documents",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-java-documents-hidane.json"
+    },
+    {
+     "name": "sdk-java-listen",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-java-listen-hidane.json"
+    },
+    {
+     "name": "sdk-java-queries",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-java-queries-hidane.json"
+    },
+    {
+     "name": "sdk-java-transactions",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-java-transactions-hidane.json"
+    }
+   ]
+  },
+  {
+   "id": "flutter-web",
+   "client": "FlutterFire cloud_firestore on the web",
+   "ecosystem": "pub",
+   "package": "cloud_firestore",
+   "platform": "Chromium",
+   "transport": [
+    "WebChannel",
+    "REST"
+   ],
+   "status": "verified",
+   "version": "6.10.0",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "transactions",
+    "listeners"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-13",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "flutter-web",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/flutter-web-hidane.json"
+    }
+   ]
+  },
+  {
+   "id": "flutter-native",
+   "client": "FlutterFire cloud_firestore on Android, iOS, macOS, Windows",
+   "ecosystem": "pub",
+   "package": "cloud_firestore",
+   "platform": "Android, iOS, macOS, Windows",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "not-verified",
+   "version": null,
+   "official_emulator": [],
+   "exercised": [],
+   "not_exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "transactions",
+    "listeners"
+   ],
+   "gaps": [],
+   "last_recorded": null,
+   "tracking": "https://github.com/hidane-dev/hidane/issues/187",
+   "evidence": []
+  },
+  {
+   "id": "ios",
+   "client": "firebase-ios-sdk",
+   "ecosystem": "swiftpm",
+   "package": "FirebaseFirestore",
+   "platform": "iOS, macOS, tvOS, watchOS",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "not-verified",
+   "version": null,
+   "official_emulator": [],
+   "exercised": [],
+   "not_exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "transactions",
+    "listeners"
+   ],
+   "gaps": [],
+   "last_recorded": null,
+   "tracking": "https://github.com/hidane-dev/hidane/issues/187",
+   "evidence": []
+  },
+  {
+   "id": "android",
+   "client": "firebase-android-sdk",
+   "ecosystem": "maven",
+   "package": "com.google.firebase:firebase-firestore",
+   "platform": "Android",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "not-verified",
+   "version": null,
+   "official_emulator": [],
+   "exercised": [],
+   "not_exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "transactions",
+    "listeners"
+   ],
+   "gaps": [],
+   "last_recorded": null,
+   "tracking": "https://github.com/hidane-dev/hidane/issues/187",
+   "evidence": []
+  },
+  {
+   "id": "cpp-unity",
+   "client": "Firebase C++ SDK / Unity",
+   "ecosystem": "other",
+   "package": "firebase-cpp-sdk",
+   "platform": "iOS, Android, desktop",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "not-verified",
+   "version": null,
+   "official_emulator": [],
+   "exercised": [],
+   "not_exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "transactions",
+    "listeners"
+   ],
+   "gaps": [],
+   "last_recorded": null,
+   "tracking": null,
+   "evidence": []
+  }
+ ],
+ "parity": {
+  "fixtures": 41,
+  "answers": 20224,
+  "levels": {
+   "full": 12029,
+   "reasons": 3912,
+   "part": 731,
+   "status": 3401,
+   "codes": 30,
+   "none": 1,
+   "differs": 120
+  },
+  "transcripts": {
+   "pairs": 31,
+   "comparisons": 33,
+   "identical": 19,
+   "documented": 14,
+   "unexplained": 0,
+   "where": "docs/parity.md"
+  }
+ },
+ "browser_suite": {
+  "commit": "8a7e7fda925c7355f98cb3c4dca1bfaed73ab787",
+  "official": {
+   "path": "results/js-sdk-browser-official-v1.22.0.json",
+   "passed": 1183,
+   "failed": 0,
+   "skipped": 739
+  },
+  "hidane": {
+   "path": "results/js-sdk-browser-hidane.json",
+   "passed": 1183,
+   "failed": 0,
+   "skipped": 739
+  },
+  "result": "identical"
+ },
+ "differences": {
+  "intentional": {
+   "count": 68,
+   "by_kind": {
+    "bug-for-bug": 1,
+    "more-correct": 43,
+    "equivalent": 18,
+    "limitation": 6
+   }
+  },
+  "production": {
+   "count": 14,
+   "by_kind": {
+    "bug-for-bug": 12,
+    "more-correct": 2
+   }
+  },
+  "kinds": [
+   {
+    "key": "bug-for-bug",
+    "meaning": "hidane does what the official emulator does, where production Firestore differs."
+   },
+   {
+    "key": "more-correct",
+    "meaning": "hidane departs from the official emulator to do what production Firestore or the documented contract does, or to fix what is a bug whatever production does."
+   },
+   {
+    "key": "equivalent",
+    "meaning": "hidane departs in a detail clients do not observe or cannot rely on (wording, transport, timing, order, opaque formats), with the same outcome."
+   },
+   {
+    "key": "limitation",
+    "meaning": "hidane departs because it does less, or bounds what the official emulator does not."
+   }
+  ]
+ }
+}
