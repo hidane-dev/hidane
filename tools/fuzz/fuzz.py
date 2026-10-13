@@ -108,10 +108,17 @@ class Session:
         hidane = diff.run(self.args.hidane, case, self.args.timeout)
         return official, hidane
 
-    def reproduces(self, signature):
+    def unexplained(self, area, signature, found):
+        """Whether `found` is the difference `signature` and no rule accepts it. A smaller case
+        can keep the signature (a message template, a kind of reason) and yet become one a rule
+        accepts, such as a denial whose reasons are now a subset of the official one's (D008):
+        minimising must not turn a difference into one the run would not have reported."""
+        return (found is not None and found["signature"] == signature
+                and self.exceptions.match(area, found) is None)
+
+    def reproduces(self, area, signature):
         def test(candidate):
-            found = diff.compare(candidate, *self.both(candidate))
-            return found is not None and found["signature"] == signature
+            return self.unexplained(area, signature, diff.compare(candidate, *self.both(candidate)))
         return test
 
     def check_alive(self, found):
@@ -162,7 +169,7 @@ class Session:
             entry["exception"] = rule["exception"]
             self.by_area[area]["accepted"] += 1
             return
-        if not self.reproduces(signature)(case):
+        if not self.reproduces(area, signature)(case):
             entry["outcome"] = "flaky"
             self.by_area[area]["flaky"] += 1
             return
@@ -171,11 +178,11 @@ class Session:
         deadline = time.monotonic() + self.args.minimize_seconds
         if self.deadline is not None:
             deadline = min(deadline, self.deadline + self.args.minimize_seconds)
-        small, tests = shrink.minimize(case, found["step"], self.reproduces(signature),
+        small, tests = shrink.minimize(case, found["step"], self.reproduces(area, signature),
                                        self.args.minimize_budget, deadline)
         official, hidane = self.both(small)
         final = diff.compare(small, official, hidane)
-        if final is None or final["signature"] != signature:
+        if not self.unexplained(area, signature, final):
             small, (official, hidane) = case, self.both(case)
             final = diff.compare(case, official, hidane) or found
         entry["minimized"] = {"steps": len(small["steps"]), "from_steps": len(case["steps"]), "tests": tests}

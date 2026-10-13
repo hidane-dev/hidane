@@ -255,7 +255,12 @@ def classify(step, official, hidane):
         detail = "+".join(sides) + ":" + "/".join(str(s) for s in (o_status, h_status))
     elif o_status != h_status or (o_error and h_error and o_error["status"] != h_error["status"]):
         kind = "status"
+        # The errors' templates too: refusals of different things (an untyped value, a nested
+        # transform) are different differences, even of one request with the same statuses.
         detail = f"{(o_error or {}).get('status')}/{(h_error or {}).get('status')}"
+        templates = [template(e["message"]) for e in (o_error, h_error) if e]
+        if templates:
+            detail += ": " + " | ".join(templates)
     elif o_error and h_error:
         kind = "message"
         detail = template(o_error["message"]) + " | " + template(h_error["message"])

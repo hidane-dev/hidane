@@ -58,7 +58,9 @@ those years in microseconds (precondition messages). It classifies the differenc
 Its signature (`message-commit-0123456789ab`) is the kind, the request (`:commit`,
 `GET document`), both statuses and where or how the answers differ, without the inputs' values:
 messages are compared as templates (`Document "…" has N […]`), a denial as the kinds of reasons
-it lists, a data difference as a path such as `document.fields.*.doubleValue`. Other seeds and
+it lists, a status difference with the templates of the errors either side gave (refusing an
+untyped value and refusing nested transforms are two differences, even of `:commit` with the same
+statuses), a data difference as a path such as `document.fields.*.doubleValue`. Other seeds and
 other areas that hit the same problem get the same signature, which is what the summary, the
 artifacts and the issues deduplicate on.
 
@@ -80,7 +82,9 @@ the entry's text.
 A new difference is run again first: one that does not show twice is reported as not
 reproduced (timing, the lookups docs/parity-exceptions.md calls unpredictable) and goes no
 further. Then `shrink.py` keeps only what it needs, checking each candidate on both emulators
-for the same signature: the steps after the one that differs go, ddmin removes the earlier steps
+for the same signature, still not accepted by a rule (a smaller case can keep the signature and
+become one `exceptions.json` accepts, such as a denial whose reasons are now a subset of the
+official one's): the steps after the one that differs go, ddmin removes the earlier steps
 it does not need, then each body is reduced top down (list elements by ddmin, object keys one at
 a time, long strings halved), repeated while a pass removes something (a smaller body can make an
 earlier step unneeded). `--minimize-budget` and `--minimize-seconds` bound it.
