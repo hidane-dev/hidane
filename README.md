@@ -135,8 +135,9 @@ anything: `firebase.json` and the emulators it starts, the rules, the SDK and fi
 versions, and the CI workflows and scripts that start the emulators, each marked verified, not
 verified or incompatible. `hidane migrate` shows the changes as a diff (`hidane exec --` before
 `firebase emulators:exec`, `hidane-dev/setup-hidane` where `actions/setup-java` served only the
-Firestore emulator) and makes them with `--apply`. [`docs/migrating.md`](docs/migrating.md)
-explains both.
+Firestore emulator) and makes them with `--apply`; the
+[`hidane-dev/setup-hidane/migrate`](https://github.com/hidane-dev/setup-hidane#migrating-to-hidane-in-a-pull-request)
+action opens them as a pull request. [`docs/migrating.md`](docs/migrating.md) explains all three.
 
 ## Documentation
 

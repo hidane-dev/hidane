@@ -114,6 +114,9 @@ it can be configured. The registries and the GitHub settings below are set up on
 The GitHub Action [`hidane-dev/setup-hidane`](https://github.com/hidane-dev/setup-hidane) is
 released from its own repository, with a moving `v1` tag. Listing its releases on GitHub
 Marketplace, and releasing it later, is described in [setup-hidane-marketplace.md](setup-hidane-marketplace.md).
+Its `migrate` sub-action runs `hidane migrate`, which is in the releases after 0.4.0; until the
+first of them, setup-hidane's test workflow builds hidane from a commit of `main`. After that
+release, point the test at it and drop the build.
 
 [cargo-dist](https://github.com/axodotdev/cargo-dist) was considered (#56) and not adopted: the
 workflow above is about one hundred lines that the project controls, with no generator to keep in
