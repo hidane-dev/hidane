@@ -19,7 +19,7 @@
 
 <img alt="A terminal recording: the same 200 Firestore tests under firebase emulators:exec, first on the official emulator, then with hidane exec in front; both pass, and the hidane run finishes sooner." src="https://raw.githubusercontent.com/hidane-dev/hidane/main/docs/assets/demo.gif" width="100%">
 
-<sub>Recorded on a laptop, so its timings are that machine's. The figures below are medians from the canonical benchmark.</sub>
+<sub>Recorded by the <a href=".github/workflows/demo.yml">Demo workflow</a> on a GitHub-hosted runner (4 vCPUs; Java 21, firebase-tools 15.33.0, hidane v0.5.0), so its timings are that machine's. The figures below are medians from the canonical benchmark.</sub>
 
 <p><strong>Run your Firestore tests under <code>firebase-tools</code> without installing Java.</strong></p>
 
