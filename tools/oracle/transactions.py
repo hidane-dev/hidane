@@ -260,6 +260,13 @@ SCENARIOS = [
         step("aggregate", "ended T aggregates nothing", txn="T", structuredAggregationQuery={}),
         step("aggregate", "ended T sums without a collection", txn="T",
              structuredAggregationQuery={"structuredQuery": {}, "aggregations": [{"sum": {"field": {"fieldPath": "a"}}}]}),
+        # The operators of the filter come before the transaction.
+        step("query", "ended T queries with two negations", txn="T",
+             structuredQuery={"from": [{"collectionId": "c"}], "where": {"compositeFilter": {"op": "AND", "filters": [
+                 {"fieldFilter": {"op": "NOT_EQUAL"}}, {"unaryFilter": {"op": "IS_NOT_NAN"}}]}}}),
+        step("aggregate", "ended T counts with not-in in an or", txn="T",
+             structuredAggregationQuery={"structuredQuery": {"from": [{"collectionId": "c"}], "where": {"compositeFilter": {"op": "OR", "filters": [
+                 {"fieldFilter": {"op": "NOT_IN"}}]}}}, "aggregations": [{"count": {}}]}),
         step("begin", "begin U", **{"as": "U"}),
         step("query", "U queries without a query", txn="U", structuredQuery=None),
         step("aggregate", "U aggregates without a query", txn="U", structuredAggregationQuery=None),

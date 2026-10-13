@@ -2384,6 +2384,76 @@
      }
     },
     {
+     "op": "query",
+     "label": "ended T queries with two negations",
+     "txn": "T",
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "where": {
+       "compositeFilter": {
+        "op": "AND",
+        "filters": [
+         {
+          "fieldFilter": {
+           "op": "NOT_EQUAL"
+          }
+         },
+         {
+          "unaryFilter": {
+           "op": "IS_NOT_NAN"
+          }
+         }
+        ]
+       }
+      }
+     },
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Only a single 'NOT_EQUAL', 'NOT_IN', 'IS_NOT_NAN', or 'IS_NOT_NULL' filter allowed per query.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "aggregate",
+     "label": "ended T counts with not-in in an or",
+     "txn": "T",
+     "structuredAggregationQuery": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "compositeFilter": {
+         "op": "OR",
+         "filters": [
+          {
+           "fieldFilter": {
+            "op": "NOT_IN"
+           }
+          }
+         ]
+        }
+       }
+      },
+      "aggregations": [
+       {
+        "count": {}
+       }
+      ]
+     },
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "'NOT_IN' cannot be used in the same query with 'IN', 'ARRAY_CONTAINS_ANY' or 'OR'.",
+      "elapsed": 0.0
+     }
+    },
+    {
      "op": "begin",
      "label": "begin U",
      "as": "U",

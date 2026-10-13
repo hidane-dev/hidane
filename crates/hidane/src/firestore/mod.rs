@@ -911,8 +911,12 @@ impl Firestore for FirestoreService {
         let database = parent.database;
         // `explain_options` is ignored, as on the official emulator: the same results, no
         // explain metrics.
-        // The transaction the request reads in comes first: a malformed or ended one is
-        // reported before anything about the query (`tools/oracle/transactions.py`, #262).
+        // The operators of the query's filter come first, then the transaction the request
+        // reads in: a malformed or ended one is reported before anything else about the query
+        // (`tools/oracle/transactions.py`, `tools/oracle/queries.py`, #262).
+        if let Some(run_query_request::QueryType::StructuredQuery(structured)) = &req.query_type {
+            query::check_operators(structured)?;
+        }
         if let Some(run_query_request::ConsistencySelector::Transaction(t)) =
             &req.consistency_selector
         {
@@ -998,9 +1002,21 @@ impl Firestore for FirestoreService {
         let database = parent.database;
         // `explain_options` is ignored, as on the official emulator: the same results, no
         // explain metrics.
-        // As for RunQuery, the transaction first; then the aggregations, before the query they
-        // aggregate (`tools/oracle/aggregations.py`, #262). An aggregation query without a
-        // query aggregates the empty one.
+        // As for RunQuery, the operators of the query's filter, then the transaction. Then the
+        // aggregations are read, the query's parts read, the aggregations checked as a list,
+        // and the rest of the query checked (`tools/oracle/aggregations.py`, #262). An
+        // aggregation query without a query aggregates the empty one.
+        let default = StructuredQuery::default();
+        let structured = match &req.query_type {
+            Some(run_aggregation_query_request::QueryType::StructuredAggregationQuery(q)) => {
+                match &q.query_type {
+                    Some(structured_aggregation_query::QueryType::StructuredQuery(s)) => s,
+                    None => &default,
+                }
+            }
+            None => &default,
+        };
+        query::check_operators(structured)?;
         if let Some(run_aggregation_query_request::ConsistencySelector::Transaction(t)) =
             &req.consistency_selector
         {
@@ -1013,17 +1029,14 @@ impl Firestore for FirestoreService {
                 "Only structured aggregation queries are supported.",
             ));
         };
-        let default = StructuredQuery::default();
-        let structured = match &q.query_type {
-            Some(structured_aggregation_query::QueryType::StructuredQuery(s)) => s,
-            None => &default,
-        };
-        let aggregations = Aggregations::parse(&q.aggregations)?;
-        let mut query = Query::parse_aggregated(
-            parent.path,
-            structured,
-            aggregations.fields().next().is_some(),
-        )?;
+        let read = Aggregations::read(&q.aggregations)?;
+        let reads_fields = read.reads_fields();
+        let mut checked = None;
+        let mut query = Query::parse_aggregated(parent.path, structured, || {
+            checked = Some(read.check()?);
+            Ok(reads_fields)
+        })?;
+        let aggregations = checked.expect("checked while parsing the query");
         self.check_list(&caller, &database, &query)?;
         query.require(aggregations.fields());
         let consistency = match &req.consistency_selector {

@@ -13223,6 +13223,518 @@
    }
   },
   {
+   "name": "two negations and a reserved collection ID",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "__x__"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "NOT_EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "unaryFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "IS_NOT_NULL"
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Only a single 'NOT_EQUAL', 'NOT_IN', 'IS_NOT_NAN', or 'IS_NOT_NULL' filter allowed per query."
+   }
+  },
+  {
+   "name": "two negations without fields",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "op": "NOT_EQUAL"
+        }
+       },
+       {
+        "unaryFilter": {
+         "op": "IS_NOT_NULL"
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Only a single 'NOT_EQUAL', 'NOT_IN', 'IS_NOT_NAN', or 'IS_NOT_NULL' filter allowed per query."
+   }
+  },
+  {
+   "name": "not-in in an or of one filter",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "OR",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "NOT_IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "1"
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "'NOT_IN' cannot be used in the same query with 'IN', 'ARRAY_CONTAINS_ANY' or 'OR'."
+   }
+  },
+  {
+   "name": "not-in in an and of one filter",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "NOT_IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "1"
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "document": "p/p6"
+     },
+     {
+      "document": "p/p2"
+     },
+     {
+      "document": "p/p3"
+     },
+     {
+      "document": "p/p4"
+     },
+     {
+      "document": "p/p5"
+     },
+     {
+      "document": "p/p8",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "not-in in an or, and a negative limit",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "OR",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "NOT_IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "1"
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    "limit": -1
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "'NOT_IN' cannot be used in the same query with 'IN', 'ARRAY_CONTAINS_ANY' or 'OR'."
+   }
+  },
+  {
+   "name": "duplicate orders and a negative limit",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "b"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "b"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "limit": -1
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain duplicate fields b"
+   }
+  },
+  {
+   "name": "__name__ twice in the order",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain more fields after the key"
+   }
+  },
+  {
+   "name": "an inequality, an order by __name__ then b, and a negative limit",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "GREATER_THAN",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "b"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "limit": -1
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain more fields after the key"
+   }
+  },
+  {
+   "name": "a cursor with too many values and a negative limit",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "startAt": {
+     "values": [
+      {
+       "integerValue": "1"
+      },
+      {
+       "integerValue": "2"
+      },
+      {
+       "integerValue": "3"
+      }
+     ],
+     "before": true
+    },
+    "limit": -1
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Cursor has too many values."
+   }
+  },
+  {
+   "name": "an invalid projection path and duplicate orders",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "a..b"
+      }
+     ]
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path \"a..b\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\]|(?:\\\\.))+`)"
+   }
+  },
+  {
+   "name": "an order without a collection and a negative limit",
+   "parent": "",
+   "query": {
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "b"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "limit": -1
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "limit is negative"
+   }
+  },
+  {
+   "name": "a filter and an order without a collection",
+   "parent": "",
+   "query": {
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "b"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "kind is required for all orders except __key__ ascending"
+   }
+  },
+  {
+   "name": "array-contains on m and m.x without a collection",
+   "parent": "",
+   "query": {
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "m"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "m.x"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "FAILED_PRECONDITION",
+    "message": "Only a single array-contains clause is allowed in a query"
+   }
+  },
+  {
+   "name": "duplicate orders and a __name__ filter that is not a key",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "LESS_THAN_OR_EQUAL",
+      "value": {
+       "doubleValue": "Infinity"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain duplicate fields a"
+   }
+  },
+  {
    "name": "a != 1 and __name__ == p3",
    "parent": "",
    "query": {

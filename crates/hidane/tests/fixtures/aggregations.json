@@ -2952,6 +2952,309 @@
     "status": "INVALID_ARGUMENT",
     "message": "The `up_to` value in a COUNT aggregation must be greater than or equal to zero."
    }
+  },
+  {
+   "name": "a sum of an invalid path and two negations",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "NOT_EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "NOT_EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a..b"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Only a single 'NOT_EQUAL', 'NOT_IN', 'IS_NOT_NAN', or 'IS_NOT_NULL' filter allowed per query."
+   }
+  },
+  {
+   "name": "a count up to -1 and a reserved collection ID",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "__x__"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {
+      "upTo": "-1"
+     },
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The `up_to` value in a COUNT aggregation must be greater than or equal to zero."
+   }
+  },
+  {
+   "name": "an aggregation without an operator and an empty filter",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {}
+   },
+   "aggregations": [
+    {
+     "alias": "x"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Operator field in Aggregation is not set."
+   }
+  },
+  {
+   "name": "a sum of an invalid path and a reserved collection ID",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "__x__"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a..b"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path \"a..b\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\]|(?:\\\\.))+`)"
+   }
+  },
+  {
+   "name": "no aggregations and a reserved collection ID",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "__x__"
+     }
+    ]
+   },
+   "aggregations": [],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Collection id \"__x__\" is invalid because it is reserved."
+   }
+  },
+  {
+   "name": "six aggregations and an empty filter",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {}
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "a"
+    },
+    {
+     "count": {},
+     "alias": "b"
+    },
+    {
+     "count": {},
+     "alias": "c"
+    },
+    {
+     "count": {},
+     "alias": "d"
+    },
+    {
+     "count": {},
+     "alias": "e"
+    },
+    {
+     "count": {},
+     "alias": "f"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Unknown Filter type."
+   }
+  },
+  {
+   "name": "a sum of __name__ and an invalid filter path",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a..b"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__name__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path \"a..b\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\]|(?:\\\\.))+`)"
+   }
+  },
+  {
+   "name": "a duplicate alias and a negative limit",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "limit": -1
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "x"
+    },
+    {
+     "count": {},
+     "alias": "x"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation aliases contain duplicate alias: x."
+   }
+  },
+  {
+   "name": "a reserved alias and an order without a collection",
+   "parent": "",
+   "query": {
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      }
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "__x__"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The property.name \"__x__\" is reserved."
+   }
+  },
+  {
+   "name": "a sum of __name__ and duplicate orders",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     {
+      "field": {
+       "fieldPath": "v"
+      }
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__name__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregations are not supported for the property: __key__"
+   }
   }
  ]
 }

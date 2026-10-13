@@ -314,18 +314,23 @@ pub struct Results {
 impl Query {
     /// Validates `query` under `parent`, with the official error messages.
     pub fn parse(parent: ResourcePath, query: &StructuredQuery) -> Result<Self, Status> {
-        Self::parse_aggregated(parent, query, false)
+        Self::parse_aggregated(parent, query, || Ok(false))
     }
 
-    /// Validates the query of an aggregation; `orders_fields` when it has a `sum` or an `avg`,
-    /// which order by their fields: like an explicit order, that needs a collection, checked
-    /// after the limit and the offset and before the filter (`tools/oracle/aggregations.py`,
-    /// #262).
+    /// Validates `query` under `parent` in the official emulator's order
+    /// (`tools/oracle/queries.py`, `tools/oracle/aggregations.py`, #262): the operators of its
+    /// filter ([`check_operators`]); then what each part names and holds (the collection, the
+    /// filter's kinds, paths and values, the orders' and the projection's paths); then
+    /// `aggregations`, an aggregation's own checks, which say whether it has a `sum` or an
+    /// `avg`; then the orders (a key before other fields, duplicates) and the cursors, the
+    /// limit and the offset, whether the orders need a collection (a `sum` or an `avg` orders by
+    /// its field), and the filter as a whole.
     pub fn parse_aggregated(
         parent: ResourcePath,
         query: &StructuredQuery,
-        orders_fields: bool,
+        aggregations: impl FnOnce() -> Result<bool, Status>,
     ) -> Result<Self, Status> {
+        check_operators(query)?;
         let source = match query.from.as_slice() {
             [] => Source::Children,
             [selector] if selector.collection_id.is_empty() => {
@@ -350,31 +355,12 @@ impl Query {
             }
         };
         let kindless = matches!(source, Source::Children | Source::Descendants);
-        let limit = match query.limit {
-            Some(n) if n < 0 => return Err(Status::invalid_argument("limit is negative")),
-            Some(n) => Some(usize::try_from(n).unwrap_or(0)),
-            None => None,
-        };
-        if query.offset < 0 {
-            return Err(Status::invalid_argument("offset is negative"));
-        }
-        let offset = usize::try_from(query.offset).unwrap_or(0);
-        if kindless && orders_fields {
-            return Err(Status::invalid_argument(
-                "kind is required for all orders except __key__ ascending",
-            ));
-        }
-
         let filter = query
             .r#where
             .as_ref()
             .map(parse_filter)
             .transpose()?
             .flatten();
-        if let Some(filter) = &filter {
-            check_filter(filter, kindless)?;
-        }
-
         let explicit = query
             .order_by
             .iter()
@@ -385,13 +371,6 @@ impl Query {
                 })
             })
             .collect::<Result<Vec<_>, Status>>()?;
-        let orders = complete_orders(&explicit, filter.as_ref(), kindless)?;
-
-        let bound =
-            |cursor: Option<&Cursor>| cursor.map(|c| parse_cursor(c, &explicit)).transpose();
-        let start = bound(query.start_at.as_ref())?;
-        let end = bound(query.end_at.as_ref())?;
-
         let projection = query
             .select
             .as_ref()
@@ -405,6 +384,31 @@ impl Query {
                 Ok::<_, Status>(paths)
             })
             .transpose()?;
+
+        let orders_fields = aggregations()?;
+
+        let orders = complete_orders(&explicit, filter.as_ref())?;
+        let bound =
+            |cursor: Option<&Cursor>| cursor.map(|c| parse_cursor(c, &explicit)).transpose();
+        let start = bound(query.start_at.as_ref())?;
+        let end = bound(query.end_at.as_ref())?;
+        let limit = match query.limit {
+            Some(n) if n < 0 => return Err(Status::invalid_argument("limit is negative")),
+            Some(n) => Some(usize::try_from(n).unwrap_or(0)),
+            None => None,
+        };
+        if query.offset < 0 {
+            return Err(Status::invalid_argument("offset is negative"));
+        }
+        let offset = usize::try_from(query.offset).unwrap_or(0);
+        if kindless && (orders_fields || explicit.iter().any(|o| o.field != Field::Name)) {
+            return Err(Status::invalid_argument(
+                "kind is required for all orders except __key__ ascending",
+            ));
+        }
+        if let Some(filter) = &filter {
+            check_filter(filter, kindless)?;
+        }
         let nearest = query
             .find_nearest
             .as_ref()
@@ -850,9 +854,77 @@ fn visit_compares(filter: &Filter, f: &mut dyn FnMut(&Field, Op, &Value)) {
 }
 
 /// Checks that apply to the filter as a whole.
+/// The operators of a query's filter, which the official emulator checks before anything else
+/// about a query, its transaction included, whatever the filters' fields and values
+/// (`tools/oracle/queries.py`, #262): at most one `!=`, `not-in`, `is not NaN` or `is not null`,
+/// and `not-in` never next to `in`, `array-contains-any` or an `or`, even one of a single filter.
+pub fn check_operators(query: &StructuredQuery) -> Result<(), Status> {
+    #[derive(Default)]
+    struct Seen {
+        negations: usize,
+        not_in: bool,
+        in_or_any: bool,
+        or: bool,
+    }
+    fn visit(filter: &structured_query::Filter, seen: &mut Seen) {
+        match &filter.filter_type {
+            Some(FilterType::CompositeFilter(composite)) => {
+                if composite.op == composite_filter::Operator::Or as i32 {
+                    seen.or = true;
+                }
+                for filter in &composite.filters {
+                    visit(filter, seen);
+                }
+            }
+            Some(FilterType::FieldFilter(field)) => {
+                use field_filter::Operator as F;
+                match F::try_from(field.op) {
+                    Ok(F::NotEqual) => seen.negations += 1,
+                    Ok(F::NotIn) => {
+                        seen.negations += 1;
+                        seen.not_in = true;
+                    }
+                    Ok(F::In | F::ArrayContainsAny) => seen.in_or_any = true,
+                    _ => {}
+                }
+            }
+            Some(FilterType::UnaryFilter(unary)) => {
+                use unary_filter::Operator as U;
+                if matches!(U::try_from(unary.op), Ok(U::IsNotNan | U::IsNotNull)) {
+                    seen.negations += 1;
+                }
+            }
+            None => {}
+        }
+    }
+    let Some(filter) = &query.r#where else {
+        return Ok(());
+    };
+    let mut seen = Seen::default();
+    visit(filter, &mut seen);
+    if seen.negations > 1 {
+        return Err(Status::invalid_argument(
+            "Only a single 'NOT_EQUAL', 'NOT_IN', 'IS_NOT_NAN', or 'IS_NOT_NULL' filter allowed per query.",
+        ));
+    }
+    if seen.not_in && (seen.in_or_any || seen.or) {
+        return Err(Status::invalid_argument(
+            "'NOT_IN' cannot be used in the same query with 'IN', 'ARRAY_CONTAINS_ANY' or 'OR'.",
+        ));
+    }
+    Ok(())
+}
+
+/// The filter as a whole, once the orders and the limit are checked; its operators were
+/// checked first ([`check_operators`]).
 fn check_filter(filter: &Filter, kindless: bool) -> Result<(), Status> {
     let mut leaves = Vec::new();
     collect_leaves(filter, &mut leaves);
+    if array_filters(filter) > 1 {
+        return Err(Status::failed_precondition(
+            "Only a single array-contains clause is allowed in a query",
+        ));
+    }
     if kindless
         && let Some(field) = leaves
             .iter()
@@ -863,32 +935,6 @@ fn check_filter(filter: &Filter, kindless: bool) -> Result<(), Status> {
             "kind is required for filter: {}",
             field.display()
         )));
-    }
-    let negations = leaves
-        .iter()
-        .filter(|(_, kind)| {
-            matches!(
-                kind,
-                Leaf::Compare(Op::NotEqual | Op::NotIn)
-                    | Leaf::Unary(UnaryOp::NotNan | UnaryOp::NotNull)
-            )
-        })
-        .count();
-    if negations > 1 {
-        return Err(Status::invalid_argument(
-            "Only a single 'NOT_EQUAL', 'NOT_IN', 'IS_NOT_NAN', or 'IS_NOT_NULL' filter allowed per query.",
-        ));
-    }
-    let has = |op: Op| leaves.iter().any(|(_, kind)| *kind == Leaf::Compare(op));
-    if has(Op::NotIn) && (has(Op::In) || has(Op::ArrayContainsAny) || contains_or(filter)) {
-        return Err(Status::invalid_argument(
-            "'NOT_IN' cannot be used in the same query with 'IN', 'ARRAY_CONTAINS_ANY' or 'OR'.",
-        ));
-    }
-    if array_filters(filter) > 1 {
-        return Err(Status::failed_precondition(
-            "Only a single array-contains clause is allowed in a query",
-        ));
     }
     let disjunctions = disjunctions(filter);
     // Past twice the maximum, the official emulator stops counting.
@@ -939,14 +985,6 @@ fn array_filters(filter: &Filter) -> usize {
     }
 }
 
-fn contains_or(filter: &Filter) -> bool {
-    match filter {
-        Filter::Or(filters) => filters.len() > 1 || filters.iter().any(contains_or),
-        Filter::And(filters) => filters.iter().any(contains_or),
-        Filter::Compare { .. } | Filter::Unary { .. } => false,
-    }
-}
-
 /// How many conjunctions the filter becomes in disjunctive normal form, where `in` and
 /// `array-contains-any` count one per value.
 fn disjunctions(filter: &Filter) -> usize {
@@ -991,24 +1029,27 @@ fn inequality_fields(filter: &Filter, out: &mut Vec<FieldPath>) {
     }
 }
 
+fn more_fields_after_the_key() -> Status {
+    Status::invalid_argument("order by clause cannot contain more fields after the key")
+}
+
 /// The explicit ordering, then the inequality fields it lacks (in field path order), then
 /// `__name__`; added orderings take the direction of the last explicit one.
-fn complete_orders(
-    explicit: &[Order],
-    filter: Option<&Filter>,
-    kindless: bool,
-) -> Result<Vec<Order>, Status> {
+fn complete_orders(explicit: &[Order], filter: Option<&Filter>) -> Result<Vec<Order>, Status> {
+    // The key before other fields comes first, then duplicates (`__name__` twice is the key
+    // before another field); whether the orders need a collection is the caller's, after the
+    // limit (`tools/oracle/queries.py`, #262).
+    if let Some(i) = explicit.iter().position(|o| o.field == Field::Name)
+        && i + 1 < explicit.len()
+    {
+        return Err(more_fields_after_the_key());
+    }
     for (i, order) in explicit.iter().enumerate() {
         if explicit[..i].iter().any(|o| o.field == order.field) {
             return Err(Status::invalid_argument(format!(
                 "order by clause cannot contain duplicate fields {}",
                 order.field.display()
             )));
-        }
-        if kindless && order.field != Field::Name {
-            return Err(Status::invalid_argument(
-                "kind is required for all orders except __key__ ascending",
-            ));
         }
     }
     let descending = explicit.last().is_some_and(|o| o.descending);
@@ -1027,9 +1068,7 @@ fn complete_orders(
     }
     match orders.iter().position(|o| o.field == Field::Name) {
         Some(i) if i + 1 < orders.len() => {
-            return Err(Status::invalid_argument(
-                "order by clause cannot contain more fields after the key",
-            ));
+            return Err(more_fields_after_the_key());
         }
         Some(_) => {}
         None => orders.push(Order {
