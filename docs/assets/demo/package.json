@@ -1,0 +1,11 @@
+{
+  "name": "hidane-demo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test --test-reporter=spec"
+  },
+  "dependencies": {
+    "firebase-admin": "13.10.0"
+  }
+}
