@@ -56,6 +56,7 @@ HARNESSES = {
     "npm:@firebase/rules-unit-testing": "node",
 }
 SECTIONS = ("documents", "queries", "transactions", "listen")
+AUTOMATIC_CHANNELS = (watch.STABLE,)
 NODE_PACKAGES = ("firebase", "@google-cloud/firestore", "@firebase/rules-unit-testing")
 NODE_SKIPPED = ("sdk_export_import.mjs",)  # runs under firebase-tools
 DEPENDENCY_PLUGIN = "org.apache.maven.plugins:maven-dependency-plugin:3.11.0"
@@ -87,13 +88,20 @@ def slug(key):
     return "sdk-" + re.sub(r"[^A-Za-z0-9.]+", "-", key).strip("-")
 
 
+def runs_by_itself(sdk):
+    """Whether the canary runs a release's harness without being asked: a stable release only.
+    A prerelease, or a `latest` that is not the stable release, runs only when asked for by
+    hand (the workflow's `sdk` input), since its code is the least reviewed."""
+    return sdk["channel"] in AUTOMATIC_CHANNELS or bool(sdk.get("requested"))
+
+
 def plan(upstream):
-    """The new releases of verified SDKs that have a harness."""
+    """The new releases of verified SDKs that have a harness and run (runs_by_itself)."""
     _, sdks = watch.canary_inputs(upstream)
     runs = []
     for sdk in sdks:
         ident = f"{sdk['ecosystem']}:{sdk['name']}"
-        if sdk["verified"] and ident in HARNESSES:
+        if sdk["verified"] and ident in HARNESSES and runs_by_itself(sdk):
             runs.append({"key": sdk["key"], "slug": slug(sdk["key"]), "name": sdk["name"],
                          "version": sdk["version"], "harness": HARNESSES[ident]})
     return runs

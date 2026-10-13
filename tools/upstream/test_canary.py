@@ -316,6 +316,17 @@ class Report(unittest.TestCase):
         self.assertIn("**different** (1 difference(s))", finding["body"])
         self.assertIn("`sdk-go-cloud.google.com-go-firestore-1.27.0` artifact", finding["body"])
 
+    def test_sdk_prerelease_runs_only_by_hand(self):
+        packages = [{"id": "go:cloud.google.com/go/firestore", "ecosystem": "go",
+                     "name": "cloud.google.com/go/firestore", "watched": "1.26.0",
+                     "verified": True, "new": [{"channel": "prerelease", "version": "1.27.0-rc.1"}]}]
+        data = self.report(packages=packages)
+        [sdk] = data["sdks"]
+        self.assertEqual(sdk["result"], "not-run")
+        self.assertIn("runs only by hand", sdk["reason"])
+        self.assertIn("`go:cloud.google.com/go/firestore@1.27.0-rc.1`", sdk["reason"])
+        self.assertTrue(data["conclusive"])
+
     def test_sdk_inconclusive(self):
         for sdk_json in (None, {"prepared": False, "error": "go get failed"},
                          {"units": [{"unit": "documents", "result": "error"}]},

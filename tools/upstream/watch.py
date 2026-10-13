@@ -579,8 +579,14 @@ def detect(watch, fetch, requested=(), requested_sdks=()):
             if version is not None and newer(version, package["version"]):
                 entry["new"].append({"channel": channel, "version": version})
         for ident, version in wanted:
-            if ident == entry["id"] and version not in [n["version"] for n in entry["new"]]:
-                entry["new"].append({"channel": REQUESTED, "version": version})
+            if ident != entry["id"]:
+                continue
+            same = [n for n in entry["new"] if n["version"] == version]
+            for new in same:  # a new release asked for by hand keeps its channel
+                new["requested"] = True
+            if not same:
+                entry["new"].append({"channel": REQUESTED, "version": version,
+                                     "requested": True})
         if package["ecosystem"] == "npm" and package["name"] == FIREBASE_TOOLS:
             tools_channels = entry["channels"]
         packages.append(entry)
@@ -614,6 +620,7 @@ def canary_inputs(report):
             sdks.append({"key": f"{package['id']}@{new['version']}",
                          "ecosystem": package["ecosystem"], "name": package["name"],
                          "version": new["version"], "channel": new["channel"],
+                         "requested": new.get("requested", False),
                          "verified": package["verified"]})
     return emulators, sdks
 

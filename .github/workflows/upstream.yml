@@ -9,10 +9,11 @@ name: Upstream
 #   branch pins), re-records the drift recordings against it (official-recordings.yml), runs
 #   hidane's tests with the recordings that differ in place of the fixtures, and writes a
 #   compatibility report (job summary and the `compatibility-report` artifact). For each new
-#   release of a verified SDK that has a harness in tools/oracle/ (Go, Python, Java, Node), runs
-#   the harness with that release against the pinned official emulator and against hidane, and
-#   compares the transcripts with those of the verified release; the other new releases are
-#   listed as not run. It runs once per set of new releases.
+#   stable release of a verified SDK that has a harness in tools/oracle/ (Go, Python, Java,
+#   Node), runs the harness with that release against the pinned official emulator and against
+#   hidane, and compares the transcripts with those of the verified release; a prerelease runs
+#   only by hand (`sdk`), and the other new releases are listed as not run. It runs once per set
+#   of new releases.
 # - issues: opens one issue per release whose difference is confirmed, or updates the open one
 #   (found by a marker in its body). Only on main, on the schedule or by hand without dry-run.
 #
@@ -46,7 +47,7 @@ on:
         required: false
         default: ""
       sdk:
-        description: Also run the canary for this release of a watched SDK (ecosystem:name@version)
+        description: Also run the canary for this release of a watched SDK (ecosystem:name@version), the only way a prerelease runs
         required: false
         default: ""
   pull_request:

@@ -110,8 +110,11 @@ For each new official emulator jar, whichever channel pins it:
 
    New SDK and tool releases are listed with what the canary ran for each (below).
 
-For each new release of a verified SDK that has a harness in `tools/oracle/`, the **build hidane**
-job builds hidane once, and a job per release runs `python3 tools/upstream/sdk_canary.py run`:
+For each new **stable** release of a verified SDK that has a harness in `tools/oracle/`, the
+**build hidane** job builds hidane once, and a job per release runs
+`python3 tools/upstream/sdk_canary.py run`. A prerelease (and a `latest` that is not the stable
+release) is listed in the report as not run, and runs only when asked for by hand: the workflow's
+`sdk` input, with that release (see [Running new SDK code](#running-new-sdk-code)).
 
 | Package | Harness | Units |
 |---|---|---|
@@ -144,11 +147,6 @@ A verdict covers what the canary ran, nothing more: the other fixtures are not r
 new emulator, and a harness covers the steps it has, so **same** is not "verified". The report
 says how many fixtures were re-recorded and lists every unit.
 
-The SDK jobs run code published minutes earlier, so they get as little as possible: no credential
-(`persist-credentials: false`, no secret), read-only `GITHUB_TOKEN`, no cache restored or saved by
-a toolchain, `npm install --ignore-scripts`, wheels only for pip, and hidane as a binary built by
-another job.
-
 The canary runs once for each set of new releases: the report job saves a cache entry named by
 the set's fingerprint (`upstream-canary-<sha256>`), and a later run with the same set skips the
 canary unless it is run by hand with **force**. A run that was inconclusive saves nothing. A pull
@@ -157,6 +155,25 @@ Java and `firebase` harnesses instead, whose results must come out as committed 
 for each). Not `@google-cloud/firestore`: run as the verified release itself, it has nothing but
 the committed pair to compare with, and its transactions script counts attempts that depend on
 timing.
+
+### Running new SDK code
+
+The SDK jobs install and run an SDK release published hours or minutes earlier, with whatever it
+depends on. They get as little as possible: no credential (`persist-credentials: false`, no
+secret), a read-only `GITHUB_TOKEN`, no cache restored or saved by a toolchain,
+`npm install --ignore-scripts`, wheels only for pip, and hidane as a binary built by another job.
+
+What remains: code running in a job can reach what the runner gives that job, among it the
+token the runner uses for the job's artifacts and for the Actions cache, which on the schedule is
+`main`'s cache. A malicious release could therefore upload artifacts to the run or write cache
+entries that later runs on `main` restore (Rust builds, the jar's entry, whose SHA-256 is checked
+again when it is restored). It cannot push, open pull requests or issues, or read a secret.
+
+So the schedule runs the SDK harnesses for **stable** releases only: the ones users install by
+default, published through each project's release process. A prerelease or an unreleased build
+runs only when a maintainer asks for it by hand (Run workflow, `sdk`: `ecosystem:name@version`),
+after looking at what it is. Releases watched without being verified, and packages without a
+harness, never run.
 
 ## Issues
 
@@ -180,7 +197,7 @@ By hand (Actions → Upstream → Run workflow):
   (the pinned one, `1.22.0` and `9b6498b7…`, should come out **same**);
 - **sdk**: also run the canary for this release of a watched package, `ecosystem:name@version`
   (for example `pypi:google-cloud-firestore@2.34.1`, the verified one, which should come out
-  **same**).
+  **same**); the only way a prerelease's harness runs.
 
 ### Acting on a canary issue
 

@@ -81,16 +81,25 @@ class Units(unittest.TestCase):
         upstream = {"packages": [
             {"id": "go:cloud.google.com/go/firestore", "ecosystem": "go",
              "name": "cloud.google.com/go/firestore", "verified": True,
-             "new": [{"channel": "prerelease", "version": "1.27.0-rc.1"}]},
+             "new": [{"channel": "stable", "version": "1.27.0"},
+                     {"channel": "prerelease", "version": "1.28.0-rc.1"}]},
+            {"id": "pypi:google-cloud-firestore", "ecosystem": "pypi",
+             "name": "google-cloud-firestore", "verified": True,
+             "new": [{"channel": "latest", "version": "2.35.0"},
+                     {"channel": "prerelease", "version": "2.36.0b1", "requested": True}]},
             {"id": "npm:firebase-functions", "ecosystem": "npm", "name": "firebase-functions",
              "verified": True, "new": [{"channel": "stable", "version": "7.4.0"}]},
             {"id": "pypi:firebase-admin", "ecosystem": "pypi", "name": "firebase-admin",
              "verified": False, "new": [{"channel": "stable", "version": "7.8.0"}]},
         ], "emulator": {"candidates": []}}
+        # A stable release by itself; a prerelease or a `latest` only when asked for by hand.
         self.assertEqual(sdk_canary.plan(upstream), [{
-            "key": "go:cloud.google.com/go/firestore@1.27.0-rc.1",
-            "slug": "sdk-go-cloud.google.com-go-firestore-1.27.0-rc.1",
-            "name": "cloud.google.com/go/firestore", "version": "1.27.0-rc.1", "harness": "go"}])
+            "key": "go:cloud.google.com/go/firestore@1.27.0",
+            "slug": "sdk-go-cloud.google.com-go-firestore-1.27.0",
+            "name": "cloud.google.com/go/firestore", "version": "1.27.0", "harness": "go"}, {
+            "key": "pypi:google-cloud-firestore@2.36.0b1",
+            "slug": "sdk-pypi-google-cloud-firestore-2.36.0b1",
+            "name": "google-cloud-firestore", "version": "2.36.0b1", "harness": "python"}])
 
     def test_units(self):
         with tempfile.TemporaryDirectory() as tmp:

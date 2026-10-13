@@ -257,6 +257,11 @@ def sdk_entry(sdk, artifacts):
         entry.update(result=NOT_RUN,
                      reason=NOT_RUN_REASONS.get(ident, "the canary does not run its harness yet"))
         return entry
+    if not sdk_canary.runs_by_itself(sdk):
+        entry.update(result=NOT_RUN,
+                     reason=f"a {sdk['channel']} release runs only by hand: run the Upstream "
+                            f"workflow with `sdk` set to `{sdk['key']}`")
+        return entry
     harness = sdk_canary.HARNESSES[ident]
     entry.update(harness=harness, units=[])
     path = Path(artifacts) / sdk_canary.slug(sdk["key"]) / "sdk.json"
