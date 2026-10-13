@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "about": "The upstream releases the Upstream workflow watches (tools/upstream/README.md). `version` is the release hidane was verified against: for a `verified` package the one in crates/hidane/src/project/verified.rs, for the others the one last reviewed. `emulator` is the official emulator the fixtures were recorded from (.github/actions/official-emulator/pinned.sh) and the Emulator UI verified with it. `python3 tools/upstream/watch.py check` keeps them in step.",
+  "npm_prerelease_tags": ["next", "beta", "rc", "preview"],
+  "packages": [
+    {"ecosystem": "npm", "name": "firebase-tools", "version": "15.33.0", "verified": true},
+    {"ecosystem": "npm", "name": "firebase", "version": "13.0.0", "verified": true},
+    {"ecosystem": "npm", "name": "firebase-admin", "version": "14.5.0", "verified": false,
+     "note": "Not verified itself: its Firestore client is @google-cloud/firestore."},
+    {"ecosystem": "npm", "name": "@google-cloud/firestore", "version": "9.3.1", "verified": true},
+    {"ecosystem": "npm", "name": "firebase-functions", "version": "6.6.0", "verified": true},
+    {"ecosystem": "npm", "name": "@firebase/rules-unit-testing", "version": "6.0.0", "verified": true},
+    {"ecosystem": "pypi", "name": "google-cloud-firestore", "version": "2.34.1", "verified": true},
+    {"ecosystem": "pypi", "name": "firebase-admin", "version": "7.7.0", "verified": false,
+     "note": "Not verified itself: its Firestore client is google-cloud-firestore."},
+    {"ecosystem": "go", "name": "cloud.google.com/go/firestore", "version": "1.26.0", "verified": true},
+    {"ecosystem": "maven", "name": "com.google.cloud:google-cloud-firestore", "version": "3.49.0",
+     "verified": true},
+    {"ecosystem": "maven", "name": "com.google.firebase:firebase-admin", "version": "9.11.0",
+     "verified": false,
+     "note": "Not verified itself: its Firestore client is com.google.cloud:google-cloud-firestore."},
+    {"ecosystem": "pub", "name": "cloud_firestore", "version": "6.10.0", "verified": true}
+  ],
+  "emulator": {
+    "name": "cloud-firestore-emulator",
+    "version": "1.22.0",
+    "sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "ui": "1.15.0"
+  }
+}

@@ -1,0 +1,79 @@
+name: Upstream
+
+# Watches the upstream releases hidane is verified against (tools/upstream/README.md): new
+# releases of firebase-tools, the Firestore SDKs and the official emulator, on their stable,
+# latest and prerelease channels, read from the registries' public metadata only. The job summary
+# lists what is new, and the report is uploaded.
+#
+# It runs daily, by hand, and for changes to the watcher (CI checks the watch list against the
+# verified versions on every pull request). It only reads: it never pushes, and needs no secret.
+
+on:
+  schedule:
+    - cron: "37 5 * * *"
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "tools/upstream/**"
+      - ".github/workflows/upstream.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: watch list
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Test the watcher
+        run: python3 -I -B -m unittest discover -s tools/upstream -p "test_*.py" -v
+      # tools/upstream/watch.json names the versions docs/sdk-certification.json (or
+      # crates/hidane/src/project/verified.rs), docs/compatibility.json and
+      # .github/actions/official-emulator/pinned.sh name.
+      - name: Check the watch list
+        run: python3 -I -B tools/upstream/watch.py check
+
+  detect:
+    name: detect new releases
+    needs: check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    outputs:
+      emulators: ${{ steps.detect.outputs.emulators }}
+      sdks: ${{ steps.detect.outputs.sdks }}
+      fingerprint: ${{ steps.detect.outputs.fingerprint }}
+      errors: ${{ steps.detect.outputs.errors }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: tools/upstream
+      - name: Read the registries
+        id: detect
+        run: |
+          python3 -I -B tools/upstream/watch.py detect --report "$RUNNER_TEMP/upstream.json" \
+            --summary "$GITHUB_STEP_SUMMARY" --outputs "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: upstream
+          path: ${{ runner.temp }}/upstream.json
+          if-no-files-found: ignore
+      # A registry that did not answer, or answered something the watcher refuses, is listed in
+      # the summary; the run fails so that it is seen.
+      - name: Fail on errors
+        env:
+          ERRORS: ${{ steps.detect.outputs.errors }}
+        run: |
+          if [[ "$ERRORS" != "0" ]]; then
+            echo "::error title=Upstream::$ERRORS registries or pins could not be read; see the job summary"
+            exit 1
+          fi
