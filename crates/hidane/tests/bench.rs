@@ -630,16 +630,38 @@ fn operator_files_and_flags_are_checked() {
 /// 100,000 documents in commits of 500 while a Listen stream on the collection takes every
 /// change. The checks compare the run with itself, not with milliseconds, so a slow runner or a
 /// debug build passes them: the median commit time of the last tenth of the batches stays within
-/// twice the first tenth's, and the growth over the whole run (Theil–Sen, per 10,000 documents
-/// stored, times 10) stays under one early batch's time. hidane's batches are flat (a ratio near 1, a
-/// growth near 0); a commit whose cost grows with the documents stored, as the official
-/// emulator's does (about +168 ms per 10,000 documents in Phase 0), fails them.
+/// twice the first tenth's, the growth over the whole run (Theil–Sen, per 10,000 documents
+/// stored, times 10) stays under one early batch's time, and the listener's last snapshot comes
+/// within twice the writes' time. hidane's batches are flat (a ratio near 1, a growth near 0); a
+/// commit whose cost grows with the documents stored, as the official emulator's does (about
+/// +168 ms per 10,000 documents in Phase 0), fails them.
 #[test]
 fn writes_with_a_listener_attached_stay_flat() {
-    let dir = scratch("listen");
+    stays_flat(
+        "listen_writes",
+        r#"{"warmup": 0, "runs": 1, "documents": 100000, "batch": 500}"#,
+    );
+}
+
+/// #250 and #295: the same with a `limit(50)` listener, whose query hidane runs again on every
+/// commit to the collection. Its commits stayed flat before #295, but the listener fell behind
+/// (its last snapshot 16 s after the last commit, in a release build), which the bound on the
+/// delivery catches. The official emulator's batches grew by about 70 ms per 10,000 documents in
+/// Phase 0.
+#[test]
+fn writes_with_a_limited_listener_attached_stay_flat() {
+    stays_flat(
+        "listen_limit_writes",
+        r#"{"warmup": 0, "runs": 1, "documents": 100000, "batch": 500, "limit": 50}"#,
+    );
+}
+
+/// Runs `scenario` on hidane with `parameters` and checks it as the tests above say.
+fn stays_flat(scenario: &str, parameters: &str) {
+    let dir = scratch(scenario);
     std::fs::write(
         dir.join("listen.json"),
-        r#"{"scenarios": {"listen_writes": {"warmup": 0, "runs": 1, "documents": 100000, "batch": 500}}}"#,
+        format!(r#"{{"scenarios": {{"{scenario}": {parameters}}}}}"#),
     )
     .unwrap();
     let out = benchmark(
@@ -647,7 +669,7 @@ fn writes_with_a_listener_attached_stay_flat() {
             "--config",
             "listen.json",
             "--scenarios",
-            "listen_writes",
+            scenario,
             "--no-imds",
             "--out",
             "result.json",
@@ -662,7 +684,7 @@ fn writes_with_a_listener_attached_stay_flat() {
     let result: Value =
         serde_json::from_str(&std::fs::read_to_string(dir.join("result.json")).unwrap()).unwrap();
     validate(&result);
-    let r = &result["results"]["listen_writes"]["hidane"];
+    let r = &result["results"][scenario]["hidane"];
     let median = |metric: &str| r[metric]["stats"]["median"].as_f64().unwrap();
     let (first, last, growth) = (
         median("batch_first_decile"),
@@ -677,7 +699,12 @@ fn writes_with_a_listener_attached_stay_flat() {
         growth * 10.0 < first,
         "batches grew by {growth} ms per 10,000 documents stored; the first took {first} ms"
     );
-    assert!(median("delivered") > 0.0);
+    let (writes, delivered) = (median("writes"), median("delivered"));
+    assert!(delivered > 0.0);
+    assert!(
+        delivered <= 2.0 * writes,
+        "the listener's last snapshot came {delivered} ms after the first commit; the writes took {writes} ms"
+    );
     let _ = std::fs::remove_dir_all(dir);
 }
 
