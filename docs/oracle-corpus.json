@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:daa7b4122617bbb383dcc0328245b5177cfa1876696bfd09d70ac43ed01cd38f",
+ "digest": "sha256:b64fce1808d9d6b7f114de0eae19689f0a04020fb62881dc8188ed2e6d083b07",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,15 +14,15 @@
   }
  ],
  "totals": {
-  "files": 79,
-  "fixtures": 47,
+  "files": 80,
+  "fixtures": 48,
   "transcripts": 32,
-  "answers": 23579,
-  "bytes": 13836558,
+  "answers": 23582,
+  "bytes": 13843122,
   "levels": {
-   "full": 13204,
+   "full": 13205,
    "reasons": 4313,
-   "part": 833,
+   "part": 835,
    "status": 5039,
    "codes": 30,
    "none": 1,
@@ -60,9 +60,9 @@
     "answers": 34
    },
    "rules": {
-    "fixtures": 21,
+    "fixtures": 22,
     "transcripts": 2,
-    "answers": 15188
+    "answers": 15191
    },
    "export": {
     "fixtures": 1,
@@ -82,15 +82,15 @@
   },
   "by_release": {
    "v1.22.0": {
-    "fixtures": 47,
+    "fixtures": 48,
     "transcripts": 32,
-    "answers": 23579
+    "answers": 23582
    }
   },
   "by_release_source": {
    "header": 24,
    "file name": 33,
-   "git history": 22
+   "git history": 23
   }
  },
  "recordings": [
@@ -1501,6 +1501,45 @@
    ],
    "counted": "each call",
    "compared": "a denial as decision and reasons (`same_denial`: hidane's reasons are among the official ones); every other answer on its status"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/websocket_escapes.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/websocket_escapes.py",
+   "client": {
+    "over": [
+     "REST",
+     "WebSocket"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 in the working tree, where it changed"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-15",
+    "last_changed": "2026-10-15"
+   },
+   "bytes": 6564,
+   "sha256": "a33cb1431b5eca2622b6106fc55babc99a41ac86b00ab72963ba4c03efb04e2f",
+   "answers": 3,
+   "levels": {
+    "full": 1,
+    "part": 2
+   },
+   "replayed_over": [
+    "WebSocket"
+   ],
+   "tests": [
+    "crates/hidane/tests/websocket_requests.rs::strings_written_as_the_official_emulator_writes_them"
+   ],
+   "counted": "each step: a call, and the request monitor's records of it as text",
+   "compared": "text for text, times, request IDs and the release key's number masked; in part where an official record shows `resource` undefined (its first pass), which is left out"
   },
   {
    "path": "crates/hidane/tests/fixtures/websocket_requests.json",

@@ -101,6 +101,7 @@ FIXTURE_CLIENTS = {
     "unsupported.py": ([GRPC, REST], PY_GRPCURL),
     "value_order.py": ([REST], PY),
     "webchannel.py": ([REST, WEBCHANNEL], PY),
+    "websocket_escapes.py": ([REST, WEBSOCKET], PY),
     "websocket_requests.py": ([GRPC, REST, WEBSOCKET], PY_GRPCURL),
     "write_stream.mjs": ([GRPC], "Node.js"),
 }

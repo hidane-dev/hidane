@@ -475,6 +475,12 @@ def websocket_requests(f):
     return answers
 
 
+def websocket_escapes(f):
+    undefined = ',"resource":{"undefined":{}}}}'
+    return [(WEBSOCKET, PART if any(frame.endswith(undefined) for frame in step["frames"]) else FULL)
+            for case in f for step in case["steps"]]
+
+
 def write_stream(f):
     return [(GRPC, compare_mark(step))
             for scenario in f["scenarios"] for step in scenario["steps"] if "outcome" in step]
@@ -754,6 +760,14 @@ RECORDINGS = {
                  "hidane's stored document; a step marked `differs` (method and path only) as "
                  "intentionally different",
         count=websocket_requests),
+    f"{H}/fixtures/websocket_escapes.json": dict(
+        area="rules",
+        tests=[f"{H}/websocket_requests.rs::strings_written_as_the_official_emulator_writes_them"],
+        counted="each step: a call, and the request monitor's records of it as text",
+        compares="text for text, times, request IDs and the release key's number masked; in part "
+                 "where an official record shows `resource` undefined (its first pass), which is "
+                 "left out",
+        count=websocket_escapes),
     f"{H}/fixtures/rules_expressions_monitor.json": dict(
         area="rules",
         tests=[f"{H}/websocket_requests.rs::a_decision_past_the_limit_of_expressions"],
