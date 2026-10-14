@@ -346,7 +346,12 @@ pub fn apply(batch: &mut dyn WriteBatch, write: &Write) -> Result<WriteResult, S
     let name = target(write).expect("checked");
     let path = names::document(name)?.path;
     let existing = batch.get(&path);
-    check_precondition(write.current_document.as_ref(), existing.as_deref(), name)?;
+    check_precondition(
+        write.current_document.as_ref(),
+        existing.as_deref(),
+        name,
+        || batch.deleted_at(&path),
+    )?;
 
     match &write.operation {
         Some(Operation::Delete(_)) => {
@@ -541,11 +546,14 @@ fn store(
 }
 
 /// Production Firestore's wording for exists violations: the official emulator prints its
-/// internal Datastore key here instead (see docs/parity-exceptions.md).
+/// internal Datastore key here instead (see docs/parity-exceptions.md). A version precondition
+/// compares with the document's version: its update time, the time it was deleted (`deleted`),
+/// or 0 if it never existed (`tools/oracle/rest.py`, #262).
 fn check_precondition(
     precondition: Option<&Precondition>,
     existing: Option<&StoredDocument>,
     name: &str,
+    deleted: impl FnOnce() -> Option<ReadTime>,
 ) -> Result<(), Status> {
     match precondition.and_then(|p| p.condition_type.as_ref()) {
         None => Ok(()),
@@ -558,7 +566,10 @@ fn check_precondition(
         Some(ConditionType::Exists(_)) => Ok(()),
         Some(ConditionType::UpdateTime(required)) => {
             let required = ReadTime::from_timestamp(required).0;
-            let stored = existing.map_or(0, |doc| ReadTime::from_timestamp(&doc.update_time).0);
+            let stored = match existing {
+                Some(doc) => ReadTime::from_timestamp(&doc.update_time).0,
+                None => deleted().map_or(0, |time| time.0),
+            };
             if stored == required {
                 Ok(())
             } else {

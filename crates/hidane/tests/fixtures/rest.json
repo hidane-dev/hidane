@@ -9951,6 +9951,339 @@
     "contentType": "application/json",
     "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/rf/a\",\n    \"fields\": {\n      \"v\": {\n        \"geoPointValue\": {\n          \"latitude\": -90.0,\n          \"longitude\": 180.0\n        }\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
    }
+  },
+  {
+   "name": "a version precondition on a document that never existed",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/dv/never",
+       "fields": {}
+      },
+      "currentDocument": {
+       "updateTime": "2001-01-01T00:00:00Z"
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the stored version (0) does not match the required base version (978307200000000)\",\"status\":\"FAILED_PRECONDITION\"}}"
+   }
+  },
+  {
+   "name": "a document to delete",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/dv/a",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "its deletion",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "delete": "projects/{project}/databases/(default)/documents/dv/a"
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a version precondition on a deleted document",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/dv/a",
+       "fields": {}
+      },
+      "currentDocument": {
+       "updateTime": "2001-01-01T00:00:00Z"
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the stored version (<version>) does not match the required base version (978307200000000)\",\"status\":\"FAILED_PRECONDITION\"}}"
+   }
+  },
+  {
+   "name": "a version precondition on a deleted document, for a delete",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "delete": "projects/{project}/databases/(default)/documents/dv/a",
+      "currentDocument": {
+       "updateTime": "2001-01-01T00:00:00Z"
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the stored version (<version>) does not match the required base version (978307200000000)\",\"status\":\"FAILED_PRECONDITION\"}}"
+   }
+  },
+  {
+   "name": "a version precondition on a deleted document, for a transform",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "transform": {
+       "document": "projects/{project}/databases/(default)/documents/dv/a",
+       "fieldTransforms": [
+        {
+         "fieldPath": "n",
+         "increment": {
+          "integerValue": "1"
+         }
+        }
+       ]
+      },
+      "currentDocument": {
+       "updateTime": "2001-01-01T00:00:00Z"
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the stored version (<version>) does not match the required base version (978307200000000)\",\"status\":\"FAILED_PRECONDITION\"}}"
+   }
+  },
+  {
+   "name": "a version precondition on a deleted document, in a batchWrite",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchWrite",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/dv/a",
+       "fields": {}
+      },
+      "currentDocument": {
+       "updateTime": "2001-01-01T00:00:00Z"
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n  }],\n  \"status\": [{\n    \"code\": 9,\n    \"message\": \"the stored version (<version>) does not match the required base version (978307200000000)\"\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "a delete of a missing document",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "delete": "projects/{project}/databases/(default)/documents/dv/missing"
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a version precondition after a delete of a missing document",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/dv/missing",
+       "fields": {}
+      },
+      "currentDocument": {
+       "updateTime": "2001-01-01T00:00:00Z"
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the stored version (0) does not match the required base version (978307200000000)\",\"status\":\"FAILED_PRECONDITION\"}}"
+   }
+  },
+  {
+   "name": "a document deleted twice",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/dv/b",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a document deleted twice, the first deletion",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "delete": "projects/{project}/databases/(default)/documents/dv/b"
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a document deleted twice, the second deletion",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "delete": "projects/{project}/databases/(default)/documents/dv/b"
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a version precondition on a document deleted twice",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/dv/b",
+       "fields": {}
+      },
+      "currentDocument": {
+       "updateTime": "2001-01-01T00:00:00Z"
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the stored version (<version>) does not match the required base version (978307200000000)\",\"status\":\"FAILED_PRECONDITION\"}}"
+   }
   }
  ]
 }

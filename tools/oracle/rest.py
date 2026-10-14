@@ -20,6 +20,7 @@ official emulator (a `parent` in a `:listCollectionIds` body, unparsable query p
 
 import http.client
 import json
+import re
 import sys
 import time
 from pathlib import Path
@@ -513,8 +514,28 @@ case("a reference in an increment's operand", "POST", B + ":commit", commit(upd(
 case("a geo point as a maximum", "POST", B + ":commit", commit(upd("rf/a", {}, updateTransforms=[{"fieldPath": "t", "maximum": geo(latitude=91)}])))
 case("the writes that were not refused", "GET", B + "/rf")
 
+# A version precondition on a deleted document is checked against the time it was deleted: a
+# document that never existed, or was deleted while missing, has version 0. (The message's
+# versions of the years 2021 to 2099 are masked as `<version>`, as the fuzzer does.)
+OLD = {"updateTime": "2001-01-01T00:00:00Z"}
+case("a version precondition on a document that never existed", "POST", B + ":commit", commit(upd("dv/never", {}, currentDocument=OLD)))
+case("a document to delete", "POST", B + ":commit", commit(upd("dv/a", {"n": i(1)})))
+case("its deletion", "POST", B + ":commit", commit({"delete": NAME + "/dv/a"}))
+case("a version precondition on a deleted document", "POST", B + ":commit", commit(upd("dv/a", {}, currentDocument=OLD)))
+case("a version precondition on a deleted document, for a delete", "POST", B + ":commit", commit({"delete": NAME + "/dv/a", "currentDocument": OLD}))
+case("a version precondition on a deleted document, for a transform", "POST", B + ":commit", commit({"transform": {"document": NAME + "/dv/a", "fieldTransforms": [{"fieldPath": "n", "increment": i(1)}]}, "currentDocument": OLD}))
+case("a version precondition on a deleted document, in a batchWrite", "POST", B + ":batchWrite", commit(upd("dv/a", {}, currentDocument=OLD)))
+case("a delete of a missing document", "POST", B + ":commit", commit({"delete": NAME + "/dv/missing"}))
+case("a version precondition after a delete of a missing document", "POST", B + ":commit", commit(upd("dv/missing", {}, currentDocument=OLD)))
+case("a document deleted twice", "POST", B + ":commit", commit(upd("dv/b", {"n": i(1)})))
+case("a document deleted twice, the first deletion", "POST", B + ":commit", commit({"delete": NAME + "/dv/b"}))
+case("a document deleted twice, the second deletion", "POST", B + ":commit", commit({"delete": NAME + "/dv/b"}))
+case("a version precondition on a document deleted twice", "POST", B + ":commit", commit(upd("dv/b", {}, currentDocument=OLD)))
+
 
 def norm(text):
+    # Versions of the years 2021 to 2099, in microseconds (`tools/fuzz/diff.py`).
+    text = re.sub(r"(version \()(1[6-9]|[23][0-9]|40|41)[0-9]{14}(?![0-9])", r"\1<version>", text)
     return mask(text, PROJECT)
 
 

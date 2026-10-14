@@ -105,6 +105,51 @@ fn reads_see_the_version_at_their_read_time() {
     assert_eq!(v2.update_time, t2.to_timestamp());
 }
 
+/// A deleted document keeps the time of the deletion that removed it, the version a version
+/// precondition compares with on the official emulator (#262).
+#[test]
+fn a_deleted_document_keeps_the_time_it_was_deleted() {
+    let (store, now) = store_with_clock(1_000);
+    let deleted_at = |p: &str| {
+        let mut at = None;
+        store
+            .commit(DB, &mut |batch| {
+                at = batch.deleted_at(&path(p));
+                Ok(())
+            })
+            .unwrap();
+        at
+    };
+    assert_eq!(deleted_at("c/never"), None);
+    set(&store, "c/a", 1);
+    assert_eq!(deleted_at("c/a"), None);
+    now.store(2_000, Ordering::SeqCst);
+    let first = delete(&store, "c/a");
+    now.store(3_000, Ordering::SeqCst);
+    delete(&store, "c/a");
+    assert_eq!(deleted_at("c/a"), Some(first));
+    delete(&store, "c/missing");
+    assert_eq!(deleted_at("c/missing"), None);
+    set(&store, "c/a", 2);
+    assert_eq!(deleted_at("c/a"), None);
+
+    // In a batch that deletes it: this commit, if it existed.
+    now.store(4_000, Ordering::SeqCst);
+    let mut in_batch = None;
+    let commit = store
+        .commit(DB, &mut |batch| {
+            batch.delete(&path("c/a"));
+            batch.delete(&path("c/never"));
+            in_batch = Some((
+                batch.deleted_at(&path("c/a")),
+                batch.deleted_at(&path("c/never")),
+            ));
+            Ok(())
+        })
+        .unwrap();
+    assert_eq!(in_batch, Some((Some(commit.commit_time), None)));
+}
+
 #[test]
 fn commits_report_what_changed() {
     let store = MemoryStore::new();

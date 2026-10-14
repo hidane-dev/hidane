@@ -190,6 +190,11 @@ pub trait WriteBatch {
     /// Deletes the document. Deleting a missing document is not an error.
     fn delete(&mut self, path: &ResourcePath);
 
+    /// When a commit deleted the document, if it is missing because one did (not when it never
+    /// existed, nor when a delete found it missing): the commit time of that deletion, which
+    /// is the version a version precondition compares with.
+    fn deleted_at(&self, path: &ResourcePath) -> Option<ReadTime>;
+
     /// Drops the batch's writes to the document, which keeps its latest committed version: a
     /// commit whose writes leave a document as it was changes nothing.
     fn revert(&mut self, path: &ResourcePath);

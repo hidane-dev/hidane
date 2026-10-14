@@ -67,6 +67,14 @@ impl Record {
         self.versions.last().and_then(|(_, doc)| doc.as_ref())
     }
 
+    /// The commit time of the deletion that ended the document, if its latest version is one.
+    fn deleted_at(&self) -> Option<i64> {
+        match self.versions.last() {
+            Some((time, None)) => Some(*time),
+            _ => None,
+        }
+    }
+
     /// Drops versions no read can reach any more: everything older than the newest version at
     /// or before `cutoff`.
     fn prune(&mut self, cutoff: i64) {
@@ -432,6 +440,20 @@ impl WriteBatch for MemoryBatch<'_> {
 
     fn revert(&mut self, path: &ResourcePath) {
         self.pending.remove(&encode_path(path.segments()));
+    }
+
+    fn deleted_at(&self, path: &ResourcePath) -> Option<ReadTime> {
+        let key = encode_path(path.segments());
+        let record = self.db.documents.get(&key);
+        let committed = || record.and_then(Record::deleted_at).map(ReadTime);
+        match self.pending.get(&key) {
+            Some((_, Some(_))) => None,
+            // This batch deletes it: now, if it existed; else whenever it was deleted before.
+            Some((_, None)) if record.and_then(Record::latest).is_some() => {
+                Some(ReadTime(self.commit_time))
+            }
+            Some((_, None)) | None => committed(),
+        }
     }
 }
 
