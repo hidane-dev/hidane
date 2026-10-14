@@ -108,9 +108,28 @@ fn mask_values(text: &str, key: &str, mask: &str) -> String {
     out
 }
 
+/// Versions of the years 2021 to 2099 in microseconds, after `version (`, as `<version>`
+/// (`tools/oracle/rest.py`, `tools/fuzz/diff.py`).
+fn mask_versions(text: &str) -> String {
+    let marker = "version (";
+    let mut out = String::new();
+    let mut rest = text;
+    while let Some(at) = rest.find(marker) {
+        out.push_str(&rest[..at + marker.len()]);
+        rest = &rest[at + marker.len()..];
+        let digits = rest.bytes().take_while(u8::is_ascii_digit).count();
+        if digits == 16 && ("16".."42").contains(&&rest[..2]) {
+            out.push_str("<version>");
+            rest = &rest[16..];
+        }
+    }
+    out.push_str(rest);
+    out
+}
+
 /// The oracle's normalisation (`tools/oracle/rest.py`).
 fn normalize(text: &str) -> String {
-    let mut text = text.replace(PROJECT, "{project}");
+    let mut text = mask_versions(text).replace(PROJECT, "{project}");
     for key in ["createTime", "updateTime", "readTime", "commitTime"] {
         text = mask_values(&text, key, "<time>");
     }
@@ -144,7 +163,7 @@ async fn replay(cases: &[Json]) -> Vec<String> {
         let name = case["name"].as_str().unwrap();
         let path = case["path"].as_str().unwrap().replace("{project}", PROJECT);
         let body = match (case.get("raw"), case.get("body")) {
-            (Some(raw), _) => Some(raw.as_str().unwrap().to_owned()),
+            (Some(raw), _) => Some(raw.as_str().unwrap().replace("{project}", PROJECT)),
             (None, Some(body)) => Some(body.to_string().replace("{project}", PROJECT)),
             (None, None) => None,
         };

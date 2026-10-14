@@ -1,10 +1,9 @@
 //! Checks on document contents, with the official emulator's messages.
 //!
 //! The official emulator checks a commit in passes (`tools/oracle/commit_checks.py`): the names
-//! of every write first (`names`, `field_path`, `transform`: reserved names and values without
-//! a type at any depth, the types of special values and the shapes of vectors, field paths,
-//! transforms' operands), the
-//! values of every write later (`values`: name lengths, nested arrays, vectors' elements, value
+//! of every write first (`names`, `mask_paths`, `transforms`: reserved names and values
+//! without a type at any depth, the types of special values and the shapes of vectors, field
+//! paths, transforms' operands), the values of every write later (`values`: name lengths, nested arrays, vectors' elements, value
 //! lengths, depth), the size of each document when it is applied (`size`).
 
 use hidane_core::{
@@ -22,6 +21,8 @@ use hidane_proto::google::firestore::v1::{
 };
 use tonic::Status;
 
+use super::{names, property_path::PropertyPath};
+
 const TYPE_KEY: &str = "__type__";
 const VECTOR_TYPE: &str = "__vector__";
 const VECTOR_VALUES_KEY: &str = "value";
@@ -32,8 +33,18 @@ const MAX_NAME_BYTES: usize = 1500;
 const MAX_DEPTH: usize = 20;
 const MAX_DOCUMENT_BYTES: usize = 1_048_576;
 
+/// Where a value is, which decides how its references are read ([`reference`]).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Place {
+    /// In a document a write stores, or in a transform's operand.
+    Document,
+    /// In a filter, a cursor or a query vector.
+    Query,
+}
+
 /// The names in `fields`, in order and depth first: reserved names, values without a type
-/// ([`unset`]), and the special values (maps with a `__type__` key) they spell.
+/// ([`unset`]), references ([`reference`]), geo points ([`geo_point`]), and the special values
+/// (maps with a `__type__` key) they spell.
 pub fn names(fields: &Fields) -> Result<(), Status> {
     for (name, value) in fields {
         if reserved_name(name) {
@@ -41,20 +52,33 @@ pub fn names(fields: &Fields) -> Result<(), Status> {
                 "field name {name} is reserved"
             )));
         }
-        value_names(value)?;
+        value_names(value, Place::Document)?;
     }
     Ok(())
 }
 
-fn value_names(value: &Value) -> Result<(), Status> {
+/// A value of a filter, a cursor or a query vector, read as a document's is ([`names`]) when
+/// the query names it (`tools/oracle/queries.py`, #262).
+pub fn query_value(value: &Value) -> Result<(), Status> {
+    value_names(value, Place::Query)
+}
+
+fn value_names(value: &Value, place: Place) -> Result<(), Status> {
     match &value.value_type {
         None => Err(unset()),
-        Some(ValueType::ArrayValue(array)) => array.values.iter().try_for_each(value_names),
+        Some(ValueType::ReferenceValue(name)) => reference(name, place),
+        Some(ValueType::GeoPointValue(point)) => geo_point(point.latitude, point.longitude),
+        Some(ValueType::ArrayValue(array)) => array
+            .values
+            .iter()
+            .try_for_each(|value| value_names(value, place)),
         // A `__type__` key spells a special value on the wire; only vectors exist. A vector's
         // shape is checked here, its elements with the values; another type is an invalid
         // nested entity, also with the values. Every value in the map is read first.
         Some(ValueType::MapValue(map)) if map.fields.contains_key(TYPE_KEY) => {
-            map.fields.values().try_for_each(typed)?;
+            map.fields
+                .values()
+                .try_for_each(|value| read(value, place))?;
             match map.fields[TYPE_KEY].value_type.as_ref() {
                 Some(ValueType::StringValue(t)) if t == VECTOR_TYPE => vector(map).map(drop),
                 Some(ValueType::StringValue(_)) => Ok(()),
@@ -71,7 +95,7 @@ fn value_names(value: &Value) -> Result<(), Status> {
                         "field name '{name}' is reserved."
                     )));
                 }
-                value_names(nested)?;
+                value_names(nested, place)?;
             }
             Ok(())
         }
@@ -79,20 +103,63 @@ fn value_names(value: &Value) -> Result<(), Status> {
     }
 }
 
+/// `value` and every value in it: a type, references, geo points; no names (the values of a map
+/// with a `__type__` key, read before its type).
+fn read(value: &Value, place: Place) -> Result<(), Status> {
+    match &value.value_type {
+        None => Err(unset()),
+        Some(ValueType::ReferenceValue(name)) => reference(name, place),
+        Some(ValueType::GeoPointValue(point)) => geo_point(point.latitude, point.longitude),
+        Some(ValueType::ArrayValue(array)) => {
+            array.values.iter().try_for_each(|value| read(value, place))
+        }
+        Some(ValueType::MapValue(map)) => {
+            map.fields.values().try_for_each(|value| read(value, place))
+        }
+        Some(_) => Ok(()),
+    }
+}
+
+/// A reference, read as a document's parent name ([`names::reference`]); in a document, as a
+/// key too: not empty, its IDs within the key's limits ([`key`]) (`tools/oracle/rest.py`,
+/// #262). Another database's or project's document may be named.
+fn reference(name: &str, place: Place) -> Result<(), Status> {
+    let parsed = names::reference(name)?;
+    if place == Place::Document {
+        if parsed.path.is_empty() {
+            return Err(key_path_empty());
+        }
+        key(&parsed.path)?;
+    }
+    Ok(())
+}
+
+/// A reference that names no document, read as a key.
+pub fn key_path_empty() -> Status {
+    Status::invalid_argument("Key path is empty.")
+}
+
+/// A geo point's latitude within -90 to 90, then its longitude within -180 to 180; NaN is in
+/// neither. The message prints the coordinate as Java prints a double.
+fn geo_point(latitude: f64, longitude: f64) -> Result<(), Status> {
+    for (name, value, limit) in [
+        ("latitude", latitude, 90.0),
+        ("longitude", longitude, 180.0),
+    ] {
+        if !(-limit..=limit).contains(&value) {
+            return Err(Status::invalid_argument(format!(
+                "Geo point {name} '{}' outside permitted range -{limit:.1} to {limit:.1}.",
+                crate::rest::java_double_text(value)
+            )));
+        }
+    }
+    Ok(())
+}
+
 /// A value without a type (`{}` in JSON), which the official emulator cannot convert, in a
 /// document, a transform's operand, a filter, a cursor or a query vector (#262).
 pub fn unset() -> Status {
     Status::invalid_argument("Cannot convert firestore.v1.Value with type unset.")
-}
-
-/// `value` and every value in it have a type ([`unset`]), checked depth first in order.
-pub fn typed(value: &Value) -> Result<(), Status> {
-    match &value.value_type {
-        None => Err(unset()),
-        Some(ValueType::ArrayValue(array)) => array.values.iter().try_for_each(typed),
-        Some(ValueType::MapValue(map)) => map.fields.values().try_for_each(typed),
-        Some(_) => Ok(()),
-    }
 }
 
 /// Field names of the form `__…__` are reserved; `____` is not one.
@@ -105,68 +172,31 @@ pub fn reserved(name: &str) -> bool {
     name.len() >= 4 && name.starts_with("__") && name.ends_with("__")
 }
 
-/// A field path of an update mask: one that parses and names no reserved field, which the
-/// message names with the rest of the path. `__name__` alone is the document's name; in a
-/// longer path it is refused. A field transform's path is `transform_path`.
-pub fn field_path(path: &str) -> Result<FieldPath, Status> {
-    if path.is_empty() {
-        return Err(Status::invalid_argument(
-            "Invalid empty property path string.",
-        ));
-    }
-    let parsed = FieldPath::parse(path).map_err(Status::invalid_argument)?;
-    let segments = parsed.segments();
-    if segments.len() > 1 && segments.iter().any(|s| s == "__name__") {
-        return Err(Status::invalid_argument("the name __key__ is reserved"));
-    }
-    if let Some(at) = segments
+/// The paths of a read or update mask: each is read in turn ([`PropertyPath::read`]), then each
+/// is checked as a mask's path ([`PropertyPath::check_mask`]), so a reserved name in a later
+/// path comes before `__type__` or an array offset in an earlier one (`tools/oracle/rest.py`,
+/// #262). `__name__` alone is the document's name.
+pub fn mask_paths(paths: &[String]) -> Result<Vec<FieldPath>, Status> {
+    let read = paths
         .iter()
-        .position(|s| s != "__name__" && reserved_name(s))
-    {
-        return Err(Status::invalid_argument(format!(
-            "Invalid reserved name in field path {}",
-            segments[at..].join(".")
-        )));
-    }
-    Ok(parsed)
+        .map(|path| PropertyPath::read(path))
+        .collect::<Result<Vec<_>, _>>()?;
+    read.iter().try_for_each(PropertyPath::check_mask)?;
+    Ok(read.iter().map(PropertyPath::field_path).collect())
 }
 
-/// The field a field transform reads and writes: its path parsed and checked as `field_path`
-/// does, except that `__name__` may be anywhere in it, and each `__name__` segment names the
-/// field `__key__`, quoted or not, nested or not (`tools/oracle/transforms.py`, #262).
+/// The field a field transform reads and writes, from a path the transform's checks accepted:
+/// each `__name__` segment names the field `__key__`, quoted or not, nested or not
+/// (`tools/oracle/transforms.py`, #262), and `__type__` is a field like another.
 pub fn transform_path(path: &str) -> Result<FieldPath, Status> {
-    if path.is_empty() {
-        return Err(Status::invalid_argument(
-            "Invalid empty property path string.",
-        ));
-    }
-    let parsed = FieldPath::parse(path).map_err(Status::invalid_argument)?;
-    let segments = parsed.segments();
-    if let Some(at) = segments
-        .iter()
-        .position(|s| s != "__name__" && reserved_name(s))
-    {
-        return Err(Status::invalid_argument(format!(
-            "Invalid reserved name in field path {}",
-            segments[at..].join(".")
-        )));
-    }
-    if !segments.iter().any(|s| s == "__name__") {
-        return Ok(parsed);
-    }
-    Ok(FieldPath::from_segments(segments.iter().map(|s| {
-        if s == "__name__" {
-            "__key__"
-        } else {
-            s.as_str()
-        }
-    })))
+    let parsed = PropertyPath::read(path)?;
+    parsed.check_transform()?;
+    Ok(parsed.transform_field_path())
 }
 
-/// A field transform, with the names of its write: its path, its operand's names, then the
-/// operand's type.
-pub fn transform(transform: &FieldTransform) -> Result<(), Status> {
-    transform_path(&transform.field_path)?;
+/// A field transform's operation, with the names of its write: its kind, then its operand's
+/// names, then the operand's type.
+fn transform_operation(transform: &FieldTransform) -> Result<(), Status> {
     match &transform.transform_type {
         None => Err(Status::invalid_argument(
             "Operation type must be specified for field transformation.",
@@ -185,7 +215,7 @@ pub fn transform(transform: &FieldTransform) -> Result<(), Status> {
             | TransformType::Maximum(operand)
             | TransformType::Minimum(operand),
         ) => {
-            value_names(operand)?;
+            value_names(operand, Place::Document)?;
             match operand.value_type.as_ref().and_then(Number::of) {
                 Some(_) => Ok(()),
                 None => Err(Status::invalid_argument("Input must be int64 or double.")),
@@ -194,34 +224,37 @@ pub fn transform(transform: &FieldTransform) -> Result<(), Status> {
         Some(
             TransformType::AppendMissingElements(operands)
             | TransformType::RemoveAllFromArray(operands),
-        ) => operands.values.iter().try_for_each(value_names),
+        ) => operands
+            .values
+            .iter()
+            .try_for_each(|operand| value_names(operand, Place::Document)),
     }
 }
 
-/// The field transforms of one write, in order: each one (`transform`), then against the ones
-/// before it, since a write may not transform a field and a field nested in it. The same path
-/// twice is allowed. The message names the shorter path, its segments joined by dots, with
-/// `__key__` for `__name__` (`tools/oracle/transforms.py`, #262).
+/// The field transforms of one write, each in turn: its path read ([`PropertyPath::read`]), its
+/// operation, then against the ones before it, since a write may not transform a field and a
+/// field nested in it (array offsets included), then its path as a transform's (no array
+/// offsets). The same path twice is allowed. The message names the shorter path, with
+/// `__key__` for `__name__` (`tools/oracle/transforms.py`, `tools/oracle/rest.py`, #262).
 pub fn transforms(transforms: &[FieldTransform]) -> Result<(), Status> {
-    let mut paths: Vec<FieldPath> = Vec::with_capacity(transforms.len());
+    let mut paths: Vec<PropertyPath> = Vec::with_capacity(transforms.len());
     for t in transforms {
-        transform(t)?;
-        let path = transform_path(&t.field_path)?;
+        let path = PropertyPath::read(&t.field_path)?;
+        transform_operation(t)?;
         if let Some(parent) = paths.iter().find_map(|earlier| {
-            let (a, b) = (earlier.segments(), path.segments());
-            if a.len() < b.len() && b.starts_with(a) {
-                Some(a)
-            } else if b.len() < a.len() && a.starts_with(b) {
-                Some(b)
+            if earlier.is_prefix_of(&path) {
+                Some(earlier)
+            } else if path.is_prefix_of(earlier) {
+                Some(&path)
             } else {
                 None
             }
         }) {
             return Err(Status::invalid_argument(format!(
-                "Cannot transform property {} and its nested property at the same time.",
-                parent.join(".")
+                "Cannot transform property {parent} and its nested property at the same time."
             )));
         }
+        path.check_transform()?;
         paths.push(path);
     }
     Ok(())

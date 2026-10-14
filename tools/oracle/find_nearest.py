@@ -124,6 +124,19 @@ QUERIES = [
     ("cursor before distance field", {**E, "distanceResultField": "__x__"}, CURSOR),
     ("the query before find_nearest", {**E, "queryVector": I(1)}, BAD_WHERE),
     ("a collection group", E, {"from": [{"collectionId": "v", "allDescendants": True}]}),
+    # The vector field is read as other paths are (array offsets, `__key__`, reserved names),
+    # and nothing more is checked; the rest of find_nearest comes before whether the orders
+    # need a collection and before the late checks of the filter (#262).
+    ("a vector field with a reserved name", {**E, "vectorField": {"fieldPath": "__x__"}}, {}),
+    ("a vector field __key__", {**E, "vectorField": {"fieldPath": "__key__"}}, {}),
+    ("a vector field with an array offset", {**E, "vectorField": {"fieldPath": "v[0]"}}, {}),
+    ("a vector field __type__", {**E, "vectorField": {"fieldPath": "__type__"}}, {}),
+    ("a vector field with a reserved name before a query limit", {**E, "vectorField": {"fieldPath": "__x__"}}, {"limit": 1}),
+    ("no limit before a filter on __name__ that is not a key", {k: v for k, v in E.items() if k != "limit"}, {"where": {"fieldFilter": {"field": {"fieldPath": "__name__"}, "op": "EQUAL", "value": I(1)}}}),
+    ("no limit before an order without a collection", {k: v for k, v in E.items() if k != "limit"}, {"from": [], "orderBy": [{"field": {"fieldPath": "k"}}]}),
+    ("a query vector holding a reference", {**E, "queryVector": typed(S("__vector__"), arr({"referenceValue": "c/d"}))}, {}),
+    ("a query vector holding a geo point out of range", {**E, "queryVector": typed(S("__vector__"), arr({"geoPointValue": {"latitude": 91}}))}, {}),
+    ("no limit before an array offset in a filter", {k: v for k, v in E.items() if k != "limit"}, {"where": {"fieldFilter": {"field": {"fieldPath": "a[0]"}, "op": "EQUAL", "value": I(1)}}}),
 ]
 
 

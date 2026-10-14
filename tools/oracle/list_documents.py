@@ -28,6 +28,9 @@ OWNER = "Bearer owner"
 
 FIRST = ["c/a", "d/b"]
 SECOND = ["c/b", "a/z", "B/x", "c/m/sub/x", "e/q/sub/y", "c/a/s/1", "c/a/t/2"]
+# A collection whose names are not in the order of `n`, below a document no other case lists.
+THIRD = [f"e/q/sub/y/o/{d}" for d in "gaebfdc"]
+O = "e/q/sub/y"
 
 GRPC = [
     # (name, request without parent, parent relative to documents, owner?)
@@ -55,6 +58,18 @@ GRPC = [
     ("pages of 2", {"page_size": 2, "pages": True}, "", True),
     ("pages of 2 under a document", {"page_size": 2, "pages": True}, "c/a", True),
     ("at the first commit", {"at_first_commit": True}, "", True),
+    # An order other than the name's is a query's (#262). (A page token next to any order is
+    # an error without a message, UNKNOWN, on the official emulator; hidane continues the
+    # listing, so pages are not recorded here.)
+    ("collection, order by a field, a page of 2", {"collection_id": "o", "order_by": "n", "page_size": 2}, O, True),
+    ("collection, order by a field descending, a page of 3", {"collection_id": "o", "order_by": "n desc", "page_size": 3}, O, True),
+    ("collection, order by two fields", {"collection_id": "o", "order_by": "m desc, n"}, O, True),
+    ("collection, order by a field and the name descending", {"collection_id": "o", "order_by": "m, __name__ desc"}, O, True),
+    ("collection, order by a field, a mask", {"collection_id": "o", "order_by": "n DESC", "mask": {"field_paths": ["m"]}}, O, True),
+    ("collection, order by a field nobody has", {"collection_id": "o", "order_by": "x"}, O, True),
+    ("collection, an invalid order clause", {"collection_id": "o", "order_by": "n,"}, O, True),
+    ("collection, an order by a reserved name", {"collection_id": "o", "order_by": "__x__"}, O, True),
+    ("collection, duplicate orders", {"collection_id": "o", "order_by": "n, n desc"}, O, True),
 ]
 
 REST = [
@@ -133,10 +148,11 @@ def run(request, parent, owner, first_commit):
 rest("POST", "/reset")
 first_commit = commit(FIRST)
 commit(SECOND)
+commit(THIRD)
 fixture = {
     "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
     "generated_by": "tools/oracle/list_documents.py",
-    "seed": [FIRST, SECOND],
+    "seed": [FIRST, SECOND, THIRD],
     "grpc": [
         {"name": n, "request": r, "parent": p, "owner": o, "outcome": run(r, p, o, first_commit)}
         for n, r, p, o in GRPC

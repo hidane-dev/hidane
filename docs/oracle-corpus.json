@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:8f286ac88e2e11a702f89ba5401c974b5e7823aa556fcbb39b0daa6527c6bd86",
+ "digest": "sha256:073fb62a0e51725e93fb53fafe6d2ffa1df2a2241c4c142e6b273f818345d8df",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -17,13 +17,13 @@
   "files": 73,
   "fixtures": 41,
   "transcripts": 32,
-  "answers": 20609,
-  "bytes": 11044509,
+  "answers": 21104,
+  "bytes": 11381628,
   "levels": {
-   "full": 12383,
+   "full": 12870,
    "reasons": 3912,
-   "part": 753,
-   "status": 3404,
+   "part": 760,
+   "status": 3405,
    "codes": 30,
    "none": 1,
    "differs": 126
@@ -32,12 +32,12 @@
    "documents": {
     "fixtures": 6,
     "transcripts": 4,
-    "answers": 5254
+    "answers": 5263
    },
    "queries": {
     "fixtures": 4,
     "transcripts": 7,
-    "answers": 568
+    "answers": 795
    },
    "transactions": {
     "fixtures": 1,
@@ -52,7 +52,7 @@
    "rest": {
     "fixtures": 2,
     "transcripts": 1,
-    "answers": 245
+    "answers": 504
    },
    "webchannel": {
     "fixtures": 1,
@@ -84,7 +84,7 @@
    "v1.22.0": {
     "fixtures": 41,
     "transcripts": 32,
-    "answers": 20609
+    "answers": 21104
    }
   },
   "by_release_source": {
@@ -234,13 +234,13 @@
    },
    "recorded": {
     "first_recorded": "2026-10-10",
-    "last_changed": "2026-10-10"
+    "last_changed": "2026-10-14"
    },
-   "bytes": 11134,
-   "sha256": "f375f291c6250fd2bd27a7e92db19d7d2314d33bacf71313ca55bf23a6843e58",
-   "answers": 35,
+   "bytes": 15991,
+   "sha256": "c4bab3518a36196bf8406dac5a8669bd1c711096ff9db57a3e67e6d713df18cb",
+   "answers": 44,
    "levels": {
-    "full": 35
+    "full": 44
    },
    "replayed_over": [
     "gRPC",
@@ -347,14 +347,14 @@
    },
    "recorded": {
     "first_recorded": "2026-10-10",
-    "last_changed": "2026-10-13"
+    "last_changed": "2026-10-14"
    },
-   "bytes": 59681,
-   "sha256": "e77250fbd4608cd118aa15c386c2b90aff790f716f364b169302e3bb5237d5a3",
-   "answers": 89,
+   "bytes": 115917,
+   "sha256": "b58c6107acc25f3f11041a45f70a5b87b1ca2114805de2b25f12cb815afe37f8",
+   "answers": 179,
    "levels": {
-    "full": 34,
-    "part": 55
+    "full": 117,
+    "part": 62
    },
    "replayed_over": [
     "gRPC"
@@ -384,13 +384,13 @@
    },
    "recorded": {
     "first_recorded": "2026-10-10",
-    "last_changed": "2026-10-13"
+    "last_changed": "2026-10-14"
    },
-   "bytes": 511785,
-   "sha256": "1c80c87bc7533b45748ea8312290a9f2a2e6cce6b254b2c63c411c50afe7c40d",
-   "answers": 90,
+   "bytes": 519498,
+   "sha256": "274009b5f26d0ef4339bb0e435f98ea142785cf4d804e1cb6e3af2d9cc6cfec2",
+   "answers": 100,
    "levels": {
-    "full": 90
+    "full": 100
    },
    "replayed_over": [
     "REST"
@@ -420,13 +420,13 @@
    },
    "recorded": {
     "first_recorded": "2026-10-10",
-    "last_changed": "2026-10-13"
+    "last_changed": "2026-10-14"
    },
-   "bytes": 356969,
-   "sha256": "88cee8c49708e57d4d3ad0a977805d11aee1040039e5ca7aae162045d8315b2b",
-   "answers": 375,
+   "bytes": 423903,
+   "sha256": "35c109c9fafa98e5eb2b0cc7a239c7afea8043fb1e6449374f1c502735da2243",
+   "answers": 502,
    "levels": {
-    "full": 375
+    "full": 502
    },
    "replayed_over": [
     "gRPC"
@@ -623,12 +623,12 @@
     "first_recorded": "2026-10-10",
     "last_changed": "2026-10-14"
    },
-   "bytes": 149027,
-   "sha256": "b560dd7cde1ea607392bb4137018399f6b97bfa98214a0b1710d11ab766b6a70",
-   "answers": 223,
+   "bytes": 350406,
+   "sha256": "7bec9c79dcce1fa2c5a8e81de716e51eea0ab4889be6a53f937792bfd160b6f3",
+   "answers": 482,
    "levels": {
-    "full": 219,
-    "status": 4
+    "full": 477,
+    "status": 5
    },
    "replayed_over": [
     "REST"
@@ -694,7 +694,7 @@
     "release": "v1.22.0",
     "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
     "source": "git history",
-    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that last changed it, as at the earlier commit that changed it"
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 in the working tree, where it changed, as at the earlier commit that changed it"
    },
    "recorded": {
     "first_recorded": "2026-10-11",

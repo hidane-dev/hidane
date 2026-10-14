@@ -20,6 +20,7 @@ official emulator (a `parent` in a `:listCollectionIds` body, unparsable query p
 
 import http.client
 import json
+import re
 import sys
 import time
 from pathlib import Path
@@ -354,9 +355,201 @@ case("an update mask of __name__ leaves __key__", "PATCH", B + "/nm/a?updateMask
 case("a GET returns __key__", "GET", B + "/nm/a")
 case("a list returns __key__", "GET", B + "/nm")
 case("a query returns __key__", "POST", B + ":runQuery", {"structuredQuery": {"from": [{"collectionId": "nm"}]}})
+# A field path is read the same way everywhere: segments of a name (unquoted, or in backticks)
+# and any number of array offsets (`a[0][1]`, at most 2^31 - 1). A name `__key__` is refused as
+# soon as it is read, before the rest of the path; `__name__` is `__key__` from then on. Then a
+# reserved name other than `__key__` and `__type__` is refused, printed with the rest of the
+# path. What a mask, a transform or a query may hold comes later, segment by segment: a mask
+# refuses `__type__`, `__key__` in a longer path and array offsets ("Invalid property path"); a
+# transform only array offsets, after its operation and the transforms before it. A write's
+# update mask reads all its paths before checking any of them that way, then its transforms; a
+# read mask comes after the write's update mask and transforms.
+def mask_commit(*paths):
+    return commit(upd("fp/a", {"a": i(1)}, updateMask={"fieldPaths": list(paths)}))
+def tr_commit(*transforms, fields=None):
+    return commit(upd("fp/t", fields or {}, updateTransforms=list(transforms)))
+def inc(path, operand=None):
+    return {"fieldPath": path, "increment": operand or i(1)}
+for p in ["_.__type__", "__type__.a", "a[0]", "a[0][1]", "`a`[0]", "a[2147483647]", "a[2147483648]", "a[99999999999999999999]",
+          "__key__", "a.__key__", "`__key__`", "__key__.a b", "__key__[0]", "a b.__key__", "a[2147483648].__key__",
+          "__type__.__x__", "__x__.__name__", "a[0].__x__.b[07]", "`a`.__x__.`b c`", "__x__[0]",
+          "__name__.__type__", "__type__.__name__", "a[0].__name__", "__name__[0]", "__type__[0]", "a[0].__type__",
+          "a]", "a[]", "a[x]", "a[0]b"]:
+    case(f"update mask {p}", "POST", B + ":commit", mask_commit(p))
+case("update mask: every path is read before any is checked", "POST", B + ":commit", mask_commit("__type__", "__x__"))
+case("update mask: a path is read whole before the next", "POST", B + ":commit", mask_commit("__key__", "a b"))
+case("update mask: an array offset before a reserved name in the next path", "POST", B + ":commit", mask_commit("a[0]", "__x__"))
+case("update mask: an array offset, then __type__", "POST", B + ":commit", mask_commit("a[0]", "__type__"))
+case("PATCH update mask with __type__ in a longer path", "PATCH", B + "/fp/b?updateMask.fieldPaths=z.__type__&updateMask.fieldPaths=b&updateMask.fieldPaths=b", {})
+case("PATCH update mask with an array offset", "PATCH", B + "/fp/b?updateMask.fieldPaths=a%5B0%5D", {})
+case("PATCH: the update mask before the read mask", "PATCH", B + "/fp/b?updateMask.fieldPaths=a%5B0%5D&mask.fieldPaths=__x__", {"fields": {"a": i(1)}})
+case("PATCH read mask: every path is read before any is checked", "PATCH", B + "/fp/b?updateMask.fieldPaths=a&mask.fieldPaths=__type__&mask.fieldPaths=__x__", {"fields": {"a": i(1)}})
+case("PATCH read mask with __type__", "PATCH", B + "/fp/b?mask.fieldPaths=__type__", {"fields": {"a": i(1)}})
+case("POST read mask with an array offset", "POST", B + "/fp?documentId=c&mask.fieldPaths=a%5B0%5D", {"fields": {"a": i(1)}})
+case("POST read mask with __key__", "POST", B + "/fp?documentId=c&mask.fieldPaths=__key__", {"fields": {"a": i(1)}})
+case("GET read mask with an array offset", "GET", B + "/fp/a?mask.fieldPaths=a%5B0%5D")
+case("GET read mask with __key__ quoted", "GET", B + "/fp/a?mask.fieldPaths=%60__key__%60")
+case("GET read mask: __key__ in a later path before an array offset", "GET", B + "/fp/a?mask.fieldPaths=a%5B0%5D&mask.fieldPaths=__key__")
+case("GET read mask: __type__ before a reserved name in a later path", "GET", B + "/fp/a?mask.fieldPaths=__type__&mask.fieldPaths=__x__")
+case("list read mask with __key__", "GET", B + "/fp?mask.fieldPaths=__key__")
+case("list read mask with __type__", "GET", B + "/fp?mask.fieldPaths=__type__")
+case("batchGet mask with an array offset", "POST", B + ":batchGet", {"documents": [NAME + "/fp/a"], "mask": {"fieldPaths": ["a[0]"]}})
+case("batchGet mask with __type__", "POST", B + ":batchGet", {"documents": [NAME + "/fp/a"], "mask": {"fieldPaths": ["__type__"]}})
+for p in ["__key__", "a.__key__", "`__key__`", "__type__.__x__", "__x__.__name__", "a[0]", "a[0][1]", "a[0].__x__", "__key__[0]",
+          "__type__.a[0]", "a[0].__name__", "a[2147483648]"]:
+    case(f"transform {p}", "POST", B + ":commit", tr_commit(inc(p)))
+case("transform with an array offset and no operation", "POST", B + ":commit", tr_commit({"fieldPath": "a[0]"}))
+case("transform with an array offset and an operand that is not a number", "POST", B + ":commit", tr_commit(inc("a[0]", s("x"))))
+case("transform with an array offset and a reserved name in its operand", "POST", B + ":commit", tr_commit(inc("a[0]", {"mapValue": {"fields": {"__x__": i(1)}}})))
+case("transform with an array offset and no server value", "POST", B + ":commit", tr_commit({"fieldPath": "a[0]", "setToServerValue": "SERVER_VALUE_UNSPECIFIED"}))
+case("transform with an array offset, then a reserved name", "POST", B + ":commit", tr_commit(inc("a[0]"), inc("__x__")))
+case("transforms of a field and an array offset in it", "POST", B + ":commit", tr_commit(inc("a"), inc("a[0]")))
+case("transforms of an array offset in a field and the field", "POST", B + ":commit", tr_commit(inc("a[0]"), inc("a")))
+case("nested transforms before an array offset", "POST", B + ":commit", tr_commit(inc("m"), inc("m.n"), inc("a[0]")))
+case("an update mask path before a transform path", "POST", B + ":commit", commit(upd("fp/t", {"a": i(1)}, updateMask={"fieldPaths": ["__type__"]}, updateTransforms=[inc("__x__")])))
+case("an update mask with an array offset before a transform path", "POST", B + ":commit", commit(upd("fp/t", {"a": i(1)}, updateMask={"fieldPaths": ["a[0]"]}, updateTransforms=[inc("__key__")])))
+case("an array offset in a transform of the first write before a second write", "POST", B + ":commit", commit(upd("fp/t", {}, updateTransforms=[inc("a[0]")]), {"update": {"name": NAME + "/fp"}}))
+# A transform may name `__type__`, at any depth: the field is written like any other.
+case("transforms of __type__", "POST", B + ":commit", commit(
+    upd("fp/ty", {}, updateTransforms=[inc("__type__"), inc("m.__type__"), {"fieldPath": "n.__type__", "appendMissingElements": {"values": [s("__vector__")]}}]),
+    upd("fp/ty2", {}, updateTransforms=[inc("__type__.x")])))
+case("transforms of __type__, the documents", "POST", B + ":batchGet", {"documents": [NAME + "/fp/ty", NAME + "/fp/ty2"]})
+case("a transform of __type__ inside a vector", "POST", B + ":commit", commit(
+    upd("fp/ty3", {"v": {"mapValue": {"fields": {"__type__": s("__vector__"), "value": {"arrayValue": {"values": [d(1.0)]}}}}}},
+        updateTransforms=[{"fieldPath": "v.__type__", "maximum": i(3)}])))
+case("a transform of __type__ inside a vector, the document", "GET", B + "/fp/ty3")
+case("nested transforms of __type__", "POST", B + ":commit", tr_commit(inc("a.b"), inc("__type__.c"), inc("__type__")))
+case("transforms with array offsets write nothing", "GET", B + "/fp/t")
+
+# protobuf-java's JsonFormat (on Gson) reads a field that is not a message leniently: an array of
+# one string, number or boolean is that value, at any depth; a string field takes a number as
+# written (`1.50`, `1e5`, `-0`) or a boolean; a boolean field the strings "true" and "false"; an
+# integer field a decimal with an exact integer value ("1e2", 1.0); a double field a decimal
+# string ("1.", ".5", "+1"), "NaN", "Infinity" and "-Infinity" but not "nan" or "inf"; an enum a
+# value's number; the null value any number.
+JSON_VALUES = [
+    '{"nullValue": 0}', '{"nullValue": 1}', '{"nullValue": "0"}', '{"nullValue": [0]}', '{"nullValue": "NULL_VALUE"}',
+    '{"nullValue": "x"}', '{"nullValue": true}', '{"nullValue": {}}',
+    '{"doubleValue": "nan"}', '{"doubleValue": "inf"}', '{"doubleValue": "infinity"}', '{"doubleValue": "-inf"}', '{"doubleValue": "+Infinity"}',
+    '{"doubleValue": " 1"}', '{"doubleValue": "0x10"}', '{"doubleValue": "1d"}', '{"doubleValue": true}', '{"doubleValue": []}', '{"doubleValue": [1, 2]}',
+    '{"doubleValue": "1."}', '{"doubleValue": ".5"}', '{"doubleValue": "+1"}', '{"doubleValue": "1e5"}', '{"doubleValue": [1.5]}', '{"doubleValue": ["1.5"]}', '{"doubleValue": [[1]]}',
+    '{"stringValue": ["a"]}', '{"stringValue": [1]}', '{"stringValue": [["a"]]}', '{"stringValue": [true]}',
+    '{"stringValue": []}', '{"stringValue": ["a", "b"]}', '{"stringValue": [null]}', '{"stringValue": [{}]}',
+    '{"stringValue": 1e5}', '{"stringValue": 1.50}', '{"stringValue": -0}', '{"stringValue": 1E5}', '{"stringValue": 0.10}',
+    '{"stringValue": 100000000000000000000000}', '{"stringValue": -0.0}', '{"stringValue": 1e-7}', '{"stringValue": [1.50]}',
+    '{"integerValue": [1]}', '{"integerValue": ["1"]}', '{"integerValue": "1e2"}', '{"integerValue": 1e2}', '{"integerValue": 1.0}', '{"integerValue": "1.0"}',
+    '{"integerValue": "+1"}', '{"integerValue": "01"}', '{"integerValue": 1.5}', '{"integerValue": " 1"}', '{"integerValue": "0x10"}', '{"integerValue": "1.5e0"}',
+    '{"booleanValue": "true"}', '{"booleanValue": "false"}', '{"booleanValue": [true]}', '{"booleanValue": ["true"]}',
+    '{"booleanValue": "True"}', '{"booleanValue": "1"}', '{"booleanValue": 1}', '{"booleanValue": "TRUE"}',
+    '{"bytesValue": ["AQI="]}', '{"bytesValue": true}', '{"bytesValue": 1234}', '{"bytesValue": 1}',
+    '{"timestampValue": ["2020-01-01T00:00:00Z"]}', '{"timestampValue": 1}',
+    '{"geoPointValue": {"latitude": "1.5", "longitude": [2]}}', '{"geoPointValue": {"latitude": true}}',
+    '{"referenceValue": ["' + NAME + '/c/d"]}',
+    '{"mapValue": {"fields": {"a": {"integerValue": [1]}}}}',
+    '{"arrayValue": {"values": [{"stringValue": [2.50]}]}}',
+]
+for n, v in enumerate(JSON_VALUES):
+    case(f"JsonFormat: {v.replace(NAME, '{name}')}", "PATCH", B + f"/js/v{n}", raw='{"fields": {"v": ' + v + '}}')
+case("JsonFormat: a document name in an array", "POST", B + ":commit", raw='{"writes": [{"update": {"name": ["' + NAME + '/js/w"], "fields": {}}}]}')
+case("JsonFormat: exists as a string", "POST", B + ":commit", raw='{"writes": [{"update": {"name": "' + NAME + '/js/w2", "fields": {}}, "currentDocument": {"exists": "true"}}]}', compare="status")
+case("JsonFormat: exists as a string in an array", "POST", B + ":commit", raw='{"writes": [{"update": {"name": "' + NAME + '/js/w3", "fields": {}}, "currentDocument": {"exists": ["false"]}}]}')
+case("JsonFormat: a limit and an offset as a string and an array", "POST", B + ":runQuery", raw='{"structuredQuery": {"from": [{"collectionId": "js"}], "select": {"fields": []}, "limit": "2", "offset": [1]}}')
+case("JsonFormat: a limit as an object", "POST", B + ":runQuery", raw='{"structuredQuery": {"from": [{"collectionId": "js"}], "limit": {"value": "2"}}}')
+case("JsonFormat: an operator in an array", "POST", B + ":runQuery", raw='{"structuredQuery": {"from": [{"collectionId": "js"}], "where": {"fieldFilter": {"field": {"fieldPath": "v"}, "op": ["EQUAL"], "value": {"nullValue": 0}}}}}')
+case("JsonFormat: an operator by number", "POST", B + ":runQuery", raw='{"structuredQuery": {"from": [{"collectionId": "js"}], "where": {"fieldFilter": {"field": {"fieldPath": "v"}, "op": 5, "value": {"integerValue": "100"}}}}}')
+case("JsonFormat: an operator by number as a string", "POST", B + ":runQuery", raw='{"structuredQuery": {"from": [{"collectionId": "js"}], "where": {"fieldFilter": {"field": {"fieldPath": "v"}, "op": "5", "value": {"booleanValue": "true"}}}}}')
+case("JsonFormat: an operator in lowercase", "POST", B + ":runQuery", raw='{"structuredQuery": {"from": [{"collectionId": "js"}], "where": {"fieldFilter": {"field": {"fieldPath": "v"}, "op": "equal", "value": {"nullValue": 0}}}}}')
+case("JsonFormat: a boolean as a string in a query", "POST", B + ":runQuery", raw='{"structuredQuery": {"from": [{"collectionId": "js", "allDescendants": "true"}], "select": {"fields": []}}}')
+case("JsonFormat: a repeated field as an object", "POST", B + ":runQuery", raw='{"structuredQuery": {"from": {"collectionId": "js"}}}')
+case("JsonFormat: a repeated field as a string", "POST", B + ":batchGet", raw='{"documents": "' + NAME + '/js/v0"}')
+case("JsonFormat: a mask path as a number", "POST", B + ":batchGet", raw='{"documents": ["' + NAME + '/js/v34"], "mask": {"fieldPaths": [["v"]]}}')
+
+# A reference is read as a document's parent name (the database alone, with or without
+# `/documents`, is a parent), then as a key: an empty one is "Key path is empty.", and its IDs
+# have the key's limits. A geo point's latitude is within -90 to 90 and its longitude within
+# -180 to 180, NaN in neither, printed as Java prints a double. Both are checked with the names
+# of the write, value by value, in order and depth first, next to reserved names and values
+# without a type, also in transforms' operands.
+def ref(n): return {"referenceValue": n}
+def geo(**c): return {"geoPointValue": c}
+DB_NAME = "projects/{project}/databases/(default)"
+for label, value in [
+    ("a reference to c/d", ref("c/d")), ("a reference to the documents root", ref(NAME)), ("a reference to the database", ref(DB_NAME)),
+    ("a reference to a collection", ref(NAME + "/c")), ("a reference with an empty ID", ref(NAME + "/c//d")),
+    ("a reference with a trailing slash", ref(NAME + "/c/d/")), ("a reference to the database with a trailing slash", ref(DB_NAME + "/")),
+    ("a reference to another database and project", ref("projects/other/databases/db2/documents/c/d")),
+    ("a reference to a subcollection's document", ref(NAME + "/c/d/e/f")), ("an empty reference", ref("")),
+    ("a reference without documents", ref(DB_NAME + "/x")), ("a reference to a database only half named", ref("projects/p/databases")),
+    ("a reference with a reserved collection ID", ref(NAME + "/__x__/d")), ("a reference with a reserved document ID", ref(NAME + "/c/__x__")),
+    ("a reference with a numeric document ID", ref(NAME + "/c/__id5__")), ("a reference with the ID .", ref(NAME + "/c/.")),
+    ("a reference with a collection ID over 1500 bytes", ref(NAME + "/" + "c" * 1501 + "/d")),
+    ("a reference with a document ID over 1500 bytes", ref(NAME + "/c/" + "d" * 1501)),
+    ("a latitude of 91", geo(latitude=91)), ("a latitude just over 90", geo(latitude=90.0000001)), ("a latitude of -91", geo(latitude=-91)),
+    ("a latitude of 1e300", geo(latitude=1e300)), ("a latitude of infinity", geo(latitude="Infinity")), ("a latitude of NaN", geo(latitude="NaN")),
+    ("a longitude of 180.5", geo(latitude=0, longitude=180.5)), ("a longitude of -180.5", geo(longitude=-180.5)), ("a longitude of NaN", geo(longitude="NaN")),
+    ("a longitude of 1.23456789e7", geo(longitude=12345678.9)), ("a latitude and a longitude out of range", geo(latitude=91, longitude=181)),
+    ("the corners of the range", geo(latitude=-90, longitude=180)),
+]:
+    case(f"commit {label}", "POST", B + ":commit", commit(upd("rf/a", {"v": value})))
+case("PATCH a reference in a map", "PATCH", B + "/rf/b", {"fields": {"m": {"mapValue": {"fields": {"k": ref("c/d")}}}}})
+case("batchWrite a geo point in an array", "POST", B + ":batchWrite", commit(upd("rf/a", {"v": {"arrayValue": {"values": [geo(latitude=91)]}}})))
+case("POST a geo point in a map", "POST", B + "/rf?documentId=c", {"fields": {"m": {"mapValue": {"fields": {"k": geo(longitude=180.5)}}}}})
+case("a reference before a reserved name in a later field", "POST", B + ":commit", commit(upd("rf/a", {"v": ref("c/d"), "__x__": i(1)})))
+case("a reserved name before a reference in a later field", "POST", B + ":commit", commit(upd("rf/a", {"__x__": i(1), "v": ref("c/d")})))
+case("a reference before a value without a type", "POST", B + ":commit", commit(upd("rf/a", {"v": {"arrayValue": {"values": [ref("c/d"), U]}}})))
+case("a value without a type before a reference", "POST", B + ":commit", commit(upd("rf/a", {"v": {"arrayValue": {"values": [U, ref("c/d")]}}})))
+case("a geo point before a reserved name in its map", "POST", B + ":commit", commit(upd("rf/a", {"v": {"mapValue": {"fields": {"x": geo(latitude=91), "__y__": i(1)}}}})))
+case("a geo point before a reference", "POST", B + ":commit", commit(upd("rf/a", {"v": geo(latitude=91), "u": ref("c/d")})))
+case("a reference before a geo point", "POST", B + ":commit", commit(upd("rf/a", {"u": ref("c/d"), "v": geo(latitude=91)})))
+case("a reference before nested arrays", "POST", B + ":commit", commit(upd("rf/a", {"n": {"arrayValue": {"values": [{"arrayValue": {}}]}}, "v": ref("c/d")})))
+case("a reference before the update mask", "POST", B + ":commit", commit(upd("rf/a", {"v": ref("c/d")}, updateMask={"fieldPaths": ["__x__"]})))
+case("a reference before the sequence of writes", "POST", B + ":commit", commit(upd("rf/a", {"v": ref("c/d")}), upd("rf/a", {}, currentDocument={"exists": False}), {"delete": NAME + "/rf/a"}))
+case("a reference before the names of a later write", "POST", B + ":commit", commit(upd("rf/a", {"v": ref("c/d")}), upd("rf/b", {"__x__": i(1)})))
+case("a reference before a precondition", "POST", B + ":commit", commit(upd("rf/a", {"v": ref("c/d")}, currentDocument={"exists": True})))
+case("a reference in a vector", "POST", B + ":commit", commit(upd("rf/a", {"v": {"mapValue": {"fields": {"__type__": s("__vector__"), "value": {"arrayValue": {"values": [ref("c/d")]}}}}}})))
+case("a reference next to an unknown __type__", "POST", B + ":commit", commit(upd("rf/a", {"v": {"mapValue": {"fields": {"__type__": s("other"), "k": ref("c/d")}}}})))
+case("a reference in an array union", "POST", B + ":commit", commit(upd("rf/a", {}, updateTransforms=[{"fieldPath": "t", "appendMissingElements": {"values": [ref("c/d")]}}])))
+case("a geo point in an array removal", "POST", B + ":commit", commit({"transform": {"document": NAME + "/rf/a", "fieldTransforms": [{"fieldPath": "t", "removeAllFromArray": {"values": [geo(latitude=91)]}}]}}))
+case("a reference in an increment's operand", "POST", B + ":commit", commit(upd("rf/a", {}, updateTransforms=[{"fieldPath": "t", "increment": {"mapValue": {"fields": {"r": ref("c/d")}}}}])))
+case("a geo point as a maximum", "POST", B + ":commit", commit(upd("rf/a", {}, updateTransforms=[{"fieldPath": "t", "maximum": geo(latitude=91)}])))
+case("the writes that were not refused", "GET", B + "/rf")
+
+# A version precondition on a deleted document is checked against the time it was deleted: a
+# document that never existed, or was deleted while missing, has version 0. (The message's
+# versions of the years 2021 to 2099 are masked as `<version>`, as the fuzzer does.)
+OLD = {"updateTime": "2001-01-01T00:00:00Z"}
+case("a version precondition on a document that never existed", "POST", B + ":commit", commit(upd("dv/never", {}, currentDocument=OLD)))
+case("a document to delete", "POST", B + ":commit", commit(upd("dv/a", {"n": i(1)})))
+case("its deletion", "POST", B + ":commit", commit({"delete": NAME + "/dv/a"}))
+case("a version precondition on a deleted document", "POST", B + ":commit", commit(upd("dv/a", {}, currentDocument=OLD)))
+case("a version precondition on a deleted document, for a delete", "POST", B + ":commit", commit({"delete": NAME + "/dv/a", "currentDocument": OLD}))
+case("a version precondition on a deleted document, for a transform", "POST", B + ":commit", commit({"transform": {"document": NAME + "/dv/a", "fieldTransforms": [{"fieldPath": "n", "increment": i(1)}]}, "currentDocument": OLD}))
+case("a version precondition on a deleted document, in a batchWrite", "POST", B + ":batchWrite", commit(upd("dv/a", {}, currentDocument=OLD)))
+case("a delete of a missing document", "POST", B + ":commit", commit({"delete": NAME + "/dv/missing"}))
+case("a version precondition after a delete of a missing document", "POST", B + ":commit", commit(upd("dv/missing", {}, currentDocument=OLD)))
+case("a document deleted twice", "POST", B + ":commit", commit(upd("dv/b", {"n": i(1)})))
+case("a document deleted twice, the first deletion", "POST", B + ":commit", commit({"delete": NAME + "/dv/b"}))
+case("a document deleted twice, the second deletion", "POST", B + ":commit", commit({"delete": NAME + "/dv/b"}))
+case("a version precondition on a document deleted twice", "POST", B + ":commit", commit(upd("dv/b", {}, currentDocument=OLD)))
+
+# ListDocuments' `orderBy` is a query's order: clauses separated by commas, each a field path
+# and `asc` or `desc` in any case, with whitespace around ("Invalid order by clause" for
+# anything else), checked as a query's orders are; the documents without the fields are left out.
+case("documents to list in order", "POST", B + ":commit", commit(*[upd(f"lo/{d}", f) for d, f in [
+    ("a", {"n": i(3), "m": s("x")}), ("b", {"n": i(1)}), ("c", {"m": s("y")}), ("d", {"n": i(2), "m": s("x")}),
+    ("e", {"n": s("s")}), ("f", {"n": i(1), "m": s("a")}), ("g", {})]]))
+for order in ["n", "n%20desc", "n%20asc", "n%20DESC", "n%20%20desc", "m,n", "m%20desc,n", "n,%20m", "n,__name__%20desc", "__name__",
+              "a.b", "%60a%20b%60", "x%20desc", "n,", ",n", "%20", "n%20desc%20x", "n%20ascending", "m,m", "n%20desc,n",
+              "__name__,n", "__name__%20desc", "__x__", "a%5B0%5D", "a..b"]:
+    case(f"list ordered by {order}", "GET", B + "/lo?orderBy=" + order)
+case("list ordered by a field, a page of 2", "GET", B + "/lo?orderBy=n&pageSize=2")
+case("list ordered by a field, a mask", "GET", B + "/lo?orderBy=n%20desc&mask.fieldPaths=m")
+case("list ordered by a field, showing missing documents", "GET", B + "/lo?orderBy=n&showMissing=true")
 
 
 def norm(text):
+    # Versions of the years 2021 to 2099, in microseconds (`tools/fuzz/diff.py`).
+    text = re.sub(r"(version \()(1[6-9]|[23][0-9]|40|41)[0-9]{14}(?![0-9])", r"\1<version>", text)
     return mask(text, PROJECT)
 
 
@@ -366,7 +559,7 @@ def run():
         conn = http.client.HTTPConnection(*HOST.split(":"), timeout=10)
         path = c["path"].replace("{project}", PROJECT)
         if "raw" in c:
-            body = c["raw"]
+            body = c["raw"].replace("{project}", PROJECT)
         elif "body" in c:
             body = json.dumps(c["body"]).replace("{project}", PROJECT)
         else:

@@ -19,6 +19,7 @@ mod export;
 mod guard;
 mod listen;
 pub(crate) mod names;
+mod property_path;
 mod query;
 pub(crate) mod seed;
 pub(crate) mod transactions;
@@ -57,8 +58,8 @@ use hidane_proto::google::{
         WriteResult, batch_get_documents_request, batch_get_documents_response,
         firestore_server::Firestore, get_document_request, list_collection_ids_request,
         list_documents_request, precondition::ConditionType, run_aggregation_query_request,
-        run_query_request, run_query_response, structured_aggregation_query, transaction_options,
-        value::ValueType, write::Operation,
+        run_query_request, run_query_response, structured_aggregation_query, structured_query,
+        transaction_options, value::ValueType, write::Operation,
     },
     rpc,
 };
@@ -518,24 +519,26 @@ impl Firestore for FirestoreService {
                 "cannot specify an order when show_missing is true",
             ));
         }
-        match req.order_by.as_str() {
-            "" | "__name__" | "__name__ asc" => {}
-            "__name__ desc" => {
-                return Err(Status::failed_precondition(
-                    "Firestore does not support descending key scans",
-                ));
-            }
-            _ if every_collection => {
-                return Err(Status::invalid_argument(
-                    "kind is required for all orders except __key__ ascending",
-                ));
-            }
-            _ => {
-                return Err(Status::unimplemented(
-                    "ListDocuments order_by other than __name__ is not implemented yet",
-                ));
-            }
-        }
+        // The order is a query's (`tools/oracle/rest.py`, #262): its clauses, then the query's
+        // checks of its orders. Ordered by anything but the name, the listing is that query's.
+        let orders = list_orders(&req.order_by)?;
+        let ordered = Query::parse(
+            &parent.database,
+            parent.path.clone(),
+            &StructuredQuery {
+                from: if every_collection {
+                    Vec::new()
+                } else {
+                    vec![structured_query::CollectionSelector {
+                        collection_id: req.collection_id.clone(),
+                        all_descendants: false,
+                    }]
+                },
+                order_by: orders,
+                ..StructuredQuery::default()
+            },
+        )?;
+        let ordered = (!ordered.orders_by_name()).then_some(ordered);
         if req.show_missing && !caller.is_admin() {
             return Err(Status::permission_denied(METADATA_ADMIN));
         }
@@ -614,6 +617,28 @@ impl Firestore for FirestoreService {
             .ok()
             .filter(|n| *n > 0)
             .unwrap_or(usize::MAX);
+
+        if let Some(query) = ordered {
+            // A page token's document that is gone ends the listing.
+            let after = after.map(|path| self.store.get(&parent.database, &path, at));
+            let found = match &after {
+                Some(None) => Vec::new(),
+                Some(Some(doc)) => query.run_after(&*self.store, &parent.database, at, Some(doc)),
+                None => query.run_after(&*self.store, &parent.database, at, None),
+            };
+            let more = found.len() > limit;
+            let page: Vec<_> = found.into_iter().take(limit).collect();
+            return Ok(Response::new(ListDocumentsResponse {
+                next_page_token: match page.last() {
+                    Some(last) if more => encode_token(&last.path.to_string()),
+                    _ => String::new(),
+                },
+                documents: page
+                    .iter()
+                    .map(|doc| to_document(&parent.database, doc, mask.as_deref()))
+                    .collect(),
+            }));
+        }
 
         let mut documents = Vec::new();
         let mut last = None;
@@ -933,7 +958,7 @@ impl Firestore for FirestoreService {
                 "only structured queries are supported",
             ));
         };
-        let query = Query::parse(parent.path, structured)?;
+        let query = Query::parse(&database, parent.path, structured)?;
         self.check_list(&caller, &database, &query)?;
         let consistency = match &req.consistency_selector {
             Some(run_query_request::ConsistencySelector::Transaction(t)) => {
@@ -1035,12 +1060,14 @@ impl Firestore for FirestoreService {
             ));
         };
         let read = Aggregations::read(&q.aggregations)?;
-        let reads_fields = read.reads_fields();
         let mut checked = None;
-        let mut query = Query::parse_aggregated(parent.path, structured, || {
-            checked = Some(read.check()?);
-            Ok(reads_fields)
-        })?;
+        let mut query =
+            Query::parse_aggregated(&database, parent.path, structured, |projection| {
+                let aggregations = read.check(projection)?;
+                let fields = aggregations.fields().collect();
+                checked = Some(aggregations);
+                Ok(fields)
+            })?;
         let aggregations = checked.expect("checked while parsing the query");
         self.check_list(&caller, &database, &query)?;
         query.require(aggregations.fields());
@@ -1315,16 +1342,11 @@ fn document_with(
     }
 }
 
-/// A read mask, whose paths are checked as field paths are: no reserved name, no `__name__`
-/// inside a longer path, not empty (`tools/oracle/rest.py`, #262).
+/// A read mask, whose paths are checked as an update mask's are (`validate::mask_paths`,
+/// `tools/oracle/rest.py`, #262).
 fn parse_mask(mask: Option<&DocumentMask>) -> Result<Option<Vec<FieldPath>>, Status> {
-    mask.map(|m| {
-        m.field_paths
-            .iter()
-            .map(|p| validate::field_path(p))
-            .collect()
-    })
-    .transpose()
+    mask.map(|m| validate::mask_paths(&m.field_paths))
+        .transpose()
 }
 
 /// The read mask of a write that returns the document (UpdateDocument, CreateDocument), checked
@@ -1347,6 +1369,65 @@ fn store_error(err: &StoreError) -> Status {
         StoreError::AlreadyExists(m) => Status::already_exists(m.clone()),
         StoreError::FailedPrecondition(m) => Status::failed_precondition(m.clone()),
         StoreError::Aborted(m) => Status::aborted(m.clone()),
+    }
+}
+
+/// The orders of ListDocuments' `order_by`, as the official emulator reads them: clauses
+/// separated by commas, each a field path (backticks quote, as in any path) and `asc` or `desc`
+/// in any case, with whitespace around; anything else is "Invalid order by clause".
+fn list_orders(order_by: &str) -> Result<Vec<structured_query::Order>, Status> {
+    let invalid = || Status::invalid_argument(format!("Invalid order by clause \"{order_by}\"."));
+    let mut orders = Vec::new();
+    if order_by.is_empty() {
+        return Ok(orders);
+    }
+    let mut chars = order_by.chars().peekable();
+    let skip_whitespace = |chars: &mut std::iter::Peekable<std::str::Chars<'_>>| {
+        while chars.next_if(|c| c.is_whitespace()).is_some() {}
+    };
+    loop {
+        skip_whitespace(&mut chars);
+        let mut path = String::new();
+        while let Some(&c) = chars.peek() {
+            if c.is_whitespace() || c == ',' {
+                break;
+            }
+            path.push(c);
+            chars.next();
+            if c == '`' {
+                while let Some(c) = chars.next() {
+                    path.push(c);
+                    match c {
+                        '`' => break,
+                        '\\' => path.extend(chars.next()),
+                        _ => {}
+                    }
+                }
+            }
+        }
+        if !property_path::well_formed(&path) {
+            return Err(invalid());
+        }
+        skip_whitespace(&mut chars);
+        let mut word = String::new();
+        while let Some(c) = chars.next_if(char::is_ascii_alphabetic) {
+            word.push(c);
+        }
+        let direction = match word.to_ascii_lowercase().as_str() {
+            "" | "asc" => structured_query::Direction::Ascending,
+            "desc" => structured_query::Direction::Descending,
+            _ => return Err(invalid()),
+        };
+        skip_whitespace(&mut chars);
+        orders.push(structured_query::Order {
+            field: Some(structured_query::FieldReference { field_path: path }),
+            direction: direction as i32,
+        });
+        match chars.next() {
+            None => return Ok(orders),
+            Some(',') => {}
+            Some(_) => return Err(invalid()),
+        }
     }
 }
 

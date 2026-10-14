@@ -3993,6 +3993,3292 @@
      }
     ]
    }
+  },
+  {
+   "name": "sum of __key__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__key__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path member name \"__key__\"."
+   }
+  },
+  {
+   "name": "sum of a.__key__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a.__key__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path member name \"__key__\"."
+   }
+  },
+  {
+   "name": "sum of __x__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__x__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "sum of __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregations are not supported for the property: __type__"
+   }
+  },
+  {
+   "name": "sum of a.__type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a.__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "0"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of a.__type__.b",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a.__type__.b"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __type__ is reserved"
+   }
+  },
+  {
+   "name": "sum of __type__[0]",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__[0]"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __type__ is reserved"
+   }
+  },
+  {
+   "name": "sum of a.__name__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a.__name__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __key__ is reserved"
+   }
+  },
+  {
+   "name": "sum of a[0]",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "sum of a[2147483648]",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[2147483648]"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path \"a[2147483648]\". Array offsets must be within the range [0, 2^31 - 1]."
+   }
+  },
+  {
+   "name": "avg of __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregations are not supported for the property: __type__"
+   }
+  },
+  {
+   "name": "a sum of an array offset, then a reserved name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__x__"
+      }
+     },
+     "alias": "t"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "a sum of __type__, then an array offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "t"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregations are not supported for the property: __type__"
+   }
+  },
+  {
+   "name": "a sum of an array offset, then __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "t"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "a sum of __name__, then an array offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__name__"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "t"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregations are not supported for the property: __key__"
+   }
+  },
+  {
+   "name": "a sum of an array offset and a count up to -1",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "count": {
+      "upTo": "-1"
+     },
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The `up_to` value in a COUNT aggregation must be greater than or equal to zero."
+   }
+  },
+  {
+   "name": "a sum of an array offset and six aggregations",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "count": {},
+     "alias": "a"
+    },
+    {
+     "count": {},
+     "alias": "b"
+    },
+    {
+     "count": {},
+     "alias": "c"
+    },
+    {
+     "count": {},
+     "alias": "d"
+    },
+    {
+     "count": {},
+     "alias": "e"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The maximum number of aggregations allowed in an aggregation query is 5. Received: 6"
+   }
+  },
+  {
+   "name": "a sum of an array offset and a reserved alias",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "count": {},
+     "alias": "__x__"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The property.name \"__x__\" is reserved."
+   }
+  },
+  {
+   "name": "a sum of __name__ and a reserved alias after it",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__name__"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "count": {},
+     "alias": "__x__"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The property.name \"__x__\" is reserved."
+   }
+  },
+  {
+   "name": "a sum of __type__ and a duplicate alias",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "x"
+    },
+    {
+     "count": {},
+     "alias": "x"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregations are not supported for the property: __type__"
+   }
+  },
+  {
+   "name": "a sum of an array offset and a duplicate alias",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "x"
+    },
+    {
+     "count": {},
+     "alias": "x"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "a duplicate alias before a sum of __name__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "x"
+    },
+    {
+     "count": {},
+     "alias": "x"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__name__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation aliases contain duplicate alias: x."
+   }
+  },
+  {
+   "name": "a duplicate alias before a reserved alias",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "x"
+    },
+    {
+     "count": {},
+     "alias": "x"
+    },
+    {
+     "count": {},
+     "alias": "__y__"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The property.name \"__y__\" is reserved."
+   }
+  },
+  {
+   "name": "a reserved filter path before a sum of __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__x__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "a filter without a value before a sum of an array offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL"
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Cannot convert firestore.v1.Value with type unset."
+   }
+  },
+  {
+   "name": "a sum of an array offset before duplicate orders",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     {
+      "field": {
+       "fieldPath": "v"
+      }
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "a sum of __type__ before an array offset in a filter",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregations are not supported for the property: __type__"
+   }
+  },
+  {
+   "name": "an array offset in the projection before a sum of __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "a[0]"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "a sum of __type__ without a collection",
+   "parent": "",
+   "query": {},
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregations are not supported for the property: __type__"
+   }
+  },
+  {
+   "name": "a sum of __type__ and a negative limit",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "limit": -1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregations are not supported for the property: __type__"
+   }
+  },
+  {
+   "name": "an empty projection",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {}
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation over non-key properties is not supported for base query that only returns keys."
+   }
+  },
+  {
+   "name": "an empty projection, a count",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {}
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection of no fields, an avg",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": []
+    }
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation over non-key properties is not supported for base query that only returns keys."
+   }
+  },
+  {
+   "name": "a projection of the name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "__name__"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation over non-key properties is not supported for base query that only returns keys."
+   }
+  },
+  {
+   "name": "a projection of the name, a count",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "__name__"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection of the field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "v"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Cannot apply property masks when aggregation fields are present."
+   }
+  },
+  {
+   "name": "a projection of another field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "w"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The aggregation property v is not present in the base query's property mask."
+   }
+  },
+  {
+   "name": "a projection of the field and another",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "v"
+      },
+      {
+       "fieldPath": "w"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Cannot apply property masks when aggregation fields are present."
+   }
+  },
+  {
+   "name": "a projection of a map, a field in it",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "m"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "m.x"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Cannot apply property masks when aggregation fields are present."
+   }
+  },
+  {
+   "name": "a projection of a field in a map, the map",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "m.x"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "m"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The aggregation property m is not present in the base query's property mask."
+   }
+  },
+  {
+   "name": "a projection of a quoted path with a dot",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "`m.x`"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "m.x"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The aggregation property m.x is not present in the base query's property mask."
+   }
+  },
+  {
+   "name": "a projection of the field and the name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "v"
+      },
+      {
+       "fieldPath": "__name__"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Cannot apply property masks when aggregation fields are present."
+   }
+  },
+  {
+   "name": "a projection of the name and another field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "__name__"
+      },
+      {
+       "fieldPath": "w"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The aggregation property v is not present in the base query's property mask."
+   }
+  },
+  {
+   "name": "a projection, a count",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "v"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection, a missing field before a present one",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "v"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "w"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "t"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The aggregation property w is not present in the base query's property mask."
+   }
+  },
+  {
+   "name": "a projection, a present field before a missing one",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "v"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "w"
+      }
+     },
+     "alias": "t"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The aggregation property w is not present in the base query's property mask."
+   }
+  },
+  {
+   "name": "an empty projection, a sum of __name__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {}
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__name__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Cannot apply property masks when aggregation fields are present."
+   }
+  },
+  {
+   "name": "an empty projection, a sum of __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {}
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation over non-key properties is not supported for base query that only returns keys."
+   }
+  },
+  {
+   "name": "a projection, a sum of __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "w"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The aggregation property __type__ is not present in the base query's property mask."
+   }
+  },
+  {
+   "name": "an empty projection, a sum of an array offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {}
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation over non-key properties is not supported for base query that only returns keys."
+   }
+  },
+  {
+   "name": "a projection, a sum of an array offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "w"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The aggregation property a[0] is not present in the base query's property mask."
+   }
+  },
+  {
+   "name": "an empty projection, a reserved alias",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {}
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "__x__"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The property.name \"__x__\" is reserved."
+   }
+  },
+  {
+   "name": "an empty projection, a duplicate alias",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {}
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "x"
+    },
+    {
+     "count": {},
+     "alias": "x"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation over non-key properties is not supported for base query that only returns keys."
+   }
+  },
+  {
+   "name": "an empty projection, a count up to -1",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {}
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "count": {
+      "upTo": "-1"
+     },
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The `up_to` value in a COUNT aggregation must be greater than or equal to zero."
+   }
+  },
+  {
+   "name": "a projection before two array-contains",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "v"
+      }
+     ]
+    },
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "c"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Cannot apply property masks when aggregation fields are present."
+   }
+  },
+  {
+   "name": "an empty projection before duplicate orders",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {},
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     {
+      "field": {
+       "fieldPath": "v"
+      }
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation over non-key properties is not supported for base query that only returns keys."
+   }
+  },
+  {
+   "name": "a projection before an order by the name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "w"
+      }
+     ]
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      }
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The aggregation property v is not present in the base query's property mask."
+   }
+  },
+  {
+   "name": "ordered by the name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [v] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "ordered by the name, a count",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "ordered by the field, then the name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "6"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "ordered by another field, then the name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "w"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [v] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "ordered by the field, then the name, two sums",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "w"
+      }
+     },
+     "alias": "t"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [w] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "ordered by the name, three fields",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "m.x"
+      }
+     },
+     "alias": "a"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "`x y`"
+      }
+     },
+     "alias": "b"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [m.x, v, x y] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "ordered by the name, a field twice",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "t"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [v] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "ordered by another field, then the name descending",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "w"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [v] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "ordered by the name descending",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "FAILED_PRECONDITION",
+    "message": "Firestore does not support descending key scans"
+   }
+  },
+  {
+   "name": "ordered by the name twice",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [v] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "ordered by the name, then another field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "w"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [v] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "a key inequality",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "GREATER_THAN",
+      "value": {
+       "referenceValue": "{documents}/ints/a"
+      }
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [v] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "a key equality",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "{documents}/ints/a"
+      }
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [v] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "a key equality, ordered by the field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "{documents}/ints/a"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "a key equality, ordered by another field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "{documents}/ints/a"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "w"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [v] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "a key in",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "IN",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "referenceValue": "{documents}/ints/a"
+         }
+        ]
+       }
+      }
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [v] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "is null on the key",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "unaryFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "IS_NULL"
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [v] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "is null on the key, ordered by the field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "unaryFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "IS_NULL"
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "__key__ filter value must be a Key"
+   }
+  },
+  {
+   "name": "a key equality in an or",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "OR",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "v"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "EQUAL",
+         "value": {
+          "referenceValue": "{documents}/ints/a"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [v] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "an inequality on the field, ordered by the name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "GREATER_THAN",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain more fields after the key"
+   }
+  },
+  {
+   "name": "an inequality on another field, ordered by the name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "w"
+      },
+      "op": "GREATER_THAN",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [v] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "an inequality on another field, ordered by the name descending",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "w"
+      },
+      "op": "GREATER_THAN",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [v] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "ordered by the name, a negative limit",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "limit": -1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [v] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "ordered by the name, without a collection",
+   "parent": "",
+   "query": {
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [v] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "ordered by the name, two array-contains",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "c"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "FAILED_PRECONDITION",
+    "message": "Only a single array-contains clause is allowed in a query"
+   }
+  },
+  {
+   "name": "ordered by the name, too many disjunctions",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            },
+            {
+             "integerValue": "11"
+            },
+            {
+             "integerValue": "12"
+            },
+            {
+             "integerValue": "13"
+            },
+            {
+             "integerValue": "14"
+            },
+            {
+             "integerValue": "15"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "c"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [v] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "an inequality next to a key equality, ordered by the name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "w"
+         },
+         "op": "GREATER_THAN",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "EQUAL",
+         "value": {
+          "referenceValue": "{documents}/ints/a"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Equality on key is not allowed if there are other inequality fields and key does not appear in inequalities."
+   }
+  },
+  {
+   "name": "ordered by the name, then the field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "v"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain more fields after the key"
+   }
+  },
+  {
+   "name": "ordered by the name, then one of two fields",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "v"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "w"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [w] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "array membership on the key",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "ARRAY_CONTAINS_ANY",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "referenceValue": "{documents}/ints/a"
+         }
+        ]
+       }
+      }
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __key__ is reserved"
+   }
+  },
+  {
+   "name": "array membership on the key, duplicate orders",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "ARRAY_CONTAINS",
+      "value": {
+       "referenceValue": "{documents}/ints/a"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "w"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "w"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain duplicate fields w"
+   }
+  },
+  {
+   "name": "ordered by the name, a sum of __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregations are not supported for the property: __type__"
+   }
+  },
+  {
+   "name": "ordered by the name, a duplicate alias",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "x"
+    },
+    {
+     "count": {},
+     "alias": "x"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation aliases contain duplicate alias: x."
+   }
   }
  ]
 }

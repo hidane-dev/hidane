@@ -14,6 +14,15 @@
    "e/q/sub/y",
    "c/a/s/1",
    "c/a/t/2"
+  ],
+  [
+   "e/q/sub/y/o/g",
+   "e/q/sub/y/o/a",
+   "e/q/sub/y/o/e",
+   "e/q/sub/y/o/b",
+   "e/q/sub/y/o/f",
+   "e/q/sub/y/o/d",
+   "e/q/sub/y/o/c"
   ]
  ],
  "grpc": [
@@ -563,6 +572,304 @@
       ]
      }
     ]
+   }
+  },
+  {
+   "name": "collection, order by a field, a page of 2",
+   "request": {
+    "collection_id": "o",
+    "order_by": "n",
+    "page_size": 2
+   },
+   "parent": "e/q/sub/y",
+   "owner": true,
+   "outcome": {
+    "documents": [
+     {
+      "name": "e/q/sub/y/o/g",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/a",
+      "fields": [
+       "m",
+       "n"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "collection, order by a field descending, a page of 3",
+   "request": {
+    "collection_id": "o",
+    "order_by": "n desc",
+    "page_size": 3
+   },
+   "parent": "e/q/sub/y",
+   "owner": true,
+   "outcome": {
+    "documents": [
+     {
+      "name": "e/q/sub/y/o/c",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/d",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/f",
+      "fields": [
+       "m",
+       "n"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "collection, order by two fields",
+   "request": {
+    "collection_id": "o",
+    "order_by": "m desc, n"
+   },
+   "parent": "e/q/sub/y",
+   "owner": true,
+   "outcome": {
+    "documents": [
+     {
+      "name": "e/q/sub/y/o/g",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/a",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/e",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/b",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/f",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/d",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/c",
+      "fields": [
+       "m",
+       "n"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "collection, order by a field and the name descending",
+   "request": {
+    "collection_id": "o",
+    "order_by": "m, __name__ desc"
+   },
+   "parent": "e/q/sub/y",
+   "owner": true,
+   "outcome": {
+    "documents": [
+     {
+      "name": "e/q/sub/y/o/g",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/f",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/e",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/d",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/c",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/b",
+      "fields": [
+       "m",
+       "n"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/a",
+      "fields": [
+       "m",
+       "n"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "collection, order by a field, a mask",
+   "request": {
+    "collection_id": "o",
+    "order_by": "n DESC",
+    "mask": {
+     "field_paths": [
+      "m"
+     ]
+    }
+   },
+   "parent": "e/q/sub/y",
+   "owner": true,
+   "outcome": {
+    "documents": [
+     {
+      "name": "e/q/sub/y/o/c",
+      "fields": [
+       "m"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/d",
+      "fields": [
+       "m"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/f",
+      "fields": [
+       "m"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/b",
+      "fields": [
+       "m"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/e",
+      "fields": [
+       "m"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/a",
+      "fields": [
+       "m"
+      ]
+     },
+     {
+      "name": "e/q/sub/y/o/g",
+      "fields": [
+       "m"
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "name": "collection, order by a field nobody has",
+   "request": {
+    "collection_id": "o",
+    "order_by": "x"
+   },
+   "parent": "e/q/sub/y",
+   "owner": true,
+   "outcome": {
+    "documents": []
+   }
+  },
+  {
+   "name": "collection, an invalid order clause",
+   "request": {
+    "collection_id": "o",
+    "order_by": "n,"
+   },
+   "parent": "e/q/sub/y",
+   "owner": true,
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "Invalid order by clause \"n,\"."
+   }
+  },
+  {
+   "name": "collection, an order by a reserved name",
+   "request": {
+    "collection_id": "o",
+    "order_by": "__x__"
+   },
+   "parent": "e/q/sub/y",
+   "owner": true,
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "collection, duplicate orders",
+   "request": {
+    "collection_id": "o",
+    "order_by": "n, n desc"
+   },
+   "parent": "e/q/sub/y",
+   "owner": true,
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain duplicate fields n"
    }
   }
  ],
