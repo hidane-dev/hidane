@@ -282,6 +282,8 @@ fn project_level(fields: &Fields, mask: &MaskTree) -> Fields {
 /// Where fields land follows the official emulator (#108): at each level, the masked names are
 /// visited in the order of a Java `HashMap`, those whose value changes are put into another
 /// one, and in that map's order each is removed and, unless deleted, added again at the end.
+/// The names the mask takes whole go into that map before those it masks a path below, which
+/// decides the order of two names in one bucket (`fo-bucket` in `tools/oracle/field_order.py`).
 /// A map changed inside moves the same way; fields that keep their value stay where they are.
 pub fn apply_mask(existing: &mut Fields, input: &Fields, mask: &[FieldPath]) {
     merge_level(existing, Some(input), &MaskTree::new(mask));
@@ -289,7 +291,8 @@ pub fn apply_mask(existing: &mut Fields, input: &Fields, mask: &[FieldPath]) {
 
 fn merge_level(existing: &mut Fields, input: Option<&Fields>, mask: &MaskTree) {
     let mut changes = Vec::new();
-    for (name, below) in mask.ordered() {
+    let (whole, nested): (Vec<_>, Vec<_>) = mask.ordered().partition(|(_, below)| below.whole);
+    for (name, below) in whole.into_iter().chain(nested) {
         let old = existing.get(name);
         let given = input.and_then(|fields| fields.get(name));
         let new = if below.whole {
