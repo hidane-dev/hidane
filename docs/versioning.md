@@ -80,7 +80,7 @@ notes as a change.
 | `hidane doctor` | No finding is incompatible | A finding is incompatible | A usage error, or `--path` is not a directory | |
 | `hidane migrate` | The plan was printed or applied, or there was nothing to change | `--apply` refused (uncommitted changes, files changed meanwhile) or failed | A usage error, or `--path` is not a directory | |
 | `hidane report` | The report was printed or written | `--output` could not be written | A usage error, or `--path` is not a directory | |
-| `hidane benchmark` | The run completed, stable or not | The run completed, but some runs failed (`errors` in the result) | The benchmark could not run (no result is written), or a usage error | |
+| `hidane benchmark` | The run completed, stable or not, and every failed run succeeded when run again | The run completed, but some runs failed, also when run again (`errors` in the result) | The benchmark could not run (no result is written), or a usage error | |
 
 ### JSON output
 

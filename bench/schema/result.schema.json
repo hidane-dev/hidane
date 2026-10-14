@@ -374,7 +374,7 @@
       }
     },
     "errors": {
-      "description": "Runs that failed. Their values are missing from the statistics.",
+      "description": "Attempts that failed. A run whose attempt failed is run again once, in a fresh process (`retried`); only a run whose retry failed too is missing from the statistics.",
       "type": "array",
       "items": {
         "type": "object",
@@ -385,7 +385,11 @@
           "target": { "enum": ["official", "hidane"] },
           "run": { "$ref": "#/$defs/positive" },
           "warmup": { "type": "boolean" },
-          "message": { "type": "string" }
+          "message": { "type": "string" },
+          "retried": {
+            "description": "True when the run was run again after this failure. Results from before retries existed do not have it.",
+            "type": "boolean"
+          }
         }
       }
     }

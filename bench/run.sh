@@ -6,8 +6,9 @@
 # bench/schema/result.schema.json describes it) and <name>.md (rendered from that JSON).
 #
 # Exit status: 0 when the run completed, stable or not (`stability.stable` in the JSON says
-# which); 1 when it completed but some runs failed (both files are written; `errors` lists the
-# runs); 2 when the benchmark could not run (no files are written).
+# which), and every run that failed succeeded when run again; 1 when it completed but some runs
+# failed twice (both files are written; `errors` lists the runs); 2 when the benchmark could not
+# run (no files are written).
 
 set -euo pipefail
 
@@ -155,7 +156,7 @@ if ! "$engine" benchmark render "$json" >"$md"; then
 fi
 echo "bench/run.sh: wrote $json and $md" >&2
 if [ "$status" -ne 0 ]; then
-  echo "bench/run.sh: some runs failed; see \`errors\` in the result" >&2
+  echo "bench/run.sh: some runs failed, also when run again; see \`errors\` in the result" >&2
   exit 1
 fi
 exit 0

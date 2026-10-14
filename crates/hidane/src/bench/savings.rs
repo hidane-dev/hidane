@@ -449,7 +449,7 @@ fn caveats(result: &Value, e: &Estimate) -> Vec<String> {
     let failed = result["errors"].as_array().map_or(0, |errors| {
         errors
             .iter()
-            .filter(|err| err["scenario"] == e.scenario.id())
+            .filter(|err| err["scenario"] == e.scenario.id() && err["retried"] != true)
             .count()
     });
     if failed > 0 {

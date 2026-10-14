@@ -276,7 +276,8 @@ fn the_command_runs_against_the_target() {
     // Only the command scenario runs with a command.
     assert!(result["results"]["startup"].is_null());
 
-    // A failing command is recorded as an error, and the exit code says so.
+    // A failing command is recorded as an error and run again once (#291); when it fails again,
+    // the exit code says so.
     let out = benchmark(
         &[
             "--config",
@@ -294,7 +295,13 @@ fn the_command_runs_against_the_target() {
     assert_eq!(out.status.code(), Some(1));
     let result: Value = serde_json::from_slice(&out.stdout).unwrap();
     validate(&result);
-    assert_eq!(result["errors"].as_array().unwrap().len(), 2);
+    let retried: Vec<bool> = result["errors"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|e| e["retried"].as_bool().unwrap())
+        .collect();
+    assert_eq!(retried, [true, false, true, false]);
     let _ = std::fs::remove_dir_all(dir);
 }
 

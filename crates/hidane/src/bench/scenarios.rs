@@ -139,7 +139,9 @@ pub struct Bench {
 impl Bench {
     /// Runs `f` for every warm-up and measured run, alternating targets, and records the values
     /// it returns (indexes into `metrics`) for the measured runs. A failed run is recorded as an
-    /// error and the others go on.
+    /// error, marked `retried`, and run again once, in a fresh process like every run, so that a
+    /// transient failure does not cost the target a sample (#291). A retry that fails too is
+    /// recorded as an error that was not retried, and the others go on.
     fn each_run<F>(
         &mut self,
         scenario: &'static str,
@@ -167,7 +169,26 @@ impl Bench {
                     i + 1,
                     if measured { "" } else { " (warm-up)" }
                 );
-                match f(&self.ctx, target, &name) {
+                let error = |message: &str, retried: bool| {
+                    json!({
+                        "scenario": scenario,
+                        "target": target.kind.id(),
+                        "run": i + 1,
+                        "warmup": !measured,
+                        "message": message,
+                        "retried": retried,
+                    })
+                };
+                let mut outcome = f(&self.ctx, target, &name);
+                if let Err(message) = &outcome {
+                    eprintln!(
+                        "hidane benchmark: {label}: {}: {message}; running it again",
+                        target.kind.id()
+                    );
+                    self.results.errors.push(error(message, true));
+                    outcome = f(&self.ctx, target, &format!("{name}-retry"));
+                }
+                match outcome {
                     Ok(values) if measured => {
                         for (index, value) in values {
                             self.results.add(&metrics[index], target.kind, value);
@@ -176,13 +197,7 @@ impl Bench {
                     Ok(_) => {}
                     Err(message) => {
                         eprintln!("hidane benchmark: {label}: {}: {message}", target.kind.id());
-                        self.results.errors.push(json!({
-                            "scenario": scenario,
-                            "target": target.kind.id(),
-                            "run": i + 1,
-                            "warmup": !measured,
-                            "message": message,
-                        }));
+                        self.results.errors.push(error(&message, false));
                     }
                 }
             }
@@ -973,6 +988,85 @@ mod tests {
     fn shell_quoting() {
         assert_eq!(shell_quote(Path::new("/a b/hidane")), "'/a b/hidane'");
         assert_eq!(shell_quote(Path::new("/it's")), r"'/it'\''s'");
+    }
+
+    /// #291: a failed run is run again once, under its name with `-retry`; the failure stays in
+    /// `errors`, marked `retried`, and the retry's values count. A retry that fails too is
+    /// recorded as not retried, and that run has no values.
+    #[test]
+    fn a_failed_run_is_run_again_once() {
+        let ctx = Ctx {
+            rt: tokio::runtime::Builder::new_current_thread()
+                .build()
+                .unwrap(),
+            targets: vec![Target::fake(Kind::Official), Target::fake(Kind::Hidane)],
+            params: Params::default(),
+            logs: None,
+        };
+        let mut bench = Bench {
+            ctx,
+            results: Results::default(),
+        };
+        let m = metric("startup", "time_to_port", "ms", "d");
+        let mut names = Vec::new();
+        bench.each_run(
+            "startup",
+            "startup",
+            Runs { warmup: 0, runs: 3 },
+            std::slice::from_ref(&m),
+            |_, target, name| {
+                names.push(name.to_owned());
+                match (target.kind, name) {
+                    (Kind::Official, "startup-official-2") => Err("transport error".to_owned()),
+                    (Kind::Hidane, n) if n.starts_with("startup-hidane-3") => {
+                        Err("refused".to_owned())
+                    }
+                    _ => Ok(vec![(0, 1.0)]),
+                }
+            },
+        );
+        assert_eq!(
+            names,
+            [
+                "startup-official-1",
+                "startup-hidane-1",
+                "startup-official-2",
+                "startup-official-2-retry",
+                "startup-hidane-2",
+                "startup-official-3",
+                "startup-hidane-3",
+                "startup-hidane-3-retry",
+            ]
+        );
+        let errors: Vec<(&str, u64, bool)> = bench
+            .results
+            .errors
+            .iter()
+            .map(|e| {
+                (
+                    e["target"].as_str().unwrap(),
+                    e["run"].as_u64().unwrap(),
+                    e["retried"].as_bool().unwrap(),
+                )
+            })
+            .collect();
+        assert_eq!(
+            errors,
+            [
+                ("official", 2, true),
+                ("hidane", 3, true),
+                ("hidane", 3, false)
+            ]
+        );
+        let n = |kind| {
+            bench
+                .results
+                .stats("startup", kind, "time_to_port")
+                .unwrap()
+                .n
+        };
+        assert_eq!(n(Kind::Official), 3);
+        assert_eq!(n(Kind::Hidane), 2);
     }
 
     #[test]

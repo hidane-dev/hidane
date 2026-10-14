@@ -51,8 +51,9 @@ def check(targets, result):
     errors = [e for e in result.get("errors", []) if e.get("target") == "hidane"]
     for e in errors:
         ok = False
+        again = " (then run again)" if e.get("retried") else ""
         lines.append(
-            f"\nRun {e['run']} of `{e['scenario']}` failed: {e['message']}"
+            f"\nRun {e['run']} of `{e['scenario']}` failed{again}: {e['message']}"
         )
     machine = result.get("machine", {})
     stability = result.get("stability", {})

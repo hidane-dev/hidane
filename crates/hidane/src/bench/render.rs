@@ -660,7 +660,7 @@ pub fn markdown(result: &Value) -> String {
         for e in errors {
             let _ = writeln!(
                 out,
-                "- {} / {} run {}{}: {}",
+                "- {} / {} run {}{}: {}{}",
                 e["scenario"].as_str().unwrap_or("?"),
                 e["target"].as_str().unwrap_or("?"),
                 e["run"].as_u64().unwrap_or(0),
@@ -669,7 +669,12 @@ pub fn markdown(result: &Value) -> String {
                 } else {
                     ""
                 },
-                e["message"].as_str().unwrap_or("")
+                e["message"].as_str().unwrap_or(""),
+                if e["retried"] == true {
+                    " (run again in a fresh process)"
+                } else {
+                    ""
+                }
             );
         }
         out.push('\n');
