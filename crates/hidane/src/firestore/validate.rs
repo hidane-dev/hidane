@@ -21,7 +21,7 @@ use hidane_proto::google::firestore::v1::{
 };
 use tonic::Status;
 
-use super::property_path::PropertyPath;
+use super::{names, property_path::PropertyPath};
 
 const TYPE_KEY: &str = "__type__";
 const VECTOR_TYPE: &str = "__vector__";
@@ -33,8 +33,18 @@ const MAX_NAME_BYTES: usize = 1500;
 const MAX_DEPTH: usize = 20;
 const MAX_DOCUMENT_BYTES: usize = 1_048_576;
 
+/// Where a value is, which decides how its references are read ([`reference`]).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Place {
+    /// In a document a write stores, or in a transform's operand.
+    Document,
+    /// In a filter, a cursor or a query vector.
+    Query,
+}
+
 /// The names in `fields`, in order and depth first: reserved names, values without a type
-/// ([`unset`]), and the special values (maps with a `__type__` key) they spell.
+/// ([`unset`]), references ([`reference`]), geo points ([`geo_point`]), and the special values
+/// (maps with a `__type__` key) they spell.
 pub fn names(fields: &Fields) -> Result<(), Status> {
     for (name, value) in fields {
         if reserved_name(name) {
@@ -42,20 +52,33 @@ pub fn names(fields: &Fields) -> Result<(), Status> {
                 "field name {name} is reserved"
             )));
         }
-        value_names(value)?;
+        value_names(value, Place::Document)?;
     }
     Ok(())
 }
 
-fn value_names(value: &Value) -> Result<(), Status> {
+/// A value of a filter, a cursor or a query vector, read as a document's is ([`names`]) when
+/// the query names it (`tools/oracle/queries.py`, #262).
+pub fn query_value(value: &Value) -> Result<(), Status> {
+    value_names(value, Place::Query)
+}
+
+fn value_names(value: &Value, place: Place) -> Result<(), Status> {
     match &value.value_type {
         None => Err(unset()),
-        Some(ValueType::ArrayValue(array)) => array.values.iter().try_for_each(value_names),
+        Some(ValueType::ReferenceValue(name)) => reference(name, place),
+        Some(ValueType::GeoPointValue(point)) => geo_point(point.latitude, point.longitude),
+        Some(ValueType::ArrayValue(array)) => array
+            .values
+            .iter()
+            .try_for_each(|value| value_names(value, place)),
         // A `__type__` key spells a special value on the wire; only vectors exist. A vector's
         // shape is checked here, its elements with the values; another type is an invalid
         // nested entity, also with the values. Every value in the map is read first.
         Some(ValueType::MapValue(map)) if map.fields.contains_key(TYPE_KEY) => {
-            map.fields.values().try_for_each(typed)?;
+            map.fields
+                .values()
+                .try_for_each(|value| read(value, place))?;
             match map.fields[TYPE_KEY].value_type.as_ref() {
                 Some(ValueType::StringValue(t)) if t == VECTOR_TYPE => vector(map).map(drop),
                 Some(ValueType::StringValue(_)) => Ok(()),
@@ -72,7 +95,7 @@ fn value_names(value: &Value) -> Result<(), Status> {
                         "field name '{name}' is reserved."
                     )));
                 }
-                value_names(nested)?;
+                value_names(nested, place)?;
             }
             Ok(())
         }
@@ -80,20 +103,63 @@ fn value_names(value: &Value) -> Result<(), Status> {
     }
 }
 
+/// `value` and every value in it: a type, references, geo points; no names (the values of a map
+/// with a `__type__` key, read before its type).
+fn read(value: &Value, place: Place) -> Result<(), Status> {
+    match &value.value_type {
+        None => Err(unset()),
+        Some(ValueType::ReferenceValue(name)) => reference(name, place),
+        Some(ValueType::GeoPointValue(point)) => geo_point(point.latitude, point.longitude),
+        Some(ValueType::ArrayValue(array)) => {
+            array.values.iter().try_for_each(|value| read(value, place))
+        }
+        Some(ValueType::MapValue(map)) => {
+            map.fields.values().try_for_each(|value| read(value, place))
+        }
+        Some(_) => Ok(()),
+    }
+}
+
+/// A reference, read as a document's parent name ([`names::reference`]); in a document, as a
+/// key too: not empty, its IDs within the key's limits ([`key`]) (`tools/oracle/rest.py`,
+/// #262). Another database's or project's document may be named.
+fn reference(name: &str, place: Place) -> Result<(), Status> {
+    let parsed = names::reference(name)?;
+    if place == Place::Document {
+        if parsed.path.is_empty() {
+            return Err(key_path_empty());
+        }
+        key(&parsed.path)?;
+    }
+    Ok(())
+}
+
+/// A reference that names no document, read as a key.
+pub fn key_path_empty() -> Status {
+    Status::invalid_argument("Key path is empty.")
+}
+
+/// A geo point's latitude within -90 to 90, then its longitude within -180 to 180; NaN is in
+/// neither. The message prints the coordinate as Java prints a double.
+fn geo_point(latitude: f64, longitude: f64) -> Result<(), Status> {
+    for (name, value, limit) in [
+        ("latitude", latitude, 90.0),
+        ("longitude", longitude, 180.0),
+    ] {
+        if !(-limit..=limit).contains(&value) {
+            return Err(Status::invalid_argument(format!(
+                "Geo point {name} '{}' outside permitted range -{limit:.1} to {limit:.1}.",
+                crate::rest::java_double_text(value)
+            )));
+        }
+    }
+    Ok(())
+}
+
 /// A value without a type (`{}` in JSON), which the official emulator cannot convert, in a
 /// document, a transform's operand, a filter, a cursor or a query vector (#262).
 pub fn unset() -> Status {
     Status::invalid_argument("Cannot convert firestore.v1.Value with type unset.")
-}
-
-/// `value` and every value in it have a type ([`unset`]), checked depth first in order.
-pub fn typed(value: &Value) -> Result<(), Status> {
-    match &value.value_type {
-        None => Err(unset()),
-        Some(ValueType::ArrayValue(array)) => array.values.iter().try_for_each(typed),
-        Some(ValueType::MapValue(map)) => map.fields.values().try_for_each(typed),
-        Some(_) => Ok(()),
-    }
 }
 
 /// Field names of the form `__…__` are reserved; `____` is not one.
@@ -149,7 +215,7 @@ fn transform_operation(transform: &FieldTransform) -> Result<(), Status> {
             | TransformType::Maximum(operand)
             | TransformType::Minimum(operand),
         ) => {
-            value_names(operand)?;
+            value_names(operand, Place::Document)?;
             match operand.value_type.as_ref().and_then(Number::of) {
                 Some(_) => Ok(()),
                 None => Err(Status::invalid_argument("Input must be int64 or double.")),
@@ -158,7 +224,10 @@ fn transform_operation(transform: &FieldTransform) -> Result<(), Status> {
         Some(
             TransformType::AppendMissingElements(operands)
             | TransformType::RemoveAllFromArray(operands),
-        ) => operands.values.iter().try_for_each(value_names),
+        ) => operands
+            .values
+            .iter()
+            .try_for_each(|operand| value_names(operand, Place::Document)),
     }
 }
 

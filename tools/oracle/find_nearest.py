@@ -134,6 +134,8 @@ QUERIES = [
     ("a vector field with a reserved name before a query limit", {**E, "vectorField": {"fieldPath": "__x__"}}, {"limit": 1}),
     ("no limit before a filter on __name__ that is not a key", {k: v for k, v in E.items() if k != "limit"}, {"where": {"fieldFilter": {"field": {"fieldPath": "__name__"}, "op": "EQUAL", "value": I(1)}}}),
     ("no limit before an order without a collection", {k: v for k, v in E.items() if k != "limit"}, {"from": [], "orderBy": [{"field": {"fieldPath": "k"}}]}),
+    ("a query vector holding a reference", {**E, "queryVector": typed(S("__vector__"), arr({"referenceValue": "c/d"}))}, {}),
+    ("a query vector holding a geo point out of range", {**E, "queryVector": typed(S("__vector__"), arr({"geoPointValue": {"latitude": 91}}))}, {}),
     ("no limit before an array offset in a filter", {k: v for k, v in E.items() if k != "limit"}, {"where": {"fieldFilter": {"field": {"fieldPath": "a[0]"}, "op": "EQUAL", "value": I(1)}}}),
 ]
 

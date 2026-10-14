@@ -3248,6 +3248,86 @@
    }
   },
   {
+   "name": "a query vector holding a reference",
+   "query": {
+    "from": [
+     {
+      "collectionId": "v"
+     }
+    ],
+    "findNearest": {
+     "vectorField": {
+      "fieldPath": "v"
+     },
+     "queryVector": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "referenceValue": "c/d"
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     "distanceMeasure": "EUCLIDEAN",
+     "limit": 10
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "message": "Document parent name \"c/d\" lacks \"projects\" at index 0."
+   }
+  },
+  {
+   "name": "a query vector holding a geo point out of range",
+   "query": {
+    "from": [
+     {
+      "collectionId": "v"
+     }
+    ],
+    "findNearest": {
+     "vectorField": {
+      "fieldPath": "v"
+     },
+     "queryVector": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "geoPointValue": {
+             "latitude": 91
+            }
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     "distanceMeasure": "EUCLIDEAN",
+     "limit": 10
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "message": "Geo point latitude '91.0' outside permitted range -90.0 to 90.0."
+   }
+  },
+  {
    "name": "no limit before an array offset in a filter",
    "query": {
     "from": [

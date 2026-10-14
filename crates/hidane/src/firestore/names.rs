@@ -47,6 +47,12 @@ pub fn parent(name: &str) -> Result<Name, Status> {
     parse(name, Shape::Parent)
 }
 
+/// Parses a reference value as the official emulator reads one: as a parent name, where the
+/// database alone (without `/documents`) is the root too (`tools/oracle/rest.py`, #262).
+pub fn reference(name: &str) -> Result<Name, Status> {
+    parse(name, Shape::Reference)
+}
+
 /// Parses the name of a document or a collection (any number of path segments).
 pub fn any(name: &str) -> Result<Name, Status> {
     parse(name, Shape::Any)
@@ -96,13 +102,14 @@ pub fn document_id(id: &str) -> Result<(), Status> {
 enum Shape {
     Document,
     Parent,
+    Reference,
     Any,
 }
 
 fn parse(name: &str, shape: Shape) -> Result<Name, Status> {
     let what = match shape {
         Shape::Document => "Document name",
-        Shape::Parent => "Document parent name",
+        Shape::Parent | Shape::Reference => "Document parent name",
         Shape::Any => "Resource name",
     };
     let mut cursor = Cursor::new(name, what);
@@ -114,7 +121,16 @@ fn parse(name: &str, shape: Shape) -> Result<Name, Status> {
     cursor.literal("/")?;
     cursor.segment("database")?;
     let database_end = cursor.pos;
+    if shape == Shape::Reference && cursor.at_end() {
+        return Ok(Name {
+            database: name.to_owned(),
+            path: ResourcePath::from_segments(Vec::<String>::new()),
+        });
+    }
     cursor.literal("/")?;
+    if shape == Shape::Reference && cursor.at_end() {
+        return Err(cursor.trailing_slash());
+    }
     cursor.literal("documents")?;
 
     let mut segments = Vec::new();
@@ -124,7 +140,7 @@ fn parse(name: &str, shape: Shape) -> Result<Name, Status> {
             let complete = segments.len() % 2 == 0;
             let allowed = match shape {
                 Shape::Document => complete && !segments.is_empty(),
-                Shape::Parent => complete,
+                Shape::Parent | Shape::Reference => complete,
                 Shape::Any => true,
             };
             // The database's documents root names no document (#262).

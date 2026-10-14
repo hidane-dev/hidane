@@ -8337,6 +8337,1620 @@
     "contentType": "application/json",
     "body": "[\n{\n  \"found\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v34\",\n    \"fields\": {\n      \"v\": {\n        \"stringValue\": \"1e5\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n}\n]\n"
    }
+  },
+  {
+   "name": "commit a reference to c/d",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "c/d"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"c\\/d\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a reference to the documents root",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "projects/{project}/databases/(default)/documents"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Key path is empty.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a reference to the database",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "projects/{project}/databases/(default)"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Key path is empty.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a reference to a collection",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "projects/{project}/databases/(default)/documents/c"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/c\\\" lacks \\\"\\/\\\" at index 52.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a reference with an empty ID",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "projects/{project}/databases/(default)/documents/c//d"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/c\\/\\/d\\\" lacks a resource id at index 53.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a reference with a trailing slash",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "projects/{project}/databases/(default)/documents/c/d/"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/c\\/d\\/\\\" has invalid trailing \\\"\\/\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a reference to the database with a trailing slash",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "projects/{project}/databases/(default)/"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"projects\\/{project}\\/databases\\/(default)\\/\\\" has invalid trailing \\\"\\/\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a reference to another database and project",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "projects/other/databases/db2/documents/c/d"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "commit a reference to a subcollection's document",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "projects/{project}/databases/(default)/documents/c/d/e/f"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "commit an empty reference",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": ""
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a reference without documents",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "projects/{project}/databases/(default)/x"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"projects\\/{project}\\/databases\\/(default)\\/x\\\" lacks \\\"documents\\\" at index 41.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a reference to a database only half named",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "projects/p/databases"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"projects\\/p\\/databases\\\" lacks \\\"\\/\\\" at index 20.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a reference with a reserved collection ID",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "projects/{project}/databases/(default)/documents/__x__/d"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Collection id \\\"__x__\\\" is invalid because it is reserved.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a reference with a reserved document ID",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "projects/{project}/databases/(default)/documents/c/__x__"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Resource id \\\"__x__\\\" is invalid because it is reserved.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a reference with a numeric document ID",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "projects/{project}/databases/(default)/documents/c/__id5__"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "commit a reference with the ID .",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "projects/{project}/databases/(default)/documents/c/."
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/c\\/.\\\" contains a resource id \\\".\\\" at index 53.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a reference with a collection ID over 1500 bytes",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "projects/{project}/databases/(default)/documents/ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc/d"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"The key path element kind is longer than 1500 bytes.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a reference with a document ID over 1500 bytes",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "projects/{project}/databases/(default)/documents/c/ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"The key path element name is longer than 1500 bytes.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a latitude of 91",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "geoPointValue": {
+          "latitude": 91
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Geo point latitude '91.0' outside permitted range -90.0 to 90.0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a latitude just over 90",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "geoPointValue": {
+          "latitude": 90.0000001
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Geo point latitude '90.0000001' outside permitted range -90.0 to 90.0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a latitude of -91",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "geoPointValue": {
+          "latitude": -91
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Geo point latitude '-91.0' outside permitted range -90.0 to 90.0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a latitude of 1e300",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "geoPointValue": {
+          "latitude": 1e+300
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Geo point latitude '1.0E300' outside permitted range -90.0 to 90.0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a latitude of infinity",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "geoPointValue": {
+          "latitude": "Infinity"
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Geo point latitude 'Infinity' outside permitted range -90.0 to 90.0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a latitude of NaN",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "geoPointValue": {
+          "latitude": "NaN"
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Geo point latitude 'NaN' outside permitted range -90.0 to 90.0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a longitude of 180.5",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "geoPointValue": {
+          "latitude": 0,
+          "longitude": 180.5
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Geo point longitude '180.5' outside permitted range -180.0 to 180.0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a longitude of -180.5",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "geoPointValue": {
+          "longitude": -180.5
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Geo point longitude '-180.5' outside permitted range -180.0 to 180.0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a longitude of NaN",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "geoPointValue": {
+          "longitude": "NaN"
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Geo point longitude 'NaN' outside permitted range -180.0 to 180.0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a longitude of 1.23456789e7",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "geoPointValue": {
+          "longitude": 12345678.9
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Geo point longitude '1.23456789E7' outside permitted range -180.0 to 180.0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit a latitude and a longitude out of range",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "geoPointValue": {
+          "latitude": 91,
+          "longitude": 181
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Geo point latitude '91.0' outside permitted range -90.0 to 90.0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit the corners of the range",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "geoPointValue": {
+          "latitude": -90,
+          "longitude": 180
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "PATCH a reference in a map",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/rf/b",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "m": {
+      "mapValue": {
+       "fields": {
+        "k": {
+         "referenceValue": "c/d"
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"c\\/d\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "batchWrite a geo point in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchWrite",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "geoPointValue": {
+             "latitude": 91
+            }
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Geo point latitude '91.0' outside permitted range -90.0 to 90.0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST a geo point in a map",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/rf?documentId=c",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "m": {
+      "mapValue": {
+       "fields": {
+        "k": {
+         "geoPointValue": {
+          "longitude": 180.5
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Geo point longitude '180.5' outside permitted range -180.0 to 180.0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a reference before a reserved name in a later field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "c/d"
+        },
+        "__x__": {
+         "integerValue": "1"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"c\\/d\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a reserved name before a reference in a later field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "__x__": {
+         "integerValue": "1"
+        },
+        "v": {
+         "referenceValue": "c/d"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"field name __x__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a reference before a value without a type",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "referenceValue": "c/d"
+           },
+           {}
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"c\\/d\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a value without a type before a reference",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {},
+           {
+            "referenceValue": "c/d"
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot convert firestore.v1.Value with type unset.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a geo point before a reserved name in its map",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "mapValue": {
+          "fields": {
+           "x": {
+            "geoPointValue": {
+             "latitude": 91
+            }
+           },
+           "__y__": {
+            "integerValue": "1"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Geo point latitude '91.0' outside permitted range -90.0 to 90.0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a geo point before a reference",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "geoPointValue": {
+          "latitude": 91
+         }
+        },
+        "u": {
+         "referenceValue": "c/d"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Geo point latitude '91.0' outside permitted range -90.0 to 90.0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a reference before a geo point",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "u": {
+         "referenceValue": "c/d"
+        },
+        "v": {
+         "geoPointValue": {
+          "latitude": 91
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"c\\/d\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a reference before nested arrays",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "n": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        },
+        "v": {
+         "referenceValue": "c/d"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"c\\/d\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a reference before the update mask",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "c/d"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "__x__"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"c\\/d\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a reference before the sequence of writes",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "c/d"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {}
+      },
+      "currentDocument": {
+       "exists": false
+      }
+     },
+     {
+      "delete": "projects/{project}/databases/(default)/documents/rf/a"
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"c\\/d\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a reference before the names of a later write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "c/d"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/b",
+       "fields": {
+        "__x__": {
+         "integerValue": "1"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"c\\/d\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a reference before a precondition",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "referenceValue": "c/d"
+        }
+       }
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"c\\/d\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a reference in a vector",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "mapValue": {
+          "fields": {
+           "__type__": {
+            "stringValue": "__vector__"
+           },
+           "value": {
+            "arrayValue": {
+             "values": [
+              {
+               "referenceValue": "c/d"
+              }
+             ]
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"c\\/d\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a reference next to an unknown __type__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {
+        "v": {
+         "mapValue": {
+          "fields": {
+           "__type__": {
+            "stringValue": "other"
+           },
+           "k": {
+            "referenceValue": "c/d"
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"c\\/d\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a reference in an array union",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "t",
+        "appendMissingElements": {
+         "values": [
+          {
+           "referenceValue": "c/d"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"c\\/d\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a geo point in an array removal",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "transform": {
+       "document": "projects/{project}/databases/(default)/documents/rf/a",
+       "fieldTransforms": [
+        {
+         "fieldPath": "t",
+         "removeAllFromArray": {
+          "values": [
+           {
+            "geoPointValue": {
+             "latitude": 91
+            }
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Geo point latitude '91.0' outside permitted range -90.0 to 90.0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a reference in an increment's operand",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "t",
+        "increment": {
+         "mapValue": {
+          "fields": {
+           "r": {
+            "referenceValue": "c/d"
+           }
+          }
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"c\\/d\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a geo point as a maximum",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/rf/a",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "t",
+        "maximum": {
+         "geoPointValue": {
+          "latitude": 91
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Geo point latitude '91.0' outside permitted range -90.0 to 90.0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "the writes that were not refused",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/rf",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/rf/a\",\n    \"fields\": {\n      \"v\": {\n        \"geoPointValue\": {\n          \"latitude\": -90.0,\n          \"longitude\": 180.0\n        }\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
+   }
   }
  ]
 }

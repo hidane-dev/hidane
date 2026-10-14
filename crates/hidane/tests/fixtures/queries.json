@@ -24366,6 +24366,1186 @@
    }
   },
   {
+   "name": "a filter on a reference to c/d",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "c/d"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Document parent name \"c/d\" lacks \"projects\" at index 0."
+   }
+  },
+  {
+   "name": "a filter on a reference to the documents root",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "{documents}"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "a filter on a reference to the database",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "{database}"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "a filter on a reference to a collection",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "{documents}/c"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Document parent name \"projects/{project}/databases/(default)/documents/c\" lacks \"/\" at index 55."
+   }
+  },
+  {
+   "name": "a filter on a reference to a reserved collection ID",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "{documents}/__x__/d"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Collection id \"__x__\" is invalid because it is reserved."
+   }
+  },
+  {
+   "name": "a filter on a reference in a map",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "LESS_THAN",
+      "value": {
+       "mapValue": {
+        "fields": {
+         "k": {
+          "referenceValue": "c/d"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Document parent name \"c/d\" lacks \"projects\" at index 0."
+   }
+  },
+  {
+   "name": "in with a reference",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "IN",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "integerValue": "1"
+         },
+         {
+          "referenceValue": "c/d"
+         }
+        ]
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Document parent name \"c/d\" lacks \"projects\" at index 0."
+   }
+  },
+  {
+   "name": "a reference before not-in without an array",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "NOT_IN",
+      "value": {
+       "referenceValue": "c/d"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Document parent name \"c/d\" lacks \"projects\" at index 0."
+   }
+  },
+  {
+   "name": "a reference before an unknown operator",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "op": "OPERATOR_UNSPECIFIED",
+      "field": {
+       "fieldPath": "a"
+      },
+      "value": {
+       "referenceValue": "c/d"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Document parent name \"c/d\" lacks \"projects\" at index 0."
+   }
+  },
+  {
+   "name": "a reference before a value without a type",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "referenceValue": "c/d"
+         },
+         {}
+        ]
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Document parent name \"c/d\" lacks \"projects\" at index 0."
+   }
+  },
+  {
+   "name": "a value without a type before a reference",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {},
+         {
+          "referenceValue": "c/d"
+         }
+        ]
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Cannot convert firestore.v1.Value with type unset."
+   }
+  },
+  {
+   "name": "a reference before an array offset in the filter's path",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "c/d"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Document parent name \"c/d\" lacks \"projects\" at index 0."
+   }
+  },
+  {
+   "name": "a filter on a geo point out of range",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "geoPointValue": {
+        "latitude": 91
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Geo point latitude '91.0' outside permitted range -90.0 to 90.0."
+   }
+  },
+  {
+   "name": "a geo point out of range before not-in without an array",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "NOT_IN",
+      "value": {
+       "geoPointValue": {
+        "longitude": -180.5
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Geo point longitude '-180.5' outside permitted range -180.0 to 180.0."
+   }
+  },
+  {
+   "name": "a filter on a map with a reserved name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "mapValue": {
+        "fields": {
+         "__x__": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "field name '__x__' is reserved."
+   }
+  },
+  {
+   "name": "a filter on a map with __type__ not a string",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "mapValue": {
+        "fields": {
+         "__type__": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Field __type__ must be a string; founds LONG."
+   }
+  },
+  {
+   "name": "a filter on a map with an unknown __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "mapValue": {
+        "fields": {
+         "__type__": {
+          "stringValue": "other"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "a filter on a vector of integers",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "mapValue": {
+        "fields": {
+         "__type__": {
+          "stringValue": "__vector__"
+         },
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "1"
+            }
+           ]
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Vector must only contain values of type 'double'"
+   }
+  },
+  {
+   "name": "a filter on a vector without values",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "mapValue": {
+        "fields": {
+         "__type__": {
+          "stringValue": "__vector__"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Vector map is missing key 'value'."
+   }
+  },
+  {
+   "name": "a filter on a vector holding a reference",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "mapValue": {
+        "fields": {
+         "__type__": {
+          "stringValue": "__vector__"
+         },
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "referenceValue": "c/d"
+            }
+           ]
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Document parent name \"c/d\" lacks \"projects\" at index 0."
+   }
+  },
+  {
+   "name": "a filter on a vector holding NaN",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "mapValue": {
+        "fields": {
+         "__type__": {
+          "stringValue": "__vector__"
+         },
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "doubleValue": "NaN"
+            }
+           ]
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "a vector of integers before not-in without an array",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "NOT_IN",
+      "value": {
+       "mapValue": {
+        "fields": {
+         "__type__": {
+          "stringValue": "__vector__"
+         },
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "1"
+            }
+           ]
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Vector must only contain values of type 'double'"
+   }
+  },
+  {
+   "name": "a cursor on a reference to c/d",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "startAt": {
+     "values": [
+      {
+       "referenceValue": "c/d"
+      }
+     ],
+     "before": true
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Document parent name \"c/d\" lacks \"projects\" at index 0."
+   }
+  },
+  {
+   "name": "a cursor on a geo point out of range",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "startAt": {
+     "values": [
+      {
+       "geoPointValue": {
+        "latitude": 91
+       }
+      }
+     ],
+     "before": true
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Geo point latitude '91.0' outside permitted range -90.0 to 90.0."
+   }
+  },
+  {
+   "name": "a cursor on a vector of integers",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "startAt": {
+     "values": [
+      {
+       "mapValue": {
+        "fields": {
+         "__type__": {
+          "stringValue": "__vector__"
+         },
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "1"
+            }
+           ]
+          }
+         }
+        }
+       }
+      }
+     ],
+     "before": true
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Vector must only contain values of type 'double'"
+   }
+  },
+  {
+   "name": "a cursor on __name__ at the documents root",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "startAt": {
+     "values": [
+      {
+       "referenceValue": "{documents}"
+      }
+     ],
+     "before": true
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "document": "p/p1"
+     },
+     {
+      "document": "p/p2"
+     },
+     {
+      "document": "p/p3"
+     },
+     {
+      "document": "p/p4"
+     },
+     {
+      "document": "p/p5"
+     },
+     {
+      "document": "p/p6"
+     },
+     {
+      "document": "p/p7"
+     },
+     {
+      "document": "p/p8",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "a reference before too many cursor values",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "startAt": {
+     "values": [
+      {
+       "referenceValue": "c/d"
+      },
+      {
+       "integerValue": "1"
+      }
+     ],
+     "before": true
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Cursor has too many values."
+   }
+  },
+  {
+   "name": "__name__ equal to the documents root",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "{documents}"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Key path is empty."
+   }
+  },
+  {
+   "name": "__name__ equal to the database",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "{database}"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Key path is empty."
+   }
+  },
+  {
+   "name": "__name__ equal to the documents root, and duplicate orders",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "{documents}"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain duplicate fields a"
+   }
+  },
+  {
+   "name": "__name__ in the database, and duplicate orders",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "IN",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "referenceValue": "{database}"
+         }
+        ]
+       }
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain duplicate fields a"
+   }
+  },
+  {
+   "name": "__name__ equal to c/d, and duplicate orders",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "c/d"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Document parent name \"c/d\" lacks \"projects\" at index 0."
+   }
+  },
+  {
+   "name": "__name__ equal to a document of another project",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "projects/other/databases/(default)/documents/p/p1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The request was for database 'projects/{project}/databases/(default)' but was attempting to access database 'projects/other/databases/(default)'"
+   }
+  },
+  {
+   "name": "__name__ equal to a document ID over 1500 bytes",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "{documents}/p/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The key path element name is longer than 1500 bytes."
+   }
+  },
+  {
+   "name": "__name__ equal to the documents root before another filter's array offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "EQUAL",
+         "value": {
+          "referenceValue": "{documents}"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a[0]"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Key path is empty."
+   }
+  },
+  {
    "name": "find_nearest",
    "parent": "",
    "query": {

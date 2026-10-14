@@ -977,11 +977,20 @@ fn civil_from_days(days: i64) -> (i64, i64, i64) {
 /// plain with at least one fractional digit between 10^-3 and 10^7, otherwise
 /// `d.dddE±n`; `NaN` and the infinities as strings. Negative zero prints as `-0.0`.
 fn java_double(f: f64) -> String {
+    if f.is_finite() {
+        java_double_text(f)
+    } else {
+        json_string(&java_double_text(f))
+    }
+}
+
+/// A double as Java's `Double.toString` prints it, `NaN` and the infinities unquoted.
+pub(crate) fn java_double_text(f: f64) -> String {
     if f.is_nan() {
-        return json_string("NaN");
+        return "NaN".to_owned();
     }
     if f.is_infinite() {
-        return json_string(if f > 0.0 { "Infinity" } else { "-Infinity" });
+        return if f > 0.0 { "Infinity" } else { "-Infinity" }.to_owned();
     }
     if f == 0.0 {
         return if f.is_sign_negative() { "-0.0" } else { "0.0" }.to_owned();

@@ -528,6 +528,46 @@ case("an array offset in a filter before __type__ in an order", q("p", where_=ff
 case("an order by a path ending in __type__", q("p", where_=ff("a.__type__", "EQUAL", i(1)), order=[asc("__name__")]))
 case("an inequality on a path ending in __type__ before an order by the key", q("p", where_=ff("a.__type__", "GREATER_THAN", i(1)), order=[asc("__name__")]))
 case("a quoted __name__ is the key", q("p", order=[asc("`__name__`")]))
+# A filter's or a cursor's value is read as a written one is (rest.py), with the filter's field
+# and before its operator: references as parent names (the documents root and the database
+# are), geo points within range, reserved names in maps, `__type__` a string, vectors' shapes.
+# A filter on `__name__` reads its references as keys too, late, with its other checks: not
+# empty, of the query's database, IDs within the key's limits.
+def geo(**c): return {"geoPointValue": c}
+for label, value in [("c/d", {"referenceValue": "c/d"}), ("the documents root", {"referenceValue": "{documents}"}),
+                     ("the database", {"referenceValue": "{database}"}),
+                     ("a collection", {"referenceValue": "{documents}/c"}), ("a reserved collection ID", {"referenceValue": "{documents}/__x__/d"})]:
+    case(f"a filter on a reference to {label}", q("p", where_=ff("a", "EQUAL", value)))
+case("a filter on a reference in a map", q("p", where_=ff("a", "LESS_THAN", mp(k={"referenceValue": "c/d"}))))
+case("in with a reference", q("p", where_=ff("a", "IN", arr(i(1), {"referenceValue": "c/d"}))))
+case("a reference before not-in without an array", q("p", where_=ff("a", "NOT_IN", {"referenceValue": "c/d"})))
+case("a reference before an unknown operator", q("p", where_=ffv("a", "OPERATOR_UNSPECIFIED", {"referenceValue": "c/d"})))
+case("a reference before a value without a type", q("p", where_=ff("a", "EQUAL", arr({"referenceValue": "c/d"}, UNSET))))
+case("a value without a type before a reference", q("p", where_=ff("a", "EQUAL", arr(UNSET, {"referenceValue": "c/d"}))))
+case("a reference before an array offset in the filter's path", q("p", where_=ff("a[0]", "EQUAL", {"referenceValue": "c/d"})))
+case("a filter on a geo point out of range", q("p", where_=ff("a", "EQUAL", geo(latitude=91))))
+case("a geo point out of range before not-in without an array", q("p", where_=ff("a", "NOT_IN", geo(longitude=-180.5))))
+case("a filter on a map with a reserved name", q("p", where_=ff("a", "EQUAL", mp(__x__=i(1)))))
+case("a filter on a map with __type__ not a string", q("p", where_=ff("a", "EQUAL", mp(__type__=i(1)))))
+case("a filter on a map with an unknown __type__", q("p", where_=ff("a", "EQUAL", mp(__type__=s("other")))))
+case("a filter on a vector of integers", q("p", where_=ff("a", "EQUAL", mp(__type__=s("__vector__"), value=arr(i(1))))))
+case("a filter on a vector without values", q("p", where_=ff("a", "EQUAL", mp(__type__=s("__vector__")))))
+case("a filter on a vector holding a reference", q("p", where_=ff("a", "EQUAL", mp(__type__=s("__vector__"), value=arr({"referenceValue": "c/d"})))))
+case("a filter on a vector holding NaN", q("p", where_=ff("a", "EQUAL", vec("NaN"))))
+case("a vector of integers before not-in without an array", q("p", where_=ff("a", "NOT_IN", mp(__type__=s("__vector__"), value=arr(i(1))))))
+case("a cursor on a reference to c/d", q("p", order=[asc("a")], start=cur({"referenceValue": "c/d"}, before=True)))
+case("a cursor on a geo point out of range", q("p", order=[asc("a")], start=cur(geo(latitude=91), before=True)))
+case("a cursor on a vector of integers", q("p", order=[asc("a")], start=cur(mp(__type__=s("__vector__"), value=arr(i(1))), before=True)))
+case("a cursor on __name__ at the documents root", q("p", order=[asc("__name__")], start=cur({"referenceValue": "{documents}"}, before=True)))
+case("a reference before too many cursor values", q("p", order=[asc("a")], start=cur({"referenceValue": "c/d"}, i(1), before=True)))
+case("__name__ equal to the documents root", q("p", where_=ff("__name__", "EQUAL", {"referenceValue": "{documents}"})))
+case("__name__ equal to the database", q("p", where_=ff("__name__", "EQUAL", {"referenceValue": "{database}"})))
+case("__name__ equal to the documents root, and duplicate orders", q("p", where_=ff("__name__", "EQUAL", {"referenceValue": "{documents}"}), order=[asc("a"), asc("a")]))
+case("__name__ in the database, and duplicate orders", q("p", where_=ff("__name__", "IN", arr({"referenceValue": "{database}"})), order=[asc("a"), asc("a")]))
+case("__name__ equal to c/d, and duplicate orders", q("p", where_=ff("__name__", "EQUAL", {"referenceValue": "c/d"}), order=[asc("a"), asc("a")]))
+case("__name__ equal to a document of another project", q("p", where_=ff("__name__", "EQUAL", {"referenceValue": "projects/other/databases/(default)/documents/p/p1"})))
+case("__name__ equal to a document ID over 1500 bytes", q("p", where_=ff("__name__", "EQUAL", {"referenceValue": "{documents}/p/" + "x" * 1501})))
+case("__name__ equal to the documents root before another filter's array offset", q("p", where_=AND(ff("__name__", "EQUAL", {"referenceValue": "{documents}"}), ff("a[0]", "EQUAL", i(1)))))
 # find_nearest is #26; recorded for reference, not replayed.
 case("find_nearest", q("t", findNearest={"vectorField": f("v"), "queryVector": vec(1, 2), "distanceMeasure": "EUCLIDEAN", "limit": 2}))
 
@@ -536,7 +576,7 @@ case("find_nearest", q("t", findNearest={"vectorField": f("v"), "queryVector": v
 
 def fill(value):
     if isinstance(value, str):
-        return value.replace("{documents}", DOCUMENTS)
+        return value.replace("{documents}", DOCUMENTS).replace("{database}", DOCUMENTS[:-len("/documents")])
     if isinstance(value, list):
         return [fill(v) for v in value]
     if isinstance(value, dict):

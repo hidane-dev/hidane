@@ -934,7 +934,7 @@ impl Firestore for FirestoreService {
                 "only structured queries are supported",
             ));
         };
-        let query = Query::parse(parent.path, structured)?;
+        let query = Query::parse(&database, parent.path, structured)?;
         self.check_list(&caller, &database, &query)?;
         let consistency = match &req.consistency_selector {
             Some(run_query_request::ConsistencySelector::Transaction(t)) => {
@@ -1038,7 +1038,7 @@ impl Firestore for FirestoreService {
         let read = Aggregations::read(&q.aggregations)?;
         let reads_fields = read.reads_fields();
         let mut checked = None;
-        let mut query = Query::parse_aggregated(parent.path, structured, || {
+        let mut query = Query::parse_aggregated(&database, parent.path, structured, || {
             checked = Some(read.check()?);
             Ok(reads_fields)
         })?;

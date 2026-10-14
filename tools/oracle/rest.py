@@ -463,6 +463,56 @@ case("JsonFormat: a repeated field as an object", "POST", B + ":runQuery", raw='
 case("JsonFormat: a repeated field as a string", "POST", B + ":batchGet", raw='{"documents": "' + NAME + '/js/v0"}')
 case("JsonFormat: a mask path as a number", "POST", B + ":batchGet", raw='{"documents": ["' + NAME + '/js/v34"], "mask": {"fieldPaths": [["v"]]}}')
 
+# A reference is read as a document's parent name (the database alone, with or without
+# `/documents`, is a parent), then as a key: an empty one is "Key path is empty.", and its IDs
+# have the key's limits. A geo point's latitude is within -90 to 90 and its longitude within
+# -180 to 180, NaN in neither, printed as Java prints a double. Both are checked with the names
+# of the write, value by value, in order and depth first, next to reserved names and values
+# without a type, also in transforms' operands.
+def ref(n): return {"referenceValue": n}
+def geo(**c): return {"geoPointValue": c}
+DB_NAME = "projects/{project}/databases/(default)"
+for label, value in [
+    ("a reference to c/d", ref("c/d")), ("a reference to the documents root", ref(NAME)), ("a reference to the database", ref(DB_NAME)),
+    ("a reference to a collection", ref(NAME + "/c")), ("a reference with an empty ID", ref(NAME + "/c//d")),
+    ("a reference with a trailing slash", ref(NAME + "/c/d/")), ("a reference to the database with a trailing slash", ref(DB_NAME + "/")),
+    ("a reference to another database and project", ref("projects/other/databases/db2/documents/c/d")),
+    ("a reference to a subcollection's document", ref(NAME + "/c/d/e/f")), ("an empty reference", ref("")),
+    ("a reference without documents", ref(DB_NAME + "/x")), ("a reference to a database only half named", ref("projects/p/databases")),
+    ("a reference with a reserved collection ID", ref(NAME + "/__x__/d")), ("a reference with a reserved document ID", ref(NAME + "/c/__x__")),
+    ("a reference with a numeric document ID", ref(NAME + "/c/__id5__")), ("a reference with the ID .", ref(NAME + "/c/.")),
+    ("a reference with a collection ID over 1500 bytes", ref(NAME + "/" + "c" * 1501 + "/d")),
+    ("a reference with a document ID over 1500 bytes", ref(NAME + "/c/" + "d" * 1501)),
+    ("a latitude of 91", geo(latitude=91)), ("a latitude just over 90", geo(latitude=90.0000001)), ("a latitude of -91", geo(latitude=-91)),
+    ("a latitude of 1e300", geo(latitude=1e300)), ("a latitude of infinity", geo(latitude="Infinity")), ("a latitude of NaN", geo(latitude="NaN")),
+    ("a longitude of 180.5", geo(latitude=0, longitude=180.5)), ("a longitude of -180.5", geo(longitude=-180.5)), ("a longitude of NaN", geo(longitude="NaN")),
+    ("a longitude of 1.23456789e7", geo(longitude=12345678.9)), ("a latitude and a longitude out of range", geo(latitude=91, longitude=181)),
+    ("the corners of the range", geo(latitude=-90, longitude=180)),
+]:
+    case(f"commit {label}", "POST", B + ":commit", commit(upd("rf/a", {"v": value})))
+case("PATCH a reference in a map", "PATCH", B + "/rf/b", {"fields": {"m": {"mapValue": {"fields": {"k": ref("c/d")}}}}})
+case("batchWrite a geo point in an array", "POST", B + ":batchWrite", commit(upd("rf/a", {"v": {"arrayValue": {"values": [geo(latitude=91)]}}})))
+case("POST a geo point in a map", "POST", B + "/rf?documentId=c", {"fields": {"m": {"mapValue": {"fields": {"k": geo(longitude=180.5)}}}}})
+case("a reference before a reserved name in a later field", "POST", B + ":commit", commit(upd("rf/a", {"v": ref("c/d"), "__x__": i(1)})))
+case("a reserved name before a reference in a later field", "POST", B + ":commit", commit(upd("rf/a", {"__x__": i(1), "v": ref("c/d")})))
+case("a reference before a value without a type", "POST", B + ":commit", commit(upd("rf/a", {"v": {"arrayValue": {"values": [ref("c/d"), U]}}})))
+case("a value without a type before a reference", "POST", B + ":commit", commit(upd("rf/a", {"v": {"arrayValue": {"values": [U, ref("c/d")]}}})))
+case("a geo point before a reserved name in its map", "POST", B + ":commit", commit(upd("rf/a", {"v": {"mapValue": {"fields": {"x": geo(latitude=91), "__y__": i(1)}}}})))
+case("a geo point before a reference", "POST", B + ":commit", commit(upd("rf/a", {"v": geo(latitude=91), "u": ref("c/d")})))
+case("a reference before a geo point", "POST", B + ":commit", commit(upd("rf/a", {"u": ref("c/d"), "v": geo(latitude=91)})))
+case("a reference before nested arrays", "POST", B + ":commit", commit(upd("rf/a", {"n": {"arrayValue": {"values": [{"arrayValue": {}}]}}, "v": ref("c/d")})))
+case("a reference before the update mask", "POST", B + ":commit", commit(upd("rf/a", {"v": ref("c/d")}, updateMask={"fieldPaths": ["__x__"]})))
+case("a reference before the sequence of writes", "POST", B + ":commit", commit(upd("rf/a", {"v": ref("c/d")}), upd("rf/a", {}, currentDocument={"exists": False}), {"delete": NAME + "/rf/a"}))
+case("a reference before the names of a later write", "POST", B + ":commit", commit(upd("rf/a", {"v": ref("c/d")}), upd("rf/b", {"__x__": i(1)})))
+case("a reference before a precondition", "POST", B + ":commit", commit(upd("rf/a", {"v": ref("c/d")}, currentDocument={"exists": True})))
+case("a reference in a vector", "POST", B + ":commit", commit(upd("rf/a", {"v": {"mapValue": {"fields": {"__type__": s("__vector__"), "value": {"arrayValue": {"values": [ref("c/d")]}}}}}})))
+case("a reference next to an unknown __type__", "POST", B + ":commit", commit(upd("rf/a", {"v": {"mapValue": {"fields": {"__type__": s("other"), "k": ref("c/d")}}}})))
+case("a reference in an array union", "POST", B + ":commit", commit(upd("rf/a", {}, updateTransforms=[{"fieldPath": "t", "appendMissingElements": {"values": [ref("c/d")]}}])))
+case("a geo point in an array removal", "POST", B + ":commit", commit({"transform": {"document": NAME + "/rf/a", "fieldTransforms": [{"fieldPath": "t", "removeAllFromArray": {"values": [geo(latitude=91)]}}]}}))
+case("a reference in an increment's operand", "POST", B + ":commit", commit(upd("rf/a", {}, updateTransforms=[{"fieldPath": "t", "increment": {"mapValue": {"fields": {"r": ref("c/d")}}}}])))
+case("a geo point as a maximum", "POST", B + ":commit", commit(upd("rf/a", {}, updateTransforms=[{"fieldPath": "t", "maximum": geo(latitude=91)}])))
+case("the writes that were not refused", "GET", B + "/rf")
+
 
 def norm(text):
     return mask(text, PROJECT)

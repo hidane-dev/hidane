@@ -206,7 +206,7 @@ impl Nearest {
     /// list is checked (#262).
     fn target(find: &FindNearest) -> Result<Vec<f64>, Status> {
         let vector = find.query_vector.clone().unwrap_or_default();
-        validate::typed(&vector)?;
+        validate::query_value(&vector)?;
         match vector.value_type.as_ref() {
             None => Err(validate::unset()),
             Some(ValueType::MapValue(map)) if is_vector(map) => validate::vector(map),
@@ -329,9 +329,13 @@ pub struct Results {
 }
 
 impl Query {
-    /// Validates `query` under `parent`, with the official error messages.
-    pub fn parse(parent: ResourcePath, query: &StructuredQuery) -> Result<Self, Status> {
-        Self::parse_aggregated(parent, query, || Ok(false))
+    /// Validates `query` under `parent` in `database`, with the official error messages.
+    pub fn parse(
+        database: &str,
+        parent: ResourcePath,
+        query: &StructuredQuery,
+    ) -> Result<Self, Status> {
+        Self::parse_aggregated(database, parent, query, || Ok(false))
     }
 
     /// Validates `query` under `parent` in the official emulator's order
@@ -345,6 +349,7 @@ impl Query {
     /// by its field), whether the filter does, the filters on `__name__`, and the rest of
     /// `find_nearest`.
     pub fn parse_aggregated(
+        database: &str,
         parent: ResourcePath,
         query: &StructuredQuery,
         aggregations: impl FnOnce() -> Result<bool, Status>,
@@ -447,7 +452,7 @@ impl Query {
             ));
         }
         if let Some(filter) = &filter {
-            check_filter_late(filter, kindless)?;
+            check_filter_late(filter, kindless, database)?;
         }
         explicit.iter().try_for_each(|order| order.field.check())?;
 
@@ -794,7 +799,7 @@ fn parse_filter(filter: &structured_query::Filter) -> Result<Option<Filter>, Sta
             use field_filter::Operator as F;
             let field = Field::parse(field_filter.field.as_ref())?;
             let value = field_filter.value.clone().unwrap_or_default();
-            validate::typed(&value)?;
+            validate::query_value(&value)?;
             let op = match F::try_from(field_filter.op) {
                 Ok(F::LessThan) => Op::Less,
                 Ok(F::LessThanOrEqual) => Op::LessOrEqual,
@@ -833,16 +838,9 @@ fn parse_filter(filter: &structured_query::Filter) -> Result<Option<Filter>, Sta
                     )));
                 }
             }
-            if field == Field::Name {
-                // A reference's name is read here; array membership on `__name__` and a value
-                // that is not a reference are refused after the orders and the limit
-                // (`check_key_values`).
-                for value in key_values(op, &value) {
-                    if let Some(ValueType::ReferenceValue(name)) = &value.value_type {
-                        names::parent(name)?;
-                    }
-                }
-            }
+            // On `__name__`, array membership, a value that is not a reference and a reference
+            // that is not a key of the database are refused after the orders and the limit
+            // (`check_key_filter`).
             Ok(Some(Filter::Compare { field, op, value }))
         }
         // Its field, then its operator (#262).
@@ -855,7 +853,7 @@ fn parse_filter(filter: &structured_query::Filter) -> Result<Option<Filter>, Sta
                 ));
             };
             // A unary filter on `__name__` is refused late, as a key value
-            // (`check_key_values`); until then it is an equality or an inequality on the key.
+            // (`check_key_filter`); until then it is an equality or an inequality on the key.
             let field = Field::parse(Some(reference))?;
             let op = match U::try_from(unary.op) {
                 Ok(U::IsNan) => UnaryOp::Nan,
@@ -881,13 +879,25 @@ fn key_value_required() -> Status {
     Status::invalid_argument("__key__ filter value must be a Key")
 }
 
-/// A `__name__` filter value: a reference to a document, in any collection. The official
-/// emulator parses it like a parent name, so an odd path gets that message.
-fn check_key(value: &Value) -> Result<(), Status> {
-    match &value.value_type {
-        Some(ValueType::ReferenceValue(name)) => names::parent(name).map(|_| ()),
-        _ => Err(key_value_required()),
+/// A `__name__` filter value: a reference to a document of `database`, in any collection, read
+/// as a key (`tools/oracle/queries.py`, #262): not empty, of the query's database, its IDs
+/// within the key's limits.
+fn check_key(value: &Value, database: &str) -> Result<(), Status> {
+    let Some(ValueType::ReferenceValue(name)) = &value.value_type else {
+        return Err(key_value_required());
+    };
+    let key = names::reference(name)?;
+    if key.path.is_empty() {
+        return Err(validate::key_path_empty());
     }
+    if key.database != database {
+        return Err(Status::invalid_argument(format!(
+            "The request was for database '{database}' but was attempting to access database \
+             '{}'",
+            key.database
+        )));
+    }
+    validate::key(&key.path)
 }
 
 /// The values a `__name__` filter compares with: each of an `in` or `not-in` list.
@@ -938,8 +948,8 @@ fn check_key_equality(leaves: &[(&Field, Leaf)]) -> Result<(), Status> {
 }
 
 /// A filter on `__name__`, last (#262): no array membership, no unary filter, and every value
-/// a reference.
-fn check_key_filter(filter: &Filter) -> Result<(), Status> {
+/// a key of `database` ([`check_key`]).
+fn check_key_filter(filter: &Filter, database: &str) -> Result<(), Status> {
     match filter {
         Filter::Compare {
             field: Field::Name,
@@ -953,7 +963,9 @@ fn check_key_filter(filter: &Filter) -> Result<(), Status> {
             field: Field::Name,
             op,
             value,
-        } => key_values(*op, value).iter().try_for_each(check_key),
+        } => key_values(*op, value)
+            .iter()
+            .try_for_each(|value| check_key(value, database)),
         _ => Ok(()),
     }
 }
@@ -1052,7 +1064,7 @@ fn check_filter(filter: &Filter) -> Result<(), Status> {
 /// collection (`tools/oracle/queries.py`, #262), filter by filter in order: what its path may
 /// hold ([`Field::check`]), whether it needs a collection, then, on `__name__`, its operator
 /// and its values ([`check_key_filter`]).
-fn check_filter_late(filter: &Filter, kindless: bool) -> Result<(), Status> {
+fn check_filter_late(filter: &Filter, kindless: bool, database: &str) -> Result<(), Status> {
     let mut leaves = Vec::new();
     collect_leaf_filters(filter, &mut leaves);
     for leaf in leaves {
@@ -1067,7 +1079,7 @@ fn check_filter_late(filter: &Filter, kindless: bool) -> Result<(), Status> {
                 field.display()
             )));
         }
-        check_key_filter(leaf)?;
+        check_key_filter(leaf, database)?;
     }
     Ok(())
 }
@@ -1392,14 +1404,13 @@ fn parse_cursor(cursor: &Cursor, explicit: &[Order]) -> Result<Bound, Status> {
         .iter()
         .zip(explicit)
         .map(|(value, order)| {
-            validate::typed(value)?;
-            if order.field == Field::Name {
-                if !matches!(value.value_type, Some(ValueType::ReferenceValue(_))) {
-                    return Err(Status::invalid_argument(
-                        "Cursor __key__ value is not a document reference.",
-                    ));
-                }
-                check_key(value)?;
+            validate::query_value(value)?;
+            if order.field == Field::Name
+                && !matches!(value.value_type, Some(ValueType::ReferenceValue(_)))
+            {
+                return Err(Status::invalid_argument(
+                    "Cursor __key__ value is not a document reference.",
+                ));
             }
             Ok(normalized(value.clone()))
         })
@@ -1685,7 +1696,7 @@ mod tests {
 
     /// The documents' paths, and how many documents the scans visited.
     fn run(store: &Counting, query: &StructuredQuery) -> (Vec<String>, usize) {
-        let query = Query::parse(ResourcePath::root(), query).unwrap();
+        let query = Query::parse(DB, ResourcePath::root(), query).unwrap();
         store.visited.store(0, Atomic::Relaxed);
         let at = store.latest_read_time(DB);
         let results = query.run(store, DB, at);

@@ -352,7 +352,7 @@ impl Listener<'_> {
                     Some(query_target::QueryType::StructuredQuery(q)) => q,
                     None => &default,
                 };
-                let query = Query::parse(parent.path, structured)?;
+                let query = Query::parse(&parent.database, parent.path, structured)?;
                 (parent.database, Watch::Query(Box::new(query)))
             }
             Some(target::TargetType::Documents(documents)) => {

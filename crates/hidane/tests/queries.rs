@@ -47,7 +47,12 @@ fn documents() -> String {
 
 /// The fixture with `{documents}` filled in for this test's project.
 fn fixture() -> Json {
-    let text = include_str!("fixtures/queries.json").replace("{documents}", &documents());
+    let text = include_str!("fixtures/queries.json")
+        .replace("{documents}", &documents())
+        .replace(
+            "{database}",
+            &format!("projects/{PROJECT}/databases/(default)"),
+        );
     serde_json::from_str(&text).unwrap()
 }
 
