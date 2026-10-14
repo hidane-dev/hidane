@@ -28,7 +28,7 @@ jobs:
           node-version: 24
           cache: npm
       # Installs the latest hidane release, after checking its SHA-256 and build provenance, and
-      # puts it on PATH. `with: { version: 0.4.0 }` pins a version.
+      # puts it on PATH. `with: { version: 0.5.1 }` pins a version.
       - uses: hidane-dev/setup-hidane@f0bdb68d1e28100cd5b445456455e1108f370987 # v1.0.0
       # --ignore-scripts: no dependency runs code while it installs. Drop it if yours need to.
       - run: npm ci --ignore-scripts

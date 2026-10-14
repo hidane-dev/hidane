@@ -24,4 +24,4 @@ which needs no Google Cloud project.
 
 [`examples.yml`](../../.github/workflows/examples.yml) starts hidane the same way and runs
 `go test ./...` with the Go version in `go.mod`, with hidane built from the pull request and with
-the published v0.4.0.
+the published release that it pins (`PUBLISHED_VERSION`).

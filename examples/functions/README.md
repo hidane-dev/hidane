@@ -31,4 +31,4 @@ matching write. `demo-hidane` is a demo project ID, which needs no Firebase proj
 
 [`examples.yml`](../../.github/workflows/examples.yml) runs `npm ci --ignore-scripts` in both
 directories and `npm test` on Node.js 24, with hidane built from the pull request and with the
-published v0.4.0.
+published release that it pins (`PUBLISHED_VERSION`).

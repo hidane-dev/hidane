@@ -32,4 +32,4 @@ uv pip compile --universal --python-version 3.13 --generate-hashes requirements.
 
 [`examples.yml`](../../.github/workflows/examples.yml) installs `requirements.txt` on Python 3.13,
 starts hidane the same way and runs `pytest`, with hidane built from the pull request and with the
-published v0.4.0.
+published release that it pins (`PUBLISHED_VERSION`).
