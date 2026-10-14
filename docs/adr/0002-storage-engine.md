@@ -65,8 +65,10 @@ The model the trait fixes, and why:
   recovery, in whole minutes), and answers "too old" past that (#86,
   `tools/oracle/read_time_and_databases.py`). It does not always keep the history behind those
   reads: once, an hour after a document was written and left unread, a read before its creation
-  failed with `UNKNOWN`. The hour is a difference from it
-  ([parity exceptions](../parity-exceptions.md)).
+  failed with `UNKNOWN`. The hour stays (decided on 2026-10-14, #86): it bounds the memory old
+  versions take and answers every older read with the same clear "too old", as production does
+  without point-in-time recovery. It is a limitation against the official emulator
+  ([parity exceptions](../parity-exceptions.md), D065).
 - **Commits are closures over a `WriteBatch`.** The commit time is fixed before the closure runs
   (server timestamps and `update_time` need it), reads inside the batch see the batch's writes,
   and an error from the closure applies nothing. Preconditions, update masks and transforms are
