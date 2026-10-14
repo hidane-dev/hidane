@@ -60,7 +60,11 @@ The model the trait fixes, and why:
   Listen.
 - **Retention.** Overwritten versions stay readable for one hour by default (Firestore's limit
   for stale reads); older ones are dropped when the document is next written. The official
-  emulator's own limit is still to be measured (#86).
+  emulator serves a `read_time` up to seven days old (604,800 s before now, whatever its uptime
+  and whenever the data was written; production allows seven days only with point-in-time
+  recovery, in whole minutes), and answers "too old" past that (#86,
+  `tools/oracle/read_time_and_databases.py`). The hour is a difference from it
+  ([parity exceptions](../parity-exceptions.md)).
 - **Commits are closures over a `WriteBatch`.** The commit time is fixed before the closure runs
   (server timestamps and `update_time` need it), reads inside the batch see the batch's writes,
   and an error from the closure applies nothing. Preconditions, update masks and transforms are
