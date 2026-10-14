@@ -599,10 +599,53 @@ impl Query {
     }
 
     pub fn run(&self, store: &dyn Store, database: &str, at: ReadTime) -> Results {
-        let mut matches: Vec<(Arc<StoredDocument>, Vec<Value>)> = Vec::new();
+        let in_range = |key: &[Value]| {
+            let after_start =
+                self.start
+                    .as_ref()
+                    .is_none_or(|start| match self.compare_to_cursor(key, start) {
+                        Ordering::Greater => true,
+                        Ordering::Equal => start.before,
+                        Ordering::Less => false,
+                    });
+            let before_end =
+                self.end
+                    .as_ref()
+                    .is_none_or(|end| match self.compare_to_cursor(key, end) {
+                        Ordering::Less => true,
+                        Ordering::Equal => !end.before,
+                        Ordering::Greater => false,
+                    });
+            after_start && before_end
+        };
+        // How many documents in range the result needs, when it takes the first ones.
+        let wanted = self
+            .limit
+            .filter(|_| self.nearest.is_none())
+            .map(|limit| self.offset.saturating_add(limit));
+        // Ordered by name alone, ascending, these scans visit documents in the query's order
+        // (the store's keys sort as `__name__` does), so a limited query stops once it has its
+        // documents rather than reading the whole collection: a listener runs such a query
+        // again on every commit (#295). The children's scans are in order within each
+        // collection only.
+        let stop_at = wanted.filter(|_| {
+            matches!(self.orders.as_slice(), [order] if order.field == Field::Name && !order.descending)
+                && !matches!(self.source, Source::Children)
+        });
+        type Match = (Arc<StoredDocument>, Vec<Value>);
+        let mut found = 0;
+        let mut matches: Vec<Match> = Vec::new();
         let mut visit = |doc: &Arc<StoredDocument>| {
             if let Some(key) = self.sort_key(database, doc) {
-                matches.push((Arc::clone(doc), key));
+                if let Some(stop_at) = stop_at {
+                    found += usize::from(in_range(&key));
+                    matches.push((Arc::clone(doc), key));
+                    if found >= stop_at {
+                        return std::ops::ControlFlow::Break(());
+                    }
+                } else {
+                    matches.push((Arc::clone(doc), key));
+                }
             }
             std::ops::ControlFlow::Continue(())
         };
@@ -623,8 +666,9 @@ impl Query {
             }
         }
 
-        matches.sort_by(|(_, a), (_, b)| self.compare_keys(a, b));
+        let compare = |(_, a): &Match, (_, b): &Match| self.compare_keys(a, b);
         if let Some(nearest) = &self.nearest {
+            matches.sort_by(compare);
             // No offset, limit or cursor comes with `find_nearest`. Ties keep the query's
             // ordering, as on the official emulator.
             let mut scored: Vec<(Arc<StoredDocument>, f64)> = matches
@@ -640,35 +684,24 @@ impl Query {
                 distances,
             };
         }
-        let in_range = |key: &[Value]| {
-            let after_start =
-                self.start
-                    .as_ref()
-                    .is_none_or(|start| match self.compare_to_cursor(key, start) {
-                        Ordering::Greater => true,
-                        Ordering::Equal => start.before,
-                        Ordering::Less => false,
-                    });
-            let before_end =
-                self.end
-                    .as_ref()
-                    .is_none_or(|end| match self.compare_to_cursor(key, end) {
-                        Ordering::Less => true,
-                        Ordering::Equal => !end.before,
-                        Ordering::Greater => false,
-                    });
-            after_start && before_end
-        };
-        let in_range: Vec<_> = matches
-            .into_iter()
-            .filter(|(_, key)| in_range(key))
-            .map(|(doc, _)| doc)
-            .collect();
-        let skipped = self.offset.min(in_range.len());
-        let documents = in_range
+        matches.retain(|(_, key)| in_range(key));
+        let skipped = self.offset.min(matches.len());
+        // Only the first `wanted` are kept: select them, then sort those. The orders end with
+        // `__name__`, so no two keys are equal and this keeps the documents a full sort would.
+        if let Some(wanted) = wanted
+            && wanted < matches.len()
+        {
+            if wanted > 0 {
+                matches.select_nth_unstable_by(wanted - 1, compare);
+            }
+            matches.truncate(wanted);
+        }
+        matches.sort_by(compare);
+        let documents = matches
             .into_iter()
             .skip(self.offset)
             .take(self.limit.unwrap_or(usize::MAX))
+            .map(|(doc, _)| doc)
             .collect();
         Results {
             documents,
@@ -1453,6 +1486,220 @@ fn rules_filter(filter: &Filter) -> hidane_rules::eval::Filter {
                 UnaryOp::NotNull => FilterOp::IsNotNull,
             };
             rules_field(field, op, RulesValue::Null)
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        ops::ControlFlow,
+        sync::atomic::{AtomicUsize, Ordering as Atomic},
+    };
+
+    use hidane_core::store::{
+        Commit, ListItem, ListOptions, MemoryStore, StoreError, Visit, WriteBatch,
+    };
+    use hidane_proto::google::firestore::v1::structured_query::{
+        CollectionSelector, Direction, FieldReference, Order as QueryOrder,
+    };
+
+    use super::*;
+
+    const DB: &str = "projects/demo/databases/(default)";
+
+    /// A store that counts the documents its scans visit.
+    struct Counting {
+        inner: MemoryStore,
+        visited: AtomicUsize,
+    }
+
+    impl Store for Counting {
+        fn latest_read_time(&self, database: &str) -> ReadTime {
+            self.inner.latest_read_time(database)
+        }
+        fn earliest_read_time(&self, database: &str) -> ReadTime {
+            self.inner.earliest_read_time(database)
+        }
+        fn get(
+            &self,
+            database: &str,
+            path: &ResourcePath,
+            at: ReadTime,
+        ) -> Option<Arc<StoredDocument>> {
+            self.inner.get(database, path, at)
+        }
+        fn list_collection(
+            &self,
+            database: &str,
+            collection: &ResourcePath,
+            at: ReadTime,
+            options: ListOptions<'_>,
+            visit: &mut dyn FnMut(ListItem<'_>) -> ControlFlow<()>,
+        ) {
+            self.inner
+                .list_collection(database, collection, at, options, &mut |item| {
+                    self.visited.fetch_add(1, Atomic::Relaxed);
+                    visit(item)
+                });
+        }
+        fn scan_collection_group(
+            &self,
+            database: &str,
+            parent: &ResourcePath,
+            collection_id: &str,
+            at: ReadTime,
+            visit: &mut Visit<'_>,
+        ) {
+            self.inner
+                .scan_collection_group(database, parent, collection_id, at, &mut |doc| {
+                    self.visited.fetch_add(1, Atomic::Relaxed);
+                    visit(doc)
+                });
+        }
+        fn scan_descendants(
+            &self,
+            database: &str,
+            parent: &ResourcePath,
+            at: ReadTime,
+            visit: &mut Visit<'_>,
+        ) {
+            self.inner
+                .scan_descendants(database, parent, at, &mut |doc| {
+                    self.visited.fetch_add(1, Atomic::Relaxed);
+                    visit(doc)
+                });
+        }
+        fn list_collection_ids(
+            &self,
+            database: &str,
+            parent: &ResourcePath,
+            at: ReadTime,
+        ) -> Vec<String> {
+            self.inner.list_collection_ids(database, parent, at)
+        }
+        fn commit(
+            &self,
+            database: &str,
+            write: &mut dyn FnMut(&mut dyn WriteBatch) -> Result<(), StoreError>,
+        ) -> Result<Commit, StoreError> {
+            self.inner.commit(database, write)
+        }
+        fn clear_database(&self, database: &str) -> ReadTime {
+            self.inner.clear_database(database)
+        }
+        fn database_names(&self) -> Vec<String> {
+            self.inner.database_names()
+        }
+        fn clear(&self) {
+            self.inner.clear()
+        }
+    }
+
+    /// `c/d000` … `c/d099`, with `n` counting down from 99, and `g/d000/c/x` in the same group.
+    fn store() -> Counting {
+        let store = Counting {
+            inner: MemoryStore::new(),
+            visited: AtomicUsize::new(0),
+        };
+        store
+            .commit(DB, &mut |batch| {
+                for i in 0..100 {
+                    let n = Value {
+                        value_type: Some(ValueType::IntegerValue(99 - i)),
+                    };
+                    batch.set(
+                        &ResourcePath::parse(&format!("c/d{i:03}")).unwrap(),
+                        [("n".to_owned(), n)].into(),
+                    );
+                }
+                batch.set(
+                    &ResourcePath::parse("g/d000/c/x").unwrap(),
+                    Default::default(),
+                );
+                Ok(())
+            })
+            .unwrap();
+        store
+    }
+
+    fn query(
+        group: bool,
+        order: Option<(&str, bool)>,
+        offset: i32,
+        limit: Option<i32>,
+    ) -> StructuredQuery {
+        StructuredQuery {
+            from: vec![CollectionSelector {
+                collection_id: "c".to_owned(),
+                all_descendants: group,
+            }],
+            order_by: order
+                .map(|(field, descending)| QueryOrder {
+                    field: Some(FieldReference {
+                        field_path: field.to_owned(),
+                    }),
+                    direction: if descending {
+                        Direction::Descending
+                    } else {
+                        Direction::Ascending
+                    } as i32,
+                })
+                .into_iter()
+                .collect(),
+            offset,
+            limit,
+            ..StructuredQuery::default()
+        }
+    }
+
+    /// The documents' paths, and how many documents the scans visited.
+    fn run(store: &Counting, query: &StructuredQuery) -> (Vec<String>, usize) {
+        let query = Query::parse(ResourcePath::root(), query).unwrap();
+        store.visited.store(0, Atomic::Relaxed);
+        let at = store.latest_read_time(DB);
+        let results = query.run(store, DB, at);
+        let paths = results
+            .documents
+            .iter()
+            .map(|d| d.path.to_string())
+            .collect();
+        (paths, store.visited.load(Atomic::Relaxed))
+    }
+
+    /// #295: a limit and an offset keep what a full sort keeps, for every order, and a query
+    /// ordered by name alone stops scanning once it has its documents.
+    #[test]
+    fn a_limit_keeps_what_a_full_sort_keeps_and_stops_early_by_name() {
+        let store = store();
+        for group in [false, true] {
+            // A descending key scan is refused, as on the official emulator.
+            for order in [
+                None,
+                Some(("__name__", false)),
+                Some(("n", false)),
+                Some(("n", true)),
+            ] {
+                let (all, scanned) = run(&store, &query(group, order, 0, None));
+                assert_eq!(scanned, if group { 101 } else { 100 });
+                for (offset, limit) in [(0, 0), (0, 1), (0, 3), (2, 3), (98, 5), (0, 200)] {
+                    let (some, visited) = run(&store, &query(group, order, offset, Some(limit)));
+                    let expected: Vec<String> = all
+                        .iter()
+                        .skip(offset as usize)
+                        .take(limit as usize)
+                        .cloned()
+                        .collect();
+                    let what = format!("group {group}, {order:?}, offset {offset}, limit {limit}");
+                    assert_eq!(some, expected, "{what}");
+                    if matches!(order, None | Some(("__name__", false))) {
+                        let wanted = (offset + limit) as usize;
+                        assert_eq!(visited, wanted.clamp(1, scanned), "{what}");
+                    } else {
+                        assert_eq!(visited, scanned, "{what}");
+                    }
+                }
+            }
         }
     }
 }
