@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:b64fce1808d9d6b7f114de0eae19689f0a04020fb62881dc8188ed2e6d083b07",
+ "digest": "sha256:cbe87d2d1de1d37951bf82a4dc63289b1cb36854171532c632daef9167acb303",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,19 +14,19 @@
   }
  ],
  "totals": {
-  "files": 80,
-  "fixtures": 48,
+  "files": 81,
+  "fixtures": 49,
   "transcripts": 32,
-  "answers": 23582,
-  "bytes": 13843122,
+  "answers": 23651,
+  "bytes": 13879171,
   "levels": {
    "full": 13205,
-   "reasons": 4313,
+   "reasons": 4320,
    "part": 835,
-   "status": 5039,
+   "status": 5099,
    "codes": 30,
    "none": 1,
-   "differs": 159
+   "differs": 161
   },
   "by_area": {
    "documents": {
@@ -60,9 +60,9 @@
     "answers": 34
    },
    "rules": {
-    "fixtures": 22,
+    "fixtures": 23,
     "transcripts": 2,
-    "answers": 15191
+    "answers": 15260
    },
    "export": {
     "fixtures": 1,
@@ -82,15 +82,15 @@
   },
   "by_release": {
    "v1.22.0": {
-    "fixtures": 48,
+    "fixtures": 49,
     "transcripts": 32,
-    "answers": 23582
+    "answers": 23651
    }
   },
   "by_release_source": {
    "header": 24,
    "file name": 33,
-   "git history": 23
+   "git history": 24
   }
  },
  "recordings": [
@@ -1384,6 +1384,44 @@
    "compared": "every status and what `debug()` printed (without `request.time`); the rules and coverage reports in full (byte for byte, without `request.time`); a denial as decision and reasons (`same_denial`); a call that printed in part, the others on their status; the coverage page and the cases marked `differs` as intentionally different"
   },
   {
+   "path": "crates/hidane/tests/fixtures/rules_same_document.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/rules_same_document.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that added it"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-15",
+    "last_changed": "2026-10-15"
+   },
+   "bytes": 31763,
+   "sha256": "7264ef9a9828b23399f9245df83e6a41abf583e6e940ca9a8a8761243896836e",
+   "answers": 61,
+   "levels": {
+    "reasons": 4,
+    "status": 57
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/rules_server.rs::replay"
+   ],
+   "counted": "each call",
+   "compared": "a denial as decision and reasons (`same_denial`: hidane's reasons are among the official ones); every other answer on its status"
+  },
+  {
    "path": "crates/hidane/tests/fixtures/rules_streams.json",
    "kind": "fixture",
    "area": "rules",
@@ -1480,18 +1518,19 @@
     "release": "v1.22.0",
     "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
     "source": "git history",
-    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that last changed it, as at the earlier commit that changed it"
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that last changed it, as at the 2 earlier commits that changed it"
    },
    "recorded": {
     "first_recorded": "2026-10-11",
-    "last_changed": "2026-10-12"
+    "last_changed": "2026-10-15"
    },
-   "bytes": 118949,
-   "sha256": "3d1ce8e287757cf99c5b997029c14edbe6e3fac3216686b1548218ba63798476",
-   "answers": 366,
+   "bytes": 123235,
+   "sha256": "13be62390da72b0145095234d8ea8e7840b204125b10436b9c70b4cb2baab097",
+   "answers": 374,
    "levels": {
-    "reasons": 66,
-    "status": 300
+    "reasons": 69,
+    "status": 303,
+    "differs": 2
    },
    "replayed_over": [
     "REST"
