@@ -871,6 +871,52 @@
     "code": "INVALID_ARGUMENT",
     "message": "order by clause cannot contain duplicate fields n"
    }
+  },
+  {
+   "name": "collection, order by a field, pages of 2",
+   "request": {
+    "collection_id": "o",
+    "order_by": "n",
+    "page_size": 2,
+    "pages": true
+   },
+   "parent": "e/q/sub/y",
+   "owner": true,
+   "outcome": {
+    "pages": [
+     [
+      "e/q/sub/y/o/g",
+      "e/q/sub/y/o/a"
+     ]
+    ],
+    "error": {
+     "code": "UNKNOWN",
+     "message": ""
+    }
+   }
+  },
+  {
+   "name": "collection, order by the name, pages of 2",
+   "request": {
+    "collection_id": "o",
+    "order_by": "__name__",
+    "page_size": 2,
+    "pages": true
+   },
+   "parent": "e/q/sub/y",
+   "owner": true,
+   "outcome": {
+    "pages": [
+     [
+      "e/q/sub/y/o/a",
+      "e/q/sub/y/o/b"
+     ]
+    ],
+    "error": {
+     "code": "UNKNOWN",
+     "message": ""
+    }
+   }
   }
  ],
  "rest": [

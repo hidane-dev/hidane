@@ -144,7 +144,13 @@ async fn list(client: &mut Client, case: &Json, first_commit: &prost_types::Time
                     }
                     name.push(c.to_ascii_uppercase());
                 }
-                return json!({"code": name, "message": status.message()});
+                let error = json!({"code": name, "message": status.message()});
+                // An error after the first page keeps the pages before it, as recorded.
+                return if result.is_empty() {
+                    error
+                } else {
+                    json!({"pages": result, "error": error})
+                };
             }
         };
         if !pages {
@@ -199,6 +205,24 @@ async fn get(addr: SocketAddr, suffix: &str) -> Json {
     }
 }
 
+/// Cases where hidane answers differently on purpose, with the row of
+/// `docs/parity-exceptions.md` that says why: a page token next to an order, which the official
+/// emulator answers with `UNKNOWN` and no message ("not supported" in its log) and hidane
+/// continues in the requested order, as production does.
+const INTENTIONAL: &[(&str, &str)] = &[
+    ("collection, order by a field, pages of 2", "D089"),
+    ("collection, order by the name, pages of 2", "D089"),
+];
+
+/// The same request in one page.
+fn unpaged(case: &Json) -> Json {
+    let mut case = case.clone();
+    let request = case["request"].as_object_mut().unwrap();
+    request.remove("pages");
+    request.remove("page_size");
+    case
+}
+
 #[tokio::test]
 async fn list_documents_like_the_official_emulator() {
     let fixture: Json = serde_json::from_str(include_str!("fixtures/list_documents.json")).unwrap();
@@ -209,6 +233,27 @@ async fn list_documents_like_the_official_emulator() {
     let mut differences = Vec::new();
     for case in fixture["grpc"].as_array().unwrap() {
         let actual = list(&mut client, case, &first_commit).await;
+        if INTENTIONAL.iter().any(|(name, _)| case["name"] == *name) {
+            // The official emulator's first page, then the rest of the listing in its order.
+            let official = &case["outcome"];
+            assert_eq!(official["error"]["code"], "UNKNOWN", "{}", case["name"]);
+            assert_eq!(actual["pages"][0], official["pages"][0], "{}", case["name"]);
+            let all = list(&mut client, &unpaged(case), &first_commit).await;
+            let names: Vec<&Json> = all["documents"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|d| &d["name"])
+                .collect();
+            let paged: Vec<&Json> = actual["pages"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .flat_map(|page| page.as_array().unwrap())
+                .collect();
+            assert_eq!(paged, names, "{}", case["name"]);
+            continue;
+        }
         if actual != case["outcome"] {
             differences.push(format!(
                 "grpc {}:\n    official {}\n    hidane   {actual}",

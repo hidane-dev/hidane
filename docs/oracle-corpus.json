@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:073fb62a0e51725e93fb53fafe6d2ffa1df2a2241c4c142e6b273f818345d8df",
+ "digest": "sha256:de931dfd31dfe58a11d71c73f55adef665e77639557856749b1b361fbad67929",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -17,8 +17,8 @@
   "files": 73,
   "fixtures": 41,
   "transcripts": 32,
-  "answers": 21104,
-  "bytes": 11381628,
+  "answers": 21106,
+  "bytes": 11382398,
   "levels": {
    "full": 12870,
    "reasons": 3912,
@@ -26,13 +26,13 @@
    "status": 3405,
    "codes": 30,
    "none": 1,
-   "differs": 126
+   "differs": 128
   },
   "by_area": {
    "documents": {
     "fixtures": 6,
     "transcripts": 4,
-    "answers": 5263
+    "answers": 5265
    },
    "queries": {
     "fixtures": 4,
@@ -84,7 +84,7 @@
    "v1.22.0": {
     "fixtures": 41,
     "transcripts": 32,
-    "answers": 21104
+    "answers": 21106
    }
   },
   "by_release_source": {
@@ -236,11 +236,12 @@
     "first_recorded": "2026-10-10",
     "last_changed": "2026-10-14"
    },
-   "bytes": 15991,
-   "sha256": "c4bab3518a36196bf8406dac5a8669bd1c711096ff9db57a3e67e6d713df18cb",
-   "answers": 44,
+   "bytes": 16761,
+   "sha256": "2638252112a72d34c0b4d3216feccf19d012df6fcd28429d5ae656298babe95c",
+   "answers": 46,
    "levels": {
-    "full": 44
+    "full": 44,
+    "differs": 2
    },
    "replayed_over": [
     "gRPC",
@@ -250,7 +251,7 @@
     "crates/hidane/tests/list_documents.rs::list_documents_like_the_official_emulator"
    ],
    "counted": "each case (a paged case is one)",
-   "compared": "in full: the names of every page, or the code and message"
+   "compared": "in full: the names of every page, or the code and message; a page token next to an order as intentionally different"
   },
   {
    "path": "crates/hidane/tests/fixtures/same_document_writes.json",
