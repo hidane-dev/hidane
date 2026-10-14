@@ -14,7 +14,7 @@
 
 <p>
   <a href="https://www.producthunt.com/products/hidane?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-hidane"><picture><source media="(prefers-color-scheme: dark)" srcset="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1277504&theme=dark&t=1791976762318"><img alt="hidane - A Firestore emulator without Java, in one Rust binary | Product Hunt" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1277504&theme=light&t=1791976762318" width="250" height="54"></picture></a>
-  <a href="https://orynth.dev/projects/hidane"><picture><source media="(prefers-color-scheme: dark)" srcset="https://orynth.dev/api/badge/hidane?theme=dark&style=default"><img alt="Featured on Orynth" src="https://orynth.dev/api/badge/hidane?theme=light&style=default" width="176" height="54"></picture></a>
+  <a href="https://orynth.dev/projects/hidane"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.orynth.dev/api/badge/hidane?theme=dark&style=default"><img alt="Featured on Orynth" src="https://www.orynth.dev/api/badge/hidane?theme=light&style=default" width="176" height="54"></picture></a>
   <a href="https://www.uneed.best/tool/hidane"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.uneed.best/EMBED1B.png"><img alt="Featured on Uneed" src="https://www.uneed.best/EMBED1A.png" width="164" height="54"></picture></a>
 </p>
 
