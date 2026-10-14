@@ -6,8 +6,8 @@ published. This page lists the places where hidane
 **intentionally** behaves differently, and the places where the official emulator itself
 diverges from production Firestore so that a parity target has to be chosen.
 
-Status: kept up to date with each change. Naming, for each entry, the fixture or test that pins
-hidane's side is #45.
+Status: kept up to date with each change. Each entry names the tests that pin hidane's side, or
+says why none does ([What pins each entry](#what-pins-each-entry)).
 
 The tables are generated from a database, [`parity-exceptions.json`](parity-exceptions.json)
 ([schema](parity-exceptions.schema.json)), which holds each entry with structured fields:
@@ -22,6 +22,7 @@ The tables are generated from a database, [`parity-exceptions.json`](parity-exce
 | `reason` | Why: the first table's Why column, the second table's Decision column |
 | `kind` | `bug-for-bug`: hidane does what the official emulator does, where production differs. `more-correct`: hidane departs from the official emulator to do what production or the documented contract does, or to fix what is a bug whatever production does. `equivalent`: hidane departs in a detail clients do not observe or cannot rely on (wording, transport, timing, order, opaque formats), with the same outcome. `limitation`: hidane departs because it does less, or bounds what the official emulator does not |
 | `references` | The issues (`hidane-dev/hidane#86`, `firebase/firebase-tools#11241`), web pages and repository files the entry relies on: at least every one its text mentions, and more where useful, such as the fixture that pins hidane's side |
+| `pinned_by`, `unpinned` | The tests that fail if hidane stops doing what `hidane` says, as `<file>::<test function>`; or, when there is none, why |
 
 To add or change an entry, edit the database and run `python3 tools/parity/differences.py`,
 which validates it, checks that every reference its text makes is listed and that each file
@@ -46,7 +47,7 @@ documentation and `tools/parity/table.py` refer to.
 | A cleared database (`DELETE /emulator/v1/…/documents`, rules-unit-testing's `clearFirestore()`) reaches a web SDK query listener as several snapshots | One snapshot with every document gone | Follows from answering with `RESET` | more correct (D004) |
 | After a reconnect, the web SDK sees a resumed query in several snapshots: the first still shows the documents deleted or changed away while it was offline, later ones drop them one by one | One snapshot with everything that changed since the token | Follows from resuming with `RESET` (see the production table below); the SDK then looks up each document it can no longer place. A limit query whose window moved while offline gets one snapshot on both (#146) | more correct (D005) |
 | Adding a Listen target with an ID that is in use ends the stream with `UNKNOWN` and no message | Ends it with `INVALID_ARGUMENT` "Target ID … is already in use." | Bug (an internal error) | more correct (D006) |
-| A Listen query whose parent names another database reads the stream's database | Refuses the target (`REMOVE` with an `INVALID_ARGUMENT` cause) | Bug | more correct (D007) |
+| A Listen query whose parent names another database reads the stream's database | Refuses the target (`REMOVE` with an `INVALID_ARGUMENT` cause); a stream watches the database of its first target | Bug | more correct (D007) |
 | Rules conditions are evaluated in two passes, and a denial lists the reasons of both. In the first pass `resource.data` and lookups (`get()`, `exists()`) fail (`evaluation error at L5:22`), the `request.resource` of a write with an update mask or transforms is not computed yet (`debug(request)` shows it as `undefined`, and so does the coverage report's value of `request`, even when the first pass decides), and its lookups count against the limits of 10 and 20 (firebase-tools [#6252](https://github.com/firebase/firebase-tools/issues/6252), open since 2023). `debug()` prints in both passes, and the coverage report (`:ruleCoverage`) counts both, the first pass's failures as `{"undefined": {}}` | Evaluate once: a denial lists each statement's reason once, only the conditions' own lookups count, and `debug()` and the coverage report see one evaluation, with `request.resource` always the document as the write leaves it | Bug | more correct (D008) |
 | A commit's `verify` write (which the SDKs send for a document a transaction read without writing it) is checked as a `get` in the same two passes, with a different `request` in each: in the first it has the keys of a read (`fields`, null), in the second those of a write (`transforms`, `writeFields`, `readFields`, all null, and `resource`, the stored document). Where the first pass decides, `debug(request)` and the coverage report show the keys of a read | One evaluation, with the keys of the second pass: `request.resource` is the stored document, and `request.fields` is undefined | Follows from evaluating once, with everything the second pass computes | more correct (D009) |
 | The Emulator UI's request monitor (the WebSocket feed on `--websocket_port`) gets a record for each pass of that evaluation: a first one where `resource` is undefined and conditions reading it fail, then, unless that decided, one with the stored document. An upsert's first pass evaluates `create` and `update`, and if they disagree a third record evaluates the method that applies; `granularAllowOutcomes` grows over all of them | One record per method evaluated: a read, a document of a batchGet or of a Listen target, a way of a list's filter, a write (an upsert: `create`, then `update`). `resource` holds the stored document (null when there is none) | Follows from evaluating once | more correct (D010) |
@@ -83,7 +84,7 @@ documentation and `tools/parity/table.py` refer to.
 | WebChannel answers carry no `Access-Control-Allow-Methods` | The CORS headers of every HTTP path, that one included | Harmless | equivalent (D040) |
 | JWT segments in `Authorization` are read with a lenient JSON parser (an unquoted key such as `{a:1}` passes) | Strict JSON: such a token is `invalid jwt` | Clients only send JSON | equivalent (D041) |
 | `DELETE /emulator/v1/…/documents/{path}` with an empty path segment names the parent in its error (`Document parent name "…/c/" has invalid trailing "/".`) | Names the whole path (`Resource name "…" lacks a resource id at index ….`), same status | Wording only | equivalent (D042) |
-| RunAggregationQuery responses carry `done: true`, a field the published protos do not define (visible over REST) | Not sent over gRPC, where clients built from the published protos would drop it; the REST layer (#34) will add it | Not part of the published API | equivalent (D043) |
+| RunAggregationQuery responses carry `done: true`, a field the published protos do not define (visible over REST) | Not sent over gRPC, where clients built from the published protos would drop it; sent over REST, as the official emulator does (#34) | Not part of the published API | equivalent (D043) |
 | REST `GET` of a document or collection with `?transaction=` never answers (gRPC works) | Follows the gRPC behaviour (#34) | Bug | more correct (D044) |
 | A REST query parameter that does not parse (`pageSize=abc`, `showMissing=maybe`) leaves the request unanswered | `400` "Payload isn't valid for request.", the answer to a body that does not parse | Bug | more correct (D045) |
 | A `:listCollectionIds` body that names a `parent` as the path does leaves the request unanswered | The path wins | Bug | more correct (D046) |
@@ -144,6 +145,112 @@ documentation and `tools/parity/table.py` refer to.
 | Collection group queries under a document | A collection group query (`allDescendants`) whose parent is a document, with a filter or an order other than ascending `__name__` (an aggregation over one too), is refused: `FAILED_PRECONDITION` "collection group queries are only allowed if they're at the root or they're an ascending primary key scan" | Allowed by the API reference: the `parent` of [RunQuery](https://firebase.google.com/docs/firestore/reference/rest/v1/projects.databases.documents/runQuery) may be a document, and a [CollectionSelector](https://firebase.google.com/docs/firestore/reference/rest/v1/StructuredQuery#collectionselector) with `allDescendants` selects all descendant collections of it; no restriction to the root is documented | Follow production's documented API (#262) | more correct (D088) |
 
 <!-- differences:production:end -->
+
+## What pins each entry
+
+The tests that fail if hidane stops doing what an entry says, or why none does. Most of these
+differences are marked in a recording (a `compare` of `status` or `codes`) or in the list of a
+test that replays one (`INTENTIONAL`, `KNOWN`), and the entry names that test.
+
+<!-- differences:pinned:start -->
+<!-- Generated by tools/parity/differences.py from docs/parity-exceptions.json; edit the database, not this. -->
+
+63 of 90 entries are pinned by a test.
+
+| Entry | Pinned by |
+|---|---|
+| D001 | [`listen.rs` `later_commits_send_only_what_changed`](../crates/hidane/tests/listen.rs), [`bench.rs` `writes_with_a_listener_attached_stay_flat`](../crates/hidane/tests/bench.rs) |
+| D002 | [`listen.rs` `documents_leaving_a_query_are_removed`](../crates/hidane/tests/listen.rs) |
+| D003 | [`clear.rs` `listeners_see_cleared_documents_go`](../crates/hidane/tests/clear.rs) |
+| D004 | [`clear.rs` `listeners_see_cleared_documents_go`](../crates/hidane/tests/clear.rs) |
+| D005 | [`listen.rs` `a_resumed_target_gets_only_what_changed`](../crates/hidane/tests/listen.rs) |
+| D006 | [`listen.rs` `target_ids_bad_targets_and_half_close`](../crates/hidane/tests/listen.rs) |
+| D007 | [`listen.rs` `a_target_of_another_database_and_once`](../crates/hidane/tests/listen.rs) |
+| D008 | [`library.rs` `evaluation_matches_the_official_emulator`](../crates/hidane-rules/tests/library.rs), [`denials.rs` `denials_name_each_statement`](../crates/hidane-rules/tests/denials.rs) |
+| D009 | [`rules_coverage.rs` `verify_writes`](../crates/hidane/tests/rules_coverage.rs) |
+| D010 | Nothing. `websocket_requests.rs` marks the second-pass steps `differs` and only checks hidane's records name a recorded method and path, so the single record per method is not asserted. |
+| D011 | [`websocket_requests.rs` `a_client_that_does_not_read_is_disconnected`](../crates/hidane/tests/websocket_requests.rs), [`monitor.rs` `a_client_too_far_behind_is_dropped`](../crates/hidane/src/rules/monitor.rs), [`monitor.rs` `the_backlog_keeps_the_last_records`](../crates/hidane/src/rules/monitor.rs) |
+| D012 | Nothing. The replayed `backlog` case only uses a 50-record backlog that both emulators send and follow with later records; no test with a backlog too large to send at once. |
+| D013 | [`websocket_requests.rs` `records_as_the_official_emulator_sends_them`](../crates/hidane/tests/websocket_requests.rs) |
+| D014 | Nothing. The step "query targets checked again" is `differs` and checked on its method and path only, which a re-check would also pass; no test asserts a query target is checked once. |
+| D015 | Nothing. The coverage case "a branch not taken" is marked `differs` in `rules_coverage.json`, so only its status is compared. |
+| D016 | Nothing. No test exercises the 100-distinct-values cap (`MAX_VALUES` in `crates/hidane-rules/src/coverage.rs`). |
+| D017 | [`rules_coverage.rs` `rules_coverage_and_debug`](../crates/hidane/tests/rules_coverage.rs), [`report.rs` `html_escapes_as_gson_does`](../crates/hidane/src/rules/report.rs) |
+| D018 | [`list.rs` `every_way_of_the_filter_must_be_allowed`](../crates/hidane-rules/tests/list.rs) |
+| D019 | Nothing. Batch denials are compared with `common::rules::same_denial`, which accepts any subset of the official reasons, so extra entries for earlier writes would still pass. |
+| D020 | [`rules_server.rs` `documents_a_batch_writes_are_free_to_look_up`](../crates/hidane/tests/rules_server.rs), [`library.rs` `evaluation_matches_the_official_emulator`](../crates/hidane-rules/tests/library.rs) |
+| D021 | [`library.rs` `evaluation_matches_the_official_emulator`](../crates/hidane-rules/tests/library.rs) |
+| D022 | Nothing. `rules_eval.json` pins UTF-16 sizes and indexes, but no test checks that half a surrogate pair becomes U+FFFD. |
+| D023 | [`transactions.rs` `transactions_behave_like_the_official_emulator`](../crates/hidane/tests/transactions.rs), [`tests.rs` `a_write_gives_up_after_the_lock_timeout_and_ends_its_transaction`](../crates/hidane/src/firestore/transactions/tests.rs), [`tests.rs` `collection_locks_cover_every_collection_with_that_id`](../crates/hidane/src/firestore/transactions/tests.rs) |
+| D024 | [`tests.rs` `ids_count_per_database_in_the_official_encoding`](../crates/hidane/src/firestore/transactions/tests.rs), [`tests.rs` `clear_forgets_transactions_but_keeps_counting`](../crates/hidane/src/firestore/transactions/tests.rs) |
+| D025 | [`transactions.rs` `unknown_and_stale_transactions`](../crates/hidane/tests/transactions.rs), [`tests.rs` `ids_count_per_database_in_the_official_encoding`](../crates/hidane/src/firestore/transactions/tests.rs) |
+| D026 | [`tests.rs` `a_waiting_write_proceeds_when_the_blocking_transaction_expires`](../crates/hidane/src/firestore/transactions/tests.rs) |
+| D027 | [`write_stream.rs` `the_write_stream_behaves_like_the_official_emulator`](../crates/hidane/tests/write_stream.rs), [`write_stream.rs` `invalid_names_are_rejected_instead_of_ignored`](../crates/hidane/tests/write_stream.rs) |
+| D028 | [`write_stream.rs` `invalid_names_are_rejected_instead_of_ignored`](../crates/hidane/tests/write_stream.rs) |
+| D029 | [`commit_checks.rs` `writes_to_another_database_are_refused`](../crates/hidane/tests/commit_checks.rs), [`write_stream.rs` `invalid_names_are_rejected_instead_of_ignored`](../crates/hidane/tests/write_stream.rs) |
+| D030 | [`commit_checks.rs` `the_first_error_is_the_official_one`](../crates/hidane/tests/commit_checks.rs) |
+| D031 | Nothing. `export_import.rs` sorts the output records before comparing, so the name order of an export is not asserted. |
+| D032 | Nothing. No test seeds from an export holding another database's documents and then exports; `seed.rs`'s unit test cannot tell the two behaviours apart. |
+| D033 | [`find_nearest.rs` `a_vector_field_path_is_a_path`](../crates/hidane/tests/find_nearest.rs) |
+| D034 | Nothing. `large_grpc_requests_pass` skips the recordings over 20 MB, so the 100 MiB limit and its `OUT_OF_RANGE` error are untested. |
+| D035 | Nothing. No test lists services over reflection; `grpc_settings.rs` only checks that v1beta1 answers like v1, which both emulators share. |
+| D036 | Nothing. `limits.rs` replays only cases where both emulators agree; no test sits on the few-tens-of-bytes document size boundary. |
+| D037 | Nothing. `webchannel.rs` reads frames through a hyper client and does not assert Content-Length or a kept-open connection. |
+| D038 | Nothing. Long-polling reads are compared only on their first data and whether they ended, and noops are filtered, so hidane's own long-poll behaviour is not asserted. |
+| D039 | Nothing. No test drops a WebChannel session after 5 idle minutes (`IDLE_SESSION` in `crates/hidane/src/webchannel.rs`). |
+| D040 | Nothing. `cors.rs` covers only an OPTIONS preflight on the WebChannel path; no test checks the CORS headers of WebChannel POST/GET answers. |
+| D041 | Nothing. `auth.json` has no lenient-JSON token cases, so strict parsing to "invalid jwt" is untested. |
+| D042 | [`clear.rs` `deleting_a_database_or_a_path`](../crates/hidane/tests/clear.rs) |
+| D043 | Nothing. Structural: the published gRPC protos have no `done` field for hidane to send. |
+| D044 | [`rest.rs` `requests_that_hang_the_official_emulator_are_answered`](../crates/hidane/tests/rest.rs) |
+| D045 | [`rest.rs` `requests_that_hang_the_official_emulator_are_answered`](../crates/hidane/tests/rest.rs) |
+| D046 | [`rest.rs` `requests_that_hang_the_official_emulator_are_answered`](../crates/hidane/tests/rest.rs) |
+| D047 | Nothing. Page tokens are only followed or checked for presence (`list_documents.rs` `next_page`); their encoding is not asserted. |
+| D048 | [`negative_zero.rs` `every_recorded_step_gives_the_official_answer`](../crates/hidane/tests/negative_zero.rs), [`rest.rs` `json_has_no_negative_zero`](../crates/hidane/src/rest.rs) |
+| D049 | Nothing. Keepalive against a real iOS client is not tested (`tools/oracle/keepalive.mjs` is a recorder, not a CI test). |
+| D050 | [`rules_compile.rs` `compiles_like_the_official_emulator`](../crates/hidane/tests/rules_compile.rs) |
+| D051 | Nothing. `function_triggers.json` has no query parameter naming a trigger field (those hang the official emulator), and no test sends one. |
+| D052 | Nothing. `function_events.rs` rewrites `projects/projects/` to `projects/` on both sides before comparing, so a doubled ce-source from hidane would still pass. |
+| D053 | [`function_events.rs` `events_reach_the_functions_emulator_as_on_the_official_emulator`](../crates/hidane/tests/function_events.rs) |
+| D054 | [`function_events.rs` `events_reach_the_functions_emulator_as_on_the_official_emulator`](../crates/hidane/tests/function_events.rs) |
+| D055 | [`function_events.rs` `events_reach_the_functions_emulator_as_on_the_official_emulator`](../crates/hidane/tests/function_events.rs) |
+| D056 | Nothing. For `DELETE /emulator/v1/…` steps the test sorts both sides' deliveries by document, so hidane's name order is not asserted. |
+| D057 | Nothing. Only the `ce-*` headers and `Content-Type` are compared; `User-Agent` and connection reuse are not asserted. |
+| D058 | Nothing. `function_triggers.json` holds only bodies both emulators read alike; no lenient-syntax body or 1e3-as-string case is tested. |
+| D059 | [`rules_compile.rs` `compiles_like_the_official_emulator`](../crates/hidane/tests/rules_compile.rs), [`warnings.rs` `warnings_are_the_official_emulators`](../crates/hidane-rules/tests/warnings.rs) |
+| D060 | [`lib.rs` `deep_input`](../crates/hidane-rules/src/lib.rs) |
+| D061 | [`rules_compile.rs` `compiles_like_the_official_emulator`](../crates/hidane/tests/rules_compile.rs) |
+| D062 | Nothing. No test runs grpcurl or a reflection client against hidane. |
+| D063 | [`admin_http.rs` `admin_endpoints_match_the_official_emulator`](../crates/hidane/tests/admin_http.rs) |
+| D064 | [`documents.rs` `preconditions`](../crates/hidane/tests/documents.rs) |
+| D065 | [`read_time_and_databases.rs` `read_times_up_to_the_window`](../crates/hidane/tests/read_time_and_databases.rs) |
+| D066 | [`read_time_and_databases.rs` `read_times_up_to_the_window`](../crates/hidane/tests/read_time_and_databases.rs), [`base_versions.rs` `update_time_preconditions_like_the_official_emulator`](../crates/hidane/tests/base_versions.rs), [`rest.rs` `requests_that_hang_the_official_emulator_are_answered`](../crates/hidane/tests/rest.rs) |
+| D067 | [`cli.rs` `official_consistency_checks`](../crates/hidane/src/cli.rs), [`cli.rs` `every_official_flag_is_accepted`](../crates/hidane/src/cli.rs) |
+| D068 | [`transforms.rs` `every_recorded_case_gives_the_official_answer`](../crates/hidane/tests/transforms.rs), [`transform.rs` `server_time_has_millisecond_precision`](../crates/hidane-core/src/transform.rs) |
+| D069 | [`transactions.rs` `transactions_behave_like_the_official_emulator`](../crates/hidane/tests/transactions.rs), [`tests.rs` `idle_transactions_expire_sixty_seconds_after_their_last_use`](../crates/hidane/src/firestore/transactions/tests.rs), [`tests.rs` `read_only_transactions_lock_nothing_and_cannot_write`](../crates/hidane/src/firestore/transactions/tests.rs) |
+| D070 | [`queries.rs` `queries_answer_like_the_official_emulator`](../crates/hidane/tests/queries.rs) |
+| D071 | [`listen.rs` `a_target_of_another_database_and_once`](../crates/hidane/tests/listen.rs) |
+| D072 | [`listen.rs` `a_resumed_target_gets_only_what_changed`](../crates/hidane/tests/listen.rs), [`listen.rs` `a_resumed_limit_target_gets_what_entered_and_left_its_window`](../crates/hidane/tests/listen.rs) |
+| D073 | [`queries.rs` `queries_answer_like_the_official_emulator`](../crates/hidane/tests/queries.rs) |
+| D074 | [`queries.rs` `queries_answer_like_the_official_emulator`](../crates/hidane/tests/queries.rs) |
+| D075 | [`limits.rs` `limits_like_the_official_emulator`](../crates/hidane/tests/limits.rs), [`grpc_settings.rs` `large_grpc_requests_pass`](../crates/hidane/tests/grpc_settings.rs), [`grpc_settings.rs` `rest_bodies_up_to_16_mib`](../crates/hidane/tests/grpc_settings.rs) |
+| D076 | [`unsupported.rs` `ignored_and_refused_like_the_official_emulator`](../crates/hidane/tests/unsupported.rs) |
+| D077 | Nothing. No CI test pings an idle HTTP/2 connection; `results/keepalive-*.txt` come from a manual recorder. |
+| D078 | [`unsupported.rs` `ignored_and_refused_like_the_official_emulator`](../crates/hidane/tests/unsupported.rs), [`unsupported.rs` `enterprise_pipelines_are_not_implemented_yet`](../crates/hidane/tests/unsupported.rs) |
+| D079 | [`unsupported.rs` `ignored_and_refused_like_the_official_emulator`](../crates/hidane/tests/unsupported.rs), [`queries.rs` `read_time_and_explain_options`](../crates/hidane/tests/queries.rs) |
+| D080 | [`find_nearest.rs` `find_nearest_like_the_official_emulator`](../crates/hidane/tests/find_nearest.rs) |
+| D081 | [`export_import.rs` `exports_match_the_official_files`](../crates/hidane/tests/export_import.rs), [`export_import.rs` `imports_write_what_the_official_emulator_writes`](../crates/hidane/tests/export_import.rs) |
+| D082 | [`export_import.rs` `imports_write_what_the_official_emulator_writes`](../crates/hidane/tests/export_import.rs), [`export_import.rs` `databases_are_seeded_like_the_official_emulator`](../crates/hidane/tests/export_import.rs) |
+| D083 | [`rest.rs` `a_lone_surrogate_is_a_body_that_does_not_parse`](../crates/hidane/tests/rest.rs) |
+| D084 | [`rest.rs` `timestamps_are_read_as_rfc_3339`](../crates/hidane/tests/rest.rs) |
+| D085 | [`rest.rs` `a_failed_query_leaves_no_lock`](../crates/hidane/tests/rest.rs) |
+| D086 | [`rest.rs` `a_form_encoded_post_is_served`](../crates/hidane/tests/rest.rs) |
+| D087 | [`rest.rs` `a_long_request_line_is_served`](../crates/hidane/tests/rest.rs) |
+| D088 | [`rest.rs` `a_collection_group_query_runs_under_a_document`](../crates/hidane/tests/rest.rs) |
+| D089 | [`list_documents.rs` `list_documents_like_the_official_emulator`](../crates/hidane/tests/list_documents.rs) |
+| D090 | [`websocket_requests.rs` `a_decision_past_the_limit_of_expressions`](../crates/hidane/tests/websocket_requests.rs) |
+
+<!-- differences:pinned:end -->
 
 ## Not in scope (neither emulator nor hidane)
 

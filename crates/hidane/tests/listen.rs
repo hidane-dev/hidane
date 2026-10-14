@@ -457,6 +457,48 @@ async fn target_ids_bad_targets_and_half_close() {
     );
 }
 
+/// A query target whose parent names another database than the stream's (its first target's)
+/// is refused, where the official emulator reads the stream's database; and `once` is ignored,
+/// as the official emulator ignores it: the target stays after `CURRENT`
+/// (docs/parity-exceptions.md).
+#[tokio::test]
+async fn a_target_of_another_database_and_once() {
+    let mut client = start().await;
+    let mut stream = Stream::open(&mut client).await;
+    stream.add(query_target(2, "c", None)).await;
+    stream.drain().await;
+    let mut other = query_target(3, "c", None);
+    if let Some(target::TargetType::Query(query)) = &mut other.target_type {
+        query.parent = "projects/listen/databases/other/documents".to_owned();
+    }
+    stream.add(other).await;
+    assert_eq!(
+        stream.drain().await,
+        [format!(
+            "REMOVE [3] cause 3 Target is in database \"projects/listen/databases/other\", but \
+             the stream watches \"{DB}\"."
+        )]
+    );
+
+    let mut once = query_target(4, "c", None);
+    once.once = true;
+    stream.add(once).await;
+    assert_eq!(
+        stream.drain().await,
+        [
+            "ADD [4]",
+            "CURRENT [4] token read_time",
+            "NO_CHANGE [] token read_time"
+        ]
+    );
+    commit(&mut client, vec![set("c/a", 1)]).await;
+    let responses = stream.drain().await;
+    assert!(
+        responses.contains(&"change c/a=1 [4]".to_owned()),
+        "{responses:?}"
+    );
+}
+
 #[tokio::test]
 async fn resume_tokens_carry_the_read_time() {
     let mut client = start().await;
