@@ -1170,13 +1170,13 @@ fn check_disjunctions(filter: &Filter) -> Result<(), Status> {
 }
 
 /// The last checks of a filter, after the orders, the limit and whether the orders need a
-/// collection (`tools/oracle/queries.py`, #262), filter by filter in order: what its path may
-/// hold ([`Field::check`]), the size of its values ([`check_value_size`]), whether it needs a
-/// collection, then, on `__name__`, its operator and its values ([`check_key_filter`]).
+/// collection (`tools/oracle/queries.py`, #262), filter by filter in the order of its
+/// disjunctive normal form ([`dnf_leaves`]): what its path may hold ([`Field::check`]), the
+/// size of its values ([`check_value_size`]), whether it needs a collection, then, on
+/// `__name__`, its operator and its values ([`check_key_filter`]).
 fn check_filter_late(filter: &Filter, kindless: bool, database: &str) -> Result<(), Status> {
-    let mut leaves = Vec::new();
-    collect_leaf_filters(filter, &mut leaves);
-    for leaf in leaves {
+    let normalized = normalize(filter);
+    for leaf in dnf_leaves(&normalized).into_iter().flatten() {
         let field = match leaf {
             Filter::Compare { field, .. } | Filter::Unary { field, .. } => field,
             Filter::And(_) | Filter::Or(_) => continue,
@@ -1224,6 +1224,52 @@ fn check_value_size(leaf: &Filter) -> Result<(), Status> {
         field.display()
     )))
 }
+
+/// The leaf filters of a normalized filter, conjunction by conjunction of its disjunctive
+/// normal form, a leaf once in each conjunction it is part of (`AND(OR(a, b), c)` is `a, c`,
+/// then `b, c`). Past [`MAX_DNF_TERMS`] conjunctions, the leaves in the filter's own order.
+fn dnf_leaves(filter: &Filter) -> Vec<Vec<&Filter>> {
+    fn expand<'a>(filter: &'a Filter) -> Option<Vec<Vec<&'a Filter>>> {
+        let terms = match filter {
+            Filter::Or(children) => children
+                .iter()
+                .map(expand)
+                .collect::<Option<Vec<_>>>()?
+                .into_iter()
+                .flatten()
+                .collect(),
+            Filter::And(children) => {
+                let mut terms = vec![Vec::new()];
+                for child in children {
+                    let child_terms = expand(child)?;
+                    terms = terms
+                        .iter()
+                        .flat_map(|term: &Vec<&'a Filter>| {
+                            child_terms
+                                .iter()
+                                .map(move |more| term.iter().chain(more).copied().collect())
+                        })
+                        .collect();
+                    if terms.len() > MAX_DNF_TERMS {
+                        return None;
+                    }
+                }
+                terms
+            }
+            leaf => vec![vec![leaf]],
+        };
+        (terms.len() <= MAX_DNF_TERMS).then_some(terms)
+    }
+    expand(filter).unwrap_or_else(|| {
+        let mut leaves = Vec::new();
+        collect_leaf_filters(filter, &mut leaves);
+        vec![leaves]
+    })
+}
+
+/// Bounds [`dnf_leaves`]: more than the disjunctions a query may have, which are counted as
+/// sets ([`check_disjunctions`]) before.
+const MAX_DNF_TERMS: usize = 1024;
 
 fn collect_leaf_filters<'a>(filter: &'a Filter, out: &mut Vec<&'a Filter>) {
     match filter {

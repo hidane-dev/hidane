@@ -57,7 +57,7 @@ those years in microseconds (precondition messages). It classifies the differenc
 | `crash` | one side answered 5xx or nothing (a timeout, a closed connection), the other did not |
 | `status` | different HTTP statuses, or the same one with a different error status |
 | `message` | the same error, worded differently |
-| `order` | the same values in another order: list elements, or the fields of an object |
+| `order` | the same values in another order: list elements, or the fields of an object (not where a masked generated ID comes, which is chance) |
 | `data` | anything else: values, how JSON is written, the content type |
 
 Its signature (`message-commit-0123456789ab`) is the kind, the request (`:commit`,
@@ -198,7 +198,9 @@ Listen and Write streams, WebChannel and the WebSocket feed are not fuzzed. Requ
 a time, so lock waits are covered (a write outside a transaction to what it read) but not races.
 Server-chosen times are masked by year, and the order of masked or transformed fields (a Java
 `HashMap`'s) is left to `tools/oracle/field_order.py`; such differences tend to show as not
-reproduced.
+reproduced. Every request is a connection of its own: several runs at once can use up the
+client's local ports for a while, which a request waits out (`tools/oracle/harness.py`) rather
+than taking it for an emulator that stopped answering.
 
 ## Tests
 

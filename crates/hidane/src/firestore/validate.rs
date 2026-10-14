@@ -335,10 +335,14 @@ pub fn values(path: &ResourcePath, fields: &Fields) -> Result<(), Status> {
 }
 
 /// A property's value, or an element of an array (`inside_array`); `property` names it in
-/// messages.
+/// messages. An array in an array is converted before it is refused, so a problem among its
+/// elements comes first (`tools/oracle/rest.py`, #262).
 fn property_value(value: &Value, property: &str, inside_array: bool) -> Result<(), Status> {
     match &value.value_type {
-        Some(ValueType::ArrayValue(_)) if inside_array => {
+        Some(ValueType::ArrayValue(array)) if inside_array => {
+            for element in &array.values {
+                property_value(element, property, true)?;
+            }
             Err(Status::invalid_argument("Nested arrays are not allowed"))
         }
         Some(ValueType::MapValue(map)) if is_vector(map) => vector_elements(map),

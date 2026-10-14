@@ -6,13 +6,18 @@ put the script's directory on the path. `send` and `mask` are also what the diff
 recordings' own.
 """
 
+import errno
 import json
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
 
 HOST = sys.argv[1] if len(sys.argv) > 1 else "127.0.0.1:8080"
+
+
+OUT_OF_PORTS_TRIES = 120
 
 
 def send(host, method, path, body=None, headers=None, raw=None, timeout=30):
@@ -29,11 +34,19 @@ def send(host, method, path, body=None, headers=None, raw=None, timeout=30):
         data=data,
         headers={"Content-Type": "application/json", **(headers or {})},
     )
-    try:
-        with urllib.request.urlopen(req, timeout=timeout) as res:
-            return res.status, res.headers.get("Content-Type"), res.read().decode(errors="replace")
-    except urllib.error.HTTPError as err:
-        return err.code, err.headers.get("Content-Type"), err.read().decode(errors="replace")
+    # Each request is a connection of its own: several runs at once can use up the client's
+    # local ports for a while, which is waited out rather than taken for a server that does not
+    # answer (#262).
+    for attempt in range(OUT_OF_PORTS_TRIES):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as res:
+                return res.status, res.headers.get("Content-Type"), res.read().decode(errors="replace")
+        except urllib.error.HTTPError as err:
+            return err.code, err.headers.get("Content-Type"), err.read().decode(errors="replace")
+        except urllib.error.URLError as err:
+            if getattr(err.reason, "errno", None) != errno.EADDRNOTAVAIL or attempt + 1 == OUT_OF_PORTS_TRIES:
+                raise
+            time.sleep(0.5)
 
 
 def call(method, path, body=None, headers=None):

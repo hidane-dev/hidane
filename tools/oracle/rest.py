@@ -425,7 +425,7 @@ case("transforms with array offsets write nothing", "GET", B + "/fp/t")
 # one string, number or boolean is that value, at any depth; a string field takes a number as
 # written (`1.50`, `1e5`, `-0`) or a boolean; a boolean field the strings "true" and "false"; an
 # integer field a decimal with an exact integer value ("1e2", 1.0); a double field a decimal
-# string ("1.", ".5", "+1"), "NaN", "Infinity" and "-Infinity" but not "nan" or "inf"; an enum a
+# string ("1.", ".5", "+1") within a double's range, "NaN", "Infinity" and "-Infinity" but not "nan" or "inf"; an enum a
 # value's number; the null value any number.
 JSON_VALUES = [
     '{"nullValue": 0}', '{"nullValue": 1}', '{"nullValue": "0"}', '{"nullValue": [0]}', '{"nullValue": "NULL_VALUE"}',
@@ -447,6 +447,13 @@ JSON_VALUES = [
     '{"referenceValue": ["' + NAME + '/c/d"]}',
     '{"mapValue": {"fields": {"a": {"integerValue": [1]}}}}',
     '{"arrayValue": {"values": [{"stringValue": [2.50]}]}}',
+    # Past the largest double: out of range, not an infinity (#262).
+    '{"doubleValue": "1e400"}', '{"doubleValue": "-1e400"}', '{"doubleValue": "1.8e308"}',
+    '{"doubleValue": "1.7976931348623157e308"}', '{"doubleValue": "1e-400"}',
+    '{"geoPointValue": {"latitude": "1e400", "longitude": 0}}',
+    # An array in an array is converted before it is refused: a problem in a map in it comes first.
+    '{"arrayValue": {"values": [{"arrayValue": {"values": [{"mapValue": {"fields": {"a": {"arrayValue": {"values": [{"arrayValue": {}}]}}}}}]}}]}}',
+    '{"arrayValue": {"values": [{"arrayValue": {"values": [{"integerValue": "2"}]}}, {"mapValue": {"fields": {"a": {"arrayValue": {"values": [{"arrayValue": {}}]}}}}}]}}',
 ]
 for n, v in enumerate(JSON_VALUES):
     case(f"JsonFormat: {v.replace(NAME, '{name}')}", "PATCH", B + f"/js/v{n}", raw='{"fields": {"v": ' + v + '}}')

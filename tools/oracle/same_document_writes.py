@@ -103,8 +103,8 @@ for kinds in [
 # Version 0 and deletes that need no document (found by the differential fuzzer, #262): an
 # update time of version 0 is an insert, a delete with an `exists: false` precondition can follow
 # nothing but a delete, and a delete then an upsert or an insert is what the first write was when
-# that was an insert or an update. Every pair with one of them, on a missing document, then
-# longer sequences.
+# that was an insert or an update (or a delete that needs no document, or needs it). Every pair
+# with one of them, on a missing document, then longer sequences.
 NEW = ["update-time-0", "delete-missing", "delete-time-0"]
 ALL = KINDS + ["update-time", "delete-exists", "delete-time"] + NEW
 for first in ALL:
@@ -118,6 +118,10 @@ for kinds in [
     ["create", "delete", "set", "create"], ["delete-time", "set", "create"],
     ["delete-time-0", "update-time-0", "create"], ["delete-time", "set", "delete-missing"],
     ["delete-time-0", "create", "delete-missing"], ["update", "delete", "set", "delete-missing"],
+    # A first delete that needs no document, or needs it, counts as an insert or an update.
+    ["delete-missing", "set", "create"], ["delete-missing", "delete", "set", "create"],
+    ["delete-missing", "set", "delete-missing"], ["delete-exists", "set", "create"],
+    ["delete-exists", "set", "delete-missing"], ["delete-time", "delete-missing", "set", "create"],
 ]:
     n += 1
     sequence(kinds, False, f"s-zero-{n}")

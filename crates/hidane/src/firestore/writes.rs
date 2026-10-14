@@ -102,8 +102,9 @@ struct Collapsed {
 /// an `exists: true` precondition, and a delete with an `exists: false` one can follow nothing
 /// but a delete; only the first write may carry an `update_time` precondition, which a later one
 /// may repeat. What follows is checked against the writes so far collapsed into one: anything
-/// then a delete is a delete, else an insert or an update when the first write was one, else an
-/// upsert. Verifies are left to `check_verifies`.
+/// then a delete is a delete, else an insert or an update when the first write was one (or a
+/// delete that needs no document, or needs it), else an upsert. Verifies are left to
+/// `check_verifies`.
 pub fn check_sequences(writes: &[Write]) -> Result<(), Status> {
     let mut documents: HashMap<&str, Collapsed> = HashMap::new();
     for write in writes {
@@ -130,10 +131,17 @@ pub fn check_sequences(writes: &[Write]) -> Result<(), Status> {
             (_, None) => Mutation::Upsert,
         };
         let Some(collapsed) = documents.get_mut(name) else {
+            // A first delete that needs the document, or needs none, counts as an update or an
+            // insert for what follows it.
+            let first = match (mutation, condition) {
+                (Mutation::Delete, Some(ConditionType::Exists(true))) => Mutation::Update,
+                (Mutation::Delete, Some(ConditionType::Exists(false))) => Mutation::Insert,
+                _ => mutation,
+            };
             documents.insert(
                 name,
                 Collapsed {
-                    first: mutation,
+                    first,
                     now: mutation,
                     base: version,
                 },

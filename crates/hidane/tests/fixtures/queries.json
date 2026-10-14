@@ -34253,6 +34253,342 @@
    }
   },
   {
+   "name": "normal form order: and(or(key >= ref, key == a string), key array-contains-any)",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "compositeFilter": {
+         "op": "OR",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "__name__"
+            },
+            "op": "GREATER_THAN_OR_EQUAL",
+            "value": {
+             "referenceValue": "{documents}/p/p1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "__name__"
+            },
+            "op": "EQUAL",
+            "value": {
+             "stringValue": "a"
+            }
+           }
+          }
+         ]
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "ARRAY_CONTAINS_ANY",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "referenceValue": "{documents}/p/p1"
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __key__ is reserved"
+   }
+  },
+  {
+   "name": "normal form order: and(or(key == a string, key >= ref), key array-contains-any)",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "compositeFilter": {
+         "op": "OR",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "__name__"
+            },
+            "op": "EQUAL",
+            "value": {
+             "stringValue": "a"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "__name__"
+            },
+            "op": "GREATER_THAN_OR_EQUAL",
+            "value": {
+             "referenceValue": "{documents}/p/p1"
+            }
+           }
+          }
+         ]
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "ARRAY_CONTAINS_ANY",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "referenceValue": "{documents}/p/p1"
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "__key__ filter value must be a Key"
+   }
+  },
+  {
+   "name": "normal form order: and(or(key >= ref, key == a string), or(key array-contains-any))",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "compositeFilter": {
+         "op": "OR",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "__name__"
+            },
+            "op": "GREATER_THAN_OR_EQUAL",
+            "value": {
+             "referenceValue": "{documents}/p/p1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "__name__"
+            },
+            "op": "EQUAL",
+            "value": {
+             "stringValue": "a"
+            }
+           }
+          }
+         ]
+        }
+       },
+       {
+        "compositeFilter": {
+         "op": "OR",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "__name__"
+            },
+            "op": "ARRAY_CONTAINS_ANY",
+            "value": {
+             "arrayValue": {
+              "values": [
+               {
+                "referenceValue": "{documents}/p/p1"
+               }
+              ]
+             }
+            }
+           }
+          }
+         ]
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __key__ is reserved"
+   }
+  },
+  {
+   "name": "normal form order: or(and(key >= ref, key array-contains-any), key == a string)",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "OR",
+      "filters": [
+       {
+        "compositeFilter": {
+         "op": "AND",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "__name__"
+            },
+            "op": "GREATER_THAN_OR_EQUAL",
+            "value": {
+             "referenceValue": "{documents}/p/p1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "__name__"
+            },
+            "op": "ARRAY_CONTAINS_ANY",
+            "value": {
+             "arrayValue": {
+              "values": [
+               {
+                "referenceValue": "{documents}/p/p1"
+               }
+              ]
+             }
+            }
+           }
+          }
+         ]
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "EQUAL",
+         "value": {
+          "stringValue": "a"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __key__ is reserved"
+   }
+  },
+  {
+   "name": "normal form order: and(or(key >= ref, key == a string), v == 1) without a collection",
+   "parent": "",
+   "query": {
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "compositeFilter": {
+         "op": "OR",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "__name__"
+            },
+            "op": "GREATER_THAN_OR_EQUAL",
+            "value": {
+             "referenceValue": "{documents}/p/p1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "__name__"
+            },
+            "op": "EQUAL",
+            "value": {
+             "stringValue": "a"
+            }
+           }
+          }
+         ]
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "v"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "kind is required for filter: v"
+   }
+  },
+  {
    "name": "find_nearest",
    "parent": "",
    "query": {

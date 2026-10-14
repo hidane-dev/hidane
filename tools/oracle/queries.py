@@ -610,6 +610,20 @@ for label, where in [
     case(f"too large for a query: {label}", q("t", where_=where))
 case("too large for a query: without a collection", {"where": ff("v", "EQUAL", X(1500))})
 case("too large for a query: a cursor", q("t", order=[asc("v")], start=cur(X(1500), before=True)))
+# Those last checks go conjunction by conjunction of the filter's disjunctive normal form:
+# AND(OR(a, b), c) checks a and c, then b and c.
+K_GE = ff("__name__", "GREATER_THAN_OR_EQUAL", ref("p/p1"))
+K_STR = ff("__name__", "EQUAL", s("a"))
+K_ACA = ff("__name__", "ARRAY_CONTAINS_ANY", arr(ref("p/p1")))
+for label, where in [
+    ("and(or(key >= ref, key == a string), key array-contains-any)", AND(OR(K_GE, K_STR), K_ACA)),
+    ("and(or(key == a string, key >= ref), key array-contains-any)", AND(OR(K_STR, K_GE), K_ACA)),
+    ("and(or(key >= ref, key == a string), or(key array-contains-any))", AND(OR(K_GE, K_STR), OR(K_ACA))),
+    ("or(and(key >= ref, key array-contains-any), key == a string)", OR(AND(K_GE, K_ACA), K_STR)),
+]:
+    case(f"normal form order: {label}", q("p", where_=where))
+case("normal form order: and(or(key >= ref, key == a string), v == 1) without a collection",
+     {"where": AND(OR(K_GE, K_STR), ff("v", "EQUAL", i(1)))})
 # find_nearest is #26; recorded for reference, not replayed.
 case("find_nearest", q("t", findNearest={"vectorField": f("v"), "queryVector": vec(1, 2), "distanceMeasure": "EUCLIDEAN", "limit": 2}))
 
