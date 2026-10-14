@@ -52,6 +52,8 @@ async fn admin_endpoints_match_the_official_emulator() {
         (Method::POST, "/", not_found.clone()),
         (Method::PUT, "/", not_found.clone()),
         (Method::GET, "/index.html", not_found.clone()),
+        // The official emulator never answers this one (docs/parity-exceptions.md).
+        (Method::GET, "//", not_found.clone()),
         (Method::POST, "/reset", ok("Resetting...\n")),
         (Method::POST, "/reset?x=1", ok("Resetting...\n")),
         (Method::GET, "/reset", not_found.clone()),

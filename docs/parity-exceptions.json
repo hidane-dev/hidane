@@ -128,11 +128,12 @@
    "kind": "more-correct",
    "official": "A Listen query whose parent names another database reads the stream's database",
    "firestore": null,
-   "hidane": "Refuses the target (`REMOVE` with an `INVALID_ARGUMENT` cause)",
+   "hidane": "Refuses the target (`REMOVE` with an `INVALID_ARGUMENT` cause); a stream watches the database of its first target",
    "reason": "Bug",
    "references": [],
-   "pinned_by": [],
-   "unpinned": "No test adds a Listen query target whose parent names another database; the refusal in `crates/hidane/src/firestore/listen.rs` is untested."
+   "pinned_by": [
+    "crates/hidane/tests/listen.rs::a_target_of_another_database_and_once"
+   ]
   },
   {
    "id": "D008",
@@ -685,8 +686,9 @@
    "hidane": "Names the whole path (`Resource name \"…\" lacks a resource id at index ….`), same status",
    "reason": "Wording only",
    "references": [],
-   "pinned_by": [],
-   "unpinned": "`clear.rs` does not send an empty path segment to `DELETE /emulator/v1/…/documents/{path}`."
+   "pinned_by": [
+    "crates/hidane/tests/clear.rs::deleting_a_database_or_a_path"
+   ]
   },
   {
    "id": "D043",
@@ -1008,8 +1010,9 @@
    "hidane": "`404 Not Found`",
    "reason": "Bug",
    "references": [],
-   "pinned_by": [],
-   "unpinned": "No test sends `GET //` (`admin_http.rs` covers other paths only)."
+   "pinned_by": [
+    "crates/hidane/tests/admin_http.rs::admin_endpoints_match_the_official_emulator"
+   ]
   },
   {
    "id": "D064",
@@ -1259,8 +1262,9 @@
    "references": [
     "hidane-dev/hidane#18"
    ],
-   "pinned_by": [],
-   "unpinned": "No test sets Listen `once`."
+   "pinned_by": [
+    "crates/hidane/tests/listen.rs::a_target_of_another_database_and_once"
+   ]
   },
   {
    "id": "D072",

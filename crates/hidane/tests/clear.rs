@@ -188,6 +188,26 @@ async fn deleting_a_database_or_a_path() {
     assert_eq!((r.0, r.1.as_str(), r.2.as_str()), EMPTY);
     assert!(present(&mut client, "other", &all).await.is_empty());
 
+    // An empty segment is named with the whole path, where the official emulator names its
+    // parent (docs/parity-exceptions.md).
+    let r = http(
+        addr,
+        "DELETE",
+        "/emulator/v1/projects/p/databases/(default)/documents/c//d",
+    )
+    .await;
+    let error: serde_json::Value = serde_json::from_str(&r.2).unwrap();
+    assert_eq!(
+        (r.0, &error["error"]["message"]),
+        (
+            400,
+            &serde_json::json!(
+                "Resource name \"projects/p/databases/(default)/documents/c//d\" lacks a resource \
+                 id at index 43."
+            )
+        )
+    );
+
     // Other methods and shapes are not found.
     for (method, path) in [
         (
