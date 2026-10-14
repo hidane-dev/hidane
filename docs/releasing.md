@@ -92,6 +92,12 @@ The macOS binaries are not signed or notarized yet. Archives fetched with `curl`
    installs the release through every channel. Its npm, Homebrew and pub.dev jobs wait until
    those channels serve the new version, for up to three hours: approve the staged npm versions
    and, without `HOMEBREW_TAP_TOKEN`, commit the formula within that time.
+8. Once every channel serves it, point CI and the docs at the published release, as #282 did:
+   `PUBLISHED_VERSION` in `.github/workflows/examples.yml`, the image tag and digest in
+   `.github/workflows/testcontainers.yml`, the pinned versions in `docs/release-channels.md` and
+   `docs/testcontainers.md`, the placeholder in `.github/ISSUE_TEMPLATE/bug_report.yml` and the
+   version in the heading of the README's client table. `git grep` the previous version for the
+   rest, and leave what is history (`CHANGELOG.md`, the roadmap, release notes, published results).
 
 A tag with a pre-release suffix (`v0.1.0-rc.1`) stops at the draft. A pull request that changes the
 workflow runs the builds as a dry run; nothing is released.

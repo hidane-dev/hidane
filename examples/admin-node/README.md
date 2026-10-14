@@ -33,6 +33,7 @@ binary in `node_modules/.bin` before the one on `PATH`.
 ## In CI
 
 [`examples.yml`](../../.github/workflows/examples.yml) runs `npm ci --ignore-scripts` and
-`npm test` on Node.js 24, with hidane built from the pull request and with the published v0.4.0.
+`npm test` on Node.js 24, with hidane built from the pull request and with the published release
+that it pins (`PUBLISHED_VERSION`).
 Its `github-actions` job runs this project with the workflow in
 [`github-actions/`](../github-actions/), which you can copy.

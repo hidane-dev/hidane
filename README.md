@@ -139,7 +139,7 @@ compared with the official emulator's (`results/`); the version of each client t
 was compared and the evidence are in the
 [SDK certification matrix](docs/sdk-certification.md), generated from those results:
 
-| Client | Transport | In v0.5.0 |
+| Client | Transport | In v0.5.1 |
 |---|---|---|
 | firebase-admin (Node) / `@google-cloud/firestore` | gRPC | verified: documents, queries, aggregations, vector search, transactions, listeners |
 | firebase-js-sdk in Node | gRPC | verified: writes, transactions, listeners, offline and resume |

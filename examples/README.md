@@ -2,8 +2,9 @@
 
 Small projects whose tests use hidane the way an application's tests would. Each is a starting
 point to copy, and an integration test: [`examples.yml`](../.github/workflows/examples.yml) runs
-every one of them against hidane built from the pull request and against the published v0.4.0
-(the GitHub Actions workflow, against the latest release, as it installs), for pull requests that
+every one of them against hidane built from the pull request and against the published release
+that it pins (`PUBLISHED_VERSION`; the GitHub Actions workflow, against the latest release, as it
+installs), for pull requests that
 change hidane or the examples, and weekly.
 
 | Example | What it shows | How hidane runs |
