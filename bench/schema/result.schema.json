@@ -137,6 +137,18 @@
                 "documents": { "$ref": "#/$defs/positive" }
               }
             },
+            "listen_limit_writes": {
+              "type": "object",
+              "required": ["warmup", "runs", "documents", "batch", "limit"],
+              "additionalProperties": false,
+              "properties": {
+                "warmup": { "$ref": "#/$defs/count" },
+                "runs": { "$ref": "#/$defs/positive" },
+                "documents": { "$ref": "#/$defs/positive" },
+                "batch": { "$ref": "#/$defs/positive" },
+                "limit": { "$ref": "#/$defs/positive" }
+              }
+            },
             "command": {
               "type": "object",
               "required": ["warmup", "runs", "command"],
@@ -432,7 +444,7 @@
     }
   ],
   "$defs": {
-    "scenario": { "enum": ["startup", "memory", "operations", "datasets", "ci", "ci_firebase", "listen_writes", "command", "owner_writes"] },
+    "scenario": { "enum": ["startup", "memory", "operations", "datasets", "ci", "ci_firebase", "listen_writes", "command", "owner_writes", "listen_limit_writes"] },
     "count": { "type": "integer", "minimum": 0 },
     "positive": { "type": "integer", "minimum": 1 },
     "countOrNull": { "type": ["integer", "null"], "minimum": 0 },
