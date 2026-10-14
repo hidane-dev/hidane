@@ -354,6 +354,71 @@ case("an update mask of __name__ leaves __key__", "PATCH", B + "/nm/a?updateMask
 case("a GET returns __key__", "GET", B + "/nm/a")
 case("a list returns __key__", "GET", B + "/nm")
 case("a query returns __key__", "POST", B + ":runQuery", {"structuredQuery": {"from": [{"collectionId": "nm"}]}})
+# A field path is read the same way everywhere: segments of a name (unquoted, or in backticks)
+# and any number of array offsets (`a[0][1]`, at most 2^31 - 1). A name `__key__` is refused as
+# soon as it is read, before the rest of the path; `__name__` is `__key__` from then on. Then a
+# reserved name other than `__key__` and `__type__` is refused, printed with the rest of the
+# path. What a mask, a transform or a query may hold comes later, segment by segment: a mask
+# refuses `__type__`, `__key__` in a longer path and array offsets ("Invalid property path"); a
+# transform only array offsets, after its operation and the transforms before it. A write's
+# update mask reads all its paths before checking any of them that way, then its transforms; a
+# read mask comes after the write's update mask and transforms.
+def mask_commit(*paths):
+    return commit(upd("fp/a", {"a": i(1)}, updateMask={"fieldPaths": list(paths)}))
+def tr_commit(*transforms, fields=None):
+    return commit(upd("fp/t", fields or {}, updateTransforms=list(transforms)))
+def inc(path, operand=None):
+    return {"fieldPath": path, "increment": operand or i(1)}
+for p in ["_.__type__", "__type__.a", "a[0]", "a[0][1]", "`a`[0]", "a[2147483647]", "a[2147483648]", "a[99999999999999999999]",
+          "__key__", "a.__key__", "`__key__`", "__key__.a b", "__key__[0]", "a b.__key__", "a[2147483648].__key__",
+          "__type__.__x__", "__x__.__name__", "a[0].__x__.b[07]", "`a`.__x__.`b c`", "__x__[0]",
+          "__name__.__type__", "__type__.__name__", "a[0].__name__", "__name__[0]", "__type__[0]", "a[0].__type__",
+          "a]", "a[]", "a[x]", "a[0]b"]:
+    case(f"update mask {p}", "POST", B + ":commit", mask_commit(p))
+case("update mask: every path is read before any is checked", "POST", B + ":commit", mask_commit("__type__", "__x__"))
+case("update mask: a path is read whole before the next", "POST", B + ":commit", mask_commit("__key__", "a b"))
+case("update mask: an array offset before a reserved name in the next path", "POST", B + ":commit", mask_commit("a[0]", "__x__"))
+case("update mask: an array offset, then __type__", "POST", B + ":commit", mask_commit("a[0]", "__type__"))
+case("PATCH update mask with __type__ in a longer path", "PATCH", B + "/fp/b?updateMask.fieldPaths=z.__type__&updateMask.fieldPaths=b&updateMask.fieldPaths=b", {})
+case("PATCH update mask with an array offset", "PATCH", B + "/fp/b?updateMask.fieldPaths=a%5B0%5D", {})
+case("PATCH: the update mask before the read mask", "PATCH", B + "/fp/b?updateMask.fieldPaths=a%5B0%5D&mask.fieldPaths=__x__", {"fields": {"a": i(1)}})
+case("PATCH read mask: every path is read before any is checked", "PATCH", B + "/fp/b?updateMask.fieldPaths=a&mask.fieldPaths=__type__&mask.fieldPaths=__x__", {"fields": {"a": i(1)}})
+case("PATCH read mask with __type__", "PATCH", B + "/fp/b?mask.fieldPaths=__type__", {"fields": {"a": i(1)}})
+case("POST read mask with an array offset", "POST", B + "/fp?documentId=c&mask.fieldPaths=a%5B0%5D", {"fields": {"a": i(1)}})
+case("POST read mask with __key__", "POST", B + "/fp?documentId=c&mask.fieldPaths=__key__", {"fields": {"a": i(1)}})
+case("GET read mask with an array offset", "GET", B + "/fp/a?mask.fieldPaths=a%5B0%5D")
+case("GET read mask with __key__ quoted", "GET", B + "/fp/a?mask.fieldPaths=%60__key__%60")
+case("GET read mask: __key__ in a later path before an array offset", "GET", B + "/fp/a?mask.fieldPaths=a%5B0%5D&mask.fieldPaths=__key__")
+case("GET read mask: __type__ before a reserved name in a later path", "GET", B + "/fp/a?mask.fieldPaths=__type__&mask.fieldPaths=__x__")
+case("list read mask with __key__", "GET", B + "/fp?mask.fieldPaths=__key__")
+case("list read mask with __type__", "GET", B + "/fp?mask.fieldPaths=__type__")
+case("batchGet mask with an array offset", "POST", B + ":batchGet", {"documents": [NAME + "/fp/a"], "mask": {"fieldPaths": ["a[0]"]}})
+case("batchGet mask with __type__", "POST", B + ":batchGet", {"documents": [NAME + "/fp/a"], "mask": {"fieldPaths": ["__type__"]}})
+for p in ["__key__", "a.__key__", "`__key__`", "__type__.__x__", "__x__.__name__", "a[0]", "a[0][1]", "a[0].__x__", "__key__[0]",
+          "__type__.a[0]", "a[0].__name__", "a[2147483648]"]:
+    case(f"transform {p}", "POST", B + ":commit", tr_commit(inc(p)))
+case("transform with an array offset and no operation", "POST", B + ":commit", tr_commit({"fieldPath": "a[0]"}))
+case("transform with an array offset and an operand that is not a number", "POST", B + ":commit", tr_commit(inc("a[0]", s("x"))))
+case("transform with an array offset and a reserved name in its operand", "POST", B + ":commit", tr_commit(inc("a[0]", {"mapValue": {"fields": {"__x__": i(1)}}})))
+case("transform with an array offset and no server value", "POST", B + ":commit", tr_commit({"fieldPath": "a[0]", "setToServerValue": "SERVER_VALUE_UNSPECIFIED"}))
+case("transform with an array offset, then a reserved name", "POST", B + ":commit", tr_commit(inc("a[0]"), inc("__x__")))
+case("transforms of a field and an array offset in it", "POST", B + ":commit", tr_commit(inc("a"), inc("a[0]")))
+case("transforms of an array offset in a field and the field", "POST", B + ":commit", tr_commit(inc("a[0]"), inc("a")))
+case("nested transforms before an array offset", "POST", B + ":commit", tr_commit(inc("m"), inc("m.n"), inc("a[0]")))
+case("an update mask path before a transform path", "POST", B + ":commit", commit(upd("fp/t", {"a": i(1)}, updateMask={"fieldPaths": ["__type__"]}, updateTransforms=[inc("__x__")])))
+case("an update mask with an array offset before a transform path", "POST", B + ":commit", commit(upd("fp/t", {"a": i(1)}, updateMask={"fieldPaths": ["a[0]"]}, updateTransforms=[inc("__key__")])))
+case("an array offset in a transform of the first write before a second write", "POST", B + ":commit", commit(upd("fp/t", {}, updateTransforms=[inc("a[0]")]), {"update": {"name": NAME + "/fp"}}))
+# A transform may name `__type__`, at any depth: the field is written like any other.
+case("transforms of __type__", "POST", B + ":commit", commit(
+    upd("fp/ty", {}, updateTransforms=[inc("__type__"), inc("m.__type__"), {"fieldPath": "n.__type__", "appendMissingElements": {"values": [s("__vector__")]}}]),
+    upd("fp/ty2", {}, updateTransforms=[inc("__type__.x")])))
+case("transforms of __type__, the documents", "POST", B + ":batchGet", {"documents": [NAME + "/fp/ty", NAME + "/fp/ty2"]})
+case("a transform of __type__ inside a vector", "POST", B + ":commit", commit(
+    upd("fp/ty3", {"v": {"mapValue": {"fields": {"__type__": s("__vector__"), "value": {"arrayValue": {"values": [d(1.0)]}}}}}},
+        updateTransforms=[{"fieldPath": "v.__type__", "maximum": i(3)}])))
+case("a transform of __type__ inside a vector, the document", "GET", B + "/fp/ty3")
+case("nested transforms of __type__", "POST", B + ":commit", tr_commit(inc("a.b"), inc("__type__.c"), inc("__type__")))
+case("transforms with array offsets write nothing", "GET", B + "/fp/t")
 
 
 def norm(text):

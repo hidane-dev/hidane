@@ -1,10 +1,9 @@
 //! Checks on document contents, with the official emulator's messages.
 //!
 //! The official emulator checks a commit in passes (`tools/oracle/commit_checks.py`): the names
-//! of every write first (`names`, `field_path`, `transform`: reserved names and values without
-//! a type at any depth, the types of special values and the shapes of vectors, field paths,
-//! transforms' operands), the
-//! values of every write later (`values`: name lengths, nested arrays, vectors' elements, value
+//! of every write first (`names`, `mask_paths`, `transforms`: reserved names and values
+//! without a type at any depth, the types of special values and the shapes of vectors, field
+//! paths, transforms' operands), the values of every write later (`values`: name lengths, nested arrays, vectors' elements, value
 //! lengths, depth), the size of each document when it is applied (`size`).
 
 use hidane_core::{
@@ -21,6 +20,8 @@ use hidane_proto::google::firestore::v1::{
     value::ValueType,
 };
 use tonic::Status;
+
+use super::property_path::PropertyPath;
 
 const TYPE_KEY: &str = "__type__";
 const VECTOR_TYPE: &str = "__vector__";
@@ -105,68 +106,31 @@ pub fn reserved(name: &str) -> bool {
     name.len() >= 4 && name.starts_with("__") && name.ends_with("__")
 }
 
-/// A field path of an update mask: one that parses and names no reserved field, which the
-/// message names with the rest of the path. `__name__` alone is the document's name; in a
-/// longer path it is refused. A field transform's path is `transform_path`.
-pub fn field_path(path: &str) -> Result<FieldPath, Status> {
-    if path.is_empty() {
-        return Err(Status::invalid_argument(
-            "Invalid empty property path string.",
-        ));
-    }
-    let parsed = FieldPath::parse(path).map_err(Status::invalid_argument)?;
-    let segments = parsed.segments();
-    if segments.len() > 1 && segments.iter().any(|s| s == "__name__") {
-        return Err(Status::invalid_argument("the name __key__ is reserved"));
-    }
-    if let Some(at) = segments
+/// The paths of a read or update mask: each is read in turn ([`PropertyPath::read`]), then each
+/// is checked as a mask's path ([`PropertyPath::check_mask`]), so a reserved name in a later
+/// path comes before `__type__` or an array offset in an earlier one (`tools/oracle/rest.py`,
+/// #262). `__name__` alone is the document's name.
+pub fn mask_paths(paths: &[String]) -> Result<Vec<FieldPath>, Status> {
+    let read = paths
         .iter()
-        .position(|s| s != "__name__" && reserved_name(s))
-    {
-        return Err(Status::invalid_argument(format!(
-            "Invalid reserved name in field path {}",
-            segments[at..].join(".")
-        )));
-    }
-    Ok(parsed)
+        .map(|path| PropertyPath::read(path))
+        .collect::<Result<Vec<_>, _>>()?;
+    read.iter().try_for_each(PropertyPath::check_mask)?;
+    Ok(read.iter().map(PropertyPath::field_path).collect())
 }
 
-/// The field a field transform reads and writes: its path parsed and checked as `field_path`
-/// does, except that `__name__` may be anywhere in it, and each `__name__` segment names the
-/// field `__key__`, quoted or not, nested or not (`tools/oracle/transforms.py`, #262).
+/// The field a field transform reads and writes, from a path the transform's checks accepted:
+/// each `__name__` segment names the field `__key__`, quoted or not, nested or not
+/// (`tools/oracle/transforms.py`, #262), and `__type__` is a field like another.
 pub fn transform_path(path: &str) -> Result<FieldPath, Status> {
-    if path.is_empty() {
-        return Err(Status::invalid_argument(
-            "Invalid empty property path string.",
-        ));
-    }
-    let parsed = FieldPath::parse(path).map_err(Status::invalid_argument)?;
-    let segments = parsed.segments();
-    if let Some(at) = segments
-        .iter()
-        .position(|s| s != "__name__" && reserved_name(s))
-    {
-        return Err(Status::invalid_argument(format!(
-            "Invalid reserved name in field path {}",
-            segments[at..].join(".")
-        )));
-    }
-    if !segments.iter().any(|s| s == "__name__") {
-        return Ok(parsed);
-    }
-    Ok(FieldPath::from_segments(segments.iter().map(|s| {
-        if s == "__name__" {
-            "__key__"
-        } else {
-            s.as_str()
-        }
-    })))
+    let parsed = PropertyPath::read(path)?;
+    parsed.check_transform()?;
+    Ok(parsed.transform_field_path())
 }
 
-/// A field transform, with the names of its write: its path, its operand's names, then the
-/// operand's type.
-pub fn transform(transform: &FieldTransform) -> Result<(), Status> {
-    transform_path(&transform.field_path)?;
+/// A field transform's operation, with the names of its write: its kind, then its operand's
+/// names, then the operand's type.
+fn transform_operation(transform: &FieldTransform) -> Result<(), Status> {
     match &transform.transform_type {
         None => Err(Status::invalid_argument(
             "Operation type must be specified for field transformation.",
@@ -198,30 +162,30 @@ pub fn transform(transform: &FieldTransform) -> Result<(), Status> {
     }
 }
 
-/// The field transforms of one write, in order: each one (`transform`), then against the ones
-/// before it, since a write may not transform a field and a field nested in it. The same path
-/// twice is allowed. The message names the shorter path, its segments joined by dots, with
-/// `__key__` for `__name__` (`tools/oracle/transforms.py`, #262).
+/// The field transforms of one write, each in turn: its path read ([`PropertyPath::read`]), its
+/// operation, then against the ones before it, since a write may not transform a field and a
+/// field nested in it (array offsets included), then its path as a transform's (no array
+/// offsets). The same path twice is allowed. The message names the shorter path, with
+/// `__key__` for `__name__` (`tools/oracle/transforms.py`, `tools/oracle/rest.py`, #262).
 pub fn transforms(transforms: &[FieldTransform]) -> Result<(), Status> {
-    let mut paths: Vec<FieldPath> = Vec::with_capacity(transforms.len());
+    let mut paths: Vec<PropertyPath> = Vec::with_capacity(transforms.len());
     for t in transforms {
-        transform(t)?;
-        let path = transform_path(&t.field_path)?;
+        let path = PropertyPath::read(&t.field_path)?;
+        transform_operation(t)?;
         if let Some(parent) = paths.iter().find_map(|earlier| {
-            let (a, b) = (earlier.segments(), path.segments());
-            if a.len() < b.len() && b.starts_with(a) {
-                Some(a)
-            } else if b.len() < a.len() && a.starts_with(b) {
-                Some(b)
+            if earlier.is_prefix_of(&path) {
+                Some(earlier)
+            } else if path.is_prefix_of(earlier) {
+                Some(&path)
             } else {
                 None
             }
         }) {
             return Err(Status::invalid_argument(format!(
-                "Cannot transform property {} and its nested property at the same time.",
-                parent.join(".")
+                "Cannot transform property {parent} and its nested property at the same time."
             )));
         }
+        path.check_transform()?;
         paths.push(path);
     }
     Ok(())

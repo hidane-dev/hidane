@@ -234,9 +234,7 @@ pub fn check_names(database: &str, write: &Write) -> Result<ResourcePath, Status
         Some(Operation::Update(document)) => {
             validate::names(&document.fields)?;
             if let Some(mask) = &write.update_mask {
-                for path in &mask.field_paths {
-                    validate::field_path(path)?;
-                }
+                validate::mask_paths(&mask.field_paths)?;
             }
             validate::transforms(&write.update_transforms)?;
         }

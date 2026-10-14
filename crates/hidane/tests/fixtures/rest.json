@@ -4644,6 +4644,2394 @@
     "contentType": "application/json",
     "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/nm/a\",\n    \"fields\": {\n      \"a\": {\n        \"integerValue\": \"1\"\n      },\n      \"__key__\": {\n        \"integerValue\": \"1\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
    }
+  },
+  {
+   "name": "update mask _.__type__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "_.__type__"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the name __type__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask __type__.a",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "__type__.a"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the name __type__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask a[0]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a[0]"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask a[0][1]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a[0][1]"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask `a`[0]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "`a`[0]"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask a[2147483647]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a[2147483647]"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask a[2147483648]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a[2147483648]"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"a[2147483648]\\\". Array offsets must be within the range [0, 2^31 - 1].\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask a[99999999999999999999]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a[99999999999999999999]"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"a[99999999999999999999]\\\". Array offsets must be within the range [0, 2^31 - 1].\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask __key__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "__key__"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path member name \\\"__key__\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask a.__key__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a.__key__"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path member name \\\"__key__\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask `__key__`",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "`__key__`"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path member name \\\"__key__\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask __key__.a b",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "__key__.a b"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path member name \\\"__key__\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask __key__[0]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "__key__[0]"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path member name \\\"__key__\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask a b.__key__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a b.__key__"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"a b.__key__\\\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\\\\\]|(?:\\\\\\\\.))+`)\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask a[2147483648].__key__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a[2147483648].__key__"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"a[2147483648].__key__\\\". Array offsets must be within the range [0, 2^31 - 1].\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask __type__.__x__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "__type__.__x__"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid reserved name in field path __x__\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask __x__.__name__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "__x__.__name__"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid reserved name in field path __x__.__key__\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask a[0].__x__.b[07]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a[0].__x__.b[07]"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid reserved name in field path __x__.b[7]\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask `a`.__x__.`b c`",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "`a`.__x__.`b c`"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid reserved name in field path __x__.b c\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask __x__[0]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "__x__[0]"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid reserved name in field path __x__[0]\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask __name__.__type__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "__name__.__type__"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the name __key__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask __type__.__name__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "__type__.__name__"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the name __type__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask a[0].__name__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a[0].__name__"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask __name__[0]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "__name__[0]"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the name __key__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask __type__[0]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "__type__[0]"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the name __type__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask a[0].__type__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a[0].__type__"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask a]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a]"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"a]\\\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\\\\\]|(?:\\\\\\\\.))+`)\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask a[]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a[]"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"a[]\\\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\\\\\]|(?:\\\\\\\\.))+`)\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask a[x]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a[x]"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"a[x]\\\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\\\\\]|(?:\\\\\\\\.))+`)\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask a[0]b",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a[0]b"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"a[0]b\\\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\\\\\]|(?:\\\\\\\\.))+`)\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask: every path is read before any is checked",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "__type__",
+        "__x__"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid reserved name in field path __x__\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask: a path is read whole before the next",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "__key__",
+        "a b"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path member name \\\"__key__\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask: an array offset before a reserved name in the next path",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a[0]",
+        "__x__"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid reserved name in field path __x__\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "update mask: an array offset, then __type__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/a",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a[0]",
+        "__type__"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH update mask with __type__ in a longer path",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fp/b?updateMask.fieldPaths=z.__type__&updateMask.fieldPaths=b&updateMask.fieldPaths=b",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the name __type__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH update mask with an array offset",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fp/b?updateMask.fieldPaths=a%5B0%5D",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH: the update mask before the read mask",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fp/b?updateMask.fieldPaths=a%5B0%5D&mask.fieldPaths=__x__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "a": {
+      "integerValue": "1"
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH read mask: every path is read before any is checked",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fp/b?updateMask.fieldPaths=a&mask.fieldPaths=__type__&mask.fieldPaths=__x__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "a": {
+      "integerValue": "1"
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid reserved name in field path __x__\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH read mask with __type__",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fp/b?mask.fieldPaths=__type__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "a": {
+      "integerValue": "1"
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the name __type__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST read mask with an array offset",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fp?documentId=c&mask.fieldPaths=a%5B0%5D",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "a": {
+      "integerValue": "1"
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "POST read mask with __key__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fp?documentId=c&mask.fieldPaths=__key__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {
+     "a": {
+      "integerValue": "1"
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path member name \\\"__key__\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "GET read mask with an array offset",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fp/a?mask.fieldPaths=a%5B0%5D",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "GET read mask with __key__ quoted",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fp/a?mask.fieldPaths=%60__key__%60",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path member name \\\"__key__\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "GET read mask: __key__ in a later path before an array offset",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fp/a?mask.fieldPaths=a%5B0%5D&mask.fieldPaths=__key__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path member name \\\"__key__\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "GET read mask: __type__ before a reserved name in a later path",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fp/a?mask.fieldPaths=__type__&mask.fieldPaths=__x__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid reserved name in field path __x__\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "list read mask with __key__",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fp?mask.fieldPaths=__key__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path member name \\\"__key__\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "list read mask with __type__",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fp?mask.fieldPaths=__type__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the name __type__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "batchGet mask with an array offset",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/{project}/databases/(default)/documents/fp/a"
+    ],
+    "mask": {
+     "fieldPaths": [
+      "a[0]"
+     ]
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "batchGet mask with __type__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/{project}/databases/(default)/documents/fp/a"
+    ],
+    "mask": {
+     "fieldPaths": [
+      "__type__"
+     ]
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the name __type__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transform __key__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "__key__",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path member name \\\"__key__\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transform a.__key__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a.__key__",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path member name \\\"__key__\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transform `__key__`",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "`__key__`",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path member name \\\"__key__\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transform __type__.__x__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "__type__.__x__",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid reserved name in field path __x__\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transform __x__.__name__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "__x__.__name__",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid reserved name in field path __x__.__key__\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transform a[0]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a[0]",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Field transformation paths currently support only \\\".\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transform a[0][1]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a[0][1]",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Field transformation paths currently support only \\\".\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transform a[0].__x__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a[0].__x__",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid reserved name in field path __x__\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transform __key__[0]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "__key__[0]",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path member name \\\"__key__\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transform __type__.a[0]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "__type__.a[0]",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Field transformation paths currently support only \\\".\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transform a[0].__name__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a[0].__name__",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Field transformation paths currently support only \\\".\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transform a[2147483648]",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a[2147483648]",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path \\\"a[2147483648]\\\". Array offsets must be within the range [0, 2^31 - 1].\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transform with an array offset and no operation",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a[0]"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Operation type must be specified for field transformation.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transform with an array offset and an operand that is not a number",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a[0]",
+        "increment": {
+         "stringValue": "x"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Input must be int64 or double.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transform with an array offset and a reserved name in its operand",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a[0]",
+        "increment": {
+         "mapValue": {
+          "fields": {
+           "__x__": {
+            "integerValue": "1"
+           }
+          }
+         }
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"field name '__x__' is reserved.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transform with an array offset and no server value",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a[0]",
+        "setToServerValue": "SERVER_VALUE_UNSPECIFIED"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"ServerValue type must be specified for set_to_server_value transformation.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transform with an array offset, then a reserved name",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a[0]",
+        "increment": {
+         "integerValue": "1"
+        }
+       },
+       {
+        "fieldPath": "__x__",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Field transformation paths currently support only \\\".\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transforms of a field and an array offset in it",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a",
+        "increment": {
+         "integerValue": "1"
+        }
+       },
+       {
+        "fieldPath": "a[0]",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot transform property a and its nested property at the same time.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transforms of an array offset in a field and the field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a[0]",
+        "increment": {
+         "integerValue": "1"
+        }
+       },
+       {
+        "fieldPath": "a",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Field transformation paths currently support only \\\".\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "nested transforms before an array offset",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "m",
+        "increment": {
+         "integerValue": "1"
+        }
+       },
+       {
+        "fieldPath": "m.n",
+        "increment": {
+         "integerValue": "1"
+        }
+       },
+       {
+        "fieldPath": "a[0]",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot transform property m and its nested property at the same time.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an update mask path before a transform path",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "__type__"
+       ]
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "__x__",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the name __type__ is reserved\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an update mask with an array offset before a transform path",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a[0]"
+       ]
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "__key__",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an array offset in a transform of the first write before a second write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a[0]",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp"
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Field transformation paths currently support only \\\".\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transforms of __type__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/ty",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "__type__",
+        "increment": {
+         "integerValue": "1"
+        }
+       },
+       {
+        "fieldPath": "m.__type__",
+        "increment": {
+         "integerValue": "1"
+        }
+       },
+       {
+        "fieldPath": "n.__type__",
+        "appendMissingElements": {
+         "values": [
+          {
+           "stringValue": "__vector__"
+          }
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/ty2",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "__type__.x",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"integerValue\": \"1\"\n    }, {\n      \"integerValue\": \"1\"\n    }, {\n      \"nullValue\": null\n    }]\n  }, {\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"integerValue\": \"1\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "transforms of __type__, the documents",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/{project}/databases/(default)/documents/fp/ty",
+     "projects/{project}/databases/(default)/documents/fp/ty2"
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"found\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/fp/ty\",\n    \"fields\": {\n      \"__type__\": {\n        \"integerValue\": \"1\"\n      },\n      \"m\": {\n        \"mapValue\": {\n          \"fields\": {\n            \"__type__\": {\n              \"integerValue\": \"1\"\n            }\n          }\n        }\n      },\n      \"n\": {\n        \"mapValue\": {\n          \"fields\": {\n            \"__type__\": {\n              \"arrayValue\": {\n                \"values\": [{\n                  \"stringValue\": \"__vector__\"\n                }]\n              }\n            }\n          }\n        }\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"found\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/fp/ty2\",\n    \"fields\": {\n      \"__type__\": {\n        \"mapValue\": {\n          \"fields\": {\n            \"x\": {\n              \"integerValue\": \"1\"\n            }\n          }\n        }\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n}\n]\n"
+   }
+  },
+  {
+   "name": "a transform of __type__ inside a vector",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/ty3",
+       "fields": {
+        "v": {
+         "mapValue": {
+          "fields": {
+           "__type__": {
+            "stringValue": "__vector__"
+           },
+           "value": {
+            "arrayValue": {
+             "values": [
+              {
+               "doubleValue": 1.0
+              }
+             ]
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "v.__type__",
+        "maximum": {
+         "integerValue": "3"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"integerValue\": \"3\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a transform of __type__ inside a vector, the document",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fp/ty3",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/fp/ty3\",\n  \"fields\": {\n    \"v\": {\n      \"mapValue\": {\n        \"fields\": {\n          \"__type__\": {\n            \"integerValue\": \"3\"\n          }\n        }\n      }\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "nested transforms of __type__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/fp/t",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a.b",
+        "increment": {
+         "integerValue": "1"
+        }
+       },
+       {
+        "fieldPath": "__type__.c",
+        "increment": {
+         "integerValue": "1"
+        }
+       },
+       {
+        "fieldPath": "__type__",
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Cannot transform property __type__ and its nested property at the same time.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "transforms with array offsets write nothing",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/fp/t",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/fp\\/t) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
   }
  ]
 }

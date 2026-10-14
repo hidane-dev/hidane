@@ -19,6 +19,7 @@ mod export;
 mod guard;
 mod listen;
 pub(crate) mod names;
+mod property_path;
 mod query;
 pub(crate) mod seed;
 pub(crate) mod transactions;
@@ -1315,16 +1316,11 @@ fn document_with(
     }
 }
 
-/// A read mask, whose paths are checked as field paths are: no reserved name, no `__name__`
-/// inside a longer path, not empty (`tools/oracle/rest.py`, #262).
+/// A read mask, whose paths are checked as an update mask's are (`validate::mask_paths`,
+/// `tools/oracle/rest.py`, #262).
 fn parse_mask(mask: Option<&DocumentMask>) -> Result<Option<Vec<FieldPath>>, Status> {
-    mask.map(|m| {
-        m.field_paths
-            .iter()
-            .map(|p| validate::field_path(p))
-            .collect()
-    })
-    .transpose()
+    mask.map(|m| validate::mask_paths(&m.field_paths))
+        .transpose()
 }
 
 /// The read mask of a write that returns the document (UpdateDocument, CreateDocument), checked
