@@ -191,7 +191,7 @@ async fn fields_come_back_in_the_official_order() {
         }
     }
     // Every read of the fixture was compared, not skipped.
-    assert_eq!(compared, 79);
+    assert_eq!(compared, 85);
 }
 
 fn int(n: i64) -> Value {

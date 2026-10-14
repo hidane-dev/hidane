@@ -127,6 +127,20 @@ case("masked update with other names", "fo-names", [
     get("c/d", "`x.y`", "`\u65e5\u672c`", "`\u00e9t\u00e9`", "Z", "zeta"),
     get("c/d", "\u65e5\u672c"),
 ])
+# `h` and `x` fall into one bucket of a Java HashMap, and so do U+1F600 and `x`: there, the
+# fields a mask names whole come before those it names a path below, each in the masked order.
+bucket = [
+    (["h.a", "x"], fields(("x", i(1)), ("h", m(("a", i(2)))))),
+    (["x.a", "h"], fields(("x", m(("a", i(1)))), ("h", i(2)))),
+    (["x", "h.a"], fields(("x", i(1)), ("h", m(("a", i(2)))))),
+    (["h.a", "x.a"], fields(("x", m(("a", i(1)))), ("h", m(("a", i(2)))))),
+    (["`\U0001F600`.`a-b`", "x"], fields(("\U0001F600", m(("a-b", i(1)))), ("x", i(2)))),
+    (["x", "`\U0001F600`"], fields(("\U0001F600", i(1)), ("x", i(2)))),
+]
+case("masked update: whole fields before nested ones in a bucket", "fo-bucket", [
+    step for k, (mask, written) in enumerate(bucket)
+    for step in (commit(update(f"c/b{k}", written, mask=mask)), get(f"c/b{k}"))
+])
 case("set again with the same values in another order", "fo-same-reordered", [
     commit(update("c/d", base_doc)),
     get("c/d"),

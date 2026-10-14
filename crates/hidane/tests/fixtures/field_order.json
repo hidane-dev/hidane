@@ -2180,6 +2180,413 @@
   ]
  },
  {
+  "name": "masked update: whole fields before nested ones in a bucket",
+  "steps": [
+   {
+    "method": "POST",
+    "path": "projects/fo-bucket/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-bucket/databases/(default)/documents/c/b0",
+        "fields": {
+         "x": {
+          "integerValue": "1"
+         },
+         "h": {
+          "mapValue": {
+           "fields": {
+            "a": {
+             "integerValue": "2"
+            }
+           }
+          }
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "h.a",
+         "x"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-14T16:39:41.931605Z"
+      }
+     ],
+     "commitTime": "2026-10-14T16:39:41.931605Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-bucket/databases/(default)/documents/c/b0",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-bucket/databases/(default)/documents/c/b0",
+     "fields": {
+      "x": {
+       "integerValue": "1"
+      },
+      "h": {
+       "mapValue": {
+        "fields": {
+         "a": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-14T16:39:41.931605Z",
+     "updateTime": "2026-10-14T16:39:41.931605Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-bucket/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-bucket/databases/(default)/documents/c/b1",
+        "fields": {
+         "x": {
+          "mapValue": {
+           "fields": {
+            "a": {
+             "integerValue": "1"
+            }
+           }
+          }
+         },
+         "h": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "x.a",
+         "h"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-14T16:39:41.942291Z"
+      }
+     ],
+     "commitTime": "2026-10-14T16:39:41.942291Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-bucket/databases/(default)/documents/c/b1",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-bucket/databases/(default)/documents/c/b1",
+     "fields": {
+      "h": {
+       "integerValue": "2"
+      },
+      "x": {
+       "mapValue": {
+        "fields": {
+         "a": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-14T16:39:41.942291Z",
+     "updateTime": "2026-10-14T16:39:41.942291Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-bucket/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-bucket/databases/(default)/documents/c/b2",
+        "fields": {
+         "x": {
+          "integerValue": "1"
+         },
+         "h": {
+          "mapValue": {
+           "fields": {
+            "a": {
+             "integerValue": "2"
+            }
+           }
+          }
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "x",
+         "h.a"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-14T16:39:41.952532Z"
+      }
+     ],
+     "commitTime": "2026-10-14T16:39:41.952532Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-bucket/databases/(default)/documents/c/b2",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-bucket/databases/(default)/documents/c/b2",
+     "fields": {
+      "x": {
+       "integerValue": "1"
+      },
+      "h": {
+       "mapValue": {
+        "fields": {
+         "a": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-14T16:39:41.952532Z",
+     "updateTime": "2026-10-14T16:39:41.952532Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-bucket/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-bucket/databases/(default)/documents/c/b3",
+        "fields": {
+         "x": {
+          "mapValue": {
+           "fields": {
+            "a": {
+             "integerValue": "1"
+            }
+           }
+          }
+         },
+         "h": {
+          "mapValue": {
+           "fields": {
+            "a": {
+             "integerValue": "2"
+            }
+           }
+          }
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "h.a",
+         "x.a"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-14T16:39:41.963024Z"
+      }
+     ],
+     "commitTime": "2026-10-14T16:39:41.963024Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-bucket/databases/(default)/documents/c/b3",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-bucket/databases/(default)/documents/c/b3",
+     "fields": {
+      "h": {
+       "mapValue": {
+        "fields": {
+         "a": {
+          "integerValue": "2"
+         }
+        }
+       }
+      },
+      "x": {
+       "mapValue": {
+        "fields": {
+         "a": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-14T16:39:41.963024Z",
+     "updateTime": "2026-10-14T16:39:41.963024Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-bucket/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-bucket/databases/(default)/documents/c/b4",
+        "fields": {
+         "\ud83d\ude00": {
+          "mapValue": {
+           "fields": {
+            "a-b": {
+             "integerValue": "1"
+            }
+           }
+          }
+         },
+         "x": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "`\ud83d\ude00`.`a-b`",
+         "x"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-14T16:39:41.974491Z"
+      }
+     ],
+     "commitTime": "2026-10-14T16:39:41.974491Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-bucket/databases/(default)/documents/c/b4",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-bucket/databases/(default)/documents/c/b4",
+     "fields": {
+      "x": {
+       "integerValue": "2"
+      },
+      "\ud83d\ude00": {
+       "mapValue": {
+        "fields": {
+         "a-b": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     },
+     "createTime": "2026-10-14T16:39:41.974491Z",
+     "updateTime": "2026-10-14T16:39:41.974491Z"
+    }
+   },
+   {
+    "method": "POST",
+    "path": "projects/fo-bucket/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/fo-bucket/databases/(default)/documents/c/b5",
+        "fields": {
+         "\ud83d\ude00": {
+          "integerValue": "1"
+         },
+         "x": {
+          "integerValue": "2"
+         }
+        }
+       },
+       "updateMask": {
+        "fieldPaths": [
+         "x",
+         "`\ud83d\ude00`"
+        ]
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "response": {
+     "writeResults": [
+      {
+       "updateTime": "2026-10-14T16:39:41.984746Z"
+      }
+     ],
+     "commitTime": "2026-10-14T16:39:41.984746Z"
+    }
+   },
+   {
+    "method": "GET",
+    "path": "projects/fo-bucket/databases/(default)/documents/c/b5",
+    "body": null,
+    "status": 200,
+    "response": {
+     "name": "projects/fo-bucket/databases/(default)/documents/c/b5",
+     "fields": {
+      "x": {
+       "integerValue": "2"
+      },
+      "\ud83d\ude00": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-14T16:39:41.984746Z",
+     "updateTime": "2026-10-14T16:39:41.984746Z"
+    }
+   }
+  ]
+ },
+ {
   "name": "set again with the same values in another order",
   "steps": [
    {
