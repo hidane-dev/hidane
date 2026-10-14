@@ -211,6 +211,9 @@
    "reason": "Bug (a monitor that stops for new clients)",
    "references": [
     "crates/hidane/tests/fixtures/rules_expressions_monitor.json"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/websocket_requests.rs::a_decision_past_the_limit_of_expressions"
    ]
   },
   {
