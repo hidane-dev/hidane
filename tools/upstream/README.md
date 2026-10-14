@@ -91,9 +91,10 @@ For each new official emulator jar, whichever channel pins it:
    `downloadableEmulatorInfo.json`, checked by the watcher), and re-records the recordings of the
    Official emulator workflow's drift job against it, each on a freshly started emulator
    (`.github/workflows/official-recordings.yml`, shared with that job): `value_order`, `queries`,
-   `aggregations`, `rest`, `limits`, `rules_paths`. Each recording is compared with the committed
-   fixture byte for byte; one that differs is recorded again on another fresh emulator, and the
-   difference is **confirmed** only when both recordings agree (**unstable** when they do not).
+   `aggregations`, `rest`, `limits`, `rules_paths`, `rules_eval`. Each recording is compared with
+   the committed fixture byte for byte; one that differs is recorded again on another fresh
+   emulator, and the difference is **confirmed** only when both recordings agree (**unstable**
+   when they do not).
 2. **hidane against v…** puts each confirmed recording in its fixture's place and runs
    `cargo test --workspace` (`python3 tools/upstream/canary.py replay`). A test that fails is run
    again with the committed fixtures; it is a **regression** only if it passes there.

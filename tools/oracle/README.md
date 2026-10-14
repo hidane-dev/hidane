@@ -57,7 +57,7 @@ evaluation errors exist in English only, and under another locale each of them b
 | `websocket_requests.py` | What does the WebSocket feed on `--websocket_port` send, the one the Emulator UI's request monitor (its Firestore "Requests" tab) reads: the handshake at `/requests` and the answers to requests that are not one, the backlog (the last 50 records, oldest first) as one JSON-array frame, then one frame per evaluation, with every field of a record in order (`rules`, `time`, `rulesReleaseKey`, `requestId`, `outcome`, `granularAllowOutcomes`, `rulesContext` with `request` and `resource` as value messages) for reads, lists, writes, batches, transactions, Listen targets, the owner (not recorded) and databases without rules; pongs, closes, several clients, `PUT` and `POST /reset` (which keep the backlog), and a client that does not read (writes wait for it)? Takes the WebSocket port as its second argument; needs `grpcurl` on `PATH` | `crates/hidane/tests/fixtures/websocket_requests.json` | `crates/hidane/tests/websocket_requests.rs` |
 | `rules_auth.py` | What does `request.auth` hold for unsigned (`alg: none`) tokens with claims present or missing, expired or for another project, for `Bearer owner` and for no header? (`uid` from `sub`, `null` without one; `token` with every claim; nothing verified) | `crates/hidane/tests/fixtures/rules_auth.json` | `crates/hidane/tests/rules_server.rs` |
 | `rules_conditions.py` | What does the official emulator decide for a Security Rules condition (allow, false, evaluation error, compile error) on a fixed document? Takes a JSON list of conditions; `spikes/rules-eval/conditions.py` builds the list the #61 spike used | `results/rules-conditions-official-v1.22.0.json` | `crates/hidane-rules/tests/conditions.rs` |
-| `rules_eval.py` | How are Security Rules conditions evaluated: operators and their errors, literals, indexes and slices, conversions, every function and method of every type (with the forms each takes), lookups and which documents cost nothing, scoping of functions and wildcards, and the entries of a denial? Records the full message of each denial | `crates/hidane-rules/tests/fixtures/rules_eval.json` | `crates/hidane-rules/tests/library.rs` |
+| `rules_eval.py` | How are Security Rules conditions evaluated: operators and their errors, literals, indexes and slices, conversions, every function and method of every type (with the forms each takes), lookups and which documents cost nothing, scoping of functions and wildcards, and the entries of a denial? Records the full message of each denial; the two batches whose lookup of a document another write writes is free in some projects and runs and costs one in others (#210) under 20 projects, with both answers | `crates/hidane-rules/tests/fixtures/rules_eval.json` | `crates/hidane-rules/tests/library.rs` |
 | `rules_warnings.py` | Which warnings does the compiler give, with which positions: the type checker's (`Invalid type. Received one of […]. Expected one of […].`, conditions expecting a boolean, comparisons that can never be true, conditionals with results of different types, the types of wildcards, parameters and `let`s inferred from their uses and checked at each call)? Records the `issues[]` of every condition and ruleset of `rules_eval.py`, `rules_conditions.py` and `rules_paths.py` (whose fixtures keep only the descriptions) with positions, and cases of its own; nothing is read | `crates/hidane-rules/tests/fixtures/rules_warnings.json` | `crates/hidane-rules/tests/warnings.rs` |
 | `transactions.py` | What do transactions lock, how long do writes wait, when do transactions end, how are `verify` writes checked, and is a query's transaction checked before the query, and a commit's before its writes? Scenarios with concurrent steps and timing; needs `grpcurl` on `PATH` and takes about two minutes | `crates/hidane/tests/fixtures/transactions.json` | `crates/hidane/tests/transactions.rs` |
 
@@ -224,13 +224,15 @@ firebase-tools' `src/emulator/downloadableEmulatorInfo.json` gives them (`firest
 The Official emulator workflow (`.github/workflows/official-emulator.yml`) uses the action
 weekly, by hand, and on pull requests that change the action or the workflow:
 
-- **drift** re-records `value_order`, `queries`, `aggregations`, `rest`, `limits` and
-  `rules_paths`, each against a freshly started emulator, and fails when a recording differs from
-  the committed fixture by a byte. They cover values, queries, aggregations, the REST surface,
-  document limits and rules paths, take seconds, need nothing beyond the Python standard library,
-  and come out the same on every run: they wait on no stream, and the server times and IDs the
-  emulator chooses are masked or absent in what they record. (`rules_eval.py` does not: under
-  Java 21 two of its batch lookup cases are allowed on some runs and denied on others.) A
+- **drift** re-records `value_order`, `queries`, `aggregations`, `rest`, `limits`,
+  `rules_paths` and `rules_eval`, each against a freshly started emulator, and fails when a
+  recording differs from the committed fixture by a byte. They cover values, queries,
+  aggregations, the REST surface, document limits, rules paths and the evaluation of rules, take
+  seconds, need nothing beyond the Python standard library, and come out the same on every run:
+  they wait on no stream, and the server times and IDs the emulator chooses are masked or absent
+  in what they record. (Two batches of `rules_eval.py` are allowed in some projects and denied in
+  others, and which ones changes from one start of the official emulator to the next, on Java 21
+  and 24 alike; the script records them under 20 projects with both answers, #210.) A
   recording that differs is made again against a second fresh emulator, which tells a confirmed
   difference (both recordings agree) from an unstable one. Each recording, a `result.json` and
   the emulator's output are uploaded, and each job's summary gives the emulator's start-up time

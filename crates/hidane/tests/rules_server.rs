@@ -164,3 +164,77 @@ async fn request_auth_from_tokens() {
 async fn denials() {
     replay(include_str!("fixtures/rules_denials.json"), &[]).await;
 }
+
+/// The batches of `rules_eval.py` (`hidane-rules/tests/fixtures/rules_eval.json`) as commits over
+/// REST, which tell which documents cost a lookup. The two the official emulator allows in some
+/// projects and runs and denies in others (`answers`, #210) are allowed: every document a commit
+/// writes is free for its writes' `get()` and `exists()` (D020 in `docs/parity-exceptions.md`).
+#[tokio::test]
+async fn documents_a_batch_writes_are_free_to_look_up() {
+    let fixture: Json = serde_json::from_str(include_str!(
+        "../../hidane-rules/tests/fixtures/rules_eval.json"
+    ))
+    .unwrap();
+    let addr = start().await;
+    let base = "projects/rules-eval/databases/(default)/documents";
+    let owner = Some("Bearer owner");
+    let mut compared = 0;
+    for result in fixture["results"].as_array().unwrap() {
+        let name = result["name"].as_str().unwrap();
+        if !name.starts_with("batches/") {
+            continue;
+        }
+        let content = format!(
+            "rules_version = '2';\nservice cloud.firestore {{\n  match /databases/{{database}}/documents {{\n    match /c/{{d}} {{\n      allow read: if true;\n      allow write: if {};\n    }}\n  }}\n}}\n",
+            result["condition"].as_str().unwrap()
+        );
+        let rules = serde_json::json!({"rules": {"files": [{"name": "firestore.rules", "content": content}]}});
+        let path = "/emulator/v1/projects/rules-eval:securityRules";
+        let (status, _) = send(addr, "PUT", path, Some(&rules.to_string()), None).await;
+        assert_eq!(status, 200, "{name}");
+        for d in ["u", "v", "w"] {
+            send(addr, "DELETE", &format!("/v1/{base}/c/{d}"), None, owner).await;
+        }
+        let stored = r#"{"fields": {"n": {"integerValue": "1"}}}"#;
+        let (status, _) = send(
+            addr,
+            "PATCH",
+            &format!("/v1/{base}/c/x"),
+            Some(stored),
+            owner,
+        )
+        .await;
+        assert_eq!(status, 200, "{name}");
+        let writes: Vec<Json> = result["writes"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|w| {
+                let w = w.as_str().unwrap();
+                let doc = format!("{base}/c/{}", &w[1..]);
+                if w.starts_with('-') {
+                    serde_json::json!({"delete": doc})
+                } else {
+                    serde_json::json!({"update": {"name": doc, "fields": {"n": {"integerValue": "2"}}}})
+                }
+            })
+            .collect();
+        let commit = serde_json::json!({ "writes": writes }).to_string();
+        let (status, response) = send(
+            addr,
+            "POST",
+            &format!("/v1/{base}:commit"),
+            Some(&commit),
+            None,
+        )
+        .await;
+        let allowed = result.get("answers").is_some() || result["outcome"] == "allow";
+        assert_eq!(
+            status,
+            if allowed { 200 } else { 403 },
+            "{name}: {response}"
+        );
+        compared += 1;
+    }
+    assert_eq!(compared, 7);
+}

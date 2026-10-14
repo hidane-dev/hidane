@@ -23,13 +23,19 @@ errors, literals, indexes and slices, conversions, the namespaced functions, eve
 every type (each method called on a value of each type, with arguments no form takes, which
 makes the error list the forms), lookups, and whole rulesets for scoping, functions and the
 order of a denial's entries. Last, batches of writes to `c/{d}` show which documents cost
-nothing to look up.
+nothing to look up. Whether `get()` or `exists()` of a document another write of the batch
+writes costs a lookup is not stable on the official emulator (#210): it keeps one answer for a
+project while it runs, but the answer differs from one project to another and from one start to
+the next. Those cases are recorded under `VARIES` project names of their own, with every answer
+seen (`answers`, the allowed one first), so that a recording comes out the same on every run.
 
 Each result has `outcome` (`allow`, `deny`, `compile`, or another HTTP status), the full
-`message` of a denial or a compile error, and the compiler's warnings (`issues`). A denial lists
-one entry per statement, `<false or the error> for 'get' @ L<line>`, joined by `, `; after an
-error the official emulator evaluates again and lists them all twice, and a condition that reads
-`resource` or a document starts with `evaluation error at L5:22` (firebase-tools #6252).
+`message` of a denial or a compile error, and the compiler's warnings (`issues`); a case recorded
+under several projects has `projects` (how many) and `answers` (each distinct `outcome` and
+`message`) instead. A denial lists one entry per statement, `<false or the error> for 'get' @
+L<line>`, joined by `, `; after an error the official emulator evaluates again and lists them
+all twice, and a condition that reads `resource` or a document starts with `evaluation error at
+L5:22` (firebase-tools #6252).
 Stdlib only.
 """
 
@@ -521,26 +527,31 @@ TEN = " && ".join(f"!exists(/databases/$(database)/documents/missing/m{i})" for 
 C = "/databases/$(database)/documents/c"
 
 # Batches committed under `allow write: if <condition>` on `c/{d}`, with `c/x` stored first: which
-# documents cost nothing to look up. Each write updates (`+id`) or deletes (`-id`) a document.
+# documents cost nothing to look up. Each write updates (`+id`) or deletes (`-id`) a document. The
+# last field says whether the case is recorded under `VARIES` projects: the official emulator
+# answers `get()` and `exists()` of a document another write of the batch writes with a lookup
+# that is free under some projects and costs one under others, and which ones changes each time it
+# starts (#210). Under 20 projects both answers came up on each of 120 starts on Java 21 and 24.
 BATCHES = [
-    ("the document written", f"getAfter({C}/$(d)) != null && {TEN}", ["+w"]),
-    ("the document written, before", f"get({C}/$(d)) != null && {TEN}", ["+x"]),
-    ("another document", f"get({C}/x) != null && {TEN}", ["+w"]),
-    ("a document the batch writes", f"getAfter({C}/w) != null && {TEN}", ["+v", "+w"]),
-    ("a document the batch writes, before", f"get({C}/x) != null && {TEN}", ["+v", "+x"]),
-    ("a document the batch deletes", f"exists({C}/x) && {TEN}", ["+v", "-x"]),
-    ("a document outside the batch", f"get({C}/x) != null && {TEN}", ["+v", "+u"]),
+    ("the document written", f"getAfter({C}/$(d)) != null && {TEN}", ["+w"], False),
+    ("the document written, before", f"get({C}/$(d)) != null && {TEN}", ["+x"], False),
+    ("another document", f"get({C}/x) != null && {TEN}", ["+w"], False),
+    ("a document the batch writes", f"getAfter({C}/w) != null && {TEN}", ["+v", "+w"], False),
+    ("a document the batch writes, before", f"get({C}/x) != null && {TEN}", ["+v", "+x"], True),
+    ("a document the batch deletes", f"exists({C}/x) && {TEN}", ["+v", "-x"], True),
+    ("a document outside the batch", f"get({C}/x) != null && {TEN}", ["+v", "+u"], False),
 ]
+VARIES = 20
 
 
-def batch(condition, writes):
+def batch(condition, writes, project=PROJECT):
     content = ("rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
                f"    match /c/{{d}} {{\n      allow read: if true;\n      allow write: if {condition};\n"
                "    }\n  }\n}\n")
-    status, body = request("PUT", f"/emulator/v1/projects/{PROJECT}:securityRules",
+    status, body = request("PUT", f"/emulator/v1/projects/{project}:securityRules",
                            {"rules": {"files": [{"name": "firestore.rules", "content": content}]}})
     assert status == 200, body
-    base = f"{DB}/documents"
+    base = f"projects/{project}/databases/(default)/documents"
     owner = {"Authorization": "Bearer owner"}
     for d in ("u", "v", "w"):
         request("DELETE", f"/v1/{base}/c/{d}", headers=owner)
@@ -566,9 +577,16 @@ def main():
             results.append({"name": f"{group}/{i}", "condition": condition, **run(RULES % condition)})
     for name, content in RULESETS:
         results.append({"name": f"rulesets/{name}", "rules": content, **run(content)})
-    for name, condition, writes in BATCHES:
-        results.append({"name": f"batches/{name}", "condition": condition, "writes": writes,
-                        **batch(condition, writes)})
+    for name, condition, writes, varies in BATCHES:
+        result = {"name": f"batches/{name}", "condition": condition, "writes": writes}
+        if varies:
+            answers = [batch(condition, writes, f"{PROJECT}-{i}") for i in range(VARIES)]
+            distinct = {json.dumps(a, sort_keys=True): a for a in answers}
+            result.update(projects=VARIES, answers=sorted(
+                distinct.values(), key=lambda a: (str(a["outcome"]), a.get("message", ""))))
+        else:
+            result.update(batch(condition, writes))
+        results.append(result)
     # One result per line, so a diff shows which cases changed.
     sys.stdout.reconfigure(encoding="utf-8")
     print("{")

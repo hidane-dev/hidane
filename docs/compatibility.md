@@ -27,8 +27,8 @@ firebase-tools that launches it and the official emulator it is compared with.
 
 | Evidence | What the results show | Where |
 |---|---|---|
-| Oracle corpus | 73 recordings of the official emulator 1.22.0 (41 fixtures, 32 official transcripts), `sha256:a90000e553dc…` | [oracle-corpus.md](oracle-corpus.md) |
-| Record and replay | 20,609 recorded answers in 41 fixtures, replayed by `cargo test` on every pull request and push to main: 12,385 in full, 3,912 decision and reasons, 753 in part, 3,404 status only, 30 without messages, 1 not compared, 124 intentionally different | [parity.md](parity.md) |
+| Oracle corpus | 73 recordings of the official emulator 1.22.0 (41 fixtures, 32 official transcripts), `sha256:8f286ac88e2e…` | [oracle-corpus.md](oracle-corpus.md) |
+| Record and replay | 20,609 recorded answers in 41 fixtures, replayed by `cargo test` on every pull request and push to main: 12,383 in full, 3,912 decision and reasons, 753 in part, 3,404 status only, 30 without messages, 1 not compared, 126 intentionally different | [parity.md](parity.md) |
 | SDK transcripts | 34 comparisons of 32 transcript pairs: 20 identical, 14 documented differences | [parity.md](parity.md) |
 | SDK certification | 16 clients and tools: 11 verified, 0 partially verified, 5 not verified | [sdk-certification.md](sdk-certification.md) |
 | Browser | firebase-js-sdk's browser suite at `8a7e7fd`: 1,183 passed, 0 failed, 739 skipped on hidane; 1,183 passed, 0 failed on the official emulator (identical). 3 transcripts in Chromium: browser-webchannel (identical), flutter-web (documented), browser-rules (documented) | [`js-sdk-browser.yml`](../.github/workflows/js-sdk-browser.yml) |

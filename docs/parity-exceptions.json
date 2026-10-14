@@ -265,11 +265,19 @@
    "area": "rules",
    "topic": null,
    "kind": "more-correct",
-   "official": "Whether a document that a commit writes costs a lookup when another of its writes reads it with `get()` or `exists()` varies from one project to another (commits of the same shape were allowed in some projects and denied in others); through `getAfter()` or `existsAfter()` it never does. A document the commit verifies always costs one through `get()` or `exists()`, and in a verify's condition so does every document the commit writes",
-   "firestore": null,
-   "hidane": "Every document a commit writes is free for its writes' conditions; the rest as on the official emulator",
-   "reason": "The official result cannot be predicted",
-   "references": []
+   "official": "Whether a document that a commit writes costs a lookup when another of its writes reads it with `get()` or `exists()` cannot be predicted: the official emulator keeps one answer for a project while it runs, but the answer differs from one project to another and from one start of the emulator to the next, on Java 21 and 24 alike (about half of the projects on each start, whatever the order of the writes or the time between requests; #210). Through `getAfter()` or `existsAfter()` it never does. A document the commit verifies always costs one through `get()` or `exists()`, and in a verify's condition so does every document the commit writes",
+   "firestore": "Documented: 10 lookups for each write and 20 for the batch, and \"some document access calls may be cached, and cached calls do not count towards the limits\" ([conditions](https://firebase.google.com/docs/firestore/security/rules-conditions)); not whether a document the batch writes is one. `get()` and `exists()` see the documents as they were before the batch, `getAfter()` and `existsAfter()` as it leaves them ([reference](https://firebase.google.com/docs/reference/rules/rules.firestore))",
+   "hidane": "Every document a commit writes is free for its writes' conditions, through `get()`, `exists()`, `getAfter()` and `existsAfter()`; the rest as on the official emulator. `rules_eval.json` records both official answers for two such batches, each under 20 projects",
+   "reason": "The official result cannot be predicted. Free is what the official emulator answers through `getAfter()` and `existsAfter()`, and through `get()` and `exists()` in about half of the projects; one answer for all four keeps a test's result from depending on the project's name or the run",
+   "references": [
+    "hidane-dev/hidane#210",
+    "https://firebase.google.com/docs/firestore/security/rules-conditions",
+    "https://firebase.google.com/docs/reference/rules/rules.firestore",
+    "crates/hidane-rules/tests/fixtures/rules_eval.json",
+    "tools/oracle/rules_eval.py",
+    "crates/hidane-rules/tests/library.rs",
+    "crates/hidane/tests/rules_server.rs"
+   ]
   },
   {
    "id": "D021",
