@@ -241,7 +241,15 @@ the samples (every 50 ms) on macOS. CPU time is user + system; `ps` reports it i
 
 Every metric reports the median, the 95th percentile (linear interpolation between the closest
 ranks), the minimum, maximum, mean, sample standard deviation and the number of samples, with
-every sample. Comparisons use medians. A failed run is listed under `errors` and leaves no sample.
+every sample. Comparisons use medians.
+
+A run that fails is listed under `errors`, marked `retried`, and run again once, in a fresh
+process as every run is, for the same target and in the same place in the order. So a transient
+failure, such as one dropped connection among hundreds of runs, costs neither target a sample.
+The rule is the same for both emulators, and the report lists every run that was run again with
+its error. A run whose retry fails too is listed again, not retried, and leaves no sample; the
+run's exit status is then 1 (#291). `check_targets.py` is stricter for hidane's own targets: any
+failed attempt of hidane's fails it, retried or not.
 
 ### Stability
 
@@ -312,9 +320,9 @@ correction made to one after publication, are listed with their evidence in
 [hidane-dev/benchmark-results](https://github.com/hidane-dev/benchmark-results) (`PROVENANCE.md`).
 
 `run.sh` writes exactly one `<name>.json` and one `<name>.md` into `--out` (name: `--name`, or
-`<UTC date>-<kind>`). It exits 0 when the run completed, stable or not; 1 when it completed but
-some runs failed (both files are written, `errors` lists the runs); 2 when the benchmark could
-not run (no files).
+`<UTC date>-<kind>`). It exits 0 when the run completed, stable or not, and every run that failed
+succeeded when run again; 1 when it completed but some runs failed twice (both files are written,
+`errors` lists the runs); 2 when the benchmark could not run (no files).
 
 ### The environment file
 

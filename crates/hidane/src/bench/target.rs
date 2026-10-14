@@ -46,6 +46,18 @@ pub struct Target {
 }
 
 impl Target {
+    /// A target that is never started, for tests of the run loop.
+    #[cfg(test)]
+    pub fn fake(kind: Kind) -> Self {
+        Self {
+            kind,
+            program: PathBuf::new(),
+            prefix: Vec::new(),
+            jar: None,
+            info: Value::Null,
+        }
+    }
+
     pub fn hidane(
         path: &Path,
         commit: Option<&str>,

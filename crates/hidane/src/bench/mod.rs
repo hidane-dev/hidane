@@ -1027,18 +1027,44 @@ fn run(args: &Args) -> Result<ExitCode, String> {
             )
         }
     );
-    Ok(
-        if result["errors"].as_array().is_some_and(|e| !e.is_empty()) {
-            ExitCode::FAILURE
-        } else {
-            ExitCode::SUCCESS
-        },
-    )
+    Ok(if failed_runs(&result) > 0 {
+        ExitCode::FAILURE
+    } else {
+        ExitCode::SUCCESS
+    })
+}
+
+/// The runs a result has no values of: failures that were not run again (a retry that failed
+/// too). A failure that was retried successfully costs nothing.
+fn failed_runs(result: &Value) -> usize {
+    result["errors"].as_array().map_or(0, |errors| {
+        errors.iter().filter(|e| e["retried"] != true).count()
+    })
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// #291: only a failure that was not run again makes the exit status 1.
+    #[test]
+    fn retried_failures_do_not_fail_the_run() {
+        let error = |retried: Option<bool>| {
+            let mut e = json!({"scenario": "ci", "target": "official", "run": 2, "warmup": false, "message": "x"});
+            if let Some(r) = retried {
+                e["retried"] = r.into();
+            }
+            e
+        };
+        assert_eq!(failed_runs(&json!({"errors": []})), 0);
+        assert_eq!(failed_runs(&json!({"errors": [error(Some(true))]})), 0);
+        assert_eq!(
+            failed_runs(&json!({"errors": [error(Some(true)), error(Some(false))]})),
+            1
+        );
+        // Results from before retries existed count every failure.
+        assert_eq!(failed_runs(&json!({"errors": [error(None)]})), 1);
+    }
 
     #[test]
     fn civil_dates() {
