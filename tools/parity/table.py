@@ -769,6 +769,7 @@ TRANSCRIPTS = {
     "sdk-rules-unit-testing": dict(area="rules", client="firebase + rules-unit-testing in Node",
                                    transport="gRPC"),
     "sdk-transactions": dict(area="transactions", client="Admin SDK", transport="gRPC"),
+    "sdk-web-aggregations": dict(area="queries", client="web SDK in Node", transport="gRPC"),
     "sdk-web-transactions": dict(area="transactions", client="web SDK in Node", transport="gRPC"),
     "sdk-web-writes": dict(area="streams", client="web SDK in Node", transport="gRPC"),
 }

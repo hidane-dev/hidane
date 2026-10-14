@@ -73,8 +73,8 @@
  ],
  "totals": {
   "clients": 16,
-  "verified": 10,
-  "partially-verified": 1,
+  "verified": 11,
+  "partially-verified": 0,
   "not-verified": 5
  },
  "clients": [
@@ -87,7 +87,7 @@
    "transport": [
     "gRPC"
    ],
-   "status": "partially-verified",
+   "status": "verified",
    "version": "13.0.0",
    "official_emulator": [
     "v1.22.0"
@@ -102,17 +102,14 @@
    "exercised": [
     "documents",
     "queries",
+    "aggregations",
     "transactions",
     "listeners",
     "reconnect"
    ],
-   "not_exercised": [
-    "aggregations"
-   ],
-   "gaps": [
-    "aggregation queries not compared"
-   ],
-   "last_recorded": "2026-10-13",
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-14",
    "tracking": null,
    "evidence": [
     {
@@ -274,6 +271,38 @@
       "queries",
       "transactions",
       "listeners"
+     ]
+    },
+    {
+     "transcript": "sdk-web-aggregations",
+     "official": "results/sdk-web-aggregations-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-14",
+      "last_changed": "2026-10-14"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-web-aggregations-hidane.json",
+       "result": "identical",
+       "sha256": "bb87d2f4bf3ce3386b59a0c742f0ab5b61a006aebb7e7ac1fa5ecad8380f15a9",
+       "recorded": {
+        "first_recorded": "2026-10-14",
+        "last_changed": "2026-10-14"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "firebase",
+       "version": "13.0.0",
+       "source": "recorded",
+       "where": "results/sdk-web-aggregations-official-v1.22.0.json"
+      }
+     ],
+     "features": [
+      "aggregations"
      ]
     },
     {
@@ -1976,7 +2005,7 @@
    "ecosystem": "npm",
    "name": "firebase",
    "version": "13.0.0",
-   "what": "Lite over REST, in Chromium over WebChannel, and partially in Node over gRPC",
+   "what": "in Node over gRPC, Lite over REST, and in Chromium over WebChannel",
    "source": "docs/sdk-certification.md",
    "clients": [
     "firebase-js-node",

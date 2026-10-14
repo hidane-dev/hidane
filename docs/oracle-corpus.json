@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:b2efcefab13dcc4ad2289b4956db0bc337870e849383deaefab8f92eeb4d54c5",
+ "digest": "sha256:a90000e553dc757095c1172aaca823fe94558829920f3c3d2f8dd792adc93df0",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,11 +14,11 @@
   }
  ],
  "totals": {
-  "files": 72,
+  "files": 73,
   "fixtures": 41,
-  "transcripts": 31,
+  "transcripts": 32,
   "answers": 20609,
-  "bytes": 11040153,
+  "bytes": 11043438,
   "levels": {
    "full": 12385,
    "reasons": 3912,
@@ -36,7 +36,7 @@
    },
    "queries": {
     "fixtures": 4,
-    "transcripts": 6,
+    "transcripts": 7,
     "answers": 568
    },
    "transactions": {
@@ -83,13 +83,13 @@
   "by_release": {
    "v1.22.0": {
     "fixtures": 41,
-    "transcripts": 31,
+    "transcripts": 32,
     "answers": 20609
    }
   },
   "by_release_source": {
    "header": 22,
-   "file name": 32,
+   "file name": 33,
    "git history": 18
   }
  },
@@ -2083,6 +2083,44 @@
    "compared_with": [
     {
      "path": "results/sdk-queries-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-web-aggregations-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "queries",
+   "recorder": "tools/oracle/sdk_web_aggregations.mjs",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "web SDK in Node",
+    "packages": [
+     {
+      "name": "firebase",
+      "version": "13.0.0",
+      "source": "recorded",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-14",
+    "last_changed": "2026-10-14"
+   },
+   "bytes": 3285,
+   "sha256": "bb87d2f4bf3ce3386b59a0c742f0ab5b61a006aebb7e7ac1fa5ecad8380f15a9",
+   "compared_with": [
+    {
+     "path": "results/sdk-web-aggregations-hidane.json",
      "what": "hidane",
      "result": "identical"
     }

@@ -25,7 +25,7 @@
    "status": "verified",
    "evidence": [
     "20,609 recorded answers of the official emulator v1.22.0 in 41 fixtures, replayed against hidane by cargo test",
-    "33 comparisons of SDK transcripts with the official emulator v1.22.0's: 19 identical, 14 documented differences",
+    "34 comparisons of SDK transcripts with the official emulator v1.22.0's: 20 identical, 14 documented differences",
     "2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers"
    ]
   }
@@ -54,7 +54,7 @@
    "transport": [
     "gRPC"
    ],
-   "status": "partially-verified",
+   "status": "verified",
    "version": "13.0.0",
    "official_emulator": [
     "1.22.0"
@@ -62,17 +62,14 @@
    "exercised": [
     "documents and writes",
     "queries",
+    "aggregation queries",
     "transactions",
     "listeners",
     "going offline and resuming"
    ],
-   "not_exercised": [
-    "aggregation queries"
-   ],
-   "gaps": [
-    "aggregation queries not compared"
-   ],
-   "last_recorded": "2026-10-13",
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-14",
    "tracking": null,
    "evidence": [
     {
@@ -94,6 +91,11 @@
      "name": "sdk-rules-unit-testing",
      "result": "documented",
      "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-rules-unit-testing-hidane.json"
+    },
+    {
+     "name": "sdk-web-aggregations",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-web-aggregations-hidane.json"
     },
     {
      "name": "sdk-web-transactions",
@@ -674,9 +676,9 @@
    "differs": 124
   },
   "transcripts": {
-   "pairs": 31,
-   "comparisons": 33,
-   "identical": 19,
+   "pairs": 32,
+   "comparisons": 34,
+   "identical": 20,
    "documented": 14,
    "unexplained": 0,
    "where": "docs/parity.md"

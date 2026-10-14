@@ -1,0 +1,220 @@
+[
+ {
+  "versions": {
+   "firebase": "13.0.0"
+  }
+ },
+ {
+  "name": "seed",
+  "ok": "ok"
+ },
+ {
+  "name": "count of a collection",
+  "ok": {
+   "count": 5
+  }
+ },
+ {
+  "name": "count with a filter",
+  "ok": {
+   "count": 2
+  }
+ },
+ {
+  "name": "count with a limit",
+  "ok": {
+   "count": 2
+  }
+ },
+ {
+  "name": "count with a limit above the number of documents",
+  "ok": {
+   "count": 5
+  }
+ },
+ {
+  "name": "count with orderBy (documents without the field left out)",
+  "ok": {
+   "count": 4
+  }
+ },
+ {
+  "name": "count with limitToLast",
+  "ok": {
+   "count": 2
+  }
+ },
+ {
+  "name": "count with a cursor",
+  "ok": {
+   "count": 3
+  }
+ },
+ {
+  "name": "count with an or filter",
+  "ok": {
+   "count": 3
+  }
+ },
+ {
+  "name": "count with an and of an inequality",
+  "ok": {
+   "count": 2
+  }
+ },
+ {
+  "name": "count of an empty collection",
+  "ok": {
+   "count": 0
+  }
+ },
+ {
+  "name": "count after a write",
+  "ok": {
+   "after": {
+    "count": 6
+   },
+   "deleted": {
+    "count": 5
+   }
+  }
+ },
+ {
+  "name": "sum and average of integers",
+  "ok": {
+   "mean": 2,
+   "total": 6
+  }
+ },
+ {
+  "name": "sum and average of doubles",
+  "ok": {
+   "mean": 1.3333333333333333,
+   "total": 4
+  }
+ },
+ {
+  "name": "sum and average of integers and a double",
+  "ok": {
+   "mean": 6.5,
+   "total": 19.5
+  }
+ },
+ {
+  "name": "sum and average of mixed values (non-numbers and a missing field left out)",
+  "ok": {
+   "mean": 1.75,
+   "total": 3.5
+  }
+ },
+ {
+  "name": "sum and average with NaN",
+  "ok": {
+   "mean": "NaN",
+   "total": "NaN"
+  }
+ },
+ {
+  "name": "sum and average with Infinity",
+  "ok": {
+   "mean": "Infinity",
+   "total": "Infinity"
+  }
+ },
+ {
+  "name": "sum beyond 2^53",
+  "ok": {
+   "mean": 9007199254740991,
+   "total": 18014398509481982
+  }
+ },
+ {
+  "name": "sum and average of a field no document has",
+  "ok": {
+   "mean": null,
+   "total": 0
+  }
+ },
+ {
+  "name": "average of nothing (an empty result)",
+  "ok": {
+   "mean": null,
+   "n": 0,
+   "total": 0
+  }
+ },
+ {
+  "name": "sum and average with a filter and a limit",
+  "ok": {
+   "mean": 2.5,
+   "total": 2.5
+  }
+ },
+ {
+  "name": "count, sum and average in one getAggregateFromServer",
+  "ok": {
+   "meanQty": 2.4,
+   "n": 5,
+   "qty": 12
+  }
+ },
+ {
+  "name": "count next to sum and average of a sparse field",
+  "ok": {
+   "mean": 6.5,
+   "n": 4,
+   "total": 19.5
+  }
+ },
+ {
+  "name": "five aggregations in one getAggregateFromServer",
+  "ok": {
+   "mean": 6.5,
+   "meanQty": 1.75,
+   "n": 4,
+   "qty": 7,
+   "total": 19.5
+  }
+ },
+ {
+  "name": "collection group count, sum and average",
+  "ok": {
+   "n": 3,
+   "price": 1.75,
+   "qty": 11
+  }
+ },
+ {
+  "name": "collection group count with a filter",
+  "ok": {
+   "count": 2
+  }
+ },
+ {
+  "name": "count and sum of a subcollection",
+  "ok": {
+   "n": 1,
+   "qty": 4
+  }
+ },
+ {
+  "name": "six aggregations (refused)",
+  "error": {
+   "code": "invalid-argument",
+   "message": "3 INVALID_ARGUMENT: The maximum number of aggregations allowed in an aggregation query is 5. Received: 6"
+  }
+ },
+ {
+  "name": "sum of documentId() (refused)",
+  "error": {
+   "code": "invalid-argument",
+   "message": "3 INVALID_ARGUMENT: Aggregations are not supported for the property: __key__"
+  }
+ },
+ {
+  "name": "a count after the refused aggregations",
+  "ok": {
+   "count": 5
+  }
+ }
+]

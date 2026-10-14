@@ -103,6 +103,11 @@ its transcripts are in `results/sdk-aggregations-*.json`.
 `sdk_web_writes.mjs` does the same for writes through the web SDK (`npm i firebase`), which
 sends them over the Write stream; its transcripts are in `results/sdk-web-writes-*.json`.
 
+`sdk_web_aggregations.mjs` does the same for aggregation queries through the web SDK in Node
+(`npm i firebase@13.0.0`: `getCountFromServer`, and `getAggregateFromServer` with `count`, `sum`
+and `average`), which sends them as `RunAggregationQuery` over gRPC, and records the SDK's version
+in its transcript; its transcripts are in `results/sdk-web-aggregations-*.json`.
+
 `sdk_listen.mjs` listens through both the Admin SDK and the web SDK while writing through the
 Admin SDK, and prints every snapshot each listener received; its transcripts are in
 `results/sdk-listen-*.json`.

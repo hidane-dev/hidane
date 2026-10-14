@@ -142,7 +142,7 @@ was compared and the evidence are in the
 | Client | Transport | In v0.5.0 |
 |---|---|---|
 | firebase-admin (Node) / `@google-cloud/firestore` | gRPC | verified: documents, queries, aggregations, vector search, transactions, listeners |
-| firebase-js-sdk in Node | gRPC | verified: writes, transactions, listeners, offline and resume |
+| firebase-js-sdk in Node | gRPC | verified: documents and writes, queries, aggregations, transactions, listeners, offline and resume |
 | firebase-js-sdk Lite | REST | verified |
 | firebase-js-sdk in the browser | WebChannel and REST | verified in Chromium: the SDK's own browser suite passes, 1,183 tests, as on the official emulator ([`tools/js-sdk-browser/`](tools/js-sdk-browser/)); listeners, writes, queries, long polling, mock tokens ([`docs/webchannel.md`](docs/webchannel.md)) |
 | Flutter Web (`cloud_firestore`) | WebChannel and REST, through firebase-js-sdk | verified in Chromium: reads, writes, transforms, queries, aggregations, `snapshots()`, batches, transactions |

@@ -26,7 +26,7 @@ pub const VERIFIED: &[Verified] = &[
         ecosystem: "npm",
         name: "firebase",
         version: "13.0.0",
-        what: "Lite over REST, in Chromium over WebChannel, and partially in Node over gRPC",
+        what: "in Node over gRPC, Lite over REST, and in Chromium over WebChannel",
         source: "docs/sdk-certification.md",
     },
     Verified {
