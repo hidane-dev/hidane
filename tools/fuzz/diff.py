@@ -270,6 +270,9 @@ def classify(step, official, hidane):
         found = first_difference(o_parsed, h_parsed)
         if found is None:
             kind, detail = "data", "layout"
+        elif found[1] and "<auto>" in repr(at(o_parsed, found[0])):
+            # Generated document IDs are masked: where one comes among others is chance.
+            return None
         else:
             kind = "order" if found[1] else "data"
             detail = generalize(found[0])
@@ -283,6 +286,18 @@ def classify(step, official, hidane):
         if value is not None:
             out[side]["value"] = value
     return out
+
+
+def at(parsed, path):
+    """The value at `path`, or None."""
+    for part in path:
+        if isinstance(parsed, dict) and part in parsed:
+            parsed = parsed[part]
+        elif isinstance(parsed, list) and isinstance(part, int) and part < len(parsed):
+            parsed = parsed[part]
+        else:
+            return None
+    return parsed
 
 
 def leaf(parsed, path):

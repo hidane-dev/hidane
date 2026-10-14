@@ -11,8 +11,9 @@
 //! - A boolean field takes `true`, `false`, or the strings `"true"` and `"false"`.
 //! - An integer field takes a number or a string that is an integer (`"+1"`, `"01"`), or a
 //!   decimal with an exact integer value (`"1e2"`, `1.0`).
-//! - A double field takes a number or a decimal string (`"1."`, `".5"`, `"+1"`, `"1e5"`), or
-//!   exactly `"NaN"`, `"Infinity"` or `"-Infinity"` (not `"nan"` or `"inf"`).
+//! - A double field takes a number or a decimal string (`"1."`, `".5"`, `"+1"`, `"1e5"`) within
+//!   the range of a double (not `"1e400"`), or exactly `"NaN"`, `"Infinity"` or `"-Infinity"`
+//!   (not `"nan"` or `"inf"`).
 //! - An enum field takes a value's name, or its number (as a number or a string); the null
 //!   value (`nullValue`) takes `null`, `"NULL_VALUE"` or any number.
 
@@ -203,7 +204,8 @@ fn scalar(value: &mut Json, kind: &Kind) -> Option<()> {
                 return None;
             }
             let special = !number && matches!(text.as_str(), "NaN" | "Infinity" | "-Infinity");
-            if !special && !decimal(&text) {
+            // A decimal past the largest double is out of range, not an infinity.
+            if !special && (!decimal(&text) || text.parse::<f64>().is_ok_and(f64::is_infinite)) {
                 return None;
             }
             *value = Json::String(text);

@@ -1,19 +1,24 @@
 //! Applying one `Write` inside a commit.
 
-use std::{collections::HashMap, sync::Arc};
+use std::{
+    collections::{HashMap, hash_map::Entry},
+    sync::Arc,
+};
 
 use hidane_core::{
     field_path::{FieldPath, Fields, apply_mask},
     normalize::normalize_value,
+    order::numeric_id,
     path::ResourcePath,
     store::{ReadTime, StoredDocument, WriteBatch},
     transform,
 };
 use hidane_proto::google::firestore::v1::{
-    Precondition, Value, Write, WriteResult, document_transform::FieldTransform,
-    precondition::ConditionType, write::Operation,
+    Value, Write, WriteResult, document_transform::FieldTransform, precondition::ConditionType,
+    write::Operation,
 };
 use hidane_rules::eval::Method;
+use prost_types::Timestamp;
 use tonic::Status;
 
 use super::{
@@ -59,9 +64,9 @@ pub fn check_verifies(writes: &[Write]) -> Result<(), Status> {
 
 /// What a write is to the official emulator, which stores documents as Datastore entities and
 /// collapses a commit's writes to one document into one mutation.
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 enum Mutation {
-    /// An `exists: false` precondition.
+    /// An `exists: false` precondition, or an `update_time` one of version 0.
     Insert,
     /// An `exists: true` or `update_time` precondition.
     Update,
@@ -81,17 +86,27 @@ impl Mutation {
     }
 }
 
+/// The writes so far to one document of a commit, collapsed into one mutation.
+struct Collapsed {
+    /// What the first write was.
+    first: Mutation,
+    /// What the writes so far are.
+    now: Mutation,
+    /// The first write's version precondition.
+    base: Option<i64>,
+}
+
 /// The official emulator's rules for a commit that writes one document more than once
 /// (`tools/oracle/same_document_writes.py`), checked before any write is applied: an insert
 /// cannot follow anything but a delete, an update cannot follow a delete, nor can a delete with
-/// an `exists: true` precondition; and only the first write may carry an `update_time`
-/// precondition, which a later one may repeat. What follows is checked against the writes so far
-/// collapsed into one: an insert or an update stays one under upserts and updates, a delete then
-/// an insert or an upsert is an upsert, and anything then a delete is a delete. Verifies are
-/// left to `check_verifies`.
+/// an `exists: true` precondition, and a delete with an `exists: false` one can follow nothing
+/// but a delete; only the first write may carry an `update_time` precondition, which a later one
+/// may repeat. What follows is checked against the writes so far collapsed into one: anything
+/// then a delete is a delete, else an insert or an update when the first write was one (or a
+/// delete that needs no document, or needs it), else an upsert. Verifies are left to
+/// `check_verifies`.
 pub fn check_sequences(writes: &[Write]) -> Result<(), Status> {
-    // Per document, the collapsed mutation and the first write's version precondition.
-    let mut documents: HashMap<&str, (Mutation, Option<i64>)> = HashMap::new();
+    let mut documents: HashMap<&str, Collapsed> = HashMap::new();
     for write in writes {
         let Some(name) = target(write) else {
             continue;
@@ -108,34 +123,53 @@ pub fn check_sequences(writes: &[Write]) -> Result<(), Status> {
             (Some(Operation::Verify(_)) | None, _) => continue,
             (Some(Operation::Delete(_)), _) => Mutation::Delete,
             (_, Some(ConditionType::Exists(false))) => Mutation::Insert,
+            // Version 0 is a document that does not exist.
+            (_, Some(ConditionType::UpdateTime(_))) if version == Some(0) => Mutation::Insert,
             (_, Some(ConditionType::Exists(true) | ConditionType::UpdateTime(_))) => {
                 Mutation::Update
             }
             (_, None) => Mutation::Upsert,
         };
-        let Some((collapsed, base)) = documents.get_mut(name) else {
-            documents.insert(name, (mutation, version));
+        let Some(collapsed) = documents.get_mut(name) else {
+            // A first delete that needs the document, or needs none, counts as an update or an
+            // insert for what follows it.
+            let first = match (mutation, condition) {
+                (Mutation::Delete, Some(ConditionType::Exists(true))) => Mutation::Update,
+                (Mutation::Delete, Some(ConditionType::Exists(false))) => Mutation::Insert,
+                _ => mutation,
+            };
+            documents.insert(
+                name,
+                Collapsed {
+                    first,
+                    now: mutation,
+                    base: version,
+                },
+            );
             continue;
         };
-        let refused = match (*collapsed, mutation) {
-            (Mutation::Delete, Mutation::Insert) => false,
-            (_, Mutation::Insert) | (Mutation::Delete, Mutation::Update) => true,
-            (Mutation::Delete, Mutation::Delete) => {
-                matches!(condition, Some(ConditionType::Exists(true)))
-            }
-            _ => false,
+        let deleted = collapsed.now == Mutation::Delete;
+        let refused = match mutation {
+            Mutation::Insert => !deleted,
+            Mutation::Update => deleted,
+            Mutation::Delete => match condition {
+                Some(ConditionType::Exists(true)) => deleted,
+                Some(ConditionType::Exists(false)) => !deleted,
+                _ => false,
+            },
+            Mutation::Upsert => false,
         };
         if refused {
             return Err(Status::invalid_argument(format!(
                 "Cannot {} then {} an entity in the same request.",
-                collapsed.name(),
+                collapsed.now.name(),
                 mutation.name()
             )));
         }
         if let Some(version) = version
-            && *base != Some(version)
+            && collapsed.base != Some(version)
         {
-            let base = base.map_or_else(
+            let base = collapsed.base.map_or_else(
                 || "null".to_owned(),
                 |base| format!("ExactVersion[exactBaseVersion={base}]"),
             );
@@ -144,9 +178,9 @@ pub fn check_sequences(writes: &[Write]) -> Result<(), Status> {
                  ExactVersion[exactBaseVersion={version}])"
             )));
         }
-        *collapsed = match (*collapsed, mutation) {
-            (_, Mutation::Delete) => Mutation::Delete,
-            (Mutation::Insert | Mutation::Update, _) => *collapsed,
+        collapsed.now = match (mutation, collapsed.first) {
+            (Mutation::Delete, _) => Mutation::Delete,
+            (_, first @ (Mutation::Insert | Mutation::Update)) => first,
             _ => Mutation::Upsert,
         };
     }
@@ -188,7 +222,8 @@ pub fn check(
 
 /// The names of one write, and its shape: what kind of write may carry a mask or transforms,
 /// its document's name (which must be in `database`), a verify's precondition, then its fields'
-/// names, its mask's paths and its transforms, in that order.
+/// names, its mask's paths and its transforms, then the time of an `update_time` precondition,
+/// in that order.
 pub fn check_names(database: &str, write: &Write) -> Result<ResourcePath, Status> {
     let kind = match &write.operation {
         None => return Err(Status::invalid_argument("empty write operation")),
@@ -248,7 +283,31 @@ pub fn check_names(database: &str, write: &Write) -> Result<ResourcePath, Status
         }
         Some(Operation::Delete(_)) | None => {}
     }
+    if let Some(ConditionType::UpdateTime(time)) = write
+        .current_document
+        .as_ref()
+        .and_then(|p| p.condition_type.as_ref())
+    {
+        base_version(time)?;
+    }
     Ok(parsed.path)
+}
+
+/// The version an `update_time` precondition names: its time in microseconds, which must be
+/// whole and not before the epoch (`tools/oracle/base_versions.py`).
+fn base_version(time: &Timestamp) -> Result<i64, Status> {
+    if time.nanos % 1_000 != 0 {
+        return Err(Status::invalid_argument(
+            "timestamp cannot have more than microseconds precision",
+        ));
+    }
+    let version = ReadTime::from_timestamp(time).0;
+    if version < 0 {
+        return Err(Status::invalid_argument(
+            "Only timestamps past epoch are supported.",
+        ));
+    }
+    Ok(version)
 }
 
 /// The values of one write whose names are checked: the document an update or a transform
@@ -269,8 +328,9 @@ fn parse_mask(paths: &[String]) -> Result<Vec<FieldPath>, Status> {
 }
 
 /// How Security Rules check `write` (`tools/oracle/rules_writes.py`): an `exists`
-/// precondition decides between create and update, else whether the document exists, which
-/// makes the write an upsert; a delete is a delete, and a verify a get of its document
+/// precondition decides between create and update, and so does an `update_time` one (version 0
+/// is a create, `tools/oracle/base_versions.py`), else whether the document exists, which makes
+/// the write an upsert; a delete is a delete, and a verify a get of its document
 /// (`tools/oracle/rules_verify.py`). The document after the write is left for the caller to
 /// fill in.
 ///
@@ -289,9 +349,14 @@ pub(crate) fn rules_method(batch: &dyn WriteBatch, write: &Write) -> Option<Chec
             .and_then(|p| p.condition_type.as_ref())
         {
             Some(ConditionType::Exists(false)) => (Method::Create, false),
-            Some(ConditionType::Exists(true)) => (Method::Update, false),
-            _ if existing.is_some() => (Method::Update, true),
-            _ => (Method::Create, true),
+            Some(ConditionType::UpdateTime(time)) if ReadTime::from_timestamp(time).0 == 0 => {
+                (Method::Create, false)
+            }
+            Some(ConditionType::Exists(true) | ConditionType::UpdateTime(_)) => {
+                (Method::Update, false)
+            }
+            None if existing.is_some() => (Method::Update, true),
+            None => (Method::Create, true),
         },
         None => return None,
     };
@@ -341,14 +406,29 @@ pub(crate) fn rules_method(batch: &dyn WriteBatch, write: &Write) -> Option<Chec
 }
 
 /// Applies `write`, which `check` has checked, to `batch`. Nothing is written when an error is
-/// returned, so a caller may continue with other writes.
-pub fn apply(batch: &mut dyn WriteBatch, write: &Write) -> Result<WriteResult, Status> {
+/// returned, so a caller may continue with other writes. A write that is not the commit's first
+/// to its document (`Touched::record`) can only repeat the first one's `update_time`
+/// precondition (`check_sequences`), which the official emulator checks once, against the
+/// document as it was before the commit: it is not checked again.
+pub fn apply(
+    batch: &mut dyn WriteBatch,
+    write: &Write,
+    first: bool,
+) -> Result<WriteResult, Status> {
     let name = target(write).expect("checked");
-    let path = names::document(name)?.path;
+    let parsed = names::document(name)?;
+    let path = parsed.path.clone();
     let existing = batch.get(&path);
+    let precondition = write
+        .current_document
+        .as_ref()
+        .and_then(|p| p.condition_type.as_ref())
+        .filter(|condition| first || !matches!(condition, ConditionType::UpdateTime(_)));
     check_precondition(
-        write.current_document.as_ref(),
+        precondition,
+        matches!(write.operation, Some(Operation::Delete(_))),
         existing.as_deref(),
+        &parsed,
         name,
         || batch.deleted_at(&path),
     )?;
@@ -459,18 +539,23 @@ fn apply_transforms(
 pub struct Touched(HashMap<ResourcePath, (Option<Arc<StoredDocument>>, bool)>);
 
 impl Touched {
-    /// Notes the document `write` writes; call it before applying the write.
-    pub fn record(&mut self, batch: &dyn WriteBatch, write: &Write) {
+    /// Notes the document `write` writes; call it before applying the write. Whether it is the
+    /// commit's first write to that document (a verify writes none).
+    pub fn record(&mut self, batch: &dyn WriteBatch, write: &Write) -> bool {
         let Some(path) = written(write) else {
-            return;
+            return true;
         };
-        let entry = self
-            .0
-            .entry(path)
-            .or_insert_with_key(|path| (batch.get(path), false));
+        let (first, entry) = match self.0.entry(path) {
+            Entry::Occupied(entry) => (false, entry.into_mut()),
+            Entry::Vacant(entry) => {
+                let before = batch.get(entry.key());
+                (true, entry.insert((before, false)))
+            }
+        };
         if matches!(write.operation, Some(Operation::Delete(_))) {
             entry.1 = true;
         }
+        first
     }
 
     /// Settles the commit's write results, once every write is applied. The official emulator
@@ -548,18 +633,21 @@ fn store(
 /// Production Firestore's wording for exists violations: the official emulator prints its
 /// internal Datastore key here instead (see docs/parity-exceptions.md). A version precondition
 /// compares with the document's version: its update time, the time it was deleted (`deleted`),
-/// or 0 if it never existed (`tools/oracle/rest.py`, #262).
+/// or 0 if it never existed (`tools/oracle/rest.py`, #262). A version past the stored one of a
+/// document that exists is not a failed precondition but an invalid argument, which prints the
+/// key; and the version a deletion left lets only a delete through: anything else needs the
+/// document (`tools/oracle/base_versions.py`).
 fn check_precondition(
-    precondition: Option<&Precondition>,
+    precondition: Option<&ConditionType>,
+    delete: bool,
     existing: Option<&StoredDocument>,
+    parsed: &names::Name,
     name: &str,
     deleted: impl FnOnce() -> Option<ReadTime>,
 ) -> Result<(), Status> {
-    match precondition.and_then(|p| p.condition_type.as_ref()) {
+    match precondition {
         None => Ok(()),
-        Some(ConditionType::Exists(true)) if existing.is_none() => {
-            Err(Status::not_found(format!("No document to update: {name}")))
-        }
+        Some(ConditionType::Exists(true)) if existing.is_none() => Err(no_document(name)),
         Some(ConditionType::Exists(false)) if existing.is_some() => Err(Status::already_exists(
             format!("Document already exists: {name}"),
         )),
@@ -570,13 +658,90 @@ fn check_precondition(
                 Some(doc) => ReadTime::from_timestamp(&doc.update_time).0,
                 None => deleted().map_or(0, |time| time.0),
             };
-            if stored == required {
-                Ok(())
-            } else {
-                Err(Status::failed_precondition(format!(
-                    "the stored version ({stored}) does not match the required base version ({required})"
-                )))
+            if existing.is_some() && required > stored {
+                return Err(Status::invalid_argument(format!(
+                    "{PAST_STORED}{}",
+                    datastore_key(parsed)
+                )));
             }
+            if stored != required {
+                return Err(Status::failed_precondition(format!(
+                    "the stored version ({stored}) does not match the required base version ({required})"
+                )));
+            }
+            if existing.is_none() && required != 0 && !delete {
+                return Err(no_document(name));
+            }
+            Ok(())
         }
     }
+}
+
+const PAST_STORED: &str = "Invalid base version, it is greater than the stored version: ";
+
+/// Whether a write failed on its precondition (`check_precondition`), which Security Rules come
+/// before: a version past the stored one too, though not a failed precondition to the official
+/// emulator (`tools/oracle/base_versions.py`).
+pub fn is_precondition(status: &Status) -> bool {
+    matches!(
+        status.code(),
+        tonic::Code::NotFound | tonic::Code::AlreadyExists | tonic::Code::FailedPrecondition
+    ) || (status.code() == tonic::Code::InvalidArgument
+        && status.message().starts_with(PAST_STORED))
+}
+
+fn no_document(name: &str) -> Status {
+    Status::not_found(format!("No document to update: {name}"))
+}
+
+/// The official emulator's Datastore key of a document, as its messages print it: the protocol
+/// buffer text of the project (`dev~` and its ID), the path as kinds and names (or legacy
+/// numeric IDs), and a database other than `(default)` (`tools/oracle/base_versions.py`).
+fn datastore_key(name: &names::Name) -> String {
+    let mut parts = name.database.split('/');
+    let project = parts.nth(1).unwrap_or_default();
+    let database = parts.nth(1).unwrap_or_default();
+    let mut key = format!("app: \"dev~{}\"\npath <\n", text_escape(project));
+    let segments: Vec<&str> = name.path.segments().collect();
+    for pair in segments.chunks(2) {
+        let [kind, id] = pair else { continue };
+        key.push_str(&format!(
+            "  Element {{\n    type: \"{}\"\n",
+            text_escape(kind)
+        ));
+        match numeric_id(id) {
+            // Java's protocol buffer text prints larger numbers in hexadecimal, as unsigned.
+            Some(n) if n.unsigned_abs() < 2_000_000_000 => key.push_str(&format!("    id: {n}\n")),
+            #[allow(clippy::cast_sign_loss)]
+            Some(n) => key.push_str(&format!("    id: 0x{:x}\n", n as u64)),
+            None => key.push_str(&format!("    name: \"{}\"\n", text_escape(id))),
+        }
+        key.push_str("  }\n");
+    }
+    key.push_str(">\n");
+    if database != "(default)" {
+        key.push_str(&format!("database_id: \"{}\"\n", text_escape(database)));
+    }
+    key
+}
+
+/// A string as that protocol buffer text prints it, by UTF-16 unit: C escapes for some control
+/// characters, octal for the others and up to U+00FF, `\u` for the rest.
+fn text_escape(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    for unit in text.encode_utf16() {
+        match unit {
+            0x0a => out.push_str("\\n"),
+            0x0d => out.push_str("\\r"),
+            0x09 => out.push_str("\\t"),
+            0x08 => out.push_str("\\b"),
+            0x0c => out.push_str("\\f"),
+            0x22 => out.push_str("\\\""),
+            0x5c => out.push_str("\\\\"),
+            0x20..0x7f => out.push(char::from(u8::try_from(unit).expect("ASCII"))),
+            0..0x100 => out.push_str(&format!("\\{unit:03o}")),
+            _ => out.push_str(&format!("\\u{unit:04x}")),
+        }
+    }
+    out
 }

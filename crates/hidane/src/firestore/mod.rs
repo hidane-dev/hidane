@@ -243,7 +243,7 @@ impl FirestoreService {
             let mut precondition = None;
             let mut touched = writes::Touched::default();
             for write in writes {
-                touched.record(&*batch, write);
+                let first = touched.record(&*batch, write);
                 let view = guard.and_then(|_| writes::rules_method(&*batch, write));
                 if let Some(view) = &view {
                     before
@@ -251,7 +251,7 @@ impl FirestoreService {
                         .entry(view.path.clone())
                         .or_insert_with(|| view.before.clone());
                 }
-                match writes::apply(batch, write) {
+                match writes::apply(batch, write, first) {
                     Ok(result) => {
                         results.push(result);
                         if let Some(mut view) = view {
@@ -261,12 +261,12 @@ impl FirestoreService {
                     }
                     // The rules come before the precondition: check the write as if it had
                     // none (a verify has nothing else to apply), and go on with the others.
-                    Err(status) if view.is_some() && is_precondition(&status) => {
+                    Err(status) if view.is_some() && writes::is_precondition(&status) => {
                         let mut view = view.expect("checked");
                         let applied = view.method == hidane_rules::eval::Method::Get || {
                             let mut unconditional = write.clone();
                             unconditional.current_document = None;
-                            writes::apply(batch, &unconditional).is_ok()
+                            writes::apply(batch, &unconditional, first).is_ok()
                         };
                         if applied {
                             view.after = batch.get(&view.path);
@@ -417,14 +417,6 @@ impl FirestoreService {
             .map(|doc| to_document(database, &doc, mask))
             .ok_or_else(|| Status::internal("document vanished during the request"))
     }
-}
-
-/// Whether a write failed on its precondition (checked after the rules).
-fn is_precondition(status: &Status) -> bool {
-    matches!(
-        status.code(),
-        tonic::Code::NotFound | tonic::Code::AlreadyExists | tonic::Code::FailedPrecondition
-    )
 }
 
 /// Checks the writes of a commit: `get()` reads each document as it was before the commit,

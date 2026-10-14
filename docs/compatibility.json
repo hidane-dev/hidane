@@ -22,8 +22,8 @@
    "evidence": [
     {
      "kind": "replay",
-     "count": 23110,
-     "description": "23,110 recorded answers of the official emulator v1.22.0 in 46 fixtures, replayed against hidane by cargo test",
+     "count": 23579,
+     "description": "23,579 recorded answers of the official emulator v1.22.0 in 47 fixtures, replayed against hidane by cargo test",
      "where": "docs/parity.md",
      "runs": "every pull request and push to main",
      "last_recorded": null
@@ -49,33 +49,33 @@
  ],
  "oracle_corpus": {
   "where": "docs/oracle-corpus.json",
-  "digest": "sha256:d2ea7f706c17f687304beeeff59b493422d2b2d5457e1b6c36edae3beaa59ba9",
+  "digest": "sha256:daa7b4122617bbb383dcc0328245b5177cfa1876696bfd09d70ac43ed01cd38f",
   "releases": [
    "1.22.0"
   ],
-  "files": 78,
-  "fixtures": 46,
+  "files": 79,
+  "fixtures": 47,
   "transcripts": 32,
-  "answers": 23110,
-  "bytes": 13382801
+  "answers": 23579,
+  "bytes": 13836558
  },
  "replay": {
-  "fixtures": 46,
-  "answers": 23110,
+  "fixtures": 47,
+  "answers": 23579,
   "levels": {
-   "full": 12950,
+   "full": 13204,
    "reasons": 4313,
-   "part": 814,
-   "status": 4844,
+   "part": 833,
+   "status": 5039,
    "codes": 30,
    "none": 1,
-   "differs": 158
+   "differs": 159
   },
   "by_area": {
    "documents": {
-    "fixtures": 7,
-    "answers": 5345,
-    "full": 4942,
+    "fixtures": 8,
+    "answers": 5737,
+    "full": 5119,
     "transports": [
      "gRPC",
      "REST"
@@ -83,8 +83,8 @@
    },
    "queries": {
     "fixtures": 4,
-    "answers": 795,
-    "full": 733,
+    "answers": 838,
+    "full": 776,
     "transports": [
      "gRPC",
      "REST"
@@ -109,8 +109,8 @@
    },
    "rest": {
     "fixtures": 2,
-    "answers": 504,
-    "full": 499,
+    "answers": 538,
+    "full": 533,
     "transports": [
      "REST"
     ]
@@ -286,8 +286,8 @@
   ]
  },
  "integration_tests": {
-  "files": 49,
-  "replaying_files": 33,
+  "files": 50,
+  "replaying_files": 34,
   "runs": "every pull request and push to main",
   "suites": [
    {
@@ -304,6 +304,12 @@
     "path": "crates/hidane/tests/auth.rs",
     "replays": [
      "crates/hidane/tests/fixtures/auth.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/base_versions.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/base_versions.json"
     ]
    },
    {

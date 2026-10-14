@@ -9,8 +9,9 @@
 //! server streams as a JSON array with one message per element. Errors are one line, escaped
 //! by another writer ([`error`]). Unknown query parameters (such as `key`) are ignored, the
 //! content type is not checked, and an empty body is `{}`, all as on the official emulator; a
-//! body that is not valid for the request (`null` among them) answers 400 "Payload isn't valid
-//! for request.".
+//! body is read as Gson reads it, leniently ([`gson`]), and one that is not valid for the
+//! request (`null` or whitespace alone among them) answers 400 "Payload isn't valid for
+//! request.".
 //!
 //! WebChannel prints its messages with the same printer, in a compact layout that also escapes
 //! characters for HTML ([`Layout::WebChannel`]).
@@ -33,7 +34,7 @@ use serde_json::{Map, Value as Json};
 use tokio_stream::StreamExt;
 use tonic::{Code, Status, codegen::BoxStream};
 
-use crate::{json_format, ordered_json};
+use crate::{gson, json_format, ordered_json};
 
 use crate::FirestoreService;
 
@@ -129,16 +130,18 @@ pub async fn handle(
         *response.status_mut() = StatusCode::PAYLOAD_TOO_LARGE;
         return Some(response);
     };
-    let body = if bytes.iter().all(u8::is_ascii_whitespace) {
+    // Read as Gson reads it, leniently ([`gson`]). A body it cannot read (whitespace alone among
+    // them) is refused where `null` is, by the requests that read their body (`build_with`).
+    let body = if bytes.is_empty() {
         Json::Object(Map::new())
     } else {
-        match serde_json::from_slice(&bytes) {
-            Ok(mut json) => {
-                json_format::mark_numbers(&bytes, &mut json);
-                json
-            }
-            Err(_) => return Some(error(&Status::invalid_argument(INVALID_PAYLOAD))),
-        }
+        gson::strict(&bytes)
+            .and_then(|text| {
+                let mut json = serde_json::from_str::<Json>(&text).ok()?;
+                json_format::mark_numbers(text.as_bytes(), &mut json);
+                Some(json)
+            })
+            .unwrap_or(Json::Null)
     };
     let call = Call {
         method,
@@ -465,8 +468,8 @@ fn finish<T: Message + Default>(
     path: &[(&str, String)],
 ) -> Result<tonic::Request<T>, Status> {
     let invalid = || Status::invalid_argument(INVALID_PAYLOAD);
-    // A body of JSON `null` is not a message, for every request that reads its body (`POST`
-    // and `PATCH`); `GET` and `DELETE` ignore their bodies (#262).
+    // A body of JSON `null`, or one that does not read, is not a message, for every request
+    // that reads its body (`POST` and `PATCH`); `GET` and `DELETE` ignore their bodies (#262).
     if matches!(call.method, Method::POST | Method::PATCH) && call.body.is_null() {
         return Err(invalid());
     }

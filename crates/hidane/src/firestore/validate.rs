@@ -32,6 +32,7 @@ const MAX_VALUE_BYTES: usize = 1_048_487;
 const MAX_NAME_BYTES: usize = 1500;
 const MAX_DEPTH: usize = 20;
 const MAX_DOCUMENT_BYTES: usize = 1_048_576;
+const MAX_QUERY_VALUE_BYTES: usize = 1500;
 
 /// Where a value is, which decides how its references are read ([`reference`]).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -334,10 +335,14 @@ pub fn values(path: &ResourcePath, fields: &Fields) -> Result<(), Status> {
 }
 
 /// A property's value, or an element of an array (`inside_array`); `property` names it in
-/// messages.
+/// messages. An array in an array is converted before it is refused, so a problem among its
+/// elements comes first (`tools/oracle/rest.py`, #262).
 fn property_value(value: &Value, property: &str, inside_array: bool) -> Result<(), Status> {
     match &value.value_type {
-        Some(ValueType::ArrayValue(_)) if inside_array => {
+        Some(ValueType::ArrayValue(array)) if inside_array => {
+            for element in &array.values {
+                property_value(element, property, true)?;
+            }
             Err(Status::invalid_argument("Nested arrays are not allowed"))
         }
         Some(ValueType::MapValue(map)) if is_vector(map) => vector_elements(map),
@@ -449,6 +454,27 @@ fn value_size(value: &Value) -> usize {
             .map(|(key, value)| key.len() + 1 + value_size(value))
             .sum(),
         Some(_) => 0,
+    }
+}
+
+/// Whether a filter's value is over 1500 bytes by those rules, where a vector counts its doubles
+/// alone: the official emulator refuses it in a query (`tools/oracle/queries.py`, #262).
+pub fn too_large_for_a_query(value: &Value) -> bool {
+    query_value_size(value) > MAX_QUERY_VALUE_BYTES
+}
+
+fn query_value_size(value: &Value) -> usize {
+    match &value.value_type {
+        Some(ValueType::MapValue(map)) if is_vector(map) => {
+            hidane_core::order::vector_elements(map).len() * 8
+        }
+        Some(ValueType::MapValue(map)) => map
+            .fields
+            .iter()
+            .map(|(key, value)| key.len() + 1 + query_value_size(value))
+            .sum(),
+        Some(ValueType::ArrayValue(array)) => array.values.iter().map(query_value_size).sum(),
+        _ => value_size(value),
     }
 }
 

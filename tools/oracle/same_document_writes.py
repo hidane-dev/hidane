@@ -30,6 +30,7 @@ from harness import case, cases, commit, delete, update  # noqa: E402
 i = lambda n: {"integerValue": str(n)}
 T1 = "2001-01-01T00:00:00Z"
 T2 = "2002-01-01T00:00:00.000001Z"
+T0 = "1970-01-01T00:00:00Z"
 
 
 def write(kind, name, n):
@@ -48,6 +49,9 @@ def write(kind, name, n):
         "update-time-2": lambda: update(name, fields, mask=["v"], update_time=T2),
         "delete-exists": lambda: delete(name, exists=True),
         "delete-time": lambda: {**delete(name), "currentDocument": {"updateTime": T1}},
+        "update-time-0": lambda: update(name, fields, mask=["v"], update_time=T0),
+        "delete-missing": lambda: delete(name, exists=False),
+        "delete-time-0": lambda: {**delete(name), "currentDocument": {"updateTime": T0}},
     }[kind]()
 
 
@@ -95,6 +99,36 @@ for kinds in [
 ]:
     n += 1
     sequence(kinds, False, f"s-pre-{n}")
+
+# Version 0 and deletes that need no document (found by the differential fuzzer, #262): an
+# update time of version 0 is an insert, a delete with an `exists: false` precondition can follow
+# nothing but a delete, and a delete then an upsert or an insert is what the first write was when
+# that was an insert or an update (or a delete that needs no document, or needs it). Every pair
+# with one of them, on a missing document, then longer sequences.
+NEW = ["update-time-0", "delete-missing", "delete-time-0"]
+ALL = KINDS + ["update-time", "delete-exists", "delete-time"] + NEW
+for first in ALL:
+    for second in ALL:
+        if first in NEW or second in NEW:
+            n += 1
+            sequence([first, second], False, f"s-zero-{n}")
+for kinds in [
+    ["update-time", "delete", "set", "create"], ["update", "delete", "set", "create"],
+    ["update-time-0", "delete", "set", "create"], ["update-time-0", "delete", "create", "create"],
+    ["create", "delete", "set", "create"], ["delete-time", "set", "create"],
+    ["delete-time-0", "update-time-0", "create"], ["delete-time", "set", "delete-missing"],
+    ["delete-time-0", "create", "delete-missing"], ["update", "delete", "set", "delete-missing"],
+    # A first delete that needs no document, or needs it, counts as an insert or an update.
+    ["delete-missing", "set", "create"], ["delete-missing", "delete", "set", "create"],
+    ["delete-missing", "set", "delete-missing"], ["delete-exists", "set", "create"],
+    ["delete-exists", "set", "delete-missing"], ["delete-time", "delete-missing", "set", "create"],
+]:
+    n += 1
+    sequence(kinds, False, f"s-zero-{n}")
+for kinds in [["delete", "delete-missing"], ["delete-missing", "set"], ["set", "delete-missing"],
+              ["update", "delete", "set", "update"]]:
+    n += 1
+    sequence(kinds, True, f"s-zero-{n}")
 
 # Which error comes first: the sequence is checked over the whole commit before any
 # precondition, after the names, masks and field paths of every write.

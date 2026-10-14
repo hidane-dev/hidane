@@ -141,6 +141,15 @@ class Classification(unittest.TestCase):
         self.assertNotEqual(unset["signature"], nested["signature"])
         self.assertEqual(unset["signature"], other["signature"])
 
+    def test_generated_ids_in_another_order_do_not_differ(self):
+        auto = '{"name": "projects/{project}/databases/(default)/documents/gen/<auto>"}'
+        named = '{"name": "projects/{project}/databases/(default)/documents/gen/x"}'
+        first, last = (answer(200, '{"documents": [%s, %s]}' % pair) for pair in ((auto, named), (named, auto)))
+        self.assertIsNone(diff.classify(STEP, first, last))
+        other = answer(200, '{"documents": [%s, %s]}' % (named, named.replace("/x", "/y")))
+        self.assertEqual(diff.classify(STEP, other, answer(200, '{"documents": [%s, %s]}' % (
+            named.replace("/x", "/y"), named)))["kind"], "order")
+
     def test_message(self):
         found = diff.classify(STEP, error(400, "Bad 'a' at 3"), error(400, "Wrong"))
         self.assertEqual((found["kind"], found["official"]["message"], found["hidane"]["code"]),
@@ -512,6 +521,37 @@ def serving(handler):
     finally:
         server.shutdown()
         server.server_close()
+
+
+class OutOfPorts(unittest.TestCase):
+    def test_a_client_out_of_local_ports_waits_for_them(self):
+        import errno
+        import urllib.error
+        import urllib.request
+        from unittest import mock
+
+        import harness
+
+        real = urllib.request.urlopen
+        failures = [urllib.error.URLError(OSError(errno.EADDRNOTAVAIL, "Can't assign requested address"))] * 2
+
+        def urlopen(*args, **kwargs):
+            if failures:
+                raise failures.pop()
+            return real(*args, **kwargs)
+
+        with serving(FakeEmulator) as host, mock.patch("urllib.request.urlopen", urlopen), \
+                mock.patch("time.sleep") as sleep:
+            self.assertEqual(harness.send(host, "GET", "/")[0], 200)
+        self.assertEqual(sleep.call_count, 2)
+
+    def test_other_connection_errors_are_not_retried(self):
+        import harness
+
+        with serving(FakeEmulator) as host:
+            port = int(host.split(":")[1])
+        with self.assertRaises(OSError):
+            harness.send(f"127.0.0.1:{port}", "GET", "/", timeout=2)
 
 
 class EndToEnd(unittest.TestCase):

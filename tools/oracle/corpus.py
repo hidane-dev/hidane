@@ -59,6 +59,7 @@ PY, PY_GRPCURL = "Python standard library", "Python standard library and grpcurl
 FIXTURE_CLIENTS = {
     "aggregations.py": ([REST], PY),
     "auth.py": ([GRPC, REST], PY_GRPCURL),
+    "base_versions.py": ([REST], PY),
     "commit_checks.py": ([GRPC, REST], PY_GRPCURL),
     "cors.py": ([REST], PY),
     "document_writes.py": ([REST], PY),

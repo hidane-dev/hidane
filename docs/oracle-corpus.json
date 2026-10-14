@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:d2ea7f706c17f687304beeeff59b493422d2b2d5457e1b6c36edae3beaa59ba9",
+ "digest": "sha256:daa7b4122617bbb383dcc0328245b5177cfa1876696bfd09d70ac43ed01cd38f",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,30 +14,30 @@
   }
  ],
  "totals": {
-  "files": 78,
-  "fixtures": 46,
+  "files": 79,
+  "fixtures": 47,
   "transcripts": 32,
-  "answers": 23110,
-  "bytes": 13382801,
+  "answers": 23579,
+  "bytes": 13836558,
   "levels": {
-   "full": 12950,
+   "full": 13204,
    "reasons": 4313,
-   "part": 814,
-   "status": 4844,
+   "part": 833,
+   "status": 5039,
    "codes": 30,
    "none": 1,
-   "differs": 158
+   "differs": 159
   },
   "by_area": {
    "documents": {
-    "fixtures": 7,
+    "fixtures": 8,
     "transcripts": 4,
-    "answers": 5345
+    "answers": 5737
    },
    "queries": {
     "fixtures": 4,
     "transcripts": 7,
-    "answers": 795
+    "answers": 838
    },
    "transactions": {
     "fixtures": 1,
@@ -52,7 +52,7 @@
    "rest": {
     "fixtures": 2,
     "transcripts": 1,
-    "answers": 504
+    "answers": 538
    },
    "webchannel": {
     "fixtures": 1,
@@ -82,18 +82,56 @@
   },
   "by_release": {
    "v1.22.0": {
-    "fixtures": 46,
+    "fixtures": 47,
     "transcripts": 32,
-    "answers": 23110
+    "answers": 23579
    }
   },
   "by_release_source": {
-   "header": 23,
+   "header": 24,
    "file name": 33,
    "git history": 22
   }
  },
  "recordings": [
+  {
+   "path": "crates/hidane/tests/fixtures/base_versions.json",
+   "kind": "fixture",
+   "area": "documents",
+   "recorder": "tools/oracle/base_versions.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-14",
+    "last_changed": "2026-10-14"
+   },
+   "bytes": 118931,
+   "sha256": "85fcb3d681b3cc816f1cbca516fd41844e905bb8b7e63c59c6002dc364c32168",
+   "answers": 222,
+   "levels": {
+    "full": 95,
+    "status": 126,
+    "differs": 1
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/base_versions.rs::update_time_preconditions_like_the_official_emulator"
+   ],
+   "counted": "each call",
+   "compared": "an error in full (code and message, its versions those of hidane's own commits), but a missing document on its code (its message prints the official emulator's internal key, an intentional difference); a success on its status; REST's `currentDocument.updateTime` parameter as intentionally different"
+  },
   {
    "path": "crates/hidane/tests/fixtures/commit_checks.json",
    "kind": "fixture",
@@ -312,15 +350,15 @@
    },
    "recorded": {
     "first_recorded": "2026-10-13",
-    "last_changed": "2026-10-13"
+    "last_changed": "2026-10-14"
    },
-   "bytes": 230555,
-   "sha256": "d65a7eace7aada7cf94a435ae0540056dc8af6c3d52c57b6c01d39eb9ad3ffda",
-   "answers": 324,
+   "bytes": 347659,
+   "sha256": "08556745f098cd7765fc216880648eecca2cfaf29abcdf897f1882195f46f252",
+   "answers": 494,
    "levels": {
-    "full": 160,
-    "part": 96,
-    "status": 68
+    "full": 242,
+    "part": 115,
+    "status": 137
    },
    "replayed_over": [
     "gRPC"
@@ -463,11 +501,11 @@
     "first_recorded": "2026-10-10",
     "last_changed": "2026-10-14"
    },
-   "bytes": 423903,
-   "sha256": "35c109c9fafa98e5eb2b0cc7a239c7afea8043fb1e6449374f1c502735da2243",
-   "answers": 502,
+   "bytes": 620689,
+   "sha256": "145fc85138a29593b8d861857e793327ad71dba33981561dd40222d5037ecd51",
+   "answers": 545,
    "levels": {
-    "full": 502
+    "full": 545
    },
    "replayed_over": [
     "gRPC"
@@ -664,11 +702,11 @@
     "first_recorded": "2026-10-10",
     "last_changed": "2026-10-14"
    },
-   "bytes": 350406,
-   "sha256": "7bec9c79dcce1fa2c5a8e81de716e51eea0ab4889be6a53f937792bfd160b6f3",
-   "answers": 482,
+   "bytes": 371342,
+   "sha256": "b87e824b9fd2f73ccbc599b1de8164d06c83063235bae92628016c1154f3c64f",
+   "answers": 516,
    "levels": {
-    "full": 477,
+    "full": 511,
     "status": 5
    },
    "replayed_over": [

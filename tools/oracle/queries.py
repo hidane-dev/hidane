@@ -125,6 +125,15 @@ case("v in [1, 1]", q("t", where_=ff("v", "IN", arr(i(1), i(1)))))
 case("v not-in [1, a]", q("t", where_=ff("v", "NOT_IN", arr(i(1), s("a")))))
 case("v not-in [null]", q("t", where_=ff("v", "NOT_IN", arr(NULL))))
 case("v not-in [NaN]", q("t", where_=ff("v", "NOT_IN", arr(NAN))))
+# A range bound that is null or NaN, a `!=` null or a `not-in` of nulls alone matches nothing,
+# and the official emulator orders by none of their fields: an order by the key alone stands
+# (found by the differential fuzzer, #262).
+for label, where in [("v < NaN", ff("v", "LESS_THAN", NAN)), ("v >= null", ff("v", "GREATER_THAN_OR_EQUAL", NULL)),
+                     ("v != null", ff("v", "NOT_EQUAL", NULL)), ("v not-in [null]", ff("v", "NOT_IN", arr(NULL))),
+                     ("v != NaN", ff("v", "NOT_EQUAL", NAN)), ("v not-in [null, 1]", ff("v", "NOT_IN", arr(NULL, i(1)))),
+                     ("v > NaN and v == 1", AND(ff("v", "GREATER_THAN", NAN), ff("v", "EQUAL", i(1)))),
+                     ("v > NaN and w > 1", AND(ff("v", "GREATER_THAN", NAN), ff("w", "GREATER_THAN", i(1))))]:
+    case(f"{label}, by name descending", q("t", where_=where, order=[desc("__name__")]))
 case("v array-contains-any [1, a]", q("t", where_=ff("v", "ARRAY_CONTAINS_ANY", arr(i(1), s("a")))))
 case("v array-contains-any [null]", q("t", where_=ff("v", "ARRAY_CONTAINS_ANY", arr(NULL))))
 for op in ["IS_NULL", "IS_NOT_NULL", "IS_NAN", "IS_NOT_NAN"]:
@@ -568,6 +577,53 @@ case("__name__ equal to c/d, and duplicate orders", q("p", where_=ff("__name__",
 case("__name__ equal to a document of another project", q("p", where_=ff("__name__", "EQUAL", {"referenceValue": "projects/other/databases/(default)/documents/p/p1"})))
 case("__name__ equal to a document ID over 1500 bytes", q("p", where_=ff("__name__", "EQUAL", {"referenceValue": "{documents}/p/" + "x" * 1501})))
 case("__name__ equal to the documents root before another filter's array offset", q("p", where_=AND(ff("__name__", "EQUAL", {"referenceValue": "{documents}"}), ff("a[0]", "EQUAL", i(1)))))
+
+# --- values too large for a query (#262) -----------------------------------------------------
+# A filter's value of more than 1500 bytes by Firestore's storage size rules (a vector counts its
+# doubles alone), or one of an `in`, `not-in` or `array-contains-any`, is refused, filter by
+# filter, after the filter's path is checked and before whether it needs a collection; a key
+# filter's are not.
+X = lambda n: s("x" * n)
+BYTES = lambda n: {"bytesValue": __import__("base64").b64encode(b"x" * n).decode()}
+for label, where in [
+    ("a string of 1499 bytes", ff("v", "EQUAL", X(1499))), ("a string of 1500 bytes", ff("v", "EQUAL", X(1500))),
+    ("750 two-byte characters, <", ff("v", "LESS_THAN", s("é" * 750))), ("!= 1500 bytes", ff("v", "NOT_EQUAL", X(1500))),
+    ("bytes, 1500", ff("v", "EQUAL", BYTES(1500))), ("bytes, 1501", ff("v", "EQUAL", BYTES(1501))),
+    ("a map, 1500 bytes", ff("v", "EQUAL", mp(k=X(1497)))), ("a map, 1501 bytes", ff("v", "EQUAL", mp(k=X(1498)))),
+    ("187 integers", ff("v", "EQUAL", arr(*[i(1)] * 187))), ("188 integers", ff("v", "EQUAL", arr(*[i(1)] * 188))),
+    ("1501 nulls", ff("v", "EQUAL", arr(*[NULL] * 1501))), ("94 geo points", ff("v", "EQUAL", arr(*[TYPES["geo"]] * 94))),
+    ("a vector of 187", ff("v", "EQUAL", vec(*[1.5] * 187))), ("a vector of 188", ff("v", "EQUAL", vec(*[1.5] * 188))),
+    ("a reference, 1500 bytes", ff("v", "EQUAL", ref("t/" + "x" * 1481))),
+    ("a reference, 1501 bytes", ff("v", "EQUAL", ref("t/" + "x" * 1482))),
+    ("in, one of 1500 bytes", ff("v", "IN", arr(i(1), X(1500)))), ("in, two of 800", ff("v", "IN", arr(X(800), X(800)))),
+    ("not-in, one of 1500 bytes", ff("v", "NOT_IN", arr(X(1500)))),
+    ("array-contains, 1500 bytes", ff("v", "ARRAY_CONTAINS", X(1500))),
+    ("array-contains-any, one of 1500 bytes", ff("v", "ARRAY_CONTAINS_ANY", arr(X(1500)))),
+    ("a quoted path", ff("`a.b`.c", "EQUAL", X(1500))),
+    ("the second of two", AND(ff("w", "EQUAL", i(1)), ff("v", "EQUAL", X(1500)))),
+    ("in a disjunction", OR(ff("v", "EQUAL", X(1500)), ff("w", "EQUAL", i(1)))),
+    ("before a key filter that is not a key", AND(ff("v", "EQUAL", X(1500)), ff("__name__", "EQUAL", s("a")))),
+    ("after a key filter that is not a key", AND(ff("__name__", "EQUAL", s("a")), ff("v", "EQUAL", X(1500)))),
+    ("before an array offset", AND(ff("v", "EQUAL", X(1500)), ff("a[0]", "EQUAL", i(1)))),
+    ("on an array offset", ff("a[0]", "EQUAL", X(1500))),
+]:
+    case(f"too large for a query: {label}", q("t", where_=where))
+case("too large for a query: without a collection", {"where": ff("v", "EQUAL", X(1500))})
+case("too large for a query: a cursor", q("t", order=[asc("v")], start=cur(X(1500), before=True)))
+# Those last checks go conjunction by conjunction of the filter's disjunctive normal form:
+# AND(OR(a, b), c) checks a and c, then b and c.
+K_GE = ff("__name__", "GREATER_THAN_OR_EQUAL", ref("p/p1"))
+K_STR = ff("__name__", "EQUAL", s("a"))
+K_ACA = ff("__name__", "ARRAY_CONTAINS_ANY", arr(ref("p/p1")))
+for label, where in [
+    ("and(or(key >= ref, key == a string), key array-contains-any)", AND(OR(K_GE, K_STR), K_ACA)),
+    ("and(or(key == a string, key >= ref), key array-contains-any)", AND(OR(K_STR, K_GE), K_ACA)),
+    ("and(or(key >= ref, key == a string), or(key array-contains-any))", AND(OR(K_GE, K_STR), OR(K_ACA))),
+    ("or(and(key >= ref, key array-contains-any), key == a string)", OR(AND(K_GE, K_ACA), K_STR)),
+]:
+    case(f"normal form order: {label}", q("p", where_=where))
+case("normal form order: and(or(key >= ref, key == a string), v == 1) without a collection",
+     {"where": AND(OR(K_GE, K_STR), ff("v", "EQUAL", i(1)))})
 # find_nearest is #26; recorded for reference, not replayed.
 case("find_nearest", q("t", findNearest={"vectorField": f("v"), "queryVector": vec(1, 2), "distanceMeasure": "EUCLIDEAN", "limit": 2}))
 

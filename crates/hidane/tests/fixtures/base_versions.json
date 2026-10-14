@@ -1,0 +1,5226 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/base_versions.py",
+ "cases": [
+  {
+   "name": "update, version 0, missing document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-1/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-1/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "update, version 0, existing document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-2/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-2/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-2/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-2/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V1}) does not match the required base version (0)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update, version 0, deleted document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-3/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-3/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-3/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-3/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-3/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-3/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V2}) does not match the required base version (0)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update, version 1, missing document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-4/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-4/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00.000001Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version (0) does not match the required base version (1)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update, the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-5/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-5/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-5/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-5/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "update, a microsecond past the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-6/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-6/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-6/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-6/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-6\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update, an hour past the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-7/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-7/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-7/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-7/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+3600000000}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-7\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update, a microsecond before the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-8/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-8/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-8/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-8/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1-1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V1}) does not match the required base version ({V1-1})"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update, the deleted version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-9/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-9/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-9/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-9/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-9/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-9/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C2}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 404,
+     "error": {
+      "status": "NOT_FOUND",
+      "message": "no entity to update: app: \"dev~bv-9\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update, a microsecond past the deleted version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-10/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-10/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-10/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-10/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-10/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-10/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C2+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V2}) does not match the required base version ({V2+1})"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update, a microsecond before the deleted version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-11/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-11/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-11/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-11/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-11/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-11/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C2-1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V2}) does not match the required base version ({V2-1})"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete, version 0, missing document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-12/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-12/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "delete, version 0, existing document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-13/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-13/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-13/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-13/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V1}) does not match the required base version (0)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete, version 0, deleted document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-14/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-14/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-14/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-14/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-14/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-14/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V2}) does not match the required base version (0)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete, version 1, missing document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-15/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-15/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00.000001Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version (0) does not match the required base version (1)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete, the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-16/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-16/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-16/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-16/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "{C1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "delete, a microsecond past the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-17/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-17/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-17/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-17/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-17\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete, an hour past the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-18/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-18/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-18/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-18/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "{C1+3600000000}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-18\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete, a microsecond before the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-19/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-19/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-19/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-19/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "{C1-1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V1}) does not match the required base version ({V1-1})"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete, the deleted version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-20/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-20/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-20/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-20/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-20/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-20/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "{C2}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "delete, a microsecond past the deleted version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-21/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-21/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-21/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-21/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-21/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-21/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "{C2+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V2}) does not match the required base version ({V2+1})"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete, a microsecond before the deleted version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-22/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-22/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-22/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-22/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-22/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-22/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "{C2-1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V2}) does not match the required base version ({V2-1})"
+     }
+    }
+   ]
+  },
+  {
+   "name": "transform, version 0, missing document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-23/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "transform": {
+         "document": "projects/bv-23/databases/(default)/documents/c/d",
+         "fieldTransforms": [
+          {
+           "fieldPath": "t",
+           "increment": {
+            "integerValue": "1"
+           }
+          }
+         ]
+        },
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "transform, version 0, existing document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-24/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-24/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-24/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "transform": {
+         "document": "projects/bv-24/databases/(default)/documents/c/d",
+         "fieldTransforms": [
+          {
+           "fieldPath": "t",
+           "increment": {
+            "integerValue": "1"
+           }
+          }
+         ]
+        },
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V1}) does not match the required base version (0)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "transform, version 0, deleted document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-25/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-25/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-25/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-25/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-25/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "transform": {
+         "document": "projects/bv-25/databases/(default)/documents/c/d",
+         "fieldTransforms": [
+          {
+           "fieldPath": "t",
+           "increment": {
+            "integerValue": "1"
+           }
+          }
+         ]
+        },
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V2}) does not match the required base version (0)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "transform, version 1, missing document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-26/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "transform": {
+         "document": "projects/bv-26/databases/(default)/documents/c/d",
+         "fieldTransforms": [
+          {
+           "fieldPath": "t",
+           "increment": {
+            "integerValue": "1"
+           }
+          }
+         ]
+        },
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00.000001Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version (0) does not match the required base version (1)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "transform, the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-27/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-27/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-27/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "transform": {
+         "document": "projects/bv-27/databases/(default)/documents/c/d",
+         "fieldTransforms": [
+          {
+           "fieldPath": "t",
+           "increment": {
+            "integerValue": "1"
+           }
+          }
+         ]
+        },
+        "currentDocument": {
+         "updateTime": "{C1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "transform, a microsecond past the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-28/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-28/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-28/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "transform": {
+         "document": "projects/bv-28/databases/(default)/documents/c/d",
+         "fieldTransforms": [
+          {
+           "fieldPath": "t",
+           "increment": {
+            "integerValue": "1"
+           }
+          }
+         ]
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-28\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "transform, an hour past the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-29/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-29/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-29/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "transform": {
+         "document": "projects/bv-29/databases/(default)/documents/c/d",
+         "fieldTransforms": [
+          {
+           "fieldPath": "t",
+           "increment": {
+            "integerValue": "1"
+           }
+          }
+         ]
+        },
+        "currentDocument": {
+         "updateTime": "{C1+3600000000}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-29\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "transform, a microsecond before the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-30/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-30/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-30/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "transform": {
+         "document": "projects/bv-30/databases/(default)/documents/c/d",
+         "fieldTransforms": [
+          {
+           "fieldPath": "t",
+           "increment": {
+            "integerValue": "1"
+           }
+          }
+         ]
+        },
+        "currentDocument": {
+         "updateTime": "{C1-1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V1}) does not match the required base version ({V1-1})"
+     }
+    }
+   ]
+  },
+  {
+   "name": "transform, the deleted version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-31/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-31/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-31/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-31/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-31/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "transform": {
+         "document": "projects/bv-31/databases/(default)/documents/c/d",
+         "fieldTransforms": [
+          {
+           "fieldPath": "t",
+           "increment": {
+            "integerValue": "1"
+           }
+          }
+         ]
+        },
+        "currentDocument": {
+         "updateTime": "{C2}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 404,
+     "error": {
+      "status": "NOT_FOUND",
+      "message": "no entity to update: app: \"dev~bv-31\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "transform, a microsecond past the deleted version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-32/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-32/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-32/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-32/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-32/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "transform": {
+         "document": "projects/bv-32/databases/(default)/documents/c/d",
+         "fieldTransforms": [
+          {
+           "fieldPath": "t",
+           "increment": {
+            "integerValue": "1"
+           }
+          }
+         ]
+        },
+        "currentDocument": {
+         "updateTime": "{C2+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V2}) does not match the required base version ({V2+1})"
+     }
+    }
+   ]
+  },
+  {
+   "name": "transform, a microsecond before the deleted version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-33/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-33/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-33/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-33/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-33/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "transform": {
+         "document": "projects/bv-33/databases/(default)/documents/c/d",
+         "fieldTransforms": [
+          {
+           "fieldPath": "t",
+           "increment": {
+            "integerValue": "1"
+           }
+          }
+         ]
+        },
+        "currentDocument": {
+         "updateTime": "{C2-1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V2}) does not match the required base version ({V2-1})"
+     }
+    }
+   ]
+  },
+  {
+   "name": "verify, version 0, missing document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-34/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "verify": "projects/bv-34/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "verify, version 0, existing document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-35/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-35/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-35/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "verify": "projects/bv-35/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V1}) does not match the required base version (0)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "verify, version 0, deleted document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-36/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-36/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-36/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-36/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-36/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "verify": "projects/bv-36/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V2}) does not match the required base version (0)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "verify, version 1, missing document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-37/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "verify": "projects/bv-37/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00.000001Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version (0) does not match the required base version (1)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "verify, the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-38/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-38/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-38/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "verify": "projects/bv-38/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "{C1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "verify, a microsecond past the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-39/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-39/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-39/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "verify": "projects/bv-39/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-39\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "verify, an hour past the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-40/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-40/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-40/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "verify": "projects/bv-40/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "{C1+3600000000}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-40\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "verify, a microsecond before the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-41/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-41/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-41/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "verify": "projects/bv-41/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "{C1-1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V1}) does not match the required base version ({V1-1})"
+     }
+    }
+   ]
+  },
+  {
+   "name": "verify, the deleted version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-42/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-42/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-42/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-42/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-42/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "verify": "projects/bv-42/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "{C2}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 404,
+     "error": {
+      "status": "NOT_FOUND",
+      "message": "no entity to update: app: \"dev~bv-42\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "verify, a microsecond past the deleted version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-43/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-43/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-43/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-43/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-43/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "verify": "projects/bv-43/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "{C2+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V2}) does not match the required base version ({V2+1})"
+     }
+    }
+   ]
+  },
+  {
+   "name": "verify, a microsecond before the deleted version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-44/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-44/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-44/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-44/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-44/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "verify": "projects/bv-44/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "{C2-1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V2}) does not match the required base version ({V2-1})"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update, nanoseconds",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-45/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-45/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "2001-01-01T00:00:00.000000001Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "timestamp cannot have more than microseconds precision"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update, a microsecond before the epoch",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-46/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-46/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "1969-12-31T23:59:59.999999Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Only timestamps past epoch are supported."
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete, nanoseconds",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-47/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-47/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "2001-01-01T00:00:00.000000001Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "timestamp cannot have more than microseconds precision"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete, a microsecond before the epoch",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-48/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-48/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "1969-12-31T23:59:59.999999Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Only timestamps past epoch are supported."
+     }
+    }
+   ]
+  },
+  {
+   "name": "verify, nanoseconds",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-49/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "verify": "projects/bv-49/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "2001-01-01T00:00:00.000000001Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "timestamp cannot have more than microseconds precision"
+     }
+    }
+   ]
+  },
+  {
+   "name": "verify, a microsecond before the epoch",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-50/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "verify": "projects/bv-50/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "1969-12-31T23:59:59.999999Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Only timestamps past epoch are supported."
+     }
+    }
+   ]
+  },
+  {
+   "name": "update, a tenth of a microsecond",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-51/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-51/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "2001-01-01T00:00:00.0000001Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "timestamp cannot have more than microseconds precision"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update, year 1",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-52/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-52/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "0001-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Only timestamps past epoch are supported."
+     }
+    }
+   ]
+  },
+  {
+   "name": "update, year 9999",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-53/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-53/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "9999-12-31T23:59:59.999999Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version (0) does not match the required base version (253402300799999999)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update, before the epoch with nanoseconds",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-54/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-54/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "1969-12-31T23:59:59.000000001Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "timestamp cannot have more than microseconds precision"
+     }
+    }
+   ]
+  },
+  {
+   "name": "nanoseconds, then a name that does not parse",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-55/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-55/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "2001-01-01T00:00:00.000000001Z"
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-55/databases/(default)/documents/c",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "timestamp cannot have more than microseconds precision"
+     }
+    }
+   ]
+  },
+  {
+   "name": "a name that does not parse, then nanoseconds",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-56/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-56/databases/(default)/documents/c",
+         "fields": {}
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-56/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "2001-01-01T00:00:00.000000001Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Document name \"projects/bv-56/databases/(default)/documents/c\" lacks \"/\" at index 46."
+     }
+    }
+   ]
+  },
+  {
+   "name": "nanoseconds, then a mask that does not parse",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-57/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-57/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "2001-01-01T00:00:00.000000001Z"
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-57/databases/(default)/documents/c/e",
+         "fields": {}
+        },
+        "updateMask": {
+         "fieldPaths": [
+          "a..b"
+         ]
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "timestamp cannot have more than microseconds precision"
+     }
+    }
+   ]
+  },
+  {
+   "name": "a mask that does not parse, then nanoseconds",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-58/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-58/databases/(default)/documents/c/e",
+         "fields": {}
+        },
+        "updateMask": {
+         "fieldPaths": [
+          "a..b"
+         ]
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-58/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "2001-01-01T00:00:00.000000001Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid property path \"a..b\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\]|(?:\\\\.))+`)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "a mask that does not parse and nanoseconds",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-59/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-59/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "2001-01-01T00:00:00.000000001Z"
+        },
+        "updateMask": {
+         "fieldPaths": [
+          "a..b"
+         ]
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid property path \"a..b\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\]|(?:\\\\.))+`)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "a reserved field name and nanoseconds",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-60/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-60/databases/(default)/documents/c/d",
+         "fields": {
+          "__x__": {
+           "nullValue": null
+          }
+         }
+        },
+        "currentDocument": {
+         "updateTime": "2001-01-01T00:00:00.000000001Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "field name __x__ is reserved"
+     }
+    }
+   ]
+  },
+  {
+   "name": "a nested array and nanoseconds",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-61/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-61/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "arrayValue": {
+            "values": [
+             {
+              "arrayValue": {}
+             }
+            ]
+           }
+          }
+         }
+        },
+        "currentDocument": {
+         "updateTime": "2001-01-01T00:00:00.000000001Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "timestamp cannot have more than microseconds precision"
+     }
+    }
+   ]
+  },
+  {
+   "name": "a nested array, then nanoseconds",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-62/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-62/databases/(default)/documents/c/e",
+         "fields": {
+          "a": {
+           "arrayValue": {
+            "values": [
+             {
+              "arrayValue": {}
+             }
+            ]
+           }
+          }
+         }
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-62/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "2001-01-01T00:00:00.000000001Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "timestamp cannot have more than microseconds precision"
+     }
+    }
+   ]
+  },
+  {
+   "name": "a refused sequence, then nanoseconds",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-63/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-63/databases/(default)/documents/c/e"
+       },
+       {
+        "update": {
+         "name": "projects/bv-63/databases/(default)/documents/c/e",
+         "fields": {}
+        },
+        "currentDocument": {
+         "exists": true
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-63/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "2001-01-01T00:00:00.000000001Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "timestamp cannot have more than microseconds precision"
+     }
+    }
+   ]
+  },
+  {
+   "name": "a delete with a mask and nanoseconds",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-64/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-64/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "2001-01-01T00:00:00.000000001Z"
+        },
+        "updateMask": {
+         "fieldPaths": [
+          "a"
+         ]
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "a delete must not specify a document mask."
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/é'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-65/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-65/databases/(default)/documents/c/é",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-65/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-65/databases/(default)/documents/c/é",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-65\"\npath <\n  Element {\n    type: \"c\"\n    name: \"\\351\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/a\"b'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-66/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-66/databases/(default)/documents/c/a\"b",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-66/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-66/databases/(default)/documents/c/a\"b",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-66\"\npath <\n  Element {\n    type: \"c\"\n    name: \"a\\\"b\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of \"c/a'b\"",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-67/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-67/databases/(default)/documents/c/a'b",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-67/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-67/databases/(default)/documents/c/a'b",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-67\"\npath <\n  Element {\n    type: \"c\"\n    name: \"a'b\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/a\\\\b'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-68/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-68/databases/(default)/documents/c/a\\b",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-68/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-68/databases/(default)/documents/c/a\\b",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-68\"\npath <\n  Element {\n    type: \"c\"\n    name: \"a\\\\b\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/a\\tb'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-69/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-69/databases/(default)/documents/c/a\tb",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-69/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-69/databases/(default)/documents/c/a\tb",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-69\"\npath <\n  Element {\n    type: \"c\"\n    name: \"a\\tb\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/a\\nb'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-70/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-70/databases/(default)/documents/c/a\nb",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-70/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-70/databases/(default)/documents/c/a\nb",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-70\"\npath <\n  Element {\n    type: \"c\"\n    name: \"a\\nb\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/a\\rb'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-71/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-71/databases/(default)/documents/c/a\rb",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-71/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-71/databases/(default)/documents/c/a\rb",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-71\"\npath <\n  Element {\n    type: \"c\"\n    name: \"a\\rb\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/a\\x0bb'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-72/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-72/databases/(default)/documents/c/a\u000bb",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-72/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-72/databases/(default)/documents/c/a\u000bb",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-72\"\npath <\n  Element {\n    type: \"c\"\n    name: \"a\\013b\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/a\\x08b'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-73/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-73/databases/(default)/documents/c/a\bb",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-73/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-73/databases/(default)/documents/c/a\bb",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-73\"\npath <\n  Element {\n    type: \"c\"\n    name: \"a\\bb\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/a\\x0cb'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-74/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-74/databases/(default)/documents/c/a\fb",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-74/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-74/databases/(default)/documents/c/a\fb",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-74\"\npath <\n  Element {\n    type: \"c\"\n    name: \"a\\fb\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/a\\x07b'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-75/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-75/databases/(default)/documents/c/a\u0007b",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-75/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-75/databases/(default)/documents/c/a\u0007b",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-75\"\npath <\n  Element {\n    type: \"c\"\n    name: \"a\\007b\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/a\\x01b'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-76/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-76/databases/(default)/documents/c/a\u0001b",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-76/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-76/databases/(default)/documents/c/a\u0001b",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-76\"\npath <\n  Element {\n    type: \"c\"\n    name: \"a\\001b\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/a\\x7fb'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-77/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-77/databases/(default)/documents/c/ab",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-77/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-77/databases/(default)/documents/c/ab",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-77\"\npath <\n  Element {\n    type: \"c\"\n    name: \"a\\177b\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/\\x80'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-78/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-78/databases/(default)/documents/c/",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-78/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-78/databases/(default)/documents/c/",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-78\"\npath <\n  Element {\n    type: \"c\"\n    name: \"\\200\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/ÿ'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-79/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-79/databases/(default)/documents/c/ÿ",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-79/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-79/databases/(default)/documents/c/ÿ",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-79\"\npath <\n  Element {\n    type: \"c\"\n    name: \"\\377\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/Ā'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-80/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-80/databases/(default)/documents/c/Ā",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-80/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-80/databases/(default)/documents/c/Ā",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-80\"\npath <\n  Element {\n    type: \"c\"\n    name: \"\\u0100\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/€'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-81/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-81/databases/(default)/documents/c/€",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-81/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-81/databases/(default)/documents/c/€",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-81\"\npath <\n  Element {\n    type: \"c\"\n    name: \"\\u20ac\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/😀'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-82/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-82/databases/(default)/documents/c/😀",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-82/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-82/databases/(default)/documents/c/😀",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-82\"\npath <\n  Element {\n    type: \"c\"\n    name: \"\\ud83d\\ude00\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'é/d'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-83/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-83/databases/(default)/documents/é/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-83/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-83/databases/(default)/documents/é/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-83\"\npath <\n  Element {\n    type: \"\\351\"\n    name: \"d\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'a/b/c/d/e/f'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-84/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-84/databases/(default)/documents/a/b/c/d/e/f",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-84/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-84/databases/(default)/documents/a/b/c/d/e/f",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-84\"\npath <\n  Element {\n    type: \"a\"\n    name: \"b\"\n  }\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n  Element {\n    type: \"e\"\n    name: \"f\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/__id5__'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-85/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-85/databases/(default)/documents/c/__id5__",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-85/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-85/databases/(default)/documents/c/__id5__",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-85\"\npath <\n  Element {\n    type: \"c\"\n    id: 5\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/__id-5__'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-86/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-86/databases/(default)/documents/c/__id-5__",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-86/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-86/databases/(default)/documents/c/__id-5__",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-86\"\npath <\n  Element {\n    type: \"c\"\n    id: -5\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/__id1999999999__'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-87/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-87/databases/(default)/documents/c/__id1999999999__",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-87/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-87/databases/(default)/documents/c/__id1999999999__",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-87\"\npath <\n  Element {\n    type: \"c\"\n    id: 1999999999\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/__id2000000000__'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-88/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-88/databases/(default)/documents/c/__id2000000000__",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-88/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-88/databases/(default)/documents/c/__id2000000000__",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-88\"\npath <\n  Element {\n    type: \"c\"\n    id: 0x77359400\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/__id-1999999999__'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-89/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-89/databases/(default)/documents/c/__id-1999999999__",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-89/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-89/databases/(default)/documents/c/__id-1999999999__",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-89\"\npath <\n  Element {\n    type: \"c\"\n    id: -1999999999\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/__id-2000000000__'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-90/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-90/databases/(default)/documents/c/__id-2000000000__",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-90/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-90/databases/(default)/documents/c/__id-2000000000__",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-90\"\npath <\n  Element {\n    type: \"c\"\n    id: 0xffffffff88ca6c00\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/__id9223372036854775807__'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-91/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-91/databases/(default)/documents/c/__id9223372036854775807__",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-91/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-91/databases/(default)/documents/c/__id9223372036854775807__",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-91\"\npath <\n  Element {\n    type: \"c\"\n    id: 0x7fffffffffffffff\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/__id-9223372036854775808__'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-92/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-92/databases/(default)/documents/c/__id-9223372036854775808__",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-92/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-92/databases/(default)/documents/c/__id-9223372036854775808__",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-92\"\npath <\n  Element {\n    type: \"c\"\n    id: 0x8000000000000000\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key of 'c/__id1__x'",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-93/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-93/databases/(default)/documents/c/__id1__x",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-93/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-93/databases/(default)/documents/c/__id1__x",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-93\"\npath <\n  Element {\n    type: \"c\"\n    name: \"__id1__x\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the key in a named database",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-94/databases/other/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-94/databases/other/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-94/databases/other/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-94/databases/other/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-94\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\ndatabase_id: \"other\"\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "delete, set, update at the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-95/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-95/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-95/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-95/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "{C1}"
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-95/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-95/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "update, set, update at the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-96/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-96/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-96/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-96/databases/(default)/documents/c/d",
+         "fields": {
+          "v": {
+           "integerValue": "1"
+          }
+         }
+        },
+        "currentDocument": {
+         "updateTime": "{C1}"
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-96/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-96/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "update twice at the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-97/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-97/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-97/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-97/databases/(default)/documents/c/d",
+         "fields": {
+          "v": {
+           "integerValue": "1"
+          }
+         }
+        },
+        "currentDocument": {
+         "updateTime": "{C1}"
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-97/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "delete, set, delete at the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-98/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-98/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-98/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-98/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "{C1}"
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-98/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       },
+       {
+        "delete": "projects/bv-98/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "{C1}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "delete then update at version 0, missing document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-99/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-99/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-99/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "update then delete at version 0, missing document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-100/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-100/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       },
+       {
+        "delete": "projects/bv-100/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "delete then update at version 0, existing document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-101/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-101/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-101/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-101/databases/(default)/documents/c/d",
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-101/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V1}) does not match the required base version (0)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "past the stored version, then a document that is missing",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-102/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-102/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-102/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-102/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+3600000000}"
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-102/databases/(default)/documents/c/e",
+         "fields": {}
+        },
+        "currentDocument": {
+         "exists": true
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-102\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "a document that is missing, then past the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-103/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-103/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-103/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-103/databases/(default)/documents/c/e",
+         "fields": {}
+        },
+        "currentDocument": {
+         "exists": true
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-103/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+3600000000}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 404,
+     "error": {
+      "status": "NOT_FOUND",
+      "message": "no entity to update: app: \"dev~bv-103\"\npath <\n  Element {\n    type: \"c\"\n    name: \"e\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "past the stored version, then a set",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-104/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-104/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-104/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-104/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+3600000000}"
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-104/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-104\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "the deleted version after a write to another document",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-105/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-105/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-105/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-105/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-105/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-105/databases/(default)/documents/c/e",
+         "fields": {}
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-105/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C2}"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 404,
+     "error": {
+      "status": "NOT_FOUND",
+      "message": "no entity to update: app: \"dev~bv-105\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "update at version 2001 then at version 0",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-106/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-106/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "2001-01-01T00:00:00Z"
+        }
+       },
+       {
+        "update": {
+         "name": "projects/bv-106/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Cannot update then insert an entity in the same request."
+     }
+    }
+   ]
+  },
+  {
+   "name": "rules, version 0, missing document, k=c",
+   "rules": true,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-107/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-107/databases/(default)/documents/c/d",
+         "fields": {
+          "k": {
+           "stringValue": "c"
+          }
+         }
+        },
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": false,
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "rules, version 0, existing document, k=c",
+   "rules": true,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-108/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-108/databases/(default)/documents/c/d",
+         "fields": {
+          "k": {
+           "stringValue": "x"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-108/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-108/databases/(default)/documents/c/d",
+         "fields": {
+          "k": {
+           "stringValue": "c"
+          }
+         }
+        },
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": false,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V1}) does not match the required base version (0)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "rules, version 2001, missing document, k=c",
+   "rules": true,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-109/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-109/databases/(default)/documents/c/d",
+         "fields": {
+          "k": {
+           "stringValue": "c"
+          }
+         }
+        },
+        "currentDocument": {
+         "updateTime": "2001-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": false,
+     "status": 403,
+     "error": {
+      "status": "PERMISSION_DENIED",
+      "message": "\nfalse for 'update' @ L6"
+     }
+    }
+   ]
+  },
+  {
+   "name": "rules, the stored version, k=c",
+   "rules": true,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-110/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-110/databases/(default)/documents/c/d",
+         "fields": {
+          "k": {
+           "stringValue": "x"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-110/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-110/databases/(default)/documents/c/d",
+         "fields": {
+          "k": {
+           "stringValue": "c"
+          }
+         }
+        },
+        "currentDocument": {
+         "updateTime": "{C1}"
+        }
+       }
+      ]
+     },
+     "owner": false,
+     "status": 403,
+     "error": {
+      "status": "PERMISSION_DENIED",
+      "message": "\nfalse for 'update' @ L6"
+     }
+    }
+   ]
+  },
+  {
+   "name": "rules, version 0, missing document, k=u",
+   "rules": true,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-111/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-111/databases/(default)/documents/c/d",
+         "fields": {
+          "k": {
+           "stringValue": "u"
+          }
+         }
+        },
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": false,
+     "status": 403,
+     "error": {
+      "status": "PERMISSION_DENIED",
+      "message": "\nfalse for 'create' @ L5"
+     }
+    }
+   ]
+  },
+  {
+   "name": "rules, version 0, existing document, k=u",
+   "rules": true,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-112/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-112/databases/(default)/documents/c/d",
+         "fields": {
+          "k": {
+           "stringValue": "x"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-112/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-112/databases/(default)/documents/c/d",
+         "fields": {
+          "k": {
+           "stringValue": "u"
+          }
+         }
+        },
+        "currentDocument": {
+         "updateTime": "1970-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": false,
+     "status": 403,
+     "error": {
+      "status": "PERMISSION_DENIED",
+      "message": "\nfalse for 'create' @ L5"
+     }
+    }
+   ]
+  },
+  {
+   "name": "rules, version 2001, missing document, k=u",
+   "rules": true,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-113/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-113/databases/(default)/documents/c/d",
+         "fields": {
+          "k": {
+           "stringValue": "u"
+          }
+         }
+        },
+        "currentDocument": {
+         "updateTime": "2001-01-01T00:00:00Z"
+        }
+       }
+      ]
+     },
+     "owner": false,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version (0) does not match the required base version (978307200000000)"
+     }
+    }
+   ]
+  },
+  {
+   "name": "rules, the stored version, k=u",
+   "rules": true,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-114/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-114/databases/(default)/documents/c/d",
+         "fields": {
+          "k": {
+           "stringValue": "x"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-114/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-114/databases/(default)/documents/c/d",
+         "fields": {
+          "k": {
+           "stringValue": "u"
+          }
+         }
+        },
+        "currentDocument": {
+         "updateTime": "{C1}"
+        }
+       }
+      ]
+     },
+     "owner": false,
+     "status": 200
+    }
+   ]
+  },
+  {
+   "name": "rules, past the stored version",
+   "rules": true,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-115/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-115/databases/(default)/documents/c/d",
+         "fields": {
+          "k": {
+           "stringValue": "x"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-115/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-115/databases/(default)/documents/c/d",
+         "fields": {
+          "k": {
+           "stringValue": "u"
+          }
+         }
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": false,
+     "status": 400,
+     "error": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~bv-115\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "rules, the deleted version",
+   "rules": true,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-116/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-116/databases/(default)/documents/c/d",
+         "fields": {
+          "k": {
+           "stringValue": "x"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-116/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-116/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-116/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-116/databases/(default)/documents/c/d",
+         "fields": {
+          "k": {
+           "stringValue": "u"
+          }
+         }
+        },
+        "currentDocument": {
+         "updateTime": "{C2}"
+        }
+       }
+      ]
+     },
+     "owner": false,
+     "status": 404,
+     "error": {
+      "status": "NOT_FOUND",
+      "message": "no entity to update: app: \"dev~bv-116\"\npath <\n  Element {\n    type: \"c\"\n    name: \"d\"\n  }\n>\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "rules that deny, past the stored version",
+   "rules": true,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-117/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-117/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-117/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-117/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C1+1}"
+        }
+       }
+      ]
+     },
+     "owner": false,
+     "status": 403,
+     "error": {
+      "status": "PERMISSION_DENIED",
+      "message": "\nfalse for 'update' @ L5"
+     }
+    }
+   ]
+  },
+  {
+   "name": "rules that deny, the deleted version",
+   "rules": true,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-118/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-118/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-118/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "delete": "projects/bv-118/databases/(default)/documents/c/d"
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-118/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-118/databases/(default)/documents/c/d",
+         "fields": {}
+        },
+        "currentDocument": {
+         "updateTime": "{C2}"
+        }
+       }
+      ]
+     },
+     "owner": false,
+     "status": 403,
+     "error": {
+      "status": "PERMISSION_DENIED",
+      "message": "\nfalse for 'update' @ L5"
+     }
+    }
+   ]
+  },
+  {
+   "name": "REST patch, currentDocument.updateTime at the stored version",
+   "rules": false,
+   "steps": [
+    {
+     "method": "POST",
+     "path": "/v1/projects/bv-119/databases/(default)/documents:commit",
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/bv-119/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "owner": true,
+     "status": 200
+    },
+    {
+     "method": "PATCH",
+     "path": "/v1/projects/bv-119/databases/(default)/documents/c/d?currentDocument.updateTime={C1}",
+     "body": {
+      "fields": {}
+     },
+     "owner": true,
+     "status": 400,
+     "error": {
+      "status": "FAILED_PRECONDITION",
+      "message": "the stored version ({V1}) does not match the required base version (0)"
+     }
+    }
+   ]
+  }
+ ]
+}

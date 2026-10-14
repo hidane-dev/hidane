@@ -425,7 +425,7 @@ case("transforms with array offsets write nothing", "GET", B + "/fp/t")
 # one string, number or boolean is that value, at any depth; a string field takes a number as
 # written (`1.50`, `1e5`, `-0`) or a boolean; a boolean field the strings "true" and "false"; an
 # integer field a decimal with an exact integer value ("1e2", 1.0); a double field a decimal
-# string ("1.", ".5", "+1"), "NaN", "Infinity" and "-Infinity" but not "nan" or "inf"; an enum a
+# string ("1.", ".5", "+1") within a double's range, "NaN", "Infinity" and "-Infinity" but not "nan" or "inf"; an enum a
 # value's number; the null value any number.
 JSON_VALUES = [
     '{"nullValue": 0}', '{"nullValue": 1}', '{"nullValue": "0"}', '{"nullValue": [0]}', '{"nullValue": "NULL_VALUE"}',
@@ -447,6 +447,13 @@ JSON_VALUES = [
     '{"referenceValue": ["' + NAME + '/c/d"]}',
     '{"mapValue": {"fields": {"a": {"integerValue": [1]}}}}',
     '{"arrayValue": {"values": [{"stringValue": [2.50]}]}}',
+    # Past the largest double: out of range, not an infinity (#262).
+    '{"doubleValue": "1e400"}', '{"doubleValue": "-1e400"}', '{"doubleValue": "1.8e308"}',
+    '{"doubleValue": "1.7976931348623157e308"}', '{"doubleValue": "1e-400"}',
+    '{"geoPointValue": {"latitude": "1e400", "longitude": 0}}',
+    # An array in an array is converted before it is refused: a problem in a map in it comes first.
+    '{"arrayValue": {"values": [{"arrayValue": {"values": [{"mapValue": {"fields": {"a": {"arrayValue": {"values": [{"arrayValue": {}}]}}}}}]}}]}}',
+    '{"arrayValue": {"values": [{"arrayValue": {"values": [{"integerValue": "2"}]}}, {"mapValue": {"fields": {"a": {"arrayValue": {"values": [{"arrayValue": {}}]}}}}}]}}',
 ]
 for n, v in enumerate(JSON_VALUES):
     case(f"JsonFormat: {v.replace(NAME, '{name}')}", "PATCH", B + f"/js/v{n}", raw='{"fields": {"v": ' + v + '}}')
@@ -547,6 +554,43 @@ case("list ordered by a field, a mask", "GET", B + "/lo?orderBy=n%20desc&mask.fi
 case("list ordered by a field, showing missing documents", "GET", B + "/lo?orderBy=n&showMissing=true")
 
 
+# A body is read as Gson reads it in lenient mode, which protobuf-java's JsonFormat turns on
+# (#262): one byte order mark, then the prefix `)]}'` and a newline; comments; names and strings
+# in single quotes or none; `true`, `false` and `null` in any case; `=` or `=>` after a name and
+# `;` between pairs or elements; nothing after the first value is read. An element left out is a
+# null, which no repeated field takes; whitespace alone is no value. GET and DELETE ignore their
+# body.
+LJ = NAME + "/lj/"
+for name, raw in [
+    ("single quotes", "{'writes': [{'update': {'name': '" + LJ + "a', 'fields': {'v': {'stringValue': 'it\\'s \"x\"'}}}}]}"),
+    ("a byte order mark", "\ufeff{\"writes\": []}"),
+    ("two byte order marks", "\ufeff\ufeff{\"writes\": []}"),
+    ("the non-execute prefix", " )]}'\n{\"writes\": []}"),
+    ("the prefix without its newline", ")]}'{\"writes\": []}"),
+    ("comments", "/* a */ {\"writes\": // b\n [] # c\n}"),
+    ("an open comment after the value", "{\"writes\": []} /* open"),
+    ("unquoted names and strings", "{writes: [{update: {name: '" + LJ + "b', fields: {v.w: {stringValue: a\"b'c}, x: {doubleValue: NaN}, y: {integerValue: 007}, z: {booleanValue: TrUe}, n: {nullValue: NULL}}}}]}"),
+    ("= and => after names, ; between pairs", "{\"writes\" => [{\"update\" = {\"name\": \"" + LJ + "c\"; \"fields\": {}}}]}"),
+    ("; between elements", "{\"writes\": [{\"delete\": \"" + LJ + "x\"}; {\"delete\": \"" + LJ + "y\"}]}"),
+    ("an element left out", "{\"writes\": [{\"delete\": \"" + LJ + "x\"},]}"),
+    ("a pair after the last", "{\"writes\": [];}"),
+    ("a second value", "{\"writes\": []} {\"writes\": 1} ]]"),
+    ("an unquoted value that ends at a slash", "{\"writes\": [{\"delete\": " + LJ + "x}]}"),
+    ("raw control characters and a line continuation", "{\"writes\": [{\"update\": {\"name\": \"" + LJ + "d\", \"fields\": {\"v\": {\"stringValue\": \"a\tb\\\nc\"}}}}]}"),
+    ("an escape Gson does not know", "{\"writes\": [{\"update\": {\"name\": \"" + LJ + "e\", \"fields\": {\"v\": {\"stringValue\": \"\\x41\"}}}}]}"),
+    ("a keyword with letters after it", "{\"writes\": [{\"update\": {\"name\": \"" + LJ + "f\", \"fields\": {\"v\": {\"booleanValue\": truex}}}}]}"),
+    ("a form feed between tokens", "{\"writes\":\f[]}"),
+    ("whitespace alone", "  \n"),
+    ("a comment alone", "/* a */"),
+]:
+    case(f"commit, lenient JSON: {name}", "POST", B + ":commit", raw=raw)
+case("the documents lenient JSON wrote", "POST", B + ":batchGet", {"documents": [LJ + "a", LJ + "b", LJ + "c", LJ + "d"]})
+case("runQuery, lenient JSON", "POST", B + ":runQuery", raw="{structuredQuery: {from: [{collectionId: lj}], orderBy: [{field: {fieldPath: __name__}}]}}")
+case("PATCH, whitespace alone", "PATCH", B + "/lj/g", raw=" ")
+case("GET, a body that does not read", "GET", B + "/lj/a", raw="{not json")
+case("DELETE, a body that does not read", "DELETE", B + "/lj/zz", raw="{not json")
+case("an unknown verb, a body that does not read", "POST", B + ":nosuchverb", raw="{not json")
+
 def norm(text):
     # Versions of the years 2021 to 2099, in microseconds (`tools/fuzz/diff.py`).
     text = re.sub(r"(version \()(1[6-9]|[23][0-9]|40|41)[0-9]{14}(?![0-9])", r"\1<version>", text)
@@ -567,7 +611,7 @@ def run():
         headers = dict(c["headers"])
         if body is not None and "Content-Type" not in headers:
             headers["Content-Type"] = "application/json"
-        conn.request(c["method"], path, body=body, headers=headers)
+        conn.request(c["method"], path, body=None if body is None else body.encode(), headers=headers)
         r = conn.getresponse()
         c = dict(c, outcome={"status": r.status, "contentType": r.getheader("content-type"), "body": norm(r.read().decode())})
         out.append(c)

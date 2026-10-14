@@ -18,6 +18,7 @@ pub mod cli;
 pub mod diagnostic;
 pub mod export;
 mod firestore;
+mod gson;
 mod json_format;
 pub mod migrate;
 mod ordered_json;
