@@ -194,6 +194,13 @@ async fn writes_are_checked_as_create_update_or_delete() {
     .await;
 }
 
+/// A commit that writes one document more than once is checked once for it, as the official
+/// emulator collapses the writes (`tools/oracle/rules_same_document.py`).
+#[tokio::test]
+async fn a_document_written_more_than_once_is_checked_once() {
+    replay(include_str!("fixtures/rules_same_document.json"), &[]).await;
+}
+
 /// docs/parity-exceptions.md D019: a batch is denied on a document or a write no statement
 /// matches, after one that was allowed. The official emulator lists the allowed one's
 /// statements as `false`; hidane answers what the denied one alone answers.

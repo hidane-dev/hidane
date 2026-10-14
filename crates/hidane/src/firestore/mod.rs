@@ -221,7 +221,8 @@ impl FirestoreService {
     }
 
     /// Runs `writes` as one atomic commit; the first failing write aborts it. With `guard`,
-    /// Security Rules check every write once all are applied (`guard`); a denied one aborts it.
+    /// Security Rules check every write once all are applied (`guard`), the writes to one
+    /// document as one ([`guard::CheckedWrite::merge`]); a denied one aborts it.
     /// The rules come before the preconditions: a write whose precondition fails is checked as
     /// if it had none, with the writes after it, and its failure is reported only if the rules
     /// allow them all (`tools/oracle/rules_verify.py`).
@@ -235,7 +236,19 @@ impl FirestoreService {
         let mut failure = None;
         let outcome = self.store.commit(database, &mut |batch| {
             results.clear();
-            let mut checked = Vec::new();
+            let mut checked: Vec<guard::CheckedWrite> = Vec::new();
+            // Where `checked` holds the writes to each document, but verifies.
+            let mut merged: HashMap<ResourcePath, usize> = HashMap::new();
+            let mut record = |view: guard::CheckedWrite| {
+                if view.method == hidane_rules::eval::Method::Get {
+                    checked.push(view);
+                } else if let Some(&at) = merged.get(&view.path) {
+                    checked[at].merge(view);
+                } else {
+                    merged.insert(view.path.clone(), checked.len());
+                    checked.push(view);
+                }
+            };
             let mut before = guard::Before {
                 touched: HashMap::new(),
             };
@@ -254,23 +267,21 @@ impl FirestoreService {
                 match writes::apply(batch, write, first) {
                     Ok(result) => {
                         results.push(result);
-                        if let Some(mut view) = view {
-                            view.after = batch.get(&view.path);
-                            checked.push(view);
+                        if let Some(view) = view {
+                            record(view);
                         }
                     }
                     // The rules come before the precondition: check the write as if it had
                     // none (a verify has nothing else to apply), and go on with the others.
                     Err(status) if view.is_some() && writes::is_precondition(&status) => {
-                        let mut view = view.expect("checked");
+                        let view = view.expect("checked");
                         let applied = view.method == hidane_rules::eval::Method::Get || {
                             let mut unconditional = write.clone();
                             unconditional.current_document = None;
                             writes::apply(batch, &unconditional, first).is_ok()
                         };
                         if applied {
-                            view.after = batch.get(&view.path);
-                            checked.push(view);
+                            record(view);
                         }
                         precondition.get_or_insert(status);
                     }
@@ -285,8 +296,13 @@ impl FirestoreService {
                     }
                 }
             }
+            // What the writes to each document leave, once all are applied.
+            for view in &mut checked {
+                view.after = batch.get(&view.path);
+            }
             if let Some(guard) = guard
-                && let Err(message) = check_writes(guard, &checked, &before, batch)
+                && let Err(message) =
+                    check_writes(guard, &checked, writes.len() > 1, &before, batch)
             {
                 failure = Some(guard::denied(message));
                 return Err(StoreError::Aborted(String::new()));
@@ -424,6 +440,7 @@ impl FirestoreService {
 fn check_writes(
     guard: &guard::Guard,
     checked: &[guard::CheckedWrite],
+    several: bool,
     before: &guard::Before,
     batch: &dyn hidane_core::store::WriteBatch,
 ) -> Result<(), String> {
@@ -433,6 +450,7 @@ fn check_writes(
     ));
     guard.writes(
         checked,
+        several,
         time,
         &|path| before.get(path, |p| batch.get(p)),
         &|path| batch.get(path),

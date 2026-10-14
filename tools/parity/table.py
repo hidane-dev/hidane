@@ -787,7 +787,7 @@ RECORDINGS = {
         count=write_stream),
 }
 for _name in ("rules_auth", "rules_denials", "rules_expressions", "rules_list", "rules_lookups",
-              "rules_request", "rules_writes"):
+              "rules_request", "rules_same_document", "rules_writes"):
     RECORDINGS[f"{H}/fixtures/{_name}.json"] = dict(
         area="rules", tests=[f"{H}/rules_server.rs::replay"], counted="each call",
         compares="a denial as decision and reasons (`same_denial`: hidane's reasons are among "
