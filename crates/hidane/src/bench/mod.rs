@@ -63,12 +63,14 @@ enum Scenario {
     Command,
     #[value(name = "owner_writes")]
     OwnerWrites,
+    #[value(name = "listen_limit_writes")]
+    ListenLimitWrites,
 }
 
 impl Scenario {
     /// The order they run in. A new scenario goes after the existing ones, so that it cannot
     /// change the conditions the earlier ones are measured under.
-    const ALL: [Self; 9] = [
+    const ALL: [Self; 10] = [
         Self::Startup,
         Self::Memory,
         Self::Operations,
@@ -78,6 +80,7 @@ impl Scenario {
         Self::ListenWrites,
         Self::Command,
         Self::OwnerWrites,
+        Self::ListenLimitWrites,
     ];
 
     fn id(self) -> &'static str {
@@ -91,6 +94,7 @@ impl Scenario {
             Self::ListenWrites => "listen_writes",
             Self::Command => "command",
             Self::OwnerWrites => "owner_writes",
+            Self::ListenLimitWrites => "listen_limit_writes",
         }
     }
 }
@@ -156,8 +160,8 @@ struct Args {
     /// Scenarios to run (default: all but command; with a command, only command).
     #[arg(long, value_enum, value_delimiter = ',')]
     scenarios: Option<Vec<Scenario>>,
-    /// Warm-up runs per target (startup, memory, ci, command, dataset sizes, listen_writes and
-    /// owner_writes; larger sizes, listen_writes and owner_writes are capped).
+    /// Warm-up runs per target (startup, memory, ci, command, dataset sizes, listen_writes,
+    /// owner_writes and listen_limit_writes; larger sizes and the last three are capped).
     #[arg(long)]
     warmup: Option<usize>,
     /// Measured runs per target (as --warmup).
@@ -388,6 +392,12 @@ fn params(args: &Args) -> Result<(Params, Option<String>, Vec<&'static str>), St
         params.listen_writes.runs = config::Runs {
             warmup: listen.warmup.min(1),
             runs: listen.runs.min(3),
+        };
+        let mut limited = params.listen_limit_writes.runs;
+        set(&mut limited);
+        params.listen_limit_writes.runs = config::Runs {
+            warmup: limited.warmup.min(1),
+            runs: limited.runs.min(3),
         };
         for size in &mut params.datasets.sizes {
             let mut base = config::Runs {
@@ -932,6 +942,7 @@ fn run(args: &Args) -> Result<ExitCode, String> {
             Scenario::ListenWrites => bench.listen_writes(),
             Scenario::Command => bench.command(&args.command, &label),
             Scenario::OwnerWrites => bench.owner_writes(),
+            Scenario::ListenLimitWrites => bench.listen_limit_writes(),
         }
         if let (Some(a), Some(b)) = (start, system::cpu_times())
             && let Some((_, steal)) = a.shares(&b)
@@ -1112,6 +1123,10 @@ mod tests {
         let (p, _, _) = params(&parse(&["--warmup", "3", "--runs", "10"])).unwrap();
         assert_eq!(p.listen_writes.runs, config::Runs { warmup: 1, runs: 3 });
         assert_eq!(p.owner_writes.runs, config::Runs { warmup: 1, runs: 3 });
+        assert_eq!(
+            p.listen_limit_writes.runs,
+            config::Runs { warmup: 1, runs: 3 }
+        );
 
         let args = parse(&["--", "node", "test.mjs"]);
         assert_eq!(scenario_list(&args).unwrap().0, [Scenario::Command]);
@@ -1124,11 +1139,11 @@ mod tests {
         assert!(scenario_list(&parse(&["--scenarios", "command"])).is_err());
         // Without --firebase, ci_firebase is skipped and says why.
         let (list, skipped) = scenario_list(&parse(&[])).unwrap();
-        assert_eq!(list.len(), 7);
-        assert_eq!(list.last(), Some(&Scenario::OwnerWrites));
+        assert_eq!(list.len(), 8);
+        assert_eq!(list.last(), Some(&Scenario::ListenLimitWrites));
         assert_eq!(skipped[0]["scenario"], "ci_firebase");
         let (list, skipped) = scenario_list(&parse(&["--firebase", "/x/firebase"])).unwrap();
-        assert_eq!(list.len(), 8);
+        assert_eq!(list.len(), 9);
         assert!(skipped.is_empty());
         assert_eq!(params(&parse(&[])).unwrap().0, Params::default());
     }

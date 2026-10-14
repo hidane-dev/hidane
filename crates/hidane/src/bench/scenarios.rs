@@ -647,96 +647,55 @@ impl Bench {
             render::thousands(p.documents as u64),
             p.batch
         );
-        let metrics = [
-            metric(
-                "listen_writes",
-                "writes",
-                "ms",
-                &format!("{work}: the first commit sent until the last one answered"),
-            ),
-            metric(
-                "listen_writes",
-                "delivered",
-                "ms",
-                &format!(
-                    "{work}: the first commit sent until the listener's snapshot holds every document"
-                ),
-            ),
-            metric(
-                "listen_writes",
-                "batch_first_decile",
-                "ms",
-                "Median commit time of the first tenth of the batches",
-            ),
-            metric(
-                "listen_writes",
-                "batch_last_decile",
-                "ms",
-                "Median commit time of the last tenth of the batches",
-            ),
-            metric(
-                "listen_writes",
-                "batch_growth",
-                "ms",
-                "How much a batch's commit time grows per 10,000 documents already stored, in ms (Theil–Sen: the median slope between every two batches of a run)",
-            ),
-            metric(
-                "listen_writes",
-                "rss_after",
-                "bytes",
-                "RSS once the listener's snapshot holds every document",
-            ),
-        ];
+        let metrics = listen_metrics(
+            "listen_writes",
+            &work,
+            "the listener's snapshot holds every document",
+        );
         self.each_run(
             "listen_writes",
             "listen_writes",
             p.runs,
             &metrics,
             |ctx, target, name| {
-                let mut running = target.spawn(ctx.logs.as_deref(), name)?;
-                running.wait_port()?;
-                let (addr, pid) = (running.addr(), running.pid());
-                let values = ctx.rt.block_on(async {
-                    let mut listener = Listener::start(addr, "listened").await?;
-                    listener.wait_for(0, Duration::from_secs(60)).await?;
-                    let mut c = Client::connect(addr).await?;
-                    let mut batches = Vec::new();
-                    let start = Instant::now();
-                    let mut stored = 0;
-                    while stored < p.documents {
-                        let end = (stored + p.batch).min(p.documents);
-                        let writes = (stored..end)
-                            .map(|i| {
-                                Client::update(c.document(&format!("listened/doc-{i}"), i, 100))
-                            })
-                            .collect();
-                        let commit = Instant::now();
-                        c.commit(writes).await?;
-                        batches.push((stored as f64, ms(commit.elapsed())));
-                        stored = end;
-                    }
-                    let writes = start.elapsed();
-                    let snapshot = listener.wait_for(p.documents, DELIVERY_TIMEOUT).await?;
-                    let rss = system::sample(pid).ok_or("could not read the process's memory")?;
-                    drop(listener);
-                    // The official emulator can send the last documents before it answers the
-                    // last commit: then `delivered` is at most `writes`.
-                    let mut values = vec![
-                        (0, ms(writes)),
-                        (1, ms(snapshot.at.saturating_duration_since(start))),
-                    ];
-                    if let Some(trend) = stats::trend(&batches) {
-                        values.extend([
-                            (2, trend.first_decile),
-                            (3, trend.last_decile),
-                            (4, trend.growth_per_10k),
-                        ]);
-                    }
-                    values.push((5, rss.rss_bytes as f64));
-                    Ok::<_, String>(values)
-                })?;
-                running.shutdown()?;
-                Ok(values)
+                listen_run(ctx, target, name, "listened", p.documents, p.batch, None)
+            },
+        );
+    }
+
+    /// As `listen_writes`, with a listener on the collection's first `limit` documents by name,
+    /// as an SDK's `query(collection, limit(50))` (#250). The documents' IDs count down, so each
+    /// commit's documents come first and replace the listener's previous ones, as in a feed of
+    /// the newest items. The run ends when the listener's snapshot holds the last document
+    /// written.
+    pub fn listen_limit_writes(&mut self) {
+        let p = self.ctx.params.listen_limit_writes.clone();
+        let work = format!(
+            "{} documents written in commits of {} with a `limit({})` listener on the collection",
+            render::thousands(p.documents as u64),
+            p.batch,
+            p.limit
+        );
+        let metrics = listen_metrics(
+            "listen_limit_writes",
+            &work,
+            "the listener's snapshot holds the last document written",
+        );
+        self.each_run(
+            "listen_limit_writes",
+            "listen_limit_writes",
+            p.runs,
+            &metrics,
+            |ctx, target, name| {
+                listen_run(
+                    ctx,
+                    target,
+                    name,
+                    "limited",
+                    p.documents,
+                    p.batch,
+                    Some(p.limit),
+                )
             },
         );
     }
@@ -872,6 +831,129 @@ impl Bench {
 /// Single-quoted for the shell `firebase emulators:exec` runs its script with.
 fn shell_quote(path: &Path) -> String {
     format!("'{}'", path.to_string_lossy().replace('\'', r"'\''"))
+}
+
+/// The metrics of `listen_writes` and `listen_limit_writes`: `work` is what a run does, and
+/// `delivered` when it ends.
+fn listen_metrics(scenario: &'static str, work: &str, delivered: &str) -> [Metric; 6] {
+    [
+        metric(
+            scenario,
+            "writes",
+            "ms",
+            &format!("{work}: the first commit sent until the last one answered"),
+        ),
+        metric(
+            scenario,
+            "delivered",
+            "ms",
+            &format!("{work}: the first commit sent until {delivered}"),
+        ),
+        metric(
+            scenario,
+            "batch_first_decile",
+            "ms",
+            "Median commit time of the first tenth of the batches",
+        ),
+        metric(
+            scenario,
+            "batch_last_decile",
+            "ms",
+            "Median commit time of the last tenth of the batches",
+        ),
+        metric(
+            scenario,
+            "batch_growth",
+            "ms",
+            "How much a batch's commit time grows per 10,000 documents already stored, in ms (Theil–Sen: the median slope between every two batches of a run)",
+        ),
+        metric(
+            scenario,
+            "rss_after",
+            "bytes",
+            &format!("RSS once {delivered}"),
+        ),
+    ]
+}
+
+/// One run of `listen_writes` (`limit` `None`: a listener on the whole collection, documents
+/// `doc-<i>`) or `listen_limit_writes` (a `limit(n)` listener, documents named so that the
+/// newest come first by name).
+fn listen_run(
+    ctx: &Ctx,
+    target: &Target,
+    name: &str,
+    collection: &str,
+    documents: usize,
+    batch: usize,
+    limit: Option<usize>,
+) -> Result<Vec<(usize, f64)>, String> {
+    // Zero-padded IDs counting down to 0, the last document written.
+    let width = (documents - 1).to_string().len();
+    let path = |i: usize| match limit {
+        None => format!("{collection}/doc-{i}"),
+        Some(_) => format!("{collection}/doc-{:0width$}", documents - 1 - i),
+    };
+    let mut running = target.spawn(ctx.logs.as_deref(), name)?;
+    running.wait_port()?;
+    let (addr, pid) = (running.addr(), running.pid());
+    let values = ctx.rt.block_on(async {
+        let mut listener = match limit {
+            None => Listener::start(addr, collection).await?,
+            Some(n) => {
+                let n = i32::try_from(n).map_err(|_| "limit too large")?;
+                Listener::start_limited(addr, collection, n, &path(documents - 1)).await?
+            }
+        };
+        listener.wait_for(0, Duration::from_secs(60)).await?;
+        let mut c = Client::connect(addr).await?;
+        let mut batches = Vec::new();
+        let start = Instant::now();
+        let mut stored = 0;
+        while stored < documents {
+            let end = (stored + batch).min(documents);
+            let writes = (stored..end)
+                .map(|i| Client::update(c.document(&path(i), i, 100)))
+                .collect();
+            let commit = Instant::now();
+            c.commit(writes).await?;
+            batches.push((stored as f64, ms(commit.elapsed())));
+            stored = end;
+        }
+        let writes = start.elapsed();
+        let snapshot = match limit {
+            None => listener.wait_for(documents, DELIVERY_TIMEOUT).await?,
+            Some(n) => {
+                let snapshot = listener.wait_for_awaited(DELIVERY_TIMEOUT).await?;
+                if snapshot.documents != n {
+                    return Err(format!(
+                        "the limit({n}) listener's snapshot holds {} documents",
+                        snapshot.documents
+                    ));
+                }
+                snapshot
+            }
+        };
+        let rss = system::sample(pid).ok_or("could not read the process's memory")?;
+        drop(listener);
+        // The official emulator can send the last documents before it answers the last commit:
+        // then `delivered` is at most `writes`.
+        let mut values = vec![
+            (0, ms(writes)),
+            (1, ms(snapshot.at.saturating_duration_since(start))),
+        ];
+        if let Some(trend) = stats::trend(&batches) {
+            values.extend([
+                (2, trend.first_decile),
+                (3, trend.last_decile),
+                (4, trend.growth_per_10k),
+            ]);
+        }
+        values.push((5, rss.rss_bytes as f64));
+        Ok::<_, String>(values)
+    })?;
+    running.shutdown()?;
+    Ok(values)
 }
 
 /// One `firebase emulators:exec` run in the scratch project `dir`: its wall-clock time and the

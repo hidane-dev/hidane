@@ -64,6 +64,15 @@ pub struct ListenWrites {
     pub batch: usize,
 }
 
+/// Writes with a listener on the collection's first documents, `limit(n)` (#250).
+#[derive(Debug, Clone, PartialEq)]
+pub struct ListenLimitWrites {
+    pub runs: Runs,
+    pub documents: usize,
+    pub batch: usize,
+    pub limit: usize,
+}
+
 /// The write scenarios again with the owner credential the Admin SDKs send, which skips Security
 /// Rules (the others send none).
 #[derive(Debug, Clone, PartialEq)]
@@ -108,6 +117,7 @@ pub struct Params {
     pub ci_firebase: Ci,
     pub listen_writes: ListenWrites,
     pub owner_writes: OwnerWrites,
+    pub listen_limit_writes: ListenLimitWrites,
     pub command: Runs,
     pub stability: Stability,
 }
@@ -185,6 +195,12 @@ impl Default for Params {
                 batch: 500,
                 documents: 100_000,
             },
+            listen_limit_writes: ListenLimitWrites {
+                runs: runs(0, 3),
+                documents: 100_000,
+                batch: 500,
+                limit: 50,
+            },
             command: runs(1, 5),
             stability: Stability {
                 max_load_1m: Some(2.0),
@@ -242,6 +258,8 @@ impl Params {
             documents: 10_000,
             ..params.owner_writes
         };
+        params.listen_limit_writes.runs = runs(0, 1);
+        params.listen_limit_writes.documents = 10_000;
         params
     }
 
@@ -307,6 +325,7 @@ impl Params {
                 "ci_firebase",
                 "listen_writes",
                 "owner_writes",
+                "listen_limit_writes",
                 "command",
             ],
         )?;
@@ -435,6 +454,25 @@ impl Params {
                 ));
             }
         }
+        if let Some(v) = map.get("listen_limit_writes") {
+            let what = "scenarios.listen_limit_writes";
+            let m = object(v, what)?;
+            known(m, what, &["warmup", "runs", "documents", "batch", "limit"])?;
+            let l = &mut self.listen_limit_writes;
+            read_runs(m, what, &mut l.runs)?;
+            read_usize(m, what, "documents", &mut l.documents)?;
+            read_usize(m, what, "batch", &mut l.batch)?;
+            read_usize(m, what, "limit", &mut l.limit)?;
+            if l.documents == 0 || l.batch == 0 {
+                return Err(format!("{what}: documents and batch must be at least 1"));
+            }
+            // The listener's snapshot ends up with the last `limit` documents written.
+            if l.limit == 0 || l.limit > l.documents || i32::try_from(l.limit).is_err() {
+                return Err(format!(
+                    "{what}: limit must be at least 1 and at most documents"
+                ));
+            }
+        }
         if let Some(v) = map.get("command") {
             let m = object(v, "scenarios.command")?;
             known(m, "scenarios.command", &["warmup", "runs"])?;
@@ -532,6 +570,13 @@ impl Params {
                 "commits": self.owner_writes.commits,
                 "batch": self.owner_writes.batch,
                 "documents": self.owner_writes.documents,
+            }),
+            "listen_limit_writes" => json!({
+                "warmup": self.listen_limit_writes.runs.warmup,
+                "runs": self.listen_limit_writes.runs.runs,
+                "documents": self.listen_limit_writes.documents,
+                "batch": self.listen_limit_writes.batch,
+                "limit": self.listen_limit_writes.limit,
             }),
             "command" => r(self.command),
             _ => Value::Null,
@@ -704,6 +749,7 @@ mod tests {
             "ci_firebase",
             "listen_writes",
             "owner_writes",
+            "listen_limit_writes",
             "command",
         ] {
             assert_eq!(scenarios[name], params.scenario_json(name), "{name}");

@@ -82,8 +82,9 @@ comments in the issue. hidane is designed so that a commit costs only what it ch
 collection take 4.9 s on `main`, about 10.5 ms per batch from start to end
 (`results/listen-batch-writes-hidane.csv`, #30). These figures come from different machines and
 clients. The canonical benchmark's `listen_writes` scenario measures the same case for both
-emulators side by side ([`bench/`](../bench/README.md#writes-with-a-listener-attached)); its
-figures will replace these once a published result has them (#50).
+emulators side by side ([`bench/`](../bench/README.md#writes-with-a-listener-attached)), and
+`listen_limit_writes` the one with `limit(50)` ([`bench/`](../bench/README.md#a-limited-listener),
+#250); their figures will replace these once a published result has them (#50).
 
 ## What hidane is not
 
