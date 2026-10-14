@@ -1,8 +1,10 @@
 //! Conditions nested as deep as the compiler allows are evaluated within the stack of a server
 //! thread (2 MiB, tokio's default), with every value traced for the coverage report as the
-//! server does; deeper nesting through function calls is an error, not a stack overflow. The
-//! type checker, which checks a function's body again for each type its calls expect, takes
-//! time in proportion to the functions, not to the calls.
+//! server does, until they reach the limit of 1,000 evaluated expressions as the official
+//! emulator does (`tools/oracle/rules_expressions.py`); deeper nesting through function calls
+//! is that error too, not a stack overflow. The type checker, which checks a function's body
+//! again for each type its calls expect, takes time in proportion to the functions, not to the
+//! calls.
 
 mod common;
 
@@ -64,15 +66,26 @@ fn rules(functions: &str, condition: &str) -> String {
     )
 }
 
+const TOO_MANY: &str = "Unable to evaluate the expression as the maximum of 1000 expressions to \
+                        evaluate has been reached.";
+
 #[test]
 fn the_deepest_expression_the_compiler_takes() {
-    let chain = format!("{{'a': 1}}{} == 1", ".a".repeat(1_990));
+    // Each member counts as it starts, before the one inside it: the official emulator stops
+    // past 995 of them, before the type error at the second.
+    let chain = |n| format!("{{'a': 1}}{} == 1", ".a".repeat(n));
     assert_eq!(
-        decide(rules("", &chain)),
+        decide(rules("", &chain(995))),
         Decision::Deny(
             "\nType error. Received: [int] Expected: [map,path]. for 'get' @ L5".to_owned()
         )
     );
+    for n in [996, 1_990] {
+        assert_eq!(
+            decide(rules("", &chain(n))),
+            Decision::Deny(format!("\n{TOO_MANY} for 'get' @ L5"))
+        );
+    }
 }
 
 #[test]
@@ -93,10 +106,7 @@ fn nesting_through_calls_is_bounded() {
     let Decision::Deny(message) = decide(rules(&functions, "f0() == 1")) else {
         panic!("allowed")
     };
-    assert_eq!(
-        message,
-        "\nExpression is too complex to evaluate safely. for 'get' @ L25"
-    );
+    assert_eq!(message, format!("\n{TOO_MANY} for 'get' @ L25"));
 }
 
 /// Functions that each call the next `calls` times, each call expecting another type of the

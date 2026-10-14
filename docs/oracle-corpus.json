@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:56daa73bdfe7d6c92bcd01e8071bb21715d7f9346a680d699084312757da5a81",
+ "digest": "sha256:5b8187fd2b6d9cf86636df0a5639429d02ea7737fff882d3cd36383a0bf190fc",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,16 +14,16 @@
   }
  ],
  "totals": {
-  "files": 74,
-  "fixtures": 42,
+  "files": 75,
+  "fixtures": 43,
   "transcripts": 32,
-  "answers": 21186,
-  "bytes": 11399284,
+  "answers": 21902,
+  "bytes": 12631287,
   "levels": {
    "full": 12923,
-   "reasons": 3912,
+   "reasons": 4050,
    "part": 760,
-   "status": 3405,
+   "status": 3983,
    "codes": 30,
    "none": 1,
    "differs": 155
@@ -60,9 +60,9 @@
     "answers": 34
    },
    "rules": {
-    "fixtures": 17,
+    "fixtures": 18,
     "transcripts": 2,
-    "answers": 13264
+    "answers": 13980
    },
    "export": {
     "fixtures": 1,
@@ -82,15 +82,15 @@
   },
   "by_release": {
    "v1.22.0": {
-    "fixtures": 42,
+    "fixtures": 43,
     "transcripts": 32,
-    "answers": 21186
+    "answers": 21902
    }
   },
   "by_release_source": {
    "header": 23,
    "file name": 33,
-   "git history": 18
+   "git history": 19
   }
  },
  "recordings": [
@@ -1022,6 +1022,44 @@
    "levels": {
     "reasons": 21,
     "status": 44
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/rules_server.rs::replay"
+   ],
+   "counted": "each call",
+   "compared": "a denial as decision and reasons (`same_denial`: hidane's reasons are among the official ones); every other answer on its status"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/rules_expressions.json",
+   "kind": "fixture",
+   "area": "rules",
+   "recorder": "tools/oracle/rules_expressions.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "git history",
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 in the working tree, where it changed"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-14",
+    "last_changed": "2026-10-14"
+   },
+   "bytes": 1232003,
+   "sha256": "7fa742f668217e9aff6ae3fae9a445ecdf0c76ebab740433df9bd4c69caf3db7",
+   "answers": 716,
+   "levels": {
+    "reasons": 138,
+    "status": 578
    },
    "replayed_over": [
     "REST"

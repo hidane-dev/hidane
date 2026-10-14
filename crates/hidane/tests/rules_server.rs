@@ -1,8 +1,8 @@
 //! Security Rules end to end, against the official emulator's recordings: the cases of
-//! `tools/oracle/rules_{request,writes,lookups,list,auth,denials}.py` (`fixtures/rules_*.json`),
-//! each a list of REST calls, are replayed in order against a fresh hidane. Every answer's
-//! status must match, and a denial must say what the official emulator's does, as
-//! `common::rules::same_denial` compares them.
+//! `tools/oracle/rules_{request,writes,lookups,list,auth,denials,expressions}.py`
+//! (`fixtures/rules_*.json`), each a list of REST calls, are replayed in order against a fresh
+//! hidane. Every answer's status must match, and a denial must say what the official emulator's
+//! does, as `common::rules::same_denial` compares them.
 
 mod common;
 
@@ -237,4 +237,9 @@ async fn documents_a_batch_writes_are_free_to_look_up() {
         compared += 1;
     }
     assert_eq!(compared, 7);
+}
+
+#[tokio::test]
+async fn expressions_and_their_limit() {
+    replay(include_str!("fixtures/rules_expressions.json"), &[]).await;
 }

@@ -81,6 +81,7 @@ FIXTURE_CLIENTS = {
     "rules_coverage.py": ([REST, PROCESS], PY),
     "rules_denials.py": ([REST], PY),
     "rules_eval.py": ([REST], PY),
+    "rules_expressions.py": ([REST], PY),
     "rules_list.py": ([REST], PY),
     "rules_lookups.py": ([REST], PY),
     "rules_paths.py": ([REST], PY),

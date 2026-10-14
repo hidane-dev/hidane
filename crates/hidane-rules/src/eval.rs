@@ -20,6 +20,15 @@
 //!   method, a null receiver or a method it does not have comes before its arguments' errors).
 //! - The arguments of a function (the last first), then its `let`s in order, are evaluated
 //!   before its result, but an error in one only matters if the function uses it.
+//! - A decision evaluates at most 1,000 expressions ([`MAX_EXPRESSIONS`], measured with
+//!   `tools/oracle/rules_expressions.py`). Each expression evaluated counts once, parentheses
+//!   not at all, and some count more: `&&` and `||` once more when they evaluate their right
+//!   side, a conditional once more once its condition is evaluated (whatever it came to) and two
+//!   more again when it is false,
+//!   `is` and each `let` once more, a path once more for each literal segment. What a short
+//!   circuit or a conditional skips does not count. Past the limit every expression is an error
+//!   ("Unable to evaluate the expression as the maximum of 1000 expressions to evaluate has been
+//!   reached."), so nothing absorbs it.
 //!
 //! Each condition is evaluated once, so a denial lists each statement once; the official
 //! emulator evaluates again after an error and lists everything twice
@@ -259,6 +268,11 @@ pub trait Documents {
 /// The verifies of a commit count as its writes (`tools/oracle/rules_verify.py`). The documents
 /// they verify cost nothing through `getAfter()` and `existsAfter()` only, and in a verify's
 /// condition so do the documents the batch writes.
+///
+/// A decision also evaluates at most [`MAX_EXPRESSIONS`] expressions
+/// (`tools/oracle/rules_expressions.py`): the statements of the method that applies, in order,
+/// count together; each write and verify of a batch, the other method of an upsert and each way
+/// of a list count from zero.
 #[derive(Debug, Clone)]
 pub struct Budget {
     /// Distinct documents looked up so far, by the whole request or batch.
@@ -273,7 +287,12 @@ pub struct Budget {
     pub verified: Vec<Vec<String>>,
     /// Whether a verify is being decided (see [`Budget::next_verify`]).
     pub verifying: bool,
+    /// The expressions the decision has evaluated so far.
+    pub expressions: usize,
 }
+
+/// The most expressions a decision may evaluate.
+pub const MAX_EXPRESSIONS: usize = 1_000;
 
 impl Budget {
     fn with(part_limit: usize, total_limit: usize) -> Self {
@@ -285,6 +304,16 @@ impl Budget {
             written: Vec::new(),
             verified: Vec::new(),
             verifying: false,
+            expressions: 0,
+        }
+    }
+
+    /// The budget of another decision of the same request: its lookups so far, but none of
+    /// the expressions this one evaluated.
+    fn another(&self) -> Self {
+        Self {
+            expressions: 0,
+            ..self.clone()
         }
     }
 
@@ -333,12 +362,14 @@ impl Budget {
     pub fn next_write(&mut self) {
         self.this_part = 0;
         self.verifying = false;
+        self.expressions = 0;
     }
 
     /// Like [`Budget::next_write`], before a verify of the batch.
     pub fn next_verify(&mut self) {
         self.this_part = 0;
         self.verifying = true;
+        self.expressions = 0;
     }
 }
 
@@ -432,14 +463,14 @@ pub fn authorize_traced(
     };
     let other_context = context_for(other);
     // `create`'s statements come first: before the decision when `update` applies. The other
-    // method's lookups count against a copy of the budget.
+    // method's lookups count against a copy of the budget, and its expressions from zero.
     if other == Method::Create {
-        other_context.each(&others, other, &mut budget.clone(), trace);
+        other_context.each(&others, other, &mut budget.another(), trace);
     }
     let decided = context.decide(&applying, request.method, budget, trace);
     let Err(entries) = decided else {
         if other == Method::Update {
-            other_context.each(&others, other, &mut budget.clone(), trace);
+            other_context.each(&others, other, &mut budget.another(), trace);
         }
         return Decision::Allow;
     };
@@ -447,9 +478,9 @@ pub fn authorize_traced(
     // evaluated again without being traced.
     let listed = match other {
         Method::Create => {
-            other_context.listed(&others, other, &mut budget.clone(), &mut Trace::new())
+            other_context.listed(&others, other, &mut budget.another(), &mut Trace::new())
         }
-        _ => other_context.listed(&others, other, &mut budget.clone(), trace),
+        _ => other_context.listed(&others, other, &mut budget.another(), trace),
     };
     let entries: Vec<String> = match other {
         Method::Create => listed.into_iter().chain(entries).collect(),
