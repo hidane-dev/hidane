@@ -286,6 +286,74 @@ async fn strings_escape_like_the_official_emulator() {
     assert!(differences.is_empty(), "{}", differences.join("\n"));
 }
 
+/// docs/parity-exceptions.md D083: a message holding an unpaired surrogate, which the official
+/// emulator reads as `?` (a target on `c/a\ud800` watches `c/a?`), does not parse in hidane:
+/// the `POST` that carries it answers `400` without a body, on a handshake as on the forward
+/// channel.
+#[tokio::test]
+async fn a_lone_surrogate_is_a_message_that_does_not_parse() {
+    let addr = start().await;
+    let client: HttpClient = Client::builder(TokioExecutor::new()).build_http();
+    let base = format!("http://{addr}");
+    let url = |params: &[(&str, String)]| {
+        format!(
+            "{base}/google.firestore.v1.Firestore/Listen/channel?{}",
+            query(params)
+        )
+    };
+    // serde_json cannot hold the string: the message is written as text.
+    let target = |id: u32| {
+        format!(
+            r#"{{"database":"{DATABASE}","addTarget":{{"documents":{{"documents":["{DATABASE}/documents/c/a\ud800"]}},"targetId":{id}}}}}"#
+        )
+    };
+    let refused = |response: hyper::Response<Incoming>| async move {
+        let status = response.status();
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        (status.as_u16(), body)
+    };
+    let handshake = format!(
+        "headers={}&count=1&ofs=0&req0___data__={}",
+        encode(HEADERS),
+        encode(&target(2))
+    );
+    let params = [
+        ("VER", "8".into()),
+        ("database", DATABASE.into()),
+        ("RID", "1".into()),
+        ("CVER", "22".into()),
+    ];
+    let response = send(
+        &client,
+        "POST",
+        url(&params),
+        Some((handshake, "application/x-www-form-urlencoded")),
+    )
+    .await;
+    assert_eq!(refused(response).await, (400, Bytes::new()), "a handshake");
+    let sid = listen_session(&client, &base).await;
+    let forward = |rid: u32, ofs: u32, message: String| {
+        let params = [
+            ("VER", "8".into()),
+            ("database", DATABASE.into()),
+            ("SID", sid.clone()),
+            ("RID", rid.to_string()),
+            ("AID", "0".into()),
+        ];
+        let body = format!("count=1&ofs={ofs}&req0___data__={}", encode(&message));
+        send(
+            &client,
+            "POST",
+            url(&params),
+            Some((body, "application/x-www-form-urlencoded")),
+        )
+    };
+    let pair = target(4).replace("\\ud800", "\\ud83d\\ude00");
+    assert_eq!(forward(2, 1, pair).await.status(), 200, "a pair");
+    let response = forward(3, 2, target(6)).await;
+    assert_eq!(refused(response).await, (400, Bytes::new()), "a forward");
+}
+
 /// Takes `steps` in order against a fresh hidane, on `database`; the steps that differ. A read
 /// whose recorded outcome has `texts` is compared on the exact text of its messages.
 async fn replay(database: &str, steps: &[Json]) -> Vec<String> {

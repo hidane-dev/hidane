@@ -91,6 +91,8 @@ struct Client {
     buf: Vec<u8>,
     status: String,
     headers: Vec<String>,
+    /// Whether text frames come as the text itself, not as the JSON it holds.
+    as_text: bool,
 }
 
 impl Client {
@@ -124,6 +126,7 @@ impl Client {
             buf,
             status,
             headers,
+            as_text: false,
         }
     }
 
@@ -163,7 +166,9 @@ impl Client {
         let payload = buf.get(at..at + length)?.to_vec();
         let opcode = buf[0] & 0x0f;
         self.buf.drain(..at + length);
-        Some(if opcode == 1 {
+        Some(if opcode == 1 && self.as_text {
+            Json::from(String::from_utf8(payload).unwrap())
+        } else if opcode == 1 {
             serde_json::from_slice(&payload).unwrap()
         } else {
             let payload: String = payload.iter().map(|&b| char::from(b)).collect();
@@ -376,6 +381,72 @@ async fn records_as_the_official_emulator_sends_them() {
 #[tokio::test]
 async fn a_decision_past_the_limit_of_expressions() {
     replay(include_str!("fixtures/rules_expressions_monitor.json")).await;
+}
+
+/// How the feed writes strings that JSON may escape (`tools/oracle/websocket_escapes.py`), text
+/// for text: `"`, `\` and the control characters escaped, U+2028 and U+2029 as `\u2028` and
+/// `\u2029`, and the HTML characters, `/`, U+007F, U+0080 and the rest as they are, in the
+/// ruleset, the path, keys, values and the token's claims. A record is compared but for what
+/// changes from run to run and a `resource` the official emulator's record shows undefined.
+#[tokio::test]
+async fn strings_written_as_the_official_emulator_writes_them() {
+    const UNDEFINED: &str = ",\"resource\":{\"undefined\":{}}}}";
+    let cases: Vec<Json> =
+        serde_json::from_str(include_str!("fixtures/websocket_escapes.json")).unwrap();
+    let (addr, ws_addr) = start().await;
+    let mut monitor = Client::connect(ws_addr).await;
+    monitor.as_text = true;
+    let pause = Duration::from_millis(300);
+    assert_eq!(monitor.frames(Some(1), pause).await, ["[]"]);
+    for case in &cases {
+        for (i, step) in case["steps"].as_array().unwrap().iter().enumerate() {
+            let label = format!("{} #{i}", case["name"].as_str().unwrap());
+            let (status, _) = send(addr, step, &step["body"].to_string()).await;
+            assert_eq!(Json::from(status), step["status"], "{label}");
+            let expected = step["frames"].as_array().unwrap();
+            let frames = monitor.frames(Some(expected.len()), pause).await;
+            assert_eq!(frames.len(), expected.len(), "{label}");
+            for (frame, expected) in frames.iter().zip(expected) {
+                let (mut frame, mut expected) = (steady(frame), steady(expected));
+                if expected.ends_with(UNDEFINED) {
+                    for text in [&mut frame, &mut expected] {
+                        text.truncate(text.rfind(",\"resource\":").unwrap());
+                    }
+                }
+                assert_eq!(frame, expected, "{label}");
+            }
+        }
+    }
+}
+
+/// A record's text without what changes from run to run: the values of `time`, `requestId`
+/// and `timestampValue`, and the number at the end of `rulesReleaseKey`.
+fn steady(frame: &Json) -> String {
+    const KEYS: [&str; 4] = [
+        "\"time\":\"",
+        "\"requestId\":\"",
+        "\"timestampValue\":\"",
+        "\"rulesReleaseKey\":\"",
+    ];
+    let mut rest = frame.as_str().unwrap();
+    let mut out = String::with_capacity(rest.len());
+    while let Some((at, key)) = KEYS
+        .iter()
+        .filter_map(|key| rest.find(key).map(|at| (at, *key)))
+        .min()
+    {
+        let start = at + key.len();
+        let end = start + rest[start..].find('"').unwrap();
+        out.push_str(&rest[..start]);
+        if key == KEYS[3] {
+            out.push_str(
+                rest[start..end].trim_end_matches(|c: char| c.is_ascii_digit() || c == '-'),
+            );
+        }
+        rest = &rest[end..];
+    }
+    out.push_str(rest);
+    out
 }
 
 async fn replay(fixture: &str) {
