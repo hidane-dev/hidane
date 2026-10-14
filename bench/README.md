@@ -143,12 +143,15 @@ Notes:
   order. The documents have the Phase 0 baseline's shape (`{mykey, myid}`, plus a `bucket` field
   for filters).
   It sends no credential, as a signed-out client SDK does, so Security Rules apply to every
-  request on both. The Admin SDKs send an emulator `Authorization: Bearer owner`, which skips the
-  Rules, and with it the official emulator's writes are about four times as fast: 100,000
-  documents in commits of 500 over REST took 3.39 s with it and 13.78 s without, while hidane
-  took 1.72 s and 1.71 s (single local runs). An SDK's own work adds to both: through
-  firebase-admin, the same writes took 2.2 s and 1.1 s. The write scenarios and the CI workloads
-  here are therefore a signed-out app's; measuring the owner's too is #286.
+  request on both, except in `owner_writes`. That scenario sends `Authorization: Bearer owner`,
+  as the Admin SDKs do to an emulator, which skips the Rules: the official emulator's writes are
+  many times as fast with it, and hidane's take about the same time either way. Every other
+  scenario, the CI workloads included, is a signed-out app's, so compare `owner_writes` with
+  `operations.batch_write` and `datasets.seed_100000` to see what the credential changes. In the
+  CI workloads it changes little: in local runs of `ci`, seeding its 100 documents with the owner
+  credential took about 0.2 s less on the official emulator, out of about 4.4 s, and the tests
+  were no faster with it. An SDK's own work adds to both: through firebase-admin, 100,000
+  documents took 2.2 s on the official emulator and 1.1 s on hidane in a single local run.
 - **Same data and workload.** Every scenario writes the same documents and runs the same queries
   against both.
 - **Pinned versions.** The official jar is the one firebase-tools 15.33.0 downloads, checked
@@ -177,6 +180,7 @@ first hundred requests see, not a JVM after minutes of load.
 | `ci_firebase` | The same workload as projects run it: `firebase emulators:exec --only firestore` around `hidane benchmark workload`. firebase-tools starts the official emulator from the same jar and Java, and hidane through `hidane exec`; it runs in a scratch project with its own ports and configuration directory (no login, no usage reporting, no update check). Needs `--firebase` | `total`, `workload` (ms) |
 | `listen_writes` | Writes with a listener attached ([below](#writes-with-a-listener-attached)): start, open a Listen stream on a whole collection, write 100,000 documents to it in commits of 500, one at a time, until the listener's snapshot holds them all | `writes`, `delivered`, `batch_first_decile`, `batch_last_decile`, `batch_growth` (ms); `rss_after` (bytes) |
 | `command` | Your command, with `FIRESTORE_EMULATOR_HOST` set (see above) | `total`, `command`, `ready` (ms) |
+| `owner_writes` | Writes with the owner credential (`Authorization: Bearer owner`, as the Admin SDKs send it): start, wait for the port, commit 500 writes to the same documents 120 times (the first 20 discarded), then write 100,000 documents in commits of 500 | `batch_write`, `seed_100000` (ms) |
 
 Runs per target: 3 warm-up and 10 measured for `startup`, `memory`, `ci` and the dataset sizes up to
 1,000 documents. Larger sizes are scaled down, because one run of the official emulator takes
@@ -185,7 +189,8 @@ seconds there: 1 warm-up and 5 measured runs for 10,000 documents, 1 and 3 for 1
 and 3 measured runs: one run of the official emulator takes minutes (121 s in Phase 0), the
 earlier scenarios have already brought the binary and the jar into the OS's cache, and the JVM's
 own warm-up inside a run is part of what the first batches measure; `--warmup` and `--runs`
-are capped at 1 and 3 for it. `canonical.json` states every value.
+are capped at 1 and 3 for it. `owner_writes` runs 1 warm-up and 3 measured runs, as the largest
+dataset size does, and is capped the same way. `canonical.json` states every value.
 
 #### Writes with a listener attached
 
@@ -361,7 +366,7 @@ changes when an existing scenario changes what it does or measures, or one of it
 values changes: numbers of different versions are not compared. A new scenario keeps the
 version when it runs after the existing ones (scenarios run in a fixed order), because it cannot
 change the conditions they are measured under; its history starts with the first result that has
-it. `listen_writes` was added this way to definitions v1. The run-level readings (`duration_s`,
+it. `listen_writes` and `owner_writes` were added this way to definitions v1. The run-level readings (`duration_s`,
 the stability readings after the run, CPU steal over the run) cover every scenario that ran.
 
 ## Targets in CI

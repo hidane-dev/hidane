@@ -38,6 +38,8 @@ const TINY: &str = r#"{
                  "sizes": [{"documents": 100, "warmup": 0, "runs": 2}]},
     "ci": {"warmup": 0, "runs": 2, "tests": 3, "seed_documents": 10},
     "listen_writes": {"warmup": 0, "runs": 2, "documents": 2000, "batch": 500},
+    "owner_writes": {"warmup": 0, "runs": 2, "commit_warmup": 1, "commits": 3, "batch": 50,
+                     "documents": 200},
     "command": {"warmup": 0, "runs": 2}
   }
 }"#;
@@ -186,6 +188,8 @@ fn a_hidane_run_matches_the_schema_and_renders_from_its_json() {
     ] {
         assert_eq!(n("listen_writes", metric), Some(2), "{metric}");
     }
+    assert_eq!(n("owner_writes", "batch_write"), Some(6));
+    assert_eq!(n("owner_writes", "seed_200"), Some(2));
     let time_to_port = r["startup"]["hidane"]["time_to_port"]["stats"]["median"]
         .as_f64()
         .unwrap();

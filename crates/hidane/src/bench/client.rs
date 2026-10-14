@@ -1,5 +1,6 @@
 //! The one client both targets are measured with: the generated gRPC client over one HTTP/2
-//! connection, sending the same requests in the same order.
+//! connection, sending the same requests in the same order. It sends no credential, as a
+//! signed-out app does, except in `owner_writes` ([`Credential`]).
 
 use std::{
     collections::HashSet,
@@ -24,15 +25,45 @@ use hidane_proto::google::firestore::v1::{
 };
 use tokio::sync::{mpsc, watch};
 use tokio_stream::{StreamExt as _, wrappers::ReceiverStream};
-use tonic::{Code, transport::Channel};
+use tonic::{
+    Code,
+    metadata::MetadataValue,
+    service::{Interceptor, interceptor::InterceptedService},
+    transport::Channel,
+};
 
 use super::system;
 
 /// The project every request uses, on both targets.
 pub const PROJECT: &str = "demo-hidane-bench";
 
+/// What a client sends as `authorization`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Credential {
+    /// Nothing, as a signed-out app: Security Rules apply to every request.
+    None,
+    /// `Bearer owner`, what the Admin SDKs send to an emulator: Security Rules do not apply.
+    Owner,
+}
+
+impl Interceptor for Credential {
+    fn call(
+        &mut self,
+        mut request: tonic::Request<()>,
+    ) -> Result<tonic::Request<()>, tonic::Status> {
+        if *self == Self::Owner {
+            request
+                .metadata_mut()
+                .insert("authorization", MetadataValue::from_static("Bearer owner"));
+        }
+        Ok(request)
+    }
+}
+
+type Grpc = FirestoreClient<InterceptedService<Channel, Credential>>;
+
 pub struct Client {
-    inner: FirestoreClient<Channel>,
+    inner: Grpc,
     database: String,
     addr: SocketAddr,
 }
@@ -41,13 +72,13 @@ fn grpc(status: &tonic::Status) -> String {
     format!("gRPC {:?}: {}", status.code(), status.message())
 }
 
-async fn channel(addr: SocketAddr) -> Result<FirestoreClient<Channel>, String> {
+async fn channel(addr: SocketAddr, credential: Credential) -> Result<Grpc, String> {
     let channel = Channel::from_shared(format!("http://{addr}"))
         .map_err(|e| e.to_string())?
         .connect()
         .await
         .map_err(|e| format!("could not connect over gRPC ({e})"))?;
-    Ok(FirestoreClient::new(channel)
+    Ok(FirestoreClient::with_interceptor(channel, credential)
         .max_decoding_message_size(64 << 20)
         .max_encoding_message_size(64 << 20))
 }
@@ -58,8 +89,12 @@ fn database() -> String {
 
 impl Client {
     pub async fn connect(addr: SocketAddr) -> Result<Self, String> {
+        Self::connect_as(addr, Credential::None).await
+    }
+
+    pub async fn connect_as(addr: SocketAddr, credential: Credential) -> Result<Self, String> {
         Ok(Self {
-            inner: channel(addr).await?,
+            inner: channel(addr, credential).await?,
             database: database(),
             addr,
         })
@@ -277,7 +312,7 @@ const TARGET_ID: i32 = 1;
 
 impl Listener {
     pub async fn start(addr: SocketAddr, collection: &str) -> Result<Self, String> {
-        let mut inner = channel(addr).await?;
+        let mut inner = channel(addr, Credential::None).await?;
         let database = database();
         let (requests, rx) = mpsc::channel(1);
         let query = StructuredQuery {
@@ -437,5 +472,24 @@ pub async fn first_request(addr: SocketAddr, started: Instant) -> Result<Duratio
             return Err(format!("no gRPC answer within 120 s ({last})"));
         }
         tokio::time::sleep(Duration::from_millis(1)).await;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn only_the_owner_credential_sends_authorization() {
+        let sent = |mut credential: Credential| {
+            credential
+                .call(tonic::Request::new(()))
+                .unwrap()
+                .metadata()
+                .get("authorization")
+                .map(|v| v.to_str().unwrap().to_owned())
+        };
+        assert_eq!(sent(Credential::Owner).as_deref(), Some("Bearer owner"));
+        assert_eq!(sent(Credential::None), None);
     }
 }

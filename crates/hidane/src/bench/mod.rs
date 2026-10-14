@@ -61,12 +61,14 @@ enum Scenario {
     #[value(name = "listen_writes")]
     ListenWrites,
     Command,
+    #[value(name = "owner_writes")]
+    OwnerWrites,
 }
 
 impl Scenario {
     /// The order they run in. A new scenario goes after the existing ones, so that it cannot
     /// change the conditions the earlier ones are measured under.
-    const ALL: [Self; 8] = [
+    const ALL: [Self; 9] = [
         Self::Startup,
         Self::Memory,
         Self::Operations,
@@ -75,6 +77,7 @@ impl Scenario {
         Self::CiFirebase,
         Self::ListenWrites,
         Self::Command,
+        Self::OwnerWrites,
     ];
 
     fn id(self) -> &'static str {
@@ -87,6 +90,7 @@ impl Scenario {
             Self::CiFirebase => "ci_firebase",
             Self::ListenWrites => "listen_writes",
             Self::Command => "command",
+            Self::OwnerWrites => "owner_writes",
         }
     }
 }
@@ -152,8 +156,8 @@ struct Args {
     /// Scenarios to run (default: all but command; with a command, only command).
     #[arg(long, value_enum, value_delimiter = ',')]
     scenarios: Option<Vec<Scenario>>,
-    /// Warm-up runs per target (startup, memory, ci, command, dataset sizes and listen_writes;
-    /// larger sizes and listen_writes are capped).
+    /// Warm-up runs per target (startup, memory, ci, command, dataset sizes, listen_writes and
+    /// owner_writes; larger sizes, listen_writes and owner_writes are capped).
     #[arg(long)]
     warmup: Option<usize>,
     /// Measured runs per target (as --warmup).
@@ -370,6 +374,14 @@ fn params(args: &Args) -> Result<(Params, Option<String>, Vec<&'static str>), St
         set(&mut params.ci.runs);
         set(&mut params.ci_firebase.runs);
         set(&mut params.command);
+        // Capped like the largest dataset sizes, as the official emulator writes 100,000
+        // documents in each run.
+        let mut owner = params.owner_writes.runs;
+        set(&mut owner);
+        params.owner_writes.runs = config::Runs {
+            warmup: owner.warmup.min(1),
+            runs: owner.runs.min(3),
+        };
         // Capped like the largest dataset sizes: a run of the official emulator takes minutes.
         let mut listen = params.listen_writes.runs;
         set(&mut listen);
@@ -919,6 +931,7 @@ fn run(args: &Args) -> Result<ExitCode, String> {
             }
             Scenario::ListenWrites => bench.listen_writes(),
             Scenario::Command => bench.command(&args.command, &label),
+            Scenario::OwnerWrites => bench.owner_writes(),
         }
         if let (Some(a), Some(b)) = (start, system::cpu_times())
             && let Some((_, steal)) = a.shares(&b)
@@ -1072,6 +1085,7 @@ mod tests {
         assert_eq!(p.listen_writes.runs, config::Runs { warmup: 0, runs: 2 });
         let (p, _, _) = params(&parse(&["--warmup", "3", "--runs", "10"])).unwrap();
         assert_eq!(p.listen_writes.runs, config::Runs { warmup: 1, runs: 3 });
+        assert_eq!(p.owner_writes.runs, config::Runs { warmup: 1, runs: 3 });
 
         let args = parse(&["--", "node", "test.mjs"]);
         assert_eq!(scenario_list(&args).unwrap().0, [Scenario::Command]);
@@ -1084,10 +1098,11 @@ mod tests {
         assert!(scenario_list(&parse(&["--scenarios", "command"])).is_err());
         // Without --firebase, ci_firebase is skipped and says why.
         let (list, skipped) = scenario_list(&parse(&[])).unwrap();
-        assert_eq!(list.len(), 6);
+        assert_eq!(list.len(), 7);
+        assert_eq!(list.last(), Some(&Scenario::OwnerWrites));
         assert_eq!(skipped[0]["scenario"], "ci_firebase");
         let (list, skipped) = scenario_list(&parse(&["--firebase", "/x/firebase"])).unwrap();
-        assert_eq!(list.len(), 7);
+        assert_eq!(list.len(), 8);
         assert!(skipped.is_empty());
         assert_eq!(params(&parse(&[])).unwrap().0, Params::default());
     }

@@ -103,8 +103,8 @@ can rerun it; other machines give other numbers.
 
 Every request in the benchmark comes from its own gRPC client, which sends no credential, as a
 signed-out app does, so Security Rules apply to each one. The Admin SDKs send an emulator the
-owner credential, which skips the Rules: the official emulator then writes about four times as
-fast, hidane takes the same time either way, and the SDK's own work adds to both. Through
+owner credential, which skips the Rules: the official emulator then writes many times as fast,
+hidane takes about the same time either way, and the SDK's own work adds to both. Through
 firebase-admin, 100,000 documents took 2.2 s on the official emulator and 1.1 s on hidane in a
 single local run, about twice as fast rather than ten times
 ([`bench/`](bench/README.md#fairness-rules), #286).
