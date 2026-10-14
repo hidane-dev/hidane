@@ -5,7 +5,7 @@ use std::{cell::OnceCell, collections::HashMap, rc::Rc};
 use indexmap::IndexMap;
 
 use super::{
-    Budget, Documents, constraint,
+    Budget, Documents, MAX_EXPRESSIONS, constraint,
     library::{self, to_string},
     trace::{NodeKey, Trace, observe},
     value::{
@@ -128,10 +128,16 @@ impl<'a> Interp<'a> {
 
     /// Evaluates `e`. Each level of nesting goes through here and one small function for its
     /// kind of expression, which keeps the stack a recursion uses small.
+    ///
+    /// Each expression evaluated costs one of the decision's [`MAX_EXPRESSIONS`] (parentheses
+    /// are not expressions); some cost more, in their steps (`tools/oracle/rules_expressions.py`).
     pub fn eval(&mut self, e: &'a Expr, s: Scope<'_, 'a>) -> R {
         let object = std::mem::take(&mut self.object);
         if self.depth >= MAX_DEPTH {
             return Err(too_complex());
+        }
+        if let Err(err) = self.spend(1) {
+            return self.finish(e, Err(err), object);
         }
         self.depth += 1;
         // One call through a pointer: in a debug build each call of a `match` would keep a
@@ -187,6 +193,19 @@ impl<'a> Interp<'a> {
     /// before it.
     fn start(&self, e: &Expr) -> usize {
         coverage::start(self.parens, e).start
+    }
+
+    /// Counts `n` more expressions evaluated: an error past [`MAX_EXPRESSIONS`], and for every
+    /// expression after that.
+    fn spend(&mut self, n: usize) -> Result<(), Error> {
+        self.budget.expressions += n;
+        if self.budget.expressions > MAX_EXPRESSIONS {
+            return Err(Error::new(format!(
+                "Unable to evaluate the expression as the maximum of {MAX_EXPRESSIONS} \
+                 expressions to evaluate has been reached."
+            )));
+        }
+        Ok(())
     }
 
     /// Reports `e` and every expression in it as not evaluated.
@@ -320,6 +339,8 @@ impl<'a> Interp<'a> {
                 if let ExprKind::IntOverflow(text) = &operand.kind
                     && text.parse::<i128>().ok() == Some(-i128::from(i64::MIN))
                 {
+                    // Its literal is an expression evaluated too.
+                    self.spend(1)?;
                     return Ok(Val::Int(i64::MIN));
                 }
                 negate(self.eval(operand, s)?)
@@ -360,6 +381,8 @@ impl<'a> Interp<'a> {
         else {
             unreachable!()
         };
+        // The type counts as an expression.
+        self.spend(1)?;
         let v = self.eval(value, s)?;
         Ok(Val::Bool(v.is(&type_name.name)))
     }
@@ -374,7 +397,11 @@ impl<'a> Interp<'a> {
         else {
             unreachable!()
         };
-        match self.eval(condition, s)? {
+        // Its condition evaluated, whatever it came to (an error too), it costs one more, and two
+        // more again when the condition is false.
+        let condition = self.eval(condition, s);
+        self.spend(1)?;
+        match condition? {
             Val::Bool(true) => {
                 let result = self.eval(then, s);
                 self.skip(otherwise);
@@ -382,6 +409,7 @@ impl<'a> Interp<'a> {
             }
             Val::Bool(false) => {
                 self.skip(then);
+                self.spend(2)?;
                 self.eval(otherwise, s)
             }
             other => Err(Error::type_error(other.type_name(), "bool").at(question.start)),
@@ -391,7 +419,7 @@ impl<'a> Interp<'a> {
     /// `&&` and `||` absorb an error when the other side decides, as CEL does: `false && error`
     /// and `error && false` are false, `true || error` and `error || true` are true. A value
     /// that is not a bool is an error like any other: on the left at the operator, on the right
-    /// at the expression's start.
+    /// at the expression's start. Evaluating the right side costs one more expression.
     fn logical(&mut self, e: &'a Expr, s: Scope<'_, 'a>) -> R {
         let ExprKind::Binary {
             op,
@@ -409,10 +437,14 @@ impl<'a> Interp<'a> {
                 self.skip(right);
                 return Ok(Val::Bool(l));
             }
-            Ok(Val::Bool(_)) => return self.eval(right, s).and_then(boolean).map(Val::Bool),
+            Ok(Val::Bool(_)) => {
+                self.spend(1)?;
+                return self.eval(right, s).and_then(boolean).map(Val::Bool);
+            }
             Ok(other) => not_bool(&other).at(op_span.start),
             Err(e) => e,
         };
+        self.spend(1)?;
         match self.eval(right, s) {
             Ok(Val::Bool(r)) if r != and => Ok(Val::Bool(r)),
             _ => Err(error),
@@ -429,7 +461,7 @@ impl<'a> Interp<'a> {
             let expr = local
                 .expr
                 .expect("parameters are bound when the call starts");
-            let v = self.eval(
+            let v = self.bind(
                 expr,
                 Scope {
                     frame: s.frame,
@@ -550,7 +582,7 @@ impl<'a> Interp<'a> {
             if let Some(expr) = local.expr
                 && local.value.get().is_none()
             {
-                let v = self.eval(
+                let v = self.bind(
                     expr,
                     Scope {
                         frame: &frame,
@@ -569,9 +601,20 @@ impl<'a> Interp<'a> {
         result
     }
 
+    /// The value of a `let`, which costs one expression more than its own.
+    fn bind(&mut self, e: &'a Expr, s: Scope<'_, 'a>) -> R {
+        self.spend(1)?;
+        self.eval(e, s)
+    }
+
     /// A path literal. Literal segments are URL-decoded; `$(…)` adds a path's segments, or one
-    /// segment of anything `string()` converts.
+    /// segment of anything `string()` converts. Each literal segment costs an expression.
     fn path(&mut self, parts: &'a [PathPart], s: Scope<'_, 'a>) -> R {
+        let literal = parts
+            .iter()
+            .filter(|part| matches!(part, PathPart::Segment(_)))
+            .count();
+        self.spend(literal)?;
         let exprs: Vec<&Expr> = parts
             .iter()
             .filter_map(|part| match part {

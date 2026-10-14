@@ -16,6 +16,7 @@
 //! - A way with `__name__ ==` (or one name of a `__name__ in`) is decided on that document as
 //!   stored (null if there is none), whatever else the filter says, with its path as
 //!   `request.path`; other comparisons with the name constrain nothing.
+//! - Each way counts the expressions it evaluates from zero (`tools/oracle/rules_expressions.py`).
 
 use std::{
     hash::{DefaultHasher, Hash, Hasher},
@@ -69,6 +70,8 @@ pub(super) fn authorize(
         return Decision::Deny("\nThe query's filter has too many disjunctions.".to_owned());
     };
     for way in ways {
+        // Each way evaluates its expressions from zero.
+        budget.expressions = 0;
         let outcome = match way {
             Way::Document(path) => {
                 let parts: Vec<Part<'_>> = path.iter().map(|s| Part::Segment(s)).collect();
