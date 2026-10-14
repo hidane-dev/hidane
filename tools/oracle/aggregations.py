@@ -185,6 +185,33 @@ case("the summed field after an ascending order", q("ordered", orderBy=[{"field"
 case("an order by the summed field", q("ordered", orderBy=[{"field": f("v"), "direction": "DESCENDING"}], limit=1), [total("v", "s")])
 case("avg with limit 1: bytes after numbers", q("bytes_first", limit=1), [avg("b")])
 case("avg with offset 2: a timestamp after numbers", q("time_first", offset=2), [avg("b")])
+# The paths `sum` and `avg` read (#262): read as the aggregation is (array offsets, `__key__`,
+# reserved names but `__key__` and `__type__`, rest.py); with the list, after its length and
+# the reserved aliases, each aggregation in turn: `__name__` or `__type__` itself is not
+# supported, then what its path holds as a filter's would (`__key__` in a longer path,
+# `__type__` but at the end of a longer path, array offsets), then its alias.
+for p in ["__key__", "a.__key__", "__x__", "__type__", "a.__type__", "a.__type__.b", "__type__[0]", "a.__name__", "a[0]", "a[2147483648]"]:
+    case(f"sum of {p}", q("ints"), [total(p, "s")])
+case("avg of __type__", q("ints"), [avg("__type__", "a")])
+case("a sum of an array offset, then a reserved name", q("ints"), [total("a[0]", "s"), total("__x__", "t")])
+case("a sum of __type__, then an array offset", q("ints"), [total("__type__", "s"), total("a[0]", "t")])
+case("a sum of an array offset, then __type__", q("ints"), [total("a[0]", "s"), total("__type__", "t")])
+case("a sum of __name__, then an array offset", q("ints"), [total("__name__", "s"), total("a[0]", "t")])
+case("a sum of an array offset and a count up to -1", q("ints"), [total("a[0]", "s"), count("n", up_to=-1)])
+case("a sum of an array offset and six aggregations", q("ints"), [total("a[0]", "s"), count("a"), count("b"), count("c"), count("d"), count("e")])
+case("a sum of an array offset and a reserved alias", q("ints"), [total("a[0]", "s"), count("__x__")])
+case("a sum of __name__ and a reserved alias after it", q("ints"), [total("__name__", "s"), count("__x__")])
+case("a sum of __type__ and a duplicate alias", q("ints"), [total("__type__", "x"), count("x")])
+case("a sum of an array offset and a duplicate alias", q("ints"), [total("a[0]", "x"), count("x")])
+case("a duplicate alias before a sum of __name__", q("ints"), [count("x"), count("x"), total("__name__", "s")])
+case("a duplicate alias before a reserved alias", q("ints"), [count("x"), count("x"), count("__y__")])
+case("a reserved filter path before a sum of __type__", q("ints", where={"fieldFilter": {"field": f("__x__"), "op": "EQUAL", "value": i(1)}}), [total("__type__", "s")])
+case("a filter without a value before a sum of an array offset", q("ints", where={"fieldFilter": {"field": f("v"), "op": "EQUAL"}}), [total("a[0]", "s")])
+case("a sum of an array offset before duplicate orders", q("ints", orderBy=[{"field": f("v")}, {"field": f("v")}]), [total("a[0]", "s")])
+case("a sum of __type__ before an array offset in a filter", q("ints", where={"fieldFilter": {"field": f("a[0]"), "op": "EQUAL", "value": i(1)}}), [total("__type__", "s")])
+case("an array offset in the projection before a sum of __type__", q("ints", select={"fields": [f("a[0]")]}), [total("__type__", "s")])
+case("a sum of __type__ without a collection", {}, [total("__type__", "s")])
+case("a sum of __type__ and a negative limit", q("ints", limit=-1), [total("__type__", "s")])
 
 
 def fill(value):

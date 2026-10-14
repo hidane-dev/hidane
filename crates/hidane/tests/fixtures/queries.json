@@ -21708,6 +21708,2664 @@
    }
   },
   {
+   "name": "filter on __key__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__key__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path member name \"__key__\"."
+   }
+  },
+  {
+   "name": "filter on a.__key__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a.__key__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path member name \"__key__\"."
+   }
+  },
+  {
+   "name": "filter on `__key__`",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "`__key__`"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path member name \"__key__\"."
+   }
+  },
+  {
+   "name": "filter on __key__.a b",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__key__.a b"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path member name \"__key__\"."
+   }
+  },
+  {
+   "name": "filter on __x__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__x__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "filter on a.__x__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a.__x__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "filter on __type__.__x__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__type__.__x__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "filter on a[2147483648]",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a[2147483648]"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path \"a[2147483648]\". Array offsets must be within the range [0, 2^31 - 1]."
+   }
+  },
+  {
+   "name": "filter on __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__type__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __type__ is reserved"
+   }
+  },
+  {
+   "name": "filter on __type__.a",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__type__.a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __type__ is reserved"
+   }
+  },
+  {
+   "name": "filter on a.__type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a.__type__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "filter on a.b.__type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a.b.__type__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "filter on a.__type__.b",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a.__type__.b"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __type__ is reserved"
+   }
+  },
+  {
+   "name": "filter on a.__type__[0]",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a.__type__[0]"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __type__ is reserved"
+   }
+  },
+  {
+   "name": "filter on a[0].__type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a[0].__type__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "filter on __name__.a",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__.a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __key__ is reserved"
+   }
+  },
+  {
+   "name": "filter on a.__name__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a.__name__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __key__ is reserved"
+   }
+  },
+  {
+   "name": "filter on __name__[0]",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__[0]"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __key__ is reserved"
+   }
+  },
+  {
+   "name": "filter on a[0]",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "filter on a[0][1]",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a[0][1]"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "filter on a[0].__x__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a[0].__x__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "filter on __x__[0]",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__x__[0]"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__[0]"
+   }
+  },
+  {
+   "name": "filter on `__name__`",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "`__name__`"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "__key__ filter value must be a Key"
+   }
+  },
+  {
+   "name": "filter on `__type__`",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "`__type__`"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __type__ is reserved"
+   }
+  },
+  {
+   "name": "unary filter on __key__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "unaryFilter": {
+      "field": {
+       "fieldPath": "__key__"
+      },
+      "op": "IS_NULL"
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path member name \"__key__\"."
+   }
+  },
+  {
+   "name": "order by __key__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__key__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path member name \"__key__\"."
+   }
+  },
+  {
+   "name": "unary filter on __x__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "unaryFilter": {
+      "field": {
+       "fieldPath": "__x__"
+      },
+      "op": "IS_NULL"
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "order by __x__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__x__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "unary filter on __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "unaryFilter": {
+      "field": {
+       "fieldPath": "__type__"
+      },
+      "op": "IS_NULL"
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __type__ is reserved"
+   }
+  },
+  {
+   "name": "order by __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__type__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __type__ is reserved"
+   }
+  },
+  {
+   "name": "unary filter on a.__type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "unaryFilter": {
+      "field": {
+       "fieldPath": "a.__type__"
+      },
+      "op": "IS_NULL"
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "order by a.__type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a.__type__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "unary filter on a.__type__.b",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "unaryFilter": {
+      "field": {
+       "fieldPath": "a.__type__.b"
+      },
+      "op": "IS_NULL"
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __type__ is reserved"
+   }
+  },
+  {
+   "name": "order by a.__type__.b",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a.__type__.b"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __type__ is reserved"
+   }
+  },
+  {
+   "name": "unary filter on a.__name__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "unaryFilter": {
+      "field": {
+       "fieldPath": "a.__name__"
+      },
+      "op": "IS_NULL"
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __key__ is reserved"
+   }
+  },
+  {
+   "name": "order by a.__name__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a.__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __key__ is reserved"
+   }
+  },
+  {
+   "name": "unary filter on a[0]",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "unaryFilter": {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "op": "IS_NULL"
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "order by a[0]",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "unary filter on __name__[0]",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "unaryFilter": {
+      "field": {
+       "fieldPath": "__name__[0]"
+      },
+      "op": "IS_NULL"
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __key__ is reserved"
+   }
+  },
+  {
+   "name": "order by __name__[0]",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__[0]"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __key__ is reserved"
+   }
+  },
+  {
+   "name": "select __key__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "__key__"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path member name \"__key__\"."
+   }
+  },
+  {
+   "name": "select __x__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "__x__"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "select __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "__type__"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __type__ is reserved"
+   }
+  },
+  {
+   "name": "select a.__type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "a.__type__"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __type__ is reserved"
+   }
+  },
+  {
+   "name": "select __type__.a",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "__type__.a"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __type__ is reserved"
+   }
+  },
+  {
+   "name": "select a.__name__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "a.__name__"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __key__ is reserved"
+   }
+  },
+  {
+   "name": "select a[0]",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "a[0]"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "select __name__[0]",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "__name__[0]"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __key__ is reserved"
+   }
+  },
+  {
+   "name": "select a[0].__x__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "a[0].__x__"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "a reserved name in a filter before an unknown operator",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "op": "OPERATOR_UNSPECIFIED",
+      "field": {
+       "fieldPath": "__x__"
+      },
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "a reserved name in a filter before a value without a type",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "op": "EQUAL",
+      "field": {
+       "fieldPath": "__x__"
+      },
+      "value": {}
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "an array offset in a filter after a value without a type",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "op": "EQUAL",
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "value": {}
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Cannot convert firestore.v1.Value with type unset."
+   }
+  },
+  {
+   "name": "an array offset in a filter after an unknown operator",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "op": "OPERATOR_UNSPECIFIED",
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Unknown FieldFilter operator."
+   }
+  },
+  {
+   "name": "an array offset in a filter after in without an array",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "op": "IN",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "'IN' requires an ArrayValue."
+   }
+  },
+  {
+   "name": "the filter's paths are read before the projection's",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__x__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "__y__"
+      }
+     ]
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__z__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "the projection's paths are read before the orders'",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "__x__"
+      }
+     ]
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__y__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "the projection is checked before the orders are read",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "a[0]"
+      }
+     ]
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__x__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "an invalid projection path before an invalid order path",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "a..b"
+      }
+     ]
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "c..d"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path \"a..b\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\]|(?:\\\\.))+`)"
+   }
+  },
+  {
+   "name": "every projection path is read before any is checked",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "a[0]"
+      },
+      {
+       "fieldPath": "__x__"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "an array offset in the projection before a cursor value without a type",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "a[0]"
+      }
+     ]
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "b"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "startAt": {
+     "values": [
+      {}
+     ],
+     "before": true
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "an array offset in a filter before a reserved order path",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__x__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "an array offset in an order after a cursor value without a type",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "startAt": {
+     "values": [
+      {}
+     ],
+     "before": true
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Cannot convert firestore.v1.Value with type unset."
+   }
+  },
+  {
+   "name": "an array offset in an order after too many cursor values",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "startAt": {
+     "values": [
+      {
+       "integerValue": "1"
+      },
+      {
+       "integerValue": "2"
+      }
+     ],
+     "before": true
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Cursor has too many values."
+   }
+  },
+  {
+   "name": "an array offset in an order after a negative limit",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "limit": -1
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "limit is negative"
+   }
+  },
+  {
+   "name": "an array offset in an order after a negative offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "offset": -1
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "offset is negative"
+   }
+  },
+  {
+   "name": "an array offset in a filter after a negative limit",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "limit": -1
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "limit is negative"
+   }
+  },
+  {
+   "name": "an array offset in an order after duplicate orders",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "b"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "b"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain duplicate fields b"
+   }
+  },
+  {
+   "name": "duplicate orders with array offsets",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a[01]"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "a[1]"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain duplicate fields a[1]"
+   }
+  },
+  {
+   "name": "duplicate orders printed unquoted",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "`a b`"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "`a b`"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain duplicate fields a b"
+   }
+  },
+  {
+   "name": "duplicate orders of a quoted path with a dot",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "`a.b`"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "`a.b`"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain duplicate fields a.b"
+   }
+  },
+  {
+   "name": "duplicate orders of __name__ in a longer path",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a.__name__"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "a.__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain duplicate fields a.__key__"
+   }
+  },
+  {
+   "name": "an array offset in an order after a field after the key",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain more fields after the key"
+   }
+  },
+  {
+   "name": "an inequality on an array offset before an order by the key",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "op": "GREATER_THAN",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain more fields after the key"
+   }
+  },
+  {
+   "name": "an array offset in a filter after two array-contains",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a[0]"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "FAILED_PRECONDITION",
+    "message": "Only a single array-contains clause is allowed in a query"
+   }
+  },
+  {
+   "name": "an array offset in a filter after too many disjunctions",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a[0]"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            },
+            {
+             "integerValue": "11"
+            },
+            {
+             "integerValue": "12"
+            },
+            {
+             "integerValue": "13"
+            },
+            {
+             "integerValue": "14"
+            },
+            {
+             "integerValue": "15"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "stringValue": "x"
+            },
+            {
+             "stringValue": "y"
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Too many disjunctions after normalization. Result had 32 disjunctions which is more than the maximum of 30"
+   }
+  },
+  {
+   "name": "an array offset in a filter after an order without a collection",
+   "parent": "",
+   "query": {
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "b"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "kind is required for all orders except __key__ ascending"
+   }
+  },
+  {
+   "name": "an array offset in a filter without a collection",
+   "parent": "",
+   "query": {
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "__type__ in a filter without a collection",
+   "parent": "",
+   "query": {
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__type__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __type__ is reserved"
+   }
+  },
+  {
+   "name": "a filter without a collection before __type__ in the next",
+   "parent": "",
+   "query": {
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__type__"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "kind is required for filter: b"
+   }
+  },
+  {
+   "name": "__type__ in a filter before a filter without a collection",
+   "parent": "",
+   "query": {
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__type__"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __type__ is reserved"
+   }
+  },
+  {
+   "name": "__name__ not a key before a filter without a collection",
+   "parent": "",
+   "query": {
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "__key__ filter value must be a Key"
+   }
+  },
+  {
+   "name": "is null on __name__ before a filter without a collection",
+   "parent": "",
+   "query": {
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "unaryFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "IS_NULL"
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "__key__ filter value must be a Key"
+   }
+  },
+  {
+   "name": "a filter without a collection, quoted path",
+   "parent": "",
+   "query": {
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "`a b`"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "kind is required for filter: a b"
+   }
+  },
+  {
+   "name": "__name__ not a key before an array offset in the next filter",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a[0]"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "__key__ filter value must be a Key"
+   }
+  },
+  {
+   "name": "an array offset in a filter before __name__ not a key",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a[0]"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "array-contains on __name__ before an array offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "referenceValue": "{documents}/p/p1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a[0]"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __key__ is reserved"
+   }
+  },
+  {
+   "name": "__name__ not a key before an array offset in an order",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "__key__ filter value must be a Key"
+   }
+  },
+  {
+   "name": "__type__ in a filter before an array offset in an order",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__type__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __type__ is reserved"
+   }
+  },
+  {
+   "name": "an array offset in a filter before __type__ in an order",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__type__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "an order by a path ending in __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a.__type__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "an inequality on a path ending in __type__ before an order by the key",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a.__type__"
+      },
+      "op": "GREATER_THAN",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain more fields after the key"
+   }
+  },
+  {
+   "name": "a quoted __name__ is the key",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "`__name__`"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "document": "p/p1"
+     },
+     {
+      "document": "p/p2"
+     },
+     {
+      "document": "p/p3"
+     },
+     {
+      "document": "p/p4"
+     },
+     {
+      "document": "p/p5"
+     },
+     {
+      "document": "p/p6"
+     },
+     {
+      "document": "p/p7"
+     },
+     {
+      "document": "p/p8",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
    "name": "find_nearest",
    "parent": "",
    "query": {

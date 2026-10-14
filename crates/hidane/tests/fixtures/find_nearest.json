@@ -2945,6 +2945,359 @@
      "fields": {}
     }
    ]
+  },
+  {
+   "name": "a vector field with a reserved name",
+   "query": {
+    "from": [
+     {
+      "collectionId": "v"
+     }
+    ],
+    "findNearest": {
+     "vectorField": {
+      "fieldPath": "__x__"
+     },
+     "queryVector": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1
+           },
+           {
+            "doubleValue": 1
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     "distanceMeasure": "EUCLIDEAN",
+     "limit": 10
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "a vector field __key__",
+   "query": {
+    "from": [
+     {
+      "collectionId": "v"
+     }
+    ],
+    "findNearest": {
+     "vectorField": {
+      "fieldPath": "__key__"
+     },
+     "queryVector": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1
+           },
+           {
+            "doubleValue": 1
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     "distanceMeasure": "EUCLIDEAN",
+     "limit": 10
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "message": "Invalid property path member name \"__key__\"."
+   }
+  },
+  {
+   "name": "a vector field with an array offset",
+   "query": {
+    "from": [
+     {
+      "collectionId": "v"
+     }
+    ],
+    "findNearest": {
+     "vectorField": {
+      "fieldPath": "v[0]"
+     },
+     "queryVector": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1
+           },
+           {
+            "doubleValue": 1
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     "distanceMeasure": "EUCLIDEAN",
+     "limit": 10
+    }
+   },
+   "outcome": []
+  },
+  {
+   "name": "a vector field __type__",
+   "query": {
+    "from": [
+     {
+      "collectionId": "v"
+     }
+    ],
+    "findNearest": {
+     "vectorField": {
+      "fieldPath": "__type__"
+     },
+     "queryVector": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1
+           },
+           {
+            "doubleValue": 1
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     "distanceMeasure": "EUCLIDEAN",
+     "limit": 10
+    }
+   },
+   "outcome": []
+  },
+  {
+   "name": "a vector field with a reserved name before a query limit",
+   "query": {
+    "from": [
+     {
+      "collectionId": "v"
+     }
+    ],
+    "findNearest": {
+     "vectorField": {
+      "fieldPath": "__x__"
+     },
+     "queryVector": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1
+           },
+           {
+            "doubleValue": 1
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     "distanceMeasure": "EUCLIDEAN",
+     "limit": 10
+    },
+    "limit": 1
+   },
+   "outcome": {
+    "status": 400,
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "no limit before a filter on __name__ that is not a key",
+   "query": {
+    "from": [
+     {
+      "collectionId": "v"
+     }
+    ],
+    "findNearest": {
+     "vectorField": {
+      "fieldPath": "v"
+     },
+     "queryVector": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1
+           },
+           {
+            "doubleValue": 1
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     "distanceMeasure": "EUCLIDEAN"
+    },
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "message": "FindNearest.limit must be a positive integer of no more than 1000"
+   }
+  },
+  {
+   "name": "no limit before an order without a collection",
+   "query": {
+    "from": [],
+    "findNearest": {
+     "vectorField": {
+      "fieldPath": "v"
+     },
+     "queryVector": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1
+           },
+           {
+            "doubleValue": 1
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     "distanceMeasure": "EUCLIDEAN"
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "k"
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "message": "FindNearest.limit must be a positive integer of no more than 1000"
+   }
+  },
+  {
+   "name": "no limit before an array offset in a filter",
+   "query": {
+    "from": [
+     {
+      "collectionId": "v"
+     }
+    ],
+    "findNearest": {
+     "vectorField": {
+      "fieldPath": "v"
+     },
+     "queryVector": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1
+           },
+           {
+            "doubleValue": 1
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     "distanceMeasure": "EUCLIDEAN"
+    },
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "message": "FindNearest.limit must be a positive integer of no more than 1000"
+   }
   }
  ],
  "aggregations": [

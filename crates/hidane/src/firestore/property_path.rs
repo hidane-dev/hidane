@@ -9,7 +9,8 @@
 //! `__key__` and `__type__` (`__x__`) is refused with the rest of the path.
 //!
 //! What may hold array offsets, `__key__` and `__type__` depends on where the path is, and is
-//! checked later, segment by segment: masks ([`PropertyPath::check_mask`]) and transforms
+//! checked later, segment by segment: masks and projections ([`PropertyPath::check_mask`]),
+//! filters, orders and aggregations ([`PropertyPath::check_query`]), transforms
 //! ([`PropertyPath::check_transform`]).
 
 use std::fmt;
@@ -184,6 +185,42 @@ impl PropertyPath {
         Ok(())
     }
 
+    /// The path of a filter, an order or an aggregation: `__name__` alone (the key), `__type__`
+    /// only as the last segment of a longer path, no array offsets, segment by segment.
+    pub fn check_query(&self) -> Result<(), Status> {
+        let last = self.0.len() - 1;
+        for (i, segment) in self.0.iter().enumerate() {
+            if segment.is_key() && !self.is_name() {
+                return Err(Status::invalid_argument("the name __key__ is reserved"));
+            }
+            if segment.name == "__type__" && !(i == last && i > 0 && segment.offsets.is_empty()) {
+                return Err(Status::invalid_argument("the name __type__ is reserved"));
+            }
+            if !segment.offsets.is_empty() {
+                return Err(invalid());
+            }
+        }
+        Ok(())
+    }
+
+    /// The path `__type__` alone.
+    pub fn is_type(&self) -> bool {
+        matches!(self.0.as_slice(), [only] if only.name == "__type__" && only.offsets.is_empty())
+    }
+
+    /// A field path read and checked before, as a path of segments without array offsets.
+    pub fn of(path: &FieldPath) -> Self {
+        Self(
+            path.segments()
+                .iter()
+                .map(|name| Segment {
+                    name: name.clone(),
+                    offsets: Vec::new(),
+                })
+                .collect(),
+        )
+    }
+
     /// The path of a field transform: no array offsets (`__name__` is the field `__key__`,
     /// `__type__` a field like another).
     pub fn check_transform(&self) -> Result<(), Status> {
@@ -260,6 +297,12 @@ impl fmt::Display for Shown<'_> {
     }
 }
 
+/// A field path printed as the official emulator's messages print one (see [`PropertyPath`]'s
+/// `Display`).
+pub fn shown(path: &FieldPath) -> String {
+    PropertyPath::of(path).to_string()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -323,6 +366,15 @@ mod tests {
         );
         assert!(check("__name__", PropertyPath::check_mask).is_ok());
         assert!(check("`__name__`", PropertyPath::check_mask).is_ok());
+        assert!(check("a.__type__", PropertyPath::check_query).is_ok());
+        assert_eq!(
+            check("a.__type__[0]", PropertyPath::check_query).unwrap_err(),
+            "the name __type__ is reserved"
+        );
+        assert_eq!(
+            check("a.__type__.b", PropertyPath::check_query).unwrap_err(),
+            "the name __type__ is reserved"
+        );
         assert!(check("__type__.__name__", PropertyPath::check_transform).is_ok());
         assert!(check("a[0]", PropertyPath::check_transform).is_err());
         let a = PropertyPath::read("a").unwrap();

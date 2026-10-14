@@ -36,6 +36,7 @@ use tonic::Status;
 
 use super::{
     names::{self, Name},
+    property_path::{self, PropertyPath},
     validate,
 };
 
@@ -50,28 +51,41 @@ const MAX_DISJUNCTIONS: usize = 30;
 enum Field {
     Name,
     Path(FieldPath),
+    /// A path with array offsets (`a[0]`), which the official emulator reads, compares and
+    /// prints like another until it refuses it, late ([`Field::check`]); it reaches nothing.
+    Indexed(PropertyPath),
 }
 
 impl Field {
+    /// Reads a filter's or an order's path ([`PropertyPath::read`]); what it may hold is
+    /// checked late ([`Field::check`]).
     fn parse(reference: Option<&FieldReference>) -> Result<Self, Status> {
-        let path = reference.map_or("", |r| r.field_path.as_str());
-        if path == "__name__" {
-            return Ok(Self::Name);
-        }
-        if path.is_empty() {
-            return Err(Status::invalid_argument(
-                "Invalid empty property path string.",
-            ));
-        }
-        FieldPath::parse(path)
-            .map(Self::Path)
-            .map_err(Status::invalid_argument)
+        let path = PropertyPath::read(reference.map_or("", |r| r.field_path.as_str()))?;
+        Ok(if path.is_name() {
+            Self::Name
+        } else if path.has_offsets() {
+            Self::Indexed(path)
+        } else {
+            Self::Path(path.field_path())
+        })
     }
 
+    /// The path as the official emulator's messages print it: segments unquoted.
     fn display(&self) -> String {
         match self {
             Self::Name => "__key__".to_owned(),
-            Self::Path(path) => path.to_string(),
+            Self::Path(path) => property_path::shown(path),
+            Self::Indexed(path) => path.to_string(),
+        }
+    }
+
+    /// What a filter's or an order's path may hold ([`PropertyPath::check_query`]), checked
+    /// after the orders, the limit and whether the orders need a collection (#262).
+    fn check(&self) -> Result<(), Status> {
+        match self {
+            Self::Name => Ok(()),
+            Self::Path(path) => PropertyPath::of(path).check_query(),
+            Self::Indexed(path) => path.check_query(),
         }
     }
 }
@@ -227,14 +241,10 @@ impl Nearest {
             .vector_field
             .as_ref()
             .map_or("", |f| f.field_path.as_str());
-        if path.is_empty() {
-            return Err(Status::invalid_argument(
-                "Invalid empty property path string.",
-            ));
-        }
         // A path, as in production; the official emulator reads `a.b` as one field named
-        // `a.b` (docs/parity-exceptions.md).
-        let field = FieldPath::parse(path).map_err(Status::invalid_argument)?;
+        // `a.b` (docs/parity-exceptions.md). It is read as other paths are, and nothing more
+        // is checked (#262).
+        let field = PropertyPath::read(path)?.field_path();
         if query.limit.is_some() {
             return Err(Status::invalid_argument(
                 "A query limit cannot be used with FindNearest",
@@ -370,6 +380,25 @@ impl Query {
             .map(parse_filter)
             .transpose()?
             .flatten();
+        // The projection, read and checked as a mask is, before the orders (#262).
+        let projection = query
+            .select
+            .as_ref()
+            .map(|select| {
+                let read = select
+                    .fields
+                    .iter()
+                    .map(|field| PropertyPath::read(&field.field_path))
+                    .collect::<Result<Vec<_>, _>>()?;
+                read.iter().try_for_each(PropertyPath::check_mask)?;
+                Ok::<_, Status>(
+                    read.iter()
+                        .filter(|path| !path.is_name())
+                        .map(PropertyPath::field_path)
+                        .collect(),
+                )
+            })
+            .transpose()?;
         let explicit = query
             .order_by
             .iter()
@@ -380,19 +409,6 @@ impl Query {
                 })
             })
             .collect::<Result<Vec<_>, Status>>()?;
-        let projection = query
-            .select
-            .as_ref()
-            .map(|select| {
-                let mut paths = Vec::new();
-                for field in &select.fields {
-                    if let Field::Path(path) = Field::parse(Some(field))? {
-                        paths.push(path);
-                    }
-                }
-                Ok::<_, Status>(paths)
-            })
-            .transpose()?;
 
         let bound =
             |cursor: Option<&Cursor>| cursor.map(|c| parse_cursor(c, &explicit)).transpose();
@@ -419,6 +435,12 @@ impl Query {
             return Err(Status::invalid_argument("offset is negative"));
         }
         let offset = usize::try_from(query.offset).unwrap_or(0);
+        let nearest = query
+            .find_nearest
+            .as_ref()
+            .zip(target)
+            .map(|(find, target)| Nearest::parse(find, target, query))
+            .transpose()?;
         if kindless && (orders_fields || explicit.iter().any(|o| o.field != Field::Name)) {
             return Err(Status::invalid_argument(
                 "kind is required for all orders except __key__ ascending",
@@ -427,12 +449,7 @@ impl Query {
         if let Some(filter) = &filter {
             check_filter_late(filter, kindless)?;
         }
-        let nearest = query
-            .find_nearest
-            .as_ref()
-            .zip(target)
-            .map(|(find, target)| Nearest::parse(find, target, query))
-            .transpose()?;
+        explicit.iter().try_for_each(|order| order.field.check())?;
 
         Ok(Self {
             parent,
@@ -500,6 +517,7 @@ impl Query {
                 let field = match &order.field {
                     Field::Name => "__name__".to_owned(),
                     Field::Path(path) => path.segments().join("."),
+                    Field::Indexed(path) => path.to_string(),
                 };
                 let direction = if order.descending { "DESC" } else { "ASC" };
                 (field, direction.to_owned())
@@ -580,6 +598,7 @@ impl Query {
         let field_value = |field: &Field| match field {
             Field::Name => Some(&name),
             Field::Path(path) => get(&fields, path),
+            Field::Indexed(_) => None,
         };
         if self
             .filter
@@ -918,39 +937,24 @@ fn check_key_equality(leaves: &[(&Field, Leaf)]) -> Result<(), Status> {
     Ok(())
 }
 
-/// The filters on `__name__`, last (#262): no array membership, no unary filter, and every
-/// value a reference.
-fn check_key_values(filter: &Filter, leaves: &[(&Field, Leaf)]) -> Result<(), Status> {
-    for (field, kind) in leaves {
-        if **field != Field::Name {
-            continue;
-        }
-        match kind {
-            Leaf::Compare(Op::ArrayContains | Op::ArrayContainsAny) => {
-                return Err(Status::invalid_argument("the name __key__ is reserved"));
-            }
-            Leaf::Unary(_) => return Err(key_value_required()),
-            Leaf::Compare(_) => {}
-        }
-    }
-    let mut keys = Ok(());
-    visit_compares(filter, &mut |field, op, value| {
-        if keys.is_ok() && *field == Field::Name {
-            keys = key_values(op, value).iter().try_for_each(check_key);
-        }
-    });
-    keys
-}
-
-fn visit_compares(filter: &Filter, f: &mut dyn FnMut(&Field, Op, &Value)) {
+/// A filter on `__name__`, last (#262): no array membership, no unary filter, and every value
+/// a reference.
+fn check_key_filter(filter: &Filter) -> Result<(), Status> {
     match filter {
-        Filter::And(filters) | Filter::Or(filters) => {
-            for filter in filters {
-                visit_compares(filter, f);
-            }
-        }
-        Filter::Compare { field, op, value } => f(field, *op, value),
-        Filter::Unary { .. } => {}
+        Filter::Compare {
+            field: Field::Name,
+            op: Op::ArrayContains | Op::ArrayContainsAny,
+            ..
+        } => Err(Status::invalid_argument("the name __key__ is reserved")),
+        Filter::Unary {
+            field: Field::Name, ..
+        } => Err(key_value_required()),
+        Filter::Compare {
+            field: Field::Name,
+            op,
+            value,
+        } => key_values(*op, value).iter().try_for_each(check_key),
+        _ => Ok(()),
     }
 }
 
@@ -1045,23 +1049,38 @@ fn check_filter(filter: &Filter) -> Result<(), Status> {
 }
 
 /// The last checks of a filter, after the orders, the limit and whether the orders need a
-/// collection (`tools/oracle/queries.py`, #262): whether it needs a collection, then the values
-/// on `__name__` (`check_key_values`).
+/// collection (`tools/oracle/queries.py`, #262), filter by filter in order: what its path may
+/// hold ([`Field::check`]), whether it needs a collection, then, on `__name__`, its operator
+/// and its values ([`check_key_filter`]).
 fn check_filter_late(filter: &Filter, kindless: bool) -> Result<(), Status> {
     let mut leaves = Vec::new();
-    collect_leaves(filter, &mut leaves);
-    if kindless
-        && let Some(field) = leaves
-            .iter()
-            .map(|leaf| leaf.0)
-            .find(|field| **field != Field::Name)
-    {
-        return Err(Status::invalid_argument(format!(
-            "kind is required for filter: {}",
-            field.display()
-        )));
+    collect_leaf_filters(filter, &mut leaves);
+    for leaf in leaves {
+        let field = match leaf {
+            Filter::Compare { field, .. } | Filter::Unary { field, .. } => field,
+            Filter::And(_) | Filter::Or(_) => continue,
+        };
+        field.check()?;
+        if kindless && *field != Field::Name {
+            return Err(Status::invalid_argument(format!(
+                "kind is required for filter: {}",
+                field.display()
+            )));
+        }
+        check_key_filter(leaf)?;
     }
-    check_key_values(filter, &leaves)
+    Ok(())
+}
+
+fn collect_leaf_filters<'a>(filter: &'a Filter, out: &mut Vec<&'a Filter>) {
+    match filter {
+        Filter::And(filters) | Filter::Or(filters) => {
+            for filter in filters {
+                collect_leaf_filters(filter, out);
+            }
+        }
+        leaf => out.push(leaf),
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -1268,8 +1287,9 @@ fn disjunctions(filter: &Filter) -> Option<Vec<Conjunction<'_>>> {
 }
 
 /// Fields that need an implicit ordering: those of range, `!=`, `not-in`, `is not null` and
-/// `is not NaN` filters, anywhere in the filter.
-fn inequality_fields(filter: &Filter, out: &mut Vec<FieldPath>) {
+/// `is not NaN` filters, anywhere in the filter (paths with array offsets too, until they are
+/// refused).
+fn inequality_fields(filter: &Filter, out: &mut Vec<Field>) {
     match filter {
         Filter::And(filters) | Filter::Or(filters) => {
             for filter in filters {
@@ -1277,15 +1297,15 @@ fn inequality_fields(filter: &Filter, out: &mut Vec<FieldPath>) {
             }
         }
         Filter::Compare {
-            field: Field::Path(path),
+            field: field @ (Field::Path(_) | Field::Indexed(_)),
             op:
                 Op::Less | Op::LessOrEqual | Op::Greater | Op::GreaterOrEqual | Op::NotEqual | Op::NotIn,
             ..
         }
         | Filter::Unary {
-            field: Field::Path(path),
+            field: field @ (Field::Path(_) | Field::Indexed(_)),
             op: UnaryOp::NotNan | UnaryOp::NotNull,
-        } => out.push(path.clone()),
+        } => out.push(field.clone()),
         Filter::Compare { .. } | Filter::Unary { .. } => {}
     }
 }
@@ -1319,10 +1339,15 @@ fn complete_orders(explicit: &[Order], filter: Option<&Filter>) -> Result<Vec<Or
     if let Some(filter) = filter {
         inequality_fields(filter, &mut implicit);
     }
-    implicit.sort();
+    // In field path order; paths with array offsets after the others.
+    implicit.sort_by(|a, b| match (a, b) {
+        (Field::Path(a), Field::Path(b)) => a.cmp(b),
+        (Field::Path(_), _) => Ordering::Less,
+        (_, Field::Path(_)) => Ordering::Greater,
+        _ => Ordering::Equal,
+    });
     implicit.dedup();
-    for path in implicit {
-        let field = Field::Path(path);
+    for field in implicit {
         if !orders.iter().any(|o| o.field == field) {
             orders.push(Order { field, descending });
         }
@@ -1456,6 +1481,11 @@ fn rules_filter(filter: &Filter) -> hidane_rules::eval::Filter {
         Field::Name => Rules::Name { op, value },
         Field::Path(path) => Rules::Field {
             field: path.segments().to_vec(),
+            op,
+            value,
+        },
+        Field::Indexed(path) => Rules::Field {
+            field: vec![path.to_string()],
             op,
             value,
         },

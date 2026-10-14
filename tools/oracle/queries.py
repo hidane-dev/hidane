@@ -466,6 +466,68 @@ case("in 7 x in 9 (63 disjunctions)", q("p", where_=AND(ff("a", "IN", arr(*[i(n)
 case("or of 31 equalities x in 2 (62 disjunctions)", q("p", where_=AND(OR(*[ff("a", "EQUAL", i(n)) for n in range(31)]), ff("b", "IN", arr(s("x"), s("y"))))))
 case("array-contains-any with 31 values", q("p", where_=ff("tags", "ARRAY_CONTAINS_ANY", arr(*[i(n) for n in range(31)]))))
 case("is-not-null and is-not-nan", q("p", where_=AND(uf("a", "IS_NOT_NULL"), uf("b", "IS_NOT_NAN"))))
+# --- field paths (#262) ----------------------------------------------------------------------
+# A path is read as everywhere (rest.py): array offsets, `__key__` refused as it is read,
+# `__name__` read as `__key__`, then reserved names but `__key__` and `__type__`. The filter's
+# paths are read first, then the projection's, then the orders'. A projection is then checked
+# as a mask is (`__key__` in a longer path, `__type__`, array offsets), before the orders are
+# read. Filters and orders are checked late: after the orders, the limit and whether the orders
+# need a collection, filter by filter (what its path holds, whether it needs a collection, the
+# checks of __name__), then the orders. There `__type__` may only end a longer path, and the
+# messages print paths unquoted, array offsets as `[n]`.
+def sel(*paths): return {"fields": [f(p) for p in paths]}
+for p in ["__key__", "a.__key__", "`__key__`", "__key__.a b", "__x__", "a.__x__", "__type__.__x__", "a[2147483648]",
+          "__type__", "__type__.a", "a.__type__", "a.b.__type__", "a.__type__.b", "a.__type__[0]", "a[0].__type__",
+          "__name__.a", "a.__name__", "__name__[0]", "a[0]", "a[0][1]", "a[0].__x__", "__x__[0]", "`__name__`", "`__type__`"]:
+    case(f"filter on {p}", q("p", where_=ff(p, "EQUAL", i(1))))
+for p in ["__key__", "__x__", "__type__", "a.__type__", "a.__type__.b", "a.__name__", "a[0]", "__name__[0]"]:
+    case(f"unary filter on {p}", q("p", where_=uf(p, "IS_NULL")))
+    case(f"order by {p}", q("p", order=[asc(p)]))
+for p in ["__key__", "__x__", "__type__", "a.__type__", "__type__.a", "a.__name__", "a[0]", "__name__[0]", "a[0].__x__"]:
+    case(f"select {p}", q("p", select=sel(p)))
+case("a reserved name in a filter before an unknown operator", q("p", where_=ffv("__x__", "OPERATOR_UNSPECIFIED", i(1))))
+case("a reserved name in a filter before a value without a type", q("p", where_=ffv("__x__", "EQUAL", UNSET)))
+case("an array offset in a filter after a value without a type", q("p", where_=ffv("a[0]", "EQUAL", UNSET)))
+case("an array offset in a filter after an unknown operator", q("p", where_=ffv("a[0]", "OPERATOR_UNSPECIFIED", i(1))))
+case("an array offset in a filter after in without an array", q("p", where_=ff("a[0]", "IN", i(1))))
+case("the filter's paths are read before the projection's", q("p", where_=ff("__x__", "EQUAL", i(1)), select=sel("__y__"), order=[asc("__z__")]))
+case("the projection's paths are read before the orders'", q("p", select=sel("__x__"), order=[asc("__y__")]))
+case("the projection is checked before the orders are read", q("p", select=sel("a[0]"), order=[asc("__x__")]))
+case("an invalid projection path before an invalid order path", q("p", select=sel("a..b"), order=[asc("c..d")]))
+case("every projection path is read before any is checked", q("p", select=sel("a[0]", "__x__")))
+case("an array offset in the projection before a cursor value without a type", q("p", select=sel("a[0]"), order=[asc("b")], start=cur(UNSET, before=True)))
+case("an array offset in a filter before a reserved order path", q("p", where_=ff("a[0]", "EQUAL", i(1)), order=[asc("__x__")]))
+case("an array offset in an order after a cursor value without a type", q("p", order=[asc("a[0]")], start=cur(UNSET, before=True)))
+case("an array offset in an order after too many cursor values", q("p", order=[asc("a[0]")], start=cur(i(1), i(2), before=True)))
+case("an array offset in an order after a negative limit", q("p", order=[asc("a[0]")], limit=-1))
+case("an array offset in an order after a negative offset", q("p", order=[asc("a[0]")], offset=-1))
+case("an array offset in a filter after a negative limit", q("p", where_=ff("a[0]", "EQUAL", i(1)), limit=-1))
+case("an array offset in an order after duplicate orders", q("p", order=[asc("a[0]"), asc("b"), asc("b")]))
+case("duplicate orders with array offsets", q("p", order=[asc("a[01]"), asc("a[1]")]))
+case("duplicate orders printed unquoted", q("p", order=[asc("`a b`"), asc("`a b`")]))
+case("duplicate orders of a quoted path with a dot", q("p", order=[asc("`a.b`"), asc("`a.b`")]))
+case("duplicate orders of __name__ in a longer path", q("p", order=[asc("a.__name__"), asc("a.__name__")]))
+case("an array offset in an order after a field after the key", q("p", order=[asc("__name__"), asc("a[0]")]))
+case("an inequality on an array offset before an order by the key", q("p", where_=ff("a[0]", "GREATER_THAN", i(1)), order=[asc("__name__")]))
+case("an array offset in a filter after two array-contains", q("p", where_=AND(ff("a[0]", "ARRAY_CONTAINS", i(1)), ff("b", "ARRAY_CONTAINS", i(1)))))
+case("an array offset in a filter after too many disjunctions", q("p", where_=AND(ff("a[0]", "IN", arr(*ints(0, 16))), ff("b", "IN", arr(s("x"), s("y"))))))
+case("an array offset in a filter after an order without a collection", {"where": ff("a[0]", "EQUAL", i(1)), "orderBy": [asc("b")]})
+case("an array offset in a filter without a collection", {"where": ff("a[0]", "EQUAL", i(1))})
+case("__type__ in a filter without a collection", {"where": ff("__type__", "EQUAL", i(1))})
+case("a filter without a collection before __type__ in the next", {"where": AND(ff("b", "EQUAL", i(1)), ff("__type__", "EQUAL", i(1)))})
+case("__type__ in a filter before a filter without a collection", {"where": AND(ff("__type__", "EQUAL", i(1)), ff("b", "EQUAL", i(1)))})
+case("__name__ not a key before a filter without a collection", {"where": AND(ff("__name__", "EQUAL", i(1)), ff("b", "EQUAL", i(1)))})
+case("is null on __name__ before a filter without a collection", {"where": AND(uf("__name__", "IS_NULL"), ff("b", "EQUAL", i(1)))})
+case("a filter without a collection, quoted path", {"where": ff("`a b`", "EQUAL", i(1))})
+case("__name__ not a key before an array offset in the next filter", q("p", where_=AND(ff("__name__", "EQUAL", i(1)), ff("a[0]", "EQUAL", i(1)))))
+case("an array offset in a filter before __name__ not a key", q("p", where_=AND(ff("a[0]", "EQUAL", i(1)), ff("__name__", "EQUAL", i(1)))))
+case("array-contains on __name__ before an array offset", q("p", where_=AND(ff("__name__", "ARRAY_CONTAINS", ref("p/p1")), ff("a[0]", "EQUAL", i(1)))))
+case("__name__ not a key before an array offset in an order", q("p", where_=ff("__name__", "EQUAL", i(1)), order=[asc("a[0]")]))
+case("__type__ in a filter before an array offset in an order", q("p", where_=ff("__type__", "EQUAL", i(1)), order=[asc("a[0]")]))
+case("an array offset in a filter before __type__ in an order", q("p", where_=ff("a[0]", "EQUAL", i(1)), order=[asc("__type__")]))
+case("an order by a path ending in __type__", q("p", where_=ff("a.__type__", "EQUAL", i(1)), order=[asc("__name__")]))
+case("an inequality on a path ending in __type__ before an order by the key", q("p", where_=ff("a.__type__", "GREATER_THAN", i(1)), order=[asc("__name__")]))
+case("a quoted __name__ is the key", q("p", order=[asc("`__name__`")]))
 # find_nearest is #26; recorded for reference, not replayed.
 case("find_nearest", q("t", findNearest={"vectorField": f("v"), "queryVector": vec(1, 2), "distanceMeasure": "EUCLIDEAN", "limit": 2}))
 

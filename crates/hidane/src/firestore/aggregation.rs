@@ -28,6 +28,8 @@ use hidane_proto::google::firestore::v1::{
 };
 use tonic::Status;
 
+use super::property_path::PropertyPath;
+
 const MAX_AGGREGATIONS: usize = 5;
 
 #[derive(Debug, Clone)]
@@ -40,15 +42,22 @@ enum Kind {
 #[derive(Debug, Clone)]
 pub struct Aggregations(Vec<(String, Kind)>);
 
+/// An aggregation read but not yet checked with the list: see [`Aggregations::read`].
+enum Read {
+    Count { up_to: Option<u64> },
+    Sum(PropertyPath),
+    Avg(PropertyPath),
+}
+
 /// Aggregations read but not yet checked as a list: see [`Aggregations::read`].
-pub struct Unchecked(Vec<(String, Kind, bool)>);
+pub struct Unchecked(Vec<(String, Read)>);
 
 impl Aggregations {
     /// The official emulator checks an aggregation query in two passes around its query's
     /// (`tools/oracle/aggregations.py`, #262): this one, before the query, reads each
-    /// aggregation (its operator, a `count`'s `up_to`, the path a `sum` or an `avg` reads);
-    /// [`Unchecked::check`], after what the query names, checks the list (not empty, at most
-    /// five, no `__name__`, the aliases).
+    /// aggregation (its operator, a `count`'s `up_to`, the path a `sum` or an `avg` reads, as
+    /// [`PropertyPath::read`] does); [`Unchecked::check`], after what the query names, checks
+    /// the list.
     pub fn read(aggregations: &[Aggregation]) -> Result<Unchecked, Status> {
         let mut read = Vec::with_capacity(aggregations.len());
         for aggregation in aggregations {
@@ -58,7 +67,7 @@ impl Aggregations {
                         "Operator field in Aggregation is not set.",
                     ));
                 }
-                Some(Operator::Count(count)) => Kind::Count {
+                Some(Operator::Count(count)) => Read::Count {
                     up_to: match count.up_to {
                         None => None,
                         Some(n) => Some(u64::try_from(n).map_err(|_| {
@@ -69,17 +78,10 @@ impl Aggregations {
                         })?),
                     },
                 },
-                Some(Operator::Sum(sum)) => Kind::Sum(path(sum.field.as_ref())?),
-                Some(Operator::Avg(avg)) => Kind::Avg(path(avg.field.as_ref())?),
+                Some(Operator::Sum(Sum { field })) => Read::Sum(path(field.as_ref())?),
+                Some(Operator::Avg(Avg { field })) => Read::Avg(path(field.as_ref())?),
             };
-            // `__name__` itself, refused with the list.
-            let key = match &aggregation.operator {
-                Some(Operator::Sum(Sum { field }) | Operator::Avg(Avg { field })) => {
-                    field.as_ref().is_some_and(|f| f.field_path == "__name__")
-                }
-                _ => false,
-            };
-            read.push((aggregation.alias.clone(), kind, key));
+            read.push((aggregation.alias.clone(), kind));
         }
         Ok(Unchecked(read))
     }
@@ -90,11 +92,14 @@ impl Unchecked {
     pub fn reads_fields(&self) -> bool {
         self.0
             .iter()
-            .any(|(_, kind, _)| matches!(kind, Kind::Sum(_) | Kind::Avg(_)))
+            .any(|(_, kind)| matches!(kind, Read::Sum(_) | Read::Avg(_)))
     }
 
-    /// The checks of the list (see [`Aggregations::read`]), with the official messages, and the
-    /// names of the unnamed ones: `field_1`, `field_2`, … in order.
+    /// The checks of the list (see [`Aggregations::read`]), with the official messages
+    /// (`tools/oracle/aggregations.py`, #262): not empty, at most five, no reserved alias, then
+    /// each in turn: what a `sum` or an `avg` reads (not `__name__` or `__type__` itself,
+    /// [`PropertyPath::check_query`]) and an alias no other before it has. The unnamed ones are
+    /// `field_1`, `field_2`, … in order.
     pub fn check(self) -> Result<Aggregations, Status> {
         let aggregations = self.0;
         if aggregations.is_empty() {
@@ -107,36 +112,48 @@ impl Unchecked {
                 aggregations.len()
             )));
         }
-        let mut parsed = Vec::with_capacity(aggregations.len());
+        if let Some((alias, _)) = aggregations
+            .iter()
+            .find(|(alias, _)| alias.len() >= 4 && alias.starts_with("__") && alias.ends_with("__"))
+        {
+            return Err(Status::invalid_argument(format!(
+                "The property.name \"{alias}\" is reserved."
+            )));
+        }
+        let mut parsed: Vec<(String, Kind)> = Vec::with_capacity(aggregations.len());
         let mut unnamed = 0;
-        for (alias, kind, key) in aggregations {
-            if key {
-                return Err(Status::invalid_argument(
-                    "Aggregations are not supported for the property: __key__",
-                ));
-            }
+        for (alias, read) in aggregations {
+            let kind = match read {
+                Read::Count { up_to } => Kind::Count { up_to },
+                Read::Sum(path) => Kind::Sum(field(&path)?),
+                Read::Avg(path) => Kind::Avg(field(&path)?),
+            };
             let alias = if alias.is_empty() {
                 unnamed += 1;
                 format!("field_{unnamed}")
             } else {
                 alias
             };
-            parsed.push((alias, kind));
-        }
-        for (i, (alias, _)) in parsed.iter().enumerate() {
-            if alias.len() >= 4 && alias.starts_with("__") && alias.ends_with("__") {
-                return Err(Status::invalid_argument(format!(
-                    "The property.name \"{alias}\" is reserved."
-                )));
-            }
-            if parsed[..i].iter().any(|(other, _)| other == alias) {
+            if parsed.iter().any(|(other, _)| *other == alias) {
                 return Err(Status::invalid_argument(format!(
                     "Aggregation aliases contain duplicate alias: {alias}."
                 )));
             }
+            parsed.push((alias, kind));
         }
         Ok(Aggregations(parsed))
     }
+}
+
+/// The field a `sum` or an `avg` reads, checked with the list.
+fn field(path: &PropertyPath) -> Result<FieldPath, Status> {
+    if path.is_name() || path.is_type() {
+        return Err(Status::invalid_argument(format!(
+            "Aggregations are not supported for the property: {path}"
+        )));
+    }
+    path.check_query()?;
+    Ok(path.field_path())
 }
 
 impl Aggregations {
@@ -185,15 +202,10 @@ impl Aggregations {
     }
 }
 
-/// The path a `sum` or an `avg` reads; `__name__` is refused with the list's checks.
-fn path(reference: Option<&FieldReference>) -> Result<FieldPath, Status> {
-    let path = reference.map_or("", |r| r.field_path.as_str());
-    match path {
-        "" => Err(Status::invalid_argument(
-            "Invalid empty property path string.",
-        )),
-        _ => FieldPath::parse(path).map_err(Status::invalid_argument),
-    }
+/// The path a `sum` or an `avg` reads, read as [`PropertyPath::read`] does; the rest is checked
+/// with the list.
+fn path(reference: Option<&FieldReference>) -> Result<PropertyPath, Status> {
+    PropertyPath::read(reference.map_or("", |r| r.field_path.as_str()))
 }
 
 /// The numbers of a field: integers exactly, doubles apart.
