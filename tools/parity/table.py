@@ -260,6 +260,12 @@ def negative_zero(f):
     return answers
 
 
+def list_documents(f):
+    differs = rust_strings(f"{H}/list_documents.rs", "INTENTIONAL")
+    return ([(GRPC, DIFFERS if case["name"] in differs else FULL) for case in f["grpc"]]
+            + each(f["rest"], REST, FULL))
+
+
 def queries(f):
     # queries.rs leaves out the `findNearest` cases (find_nearest.json covers them).
     return [(GRPC, FULL) for case in f["cases"] if "findNearest" not in case["query"]]
@@ -588,8 +594,9 @@ RECORDINGS = {
         area="documents",
         tests=[f"{H}/list_documents.rs::list_documents_like_the_official_emulator"],
         counted="each case (a paged case is one)",
-        compares="in full: the names of every page, or the code and message",
-        count=lambda f: each(f["grpc"], GRPC, FULL) + each(f["rest"], REST, FULL)),
+        compares="in full: the names of every page, or the code and message; a page token next "
+                 "to an order as intentionally different",
+        count=list_documents),
     f"{H}/fixtures/negative_zero.json": dict(
         area="values",
         tests=[f"{H}/negative_zero.rs::every_recorded_step_gives_the_official_answer"],
