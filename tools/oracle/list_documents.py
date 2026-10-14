@@ -8,7 +8,8 @@ in name order; page tokens continue across collections. Records, after seeding o
 
 - `grpc`: ListDocuments requests and the document names they return (relative to
   `documents/`), or their error. `pages` cases follow `next_page_token` to the end and record
-  each page; `at_first_commit` cases read at the commit time of the first seed batch.
+  each page, and the error that ends them, if one does after the first page; `at_first_commit`
+  cases read at the commit time of the first seed batch.
 - `rest`: `GET …/documents/` and `GET …/documents/{document}/` (a trailing slash is an empty
   collection ID), with the status and the names or the error.
 
@@ -58,9 +59,7 @@ GRPC = [
     ("pages of 2", {"page_size": 2, "pages": True}, "", True),
     ("pages of 2 under a document", {"page_size": 2, "pages": True}, "c/a", True),
     ("at the first commit", {"at_first_commit": True}, "", True),
-    # An order other than the name's is a query's (#262). (A page token next to any order is
-    # an error without a message, UNKNOWN, on the official emulator; hidane continues the
-    # listing, so pages are not recorded here.)
+    # An order other than the name's is a query's (#262).
     ("collection, order by a field, a page of 2", {"collection_id": "o", "order_by": "n", "page_size": 2}, O, True),
     ("collection, order by a field descending, a page of 3", {"collection_id": "o", "order_by": "n desc", "page_size": 3}, O, True),
     ("collection, order by two fields", {"collection_id": "o", "order_by": "m desc, n"}, O, True),
@@ -70,6 +69,10 @@ GRPC = [
     ("collection, an invalid order clause", {"collection_id": "o", "order_by": "n,"}, O, True),
     ("collection, an order by a reserved name", {"collection_id": "o", "order_by": "__x__"}, O, True),
     ("collection, duplicate orders", {"collection_id": "o", "order_by": "n, n desc"}, O, True),
+    # A page token next to any order: the official emulator answers the second page with an
+    # error without a message, UNKNOWN; hidane continues the listing (D089).
+    ("collection, order by a field, pages of 2", {"collection_id": "o", "order_by": "n", "page_size": 2, "pages": True}, O, True),
+    ("collection, order by the name, pages of 2", {"collection_id": "o", "order_by": "__name__", "page_size": 2, "pages": True}, O, True),
 ]
 
 REST = [
@@ -138,7 +141,8 @@ def run(request, parent, owner, first_commit):
     while True:
         out = grpcurl(request, owner)
         if "code" in out:
-            return out
+            # An error after the first page keeps the pages before it.
+            return {"pages": result, "error": out} if result else out
         result.append([d["name"] for d in out["documents"]])
         if not out["next_page_token"]:
             return {"pages": result}

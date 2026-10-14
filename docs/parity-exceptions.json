@@ -968,6 +968,22 @@
    ]
   },
   {
+   "id": "D089",
+   "table": "intentional",
+   "area": "documents",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "ListDocuments with a page token and an `order_by` (any order, `__name__` included) answers `UNKNOWN` without a message (\"ListDocuments with a pageToken and an orderBy clause is not supported.\" in its log): the first page of an ordered listing comes back with a `next_page_token` that cannot be used",
+   "firestore": "ListDocuments takes `order_by` and `page_token` together",
+   "hidane": "Continues the listing in the requested order",
+   "reason": "The token the official emulator hands out leads only to an error, and production pages ordered listings (#262)",
+   "references": [
+    "hidane-dev/hidane#262",
+    "crates/hidane/tests/list_documents.rs",
+    "tools/oracle/list_documents.py"
+   ]
+  },
+  {
    "id": "D069",
    "table": "production",
    "area": "transactions",
