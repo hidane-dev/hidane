@@ -37,6 +37,10 @@
     "docs/why.md",
     "results/listen-batch-writes-hidane.csv",
     "results/sdk-listen-*.json"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/listen.rs::later_commits_send_only_what_changed",
+    "crates/hidane/tests/bench.rs::writes_with_a_listener_attached_stay_flat"
    ]
   },
   {
@@ -49,7 +53,10 @@
    "firestore": null,
    "hidane": "One snapshot per commit",
    "reason": "Bug (snapshots must be atomic)",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/listen.rs::documents_leaving_a_query_are_removed"
+   ]
   },
   {
    "id": "D003",
@@ -61,7 +68,10 @@
    "firestore": null,
    "hidane": "Listeners see every document go, then later writes as usual",
    "reason": "Bug (listeners keep stale data)",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/clear.rs::listeners_see_cleared_documents_go"
+   ]
   },
   {
    "id": "D004",
@@ -73,7 +83,10 @@
    "firestore": null,
    "hidane": "One snapshot with every document gone",
    "reason": "Follows from answering with `RESET`",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/clear.rs::listeners_see_cleared_documents_go"
+   ]
   },
   {
    "id": "D005",
@@ -87,6 +100,9 @@
    "reason": "Follows from resuming with `RESET` (see the production table below); the SDK then looks up each document it can no longer place. A limit query whose window moved while offline gets one snapshot on both (#146)",
    "references": [
     "hidane-dev/hidane#146"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/listen.rs::a_resumed_target_gets_only_what_changed"
    ]
   },
   {
@@ -99,7 +115,10 @@
    "firestore": null,
    "hidane": "Ends it with `INVALID_ARGUMENT` \"Target ID … is already in use.\"",
    "reason": "Bug (an internal error)",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/listen.rs::target_ids_bad_targets_and_half_close"
+   ]
   },
   {
    "id": "D007",
@@ -111,7 +130,9 @@
    "firestore": null,
    "hidane": "Refuses the target (`REMOVE` with an `INVALID_ARGUMENT` cause)",
    "reason": "Bug",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "No test adds a Listen query target whose parent names another database; the refusal in `crates/hidane/src/firestore/listen.rs` is untested."
   },
   {
    "id": "D008",
@@ -125,6 +146,10 @@
    "reason": "Bug",
    "references": [
     "firebase/firebase-tools#6252"
+   ],
+   "pinned_by": [
+    "crates/hidane-rules/tests/library.rs::evaluation_matches_the_official_emulator",
+    "crates/hidane-rules/tests/denials.rs::denials_name_each_statement"
    ]
   },
   {
@@ -137,7 +162,10 @@
    "firestore": null,
    "hidane": "One evaluation, with the keys of the second pass: `request.resource` is the stored document, and `request.fields` is undefined",
    "reason": "Follows from evaluating once, with everything the second pass computes",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/rules_coverage.rs::verify_writes"
+   ]
   },
   {
    "id": "D010",
@@ -149,7 +177,9 @@
    "firestore": null,
    "hidane": "One record per method evaluated: a read, a document of a batchGet or of a Listen target, a way of a list's filter, a write (an upsert: `create`, then `update`). `resource` holds the stored document (null when there is none)",
    "reason": "Follows from evaluating once",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "`websocket_requests.rs` marks the second-pass steps `differs` and only checks hidane's records name a recorded method and path, so the single record per method is not asserted."
   },
   {
    "id": "D011",
@@ -161,7 +191,12 @@
    "firestore": null,
    "hidane": "Records wait in a queue per client, never the request; a client more than 16 MiB behind is disconnected, and the Emulator UI reconnects and gets the last 50 records",
    "reason": "A monitor must not slow down the emulator",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/websocket_requests.rs::a_client_that_does_not_read_is_disconnected",
+    "crates/hidane/src/rules/monitor.rs::a_client_too_far_behind_is_dropped",
+    "crates/hidane/src/rules/monitor.rs::the_backlog_keeps_the_last_records"
+   ]
   },
   {
    "id": "D090",
@@ -187,7 +222,9 @@
    "firestore": null,
    "hidane": "Gets the backlog, then every record",
    "reason": "Bug",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "The replayed `backlog` case only uses a 50-record backlog that both emulators send and follow with later records; no test with a backlog too large to send at once."
   },
   {
    "id": "D013",
@@ -199,7 +236,10 @@
    "firestore": null,
    "hidane": "`404 Not Found`",
    "reason": "A request should be answered",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/websocket_requests.rs::records_as_the_official_emulator_sends_them"
+   ]
   },
   {
    "id": "D014",
@@ -211,7 +251,9 @@
    "firestore": null,
    "hidane": "Checked once, when it is added (a listened document is checked again when it changes, as on the official emulator)",
    "reason": "A query is decided by the query",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "The step \"query targets checked again\" is `differs` and checked on its method and path only, which a re-check would also pass; no test asserts a query target is checked once."
   },
   {
    "id": "D015",
@@ -223,7 +265,9 @@
    "firestore": null,
    "hidane": "The first branch and everything in it as not evaluated (`{}`)",
    "reason": "Bug (a value the branch never had)",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "The coverage case \"a branch not taken\" is marked `differs` in `rules_coverage.json`, so only its status is compared."
   },
   {
    "id": "D016",
@@ -235,7 +279,9 @@
    "firestore": null,
    "hidane": "The first 100 distinct values of each expression are kept and counted; a value that differs from all of them is not counted",
    "reason": "Bounded memory: over a long test run the report would otherwise grow without end",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "No test exercises the 100-distinct-values cap (`MAX_VALUES` in `crates/hidane-rules/src/coverage.rs`)."
   },
   {
    "id": "D017",
@@ -247,7 +293,11 @@
    "firestore": null,
    "hidane": "A page of hidane's own around the same data (`const data = …`, the report's JSON with `<`, `>`, `&`, `=` and `'` escaped as on the official page); for an empty project ID, the `500` of the JSON endpoints",
    "reason": "The official page is not redistributable; the data is the same",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/rules_coverage.rs::rules_coverage_and_debug",
+    "crates/hidane/src/rules/report.rs::html_escapes_as_gson_does"
+   ]
   },
   {
    "id": "D018",
@@ -259,7 +309,10 @@
    "firestore": null,
    "hidane": "The denied way's reasons only",
    "reason": "A message reporting allowed ways as `false` misleads",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane-rules/tests/list.rs::every_way_of_the_filter_must_be_allowed"
+   ]
   },
   {
    "id": "D019",
@@ -271,7 +324,9 @@
    "firestore": null,
    "hidane": "The denied write's reasons only: the writes are checked in order and the first denied one decides, as on the official emulator",
    "reason": "A message reporting allowed writes as `false` misleads",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "Batch denials are compared with `common::rules::same_denial`, which accepts any subset of the official reasons, so extra entries for earlier writes would still pass."
   },
   {
    "id": "D020",
@@ -291,6 +346,10 @@
     "tools/oracle/rules_eval.py",
     "crates/hidane-rules/tests/library.rs",
     "crates/hidane/tests/rules_server.rs"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rules_server.rs::documents_a_batch_writes_are_free_to_look_up",
+    "crates/hidane-rules/tests/library.rs::evaluation_matches_the_official_emulator"
    ]
   },
   {
@@ -303,7 +362,10 @@
    "firestore": null,
    "hidane": "An evaluation error, `Invalid replacement string: <replacement>.`, which denies unless `&&` or `\\|\\|` absorbs it",
    "reason": "Bug (an internal error)",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane-rules/tests/library.rs::evaluation_matches_the_official_emulator"
+   ]
   },
   {
    "id": "D022",
@@ -315,7 +377,9 @@
    "firestore": null,
    "hidane": "U+FFFD in its place; sizes and indexes still count UTF-16 code units",
    "reason": "A Rust string cannot hold half a pair",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "`rules_eval.json` pins UTF-16 sizes and indexes, but no test checks that half a surrogate pair becomes U+FFFD."
   },
   {
    "id": "D023",
@@ -330,6 +394,11 @@
    "references": [
     "firebase/firebase-tools#11241",
     "hidane-dev/hidane#21"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/transactions.rs::transactions_behave_like_the_official_emulator",
+    "crates/hidane/src/firestore/transactions/tests.rs::a_write_gives_up_after_the_lock_timeout_and_ends_its_transaction",
+    "crates/hidane/src/firestore/transactions/tests.rs::collection_locks_cover_every_collection_with_that_id"
    ]
   },
   {
@@ -342,7 +411,11 @@
    "firestore": null,
    "hidane": "Same 9-byte encoding, counted per database, but only transactions take an ID and the count continues across a reset",
    "reason": "IDs are opaque to clients. Continuing the count means an ID from before a reset reads as expired instead of naming a new transaction",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/src/firestore/transactions/tests.rs::ids_count_per_database_in_the_official_encoding",
+    "crates/hidane/src/firestore/transactions/tests.rs::clear_forgets_transactions_but_keeps_counting"
+   ]
   },
   {
    "id": "D025",
@@ -354,7 +427,11 @@
    "firestore": null,
    "hidane": "`INVALID_ARGUMENT` \"Transaction is invalid or expired.\" everywhere; an ID that has ended answers `ABORTED` \"The referenced transaction has expired or is no longer valid.\", as on the official emulator",
    "reason": "Bug (an internal error)",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/transactions.rs::unknown_and_stale_transactions",
+    "crates/hidane/src/firestore/transactions/tests.rs::ids_count_per_database_in_the_official_encoding"
+   ]
   },
   {
    "id": "D026",
@@ -366,7 +443,10 @@
    "firestore": null,
    "hidane": "The write proceeds when the holding transaction expires",
    "reason": "Timing detail with the same outcome a moment later",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/src/firestore/transactions/tests.rs::a_waiting_write_proceeds_when_the_blocking_transaction_expires"
+   ]
   },
   {
    "id": "D027",
@@ -378,7 +458,11 @@
    "firestore": null,
    "hidane": "Accepts the stream either way; the database comes from the first request",
    "reason": "Bug (an internal error)",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/write_stream.rs::the_write_stream_behaves_like_the_official_emulator",
+    "crates/hidane/tests/write_stream.rs::invalid_names_are_rejected_instead_of_ignored"
+   ]
   },
   {
    "id": "D028",
@@ -390,7 +474,10 @@
    "firestore": null,
    "hidane": "`INVALID_ARGUMENT` for a malformed name, as other RPCs answer",
    "reason": "Bug",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/write_stream.rs::invalid_names_are_rejected_instead_of_ignored"
+   ]
   },
   {
    "id": "D029",
@@ -404,6 +491,10 @@
    "reason": "Bug (silent data loss)",
    "references": [
     "crates/hidane/tests/fixtures/commit_checks.json"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/commit_checks.rs::writes_to_another_database_are_refused",
+    "crates/hidane/tests/write_stream.rs::invalid_names_are_rejected_instead_of_ignored"
    ]
   },
   {
@@ -416,7 +507,10 @@
    "firestore": null,
    "hidane": "Refused when the transform is applied, with the message the value gets in a field (\"Nested arrays are not allowed\", \"Vector cannot contain NaN values.\")",
    "reason": "Bug (values a document may not hold)",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/commit_checks.rs::the_first_error_is_the_official_one"
+   ]
   },
   {
    "id": "D031",
@@ -430,7 +524,9 @@
    "reason": "The same documents either way ([export-format.md](export-format.md))",
    "references": [
     "docs/export-format.md"
-   ]
+   ],
+   "pinned_by": [],
+   "unpinned": "`export_import.rs` sorts the output records before comparing, so the name order of an export is not asserted."
   },
   {
    "id": "D032",
@@ -442,7 +538,9 @@
    "firestore": null,
    "hidane": "Left out",
    "reason": "Bug (unreadable data that resurfaces in exports)",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "No test seeds from an export holding another database's documents and then exports; `seed.rs`'s unit test cannot tell the two behaviours apart."
   },
   {
    "id": "D033",
@@ -454,7 +552,10 @@
    "firestore": "A vector field path such as `m.v` is resolved, the field `v` of the map `m` (the hidane column: \"as production and the SDKs do\")",
    "hidane": "Resolves the path (the field `v` of the map `m`), as production and the SDKs do; `` `m.v` `` names the field `m.v`",
    "reason": "Bug (nested vector fields could not be searched)",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/find_nearest.rs::a_vector_field_path_is_a_path"
+   ]
   },
   {
    "id": "D034",
@@ -466,7 +567,9 @@
    "firestore": null,
    "hidane": "Same limit, but tonic answers `OUT_OF_RANGE` \"Error, decoded message length too large: …\"",
    "reason": "Wording of a transport error",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "`large_grpc_requests_pass` skips the recordings over 20 MB, so the 100 MiB limit and its `OUT_OF_RANGE` error are untested."
   },
   {
    "id": "D035",
@@ -481,7 +584,9 @@
    "references": [
     "hidane-dev/hidane#36",
     "hidane-dev/hidane#81"
-   ]
+   ],
+   "pinned_by": [],
+   "unpinned": "No test lists services over reflection; `grpc_settings.rs` only checks that v1beta1 answers like v1, which both emulators share."
   },
   {
    "id": "D036",
@@ -493,7 +598,9 @@
    "firestore": "Firestore's storage size rules: name, field names and values, plus 32 bytes",
    "hidane": "Firestore's storage size rules (name, field names and values, plus 32 bytes), which allow a few tens of bytes more",
    "reason": "Same limit and message; the exact boundary is an internal encoding",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "`limits.rs` replays only cases where both emulators agree; no test sits on the few-tens-of-bytes document size boundary."
   },
   {
    "id": "D037",
@@ -505,7 +612,9 @@
    "firestore": null,
    "hidane": "A content length, and the connection stays open",
    "reason": "Transport detail; the client reads the same frames",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "`webchannel.rs` reads frames through a hyper client and does not assert Content-Length or a kept-open connection."
   },
   {
    "id": "D038",
@@ -517,7 +626,9 @@
    "firestore": null,
    "hidane": "A `noop` while waiting; ends after the messages queued when data comes",
    "reason": "Timing; each message arrives once, in order",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "Long-polling reads are compared only on their first data and whether they ended, and noops are filtered, so hidane's own long-poll behaviour is not asserted."
   },
   {
    "id": "D039",
@@ -531,7 +642,9 @@
    "reason": "Bug (resource leak)",
    "references": [
     "firebase/firebase-tools#11124"
-   ]
+   ],
+   "pinned_by": [],
+   "unpinned": "No test drops a WebChannel session after 5 idle minutes (`IDLE_SESSION` in `crates/hidane/src/webchannel.rs`)."
   },
   {
    "id": "D040",
@@ -543,7 +656,9 @@
    "firestore": null,
    "hidane": "The CORS headers of every HTTP path, that one included",
    "reason": "Harmless",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "`cors.rs` covers only an OPTIONS preflight on the WebChannel path; no test checks the CORS headers of WebChannel POST/GET answers."
   },
   {
    "id": "D041",
@@ -555,7 +670,9 @@
    "firestore": null,
    "hidane": "Strict JSON: such a token is `invalid jwt`",
    "reason": "Clients only send JSON",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "`auth.json` has no lenient-JSON token cases, so strict parsing to \"invalid jwt\" is untested."
   },
   {
    "id": "D042",
@@ -567,7 +684,9 @@
    "firestore": null,
    "hidane": "Names the whole path (`Resource name \"…\" lacks a resource id at index ….`), same status",
    "reason": "Wording only",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "`clear.rs` does not send an empty path segment to `DELETE /emulator/v1/…/documents/{path}`."
   },
   {
    "id": "D043",
@@ -577,11 +696,13 @@
    "kind": "equivalent",
    "official": "RunAggregationQuery responses carry `done: true`, a field the published protos do not define (visible over REST)",
    "firestore": null,
-   "hidane": "Not sent over gRPC, where clients built from the published protos would drop it; the REST layer (#34) will add it",
+   "hidane": "Not sent over gRPC, where clients built from the published protos would drop it; sent over REST, as the official emulator does (#34)",
    "reason": "Not part of the published API",
    "references": [
     "hidane-dev/hidane#34"
-   ]
+   ],
+   "pinned_by": [],
+   "unpinned": "Structural: the published gRPC protos have no `done` field for hidane to send."
   },
   {
    "id": "D044",
@@ -595,6 +716,9 @@
    "reason": "Bug",
    "references": [
     "hidane-dev/hidane#34"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::requests_that_hang_the_official_emulator_are_answered"
    ]
   },
   {
@@ -607,7 +731,10 @@
    "firestore": null,
    "hidane": "`400` \"Payload isn't valid for request.\", the answer to a body that does not parse",
    "reason": "Bug",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::requests_that_hang_the_official_emulator_are_answered"
+   ]
   },
   {
    "id": "D046",
@@ -619,7 +746,10 @@
    "firestore": null,
    "hidane": "The path wins",
    "reason": "Bug",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::requests_that_hang_the_official_emulator_are_answered"
+   ]
   },
   {
    "id": "D047",
@@ -631,7 +761,9 @@
    "firestore": null,
    "hidane": "The last name returned, encoded; both are opaque to clients",
    "reason": "Internal format",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "Page tokens are only followed or checked for presence (`list_documents.rs` `next_page`); their encoding is not asserted."
   },
   {
    "id": "D048",
@@ -645,6 +777,10 @@
    "reason": "No client writes such a literal, and telling it from `-0.0` would need the number's text, which the JSON parser does not keep",
    "references": [
     "tools/oracle/negative_zero.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/negative_zero.rs::every_recorded_step_gives_the_official_answer",
+    "crates/hidane/src/rest.rs::json_has_no_negative_zero"
    ]
   },
   {
@@ -659,7 +795,9 @@
    "reason": "Bug",
    "references": [
     "firebase/firebase-tools#11238"
-   ]
+   ],
+   "pinned_by": [],
+   "unpinned": "Keepalive against a real iOS client is not tested (`tools/oracle/keepalive.mjs` is a recorder, not a CI test)."
   },
   {
    "id": "D050",
@@ -671,7 +809,10 @@
    "firestore": null,
    "hidane": "`400` \"Payload isn't valid for request.\"",
    "reason": "Bug (an internal error)",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/rules_compile.rs::compiles_like_the_official_emulator"
+   ]
   },
   {
    "id": "D051",
@@ -683,7 +824,9 @@
    "firestore": null,
    "hidane": "The parameter is ignored, as other parameters are",
    "reason": "Bug",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "`function_triggers.json` has no query parameter naming a trigger field (those hang the official emulator), and no test sends one."
   },
   {
    "id": "D052",
@@ -698,7 +841,9 @@
    "references": [
     "crates/hidane/tests/fixtures/function_events.json",
     "results/functions-triggers-*.json"
-   ]
+   ],
+   "pinned_by": [],
+   "unpinned": "`function_events.rs` rewrites `projects/projects/` to `projects/` on both sides before comparing, so a doubled ce-source from hidane would still pass."
   },
   {
    "id": "D053",
@@ -710,7 +855,10 @@
    "firestore": "Events only for changes (the why column: \"production sends events only for changes\")",
    "hidane": "No event, for v1 or v2 triggers",
    "reason": "Bug: production sends events only for changes, as the official emulator does to v1 triggers",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/function_events.rs::events_reach_the_functions_emulator_as_on_the_official_emulator"
+   ]
   },
   {
    "id": "D054",
@@ -722,7 +870,10 @@
    "firestore": null,
    "hidane": "The triggers stay registered, and their events keep reaching the Functions emulator, as after a clear (`DELETE …/documents`), which keeps them on both",
    "reason": "Bug (functions stop firing, silently)",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/function_events.rs::events_reach_the_functions_emulator_as_on_the_official_emulator"
+   ]
   },
   {
    "id": "D055",
@@ -734,7 +885,10 @@
    "firestore": null,
    "hidane": "The trigger watches `(default)`",
    "reason": "Bug (an internal error)",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/function_events.rs::events_reach_the_functions_emulator_as_on_the_official_emulator"
+   ]
   },
   {
    "id": "D056",
@@ -746,7 +900,9 @@
    "firestore": null,
    "hidane": "In name order",
    "reason": "The same events",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "For `DELETE /emulator/v1/…` steps the test sorts both sides' deliveries by document, so hidane's name order is not asserted."
   },
   {
    "id": "D057",
@@ -758,7 +914,9 @@
    "firestore": null,
    "hidane": "`User-Agent: hidane/<version>`, a connection per event",
    "reason": "Transport detail: the Functions emulator reads the path, the content type, the `ce-*` headers and the body",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "Only the `ce-*` headers and `Content-Type` are compared; `User-Agent` and connection reuse are not asserted."
   },
   {
    "id": "D058",
@@ -772,7 +930,9 @@
    "reason": "The Functions emulator sends JSON, with strings (`tests/fixtures/function_triggers.json`)",
    "references": [
     "crates/hidane/tests/fixtures/function_triggers.json"
-   ]
+   ],
+   "pinned_by": [],
+   "unpinned": "`function_triggers.json` holds only bodies both emulators read alike; no lenient-syntax body or 1e3-as-string case is tested."
   },
   {
    "id": "D059",
@@ -787,6 +947,10 @@
    "references": [
     "crates/hidane/tests/fixtures/rules_compile.json",
     "crates/hidane-rules/tests/warnings.rs"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rules_compile.rs::compiles_like_the_official_emulator",
+    "crates/hidane-rules/tests/warnings.rs::warnings_are_the_official_emulators"
    ]
   },
   {
@@ -799,7 +963,10 @@
    "firestore": null,
    "hidane": "More than 2,000 are \"Expression is too complex to evaluate safely.\", the compiler's message for its other depth limits",
    "reason": "Bounds the stack of the parser and the evaluator",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane-rules/src/lib.rs::deep_input"
+   ]
   },
   {
    "id": "D061",
@@ -811,7 +978,10 @@
    "firestore": null,
    "hidane": "hidane returns the same string the official emulator does; the CLI-side comparison is an upstream bug",
    "reason": "Keep wire parity; report upstream",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/rules_compile.rs::compiles_like_the_official_emulator"
+   ]
   },
   {
    "id": "D062",
@@ -823,7 +993,9 @@
    "firestore": null,
    "hidane": "Full reflection that works with `grpcurl`",
    "reason": "Developer convenience",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "No test runs grpcurl or a reflection client against hidane."
   },
   {
    "id": "D063",
@@ -835,7 +1007,9 @@
    "firestore": null,
    "hidane": "`404 Not Found`",
    "reason": "Bug",
-   "references": []
+   "references": [],
+   "pinned_by": [],
+   "unpinned": "No test sends `GET //` (`admin_http.rs` covers other paths only)."
   },
   {
    "id": "D064",
@@ -847,7 +1021,10 @@
    "firestore": "`Document already exists: <name>` and `No document to update: <name>`",
    "hidane": "Production Firestore's wording, `Document already exists: <name>` and `No document to update: <name>`; same status codes (`ALREADY_EXISTS`, `NOT_FOUND`)",
    "reason": "Internal detail; applications see the production wording in production",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/documents.rs::preconditions"
+   ]
   },
   {
    "id": "D065",
@@ -864,6 +1041,9 @@
     "docs/adr/0002-storage-engine.md",
     "crates/hidane/tests/fixtures/read_time_and_databases.json",
     "crates/hidane/tests/read_time_and_databases.rs"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/read_time_and_databases.rs::read_times_up_to_the_window"
    ]
   },
   {
@@ -879,6 +1059,11 @@
    "references": [
     "hidane-dev/hidane#34",
     "hidane-dev/hidane#262"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/read_time_and_databases.rs::read_times_up_to_the_window",
+    "crates/hidane/tests/base_versions.rs::update_time_preconditions_like_the_official_emulator",
+    "crates/hidane/tests/rest.rs::requests_that_hang_the_official_emulator_are_answered"
    ]
   },
   {
@@ -893,6 +1078,10 @@
    "reason": "Not implemented: firebase-tools does not pass `--single_project_mode_error` (it is not among the Firestore emulator's arguments in its `src/emulator/downloadableEmulators.ts`), so under it the difference is a log line, and requests are answered the same. `hidane doctor` reports it for projects in single project mode",
    "references": [
     "crates/hidane/src/cli.rs"
+   ],
+   "pinned_by": [
+    "crates/hidane/src/cli.rs::official_consistency_checks",
+    "crates/hidane/src/cli.rs::every_official_flag_is_accepted"
    ]
   },
   {
@@ -905,7 +1094,11 @@
    "firestore": null,
    "hidane": "The commit time truncated to milliseconds",
    "reason": "Same precision and the same value for every field of a commit; tests cannot depend on which instant inside the request is used",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/transforms.rs::every_recorded_case_gives_the_official_answer",
+    "crates/hidane-core/src/transform.rs::server_time_has_millisecond_precision"
+   ]
   },
   {
    "id": "D083",
@@ -920,6 +1113,9 @@
    "references": [
     "hidane-dev/hidane#262",
     "crates/hidane/tests/rest.rs"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::a_lone_surrogate_is_a_body_that_does_not_parse"
    ]
   },
   {
@@ -935,6 +1131,9 @@
    "references": [
     "hidane-dev/hidane#262",
     "crates/hidane/tests/rest.rs"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::timestamps_are_read_as_rfc_3339"
    ]
   },
   {
@@ -950,6 +1149,9 @@
    "references": [
     "hidane-dev/hidane#262",
     "crates/hidane/tests/rest.rs"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::a_failed_query_leaves_no_lock"
    ]
   },
   {
@@ -965,6 +1167,9 @@
    "references": [
     "hidane-dev/hidane#262",
     "crates/hidane/tests/rest.rs"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::a_form_encoded_post_is_served"
    ]
   },
   {
@@ -980,6 +1185,9 @@
    "references": [
     "hidane-dev/hidane#262",
     "crates/hidane/tests/rest.rs"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::a_long_request_line_is_served"
    ]
   },
   {
@@ -996,6 +1204,9 @@
     "hidane-dev/hidane#262",
     "crates/hidane/tests/list_documents.rs",
     "tools/oracle/list_documents.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/list_documents.rs::list_documents_like_the_official_emulator"
    ]
   },
   {
@@ -1013,6 +1224,11 @@
     "hidane-dev/hidane#17",
     "crates/hidane/tests/fixtures/transactions.json",
     "crates/hidane/tests/transactions.rs"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/transactions.rs::transactions_behave_like_the_official_emulator",
+    "crates/hidane/src/firestore/transactions/tests.rs::idle_transactions_expire_sixty_seconds_after_their_last_use",
+    "crates/hidane/src/firestore/transactions/tests.rs::read_only_transactions_lock_nothing_and_cannot_write"
    ]
   },
   {
@@ -1025,7 +1241,10 @@
    "firestore": "Required for many queries",
    "hidane": "As the official emulator: no index enforcement",
    "reason": "Follow the emulator (no index enforcement)",
-   "references": []
+   "references": [],
+   "pinned_by": [
+    "crates/hidane/tests/queries.rs::queries_answer_like_the_official_emulator"
+   ]
   },
   {
    "id": "D071",
@@ -1039,7 +1258,9 @@
    "reason": "Follow the emulator, measured in #18 (no SDK sets it)",
    "references": [
     "hidane-dev/hidane#18"
-   ]
+   ],
+   "pinned_by": [],
+   "unpinned": "No test sets Listen `once`."
   },
   {
    "id": "D072",
@@ -1053,6 +1274,10 @@
    "reason": "Follow production (#19): what entered, changed in or left the target since the token. From before the versions kept (one hour), the documents updated since then and an `ExistenceFilter` with the count. Tokens from before the process started or the store was reset, or that do not parse, start over with `RESET`",
    "references": [
     "hidane-dev/hidane#19"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/listen.rs::a_resumed_target_gets_only_what_changed",
+    "crates/hidane/tests/listen.rs::a_resumed_limit_target_gets_what_entered_and_left_its_window"
    ]
   },
   {
@@ -1067,6 +1292,9 @@
    "reason": "Follow the emulator, measured in #21. The SDKs add explicit orderings when they build a cursor from a snapshot, so they are not affected",
    "references": [
     "hidane-dev/hidane#21"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/queries.rs::queries_answer_like_the_official_emulator"
    ]
   },
   {
@@ -1081,6 +1309,9 @@
    "reason": "Follow the emulator, measured in #21",
    "references": [
     "hidane-dev/hidane#21"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/queries.rs::queries_answer_like_the_official_emulator"
    ]
   },
   {
@@ -1097,6 +1328,11 @@
     "firebase/firebase-tools#8649",
     "hidane-dev/hidane#121",
     "hidane-dev/hidane#25"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/limits.rs::limits_like_the_official_emulator",
+    "crates/hidane/tests/grpc_settings.rs::large_grpc_requests_pass",
+    "crates/hidane/tests/grpc_settings.rs::rest_bodies_up_to_16_mib"
    ]
   },
   {
@@ -1111,6 +1347,9 @@
    "reason": "Follow the emulator (issue #26)",
    "references": [
     "hidane-dev/hidane#26"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/unsupported.rs::ignored_and_refused_like_the_official_emulator"
    ]
   },
   {
@@ -1127,7 +1366,9 @@
     "firebase/firebase-tools#11238",
     "hidane-dev/hidane#25",
     "results/keepalive-*.txt"
-   ]
+   ],
+   "pinned_by": [],
+   "unpinned": "No CI test pings an idle HTTP/2 connection; `results/keepalive-*.txt` come from a manual recorder."
   },
   {
    "id": "D078",
@@ -1142,6 +1383,10 @@
    "references": [
     "hidane-dev/hidane#80",
     "hidane-dev/hidane#26"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/unsupported.rs::ignored_and_refused_like_the_official_emulator",
+    "crates/hidane/tests/unsupported.rs::enterprise_pipelines_are_not_implemented_yet"
    ]
   },
   {
@@ -1156,6 +1401,10 @@
    "reason": "Follow the emulator (#26)",
    "references": [
     "hidane-dev/hidane#26"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/unsupported.rs::ignored_and_refused_like_the_official_emulator",
+    "crates/hidane/tests/queries.rs::read_time_and_explain_options"
    ]
   },
   {
@@ -1171,6 +1420,9 @@
    "references": [
     "hidane-dev/hidane#118",
     "crates/hidane/tests/fixtures/find_nearest.json"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/find_nearest.rs::find_nearest_like_the_official_emulator"
    ]
   },
   {
@@ -1185,6 +1437,10 @@
    "reason": "Follow the emulator (ADR 0002)",
    "references": [
     "docs/adr/0002-storage-engine.md"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/export_import.rs::exports_match_the_official_files",
+    "crates/hidane/tests/export_import.rs::imports_write_what_the_official_emulator_writes"
    ]
   },
   {
@@ -1199,6 +1455,10 @@
    "reason": "Follow the emulator ([export-format.md](export-format.md))",
    "references": [
     "docs/export-format.md"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/export_import.rs::imports_write_what_the_official_emulator_writes",
+    "crates/hidane/tests/export_import.rs::databases_are_seeded_like_the_official_emulator"
    ]
   },
   {
@@ -1216,6 +1476,9 @@
     "https://firebase.google.com/docs/firestore/reference/rest/v1/StructuredQuery#collectionselector",
     "hidane-dev/hidane#262",
     "crates/hidane/tests/rest.rs"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::a_collection_group_query_runs_under_a_document"
    ]
   }
  ]
