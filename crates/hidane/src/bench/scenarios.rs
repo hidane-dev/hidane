@@ -13,7 +13,7 @@ use std::{
 use serde_json::{Map, Value, json};
 
 use super::{
-    client::{self, Client, Listener},
+    client::{self, Client, Credential, Listener},
     config::{Ci, Params, Runs},
     render, stats,
     system::{self, Sampler},
@@ -718,6 +718,75 @@ impl Bench {
                         ]);
                     }
                     values.push((5, rss.rss_bytes as f64));
+                    Ok::<_, String>(values)
+                })?;
+                running.shutdown()?;
+                Ok(values)
+            },
+        );
+    }
+
+    /// Writes with the owner credential the Admin SDKs send to an emulator, which skips Security
+    /// Rules; the other scenarios send none, as a signed-out app. A fresh process per run:
+    /// `batch_write` as under Operations (the same documents each time, the first commits
+    /// discarded), then `seed_<n>` as under Dataset sizes.
+    pub fn owner_writes(&mut self) {
+        let p = self.ctx.params.owner_writes.clone();
+        let n = p.documents;
+        let metrics = [
+            metric(
+                "owner_writes",
+                "batch_write",
+                "ms",
+                &format!(
+                    "Commit with {} writes (the same {} documents each time), with the owner credential",
+                    p.batch, p.batch
+                ),
+            ),
+            Metric {
+                parameters: Some(json!({ "documents": n })),
+                ..metric(
+                    "owner_writes",
+                    &format!("seed_{n}"),
+                    "ms",
+                    &format!(
+                        "Writing {n} documents in commits of {} over gRPC, with the owner credential",
+                        p.batch
+                    ),
+                )
+            },
+        ];
+        self.each_run(
+            "owner_writes",
+            "owner_writes",
+            p.runs,
+            &metrics,
+            |ctx, target, name| {
+                let mut running = target.spawn(ctx.logs.as_deref(), name)?;
+                running.wait_port()?;
+                let addr = running.addr();
+                let values = ctx.rt.block_on(async {
+                    let mut c = Client::connect_as(addr, Credential::Owner).await?;
+                    let mut values = Vec::new();
+                    for i in 0..p.commit_warmup + p.commits {
+                        let start = Instant::now();
+                        let writes = (0..p.batch)
+                            .map(|k| {
+                                Client::update(c.document(
+                                    &format!("owner_batch/doc-{k}"),
+                                    k + i,
+                                    10,
+                                ))
+                            })
+                            .collect();
+                        c.commit(writes).await?;
+                        if i >= p.commit_warmup {
+                            values.push((0, ms(start.elapsed())));
+                        }
+                    }
+                    let start = Instant::now();
+                    c.seed("owner_users", n, p.batch, 100).await?;
+                    values.push((1, ms(start.elapsed())));
                     Ok::<_, String>(values)
                 })?;
                 running.shutdown()?;

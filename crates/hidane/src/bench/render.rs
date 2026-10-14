@@ -19,6 +19,7 @@ const SCENARIOS: &[(&str, &str)] = &[
     ("ci", "CI workload"),
     ("ci_firebase", "CI workload through firebase-tools"),
     ("listen_writes", "Writes with a listener attached"),
+    ("owner_writes", "Writes with the owner credential"),
     ("command", "Command"),
 ];
 
@@ -178,6 +179,28 @@ fn summary(result: &Value) -> Vec<String> {
             "growth of a commit's time per 10,000 documents already stored, writing {listened},"
         ),
     ));
+    let owner = &scenarios["owner_writes"];
+    let owner_batch = owner["batch"].as_u64().unwrap_or(0);
+    lines.push(sentence(
+        result,
+        "owner_writes",
+        "batch_write",
+        &format!(
+            "latency of a {}-write batch commit with the owner credential, as the Admin SDKs send it,",
+            thousands(owner_batch)
+        ),
+    ));
+    if let Some(n) = owner["documents"].as_u64() {
+        lines.push(sentence(
+            result,
+            "owner_writes",
+            &format!("seed_{n}"),
+            &format!(
+                "time to write {} documents in commits of {owner_batch} with the owner credential",
+                thousands(n)
+            ),
+        ));
+    }
     lines.push(sentence(
         result,
         "command",
@@ -485,6 +508,16 @@ fn scenario_line(scenario: &str, p: &Value) -> String {
             thousands(n("documents")),
             n("batch"),
             n("documents")
+        ),
+        "owner_writes" => format!(
+            "A fresh process per run ({} warm-up, {} measured per target), its requests sent with `authorization: Bearer owner`, as the Admin SDKs send them to an emulator, so Security Rules do not apply; the other scenarios send no credential, as a signed-out app. Each run commits {} writes to the same documents {} times, the first {} discarded as warm-up, then writes {} documents in commits of {}.",
+            n("warmup"),
+            n("runs"),
+            n("batch"),
+            n("commit_warmup") + n("commits"),
+            n("commit_warmup"),
+            thousands(n("documents")),
+            n("batch")
         ),
         "command" => format!(
             "A fresh process per run ({} warm-up, {} measured per target); the command runs with FIRESTORE_EMULATOR_HOST pointing at it.",

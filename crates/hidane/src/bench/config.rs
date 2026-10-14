@@ -64,6 +64,19 @@ pub struct ListenWrites {
     pub batch: usize,
 }
 
+/// The write scenarios again with the owner credential the Admin SDKs send, which skips Security
+/// Rules (the others send none).
+#[derive(Debug, Clone, PartialEq)]
+pub struct OwnerWrites {
+    pub runs: Runs,
+    /// Commits of `batch` writes to the same documents discarded before measuring, in each run.
+    pub commit_warmup: usize,
+    pub commits: usize,
+    pub batch: usize,
+    /// Then written in commits of `batch`.
+    pub documents: usize,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Ci {
     pub runs: Runs,
@@ -94,6 +107,7 @@ pub struct Params {
     /// The CI workload through `firebase emulators:exec` (with `--firebase`).
     pub ci_firebase: Ci,
     pub listen_writes: ListenWrites,
+    pub owner_writes: OwnerWrites,
     pub command: Runs,
     pub stability: Stability,
 }
@@ -164,6 +178,13 @@ impl Default for Params {
                 documents: 100_000,
                 batch: 500,
             },
+            owner_writes: OwnerWrites {
+                runs: runs(1, 3),
+                commit_warmup: 20,
+                commits: 100,
+                batch: 500,
+                documents: 100_000,
+            },
             command: runs(1, 5),
             stability: Stability {
                 max_load_1m: Some(2.0),
@@ -214,6 +235,13 @@ impl Params {
         };
         params.listen_writes.runs = runs(0, 1);
         params.listen_writes.documents = 10_000;
+        params.owner_writes = OwnerWrites {
+            runs: runs(0, 1),
+            commit_warmup: 5,
+            commits: 20,
+            documents: 10_000,
+            ..params.owner_writes
+        };
         params
     }
 
@@ -278,6 +306,7 @@ impl Params {
                 "ci",
                 "ci_firebase",
                 "listen_writes",
+                "owner_writes",
                 "command",
             ],
         )?;
@@ -379,6 +408,33 @@ impl Params {
                 return Err(format!("{what}: documents and batch must be at least 1"));
             }
         }
+        if let Some(v) = map.get("owner_writes") {
+            let what = "scenarios.owner_writes";
+            let m = object(v, what)?;
+            known(
+                m,
+                what,
+                &[
+                    "warmup",
+                    "runs",
+                    "commit_warmup",
+                    "commits",
+                    "batch",
+                    "documents",
+                ],
+            )?;
+            let o = &mut self.owner_writes;
+            read_runs(m, what, &mut o.runs)?;
+            read_usize(m, what, "commit_warmup", &mut o.commit_warmup)?;
+            read_usize(m, what, "commits", &mut o.commits)?;
+            read_usize(m, what, "batch", &mut o.batch)?;
+            read_usize(m, what, "documents", &mut o.documents)?;
+            if o.commits == 0 || o.batch == 0 || o.documents == 0 {
+                return Err(format!(
+                    "{what}: commits, batch and documents must be at least 1"
+                ));
+            }
+        }
         if let Some(v) = map.get("command") {
             let m = object(v, "scenarios.command")?;
             known(m, "scenarios.command", &["warmup", "runs"])?;
@@ -468,6 +524,14 @@ impl Params {
                 "runs": self.listen_writes.runs.runs,
                 "documents": self.listen_writes.documents,
                 "batch": self.listen_writes.batch,
+            }),
+            "owner_writes" => json!({
+                "warmup": self.owner_writes.runs.warmup,
+                "runs": self.owner_writes.runs.runs,
+                "commit_warmup": self.owner_writes.commit_warmup,
+                "commits": self.owner_writes.commits,
+                "batch": self.owner_writes.batch,
+                "documents": self.owner_writes.documents,
             }),
             "command" => r(self.command),
             _ => Value::Null,
@@ -639,6 +703,7 @@ mod tests {
             "ci",
             "ci_firebase",
             "listen_writes",
+            "owner_writes",
             "command",
         ] {
             assert_eq!(scenarios[name], params.scenario_json(name), "{name}");
