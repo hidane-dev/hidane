@@ -231,6 +231,14 @@ class Exceptions(unittest.TestCase):
         two_passes = self.difference("message", {**DENIAL, "message": "\nevaluation error at L5:22 for 'get' @ L5, false for 'get' @ L5"},
                                      {**DENIAL, "message": "\nfalse for 'get' @ L5"})
         self.assertEqual(rules.match("rules", two_passes)["id"], "reasons")
+        # An evaluation error of the first pass stands for any reason of its statement, not another's.
+        failed_first = "\nevaluation error at L8:31 for 'create' @ L8, evaluation error at L8:31 for 'update' @ L8"
+        stands_for = self.difference("message", {**DENIAL, "message": failed_first + ", Null value error. for 'create' @ L8"},
+                                     {**DENIAL, "message": "\nNull value error. for 'create' @ L8, false for 'update' @ L8"})
+        self.assertEqual(rules.match("rules", stands_for)["id"], "reasons")
+        elsewhere = self.difference("message", {**DENIAL, "message": failed_first},
+                                    {**DENIAL, "message": "\nfalse for 'delete' @ L9"})
+        self.assertIsNone(rules.match("rules", elsewhere))
         other = self.difference("message", {**DENIAL, "message": "\nfalse for 'get' @ L5"},
                                 {**DENIAL, "message": "\nfalse for 'list' @ L6"})
         self.assertIsNone(rules.match("rules", other))
@@ -304,6 +312,12 @@ class RequestRules(unittest.TestCase):
         self.assertFalse(diff.long_request_line({"method": "GET", "path": BASE + "/c/" + "x" * fits}))
         self.assertTrue(diff.long_request_line({"method": "GET", "path": BASE + "/c/" + "x" * (fits + 1)}))
 
+        commit = {"method": "POST", "path": BASE + ":commit", "body": {"writes": [{}, {}]}}
+        self.assertTrue(diff.several_targets(commit))
+        self.assertTrue(diff.several_targets({"method": "POST", "path": BASE + ":batchGet", "body": {"documents": ["a", "b"]}}))
+        self.assertFalse(diff.several_targets({**commit, "body": {"writes": [{}]}}))
+        self.assertFalse(diff.several_targets({"method": "GET", "path": BASE + "/c/d"}))
+
         query = {"method": "POST", "path": BASE + ":runQuery", "body": {"newTransaction": {"readWrite": {}}}}
         self.assertTrue(diff.read_write_transaction(query))
         self.assertFalse(diff.read_write_transaction({**query, "body": {"newTransaction": {"readOnly": {}}}}))
@@ -324,6 +338,17 @@ class RequestRules(unittest.TestCase):
         for other in ({**posted, "headers": {}}, {**posted, "method": "PUT"}, {**posted, "path": BASE + ":batchGet"}):
             self.assertIsNone(rules.match("malformed", found, {"steps": [patch({}), other]}), other)
         self.assertIsNone(rules.match("malformed", {**found, "step": 0}, case))
+
+    def test_a_batch_denied_where_no_statement_matches(self):
+        """D019: the official emulator lists what it checked before; hidane, what the denied one answers."""
+        rules = diff.Exceptions.load()
+        batch = {"method": "POST", "path": BASE + ":batchGet", "headers": {}, "body": {"documents": ["c/a", "d/x"]}}
+        found = {"kind": "message", "verb": ":batchGet", "detail": "", "step": 0,
+                 "official": {**DENIAL, "message": "\nfalse for 'get' @ L5"},
+                 "hidane": {**DENIAL, "message": "No matching allow statements"}}
+        self.assertEqual(rules.match("rules", found, {"steps": [batch]})["id"], "rules-denial-unmatched-after-others")
+        one = {**batch, "body": {"documents": ["d/x"]}}
+        self.assertIsNone(rules.match("rules", found, {"steps": [one]}))
 
     def test_an_earlier_rule_needs_an_earlier_step_and_its_answer(self):
         rule = {"id": "e", "exception": "D001", "why": "w", "official": {"status": 409},

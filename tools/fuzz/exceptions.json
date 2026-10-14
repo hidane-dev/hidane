@@ -4,11 +4,20 @@
   {
    "id": "rules-denial-reasons",
    "exception": "D008",
-   "why": "The official emulator evaluates conditions in two passes and lists the reasons of both (a first pass where resource.data fails, or the same reason twice); hidane evaluates once and lists only its own. D018 and D019 (reasons listed as false for allowed ways and writes) follow from the same.",
+   "why": "The official emulator evaluates conditions in two passes and lists the reasons of both (a first pass where resource.data or a lookup fails, its evaluation error standing for whatever that statement's reason is, or the same reason twice); hidane evaluates once and lists only its own. D018 and D019 (reasons listed as false for allowed ways and writes) follow from the same.",
    "kinds": ["message"],
    "official": {"status": 403, "code": "^PERMISSION_DENIED$"},
    "hidane": {"status": 403, "code": "^PERMISSION_DENIED$"},
    "relation": "hidane-reasons-subset"
+  },
+  {
+   "id": "rules-denial-unmatched-after-others",
+   "exception": "D019",
+   "why": "A batch denied on a document or a write no statement matches: the official emulator lists the ones checked before it (as false, or the evaluation errors of its first pass) and nothing for the denied one; hidane answers what the denied one alone answers. Matched on the request: with one document or write, the official emulator answers the same.",
+   "kinds": ["message"],
+   "official": {"status": 403, "code": "^PERMISSION_DENIED$", "message": "^\\n"},
+   "hidane": {"status": 403, "code": "^PERMISSION_DENIED$", "message": "^No matching allow statements$"},
+   "request": {"predicates": ["several-targets"]}
   },
   {
    "id": "precondition-wording",

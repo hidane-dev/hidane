@@ -853,7 +853,9 @@ impl Firestore for FirestoreService {
             }
             None => self.read_time(&database, None)?,
         };
-        // One denied document denies the whole call, missing documents included.
+        // One denied document denies the whole call, missing documents included. The documents
+        // are checked in request order and the first denied one decides, its reasons alone
+        // (`docs/parity-exceptions.md` D019).
         let in_transaction = matches!(
             req.consistency_selector,
             Some(batch_get_documents_request::ConsistencySelector::Transaction(_))
@@ -862,24 +864,21 @@ impl Firestore for FirestoreService {
             .guard(&caller, &database)
             .map(|guard| guard.in_transaction(in_transaction))
         {
-            let denials: Vec<String> = paths
-                .iter()
-                .filter_map(|path| {
-                    let stored = self.store.get(&database, path, at);
-                    guard
-                        .get(path, stored.as_deref(), &|p| {
-                            self.store.get(&database, p, at)
-                        })
-                        .err()
-                })
-                .collect();
-            if !denials.is_empty() {
+            let denial = paths.iter().find_map(|path| {
+                let stored = self.store.get(&database, path, at);
+                guard
+                    .get(path, stored.as_deref(), &|p| {
+                        self.store.get(&database, p, at)
+                    })
+                    .err()
+            });
+            if let Some(denial) = denial {
                 // The transaction the call began ends with it: its ID is never sent, and the
                 // official emulator leaves nothing locked (`tools/oracle/rules_expressions.py`).
                 if let Some(transaction) = begun {
                     self.transactions.rollback(&database, &transaction)?;
                 }
-                return Err(guard::denied(guard::join(&denials)));
+                return Err(guard::denied(denial));
             }
         }
         // Answers come back in request order, all with the same read time.

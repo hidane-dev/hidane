@@ -354,9 +354,14 @@ def reasons(message):
 
 def hidane_reasons_subset(official, hidane):
     """hidane's denial lists some of the official one's reasons and nothing else: the official
-    emulator's two passes (D008) or its `false` for what was allowed (D018, D019) add the rest."""
+    emulator's two passes (D008) or its `false` for what was allowed (D018, D019) add the rest.
+    Where its first pass failed on `resource` or a lookup it says `evaluation error at L6:23 for
+    'create' @ L6`, which stands for any reason of that statement, as in the tests'
+    `same_denial`: hidane evaluates once, with what that pass lacked."""
     mine = reasons(hidane.get("message"))
-    return bool(mine) and set(mine) <= set(reasons(official.get("message")))
+    theirs = reasons(official.get("message"))
+    failed_first = {r[r.rindex(" for '"):] for r in theirs if r.startswith("evaluation error at L")}
+    return bool(mine) and all(r in theirs or r[r.rindex(" for '"):] in failed_first for r in mine)
 
 
 RELATIONS = {"hidane-reasons-subset": hidane_reasons_subset}
@@ -439,6 +444,13 @@ def long_request_line(step):
     return len(f"{step['method']} {path} HTTP/1.1") > 4096
 
 
+def several_targets(step):
+    """A commit or batch write of more than one write, or a batchGet of more than one document."""
+    body = body_of(step)
+    return isinstance(body, dict) and any(isinstance(body.get(key), list) and len(body[key]) > 1
+                                          for key in ("writes", "documents"))
+
+
 def read_write_transaction(step):
     """The body begins a read-write transaction (`newTransaction: {readWrite: …}`)."""
     body = body_of(step)
@@ -453,6 +465,7 @@ PREDICATES = {
     "lenient-timestamp": lenient_timestamp,
     "long-request-line": long_request_line,
     "read-write-transaction": read_write_transaction,
+    "several-targets": several_targets,
 }
 
 

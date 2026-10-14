@@ -324,13 +324,17 @@
    "area": "rules",
    "topic": null,
    "kind": "more-correct",
-   "official": "A denied commit lists, before the reasons of the write that was denied, the statements of every write checked before it, as `false` even where they allowed it (`c/y` written, then `c/b` verified, under `allow get: if d == 'a'` and `allow create, update: if d == 'y'`: `false for 'create' @ L6, false for 'update' @ L6, false for 'get' @ L5`)",
+   "official": "A denied commit or batchGet lists, before the reasons of the write or document that was denied, the statements of every one checked before it, as `false` even where they allowed it (`c/y` written, then `c/b` verified, under `allow get: if d == 'a'` and `allow create, update: if d == 'y'`: `false for 'create' @ L6, false for 'update' @ L6, false for 'get' @ L5`); where no statement matches the denied one, those alone (`tests/fixtures/rules_writes.json`)",
    "firestore": null,
-   "hidane": "The denied write's reasons only: the writes are checked in order and the first denied one decides, as on the official emulator",
+   "hidane": "The denied write's or document's reasons only: they are checked in order and the first denied one decides, as on the official emulator; `No matching allow statements` where no statement matches it",
    "reason": "A message reporting allowed writes as `false` misleads",
-   "references": [],
-   "pinned_by": [],
-   "unpinned": "Batch denials are compared with `common::rules::same_denial`, which accepts any subset of the official reasons, so extra entries for earlier writes would still pass."
+   "references": [
+    "crates/hidane/tests/fixtures/rules_writes.json",
+    "tools/oracle/rules_writes.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rules_server.rs::a_batch_denied_where_no_statement_matches"
+   ]
   },
   {
    "id": "D020",

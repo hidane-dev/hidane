@@ -11,7 +11,10 @@ update with and without a mask or an `exists` precondition, a transform, a delet
 create, patch and delete) runs under rules that allow only `create`, only `update`, only
 `delete`, or none, without an `Authorization` header; the status and message are recorded.
 Reads: a batchGet with one document denied, a transaction's get, an aggregation and a list of
-documents. Stdlib only.
+documents. Batches: a batchGet or a commit stops at its first denied document or write and lists
+the ones checked before as `false` (D019); a batchGet denied on a document no statement matches,
+first, alone, or after one allowed, and a commit's write no statement matches after one allowed.
+Stdlib only.
 """
 
 import sys
@@ -87,6 +90,27 @@ call("POST", f"/v1/{DB}/documents:batchGet", {"documents": [f"{BASE}/c/a", f"{BA
 case("batchGet, missing document")
 load(["get: if d == 'a'", "list: if true"])
 call("POST", f"/v1/{DB}/documents:batchGet", {"documents": [f"{BASE}/c/a", f"{BASE}/c/zz"]})
+# A batch is checked in request order and stops at its first denied document or write; its
+# message lists the ones checked before as `false`, even where they were allowed (D019), and is
+# "No matching allow statements" alone when no statement matched and nothing came before.
+TWO_BLOCKS = ("rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
+              "    match /c/{d} {\n      allow get: if d == 'a';\n      allow create, update: if d == 'a';\n    }\n"
+              "    match /e/{d} {\n      allow get: if d == 'x';\n    }\n  }\n}\n")
+case("batchGet, two denied under two statements")
+rules(PROJECT, TWO_BLOCKS)
+call("POST", f"/v1/{DB}/documents:batchGet", {"documents": [f"{BASE}/c/b", f"{BASE}/e/b"]})
+case("batchGet, no statement for the first")
+rules(PROJECT, TWO_BLOCKS)
+call("POST", f"/v1/{DB}/documents:batchGet", {"documents": [f"{BASE}/d/x", f"{BASE}/c/b"]})
+case("batchGet, no statement for the only one")
+rules(PROJECT, TWO_BLOCKS)
+call("POST", f"/v1/{DB}/documents:batchGet", {"documents": [f"{BASE}/d/x"]})
+case("batchGet, allowed, then no statement")
+rules(PROJECT, TWO_BLOCKS)
+call("POST", f"/v1/{DB}/documents:batchGet", {"documents": [f"{BASE}/c/a", f"{BASE}/d/x"]})
+case("commit, allowed, then no statement")
+rules(PROJECT, TWO_BLOCKS)
+call(*commit(update("c/a"), update("d/x")))
 case("get in a transaction, denied")
 load(["get: if d == 'a'", "list: if true"])
 # A REST GET with ?transaction= never answers on the official emulator; batchGet does. The

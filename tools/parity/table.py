@@ -298,12 +298,14 @@ def rest(cases):
     return [(REST, compare_mark(case)) for case in cases]
 
 
-def rules_server(name):
-    """rules_server.rs's replay: every status, and a denial's reasons."""
+def rules_server(name, skip=None):
+    """rules_server.rs's replay: every status, and a denial's reasons; the denials of the
+    cases it leaves out (`skip`, a `const` of the test) are intentionally different."""
     def count(f):
-        skip = rust_strings(f"{H}/rules_server.rs", f"fixtures/{name}")
-        return [(REST, REASONS if denial(step) else STATUS)
-                for case in f if case["name"] not in skip for step in case["steps"]]
+        skipped = rust_strings(f"{H}/rules_server.rs", skip or f"fixtures/{name}")
+        return [(REST, DIFFERS if case["name"] in skipped else REASONS if denial(step) else STATUS)
+                for case in f for step in case["steps"]
+                if case["name"] not in skipped or denial(step)]
     return count
 
 
@@ -790,7 +792,7 @@ for _name in ("rules_auth", "rules_denials", "rules_expressions", "rules_list", 
         area="rules", tests=[f"{H}/rules_server.rs::replay"], counted="each call",
         compares="a denial as decision and reasons (`same_denial`: hidane's reasons are among "
                  "the official ones); every other answer on its status",
-        count=rules_server(f"{_name}.json"))
+        count=rules_server(f"{_name}.json", "ALLOWED_THEN_UNMATCHED" if _name == "rules_writes" else None))
 for _name in ("rules_coverage", "rules_coverage_flag", "rules_expressions_report", "rules_request_fields",
               "rules_verify"):
     RECORDINGS[f"{H}/fixtures/{_name}.json"] = dict(
