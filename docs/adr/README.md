@@ -23,3 +23,4 @@ decision was made.
 | [0005](0005-rules-engine.md) | Security Rules evaluator approach (hand-written, no cel-rust) | Accepted |
 | [0006](0006-launch-under-firebase-tools.md) | Launching under firebase-tools: a scoped `java` shim (`hidane exec`), a firebase-tools change later | Accepted |
 | [0007](0007-contributor-license-agreement.md) | Contributor License Agreement (license CLA, individual and corporate, checked by a workflow) | Accepted |
+| [0008](0008-oracle-record-replay.md) | Recording the official emulator and replaying it against hidane: a recorder per question, no shared case format | Accepted |
