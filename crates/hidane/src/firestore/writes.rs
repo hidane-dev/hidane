@@ -22,7 +22,7 @@ use prost_types::Timestamp;
 use tonic::Status;
 
 use super::{
-    guard::{self, CheckedWrite},
+    guard::{self, CheckedWrite, Sets},
     names, validate,
 };
 
@@ -340,14 +340,19 @@ fn parse_mask(paths: &[String]) -> Result<Vec<FieldPath>, Status> {
 pub(crate) fn rules_method(batch: &dyn WriteBatch, write: &Write) -> Option<CheckedWrite> {
     let path = names::document(target(write)?).ok()?.path;
     let existing = batch.get(&path);
+    let condition = write
+        .current_document
+        .as_ref()
+        .and_then(|p| p.condition_type.as_ref());
+    let by_existence = if existing.is_some() {
+        (Method::Update, true)
+    } else {
+        (Method::Create, true)
+    };
     let (method, upsert) = match &write.operation {
         Some(Operation::Verify(_)) => (Method::Get, false),
         Some(Operation::Delete(_)) => (Method::Delete, false),
-        Some(Operation::Update(_) | Operation::Transform(_)) => match write
-            .current_document
-            .as_ref()
-            .and_then(|p| p.condition_type.as_ref())
-        {
+        Some(Operation::Update(_) | Operation::Transform(_)) => match condition {
             Some(ConditionType::Exists(false)) => (Method::Create, false),
             Some(ConditionType::UpdateTime(time)) if ReadTime::from_timestamp(time).0 == 0 => {
                 (Method::Create, false)
@@ -355,44 +360,33 @@ pub(crate) fn rules_method(batch: &dyn WriteBatch, write: &Write) -> Option<Chec
             Some(ConditionType::Exists(true) | ConditionType::UpdateTime(_)) => {
                 (Method::Update, false)
             }
-            None if existing.is_some() => (Method::Update, true),
-            None => (Method::Create, true),
+            None => by_existence,
         },
         None => return None,
+    };
+    // What a write after a delete takes (`check_sequences`): an insert after `exists: false`,
+    // an update after `exists: true`, else an upsert.
+    let then = match (method, condition) {
+        (Method::Delete, Some(ConditionType::Exists(false))) => (Method::Create, false),
+        (Method::Delete, Some(ConditionType::Exists(true))) => (Method::Update, false),
+        (Method::Delete, _) => by_existence,
+        _ => (method, upsert),
     };
     let field_transforms = match &write.operation {
         Some(Operation::Transform(transform)) => transform.field_transforms.as_slice(),
         Some(Operation::Update(_)) => write.update_transforms.as_slice(),
         _ => &[],
     };
-    let transforms = (!field_transforms.is_empty()).then(|| {
-        field_transforms
-            .iter()
-            .map(|t| guard::transform_path(&t.field_path))
-            .collect::<Vec<_>>()
-    });
-    let mask = match &write.operation {
-        Some(Operation::Update(_)) => write
-            .update_mask
-            .as_ref()
-            .and_then(|mask| parse_mask(&mask.field_paths).ok()),
-        _ => None,
-    };
-    let write_fields = match (&transforms, &mask) {
-        (None, None) => None,
-        (transforms, mask) => Some(
-            transforms
-                .iter()
-                .flatten()
-                .cloned()
-                .chain(
-                    mask.as_deref()
-                        .map(guard::rules_paths)
-                        .into_iter()
-                        .flatten(),
-                )
-                .collect(),
-        ),
+    let transforms = field_transforms
+        .iter()
+        .map(|t| guard::transform_path(&t.field_path))
+        .collect();
+    let sets = match &write.operation {
+        Some(Operation::Update(_)) => match write.update_mask.as_ref() {
+            Some(mask) => parse_mask(&mask.field_paths).map_or(Sets::Whole, Sets::Mask),
+            None => Sets::Whole,
+        },
+        _ => Sets::Nothing,
     };
     Some(CheckedWrite {
         method,
@@ -400,8 +394,10 @@ pub(crate) fn rules_method(batch: &dyn WriteBatch, write: &Write) -> Option<Chec
         path,
         before: existing,
         after: None,
-        write_fields,
+        sets,
         transforms,
+        then,
+        deleted: method == Method::Delete,
     })
 }
 

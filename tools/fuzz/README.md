@@ -78,7 +78,7 @@ accepts. Each rule names the entry of
 where the answers differ (`detail`), each side's status, error code, message and differing
 `value` (regular expressions), and a `relation` between the answers (`hidane-reasons-subset`: a
 denial listing some of the official one's reasons and nothing else, the official emulator's two
-passes). A difference a rule matches is counted under its entry and not reported. `fuzz.py
+passes, where an `evaluation error` of its first pass stands for any reason of its statement). A difference a rule matches is counted under its entry and not reported. `fuzz.py
 check` fails when a rule names an entry that is gone or is malformed; keep the rules as narrow as
 the entry's text.
 
@@ -91,7 +91,7 @@ was:
 |---|---|
 | `request.method`, `request.path` | the method and path of the step whose answers differ (regular expressions; the path as the case gives it, with `{project}` and the other placeholders, and its query string) |
 | `request.headers` | `{"Content-Type": "(?i)^text/"}`: a regular expression per header, names in any case; a header the step does not set is the empty string |
-| `request.predicates` | names of checks on the request (`PREDICATES` in `diff.py`), each of which must hold: `lone-surrogate` (a string of the body, key or value, holds an unpaired surrogate), `lenient-timestamp` (a string value of the body or a query parameter is shaped like a timestamp but is not RFC 3339: month 13, `2020-1-01`), `long-request-line` (the request line is longer than 4096 bytes), `read-write-transaction` (the body begins one with `newTransaction`) |
+| `request.predicates` | names of checks on the request (`PREDICATES` in `diff.py`), each of which must hold: `lone-surrogate` (a string of the body, key or value, holds an unpaired surrogate), `lenient-timestamp` (a string value of the body or a query parameter is shaped like a timestamp but is not RFC 3339: month 13, `2020-1-01`), `long-request-line` (the request line is longer than 4096 bytes), `read-write-transaction` (the body begins one with `newTransaction`), `several-targets` (a commit or batch write of more than one write, a batchGet of more than one document) |
 | `earlier` | the same keys for some step before that one, and the `status` of its answer (a number or a list; both sides answered it alike, since the first difference comes later) |
 
 ```json

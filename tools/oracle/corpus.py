@@ -90,6 +90,7 @@ FIXTURE_CLIENTS = {
     "rules_lookups.py": ([REST], PY),
     "rules_paths.py": ([REST], PY),
     "rules_request.py": ([REST], PY),
+    "rules_same_document.py": ([REST], PY),
     "rules_request_fields.py": ([REST, PROCESS], PY),
     "rules_streams.py": ([GRPC, REST], PY_GRPCURL),
     "rules_verify.py": ([REST, PROCESS], PY),

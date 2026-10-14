@@ -179,9 +179,66 @@ async fn request_and_resource() {
     replay(include_str!("fixtures/rules_request.json"), &[]).await;
 }
 
+/// The cases of `rules_writes.json` where hidane's denial differs on purpose (D019).
+const ALLOWED_THEN_UNMATCHED: &[&str] = &[
+    "batchGet, allowed, then no statement",
+    "commit, allowed, then no statement",
+];
+
 #[tokio::test]
 async fn writes_are_checked_as_create_update_or_delete() {
-    replay(include_str!("fixtures/rules_writes.json"), &[]).await;
+    replay(
+        include_str!("fixtures/rules_writes.json"),
+        ALLOWED_THEN_UNMATCHED,
+    )
+    .await;
+}
+
+/// A commit that writes one document more than once is checked once for it, as the official
+/// emulator collapses the writes (`tools/oracle/rules_same_document.py`).
+#[tokio::test]
+async fn a_document_written_more_than_once_is_checked_once() {
+    replay(include_str!("fixtures/rules_same_document.json"), &[]).await;
+}
+
+/// docs/parity-exceptions.md D019: a batch is denied on a document or a write no statement
+/// matches, after one that was allowed. The official emulator lists the allowed one's
+/// statements as `false`; hidane answers what the denied one alone answers.
+#[tokio::test]
+async fn a_batch_denied_where_no_statement_matches() {
+    let cases: Vec<Json> =
+        serde_json::from_str(include_str!("fixtures/rules_writes.json")).unwrap();
+    let addr = start().await;
+    for name in ALLOWED_THEN_UNMATCHED {
+        let case = cases.iter().find(|c| c["name"] == *name).unwrap();
+        let steps = case["steps"].as_array().unwrap();
+        let mut answer = None;
+        for step in steps {
+            let body = (!step["body"].is_null()).then(|| step["body"].to_string());
+            answer = Some(
+                send(
+                    addr,
+                    step["method"].as_str().unwrap(),
+                    step["path"].as_str().unwrap(),
+                    body.as_deref(),
+                    step["auth"].as_str(),
+                )
+                .await,
+            );
+        }
+        let (status, response) = answer.unwrap();
+        let official = &steps.last().unwrap()["response"];
+        assert_eq!(status, 403, "{name}");
+        assert!(
+            message(official).unwrap().starts_with("\nfalse for '"),
+            "{name}: {official}"
+        );
+        assert_eq!(
+            message(&response),
+            Some("No matching allow statements"),
+            "{name}"
+        );
+    }
 }
 
 #[tokio::test]

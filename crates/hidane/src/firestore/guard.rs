@@ -17,7 +17,9 @@
 //!   `ALREADY_EXISTS`, a denied one, or one next to a denied write, with `PERMISSION_DENIED`.
 //!   Every write of a commit is checked after all of them were applied, so `getAfter()` sees
 //!   the whole batch, in order; the first denied write denies the commit
-//!   (`tools/oracle/rules_verify.py`).
+//!   (`tools/oracle/rules_verify.py`). The writes of a commit to one document are checked once,
+//!   as one write, where the first of them comes ([`CheckedWrite::merge`],
+//!   `tools/oracle/rules_same_document.py`).
 //! - A denial is `PERMISSION_DENIED` with the evaluator's message.
 //! - `request` holds every key the official emulator's does (`hidane_rules::eval::Request`):
 //!   `inTransaction` for every write and for a read of documents in a transaction begun before
@@ -221,10 +223,11 @@ impl Guard {
     }
 
     /// The writes of one commit, each with the document before and after it; the first one
-    /// denied decides.
+    /// denied decides. `several` says whether the commit has more than one write.
     pub(crate) fn writes(
         &self,
         writes: &[CheckedWrite],
+        several: bool,
         time: eval::Timestamp,
         before: &dyn Fn(&ResourcePath) -> Option<Arc<StoredDocument>>,
         after: &dyn Fn(&ResourcePath) -> Option<Arc<StoredDocument>>,
@@ -234,7 +237,7 @@ impl Guard {
             before,
             after,
         };
-        let mut budget = if writes.len() > 1 {
+        let mut budget = if several {
             Budget::batch()
         } else {
             Budget::single()
@@ -267,8 +270,8 @@ impl Guard {
             request.upsert = write.upsert;
             request.in_transaction = true;
             request.verify = write.method == Method::Get;
-            request.write_fields.clone_from(&write.write_fields);
-            request.transforms.clone_from(&write.transforms);
+            request.write_fields = write.write_fields();
+            request.transforms = (!write.transforms.is_empty()).then(|| write.transforms.clone());
             // Decided without the ID: on the collection's path.
             if self.auto_id && write.method == Method::Create && !write.upsert {
                 request.auto_id = true;
@@ -295,11 +298,81 @@ pub(crate) struct CheckedWrite {
     pub before: Option<Arc<StoredDocument>>,
     /// The document after the write.
     pub after: Option<Arc<StoredDocument>>,
+    /// What the write sets besides its transforms, for `request.writeFields`.
+    pub sets: Sets,
+    /// `request.transforms` ([`transform_path`]), in order; null when empty.
+    pub transforms: Vec<String>,
+    /// The method and `upsert` a write to the document after this one takes when this one is a
+    /// delete: an `exists` precondition's, else by whether the document exists; for any other
+    /// write, its own.
+    pub then: (Method, bool),
+    /// Whether this write, or one before it to the same document, is a delete: what is written
+    /// after it sets the whole document.
+    pub deleted: bool,
+}
+
+/// What a write sets of its document besides its transforms.
+#[derive(Clone, Debug, PartialEq)]
+pub(crate) enum Sets {
+    /// Nothing: a transform, or no write yet after a delete.
+    Nothing,
+    /// The paths of an update mask.
+    Mask(Vec<FieldPath>),
+    /// The whole document: a write without a mask, or any write after a delete.
+    Whole,
+}
+
+impl CheckedWrite {
     /// `request.writeFields`: the paths of the transforms, then those of the mask
-    /// ([`rules_paths`]); `None` without either.
-    pub write_fields: Option<Vec<String>>,
-    /// `request.transforms` ([`transform_path`]); `None` without any.
-    pub transforms: Option<Vec<String>>,
+    /// ([`rules_paths`]); null for a write that sets the whole document without transforms.
+    fn write_fields(&self) -> Option<Vec<String>> {
+        match &self.sets {
+            Sets::Mask(mask) => Some(
+                self.transforms
+                    .iter()
+                    .cloned()
+                    .chain(rules_paths(mask))
+                    .collect(),
+            ),
+            _ if self.transforms.is_empty() => None,
+            _ => Some(self.transforms.clone()),
+        }
+    }
+
+    /// Merges `later`, a later write of the commit to the same document, into this one: the
+    /// official emulator collapses the writes to a document into one and checks that once
+    /// (`tools/oracle/rules_same_document.py`). `resource` stays the document before the
+    /// commit, and `request.resource` is what the last write leaves. A delete last makes a
+    /// delete; otherwise the first write decides the method (a first delete by `then`). The
+    /// masks join (a mask tree, [`rules_paths`]) and the transforms follow one another; a write
+    /// without a mask sets the whole document, and a delete starts over: what is written after
+    /// it sets the whole document.
+    pub(crate) fn merge(&mut self, later: CheckedWrite) {
+        let first = if self.method == Method::Delete {
+            self.then
+        } else {
+            (self.method, self.upsert)
+        };
+        if later.method == Method::Delete {
+            (self.method, self.upsert) = (Method::Delete, false);
+            self.then = first;
+            self.sets = Sets::Nothing;
+            self.transforms.clear();
+            self.deleted = true;
+            return;
+        }
+        (self.method, self.upsert) = first;
+        self.sets = match (std::mem::replace(&mut self.sets, Sets::Nothing), later.sets) {
+            (sets, Sets::Nothing) => sets,
+            (Sets::Mask(mut mask), Sets::Mask(more)) if !self.deleted => {
+                mask.extend(more);
+                Sets::Mask(mask)
+            }
+            (Sets::Nothing, sets) if !self.deleted => sets,
+            _ => Sets::Whole,
+        };
+        self.transforms.extend(later.transforms);
+    }
 }
 
 /// The documents before the commit, for writes: the version a write of the batch replaced, or
