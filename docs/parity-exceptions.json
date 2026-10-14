@@ -1112,16 +1112,19 @@
    "area": "values",
    "topic": null,
    "kind": "limitation",
-   "official": "A JSON string holding an unpaired surrogate (`\\ud800`) is stored, as a value, a map key, a field path or a document name; reads print it as `?`",
+   "official": "A JSON string holding an unpaired surrogate (`\\ud800`) is stored, as a value, a map key, a field path or a document name; reads print it as `?`. A WebChannel message reads it the same way: a Listen target on `c/a\\ud800` watches `c/a?`, and a filter on `a\\ud800b` matches `a?b`",
    "firestore": null,
-   "hidane": "`400` \"Payload isn't valid for request.\", the answer to a body that does not parse",
+   "hidane": "`400` \"Payload isn't valid for request.\", the answer to a body that does not parse; over WebChannel, `400` without a body to the handshake or forward `POST` that carries such a message",
    "reason": "hidane's strings are UTF-8, as protobuf strings over gRPC must be, and UTF-8 cannot hold an unpaired surrogate; no SDK writes one (#262)",
    "references": [
     "hidane-dev/hidane#262",
-    "crates/hidane/tests/rest.rs"
+    "crates/hidane/tests/rest.rs",
+    "hidane-dev/hidane#198",
+    "crates/hidane/tests/webchannel.rs"
    ],
    "pinned_by": [
-    "crates/hidane/tests/rest.rs::a_lone_surrogate_is_a_body_that_does_not_parse"
+    "crates/hidane/tests/rest.rs::a_lone_surrogate_is_a_body_that_does_not_parse",
+    "crates/hidane/tests/webchannel.rs::a_lone_surrogate_is_a_message_that_does_not_parse"
    ]
   },
   {
