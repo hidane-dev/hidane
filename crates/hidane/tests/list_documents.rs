@@ -205,6 +205,7 @@ async fn list_documents_like_the_official_emulator() {
     let (mut client, addr) = start().await;
     let first_commit = commit(&mut client, &fixture["seed"][0]).await;
     commit(&mut client, &fixture["seed"][1]).await;
+    commit(&mut client, &fixture["seed"][2]).await;
     let mut differences = Vec::new();
     for case in fixture["grpc"].as_array().unwrap() {
         let actual = list(&mut client, case, &first_commit).await;

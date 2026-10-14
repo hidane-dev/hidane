@@ -10284,6 +10284,491 @@
     "contentType": "application/json",
     "body": "{\"error\":{\"code\":400,\"message\":\"the stored version (<version>) does not match the required base version (978307200000000)\",\"status\":\"FAILED_PRECONDITION\"}}"
    }
+  },
+  {
+   "name": "documents to list in order",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/lo/a",
+       "fields": {
+        "n": {
+         "integerValue": "3"
+        },
+        "m": {
+         "stringValue": "x"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/lo/b",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/lo/c",
+       "fields": {
+        "m": {
+         "stringValue": "y"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/lo/d",
+       "fields": {
+        "n": {
+         "integerValue": "2"
+        },
+        "m": {
+         "stringValue": "x"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/lo/e",
+       "fields": {
+        "n": {
+         "stringValue": "s"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/lo/f",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        },
+        "m": {
+         "stringValue": "a"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/lo/g",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "list ordered by n",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=n",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/b\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/f\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      },\n      \"m\": {\n        \"stringValue\": \"a\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/d\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"2\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/a\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"3\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/e\",\n    \"fields\": {\n      \"n\": {\n        \"stringValue\": \"s\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "list ordered by n%20desc",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=n%20desc",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/e\",\n    \"fields\": {\n      \"n\": {\n        \"stringValue\": \"s\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/a\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"3\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/d\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"2\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/f\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      },\n      \"m\": {\n        \"stringValue\": \"a\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/b\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "list ordered by n%20asc",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=n%20asc",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/b\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/f\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      },\n      \"m\": {\n        \"stringValue\": \"a\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/d\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"2\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/a\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"3\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/e\",\n    \"fields\": {\n      \"n\": {\n        \"stringValue\": \"s\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "list ordered by n%20DESC",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=n%20DESC",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/e\",\n    \"fields\": {\n      \"n\": {\n        \"stringValue\": \"s\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/a\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"3\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/d\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"2\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/f\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      },\n      \"m\": {\n        \"stringValue\": \"a\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/b\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "list ordered by n%20%20desc",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=n%20%20desc",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/e\",\n    \"fields\": {\n      \"n\": {\n        \"stringValue\": \"s\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/a\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"3\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/d\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"2\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/f\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      },\n      \"m\": {\n        \"stringValue\": \"a\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/b\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "list ordered by m,n",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=m,n",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/f\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      },\n      \"m\": {\n        \"stringValue\": \"a\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/d\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"2\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/a\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"3\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "list ordered by m%20desc,n",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=m%20desc,n",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/d\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"2\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/a\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"3\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/f\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      },\n      \"m\": {\n        \"stringValue\": \"a\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "list ordered by n,%20m",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=n,%20m",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/f\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      },\n      \"m\": {\n        \"stringValue\": \"a\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/d\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"2\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/a\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"3\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "list ordered by n,__name__%20desc",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=n,__name__%20desc",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/f\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      },\n      \"m\": {\n        \"stringValue\": \"a\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/b\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/d\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"2\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/a\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"3\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/e\",\n    \"fields\": {\n      \"n\": {\n        \"stringValue\": \"s\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "list ordered by __name__",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=__name__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/a\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"3\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/b\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/c\",\n    \"fields\": {\n      \"m\": {\n        \"stringValue\": \"y\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/d\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"2\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/e\",\n    \"fields\": {\n      \"n\": {\n        \"stringValue\": \"s\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/f\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      },\n      \"m\": {\n        \"stringValue\": \"a\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/g\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "list ordered by a.b",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=a.b",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "list ordered by %60a%20b%60",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=%60a%20b%60",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "list ordered by x%20desc",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=x%20desc",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "list ordered by n,",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=n,",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid order by clause \\\"n,\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "list ordered by ,n",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=,n",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid order by clause \\\",n\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "list ordered by %20",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=%20",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid order by clause \\\" \\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "list ordered by n%20desc%20x",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=n%20desc%20x",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid order by clause \\\"n desc x\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "list ordered by n%20ascending",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=n%20ascending",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid order by clause \\\"n ascending\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "list ordered by m,m",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=m,m",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"order by clause cannot contain duplicate fields m\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "list ordered by n%20desc,n",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=n%20desc,n",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"order by clause cannot contain duplicate fields n\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "list ordered by __name__,n",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=__name__,n",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"order by clause cannot contain more fields after the key\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "list ordered by __name__%20desc",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=__name__%20desc",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Firestore does not support descending key scans\",\"status\":\"FAILED_PRECONDITION\"}}"
+   }
+  },
+  {
+   "name": "list ordered by __x__",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=__x__",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid reserved name in field path __x__\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "list ordered by a%5B0%5D",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=a%5B0%5D",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid property path\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "list ordered by a..b",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=a..b",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid order by clause \\\"a..b\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "list ordered by a field, a page of 2",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=n&pageSize=2",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/b\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/f\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      },\n      \"m\": {\n        \"stringValue\": \"a\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }],\n  \"nextPageToken\": \"<token>\"\n}\n"
+   }
+  },
+  {
+   "name": "list ordered by a field, a mask",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=n%20desc&mask.fieldPaths=m",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/e\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/a\",\n    \"fields\": {\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/d\",\n    \"fields\": {\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/f\",\n    \"fields\": {\n      \"m\": {\n        \"stringValue\": \"a\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/b\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "list ordered by a field, showing missing documents",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=n&showMissing=true",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"cannot specify an order when show_missing is true\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
   }
  ]
 }

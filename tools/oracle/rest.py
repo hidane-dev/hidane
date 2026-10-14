@@ -532,6 +532,20 @@ case("a document deleted twice, the first deletion", "POST", B + ":commit", comm
 case("a document deleted twice, the second deletion", "POST", B + ":commit", commit({"delete": NAME + "/dv/b"}))
 case("a version precondition on a document deleted twice", "POST", B + ":commit", commit(upd("dv/b", {}, currentDocument=OLD)))
 
+# ListDocuments' `orderBy` is a query's order: clauses separated by commas, each a field path
+# and `asc` or `desc` in any case, with whitespace around ("Invalid order by clause" for
+# anything else), checked as a query's orders are; the documents without the fields are left out.
+case("documents to list in order", "POST", B + ":commit", commit(*[upd(f"lo/{d}", f) for d, f in [
+    ("a", {"n": i(3), "m": s("x")}), ("b", {"n": i(1)}), ("c", {"m": s("y")}), ("d", {"n": i(2), "m": s("x")}),
+    ("e", {"n": s("s")}), ("f", {"n": i(1), "m": s("a")}), ("g", {})]]))
+for order in ["n", "n%20desc", "n%20asc", "n%20DESC", "n%20%20desc", "m,n", "m%20desc,n", "n,%20m", "n,__name__%20desc", "__name__",
+              "a.b", "%60a%20b%60", "x%20desc", "n,", ",n", "%20", "n%20desc%20x", "n%20ascending", "m,m", "n%20desc,n",
+              "__name__,n", "__name__%20desc", "__x__", "a%5B0%5D", "a..b"]:
+    case(f"list ordered by {order}", "GET", B + "/lo?orderBy=" + order)
+case("list ordered by a field, a page of 2", "GET", B + "/lo?orderBy=n&pageSize=2")
+case("list ordered by a field, a mask", "GET", B + "/lo?orderBy=n%20desc&mask.fieldPaths=m")
+case("list ordered by a field, showing missing documents", "GET", B + "/lo?orderBy=n&showMissing=true")
+
 
 def norm(text):
     # Versions of the years 2021 to 2099, in microseconds (`tools/fuzz/diff.py`).

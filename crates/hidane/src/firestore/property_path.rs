@@ -43,6 +43,54 @@ pub struct PropertyPath(Vec<Segment>);
 
 const MAX_OFFSET: u64 = (1 << 31) - 1;
 
+/// Whether `path` has a field path's syntax, names and array offsets read as
+/// [`PropertyPath::read`] reads them but not checked: what an order of ListDocuments takes as
+/// its path, anything else being an invalid clause (`tools/oracle/rest.py`, #262).
+pub fn well_formed(path: &str) -> bool {
+    let mut chars = path.chars().peekable();
+    loop {
+        if chars.next_if_eq(&'`').is_some() {
+            let mut name = 0;
+            loop {
+                match chars.next() {
+                    Some('`') => break,
+                    Some('\\') if chars.next().is_none() => return false,
+                    Some(_) => name += 1,
+                    None => return false,
+                }
+            }
+            if name == 0 {
+                return false;
+            }
+        } else {
+            if chars
+                .next_if(|c| c.is_ascii_alphabetic() || *c == '_')
+                .is_none()
+            {
+                return false;
+            }
+            while chars
+                .next_if(|c| c.is_ascii_alphanumeric() || *c == '_')
+                .is_some()
+            {}
+        }
+        while chars.next_if_eq(&'[').is_some() {
+            if chars.next_if(char::is_ascii_digit).is_none() {
+                return false;
+            }
+            while chars.next_if(char::is_ascii_digit).is_some() {}
+            if chars.next_if_eq(&']').is_none() {
+                return false;
+            }
+        }
+        match chars.next() {
+            None => return true,
+            Some('.') => {}
+            Some(_) => return false,
+        }
+    }
+}
+
 /// Field names of the form `__…__` are reserved; `____` is not one.
 pub fn reserved(name: &str) -> bool {
     name.len() > 4 && name.starts_with("__") && name.ends_with("__")

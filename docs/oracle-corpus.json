@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:536314c3fd11ca467d549309cddd34cfb4c419a9721164142934b687994be9ba",
+ "digest": "sha256:66150aff0bd93eabc626d6742ace2fee7d3153921cd754b4ae30c3fa228c6a3f",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -17,10 +17,10 @@
   "files": 73,
   "fixtures": 41,
   "transcripts": 32,
-  "answers": 21006,
-  "bytes": 11306535,
+  "answers": 21044,
+  "bytes": 11338544,
   "levels": {
-   "full": 12780,
+   "full": 12818,
    "reasons": 3912,
    "part": 754,
    "status": 3405,
@@ -32,7 +32,7 @@
    "documents": {
     "fixtures": 6,
     "transcripts": 4,
-    "answers": 5254
+    "answers": 5263
    },
    "queries": {
     "fixtures": 4,
@@ -52,7 +52,7 @@
    "rest": {
     "fixtures": 2,
     "transcripts": 1,
-    "answers": 475
+    "answers": 504
    },
    "webchannel": {
     "fixtures": 1,
@@ -84,7 +84,7 @@
    "v1.22.0": {
     "fixtures": 41,
     "transcripts": 32,
-    "answers": 21006
+    "answers": 21044
    }
   },
   "by_release_source": {
@@ -234,13 +234,13 @@
    },
    "recorded": {
     "first_recorded": "2026-10-10",
-    "last_changed": "2026-10-10"
+    "last_changed": "2026-10-14"
    },
-   "bytes": 11134,
-   "sha256": "f375f291c6250fd2bd27a7e92db19d7d2314d33bacf71313ca55bf23a6843e58",
-   "answers": 35,
+   "bytes": 15991,
+   "sha256": "c4bab3518a36196bf8406dac5a8669bd1c711096ff9db57a3e67e6d713df18cb",
+   "answers": 44,
    "levels": {
-    "full": 35
+    "full": 44
    },
    "replayed_over": [
     "gRPC",
@@ -623,11 +623,11 @@
     "first_recorded": "2026-10-10",
     "last_changed": "2026-10-14"
    },
-   "bytes": 323254,
-   "sha256": "62e568dcb49a5d22e4d24c4f8a8663254330438cbbcabe2896fb4acc53c1706b",
-   "answers": 453,
+   "bytes": 350406,
+   "sha256": "7bec9c79dcce1fa2c5a8e81de716e51eea0ab4889be6a53f937792bfd160b6f3",
+   "answers": 482,
    "levels": {
-    "full": 448,
+    "full": 477,
     "status": 5
    },
    "replayed_over": [

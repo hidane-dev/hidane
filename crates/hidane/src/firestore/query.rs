@@ -734,6 +734,42 @@ impl Query {
         }
     }
 
+    /// Whether the query orders by the name alone, ascending.
+    pub fn orders_by_name(&self) -> bool {
+        matches!(
+            self.orders.as_slice(),
+            [Order {
+                field: Field::Name,
+                descending: false
+            }]
+        )
+    }
+
+    /// The query's documents after `after` in its order (a page token's document), or all of
+    /// them; a document that the query leaves out continues nothing.
+    pub fn run_after(
+        &self,
+        store: &dyn Store,
+        database: &str,
+        at: ReadTime,
+        after: Option<&StoredDocument>,
+    ) -> Vec<Arc<StoredDocument>> {
+        let documents = self.run(store, database, at).documents;
+        let Some(after) = after else {
+            return documents;
+        };
+        let Some(after) = self.sort_key(database, after) else {
+            return Vec::new();
+        };
+        documents
+            .into_iter()
+            .filter(|doc| {
+                self.sort_key(database, doc)
+                    .is_some_and(|key| self.compare_keys(&key, &after) == Ordering::Greater)
+            })
+            .collect()
+    }
+
     fn compare_keys(&self, a: &[Value], b: &[Value]) -> Ordering {
         for ((order, a), b) in self.orders.iter().zip(a).zip(b) {
             let ordering = compare(a, b);
