@@ -131,7 +131,8 @@ sends an event to each trigger that watches a document it changed (#70), recorde
 official emulator by `tools/oracle/function_events.py` and replayed by
 `crates/hidane/tests/function_events.rs`: v1 JSON events, v2 CloudEvents with `ce-*` headers and
 a `DocumentEventData` in protobuf (`withAuthContext` too), path patterns, named databases, batches,
-transactions, the Write stream, deleted paths and cleared databases, one event at a time in the
+transactions, the Write stream, deleted paths and cleared databases, none for a write the Security
+Rules deny (#288), one event at a time in the
 background, the official emulator's order and `WARNING`s. Without `--functions_emulator`, each
 event is a `WARNING`. End to end, v1 and v2 functions receive the same data under `hidane exec`
 as with the official emulator (`results/functions-triggers-*.json`).

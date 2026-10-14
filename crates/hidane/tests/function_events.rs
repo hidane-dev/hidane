@@ -231,11 +231,17 @@ async fn rest(
     (head[9..12].parse().unwrap(), json)
 }
 
-fn owner<T>(message: T, database: &str) -> Request<T> {
+/// A gRPC request with the step's headers, or the owner's credential when it has none.
+fn with_headers<T>(message: T, database: &str, headers: &Json) -> Request<T> {
     let mut request = Request::new(message);
-    request
-        .metadata_mut()
-        .insert("authorization", "Bearer owner".parse().unwrap());
+    let owner = json!({"Authorization": "Bearer owner"});
+    let headers = if headers.is_object() { headers } else { &owner };
+    for (name, value) in headers.as_object().unwrap() {
+        request.metadata_mut().insert(
+            tonic::metadata::MetadataKey::from_bytes(name.to_ascii_lowercase().as_bytes()).unwrap(),
+            value.as_str().unwrap().parse().unwrap(),
+        );
+    }
     request
         .metadata_mut()
         .insert("google-cloud-resource-prefix", database.parse().unwrap());
@@ -245,6 +251,7 @@ fn owner<T>(message: T, database: &str) -> Request<T> {
 /// A gRPC step, as grpcurl sent it: the status code's name.
 async fn grpc(client: &mut FirestoreClient<Channel>, step: &Json) -> String {
     let database = step["database"].as_str().unwrap();
+    let headers = &step["headers"];
     let messages = step["messages"].as_array().unwrap();
     let writes = |message: &Json| {
         common::protojson::commit_request(
@@ -261,7 +268,7 @@ async fn grpc(client: &mut FirestoreClient<Channel>, step: &Json) -> String {
             );
             request.database = database.to_owned();
             client
-                .commit(owner(request, database))
+                .commit(with_headers(request, database, headers))
                 .await
                 .map(|_| ())
                 .err()
@@ -279,7 +286,11 @@ async fn grpc(client: &mut FirestoreClient<Channel>, step: &Json) -> String {
                 },
             ];
             match client
-                .write(owner(tokio_stream::iter(requests), database))
+                .write(with_headers(
+                    tokio_stream::iter(requests),
+                    database,
+                    headers,
+                ))
                 .await
             {
                 Ok(response) => {
