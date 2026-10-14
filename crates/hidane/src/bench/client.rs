@@ -16,7 +16,8 @@ use hidane_proto::google::firestore::v1::{
     listen_response::ResponseType,
     run_query_request,
     structured_query::{
-        CollectionSelector, FieldFilter, FieldReference, Filter, field_filter, filter::FilterType,
+        CollectionSelector, Direction, FieldFilter, FieldReference, Filter, Order, field_filter,
+        filter::FilterType,
     },
     target::{QueryTarget, TargetType, query_target},
     target_change::TargetChangeType,
@@ -294,11 +295,13 @@ impl Client {
 #[derive(Debug, Clone, Copy)]
 pub struct Snapshot {
     pub documents: usize,
+    /// Whether it holds the document a limited listener waits for ([`Listener::start_limited`]).
+    pub holds_awaited: bool,
     pub at: Instant,
 }
 
-/// A Listen stream on its own connection, with one target on a whole collection, read in the
-/// background as it arrives. It keeps the target's documents as the SDKs do: a `RESET` empties
+/// A Listen stream on its own connection, with one target on a collection (all of it, or its
+/// first documents by name), read in the background as it arrives. It keeps the target's documents as the SDKs do: a `RESET` empties
 /// them until the target is `CURRENT` again, and each `NO_CHANGE` for all targets after that is a
 /// consistent snapshot.
 pub struct Listener {
@@ -311,15 +314,49 @@ pub struct Listener {
 const TARGET_ID: i32 = 1;
 
 impl Listener {
+    /// A listener on the whole collection.
     pub async fn start(addr: SocketAddr, collection: &str) -> Result<Self, String> {
+        Self::open(addr, collection, None, None).await
+    }
+
+    /// A listener on the collection's first `limit` documents, as an SDK's
+    /// `query(collection, limit(n))` sends it (ordered by name), that waits for the document
+    /// named `awaited` (its path under `documents/`).
+    pub async fn start_limited(
+        addr: SocketAddr,
+        collection: &str,
+        limit: i32,
+        awaited: &str,
+    ) -> Result<Self, String> {
+        Self::open(addr, collection, Some(limit), Some(awaited)).await
+    }
+
+    async fn open(
+        addr: SocketAddr,
+        collection: &str,
+        limit: Option<i32>,
+        awaited: Option<&str>,
+    ) -> Result<Self, String> {
         let mut inner = channel(addr, Credential::None).await?;
         let database = database();
+        let awaited = awaited.map(|path| format!("{database}/documents/{path}"));
         let (requests, rx) = mpsc::channel(1);
         let query = StructuredQuery {
             from: vec![CollectionSelector {
                 collection_id: collection.to_owned(),
                 all_descendants: false,
             }],
+            order_by: if limit.is_some() {
+                vec![Order {
+                    field: Some(FieldReference {
+                        field_path: "__name__".to_owned(),
+                    }),
+                    direction: Direction::Ascending as i32,
+                }]
+            } else {
+                Vec::new()
+            },
+            limit,
             ..StructuredQuery::default()
         };
         requests
@@ -371,6 +408,9 @@ impl Listener {
                             {
                                 tx.send_replace(Some(Snapshot {
                                     documents: documents.len(),
+                                    holds_awaited: awaited
+                                        .as_ref()
+                                        .is_some_and(|name| documents.contains(name)),
                                     at: Instant::now(),
                                 }));
                             }
@@ -416,9 +456,27 @@ impl Listener {
         documents: usize,
         timeout: Duration,
     ) -> Result<Snapshot, String> {
-        let wait = self
-            .snapshots
-            .wait_for(|s| s.is_some_and(|s| s.documents >= documents));
+        self.wait(
+            |s| s.documents >= documents,
+            &format!("{documents} documents"),
+            timeout,
+        )
+        .await
+    }
+
+    /// The first consistent snapshot holding the document a limited listener waits for.
+    pub async fn wait_for_awaited(&mut self, timeout: Duration) -> Result<Snapshot, String> {
+        self.wait(|s| s.holds_awaited, "the awaited document", timeout)
+            .await
+    }
+
+    async fn wait(
+        &mut self,
+        done: impl Fn(&Snapshot) -> bool,
+        what: &str,
+        timeout: Duration,
+    ) -> Result<Snapshot, String> {
+        let wait = self.snapshots.wait_for(|s| s.as_ref().is_some_and(&done));
         match tokio::time::timeout(timeout, wait).await {
             Ok(Ok(snapshot)) => (*snapshot).ok_or_else(|| "no snapshot".to_owned()),
             Ok(Err(_)) => Err(match (&mut self.task).await {
@@ -427,7 +485,7 @@ impl Listener {
                 Err(e) => format!("the listener failed ({e})"),
             }),
             Err(_) => Err(format!(
-                "no snapshot with {documents} documents within {} s",
+                "no snapshot with {what} within {} s",
                 timeout.as_secs()
             )),
         }

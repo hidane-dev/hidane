@@ -20,6 +20,10 @@ const SCENARIOS: &[(&str, &str)] = &[
     ("ci_firebase", "CI workload through firebase-tools"),
     ("listen_writes", "Writes with a listener attached"),
     ("owner_writes", "Writes with the owner credential"),
+    (
+        "listen_limit_writes",
+        "Writes with a limited listener attached",
+    ),
     ("command", "Command"),
 ];
 
@@ -201,6 +205,27 @@ fn summary(result: &Value) -> Vec<String> {
             ),
         ));
     }
+    let limited = &scenarios["listen_limit_writes"];
+    let limited_work = format!(
+        "{} documents in commits of {} with a `limit({})` listener on the collection",
+        thousands(limited["documents"].as_u64().unwrap_or(0)),
+        limited["batch"].as_u64().unwrap_or(0),
+        limited["limit"].as_u64().unwrap_or(0)
+    );
+    lines.push(sentence(
+        result,
+        "listen_limit_writes",
+        "writes",
+        &format!("time to write {limited_work}"),
+    ));
+    lines.push(sentence(
+        result,
+        "listen_limit_writes",
+        "batch_growth",
+        &format!(
+            "growth of a commit's time per 10,000 documents already stored, writing {limited_work},"
+        ),
+    ));
     lines.push(sentence(
         result,
         "command",
@@ -516,6 +541,15 @@ fn scenario_line(scenario: &str, p: &Value) -> String {
             n("batch"),
             n("commit_warmup") + n("commits"),
             n("commit_warmup"),
+            thousands(n("documents")),
+            n("batch")
+        ),
+        "listen_limit_writes" => format!(
+            "As Writes with a listener attached ({} warm-up, {} measured per target), with a Listen stream on the collection's first {} documents by name, as an SDK's `query(collection, limit({}))`; the documents' IDs count down, so each commit's documents replace the listener's previous ones, as in a feed of the newest items. {} documents are written in commits of {}; the run ends when the listener's snapshot holds the last document written.",
+            n("warmup"),
+            n("runs"),
+            n("limit"),
+            n("limit"),
             thousands(n("documents")),
             n("batch")
         ),

@@ -29,8 +29,9 @@ bench/run.sh --firebase "$(command -v firebase)"   # also the CI workload throug
 ```
 
 The result lands in `bench/out/` (ignored by git) as `<UTC date>-<kind>.json` and `.md`. Expect
-about 15 to 25 minutes for a full run, most of it in the official emulator's runs (its three
-runs of `listen_writes` take several minutes alone); `--quick` takes one or two.
+about 20 to 30 minutes for a full run, most of it in the official emulator's runs (its three
+runs of `listen_writes` and of `listen_limit_writes` take several minutes each); `--quick` takes
+one or two.
 
 The engine on its own, with any hidane binary:
 
@@ -181,6 +182,7 @@ first hundred requests see, not a JVM after minutes of load.
 | `listen_writes` | Writes with a listener attached ([below](#writes-with-a-listener-attached)): start, open a Listen stream on a whole collection, write 100,000 documents to it in commits of 500, one at a time, until the listener's snapshot holds them all | `writes`, `delivered`, `batch_first_decile`, `batch_last_decile`, `batch_growth` (ms); `rss_after` (bytes) |
 | `command` | Your command, with `FIRESTORE_EMULATOR_HOST` set (see above) | `total`, `command`, `ready` (ms) |
 | `owner_writes` | Writes with the owner credential (`Authorization: Bearer owner`, as the Admin SDKs send it): start, wait for the port, commit 500 writes to the same documents 120 times (the first 20 discarded), then write 100,000 documents in commits of 500 | `batch_write`, `seed_100000` (ms) |
+| `listen_limit_writes` | Writes with a limited listener attached ([below](#a-limited-listener)): as `listen_writes`, with the Listen stream on the collection's first 50 documents by name, as an SDK's `query(collection, limit(50))`, until the listener's snapshot holds the last document written | As `listen_writes` |
 
 Runs per target: 3 warm-up and 10 measured for `startup`, `memory`, `ci` and the dataset sizes up to
 1,000 documents. Larger sizes are scaled down, because one run of the official emulator takes
@@ -189,8 +191,9 @@ seconds there: 1 warm-up and 5 measured runs for 10,000 documents, 1 and 3 for 1
 and 3 measured runs: one run of the official emulator takes minutes (121 s in Phase 0), the
 earlier scenarios have already brought the binary and the jar into the OS's cache, and the JVM's
 own warm-up inside a run is part of what the first batches measure; `--warmup` and `--runs`
-are capped at 1 and 3 for it. `owner_writes` runs 1 warm-up and 3 measured runs, as the largest
-dataset size does, and is capped the same way. `canonical.json` states every value.
+are capped at 1 and 3 for it. `listen_limit_writes` runs and is capped as `listen_writes` is.
+`owner_writes` runs 1 warm-up and 3 measured runs, as the largest dataset size does, and is
+capped the same way. `canonical.json` states every value.
 
 #### Writes with a listener attached
 
@@ -232,6 +235,23 @@ The same scenario is hidane's regression check for #49 and #30: a test in
 every pull request, and fails when the last tenth of the batches takes more than twice the first
 tenth's median, or when the growth over the run exceeds one early batch. Ratios, not
 milliseconds, so a slow runner or a debug build passes them.
+
+#### A limited listener
+
+Phase 0 also measured the official emulator with a `limit(50)` listener: 100,000 documents took
+65.5 s, each batch growing by about 70 ms per 10,000 documents
+([`results/official-v1.22.0-baseline.md`](../results/official-v1.22.0-baseline.md)).
+`listen_limit_writes` takes that case for both emulators (#250). It runs as `listen_writes`
+does, except that:
+
+- the Listen target is the query an SDK sends for `query(collection, limit(50))`: the collection
+  `limited`, ordered by `__name__`, limit 50;
+- the documents' IDs count down, zero-padded (`limited/doc-99999` first, `doc-00000` last), so
+  each commit's documents sort first and replace the listener's previous 50, as in a feed of the
+  newest items: every commit changes what the listener holds;
+- the run ends with the first consistent snapshot that holds the last document written, and fails
+  if that snapshot does not hold exactly 50 documents. `delivered` and `rss_after` are taken
+  there.
 
 Memory and CPU time are read from `/proc/<pid>/status` and `/proc/<pid>/stat` on Linux and from
 `ps` on macOS. Peak RSS is the kernel's high-water mark (`VmHWM`) on Linux and the highest of
@@ -374,7 +394,8 @@ changes when an existing scenario changes what it does or measures, or one of it
 values changes: numbers of different versions are not compared. A new scenario keeps the
 version when it runs after the existing ones (scenarios run in a fixed order), because it cannot
 change the conditions they are measured under; its history starts with the first result that has
-it. `listen_writes` and `owner_writes` were added this way to definitions v1. The run-level readings (`duration_s`,
+it. `listen_writes`, `owner_writes` and `listen_limit_writes` were added this way to definitions
+v1. The run-level readings (`duration_s`,
 the stability readings after the run, CPU steal over the run) cover every scenario that ran.
 
 ## Targets in CI

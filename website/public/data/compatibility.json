@@ -667,13 +667,13 @@
   "fixtures": 41,
   "answers": 21104,
   "levels": {
-   "full": 12872,
+   "full": 12870,
    "reasons": 3912,
    "part": 760,
    "status": 3405,
    "codes": 30,
    "none": 1,
-   "differs": 124
+   "differs": 126
   },
   "transcripts": {
    "pairs": 32,

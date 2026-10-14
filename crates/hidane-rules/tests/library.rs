@@ -142,7 +142,19 @@ fn evaluation_matches_the_official_emulator() {
         let name = result["name"].as_str().unwrap();
         if name.starts_with("batches/") {
             compared += 1;
-            let want = result["outcome"] == "allow";
+            // A case the official emulator answers both ways, depending on the project and on
+            // the run (`answers`): hidane allows, since every document of the batch is free to
+            // look up (`docs/parity-exceptions.md`, D020).
+            let want = match result.get("answers").and_then(Json::as_array) {
+                Some(answers) => {
+                    assert!(
+                        answers.iter().any(|a| a["outcome"] == "allow"),
+                        "{name}: the official emulator never allowed it"
+                    );
+                    true
+                }
+                None => result["outcome"] == "allow",
+            };
             if batch(result) != want {
                 failures.push(format!("{name}: official allows: {want}"));
             }

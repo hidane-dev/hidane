@@ -254,7 +254,8 @@ class Report(unittest.TestCase):
 
     def test_the_repository_names_its_recorders(self):
         self.assertEqual(canary.expected_recorders(), [
-            "value_order", "queries", "aggregations", "rest", "limits", "rules_paths"])
+            "value_order", "queries", "aggregations", "rest", "limits", "rules_paths",
+            "rules_eval"])
 
     def test_a_recording_of_another_release_does_not_count(self):
         self.tree.recording(self.slug, "queries", FIXTURE_Q, "identical", version="1.22.0")
