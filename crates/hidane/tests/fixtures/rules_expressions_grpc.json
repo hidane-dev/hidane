@@ -1,0 +1,1501 @@
+[
+ {
+  "name": "GetDocument: 993 (993 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !!true && resource.data.n == 1;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "GetDocument",
+  "requests": [
+   {
+    "name": "projects/expressions-grpc/databases/(default)/documents/c/e"
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "name": "projects/expressions-grpc/databases/(default)/documents/c/e",
+    "fields": {
+     "n": {
+      "integerValue": "1"
+     }
+    },
+    "createTime": "2026-10-14T07:23:07.234615Z",
+    "updateTime": "2026-10-14T07:23:07.234615Z"
+   }
+  ],
+  "status": null
+ },
+ {
+  "name": "GetDocument: 994 (993 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !!!false && resource.data.n == 1;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "GetDocument",
+  "requests": [
+   {
+    "name": "projects/expressions-grpc/databases/(default)/documents/c/e"
+   }
+  ],
+  "during": null,
+  "responses": [],
+  "status": {
+   "code": "PermissionDenied",
+   "message": "\nUnable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'get' @ L13, Unable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'get' @ L13"
+  }
+ },
+ {
+  "name": "BatchGetDocuments of two documents: 993 (993 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !!true && resource.data.n == 1;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "BatchGetDocuments",
+  "requests": [
+   {
+    "database": "projects/expressions-grpc/databases/(default)",
+    "documents": [
+     "projects/expressions-grpc/databases/(default)/documents/c/e",
+     "projects/expressions-grpc/databases/(default)/documents/c/f"
+    ]
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "found": {
+     "name": "projects/expressions-grpc/databases/(default)/documents/c/e",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-14T07:23:08.368442Z",
+     "updateTime": "2026-10-14T07:23:08.368442Z"
+    },
+    "readTime": "2026-10-14T07:23:08.408146Z"
+   },
+   {
+    "found": {
+     "name": "projects/expressions-grpc/databases/(default)/documents/c/f",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-14T07:23:08.373547Z",
+     "updateTime": "2026-10-14T07:23:08.373547Z"
+    },
+    "readTime": "2026-10-14T07:23:08.408146Z"
+   }
+  ],
+  "status": null
+ },
+ {
+  "name": "BatchGetDocuments of two documents: 994 (993 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !!!false && resource.data.n == 1;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "BatchGetDocuments",
+  "requests": [
+   {
+    "database": "projects/expressions-grpc/databases/(default)",
+    "documents": [
+     "projects/expressions-grpc/databases/(default)/documents/c/e",
+     "projects/expressions-grpc/databases/(default)/documents/c/f"
+    ]
+   }
+  ],
+  "during": null,
+  "responses": [],
+  "status": {
+   "code": "PermissionDenied",
+   "message": "\nUnable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'get' @ L13, Unable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'get' @ L13, Unable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'get' @ L13"
+  }
+ },
+ {
+  "name": "RunQuery: 993 (993 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !!true && resource.data.n == 1;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "RunQuery",
+  "requests": [
+   {
+    "parent": "projects/expressions-grpc/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "c"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "n"
+       },
+       "op": "EQUAL",
+       "value": {
+        "integerValue": "1"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "document": {
+     "name": "projects/expressions-grpc/databases/(default)/documents/c/e",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-14T07:23:09.325046Z",
+     "updateTime": "2026-10-14T07:23:09.325046Z"
+    },
+    "readTime": "2026-10-14T07:23:09.360644Z"
+   },
+   {
+    "document": {
+     "name": "projects/expressions-grpc/databases/(default)/documents/c/f",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-14T07:23:09.330197Z",
+     "updateTime": "2026-10-14T07:23:09.330197Z"
+    },
+    "readTime": "2026-10-14T07:23:09.360644Z",
+    "done": true
+   }
+  ],
+  "status": null
+ },
+ {
+  "name": "RunQuery: 994 (993 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !!!false && resource.data.n == 1;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "RunQuery",
+  "requests": [
+   {
+    "parent": "projects/expressions-grpc/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "c"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "n"
+       },
+       "op": "EQUAL",
+       "value": {
+        "integerValue": "1"
+       }
+      }
+     }
+    }
+   }
+  ],
+  "during": null,
+  "responses": [],
+  "status": {
+   "code": "PermissionDenied",
+   "message": "\nUnable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'list' @ L13"
+  }
+ },
+ {
+  "name": "RunQuery of two disjunctions: 993 (993 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !!true && resource.data.n > 0;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "RunQuery",
+  "requests": [
+   {
+    "parent": "projects/expressions-grpc/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "c"
+      }
+     ],
+     "where": {
+      "compositeFilter": {
+       "op": "OR",
+       "filters": [
+        {
+         "fieldFilter": {
+          "field": {
+           "fieldPath": "n"
+          },
+          "op": "EQUAL",
+          "value": {
+           "integerValue": "1"
+          }
+         }
+        },
+        {
+         "fieldFilter": {
+          "field": {
+           "fieldPath": "n"
+          },
+          "op": "EQUAL",
+          "value": {
+           "integerValue": "2"
+          }
+         }
+        }
+       ]
+      }
+     }
+    }
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "document": {
+     "name": "projects/expressions-grpc/databases/(default)/documents/c/e",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-14T07:23:10.177241Z",
+     "updateTime": "2026-10-14T07:23:10.177241Z"
+    },
+    "readTime": "2026-10-14T07:23:10.212432Z"
+   },
+   {
+    "document": {
+     "name": "projects/expressions-grpc/databases/(default)/documents/c/f",
+     "fields": {
+      "n": {
+       "integerValue": "1"
+      }
+     },
+     "createTime": "2026-10-14T07:23:10.182180Z",
+     "updateTime": "2026-10-14T07:23:10.182180Z"
+    },
+    "readTime": "2026-10-14T07:23:10.212432Z",
+    "done": true
+   }
+  ],
+  "status": null
+ },
+ {
+  "name": "RunQuery of two disjunctions: 994 (993 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !!!false && resource.data.n > 0;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "RunQuery",
+  "requests": [
+   {
+    "parent": "projects/expressions-grpc/databases/(default)/documents",
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "c"
+      }
+     ],
+     "where": {
+      "compositeFilter": {
+       "op": "OR",
+       "filters": [
+        {
+         "fieldFilter": {
+          "field": {
+           "fieldPath": "n"
+          },
+          "op": "EQUAL",
+          "value": {
+           "integerValue": "1"
+          }
+         }
+        },
+        {
+         "fieldFilter": {
+          "field": {
+           "fieldPath": "n"
+          },
+          "op": "EQUAL",
+          "value": {
+           "integerValue": "2"
+          }
+         }
+        }
+       ]
+      }
+     }
+    }
+   }
+  ],
+  "during": null,
+  "responses": [],
+  "status": {
+   "code": "PermissionDenied",
+   "message": "\nUnable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'list' @ L13"
+  }
+ },
+ {
+  "name": "RunAggregationQuery: 993 (993 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !!true && resource.data.n == 1;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "RunAggregationQuery",
+  "requests": [
+   {
+    "parent": "projects/expressions-grpc/databases/(default)/documents",
+    "structuredAggregationQuery": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "where": {
+       "fieldFilter": {
+        "field": {
+         "fieldPath": "n"
+        },
+        "op": "EQUAL",
+        "value": {
+         "integerValue": "1"
+        }
+       }
+      }
+     },
+     "aggregations": [
+      {
+       "alias": "n",
+       "count": {}
+      }
+     ]
+    }
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "result": {
+     "aggregateFields": {
+      "n": {
+       "integerValue": "2"
+      }
+     }
+    },
+    "readTime": "2026-10-14T07:23:11.028140Z"
+   }
+  ],
+  "status": null
+ },
+ {
+  "name": "RunAggregationQuery: 994 (993 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !!!false && resource.data.n == 1;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "RunAggregationQuery",
+  "requests": [
+   {
+    "parent": "projects/expressions-grpc/databases/(default)/documents",
+    "structuredAggregationQuery": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "where": {
+       "fieldFilter": {
+        "field": {
+         "fieldPath": "n"
+        },
+        "op": "EQUAL",
+        "value": {
+         "integerValue": "1"
+        }
+       }
+      }
+     },
+     "aggregations": [
+      {
+       "alias": "n",
+       "count": {}
+      }
+     ]
+    }
+   }
+  ],
+  "during": null,
+  "responses": [],
+  "status": {
+   "code": "PermissionDenied",
+   "message": "\nUnable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'list' @ L13"
+  }
+ },
+ {
+  "name": "Commit of two writes: 992 (992 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !false && request.resource.data.n == 1;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "Commit",
+  "requests": [
+   {
+    "database": "projects/expressions-grpc/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/expressions-grpc/databases/(default)/documents/c/e",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/expressions-grpc/databases/(default)/documents/c/new",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      }
+     }
+    ]
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "writeResults": [
+     {
+      "updateTime": "2026-10-14T07:23:11.808148Z"
+     },
+     {
+      "updateTime": "2026-10-14T07:23:11.847681Z"
+     }
+    ],
+    "commitTime": "2026-10-14T07:23:11.847681Z"
+   }
+  ],
+  "status": null
+ },
+ {
+  "name": "Commit of two writes: 993 (992 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !!true && request.resource.data.n == 1;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "Commit",
+  "requests": [
+   {
+    "database": "projects/expressions-grpc/databases/(default)",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/expressions-grpc/databases/(default)/documents/c/e",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/expressions-grpc/databases/(default)/documents/c/new",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      }
+     }
+    ]
+   }
+  ],
+  "during": null,
+  "responses": [],
+  "status": {
+   "code": "PermissionDenied",
+   "message": "\nUnable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'create' @ L13, Unable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'update' @ L13, Unable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'create' @ L13, Unable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'update' @ L13, Unable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'update' @ L13"
+  }
+ },
+ {
+  "name": "Listen to two documents: 993 (993 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !!true && resource.data.n == 1;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "Listen",
+  "requests": [
+   {
+    "database": "projects/expressions-grpc/databases/(default)",
+    "addTarget": {
+     "documents": {
+      "documents": [
+       "projects/expressions-grpc/databases/(default)/documents/c/e",
+       "projects/expressions-grpc/databases/(default)/documents/c/f"
+      ]
+     },
+     "targetId": 1
+    }
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "targetChange": {
+     "targetChangeType": "ADD",
+     "targetIds": [
+      1
+     ]
+    }
+   },
+   {
+    "documentChange": {
+     "document": {
+      "name": "projects/expressions-grpc/databases/(default)/documents/c/e",
+      "fields": {
+       "n": {
+        "integerValue": "1"
+       }
+      },
+      "createTime": "2026-10-14T07:23:36.601794Z",
+      "updateTime": "2026-10-14T07:23:36.601794Z"
+     },
+     "targetIds": [
+      1
+     ]
+    }
+   },
+   {
+    "documentChange": {
+     "document": {
+      "name": "projects/expressions-grpc/databases/(default)/documents/c/f",
+      "fields": {
+       "n": {
+        "integerValue": "1"
+       }
+      },
+      "createTime": "2026-10-14T07:23:36.605973Z",
+      "updateTime": "2026-10-14T07:23:36.605973Z"
+     },
+     "targetIds": [
+      1
+     ]
+    }
+   },
+   {
+    "targetChange": {
+     "targetChangeType": "CURRENT",
+     "targetIds": [
+      1
+     ],
+     "resumeToken": "CgkIh+jc+fy4lwM=",
+     "readTime": "2026-10-14T07:23:36.640519Z"
+    }
+   },
+   {
+    "targetChange": {
+     "resumeToken": "CgkIh+jc+fy4lwM=",
+     "readTime": "2026-10-14T07:23:36.640519Z"
+    }
+   }
+  ],
+  "status": null
+ },
+ {
+  "name": "Listen to two documents: 994 (993 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !!!false && resource.data.n == 1;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "Listen",
+  "requests": [
+   {
+    "database": "projects/expressions-grpc/databases/(default)",
+    "addTarget": {
+     "documents": {
+      "documents": [
+       "projects/expressions-grpc/databases/(default)/documents/c/e",
+       "projects/expressions-grpc/databases/(default)/documents/c/f"
+      ]
+     },
+     "targetId": 1
+    }
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "targetChange": {
+     "targetChangeType": "ADD",
+     "targetIds": [
+      1
+     ]
+    }
+   },
+   {
+    "targetChange": {
+     "targetChangeType": "REMOVE",
+     "targetIds": [
+      1
+     ],
+     "cause": {
+      "code": 7,
+      "message": "\nUnable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'get' @ L13, Unable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'get' @ L13, Unable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'get' @ L13"
+     }
+    }
+   }
+  ],
+  "status": null
+ },
+ {
+  "name": "Listen to a missing document: 995 (995 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && d0() && true && resource == null;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "Listen",
+  "requests": [
+   {
+    "database": "projects/expressions-grpc/databases/(default)",
+    "addTarget": {
+     "documents": {
+      "documents": [
+       "projects/expressions-grpc/databases/(default)/documents/c/zz"
+      ]
+     },
+     "targetId": 1
+    }
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "targetChange": {
+     "targetChangeType": "ADD",
+     "targetIds": [
+      1
+     ]
+    }
+   },
+   {
+    "documentDelete": {
+     "document": "projects/expressions-grpc/databases/(default)/documents/c/zz",
+     "readTime": "2026-10-14T07:24:05.803337Z",
+     "removedTargetIds": [
+      1
+     ]
+    }
+   },
+   {
+    "targetChange": {
+     "targetChangeType": "CURRENT",
+     "targetIds": [
+      1
+     ],
+     "resumeToken": "CgkIyeLQh/24lwM=",
+     "readTime": "2026-10-14T07:24:05.803337Z"
+    }
+   },
+   {
+    "targetChange": {
+     "resumeToken": "CgkIyeLQh/24lwM=",
+     "readTime": "2026-10-14T07:24:05.803337Z"
+    }
+   }
+  ],
+  "status": null
+ },
+ {
+  "name": "Listen to a missing document: 996 (995 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d1() && true && resource == null;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "Listen",
+  "requests": [
+   {
+    "database": "projects/expressions-grpc/databases/(default)",
+    "addTarget": {
+     "documents": {
+      "documents": [
+       "projects/expressions-grpc/databases/(default)/documents/c/zz"
+      ]
+     },
+     "targetId": 1
+    }
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "targetChange": {
+     "targetChangeType": "ADD",
+     "targetIds": [
+      1
+     ]
+    }
+   },
+   {
+    "targetChange": {
+     "targetChangeType": "REMOVE",
+     "targetIds": [
+      1
+     ],
+     "cause": {
+      "code": 7,
+      "message": "\nUnable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'get' @ L13, Unable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'get' @ L13"
+     }
+    }
+   }
+  ],
+  "status": null
+ },
+ {
+  "name": "Listen to a query: 993 (993 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !!true && resource.data.n == 1;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "Listen",
+  "requests": [
+   {
+    "database": "projects/expressions-grpc/databases/(default)",
+    "addTarget": {
+     "query": {
+      "parent": "projects/expressions-grpc/databases/(default)/documents",
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "n"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     },
+     "targetId": 1
+    }
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "targetChange": {
+     "targetChangeType": "ADD",
+     "targetIds": [
+      1
+     ]
+    }
+   },
+   {
+    "documentChange": {
+     "document": {
+      "name": "projects/expressions-grpc/databases/(default)/documents/c/e",
+      "fields": {
+       "n": {
+        "integerValue": "1"
+       }
+      },
+      "createTime": "2026-10-14T07:24:34.581618Z",
+      "updateTime": "2026-10-14T07:24:34.581618Z"
+     },
+     "targetIds": [
+      1
+     ]
+    }
+   },
+   {
+    "documentChange": {
+     "document": {
+      "name": "projects/expressions-grpc/databases/(default)/documents/c/f",
+      "fields": {
+       "n": {
+        "integerValue": "1"
+       }
+      },
+      "createTime": "2026-10-14T07:24:34.587124Z",
+      "updateTime": "2026-10-14T07:24:34.587124Z"
+     },
+     "targetIds": [
+      1
+     ]
+    }
+   },
+   {
+    "targetChange": {
+     "targetChangeType": "CURRENT",
+     "targetIds": [
+      1
+     ],
+     "resumeToken": "CgkIo9mvlf24lwM=",
+     "readTime": "2026-10-14T07:24:34.621603Z"
+    }
+   },
+   {
+    "targetChange": {
+     "resumeToken": "CgkIo9mvlf24lwM=",
+     "readTime": "2026-10-14T07:24:34.621603Z"
+    }
+   }
+  ],
+  "status": null
+ },
+ {
+  "name": "Listen to a query: 994 (993 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !!!false && resource.data.n == 1;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "Listen",
+  "requests": [
+   {
+    "database": "projects/expressions-grpc/databases/(default)",
+    "addTarget": {
+     "query": {
+      "parent": "projects/expressions-grpc/databases/(default)/documents",
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "n"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     },
+     "targetId": 1
+    }
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "targetChange": {
+     "targetChangeType": "ADD",
+     "targetIds": [
+      1
+     ]
+    }
+   },
+   {
+    "targetChange": {
+     "targetChangeType": "REMOVE",
+     "targetIds": [
+      1
+     ],
+     "cause": {
+      "code": 7,
+      "message": "\nUnable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'list' @ L13"
+     }
+    }
+   }
+  ],
+  "status": null
+ },
+ {
+  "name": "Listen to a query of two disjunctions: 993 (993 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !!true && resource.data.n > 0;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "Listen",
+  "requests": [
+   {
+    "database": "projects/expressions-grpc/databases/(default)",
+    "addTarget": {
+     "query": {
+      "parent": "projects/expressions-grpc/databases/(default)/documents",
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "compositeFilter": {
+         "op": "OR",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "n"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "n"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "2"
+            }
+           }
+          }
+         ]
+        }
+       }
+      }
+     },
+     "targetId": 1
+    }
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "targetChange": {
+     "targetChangeType": "ADD",
+     "targetIds": [
+      1
+     ]
+    }
+   },
+   {
+    "documentChange": {
+     "document": {
+      "name": "projects/expressions-grpc/databases/(default)/documents/c/e",
+      "fields": {
+       "n": {
+        "integerValue": "1"
+       }
+      },
+      "createTime": "2026-10-14T07:25:03.366939Z",
+      "updateTime": "2026-10-14T07:25:03.366939Z"
+     },
+     "targetIds": [
+      1
+     ]
+    }
+   },
+   {
+    "documentChange": {
+     "document": {
+      "name": "projects/expressions-grpc/databases/(default)/documents/c/f",
+      "fields": {
+       "n": {
+        "integerValue": "1"
+       }
+      },
+      "createTime": "2026-10-14T07:25:03.370822Z",
+      "updateTime": "2026-10-14T07:25:03.370822Z"
+     },
+     "targetIds": [
+      1
+     ]
+    }
+   },
+   {
+    "targetChange": {
+     "targetChangeType": "CURRENT",
+     "targetIds": [
+      1
+     ],
+     "resumeToken": "CgkIuK+Mo/24lwM=",
+     "readTime": "2026-10-14T07:25:03.402936Z"
+    }
+   },
+   {
+    "targetChange": {
+     "resumeToken": "CgkIuK+Mo/24lwM=",
+     "readTime": "2026-10-14T07:25:03.402936Z"
+    }
+   }
+  ],
+  "status": null
+ },
+ {
+  "name": "Listen to a query of two disjunctions: 994 (993 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !!!false && resource.data.n > 0;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "Listen",
+  "requests": [
+   {
+    "database": "projects/expressions-grpc/databases/(default)",
+    "addTarget": {
+     "query": {
+      "parent": "projects/expressions-grpc/databases/(default)/documents",
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "compositeFilter": {
+         "op": "OR",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "n"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "n"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "2"
+            }
+           }
+          }
+         ]
+        }
+       }
+      }
+     },
+     "targetId": 1
+    }
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "targetChange": {
+     "targetChangeType": "ADD",
+     "targetIds": [
+      1
+     ]
+    }
+   },
+   {
+    "targetChange": {
+     "targetChangeType": "REMOVE",
+     "targetIds": [
+      1
+     ],
+     "cause": {
+      "code": 7,
+      "message": "\nUnable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'list' @ L13"
+     }
+    }
+   }
+  ],
+  "status": null
+ },
+ {
+  "name": "two writes on the Write stream: 992 (992 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !false && request.resource.data.n == 1;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "Write",
+  "requests": [
+   {
+    "database": "projects/expressions-grpc/databases/(default)"
+   },
+   {
+    "streamToken": "",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/expressions-grpc/databases/(default)/documents/c/e",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/expressions-grpc/databases/(default)/documents/c/new",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      }
+     }
+    ]
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "streamId": "68",
+    "streamToken": "MA=="
+   },
+   {
+    "streamToken": "MQ==",
+    "writeResults": [
+     {
+      "updateTime": "2026-10-14T07:25:38.197683Z"
+     },
+     {
+      "updateTime": "2026-10-14T07:25:38.725718Z"
+     }
+    ],
+    "commitTime": "2026-10-14T07:25:38.725718Z"
+   }
+  ],
+  "status": null
+ },
+ {
+  "name": "two writes on the Write stream: 993 (992 fits)",
+  "rules": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    function d0() { return true; }\n    function d1() { return d0() && d0(); }\n    function d2() { return d1() && d1(); }\n    function d3() { return d2() && d2(); }\n    function d4() { return d3() && d3(); }\n    function d5() { return d4() && d4(); }\n    function d6() { return d5() && d5(); }\n    function d7() { return d6() && d6(); }\n    match /c/{id} {\n      allow read, write: if d7() && d6() && d2() && d1() && d0() && !!true && request.resource.data.n == 1;\n    }\n  }\n}\n",
+  "database": "projects/expressions-grpc/databases/(default)",
+  "documents": [
+   {
+    "path": "c/e",
+    "n": 1
+   },
+   {
+    "path": "c/f",
+    "n": 1
+   }
+  ],
+  "deleted": [
+   "c/new",
+   "c/zz"
+  ],
+  "rpc": "Write",
+  "requests": [
+   {
+    "database": "projects/expressions-grpc/databases/(default)"
+   },
+   {
+    "streamToken": "",
+    "writes": [
+     {
+      "update": {
+       "name": "projects/expressions-grpc/databases/(default)/documents/c/e",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      }
+     },
+     {
+      "update": {
+       "name": "projects/expressions-grpc/databases/(default)/documents/c/new",
+       "fields": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      }
+     }
+    ]
+   }
+  ],
+  "during": null,
+  "responses": [
+   {
+    "streamId": "69",
+    "streamToken": "MA=="
+   }
+  ],
+  "status": {
+   "code": "PermissionDenied",
+   "message": "\nUnable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'create' @ L13, Unable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'update' @ L13, Unable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'create' @ L13, Unable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'update' @ L13, Unable to evaluate the expression as the maximum of 1000 expressions to evaluate has been reached. for 'update' @ L13"
+  }
+ }
+]

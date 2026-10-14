@@ -164,6 +164,20 @@
    "references": []
   },
   {
+   "id": "D090",
+   "table": "intentional",
+   "area": "rules",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "The request monitor sends no record of a decision that reaches the limit of 1,000 evaluated expressions (its log shows an internal error). A client connected before it still gets the records of the decisions after it, but a client that connects after it gets nothing: neither the backlog nor any record (`tests/fixtures/rules_expressions_monitor.json`)",
+   "firestore": null,
+   "hidane": "Records that decision as any decision that ends in an error (`outcome` `error`), and every decision after it, for every client",
+   "reason": "Bug (a monitor that stops for new clients)",
+   "references": [
+    "crates/hidane/tests/fixtures/rules_expressions_monitor.json"
+   ]
+  },
+  {
    "id": "D012",
    "table": "intentional",
    "area": "rules",

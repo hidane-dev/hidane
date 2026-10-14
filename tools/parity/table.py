@@ -672,6 +672,13 @@ RECORDINGS = {
                  "reasons; a document change in part (its name and targets, not its fields) and "
                  "a write response in part (its number of results)",
         count=rules_streams),
+    f"{H}/fixtures/rules_expressions_grpc.json": dict(
+        area="rules", tests=[f"{H}/rules_streams.rs::the_limit_of_expressions"],
+        counted="each response, and each error that ended a call",
+        compares="a stream's responses as `rules_streams.json`'s; the responses of the other "
+                 "calls in part (their number); an error that ended a call as decision and "
+                 "reasons",
+        count=rules_streams),
     f"{H}/fixtures/transactions.json": dict(
         area="transactions", tests=[f"{H}/transactions.rs::replay"],
         counted="each step with an outcome, except those of the scenario marked `slow`",
@@ -720,6 +727,14 @@ RECORDINGS = {
                  "hidane's stored document; a step marked `differs` (method and path only) as "
                  "intentionally different",
         count=websocket_requests),
+    f"{H}/fixtures/rules_expressions_monitor.json": dict(
+        area="rules",
+        tests=[f"{H}/websocket_requests.rs::a_decision_past_the_limit_of_expressions"],
+        counted="each step: the request monitor's records of a call, or a WebSocket exchange",
+        compares="as `websocket_requests.json`'s; the steps marked `differs` (the official "
+                 "emulator records nothing from a decision past the limit on, to a client that "
+                 "connects after it) as intentionally different",
+        count=websocket_requests),
     f"{H}/fixtures/write_stream.json": dict(
         area="streams", tests=[f"{H}/write_stream.rs::replay"],
         counted="each step with an outcome",
@@ -735,7 +750,8 @@ for _name in ("rules_auth", "rules_denials", "rules_expressions", "rules_list", 
         compares="a denial as decision and reasons (`same_denial`: hidane's reasons are among "
                  "the official ones); every other answer on its status",
         count=rules_server(f"{_name}.json"))
-for _name in ("rules_coverage", "rules_coverage_flag", "rules_request_fields", "rules_verify"):
+for _name in ("rules_coverage", "rules_coverage_flag", "rules_expressions_report", "rules_request_fields",
+              "rules_verify"):
     RECORDINGS[f"{H}/fixtures/{_name}.json"] = dict(
         area="rules", tests=[f"{H}/rules_coverage.rs::replay"], counted="each call",
         compares="every status and what `debug()` printed (without `request.time`); the rules "

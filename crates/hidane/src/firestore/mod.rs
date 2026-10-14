@@ -839,6 +839,7 @@ impl Firestore for FirestoreService {
         let paths: Vec<ResourcePath> = documents.iter().map(|(_, path)| path.clone()).collect();
         let mask = parse_mask(req.mask.as_ref())?;
         let mut responses = Vec::with_capacity(documents.len() + 1);
+        let mut begun = None;
         let at = match &req.consistency_selector {
             Some(batch_get_documents_request::ConsistencySelector::Transaction(transaction)) => {
                 self.read_in(&database, transaction, &paths, None)?
@@ -846,6 +847,7 @@ impl Firestore for FirestoreService {
             Some(batch_get_documents_request::ConsistencySelector::NewTransaction(options)) => {
                 let transaction = self.begin(&database, Some(options))?;
                 let at = self.read_in(&database, &transaction, &paths, None)?;
+                begun = Some(transaction.clone());
                 // The new transaction's ID comes first, in a response of its own.
                 responses.push(Ok(BatchGetDocumentsResponse {
                     transaction,
@@ -880,6 +882,11 @@ impl Firestore for FirestoreService {
                 })
                 .collect();
             if !denials.is_empty() {
+                // The transaction the call began ends with it: its ID is never sent, and the
+                // official emulator leaves nothing locked (`tools/oracle/rules_expressions.py`).
+                if let Some(transaction) = begun {
+                    self.transactions.rollback(&database, &transaction)?;
+                }
                 return Err(guard::denied(guard::join(&denials)));
             }
         }

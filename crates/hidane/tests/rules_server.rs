@@ -2,11 +2,12 @@
 //! `tools/oracle/rules_{request,writes,lookups,list,auth,denials,expressions}.py`
 //! (`fixtures/rules_*.json`), each a list of REST calls, are replayed in order against a fresh
 //! hidane. Every answer's status must match, and a denial must say what the official emulator's
-//! does, as `common::rules::same_denial` compares them.
+//! does, as `common::rules::same_denial` compares them. A transaction the official emulator began
+//! is named by hidane's ID for it in the steps after.
 
 mod common;
 
-use std::net::SocketAddr;
+use std::{collections::HashMap, net::SocketAddr};
 
 use serde_json::Value as Json;
 use tokio::{
@@ -91,6 +92,36 @@ fn same_message(hidane: Option<&str>, official: Option<&str>, status: u16) -> bo
     }
 }
 
+/// The ID of the transaction an answer began: `transaction`, at its top or in its first item.
+fn transaction(answer: &Json) -> Option<&str> {
+    answer
+        .get("transaction")
+        .or_else(|| answer.get(0)?.get("transaction"))
+        .and_then(Json::as_str)
+}
+
+/// `body` with each transaction the official emulator began named by hidane's ID for it.
+fn with_transactions(body: &Json, transactions: &HashMap<String, String>) -> Json {
+    match body {
+        Json::String(s) => transactions
+            .get(s)
+            .map_or_else(|| body.clone(), |ours| Json::String(ours.clone())),
+        Json::Array(items) => Json::Array(
+            items
+                .iter()
+                .map(|item| with_transactions(item, transactions))
+                .collect(),
+        ),
+        Json::Object(fields) => Json::Object(
+            fields
+                .iter()
+                .map(|(k, v)| (k.clone(), with_transactions(v, transactions)))
+                .collect(),
+        ),
+        other => other.clone(),
+    }
+}
+
 /// Replays every case of `fixture` but those `skip` names, each case's steps in order on one
 /// server. A case stops at its first answer that differs; the differences are listed at the end.
 async fn replay(fixture: &str, skip: &[&str]) {
@@ -98,13 +129,16 @@ async fn replay(fixture: &str, skip: &[&str]) {
     let addr = start().await;
     let mut compared = 0;
     let mut differences = Vec::new();
+    // hidane's ID for each transaction the official emulator began.
+    let mut transactions: HashMap<String, String> = HashMap::new();
     for case in &cases {
         let name = case["name"].as_str().unwrap();
         if skip.contains(&name) {
             continue;
         }
         for (i, step) in case["steps"].as_array().unwrap().iter().enumerate() {
-            let body = (!step["body"].is_null()).then(|| step["body"].to_string());
+            let body = (!step["body"].is_null())
+                .then(|| with_transactions(&step["body"], &transactions).to_string());
             let (status, response) = send(
                 addr,
                 step["method"].as_str().unwrap(),
@@ -113,6 +147,11 @@ async fn replay(fixture: &str, skip: &[&str]) {
                 step["auth"].as_str(),
             )
             .await;
+            if let (Some(official), Some(ours)) =
+                (transaction(&step["response"]), transaction(&response))
+            {
+                transactions.insert(official.to_owned(), ours.to_owned());
+            }
             let same = status == step["status"]
                 && same_message(message(&response), message(&step["response"]), status);
             if !same {

@@ -347,8 +347,8 @@ fn same_records(label: &str, official: &[Json], hidane: &[Json]) {
 }
 
 /// For a step marked `differs`: each of hidane's records has a method and path the official
-/// emulator recorded.
-fn similar_records(label: &str, official: &[Json], hidane: &[Json]) {
+/// emulator recorded, or where it recorded nothing (its monitor stopped), the path of the call.
+fn similar_records(label: &str, path: &str, official: &[Json], hidane: &[Json]) {
     let place = |record: &Json| {
         let context = &record["rulesContext"];
         format!("{} {}", context["method"], context["path"])
@@ -356,14 +356,30 @@ fn similar_records(label: &str, official: &[Json], hidane: &[Json]) {
     let theirs: Vec<String> = official.iter().map(place).collect();
     assert!(!hidane.is_empty(), "{label}");
     for record in hidane {
-        assert!(theirs.contains(&place(record)), "{label}: {record}");
+        if official.is_empty() {
+            let theirs = record["rulesContext"]["path"].as_str().unwrap();
+            assert!(path.ends_with(theirs), "{label}: {record}");
+        } else {
+            assert!(theirs.contains(&place(record)), "{label}: {record}");
+        }
     }
 }
 
 #[tokio::test]
 async fn records_as_the_official_emulator_sends_them() {
-    let cases: Vec<Json> =
-        serde_json::from_str(include_str!("fixtures/websocket_requests.json")).unwrap();
+    replay(include_str!("fixtures/websocket_requests.json")).await;
+}
+
+/// The official emulator's monitor sends nothing from a decision that reaches the limit of
+/// 1,000 expressions on (`tools/oracle/rules_expressions_monitor.py`); hidane's records it, and
+/// every decision after it.
+#[tokio::test]
+async fn a_decision_past_the_limit_of_expressions() {
+    replay(include_str!("fixtures/rules_expressions_monitor.json")).await;
+}
+
+async fn replay(fixture: &str) {
+    let cases: Vec<Json> = serde_json::from_str(fixture).unwrap();
     let (addr, ws_addr) = start().await;
     let channel = Channel::from_shared(format!("http://{addr}"))
         .unwrap()
@@ -421,7 +437,12 @@ async fn records_as_the_official_emulator_sends_them() {
                     }
                     other => panic!("{other}"),
                 };
-                same_records(&label, &expected, &frames);
+                if differs {
+                    // The official emulator's monitor had stopped: hidane's still sends.
+                    assert!(!frames.is_empty(), "{label}");
+                } else {
+                    same_records(&label, &expected, &frames);
+                }
                 continue;
             }
             let monitor = clients.get_mut("monitor").unwrap();
@@ -480,7 +501,7 @@ async fn records_as_the_official_emulator_sends_them() {
             };
             let records = monitor.frames(count, pause).await;
             if differs {
-                similar_records(&label, expected, &records);
+                similar_records(&label, step["path"].as_str().unwrap(), expected, &records);
             } else {
                 same_records(&label, expected, &records);
             }

@@ -1,18 +1,21 @@
 //! The Listen and Write streams under Security Rules, against the official emulator's
-//! recordings (`tools/oracle/rules_streams.py`, `fixtures/rules_streams.json`): each case's
-//! requests go over gRPC to a fresh hidane, without credentials, and the responses are compared
-//! one by one, without times and resume tokens. A denied target is added, then removed with a
-//! `PERMISSION_DENIED` cause; a denied write ends the Write stream. Denials are compared as
-//! `common::rules::same_denial` says.
+//! recordings (`tools/oracle/rules_streams.py`, `fixtures/rules_streams.json`), and the limit of
+//! 1,000 expressions per decision over gRPC (`tools/oracle/rules_expressions_grpc.py`,
+//! `fixtures/rules_expressions_grpc.json`): each case's requests go over gRPC to a fresh hidane,
+//! without credentials, and the responses are compared one by one, without times and resume
+//! tokens; those of a call that is not a stream of the client's are counted. A denied target is
+//! added, then removed with a `PERMISSION_DENIED` cause; a denied write ends the Write stream.
+//! Denials are compared as `common::rules::same_denial` says.
 
 mod common;
 
 use std::{net::SocketAddr, time::Duration};
 
 use hidane_proto::google::firestore::v1::{
-    ListenRequest, ListenResponse, Target, WriteRequest,
+    BatchGetDocumentsRequest, GetDocumentRequest, ListenRequest, ListenResponse,
+    RunAggregationQueryRequest, RunQueryRequest, Target, WriteRequest,
     firestore_client::FirestoreClient,
-    listen_request, listen_response,
+    listen_request, listen_response, run_aggregation_query_request, run_query_request,
     target::{DocumentsTarget, QueryTarget, TargetType, query_target},
     target_change::TargetChangeType,
 };
@@ -69,6 +72,10 @@ async fn set_up(addr: SocketAddr, case: &Json) {
         json!({"rules": {"files": [{"name": "firestore.rules", "content": case["rules"]}]}});
     let path = format!("/emulator/v1/projects/{project}:securityRules");
     assert_eq!(owner(addr, "PUT", &path, &rules).await, 200);
+    for document in case["deleted"].as_array().into_iter().flatten() {
+        let path = format!("/v1/{database}/documents/{}", document.as_str().unwrap());
+        owner(addr, "DELETE", &path, &Json::Null).await;
+    }
     for document in case["documents"].as_array().unwrap() {
         let path = format!(
             "/v1/{database}/documents/{}",
@@ -130,9 +137,17 @@ enum Seen {
         ids: Vec<i32>,
         removed: Vec<i32>,
     },
+    /// A listened document that does not exist.
+    Delete {
+        name: String,
+        removed: Vec<i32>,
+    },
     Write {
         results: usize,
     },
+    /// A response of a call that is not a stream of the client's: a document, a query's
+    /// result, an aggregation, a commit.
+    Message,
 }
 
 fn ids(json: &Json) -> Vec<i32> {
@@ -164,6 +179,12 @@ fn official(json: &Json) -> (Seen, Option<&str>) {
             removed: ids(&change["removedTargetIds"]),
         };
         (seen, None)
+    } else if let Some(change) = json.get("documentDelete") {
+        let seen = Seen::Delete {
+            name: change["document"].as_str().unwrap().to_owned(),
+            removed: ids(&change["removedTargetIds"]),
+        };
+        (seen, None)
     } else if json.get("streamToken").is_some() {
         let results = json["writeResults"].as_array().map_or(0, Vec::len);
         (Seen::Write { results }, None)
@@ -190,8 +211,94 @@ fn listen_seen(response: &ListenResponse) -> (Seen, Option<String>) {
             },
             None,
         ),
+        listen_response::ResponseType::DocumentDelete(change) => (
+            Seen::Delete {
+                name: change.document.clone(),
+                removed: change.removed_target_ids.clone(),
+            },
+            None,
+        ),
         other => panic!("unexpected response {other:?}"),
     }
+}
+
+/// Makes a call that is not a stream of the client's (`request` in ProtoJSON): the number of
+/// responses, and the status it ended with.
+async fn call(client: &mut Client, rpc: &str, request: &Json) -> (usize, Option<Status>) {
+    let text = |key: &str| request[key].as_str().unwrap().to_owned();
+    let result = match rpc {
+        "GetDocument" => client
+            .get_document(GetDocumentRequest {
+                name: text("name"),
+                ..GetDocumentRequest::default()
+            })
+            .await
+            .map(|_| 1),
+        "Commit" => client
+            .commit(common::protojson::commit_request(
+                &text("database"),
+                request,
+            ))
+            .await
+            .map(|_| 1),
+        "BatchGetDocuments" => {
+            let documents = request["documents"].as_array().unwrap();
+            let request = BatchGetDocumentsRequest {
+                database: text("database"),
+                documents: documents
+                    .iter()
+                    .map(|d| d.as_str().unwrap().to_owned())
+                    .collect(),
+                ..BatchGetDocumentsRequest::default()
+            };
+            match client.batch_get_documents(request).await {
+                Ok(responses) => count(responses.into_inner()).await,
+                Err(status) => Err(status),
+            }
+        }
+        "RunQuery" => {
+            let query = common::structured_query::structured_query(&request["structuredQuery"]);
+            let request = RunQueryRequest {
+                parent: text("parent"),
+                query_type: Some(run_query_request::QueryType::StructuredQuery(query)),
+                ..RunQueryRequest::default()
+            };
+            match client.run_query(request).await {
+                Ok(responses) => count(responses.into_inner()).await,
+                Err(status) => Err(status),
+            }
+        }
+        "RunAggregationQuery" => {
+            let query = common::structured_query::structured_aggregation_query(
+                &request["structuredAggregationQuery"],
+            );
+            let request = RunAggregationQueryRequest {
+                parent: text("parent"),
+                query_type: Some(
+                    run_aggregation_query_request::QueryType::StructuredAggregationQuery(query),
+                ),
+                ..RunAggregationQueryRequest::default()
+            };
+            match client.run_aggregation_query(request).await {
+                Ok(responses) => count(responses.into_inner()).await,
+                Err(status) => Err(status),
+            }
+        }
+        other => panic!("unknown rpc {other}"),
+    };
+    match result {
+        Ok(count) => (count, None),
+        Err(status) => (0, Some(status)),
+    }
+}
+
+/// The number of responses of a stream, or the status that ended it.
+async fn count<T>(mut responses: Streaming<T>) -> Result<usize, Status> {
+    let mut count = 0;
+    while responses.message().await?.is_some() {
+        count += 1;
+    }
+    Ok(count)
 }
 
 /// Reads up to `count` responses. When none comes for a moment, makes `during`'s call once
@@ -224,8 +331,16 @@ async fn read<T>(
 
 #[tokio::test]
 async fn streams_under_rules() {
-    let cases: Vec<Json> =
-        serde_json::from_str(include_str!("fixtures/rules_streams.json")).unwrap();
+    replay(include_str!("fixtures/rules_streams.json")).await;
+}
+
+#[tokio::test]
+async fn the_limit_of_expressions() {
+    replay(include_str!("fixtures/rules_expressions_grpc.json")).await;
+}
+
+async fn replay(fixture: &str) {
+    let cases: Vec<Json> = serde_json::from_str(fixture).unwrap();
     let (mut client, addr) = start().await;
     for case in &cases {
         let name = case["name"].as_str().unwrap();
@@ -272,9 +387,22 @@ async fn streams_under_rules() {
                     .collect();
                 (seen, status)
             }
-            other => panic!("unknown rpc {other}"),
+            rpc => {
+                let (count, status) = call(&mut client, rpc, &requests[0]).await;
+                ((0..count).map(|_| (Seen::Message, None)).collect(), status)
+            }
         };
-        let official_seen: Vec<_> = expected.iter().map(official).collect();
+        let unary = !matches!(case["rpc"].as_str(), Some("Listen" | "Write"));
+        let official_seen: Vec<_> = expected
+            .iter()
+            .map(|json| {
+                if unary {
+                    (Seen::Message, None)
+                } else {
+                    official(json)
+                }
+            })
+            .collect();
         assert_eq!(
             seen.iter().map(|(s, _)| s).collect::<Vec<_>>(),
             official_seen.iter().map(|(s, _)| s).collect::<Vec<_>>(),
