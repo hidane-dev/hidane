@@ -23,14 +23,14 @@ firebase-tools that launches it and the official emulator it is compared with.
 
 | hidane | firebase-tools | Official emulator | Status | Evidence |
 |---|---|---|---|---|
-| 0.5.x | 15.33.0 | 1.22.0 | Verified | 20,609 recorded answers of the official emulator v1.22.0 in 41 fixtures, replayed against hidane by cargo test; 33 comparisons of SDK transcripts with the official emulator v1.22.0's: 19 identical, 14 documented differences; 2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers (last recorded 2026-10-13) |
+| 0.5.x | 15.33.0 | 1.22.0 | Verified | 20,609 recorded answers of the official emulator v1.22.0 in 41 fixtures, replayed against hidane by cargo test; 34 comparisons of SDK transcripts with the official emulator v1.22.0's: 20 identical, 14 documented differences; 2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers (last recorded 2026-10-13) |
 
 | Evidence | What the results show | Where |
 |---|---|---|
-| Oracle corpus | 72 recordings of the official emulator 1.22.0 (41 fixtures, 31 official transcripts), `sha256:b2efcefab13d…` | [oracle-corpus.md](oracle-corpus.md) |
+| Oracle corpus | 73 recordings of the official emulator 1.22.0 (41 fixtures, 32 official transcripts), `sha256:a90000e553dc…` | [oracle-corpus.md](oracle-corpus.md) |
 | Record and replay | 20,609 recorded answers in 41 fixtures, replayed by `cargo test` on every pull request and push to main: 12,385 in full, 3,912 decision and reasons, 753 in part, 3,404 status only, 30 without messages, 1 not compared, 124 intentionally different | [parity.md](parity.md) |
-| SDK transcripts | 33 comparisons of 31 transcript pairs: 19 identical, 14 documented differences | [parity.md](parity.md) |
-| SDK certification | 16 clients and tools: 10 verified, 1 partially verified, 5 not verified | [sdk-certification.md](sdk-certification.md) |
+| SDK transcripts | 34 comparisons of 32 transcript pairs: 20 identical, 14 documented differences | [parity.md](parity.md) |
+| SDK certification | 16 clients and tools: 11 verified, 0 partially verified, 5 not verified | [sdk-certification.md](sdk-certification.md) |
 | Browser | firebase-js-sdk's browser suite at `8a7e7fd`: 1,183 passed, 0 failed, 739 skipped on hidane; 1,183 passed, 0 failed on the official emulator (identical). 3 transcripts in Chromium: browser-webchannel (identical), flutter-web (documented), browser-rules (documented) | [`js-sdk-browser.yml`](../.github/workflows/js-sdk-browser.yml) |
 | Functions events | `function_events.json`: 152 recorded answers, `function_triggers.json`: 342 recorded answers; functions-triggers: 37 events on hidane, 43 on the official emulator (documented) | [parity-exceptions.md](parity-exceptions.md) |
 | Integration tests | 48 test files (`crates/*/tests/*.rs`), 32 of them replaying recordings, run on every pull request and push to main | [`crates/`](../crates/) |
@@ -88,7 +88,7 @@ Differential fuzzing has not run yet. A run is reported by writing a summary to
 | firebase-android-sdk | gRPC (grpc-okhttp). Uses the Listen and Write streams | not verified |
 | FlutterFire `cloud_firestore` on Android / iOS / macOS / Windows | Native SDK (gRPC) | not verified |
 | Firebase C++ SDK / Unity | iOS C++ core or Android SDK (gRPC) | not verified |
-| firebase-js-sdk imported **in Node** | gRPC (`@grpc/grpc-js`) | partially verified: documents and writes, queries, transactions and listeners give the same results; no aggregation query has been compared ([sdk-certification.md](sdk-certification.md)) |
+| firebase-js-sdk imported **in Node** | gRPC (`@grpc/grpc-js`) | verified (`firebase` 13.0.0): documents and writes, queries, aggregation queries, transactions and listeners give the same results ([sdk-certification.md](sdk-certification.md)) |
 | firebase-js-sdk **Lite** (`firebase/firestore/lite`, any platform) | REST (`fetch`) only | verified |
 | firebase-js-sdk **in the browser** | **WebChannel** for Listen and Write (this includes `getDoc`, `getDocs`, `setDoc`, `updateDoc`, `deleteDoc`, `writeBatch`), REST for `runTransaction`, aggregate queries and pipelines | verified in Chromium ([webchannel.md](webchannel.md)); the SDK's own browser suite passes, 1,183 of 1,183 tests, as on the official emulator (`results/js-sdk-browser-*.json`) |
 | FlutterFire `cloud_firestore_web` | Same as firebase-js-sdk in the browser (`firebase_core_web` loads it from `www.gstatic.com/firebasejs/`) | verified in Chromium |

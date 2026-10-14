@@ -71,7 +71,7 @@
       "group": "dependencies",
       "status": "compatible",
       "severity": "info",
-      "title": "Firebase JS SDK (firebase) 13.0.0 (package.json): verified with hidane (Lite over REST, in Chromium over WebChannel, and partially in Node over gRPC)",
+      "title": "Firebase JS SDK (firebase) 13.0.0 (package.json): verified with hidane (in Node over gRPC, Lite over REST, and in Chromium over WebChannel)",
       "source": "docs/sdk-certification.md",
       "file": "package.json",
       "line": 8

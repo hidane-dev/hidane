@@ -186,6 +186,7 @@ EVIDENCE = {
                                                     "transactions"],
                                "rules-unit-testing": ["security-rules", "clear"]},
     "sdk-transactions": {"admin-node": ["transactions"]},
+    "sdk-web-aggregations": {"firebase-js-node": ["aggregations"]},
     "sdk-web-transactions": {"firebase-js-node": ["transactions"]},
     "sdk-web-writes": {"firebase-js-node": ["documents"]},
 }
