@@ -24,11 +24,15 @@
 //!   `tools/oracle/rules_expressions.py`). Each expression evaluated counts once, parentheses
 //!   not at all, and some count more: `&&` and `||` once more when they evaluate their right
 //!   side, a conditional once more once its condition is evaluated (whatever it came to) and two
-//!   more again when it is false,
-//!   `is` and each `let` once more, a path once more for each literal segment. What a short
-//!   circuit or a conditional skips does not count. Past the limit every expression is an error
-//!   ("Unable to evaluate the expression as the maximum of 1000 expressions to evaluate has been
-//!   reached."), so nothing absorbs it.
+//!   more again when it is false, `is` and each `let` once more, a path once more for each
+//!   literal segment. What a short circuit or a conditional skips does not count. An expression
+//!   counts once what is in it is evaluated, a call before its function runs: `debug()` prints
+//!   only within the limit (`tools/oracle/rules_expressions_report.py`). The expression that goes
+//!   past the limit is an error ("Unable to evaluate the expression as the maximum of 1000
+//!   expressions to evaluate has been reached."), whatever it came to, and nothing is evaluated
+//!   after it, so nothing absorbs it and the coverage report holds no value of it or of what
+//!   holds it. The official emulator's second evaluation of a condition (below) counts from
+//!   zero, so evaluating once comes to the same decisions.
 //!
 //! Each condition is evaluated once, so a denial lists each statement once; the official
 //! emulator evaluates again after an error and lists everything twice

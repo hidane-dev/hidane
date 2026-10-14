@@ -24,7 +24,7 @@
    "official_emulator": "1.22.0",
    "status": "verified",
    "evidence": [
-    "21,902 recorded answers of the official emulator v1.22.0 in 43 fixtures, replayed against hidane by cargo test",
+    "23,110 recorded answers of the official emulator v1.22.0 in 46 fixtures, replayed against hidane by cargo test",
     "34 comparisons of SDK transcripts with the official emulator v1.22.0's: 20 identical, 14 documented differences",
     "2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers"
    ]
@@ -664,16 +664,16 @@
   }
  ],
  "parity": {
-  "fixtures": 43,
-  "answers": 21902,
+  "fixtures": 46,
+  "answers": 23110,
   "levels": {
-   "full": 12923,
-   "reasons": 4050,
-   "part": 760,
-   "status": 3983,
+   "full": 12950,
+   "reasons": 4313,
+   "part": 814,
+   "status": 4844,
    "codes": 30,
    "none": 1,
-   "differs": 155
+   "differs": 158
   },
   "transcripts": {
    "pairs": 32,
@@ -702,10 +702,10 @@
  },
  "differences": {
   "intentional": {
-   "count": 74,
+   "count": 75,
    "by_kind": {
     "bug-for-bug": 1,
-    "more-correct": 47,
+    "more-correct": 48,
     "equivalent": 18,
     "limitation": 8
    }

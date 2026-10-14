@@ -130,15 +130,17 @@ impl<'a> Interp<'a> {
     /// kind of expression, which keeps the stack a recursion uses small.
     ///
     /// Each expression evaluated costs one of the decision's [`MAX_EXPRESSIONS`] (parentheses
-    /// are not expressions); some cost more, in their steps (`tools/oracle/rules_expressions.py`).
+    /// are not expressions) once what is in it is evaluated: a call in its step, before the
+    /// function runs, anything else here, after its step. Some cost more, in their steps. The
+    /// expression that goes past the limit fails with the limit's error, whatever its step came
+    /// to, and nothing is evaluated or traced after it: `debug()` prints only if its call is
+    /// within the limit, and the coverage report holds no value of it or of what contains it
+    /// (`tools/oracle/rules_expressions.py`, `tools/oracle/rules_expressions_report.py`).
     pub fn eval(&mut self, e: &'a Expr, s: Scope<'_, 'a>) -> R {
+        if self.over() || self.depth >= MAX_DEPTH {
+            return self.refuse();
+        }
         let object = std::mem::take(&mut self.object);
-        if self.depth >= MAX_DEPTH {
-            return Err(too_complex());
-        }
-        if let Err(err) = self.spend(1) {
-            return self.finish(e, Err(err), object);
-        }
         self.depth += 1;
         // One call through a pointer: in a debug build each call of a `match` would keep a
         // slot of its own in this frame.
@@ -163,6 +165,36 @@ impl<'a> Interp<'a> {
         };
         let result = step(self, e, s);
         self.depth -= 1;
+        self.counted(e, result, object)
+    }
+
+    /// What `eval` answers past the limit, or nested too deep. Not inlined, as
+    /// [`Interp::counted`].
+    #[inline(never)]
+    #[cold]
+    fn refuse(&mut self) -> R {
+        self.object = false;
+        Err(if self.over() {
+            too_many()
+        } else {
+            too_complex()
+        })
+    }
+
+    /// Counts `e` once its step is done ([`Interp::eval`]; a call counts in its step), then
+    /// places and traces its result unless the decision went past the limit. Not inlined: the
+    /// frame of `eval`, which every level of nesting has, stays small.
+    #[inline(never)]
+    fn counted(&mut self, e: &Expr, result: R, object: bool) -> R {
+        // A call counted itself in its step; past the limit, it fails here all the same.
+        let count = usize::from(!matches!(e.kind, ExprKind::Call { .. }));
+        let result = match self.spend(count) {
+            Ok(()) => result,
+            Err(limit) => Err(limit),
+        };
+        if self.over() {
+            return result;
+        }
         if result.is_err() || self.trace.tracing() {
             return self.finish(e, result, object);
         }
@@ -199,18 +231,21 @@ impl<'a> Interp<'a> {
     /// expression after that.
     fn spend(&mut self, n: usize) -> Result<(), Error> {
         self.budget.expressions += n;
-        if self.budget.expressions > MAX_EXPRESSIONS {
-            return Err(Error::new(format!(
-                "Unable to evaluate the expression as the maximum of {MAX_EXPRESSIONS} \
-                 expressions to evaluate has been reached."
-            )));
+        if self.over() {
+            return Err(too_many());
         }
         Ok(())
     }
 
-    /// Reports `e` and every expression in it as not evaluated.
+    /// Whether the decision went past [`MAX_EXPRESSIONS`].
+    fn over(&self) -> bool {
+        self.budget.expressions > MAX_EXPRESSIONS
+    }
+
+    /// Reports `e` and every expression in it as not evaluated, unless the decision went past
+    /// the limit, after which nothing is reported.
     fn skip(&mut self, e: &Expr) {
-        if self.trace.tracing() {
+        if self.trace.tracing() && !self.over() {
             coverage::walk(e, &mut |node| self.trace.skip(NodeKey::of(node)));
         }
     }
@@ -381,7 +416,7 @@ impl<'a> Interp<'a> {
         else {
             unreachable!()
         };
-        // The type counts as an expression.
+        // The type counts as an expression, evaluated before the value.
         self.spend(1)?;
         let v = self.eval(value, s)?;
         Ok(Val::Bool(v.is(&type_name.name)))
@@ -398,7 +433,7 @@ impl<'a> Interp<'a> {
             unreachable!()
         };
         // Its condition evaluated, whatever it came to (an error too), it costs one more, and two
-        // more again when the condition is false.
+        // more again when the condition is false: one before its branch, one after.
         let condition = self.eval(condition, s);
         self.spend(1)?;
         match condition? {
@@ -409,8 +444,10 @@ impl<'a> Interp<'a> {
             }
             Val::Bool(false) => {
                 self.skip(then);
-                self.spend(2)?;
-                self.eval(otherwise, s)
+                self.spend(1)?;
+                let result = self.eval(otherwise, s);
+                self.spend(1)?;
+                result
             }
             other => Err(Error::type_error(other.type_name(), "bool").at(question.start)),
         }
@@ -419,7 +456,9 @@ impl<'a> Interp<'a> {
     /// `&&` and `||` absorb an error when the other side decides, as CEL does: `false && error`
     /// and `error && false` are false, `true || error` and `error || true` are true. A value
     /// that is not a bool is an error like any other: on the left at the operator, on the right
-    /// at the expression's start. Evaluating the right side costs one more expression.
+    /// at the expression's start. Evaluating the right side costs one more expression, counted
+    /// before it. When the right side reaches the limit after an error on the left, the limit's
+    /// error wins, as it does everywhere ([`Interp::eval`]).
     fn logical(&mut self, e: &'a Expr, s: Scope<'_, 'a>) -> R {
         let ExprKind::Binary {
             op,
@@ -495,7 +534,8 @@ impl<'a> Interp<'a> {
     }
 
     /// A call. Its errors are at the function's name, but a method the value does not have is
-    /// at the expression's start.
+    /// at the expression's start. The call counts as an expression once its arguments (and
+    /// receiver) are evaluated, before the function runs (`debug()` prints, `get()` reads).
     fn call(&mut self, callee: &'a Callee, args: &'a [Expr], s: Scope<'_, 'a>) -> R {
         match callee {
             // A function that does not exist fails before its arguments are evaluated.
@@ -505,19 +545,23 @@ impl<'a> Interp<'a> {
                     return self.call_function(f, level, args, s).map_err(at);
                 }
                 if !library::is_global(&name.name) {
+                    self.spend(1)?;
                     return Err(at(Error::not_found(&name.name)));
                 }
-                let args = self.operands(&args.iter().collect::<Vec<_>>(), s)?;
-                library::global(self, &name.name, args).map_err(at)
+                let args = self.operands(&args.iter().collect::<Vec<_>>(), s);
+                self.spend(1)?;
+                library::global(self, &name.name, args?).map_err(at)
             }
             Callee::Namespaced { namespace, name } => {
                 let at = |err: Error| err.at(name.span.start);
                 let full = format!("{}.{}", namespace.name, name.name);
                 if !library::is_namespaced(&full) {
+                    self.spend(1)?;
                     return Err(at(Error::not_found(&full)));
                 }
-                let args = self.operands(&args.iter().collect::<Vec<_>>(), s)?;
-                library::namespaced(&full, args).map_err(at)
+                let args = self.operands(&args.iter().collect::<Vec<_>>(), s);
+                self.spend(1)?;
+                library::namespaced(&full, args?).map_err(at)
             }
             // The arguments are evaluated before the receiver, but a null receiver or a method
             // it does not have fails before their errors count.
@@ -525,7 +569,9 @@ impl<'a> Interp<'a> {
                 let at = |err: Error| err.at(name.span.start);
                 let values: Vec<R> = args.iter().rev().map(|a| self.eval(a, s)).collect();
                 self.object = true;
-                let receiver = self.eval(receiver, s)?;
+                let receiver = self.eval(receiver, s);
+                self.spend(1)?;
+                let receiver = receiver?;
                 if let Val::Null = receiver {
                     return Err(at(Error::null()));
                 }
@@ -540,7 +586,8 @@ impl<'a> Interp<'a> {
 
     /// A call of a function of the ruleset. Its arguments (the last first), then its `let`s in
     /// order, are evaluated before its result (the official emulator logs a `debug()` in a `let`
-    /// that is not used), but an error in one only counts if the function uses it.
+    /// that is not used), but an error in one only counts if the function uses it. The call
+    /// counts as an expression after its arguments, before its `let`s.
     fn call_function(
         &mut self,
         f: &'a Function,
@@ -549,6 +596,7 @@ impl<'a> Interp<'a> {
         s: Scope<'_, 'a>,
     ) -> R {
         if args.len() != f.params.len() {
+            self.spend(1)?;
             let params: Vec<&str> = f.params.iter().map(|p| p.name.as_str()).collect();
             return Err(Error::arity(
                 args.len(),
@@ -556,11 +604,13 @@ impl<'a> Interp<'a> {
             ));
         }
         if self.calls >= MAX_CALL_DEPTH {
+            self.spend(1)?;
             return Err(Error::new(format!(
                 "Maximum allowed call depth of {MAX_CALL_DEPTH} is reached."
             )));
         }
         let mut values: Vec<R> = args.iter().rev().map(|arg| self.eval(arg, s)).collect();
+        self.spend(1)?;
         let mut locals = Vec::with_capacity(args.len() + f.lets.len());
         for param in &f.params {
             locals.push(Local {
@@ -595,34 +645,38 @@ impl<'a> Interp<'a> {
         let result = self.eval(&f.result, frame.scope());
         self.calls -= 1;
         // The body from each `let` on, in the coverage report, has the function's result.
-        for l in &f.lets {
-            self.trace.record(NodeKey::Body(l.span.start), &result);
+        if !self.over() {
+            for l in &f.lets {
+                self.trace.record(NodeKey::Body(l.span.start), &result);
+            }
         }
         result
     }
 
-    /// The value of a `let`, which costs one expression more than its own.
+    /// The value of a `let`, which costs one expression more than its own, after it.
     fn bind(&mut self, e: &'a Expr, s: Scope<'_, 'a>) -> R {
+        let value = self.eval(e, s);
         self.spend(1)?;
-        self.eval(e, s)
+        value
     }
 
     /// A path literal. Literal segments are URL-decoded; `$(…)` adds a path's segments, or one
-    /// segment of anything `string()` converts. Each literal segment costs an expression.
+    /// segment of anything `string()` converts. Its parts are evaluated the last first, and
+    /// each literal segment costs an expression where it is.
     fn path(&mut self, parts: &'a [PathPart], s: Scope<'_, 'a>) -> R {
-        let literal = parts
-            .iter()
-            .filter(|part| matches!(part, PathPart::Segment(_)))
-            .count();
-        self.spend(literal)?;
-        let exprs: Vec<&Expr> = parts
-            .iter()
-            .filter_map(|part| match part {
-                PathPart::Expr(e) => Some(e),
-                PathPart::Segment(_) => None,
-            })
-            .collect();
-        let mut values = self.operands(&exprs, s)?.into_iter().zip(exprs);
+        let mut results: Vec<(R, &Expr)> = Vec::new();
+        for part in parts.iter().rev() {
+            match part {
+                PathPart::Segment(_) => self.spend(1)?,
+                PathPart::Expr(e) => results.push((self.eval(e, s), e)),
+            }
+        }
+        // The first error in order wins.
+        let mut values = Vec::with_capacity(results.len());
+        for (result, e) in results.into_iter().rev() {
+            values.push((result?, e));
+        }
+        let mut values = values.into_iter();
         let mut segments = Vec::with_capacity(parts.len());
         for part in parts {
             match part {
@@ -700,6 +754,14 @@ impl<'a> Interp<'a> {
 #[cold]
 fn too_complex() -> Error {
     Error::new("Expression is too complex to evaluate safely.".to_owned())
+}
+
+#[cold]
+fn too_many() -> Error {
+    Error::new(format!(
+        "Unable to evaluate the expression as the maximum of {MAX_EXPRESSIONS} expressions to \
+         evaluate has been reached."
+    ))
 }
 
 /// A literal: null, a bool, a number, a string or bytes.

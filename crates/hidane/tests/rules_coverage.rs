@@ -2,8 +2,9 @@
 //! (`tools/oracle/rules_coverage.py`: `fixtures/rules_coverage.json`, and with `--rules`,
 //! `fixtures/rules_coverage_flag.json`; `tools/oracle/rules_request_fields.py`:
 //! `fixtures/rules_request_fields.json`; `tools/oracle/rules_verify.py`:
-//! `fixtures/rules_verify.json`). Each case's steps are replayed in order against a fresh
-//! hidane, and every answer's status must match. So must:
+//! `fixtures/rules_verify.json`; `tools/oracle/rules_expressions_report.py`:
+//! `fixtures/rules_expressions_report.json`). Each case's steps are replayed in order against a
+//! fresh hidane, and every answer's status must match. So must:
 //!
 //! - a denial's message, as `common::rules::same_denial` compares them;
 //! - what `debug()` printed during each step, line for line;
@@ -310,4 +311,13 @@ async fn request_fields() {
 #[tokio::test]
 async fn verify_writes() {
     replay(include_str!("fixtures/rules_verify.json"), false).await;
+}
+
+#[tokio::test]
+async fn the_limit_of_expressions() {
+    replay(
+        include_str!("fixtures/rules_expressions_report.json"),
+        false,
+    )
+    .await;
 }
