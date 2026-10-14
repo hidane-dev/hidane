@@ -7032,6 +7032,1311 @@
     "contentType": "application/json",
     "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/fp\\/t) not found.\",\"status\":\"NOT_FOUND\"}}"
    }
+  },
+  {
+   "name": "JsonFormat: {\"nullValue\": 0}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v0",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"nullValue\": 0}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v0\",\n  \"fields\": {\n    \"v\": {\n      \"nullValue\": null\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"nullValue\": 1}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v1",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"nullValue\": 1}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v1\",\n  \"fields\": {\n    \"v\": {\n      \"nullValue\": null\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"nullValue\": \"0\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v2",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"nullValue\": \"0\"}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v2\",\n  \"fields\": {\n    \"v\": {\n      \"nullValue\": null\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"nullValue\": [0]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v3",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"nullValue\": [0]}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v3\",\n  \"fields\": {\n    \"v\": {\n      \"nullValue\": null\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"nullValue\": \"NULL_VALUE\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v4",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"nullValue\": \"NULL_VALUE\"}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v4\",\n  \"fields\": {\n    \"v\": {\n      \"nullValue\": null\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"nullValue\": \"x\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v5",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"nullValue\": \"x\"}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"nullValue\": true}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v6",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"nullValue\": true}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"nullValue\": {}}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v7",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"nullValue\": {}}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"doubleValue\": \"nan\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v8",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"doubleValue\": \"nan\"}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"doubleValue\": \"inf\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v9",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"doubleValue\": \"inf\"}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"doubleValue\": \"infinity\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v10",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"doubleValue\": \"infinity\"}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"doubleValue\": \"-inf\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v11",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"doubleValue\": \"-inf\"}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"doubleValue\": \"+Infinity\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v12",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"doubleValue\": \"+Infinity\"}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"doubleValue\": \" 1\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v13",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"doubleValue\": \" 1\"}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"doubleValue\": \"0x10\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v14",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"doubleValue\": \"0x10\"}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"doubleValue\": \"1d\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v15",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"doubleValue\": \"1d\"}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"doubleValue\": true}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v16",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"doubleValue\": true}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"doubleValue\": []}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v17",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"doubleValue\": []}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"doubleValue\": [1, 2]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v18",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"doubleValue\": [1, 2]}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"doubleValue\": \"1.\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v19",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"doubleValue\": \"1.\"}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v19\",\n  \"fields\": {\n    \"v\": {\n      \"doubleValue\": 1.0\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"doubleValue\": \".5\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v20",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"doubleValue\": \".5\"}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v20\",\n  \"fields\": {\n    \"v\": {\n      \"doubleValue\": 0.5\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"doubleValue\": \"+1\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v21",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"doubleValue\": \"+1\"}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v21\",\n  \"fields\": {\n    \"v\": {\n      \"doubleValue\": 1.0\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"doubleValue\": \"1e5\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v22",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"doubleValue\": \"1e5\"}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v22\",\n  \"fields\": {\n    \"v\": {\n      \"doubleValue\": 100000.0\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"doubleValue\": [1.5]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v23",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"doubleValue\": [1.5]}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v23\",\n  \"fields\": {\n    \"v\": {\n      \"doubleValue\": 1.5\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"doubleValue\": [\"1.5\"]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v24",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"doubleValue\": [\"1.5\"]}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v24\",\n  \"fields\": {\n    \"v\": {\n      \"doubleValue\": 1.5\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"doubleValue\": [[1]]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v25",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"doubleValue\": [[1]]}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v25\",\n  \"fields\": {\n    \"v\": {\n      \"doubleValue\": 1.0\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"stringValue\": [\"a\"]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v26",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"stringValue\": [\"a\"]}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v26\",\n  \"fields\": {\n    \"v\": {\n      \"stringValue\": \"a\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"stringValue\": [1]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v27",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"stringValue\": [1]}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v27\",\n  \"fields\": {\n    \"v\": {\n      \"stringValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"stringValue\": [[\"a\"]]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v28",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"stringValue\": [[\"a\"]]}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v28\",\n  \"fields\": {\n    \"v\": {\n      \"stringValue\": \"a\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"stringValue\": [true]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v29",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"stringValue\": [true]}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v29\",\n  \"fields\": {\n    \"v\": {\n      \"stringValue\": \"true\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"stringValue\": []}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v30",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"stringValue\": []}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"stringValue\": [\"a\", \"b\"]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v31",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"stringValue\": [\"a\", \"b\"]}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"stringValue\": [null]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v32",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"stringValue\": [null]}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"stringValue\": [{}]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v33",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"stringValue\": [{}]}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"stringValue\": 1e5}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v34",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"stringValue\": 1e5}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v34\",\n  \"fields\": {\n    \"v\": {\n      \"stringValue\": \"1e5\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"stringValue\": 1.50}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v35",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"stringValue\": 1.50}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v35\",\n  \"fields\": {\n    \"v\": {\n      \"stringValue\": \"1.50\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"stringValue\": -0}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v36",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"stringValue\": -0}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v36\",\n  \"fields\": {\n    \"v\": {\n      \"stringValue\": \"-0\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"stringValue\": 1E5}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v37",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"stringValue\": 1E5}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v37\",\n  \"fields\": {\n    \"v\": {\n      \"stringValue\": \"1E5\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"stringValue\": 0.10}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v38",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"stringValue\": 0.10}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v38\",\n  \"fields\": {\n    \"v\": {\n      \"stringValue\": \"0.10\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"stringValue\": 100000000000000000000000}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v39",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"stringValue\": 100000000000000000000000}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v39\",\n  \"fields\": {\n    \"v\": {\n      \"stringValue\": \"100000000000000000000000\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"stringValue\": -0.0}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v40",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"stringValue\": -0.0}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v40\",\n  \"fields\": {\n    \"v\": {\n      \"stringValue\": \"-0.0\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"stringValue\": 1e-7}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v41",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"stringValue\": 1e-7}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v41\",\n  \"fields\": {\n    \"v\": {\n      \"stringValue\": \"1e-7\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"stringValue\": [1.50]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v42",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"stringValue\": [1.50]}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v42\",\n  \"fields\": {\n    \"v\": {\n      \"stringValue\": \"1.50\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"integerValue\": [1]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v43",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"integerValue\": [1]}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v43\",\n  \"fields\": {\n    \"v\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"integerValue\": [\"1\"]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v44",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"integerValue\": [\"1\"]}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v44\",\n  \"fields\": {\n    \"v\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"integerValue\": \"1e2\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v45",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"integerValue\": \"1e2\"}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v45\",\n  \"fields\": {\n    \"v\": {\n      \"integerValue\": \"100\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"integerValue\": 1e2}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v46",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"integerValue\": 1e2}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v46\",\n  \"fields\": {\n    \"v\": {\n      \"integerValue\": \"100\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"integerValue\": 1.0}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v47",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"integerValue\": 1.0}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v47\",\n  \"fields\": {\n    \"v\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"integerValue\": \"1.0\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v48",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"integerValue\": \"1.0\"}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v48\",\n  \"fields\": {\n    \"v\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"integerValue\": \"+1\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v49",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"integerValue\": \"+1\"}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v49\",\n  \"fields\": {\n    \"v\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"integerValue\": \"01\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v50",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"integerValue\": \"01\"}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v50\",\n  \"fields\": {\n    \"v\": {\n      \"integerValue\": \"1\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"integerValue\": 1.5}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v51",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"integerValue\": 1.5}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"integerValue\": \" 1\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v52",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"integerValue\": \" 1\"}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"integerValue\": \"0x10\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v53",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"integerValue\": \"0x10\"}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"integerValue\": \"1.5e0\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v54",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"integerValue\": \"1.5e0\"}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"booleanValue\": \"true\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v55",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"booleanValue\": \"true\"}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v55\",\n  \"fields\": {\n    \"v\": {\n      \"booleanValue\": true\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"booleanValue\": \"false\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v56",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"booleanValue\": \"false\"}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v56\",\n  \"fields\": {\n    \"v\": {\n      \"booleanValue\": false\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"booleanValue\": [true]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v57",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"booleanValue\": [true]}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v57\",\n  \"fields\": {\n    \"v\": {\n      \"booleanValue\": true\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"booleanValue\": [\"true\"]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v58",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"booleanValue\": [\"true\"]}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v58\",\n  \"fields\": {\n    \"v\": {\n      \"booleanValue\": true\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"booleanValue\": \"True\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v59",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"booleanValue\": \"True\"}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"booleanValue\": \"1\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v60",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"booleanValue\": \"1\"}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"booleanValue\": 1}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v61",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"booleanValue\": 1}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"booleanValue\": \"TRUE\"}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v62",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"booleanValue\": \"TRUE\"}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"bytesValue\": [\"AQI=\"]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v63",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"bytesValue\": [\"AQI=\"]}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v63\",\n  \"fields\": {\n    \"v\": {\n      \"bytesValue\": \"AQI=\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"bytesValue\": true}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v64",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"bytesValue\": true}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v64\",\n  \"fields\": {\n    \"v\": {\n      \"bytesValue\": \"true\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"bytesValue\": 1234}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v65",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"bytesValue\": 1234}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v65\",\n  \"fields\": {\n    \"v\": {\n      \"bytesValue\": \"1234\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"bytesValue\": 1}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v66",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"bytesValue\": 1}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"timestampValue\": [\"2020-01-01T00:00:00Z\"]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v67",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"timestampValue\": [\"2020-01-01T00:00:00Z\"]}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v67\",\n  \"fields\": {\n    \"v\": {\n      \"timestampValue\": \"2020-01-01T00:00:00Z\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"timestampValue\": 1}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v68",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"timestampValue\": 1}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"geoPointValue\": {\"latitude\": \"1.5\", \"longitude\": [2]}}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v69",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"geoPointValue\": {\"latitude\": \"1.5\", \"longitude\": [2]}}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v69\",\n  \"fields\": {\n    \"v\": {\n      \"geoPointValue\": {\n        \"latitude\": 1.5,\n        \"longitude\": 2.0\n      }\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"geoPointValue\": {\"latitude\": true}}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v70",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"geoPointValue\": {\"latitude\": true}}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"referenceValue\": [\"{name}/c/d\"]}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v71",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"referenceValue\": [\"projects/{project}/databases/(default)/documents/c/d\"]}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v71\",\n  \"fields\": {\n    \"v\": {\n      \"referenceValue\": \"projects/{project}/databases/(default)/documents/c/d\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"mapValue\": {\"fields\": {\"a\": {\"integerValue\": [1]}}}}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v72",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"mapValue\": {\"fields\": {\"a\": {\"integerValue\": [1]}}}}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v72\",\n  \"fields\": {\n    \"v\": {\n      \"mapValue\": {\n        \"fields\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          }\n        }\n      }\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: {\"arrayValue\": {\"values\": [{\"stringValue\": [2.50]}]}}",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/js/v73",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"fields\": {\"v\": {\"arrayValue\": {\"values\": [{\"stringValue\": [2.50]}]}}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/js/v73\",\n  \"fields\": {\n    \"v\": {\n      \"arrayValue\": {\n        \"values\": [{\n          \"stringValue\": \"2.50\"\n        }]\n      }\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: a document name in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"writes\": [{\"update\": {\"name\": [\"projects/{project}/databases/(default)/documents/js/w\"], \"fields\": {}}}]}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: exists as a string",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "status",
+   "raw": "{\"writes\": [{\"update\": {\"name\": \"projects/{project}/databases/(default)/documents/js/w2\", \"fields\": {}}, \"currentDocument\": {\"exists\": \"true\"}}]}",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"no entity to update: app: \\\"dev~{project}\\\"\\npath <\\n  Element {\\n    type: \\\"js\\\"\\n    name: \\\"w2\\\"\\n  }\\n>\\n\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: exists as a string in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"writes\": [{\"update\": {\"name\": \"projects/{project}/databases/(default)/documents/js/w3\", \"fields\": {}}, \"currentDocument\": {\"exists\": [\"false\"]}}]}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "JsonFormat: a limit and an offset as a string and an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"structuredQuery\": {\"from\": [{\"collectionId\": \"js\"}], \"select\": {\"fields\": []}, \"limit\": \"2\", \"offset\": [1]}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"skippedResults\": 1\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v19\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "JsonFormat: a limit as an object",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"structuredQuery\": {\"from\": [{\"collectionId\": \"js\"}], \"limit\": {\"value\": \"2\"}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: an operator in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"structuredQuery\": {\"from\": [{\"collectionId\": \"js\"}], \"where\": {\"fieldFilter\": {\"field\": {\"fieldPath\": \"v\"}, \"op\": [\"EQUAL\"], \"value\": {\"nullValue\": 0}}}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "JsonFormat: an operator by number",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"structuredQuery\": {\"from\": [{\"collectionId\": \"js\"}], \"where\": {\"fieldFilter\": {\"field\": {\"fieldPath\": \"v\"}, \"op\": 5, \"value\": {\"integerValue\": \"100\"}}}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v45\",\n    \"fields\": {\n      \"v\": {\n        \"integerValue\": \"100\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v46\",\n    \"fields\": {\n      \"v\": {\n        \"integerValue\": \"100\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "JsonFormat: an operator by number as a string",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"structuredQuery\": {\"from\": [{\"collectionId\": \"js\"}], \"where\": {\"fieldFilter\": {\"field\": {\"fieldPath\": \"v\"}, \"op\": \"5\", \"value\": {\"booleanValue\": \"true\"}}}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v55\",\n    \"fields\": {\n      \"v\": {\n        \"booleanValue\": true\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v57\",\n    \"fields\": {\n      \"v\": {\n        \"booleanValue\": true\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v58\",\n    \"fields\": {\n      \"v\": {\n        \"booleanValue\": true\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "JsonFormat: an operator in lowercase",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"structuredQuery\": {\"from\": [{\"collectionId\": \"js\"}], \"where\": {\"fieldFilter\": {\"field\": {\"fieldPath\": \"v\"}, \"op\": \"equal\", \"value\": {\"nullValue\": 0}}}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: a boolean as a string in a query",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"structuredQuery\": {\"from\": [{\"collectionId\": \"js\", \"allDescendants\": \"true\"}], \"select\": {\"fields\": []}}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v0\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v19\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v2\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v20\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v21\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v22\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v23\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v24\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v25\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v26\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v27\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v28\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v29\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v3\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v34\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v35\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v36\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v37\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v38\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v39\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v4\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v40\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v41\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v42\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v43\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v44\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v45\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v46\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v47\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v48\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v49\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v50\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v55\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v56\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v57\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v58\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v63\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v64\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v65\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v67\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v69\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v71\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v72\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v73\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/w\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/w3\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "JsonFormat: a repeated field as an object",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"structuredQuery\": {\"from\": {\"collectionId\": \"js\"}}}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: a repeated field as a string",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"documents\": \"projects/{project}/databases/(default)/documents/js/v0\"}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "JsonFormat: a mask path as a number",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"documents\": [\"projects/{project}/databases/(default)/documents/js/v34\"], \"mask\": {\"fieldPaths\": [[\"v\"]]}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"found\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/js/v34\",\n    \"fields\": {\n      \"v\": {\n        \"stringValue\": \"1e5\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n}\n]\n"
+   }
   }
  ]
 }

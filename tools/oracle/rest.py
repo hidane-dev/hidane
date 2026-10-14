@@ -420,6 +420,49 @@ case("a transform of __type__ inside a vector, the document", "GET", B + "/fp/ty
 case("nested transforms of __type__", "POST", B + ":commit", tr_commit(inc("a.b"), inc("__type__.c"), inc("__type__")))
 case("transforms with array offsets write nothing", "GET", B + "/fp/t")
 
+# protobuf-java's JsonFormat (on Gson) reads a field that is not a message leniently: an array of
+# one string, number or boolean is that value, at any depth; a string field takes a number as
+# written (`1.50`, `1e5`, `-0`) or a boolean; a boolean field the strings "true" and "false"; an
+# integer field a decimal with an exact integer value ("1e2", 1.0); a double field a decimal
+# string ("1.", ".5", "+1"), "NaN", "Infinity" and "-Infinity" but not "nan" or "inf"; an enum a
+# value's number; the null value any number.
+JSON_VALUES = [
+    '{"nullValue": 0}', '{"nullValue": 1}', '{"nullValue": "0"}', '{"nullValue": [0]}', '{"nullValue": "NULL_VALUE"}',
+    '{"nullValue": "x"}', '{"nullValue": true}', '{"nullValue": {}}',
+    '{"doubleValue": "nan"}', '{"doubleValue": "inf"}', '{"doubleValue": "infinity"}', '{"doubleValue": "-inf"}', '{"doubleValue": "+Infinity"}',
+    '{"doubleValue": " 1"}', '{"doubleValue": "0x10"}', '{"doubleValue": "1d"}', '{"doubleValue": true}', '{"doubleValue": []}', '{"doubleValue": [1, 2]}',
+    '{"doubleValue": "1."}', '{"doubleValue": ".5"}', '{"doubleValue": "+1"}', '{"doubleValue": "1e5"}', '{"doubleValue": [1.5]}', '{"doubleValue": ["1.5"]}', '{"doubleValue": [[1]]}',
+    '{"stringValue": ["a"]}', '{"stringValue": [1]}', '{"stringValue": [["a"]]}', '{"stringValue": [true]}',
+    '{"stringValue": []}', '{"stringValue": ["a", "b"]}', '{"stringValue": [null]}', '{"stringValue": [{}]}',
+    '{"stringValue": 1e5}', '{"stringValue": 1.50}', '{"stringValue": -0}', '{"stringValue": 1E5}', '{"stringValue": 0.10}',
+    '{"stringValue": 100000000000000000000000}', '{"stringValue": -0.0}', '{"stringValue": 1e-7}', '{"stringValue": [1.50]}',
+    '{"integerValue": [1]}', '{"integerValue": ["1"]}', '{"integerValue": "1e2"}', '{"integerValue": 1e2}', '{"integerValue": 1.0}', '{"integerValue": "1.0"}',
+    '{"integerValue": "+1"}', '{"integerValue": "01"}', '{"integerValue": 1.5}', '{"integerValue": " 1"}', '{"integerValue": "0x10"}', '{"integerValue": "1.5e0"}',
+    '{"booleanValue": "true"}', '{"booleanValue": "false"}', '{"booleanValue": [true]}', '{"booleanValue": ["true"]}',
+    '{"booleanValue": "True"}', '{"booleanValue": "1"}', '{"booleanValue": 1}', '{"booleanValue": "TRUE"}',
+    '{"bytesValue": ["AQI="]}', '{"bytesValue": true}', '{"bytesValue": 1234}', '{"bytesValue": 1}',
+    '{"timestampValue": ["2020-01-01T00:00:00Z"]}', '{"timestampValue": 1}',
+    '{"geoPointValue": {"latitude": "1.5", "longitude": [2]}}', '{"geoPointValue": {"latitude": true}}',
+    '{"referenceValue": ["' + NAME + '/c/d"]}',
+    '{"mapValue": {"fields": {"a": {"integerValue": [1]}}}}',
+    '{"arrayValue": {"values": [{"stringValue": [2.50]}]}}',
+]
+for n, v in enumerate(JSON_VALUES):
+    case(f"JsonFormat: {v.replace(NAME, '{name}')}", "PATCH", B + f"/js/v{n}", raw='{"fields": {"v": ' + v + '}}')
+case("JsonFormat: a document name in an array", "POST", B + ":commit", raw='{"writes": [{"update": {"name": ["' + NAME + '/js/w"], "fields": {}}}]}')
+case("JsonFormat: exists as a string", "POST", B + ":commit", raw='{"writes": [{"update": {"name": "' + NAME + '/js/w2", "fields": {}}, "currentDocument": {"exists": "true"}}]}', compare="status")
+case("JsonFormat: exists as a string in an array", "POST", B + ":commit", raw='{"writes": [{"update": {"name": "' + NAME + '/js/w3", "fields": {}}, "currentDocument": {"exists": ["false"]}}]}')
+case("JsonFormat: a limit and an offset as a string and an array", "POST", B + ":runQuery", raw='{"structuredQuery": {"from": [{"collectionId": "js"}], "select": {"fields": []}, "limit": "2", "offset": [1]}}')
+case("JsonFormat: a limit as an object", "POST", B + ":runQuery", raw='{"structuredQuery": {"from": [{"collectionId": "js"}], "limit": {"value": "2"}}}')
+case("JsonFormat: an operator in an array", "POST", B + ":runQuery", raw='{"structuredQuery": {"from": [{"collectionId": "js"}], "where": {"fieldFilter": {"field": {"fieldPath": "v"}, "op": ["EQUAL"], "value": {"nullValue": 0}}}}}')
+case("JsonFormat: an operator by number", "POST", B + ":runQuery", raw='{"structuredQuery": {"from": [{"collectionId": "js"}], "where": {"fieldFilter": {"field": {"fieldPath": "v"}, "op": 5, "value": {"integerValue": "100"}}}}}')
+case("JsonFormat: an operator by number as a string", "POST", B + ":runQuery", raw='{"structuredQuery": {"from": [{"collectionId": "js"}], "where": {"fieldFilter": {"field": {"fieldPath": "v"}, "op": "5", "value": {"booleanValue": "true"}}}}}')
+case("JsonFormat: an operator in lowercase", "POST", B + ":runQuery", raw='{"structuredQuery": {"from": [{"collectionId": "js"}], "where": {"fieldFilter": {"field": {"fieldPath": "v"}, "op": "equal", "value": {"nullValue": 0}}}}}')
+case("JsonFormat: a boolean as a string in a query", "POST", B + ":runQuery", raw='{"structuredQuery": {"from": [{"collectionId": "js", "allDescendants": "true"}], "select": {"fields": []}}}')
+case("JsonFormat: a repeated field as an object", "POST", B + ":runQuery", raw='{"structuredQuery": {"from": {"collectionId": "js"}}}')
+case("JsonFormat: a repeated field as a string", "POST", B + ":batchGet", raw='{"documents": "' + NAME + '/js/v0"}')
+case("JsonFormat: a mask path as a number", "POST", B + ":batchGet", raw='{"documents": ["' + NAME + '/js/v34"], "mask": {"fieldPaths": [["v"]]}}')
+
 
 def norm(text):
     return mask(text, PROJECT)
@@ -431,7 +474,7 @@ def run():
         conn = http.client.HTTPConnection(*HOST.split(":"), timeout=10)
         path = c["path"].replace("{project}", PROJECT)
         if "raw" in c:
-            body = c["raw"]
+            body = c["raw"].replace("{project}", PROJECT)
         elif "body" in c:
             body = json.dumps(c["body"]).replace("{project}", PROJECT)
         else:

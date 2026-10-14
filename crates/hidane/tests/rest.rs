@@ -144,7 +144,7 @@ async fn replay(cases: &[Json]) -> Vec<String> {
         let name = case["name"].as_str().unwrap();
         let path = case["path"].as_str().unwrap().replace("{project}", PROJECT);
         let body = match (case.get("raw"), case.get("body")) {
-            (Some(raw), _) => Some(raw.as_str().unwrap().to_owned()),
+            (Some(raw), _) => Some(raw.as_str().unwrap().replace("{project}", PROJECT)),
             (None, Some(body)) => Some(body.to_string().replace("{project}", PROJECT)),
             (None, None) => None,
         };
