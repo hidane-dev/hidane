@@ -112,8 +112,10 @@ shape.
 - A new official release changes the `oracle` constant in every recorder and `pinned.sh`
   together, and every recording is made again. The drift job's run against the new release
   shows which answers change first.
-- An answer the official emulator gives differently from run to run cannot be a byte-compared
-  fixture. Its recorder stays out of the drift job, and the answer is decided in an issue (#210).
+- An answer the official emulator gives differently from run to run cannot be recorded once.
+  The recorder asks it enough times to see every answer and keeps them all, so that the
+  recording is the same on every run and stays in the drift job. hidane's one answer is decided
+  in an issue and recorded as a D-row (#210, D020).
 - Each fixture's shape stays its own. Reviewers rely on the recorder's README row and header, and
   on `docs/parity.md`'s "What each test counts and compares".
 - Running the cases against production Firestore (#82) would need a runner of its own for the

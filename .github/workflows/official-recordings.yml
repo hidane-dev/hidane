@@ -64,9 +64,9 @@ jobs:
       fail-fast: false
       matrix:
         # Python standard library only, request and answer (no streams, no waits), with the
-        # server times and IDs the emulator chooses masked or absent. Not rules_eval.py: under
-        # Java 21 its batches of lookups ("batches/a document the batch writes, before" and the
-        # next case) are allowed on some runs and denied on others.
+        # server times and IDs the emulator chooses masked or absent. rules_eval.py records the
+        # two batches the official emulator allows in some projects and runs and denies in
+        # others under 20 projects, with both answers (#210).
         include:
           - recorder: value_order
             fixture: crates/hidane-core/tests/fixtures/value_order.json
@@ -80,6 +80,8 @@ jobs:
             fixture: crates/hidane/tests/fixtures/limits.json
           - recorder: rules_paths
             fixture: crates/hidane-rules/tests/fixtures/rules_paths.json
+          - recorder: rules_eval
+            fixture: crates/hidane-rules/tests/fixtures/rules_eval.json
     env:
       RECORDER: ${{ matrix.recorder }}
       FIXTURE: ${{ matrix.fixture }}

@@ -49,7 +49,7 @@
  ],
  "oracle_corpus": {
   "where": "docs/oracle-corpus.json",
-  "digest": "sha256:a90000e553dc757095c1172aaca823fe94558829920f3c3d2f8dd792adc93df0",
+  "digest": "sha256:8f286ac88e2e11a702f89ba5401c974b5e7823aa556fcbb39b0daa6527c6bd86",
   "releases": [
    "1.22.0"
   ],
@@ -57,19 +57,19 @@
   "fixtures": 41,
   "transcripts": 32,
   "answers": 20609,
-  "bytes": 11043438
+  "bytes": 11044509
  },
  "replay": {
   "fixtures": 41,
   "answers": 20609,
   "levels": {
-   "full": 12385,
+   "full": 12383,
    "reasons": 3912,
    "part": 753,
    "status": 3404,
    "codes": 30,
    "none": 1,
-   "differs": 124
+   "differs": 126
   },
   "by_area": {
    "documents": {
@@ -127,7 +127,7 @@
    "rules": {
     "fixtures": 17,
     "answers": 13264,
-    "full": 5541,
+    "full": 5539,
     "transports": [
      "gRPC",
      "REST",

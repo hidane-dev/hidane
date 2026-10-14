@@ -130,9 +130,9 @@ def rules_eval(f):
     known = rust_strings(f"{HR}/library.rs", "KNOWN")
     answers = []
     for result in f["results"]:
-        outcome = result["outcome"]
-        if result["name"] in known:
-            level = DIFFERS
+        outcome = result.get("outcome")
+        if result["name"] in known or "answers" in result:
+            level = DIFFERS  # `answers`: a batch the official emulator answers both ways (D020)
         elif result["name"].startswith("batches/"):
             level = FULL if outcome == "allow" else PART  # a denied batch: the decision only
         else:
@@ -454,7 +454,9 @@ RECORDINGS = {
         compares="an allow and a compile error in full; a denial as decision and reasons (the "
                  "entries of one evaluation where the official emulator lists two); a denied "
                  "batch on its decision only (in part); the official 500s, which hidane answers "
-                 "with an evaluation error, as intentionally different",
+                 "with an evaluation error, and the batches the official emulator allows in "
+                 "some projects and runs and denies in others, which hidane allows, as "
+                 "intentionally different",
         count=rules_eval),
     f"{HR}/fixtures/rules_paths.json": dict(
         area="rules",
