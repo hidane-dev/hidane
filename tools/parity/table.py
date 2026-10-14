@@ -245,6 +245,28 @@ def grpc_settings(f):
             + each(f["rest_sizes"], REST, FULL))
 
 
+def read_time_and_databases(f):
+    # The versions hidane keeps (the test's HIDANE_WINDOW): an answer the official emulator
+    # serves from further back is intentionally "too old" (D065), and the REST `?readTime=`
+    # parameter, which it always refuses, intentionally reads (D066).
+    window = re.search(r"const HIDANE_WINDOW: u64 = ([\d_ *]+);",
+                       source(f"{H}/read_time_and_databases.rs"))
+    if not window:
+        raise Stop(f"{H}/read_time_and_databases.rs: no HIDANE_WINDOW; update tools/parity/table.py.")
+    seconds = 1
+    for factor in window.group(1).split("*"):
+        seconds *= int(factor.strip().replace("_", ""))
+    answers = []
+    for case in f["read_time"]["cases"]:
+        for read, answer in zip(f["read_time"]["reads"], case["answers"]):
+            transport = GRPC if read["transport"] == "grpc" else REST
+            served = "too old" not in json.dumps(answer)
+            differs = (read["name"] == "REST GET ?readTime=" or (case["age"] > seconds and served))
+            answers.append((transport, DIFFERS if differs else FULL))
+    # The writes to every database as one answer (their statuses), then each read back.
+    return answers + [(REST, FULL)] + each(f["databases"]["reads"], REST, FULL)
+
+
 def negative_zero(f):
     answers = []
     for step in f["steps"]:
@@ -610,6 +632,17 @@ RECORDINGS = {
         compares="in full: each response's document, `skippedResults` and `done`, the fields of "
                  "projected documents, or the status and message",
         count=queries),
+    f"{H}/fixtures/read_time_and_databases.json": dict(
+        area="documents",
+        tests=[f"{H}/read_time_and_databases.rs::read_times_up_to_the_window",
+               f"{H}/read_time_and_databases.rs::databases_without_a_limit"],
+        counted="each read at each age, the statuses of the writes to every database as one, "
+                "and each read back",
+        compares="in full: the code, the message and the names of the documents (gRPC), or the "
+                 "status and the body with server times and transaction IDs masked (REST); the "
+                 "reads from further back than hidane keeps versions, and the REST `?readTime=` "
+                 "parameter, as intentionally different (docs/parity-exceptions.md)",
+        count=read_time_and_databases),
     f"{H}/fixtures/json_escapes.json": dict(
         area="values",
         tests=[f"{H}/rest.rs::strings_escape_like_the_official_emulator",

@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:de931dfd31dfe58a11d71c73f55adef665e77639557856749b1b361fbad67929",
+ "digest": "sha256:56daa73bdfe7d6c92bcd01e8071bb21715d7f9346a680d699084312757da5a81",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,25 +14,25 @@
   }
  ],
  "totals": {
-  "files": 73,
-  "fixtures": 41,
+  "files": 74,
+  "fixtures": 42,
   "transcripts": 32,
-  "answers": 21106,
-  "bytes": 11382398,
+  "answers": 21186,
+  "bytes": 11399284,
   "levels": {
-   "full": 12870,
+   "full": 12923,
    "reasons": 3912,
    "part": 760,
    "status": 3405,
    "codes": 30,
    "none": 1,
-   "differs": 128
+   "differs": 155
   },
   "by_area": {
    "documents": {
-    "fixtures": 6,
+    "fixtures": 7,
     "transcripts": 4,
-    "answers": 5265
+    "answers": 5345
    },
    "queries": {
     "fixtures": 4,
@@ -82,13 +82,13 @@
   },
   "by_release": {
    "v1.22.0": {
-    "fixtures": 41,
+    "fixtures": 42,
     "transcripts": 32,
-    "answers": 21106
+    "answers": 21186
    }
   },
   "by_release_source": {
-   "header": 22,
+   "header": 23,
    "file name": 33,
    "git history": 18
   }
@@ -252,6 +252,46 @@
    ],
    "counted": "each case (a paged case is one)",
    "compared": "in full: the names of every page, or the code and message; a page token next to an order as intentionally different"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/read_time_and_databases.json",
+   "kind": "fixture",
+   "area": "documents",
+   "recorder": "tools/oracle/read_time_and_databases.py",
+   "client": {
+    "over": [
+     "gRPC",
+     "REST"
+    ],
+    "using": "Python standard library and grpcurl",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-14",
+    "last_changed": "2026-10-14"
+   },
+   "bytes": 16886,
+   "sha256": "15880027b74661f4ae75f48a8bbc6a66e8d9f038a2156b766604252aeb508e8d",
+   "answers": 80,
+   "levels": {
+    "full": 53,
+    "differs": 27
+   },
+   "replayed_over": [
+    "gRPC",
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/read_time_and_databases.rs::read_times_up_to_the_window",
+    "crates/hidane/tests/read_time_and_databases.rs::databases_without_a_limit"
+   ],
+   "counted": "each read at each age, the statuses of the writes to every database as one, and each read back",
+   "compared": "in full: the code, the message and the names of the documents (gRPC), or the status and the body with server times and transaction IDs masked (REST); the reads from further back than hidane keeps versions, and the REST `?readTime=` parameter, as intentionally different (docs/parity-exceptions.md)"
   },
   {
    "path": "crates/hidane/tests/fixtures/same_document_writes.json",

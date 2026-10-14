@@ -840,14 +840,16 @@
    "table": "intentional",
    "area": "documents",
    "topic": null,
-   "kind": "more-correct",
-   "official": "`read_time` older than at least two hours is still served (the exact limit is #86)",
-   "firestore": "`read_time` up to one hour old (the hidane column: \"like production Firestore\")",
-   "hidane": "Up to one hour old, like production Firestore; older answers `FAILED_PRECONDITION` \"The requested 'read_time' is too old.\" with the official message",
-   "reason": "Bounded memory for old versions (ADR 0002)",
+   "kind": "limitation",
+   "official": "A `read_time` up to seven days old (604,800 s before now) is served, in microseconds rather than whole minutes, on an emulator started seconds before and for data written just before or never, over every read; one older than the data reads the data's absence. An older one answers `FAILED_PRECONDITION` \"The requested 'read_time' is too old.\" (`tests/fixtures/read_time_and_databases.json`, #86). The history behind those reads is not always kept: once, an hour after a document was written and left unread, reads before its creation failed with `UNKNOWN` and no message (`500` over REST), while its first version, replaced minutes after the write, was still served",
+   "firestore": "Up to one hour old; with point-in-time recovery enabled, also whole minutes up to seven days old (the `read_time` fields of `google.firestore.v1`)",
+   "hidane": "Up to one hour old, like production Firestore without point-in-time recovery; older answers `FAILED_PRECONDITION` \"The requested 'read_time' is too old.\" with the official message",
+   "reason": "Bounded memory for old versions (ADR 0002). The maintainer kept one hour, production's default, rather than seven days of every version or the official emulator's history that may be dropped without a message (#86)",
    "references": [
     "hidane-dev/hidane#86",
-    "docs/adr/0002-storage-engine.md"
+    "docs/adr/0002-storage-engine.md",
+    "crates/hidane/tests/fixtures/read_time_and_databases.json",
+    "crates/hidane/tests/read_time_and_databases.rs"
    ]
   },
   {

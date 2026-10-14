@@ -1,0 +1,806 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/read_time_and_databases.py",
+ "read_time": {
+  "reads": [
+   {
+    "name": "GetDocument of the written document",
+    "transport": "grpc",
+    "method": "GetDocument",
+    "body": {
+     "name": "projects/read-time/databases/(default)/documents/c/d",
+     "readTime": "{readTime}"
+    }
+   },
+   {
+    "name": "GetDocument of a missing document",
+    "transport": "grpc",
+    "method": "GetDocument",
+    "body": {
+     "name": "projects/read-time/databases/(default)/documents/c/missing",
+     "readTime": "{readTime}"
+    }
+   },
+   {
+    "name": "GetDocument in a database nothing was written to",
+    "transport": "grpc",
+    "method": "GetDocument",
+    "body": {
+     "name": "projects/read-time-empty/databases/(default)/documents/c/d",
+     "readTime": "{readTime}"
+    }
+   },
+   {
+    "name": "ListDocuments",
+    "transport": "grpc",
+    "method": "ListDocuments",
+    "body": {
+     "parent": "projects/read-time/databases/(default)/documents",
+     "collectionId": "c",
+     "readTime": "{readTime}"
+    }
+   },
+   {
+    "name": "RunQuery",
+    "transport": "grpc",
+    "method": "RunQuery",
+    "body": {
+     "parent": "projects/read-time/databases/(default)/documents",
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ]
+     },
+     "readTime": "{readTime}"
+    }
+   },
+   {
+    "name": "REST GET ?readTime=",
+    "transport": "rest",
+    "method": "GET",
+    "path": "/v1/projects/read-time/databases/(default)/documents/c/d?readTime={readTime}",
+    "body": null
+   },
+   {
+    "name": "REST :batchGet",
+    "transport": "rest",
+    "method": "POST",
+    "path": "/v1/projects/read-time/databases/(default)/documents:batchGet",
+    "body": {
+     "documents": [
+      "projects/read-time/databases/(default)/documents/c/d",
+      "projects/read-time/databases/(default)/documents/c/missing"
+     ],
+     "readTime": "{readTime}"
+    }
+   },
+   {
+    "name": "REST :runQuery",
+    "transport": "rest",
+    "method": "POST",
+    "path": "/v1/projects/read-time/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ]
+     },
+     "readTime": "{readTime}"
+    }
+   },
+   {
+    "name": "REST :runAggregationQuery",
+    "transport": "rest",
+    "method": "POST",
+    "path": "/v1/projects/read-time/databases/(default)/documents:runAggregationQuery",
+    "body": {
+     "structuredAggregationQuery": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ]
+      },
+      "aggregations": [
+       {
+        "alias": "n",
+        "count": {}
+       }
+      ]
+     },
+     "readTime": "{readTime}"
+    }
+   },
+   {
+    "name": "REST :listCollectionIds",
+    "transport": "rest",
+    "method": "POST",
+    "path": "/v1/projects/read-time/databases/(default)/documents:listCollectionIds",
+    "body": {
+     "readTime": "{readTime}"
+    }
+   },
+   {
+    "name": "REST :beginTransaction read-only",
+    "transport": "rest",
+    "method": "POST",
+    "path": "/v1/projects/read-time/databases/(default)/documents:beginTransaction",
+    "body": {
+     "options": {
+      "readOnly": {
+       "readTime": "{readTime}"
+      }
+     }
+    }
+   }
+  ],
+  "cases": [
+   {
+    "age": 0,
+    "answers": [
+     {
+      "status": "OK",
+      "message": "",
+      "documents": [
+       "c/d"
+      ]
+     },
+     {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/read-time/databases/(default)/documents/c/missing) not found."
+     },
+     {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/read-time-empty/databases/(default)/documents/c/d) not found."
+     },
+     {
+      "status": "OK",
+      "message": "",
+      "documents": [
+       "c/d"
+      ]
+     },
+     {
+      "status": "OK",
+      "message": "",
+      "documents": [
+       "c/d"
+      ]
+     },
+     {
+      "status": 400,
+      "response": {
+       "error": {
+        "code": 400,
+        "message": "Only timestamps past epoch are supported.",
+        "status": "INVALID_ARGUMENT"
+       }
+      }
+     },
+     {
+      "status": 200,
+      "response": [
+       {
+        "found": {
+         "name": "projects/read-time/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         },
+         "createTime": "<time>",
+         "updateTime": "<time>"
+        },
+        "readTime": "<time>"
+       },
+       {
+        "missing": "projects/read-time/databases/(default)/documents/c/missing",
+        "readTime": "<time>"
+       }
+      ]
+     },
+     {
+      "status": 200,
+      "response": [
+       {
+        "document": {
+         "name": "projects/read-time/databases/(default)/documents/c/d",
+         "fields": {
+          "a": {
+           "integerValue": "1"
+          }
+         },
+         "createTime": "<time>",
+         "updateTime": "<time>"
+        },
+        "readTime": "<time>",
+        "done": true
+       }
+      ]
+     },
+     {
+      "status": 200,
+      "response": [
+       {
+        "result": {
+         "aggregateFields": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        },
+        "readTime": "<time>",
+        "done": true
+       }
+      ]
+     },
+     {
+      "status": 200,
+      "response": {
+       "collectionIds": [
+        "c"
+       ]
+      }
+     },
+     {
+      "status": 200,
+      "response": {
+       "transaction": "<id>"
+      }
+     }
+    ]
+   },
+   {
+    "age": 60,
+    "answers": [
+     {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/read-time/databases/(default)/documents/c/d) not found."
+     },
+     {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/read-time/databases/(default)/documents/c/missing) not found."
+     },
+     {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/read-time-empty/databases/(default)/documents/c/d) not found."
+     },
+     {
+      "status": "OK",
+      "message": "",
+      "documents": []
+     },
+     {
+      "status": "OK",
+      "message": "",
+      "documents": []
+     },
+     {
+      "status": 400,
+      "response": {
+       "error": {
+        "code": 400,
+        "message": "Only timestamps past epoch are supported.",
+        "status": "INVALID_ARGUMENT"
+       }
+      }
+     },
+     {
+      "status": 200,
+      "response": [
+       {
+        "missing": "projects/read-time/databases/(default)/documents/c/d",
+        "readTime": "<time>"
+       },
+       {
+        "missing": "projects/read-time/databases/(default)/documents/c/missing",
+        "readTime": "<time>"
+       }
+      ]
+     },
+     {
+      "status": 200,
+      "response": [
+       {
+        "readTime": "<time>",
+        "done": true
+       }
+      ]
+     },
+     {
+      "status": 200,
+      "response": [
+       {
+        "result": {
+         "aggregateFields": {
+          "n": {
+           "integerValue": "0"
+          }
+         }
+        },
+        "readTime": "<time>",
+        "done": true
+       }
+      ]
+     },
+     {
+      "status": 200,
+      "response": {}
+     },
+     {
+      "status": 200,
+      "response": {
+       "transaction": "<id>"
+      }
+     }
+    ]
+   },
+   {
+    "age": 3540,
+    "answers": [
+     {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/read-time/databases/(default)/documents/c/d) not found."
+     },
+     {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/read-time/databases/(default)/documents/c/missing) not found."
+     },
+     {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/read-time-empty/databases/(default)/documents/c/d) not found."
+     },
+     {
+      "status": "OK",
+      "message": "",
+      "documents": []
+     },
+     {
+      "status": "OK",
+      "message": "",
+      "documents": []
+     },
+     {
+      "status": 400,
+      "response": {
+       "error": {
+        "code": 400,
+        "message": "Only timestamps past epoch are supported.",
+        "status": "INVALID_ARGUMENT"
+       }
+      }
+     },
+     {
+      "status": 200,
+      "response": [
+       {
+        "missing": "projects/read-time/databases/(default)/documents/c/d",
+        "readTime": "<time>"
+       },
+       {
+        "missing": "projects/read-time/databases/(default)/documents/c/missing",
+        "readTime": "<time>"
+       }
+      ]
+     },
+     {
+      "status": 200,
+      "response": [
+       {
+        "readTime": "<time>",
+        "done": true
+       }
+      ]
+     },
+     {
+      "status": 200,
+      "response": [
+       {
+        "result": {
+         "aggregateFields": {
+          "n": {
+           "integerValue": "0"
+          }
+         }
+        },
+        "readTime": "<time>",
+        "done": true
+       }
+      ]
+     },
+     {
+      "status": 200,
+      "response": {}
+     },
+     {
+      "status": 200,
+      "response": {
+       "transaction": "<id>"
+      }
+     }
+    ]
+   },
+   {
+    "age": 7200,
+    "answers": [
+     {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/read-time/databases/(default)/documents/c/d) not found."
+     },
+     {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/read-time/databases/(default)/documents/c/missing) not found."
+     },
+     {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/read-time-empty/databases/(default)/documents/c/d) not found."
+     },
+     {
+      "status": "OK",
+      "message": "",
+      "documents": []
+     },
+     {
+      "status": "OK",
+      "message": "",
+      "documents": []
+     },
+     {
+      "status": 400,
+      "response": {
+       "error": {
+        "code": 400,
+        "message": "Only timestamps past epoch are supported.",
+        "status": "INVALID_ARGUMENT"
+       }
+      }
+     },
+     {
+      "status": 200,
+      "response": [
+       {
+        "missing": "projects/read-time/databases/(default)/documents/c/d",
+        "readTime": "<time>"
+       },
+       {
+        "missing": "projects/read-time/databases/(default)/documents/c/missing",
+        "readTime": "<time>"
+       }
+      ]
+     },
+     {
+      "status": 200,
+      "response": [
+       {
+        "readTime": "<time>",
+        "done": true
+       }
+      ]
+     },
+     {
+      "status": 200,
+      "response": [
+       {
+        "result": {
+         "aggregateFields": {
+          "n": {
+           "integerValue": "0"
+          }
+         }
+        },
+        "readTime": "<time>",
+        "done": true
+       }
+      ]
+     },
+     {
+      "status": 200,
+      "response": {}
+     },
+     {
+      "status": 200,
+      "response": {
+       "transaction": "<id>"
+      }
+     }
+    ]
+   },
+   {
+    "age": 604740,
+    "answers": [
+     {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/read-time/databases/(default)/documents/c/d) not found."
+     },
+     {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/read-time/databases/(default)/documents/c/missing) not found."
+     },
+     {
+      "status": "NOT_FOUND",
+      "message": "Document (projects/read-time-empty/databases/(default)/documents/c/d) not found."
+     },
+     {
+      "status": "OK",
+      "message": "",
+      "documents": []
+     },
+     {
+      "status": "OK",
+      "message": "",
+      "documents": []
+     },
+     {
+      "status": 400,
+      "response": {
+       "error": {
+        "code": 400,
+        "message": "Only timestamps past epoch are supported.",
+        "status": "INVALID_ARGUMENT"
+       }
+      }
+     },
+     {
+      "status": 200,
+      "response": [
+       {
+        "missing": "projects/read-time/databases/(default)/documents/c/d",
+        "readTime": "<time>"
+       },
+       {
+        "missing": "projects/read-time/databases/(default)/documents/c/missing",
+        "readTime": "<time>"
+       }
+      ]
+     },
+     {
+      "status": 200,
+      "response": [
+       {
+        "readTime": "<time>",
+        "done": true
+       }
+      ]
+     },
+     {
+      "status": 200,
+      "response": [
+       {
+        "result": {
+         "aggregateFields": {
+          "n": {
+           "integerValue": "0"
+          }
+         }
+        },
+        "readTime": "<time>",
+        "done": true
+       }
+      ]
+     },
+     {
+      "status": 200,
+      "response": {}
+     },
+     {
+      "status": 200,
+      "response": {
+       "transaction": "<id>"
+      }
+     }
+    ]
+   },
+   {
+    "age": 604860,
+    "answers": [
+     {
+      "status": "FAILED_PRECONDITION",
+      "message": "The requested 'read_time' is too old."
+     },
+     {
+      "status": "FAILED_PRECONDITION",
+      "message": "The requested 'read_time' is too old."
+     },
+     {
+      "status": "FAILED_PRECONDITION",
+      "message": "The requested 'read_time' is too old."
+     },
+     {
+      "status": "FAILED_PRECONDITION",
+      "message": "The requested 'read_time' is too old."
+     },
+     {
+      "status": "FAILED_PRECONDITION",
+      "message": "The requested 'read_time' is too old."
+     },
+     {
+      "status": 400,
+      "response": {
+       "error": {
+        "code": 400,
+        "message": "Only timestamps past epoch are supported.",
+        "status": "INVALID_ARGUMENT"
+       }
+      }
+     },
+     {
+      "status": 400,
+      "response": {
+       "error": {
+        "code": 400,
+        "message": "The requested 'read_time' is too old.",
+        "status": "FAILED_PRECONDITION"
+       }
+      }
+     },
+     {
+      "status": 400,
+      "response": {
+       "error": {
+        "code": 400,
+        "message": "The requested 'read_time' is too old.",
+        "status": "FAILED_PRECONDITION"
+       }
+      }
+     },
+     {
+      "status": 400,
+      "response": {
+       "error": {
+        "code": 400,
+        "message": "The requested 'read_time' is too old.",
+        "status": "FAILED_PRECONDITION"
+       }
+      }
+     },
+     {
+      "status": 400,
+      "response": {
+       "error": {
+        "code": 400,
+        "message": "The requested 'read_time' is too old.",
+        "status": "FAILED_PRECONDITION"
+       }
+      }
+     },
+     {
+      "status": 400,
+      "response": {
+       "error": {
+        "code": 400,
+        "message": "The requested 'read_time' is too old.",
+        "status": "FAILED_PRECONDITION"
+       }
+      }
+     }
+    ]
+   },
+   {
+    "age": 31536000,
+    "answers": [
+     {
+      "status": "FAILED_PRECONDITION",
+      "message": "The requested 'read_time' is too old."
+     },
+     {
+      "status": "FAILED_PRECONDITION",
+      "message": "The requested 'read_time' is too old."
+     },
+     {
+      "status": "FAILED_PRECONDITION",
+      "message": "The requested 'read_time' is too old."
+     },
+     {
+      "status": "FAILED_PRECONDITION",
+      "message": "The requested 'read_time' is too old."
+     },
+     {
+      "status": "FAILED_PRECONDITION",
+      "message": "The requested 'read_time' is too old."
+     },
+     {
+      "status": 400,
+      "response": {
+       "error": {
+        "code": 400,
+        "message": "Only timestamps past epoch are supported.",
+        "status": "INVALID_ARGUMENT"
+       }
+      }
+     },
+     {
+      "status": 400,
+      "response": {
+       "error": {
+        "code": 400,
+        "message": "The requested 'read_time' is too old.",
+        "status": "FAILED_PRECONDITION"
+       }
+      }
+     },
+     {
+      "status": 400,
+      "response": {
+       "error": {
+        "code": 400,
+        "message": "The requested 'read_time' is too old.",
+        "status": "FAILED_PRECONDITION"
+       }
+      }
+     },
+     {
+      "status": 400,
+      "response": {
+       "error": {
+        "code": 400,
+        "message": "The requested 'read_time' is too old.",
+        "status": "FAILED_PRECONDITION"
+       }
+      }
+     },
+     {
+      "status": 400,
+      "response": {
+       "error": {
+        "code": 400,
+        "message": "The requested 'read_time' is too old.",
+        "status": "FAILED_PRECONDITION"
+       }
+      }
+     },
+     {
+      "status": 400,
+      "response": {
+       "error": {
+        "code": 400,
+        "message": "The requested 'read_time' is too old.",
+        "status": "FAILED_PRECONDITION"
+       }
+      }
+     }
+    ]
+   }
+  ]
+ },
+ "databases": {
+  "count": 1000,
+  "writes": {
+   "200": 1001
+  },
+  "reads": [
+   {
+    "database": "db-1",
+    "status": 200,
+    "response": {
+     "name": "projects/databases/databases/db-1/documents/c/d",
+     "fields": {
+      "n": {
+       "stringValue": "db-1"
+      }
+     },
+     "createTime": "<time>",
+     "updateTime": "<time>"
+    }
+   },
+   {
+    "database": "db-1000",
+    "status": 200,
+    "response": {
+     "name": "projects/databases/databases/db-1000/documents/c/d",
+     "fields": {
+      "n": {
+       "stringValue": "db-1000"
+      }
+     },
+     "createTime": "<time>",
+     "updateTime": "<time>"
+    }
+   }
+  ]
+ }
+}
