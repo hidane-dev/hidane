@@ -213,6 +213,91 @@ case("an array offset in the projection before a sum of __type__", q("ints", sel
 case("a sum of __type__ without a collection", {}, [total("__type__", "s")])
 case("a sum of __type__ and a negative limit", q("ints", limit=-1), [total("__type__", "s")])
 
+# A `sum` or an `avg` and the query's projection (#262), checked with the list, after the
+# reserved aliases and before each aggregation's own checks: a projection of no field but the
+# name returns keys only, and a sum or an avg of any other field is refused; any other
+# projection refuses a field it does not hold, then any sum or avg at all.
+def sel(*paths): return {"fields": [f(p) for p in paths]}
+for label, projection, aggs in [
+    ("an empty projection", {}, [total("v", "s")]),
+    ("an empty projection, a count", {}, [count("n")]),
+    ("a projection of no fields, an avg", sel(), [avg("v", "a")]),
+    ("a projection of the name", sel("__name__"), [total("v", "s")]),
+    ("a projection of the name, a count", sel("__name__"), [count("n")]),
+    ("a projection of the field", sel("v"), [total("v", "s")]),
+    ("a projection of another field", sel("w"), [total("v", "s")]),
+    ("a projection of the field and another", sel("v", "w"), [total("v", "s")]),
+    ("a projection of a map, a field in it", sel("m"), [total("m.x", "s")]),
+    ("a projection of a field in a map, the map", sel("m.x"), [total("m", "s")]),
+    ("a projection of a quoted path with a dot", sel("`m.x`"), [total("m.x", "s")]),
+    ("a projection of the field and the name", sel("v", "__name__"), [total("v", "s")]),
+    ("a projection of the name and another field", sel("__name__", "w"), [total("v", "s")]),
+    ("a projection, a count", sel("v"), [count("n")]),
+    ("a projection, a missing field before a present one", sel("v"), [total("w", "s"), total("v", "t")]),
+    ("a projection, a present field before a missing one", sel("v"), [total("v", "s"), total("w", "t")]),
+    ("an empty projection, a sum of __name__", {}, [total("__name__", "s")]),
+    ("an empty projection, a sum of __type__", {}, [total("__type__", "s")]),
+    ("a projection, a sum of __type__", sel("w"), [total("__type__", "s")]),
+    ("an empty projection, a sum of an array offset", {}, [total("a[0]", "s")]),
+    ("a projection, a sum of an array offset", sel("w"), [total("a[0]", "s")]),
+    ("an empty projection, a reserved alias", {}, [total("v", "__x__")]),
+    ("an empty projection, a duplicate alias", {}, [total("v", "x"), count("x")]),
+    ("an empty projection, a count up to -1", {}, [total("v", "s"), count("n", up_to=-1)]),
+]:
+    case(f"{label}", q("ints", select=projection), aggs)
+case("a projection before two array-contains", q("ints", select=sel("v"), where={"compositeFilter": {"op": "AND", "filters": [
+    {"fieldFilter": {"field": f("b"), "op": "ARRAY_CONTAINS", "value": i(1)}}, {"fieldFilter": {"field": f("c"), "op": "ARRAY_CONTAINS", "value": i(1)}}]}}), [total("v", "s")])
+case("an empty projection before duplicate orders", q("ints", select={}, orderBy=[{"field": f("v")}, {"field": f("v")}]), [total("v", "s")])
+case("a projection before an order by the name", q("ints", select=sel("w"), orderBy=[{"field": f("__name__")}]), [total("v", "s")])
+# A sum or an avg orders the query by its field, so a query on the name (ordered by it, or
+# with a filter on it other than array membership) needs every field it reads among its orders
+# or the fields of its inequalities: "This query requires an index that has fields [...] after
+# __name__", the fields in path order. Checked after the array-contains filters and the key's
+# equalities, before the disjunctions and the orders; a descending key scan comes first.
+def by(*paths): return [{"field": f(p.split(" ")[0]), "direction": "DESCENDING" if p.endswith(" desc") else "ASCENDING"} for p in paths]
+def key_filter(op, value): return {"fieldFilter": {"field": f("__name__"), "op": op, "value": value}}
+REF = {"referenceValue": "{documents}/ints/a"}
+for label, query, aggs in [
+    ("ordered by the name", q("ints", orderBy=by("__name__")), [total("v", "s")]),
+    ("ordered by the name, a count", q("ints", orderBy=by("__name__")), [count("n")]),
+    ("ordered by the field, then the name", q("ints", orderBy=by("v", "__name__")), [total("v", "s")]),
+    ("ordered by another field, then the name", q("ints", orderBy=by("w", "__name__")), [total("v", "s")]),
+    ("ordered by the field, then the name, two sums", q("ints", orderBy=by("v", "__name__")), [total("v", "s"), total("w", "t")]),
+    ("ordered by the name, three fields", q("ints", orderBy=by("__name__")), [avg("m.x", "a"), total("v", "s"), avg("`x y`", "b")]),
+    ("ordered by the name, a field twice", q("ints", orderBy=by("__name__")), [total("v", "s"), total("v", "t")]),
+    ("ordered by another field, then the name descending", q("ints", orderBy=by("w", "__name__ desc")), [total("v", "s")]),
+    ("ordered by the name descending", q("ints", orderBy=by("__name__ desc")), [total("v", "s")]),
+    ("ordered by the name twice", q("ints", orderBy=by("__name__", "__name__ desc")), [total("v", "s")]),
+    ("ordered by the name, then another field", q("ints", orderBy=by("__name__", "w")), [total("v", "s")]),
+    ("a key inequality", q("ints", where=key_filter("GREATER_THAN", REF)), [total("v", "s")]),
+    ("a key equality", q("ints", where=key_filter("EQUAL", REF)), [total("v", "s")]),
+    ("a key equality, ordered by the field", q("ints", where=key_filter("EQUAL", REF), orderBy=by("v")), [total("v", "s")]),
+    ("a key equality, ordered by another field", q("ints", where=key_filter("EQUAL", REF), orderBy=by("w")), [total("v", "s")]),
+    ("a key in", q("ints", where=key_filter("IN", {"arrayValue": {"values": [REF]}})), [total("v", "s")]),
+    ("is null on the key", q("ints", where={"unaryFilter": {"field": f("__name__"), "op": "IS_NULL"}}), [total("v", "s")]),
+    ("is null on the key, ordered by the field", q("ints", where={"unaryFilter": {"field": f("__name__"), "op": "IS_NULL"}}, orderBy=by("v")), [total("v", "s")]),
+    ("a key equality in an or", q("ints", where={"compositeFilter": {"op": "OR", "filters": [{"fieldFilter": {"field": f("v"), "op": "EQUAL", "value": i(1)}}, key_filter("EQUAL", REF)]}}), [total("v", "s")]),
+    ("an inequality on the field, ordered by the name", q("ints", where={"fieldFilter": {"field": f("v"), "op": "GREATER_THAN", "value": i(1)}}, orderBy=by("__name__")), [total("v", "s")]),
+    ("an inequality on another field, ordered by the name", q("ints", where={"fieldFilter": {"field": f("w"), "op": "GREATER_THAN", "value": i(1)}}, orderBy=by("__name__")), [total("v", "s")]),
+    ("an inequality on another field, ordered by the name descending", q("ints", where={"fieldFilter": {"field": f("w"), "op": "GREATER_THAN", "value": i(1)}}, orderBy=by("__name__ desc")), [total("v", "s")]),
+    ("ordered by the name, a negative limit", q("ints", orderBy=by("__name__"), limit=-1), [total("v", "s")]),
+    ("ordered by the name, without a collection", {"orderBy": by("__name__")}, [total("v", "s")]),
+    ("ordered by the name, two array-contains", q("ints", orderBy=by("__name__"), where={"compositeFilter": {"op": "AND", "filters": [
+        {"fieldFilter": {"field": f("b"), "op": "ARRAY_CONTAINS", "value": i(1)}}, {"fieldFilter": {"field": f("c"), "op": "ARRAY_CONTAINS", "value": i(1)}}]}}), [total("v", "s")]),
+    ("ordered by the name, too many disjunctions", q("ints", orderBy=by("__name__"), where={"compositeFilter": {"op": "AND", "filters": [
+        {"fieldFilter": {"field": f("b"), "op": "IN", "value": {"arrayValue": {"values": [i(n) for n in range(16)]}}}},
+        {"fieldFilter": {"field": f("c"), "op": "IN", "value": {"arrayValue": {"values": [i(1), i(2)]}}}}]}}), [total("v", "s")]),
+    ("an inequality next to a key equality, ordered by the name", q("ints", orderBy=by("__name__"), where={"compositeFilter": {"op": "AND", "filters": [
+        {"fieldFilter": {"field": f("w"), "op": "GREATER_THAN", "value": i(1)}}, key_filter("EQUAL", REF)]}}), [total("v", "s")]),
+    ("ordered by the name, then the field", q("ints", orderBy=by("__name__", "v")), [total("v", "s")]),
+    ("ordered by the name, then one of two fields", q("ints", orderBy=by("__name__", "v")), [total("v", "s"), avg("w", "a")]),
+    ("array membership on the key", q("ints", where=key_filter("ARRAY_CONTAINS_ANY", {"arrayValue": {"values": [REF]}})), [total("v", "s")]),
+    ("array membership on the key, duplicate orders", q("ints", where=key_filter("ARRAY_CONTAINS", REF), orderBy=by("w", "w")), [total("v", "s")]),
+    ("ordered by the name, a sum of __type__", q("ints", orderBy=by("__name__")), [total("__type__", "s")]),
+    ("ordered by the name, a duplicate alias", q("ints", orderBy=by("__name__")), [total("v", "x"), count("x")]),
+]:
+    case(label, query, aggs)
+
 
 def fill(value):
     if isinstance(value, str):
@@ -245,7 +330,7 @@ if __name__ == "__main__":
         assert status == "OK", (doc, status, message)
     for c in CASES:
         parent = DOCUMENTS + ("/" + c["parent"] if c["parent"] else "")
-        body = {"structuredAggregationQuery": {"structuredQuery": c["query"], "aggregations": c["aggregations"]}}
+        body = {"structuredAggregationQuery": {"structuredQuery": fill(c["query"]), "aggregations": c["aggregations"]}}
         status, message, responses = call("POST", f"{parent}:runAggregationQuery", body)
         outcome = {"status": status}
         if status != "OK":

@@ -335,16 +335,17 @@ impl Query {
         parent: ResourcePath,
         query: &StructuredQuery,
     ) -> Result<Self, Status> {
-        Self::parse_aggregated(database, parent, query, || Ok(false))
+        Self::parse_aggregated(database, parent, query, |_| Ok(Vec::new()))
     }
 
     /// Validates `query` under `parent` in the official emulator's order
     /// (`tools/oracle/queries.py`, `tools/oracle/aggregations.py`, #262): the operators of its
     /// filter ([`check_operators`]); then what each part names and holds (the collection, the
     /// filter's kinds, paths and values, the orders' and the projection's paths, the cursors,
-    /// the query vector); then `aggregations`, an aggregation's own checks, which say whether
-    /// it has a `sum` or an `avg`; then the filter as a whole (array-contains, equalities on
-    /// the key, disjunctions); then the orders (a key before other fields, duplicates), the
+    /// the query vector); then `aggregations`, the list's checks (with the projection), which
+    /// say which fields a `sum` or an `avg` reads; then the filter as a whole (array-contains,
+    /// equalities on the key), whether those fields can be ordered ([`check_index`]), the
+    /// disjunctions; then the orders (a key before other fields, duplicates), the
     /// limit and the offset, whether the orders need a collection (a `sum` or an `avg` orders
     /// by its field), whether the filter does, the filters on `__name__`, and the rest of
     /// `find_nearest`.
@@ -352,7 +353,7 @@ impl Query {
         database: &str,
         parent: ResourcePath,
         query: &StructuredQuery,
-        aggregations: impl FnOnce() -> Result<bool, Status>,
+        aggregations: impl FnOnce(Option<&[FieldPath]>) -> Result<Vec<FieldPath>, Status>,
     ) -> Result<Self, Status> {
         check_operators(query)?;
         let source = match query.from.as_slice() {
@@ -425,10 +426,15 @@ impl Query {
             .map(Nearest::target)
             .transpose()?;
 
-        let orders_fields = aggregations()?;
+        let aggregated = aggregations(projection.as_deref())?;
+        let orders_fields = !aggregated.is_empty();
 
         if let Some(filter) = &filter {
             check_filter(filter)?;
+        }
+        check_index(&explicit, filter.as_ref(), &aggregated)?;
+        if let Some(filter) = &filter {
+            check_disjunctions(filter)?;
         }
         let orders = complete_orders(&explicit, filter.as_ref())?;
         let limit = match query.limit {
@@ -1069,18 +1075,85 @@ pub fn check_operators(query: &StructuredQuery) -> Result<(), Status> {
 }
 
 /// The filter as a whole, before the orders: at most one array-contains per conjunction, the
-/// key's equalities, the disjunctions. Its operators were checked first ([`check_operators`]),
-/// the rest comes last ([`check_filter_late`]).
+/// key's equalities; the disjunctions come after [`check_index`] ([`check_disjunctions`]). Its
+/// operators were checked first ([`check_operators`]), the rest comes last
+/// ([`check_filter_late`]).
 fn check_filter(filter: &Filter) -> Result<(), Status> {
     let mut leaves = Vec::new();
     collect_leaves(filter, &mut leaves);
-    let normalized = normalize(filter);
-    if array_filters(&normalized) > 1 {
+    if array_filters(&normalize(filter)) > 1 {
         return Err(Status::failed_precondition(
             "Only a single array-contains clause is allowed in a query",
         ));
     }
-    check_key_equality(&leaves)?;
+    check_key_equality(&leaves)
+}
+
+/// The fields `sum` and `avg` read order the query after its own orders ([`Query::require`]):
+/// a query on the name (ordered by it, or with a filter on it other than array membership)
+/// needs each of them among its orders or its inequalities' fields, or no index serves it
+/// (`tools/oracle/aggregations.py`, #262). A descending key scan is refused before this.
+fn check_index(
+    explicit: &[Order],
+    filter: Option<&Filter>,
+    fields: &[FieldPath],
+) -> Result<(), Status> {
+    if fields.is_empty() {
+        return Ok(());
+    }
+    let key_order = explicit.iter().any(|o| o.field == Field::Name);
+    // Array membership on `__name__` is a field's (`check_key_filter`), not the key's.
+    let key_filter = filter.is_some_and(|filter| {
+        let mut leaves = Vec::new();
+        collect_leaves(filter, &mut leaves);
+        leaves.iter().any(|(field, kind)| {
+            **field == Field::Name
+                && !matches!(
+                    kind,
+                    Leaf::Compare(Op::ArrayContains | Op::ArrayContainsAny)
+                )
+        })
+    });
+    let descending_key_scan = matches!(
+        explicit,
+        [Order {
+            field: Field::Name,
+            descending: true
+        }]
+    ) && !filter.is_some_and(filters_a_property);
+    if !(key_order || key_filter) || descending_key_scan {
+        return Ok(());
+    }
+    // A field the query orders by, wherever (after the key is refused later), or an
+    // inequality's.
+    let mut ordered: Vec<Field> = explicit.iter().map(|o| o.field.clone()).collect();
+    if let Some(filter) = filter {
+        inequality_fields(filter, &mut ordered);
+    }
+    let mut missing: Vec<&FieldPath> = fields
+        .iter()
+        .filter(|path| !ordered.contains(&Field::Path((*path).clone())))
+        .collect();
+    missing.sort();
+    missing.dedup();
+    if missing.is_empty() {
+        return Ok(());
+    }
+    Err(Status::invalid_argument(format!(
+        "This query requires an index that has fields [{}] after __name__ and Firestore does \
+         not currently support such an index. Please try the query again with additional \
+         ordering on those fields.",
+        missing
+            .iter()
+            .map(|path| property_path::shown(path))
+            .collect::<Vec<_>>()
+            .join(", ")
+    )))
+}
+
+/// The disjunctions of the filter, normalized: at most 30.
+fn check_disjunctions(filter: &Filter) -> Result<(), Status> {
+    let normalized = normalize(filter);
     // Past twice the maximum, the official emulator stops counting.
     let Some(disjunctions) = disjunctions(&normalized).map(|dnf| dnf.len()) else {
         return Err(Status::invalid_argument(format!(

@@ -88,19 +88,12 @@ impl Aggregations {
 }
 
 impl Unchecked {
-    /// Whether a `sum` or an `avg` is among them, which orders by its field.
-    pub fn reads_fields(&self) -> bool {
-        self.0
-            .iter()
-            .any(|(_, kind)| matches!(kind, Read::Sum(_) | Read::Avg(_)))
-    }
-
     /// The checks of the list (see [`Aggregations::read`]), with the official messages
-    /// (`tools/oracle/aggregations.py`, #262): not empty, at most five, no reserved alias, then
-    /// each in turn: what a `sum` or an `avg` reads (not `__name__` or `__type__` itself,
-    /// [`PropertyPath::check_query`]) and an alias no other before it has. The unnamed ones are
-    /// `field_1`, `field_2`, … in order.
-    pub fn check(self) -> Result<Aggregations, Status> {
+    /// (`tools/oracle/aggregations.py`, #262): not empty, at most five, no reserved alias, the
+    /// query's projection ([`check_projection`]), then each in turn: what a `sum` or an `avg`
+    /// reads (not `__name__` or `__type__` itself, [`PropertyPath::check_query`]) and an alias
+    /// no other before it has. The unnamed ones are `field_1`, `field_2`, … in order.
+    pub fn check(self, projection: Option<&[FieldPath]>) -> Result<Aggregations, Status> {
         let aggregations = self.0;
         if aggregations.is_empty() {
             return Err(Status::invalid_argument("Aggregations can not be empty."));
@@ -119,6 +112,9 @@ impl Unchecked {
             return Err(Status::invalid_argument(format!(
                 "The property.name \"{alias}\" is reserved."
             )));
+        }
+        if let Some(projection) = projection {
+            check_projection(projection, &aggregations)?;
         }
         let mut parsed: Vec<(String, Kind)> = Vec::with_capacity(aggregations.len());
         let mut unnamed = 0;
@@ -143,6 +139,48 @@ impl Unchecked {
         }
         Ok(Aggregations(parsed))
     }
+}
+
+/// A `sum` or an `avg` next to a projection (`tools/oracle/aggregations.py`, #262): a
+/// projection of no field but the name returns keys only, so a field other than the name is
+/// refused; any other projection refuses a field it does not hold, in the aggregations' order;
+/// then any `sum` or `avg` at all is refused.
+fn check_projection(
+    projection: &[FieldPath],
+    aggregations: &[(String, Read)],
+) -> Result<(), Status> {
+    let fields: Vec<&PropertyPath> = aggregations
+        .iter()
+        .filter_map(|(_, read)| match read {
+            Read::Sum(path) | Read::Avg(path) => Some(path),
+            Read::Count { .. } => None,
+        })
+        .collect();
+    if fields.is_empty() {
+        return Ok(());
+    }
+    if projection.is_empty() {
+        if fields.iter().any(|path| !path.is_name()) {
+            return Err(Status::invalid_argument(
+                "Aggregation over non-key properties is not supported for base query that only \
+                 returns keys.",
+            ));
+        }
+    } else if let Some(missing) = fields.iter().find(|path| {
+        let segments = path.field_path();
+        !path.is_name()
+            && !projection
+                .iter()
+                .any(|held| segments.segments().starts_with(held.segments()))
+    }) {
+        return Err(Status::invalid_argument(format!(
+            "The aggregation property {missing} is not present in the base query's property \
+             mask."
+        )));
+    }
+    Err(Status::invalid_argument(
+        "Cannot apply property masks when aggregation fields are present.",
+    ))
 }
 
 /// The field a `sum` or an `avg` reads, checked with the list.

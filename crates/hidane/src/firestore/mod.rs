@@ -1060,12 +1060,14 @@ impl Firestore for FirestoreService {
             ));
         };
         let read = Aggregations::read(&q.aggregations)?;
-        let reads_fields = read.reads_fields();
         let mut checked = None;
-        let mut query = Query::parse_aggregated(&database, parent.path, structured, || {
-            checked = Some(read.check()?);
-            Ok(reads_fields)
-        })?;
+        let mut query =
+            Query::parse_aggregated(&database, parent.path, structured, |projection| {
+                let aggregations = read.check(projection)?;
+                let fields = aggregations.fields().collect();
+                checked = Some(aggregations);
+                Ok(fields)
+            })?;
         let aggregations = checked.expect("checked while parsing the query");
         self.check_list(&caller, &database, &query)?;
         query.require(aggregations.fields());
