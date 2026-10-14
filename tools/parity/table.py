@@ -393,6 +393,24 @@ def same_document_writes(f):
     return answers
 
 
+def base_versions(f):
+    differs = rust_strings(f"{H}/base_versions.rs", "INTENTIONAL")
+    answers = []
+    for case in f["cases"]:
+        for step in case["steps"]:
+            error = step.get("error") or {}
+            if case["name"] in differs and step["method"] == "PATCH":
+                level = DIFFERS
+            elif error and error["status"] != "NOT_FOUND":
+                level = FULL
+            else:
+                # A success on its status; a missing document on its code (its message prints
+                # the official emulator's internal key, parity exceptions).
+                level = STATUS
+            answers.append((REST, level))
+    return answers
+
+
 def commit_checks(f):
     rel = f"{H}/commit_checks.rs"
     known, differs = rust_strings(rel, "KNOWN"), rust_strings(rel, "DIFFERS")
@@ -523,6 +541,15 @@ RECORDINGS = {
                  "message)",
         count=lambda f: (each(f["classify"], REST, FULL) + each(f["grpc"], GRPC, FULL)
                          + each(f["rest"], REST, FULL))),
+    f"{H}/fixtures/base_versions.json": dict(
+        area="documents",
+        tests=[f"{H}/base_versions.rs::update_time_preconditions_like_the_official_emulator"],
+        counted="each call",
+        compares="an error in full (code and message, its versions those of hidane's own "
+                 "commits), but a missing document on its code (its message prints the official "
+                 "emulator's internal key, an intentional difference); a success on its status; "
+                 "REST's `currentDocument.updateTime` parameter as intentionally different",
+        count=base_versions),
     f"{H}/fixtures/commit_checks.json": dict(
         area="documents",
         tests=[f"{H}/commit_checks.rs::the_first_error_is_the_official_one",

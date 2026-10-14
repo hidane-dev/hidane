@@ -872,12 +872,13 @@
    "area": "rest",
    "topic": null,
    "kind": "more-correct",
-   "official": "The REST `readTime` parameter always fails with \"Only timestamps past epoch are supported.\", even for the latest commit time (gRPC works)",
+   "official": "The REST `readTime` and `currentDocument.updateTime` parameters are read as the epoch: `readTime` always fails with \"Only timestamps past epoch are supported.\", even for the latest commit time, and `currentDocument.updateTime` is version 0, which only a document that never existed has (gRPC works)",
    "firestore": null,
    "hidane": "Follows the gRPC behaviour (#34)",
    "reason": "Bug",
    "references": [
-    "hidane-dev/hidane#34"
+    "hidane-dev/hidane#34",
+    "hidane-dev/hidane#262"
    ]
   },
   {
