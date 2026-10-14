@@ -16,6 +16,14 @@ data reads its absence (`NOT_FOUND`, `missing`, no documents), not an error. An 
 of seven days, so the time a request takes does not move an answer across it; probing by hand
 placed the boundary at seven days to within the ~10 ms a request took.
 
+The fixture is recorded seconds after the write. Observed by hand and not recorded, because it
+takes an hour: on one emulator, an hour after a document was written and left unread, every read
+before its creation (GetDocument, BatchGetDocuments, ListDocuments, RunQuery, ListCollectionIds)
+answered `UNKNOWN` with no message (500 over REST), while its first version, replaced minutes
+after the write, was still served 100 minutes after being replaced. On another emulator, which read
+its documents every 15 s, reads before their creation still read their absence 76 minutes later.
+What drops that history is not known (#86).
+
 Databases. Writes one document to `(default)` and to COUNT (1,000 by default) named databases
 `db-1`, `db-2`, … of one project, which the writes create, and reads the first and the last back.
 None is refused. (By hand, 20,000 named databases in one project, and 2,000 projects of two
