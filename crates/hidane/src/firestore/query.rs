@@ -1171,8 +1171,8 @@ fn check_disjunctions(filter: &Filter) -> Result<(), Status> {
 
 /// The last checks of a filter, after the orders, the limit and whether the orders need a
 /// collection (`tools/oracle/queries.py`, #262), filter by filter in order: what its path may
-/// hold ([`Field::check`]), whether it needs a collection, then, on `__name__`, its operator
-/// and its values ([`check_key_filter`]).
+/// hold ([`Field::check`]), the size of its values ([`check_value_size`]), whether it needs a
+/// collection, then, on `__name__`, its operator and its values ([`check_key_filter`]).
 fn check_filter_late(filter: &Filter, kindless: bool, database: &str) -> Result<(), Status> {
     let mut leaves = Vec::new();
     collect_leaf_filters(filter, &mut leaves);
@@ -1182,6 +1182,7 @@ fn check_filter_late(filter: &Filter, kindless: bool, database: &str) -> Result<
             Filter::And(_) | Filter::Or(_) => continue,
         };
         field.check()?;
+        check_value_size(leaf)?;
         if kindless && *field != Field::Name {
             return Err(Status::invalid_argument(format!(
                 "kind is required for filter: {}",
@@ -1191,6 +1192,37 @@ fn check_filter_late(filter: &Filter, kindless: bool, database: &str) -> Result<
         check_key_filter(leaf, database)?;
     }
     Ok(())
+}
+
+/// A field's value, or each of an `in`, `not-in` or `array-contains-any`, of at most 1500 bytes
+/// ([`validate::too_large_for_a_query`]); array membership names the field's elements.
+fn check_value_size(leaf: &Filter) -> Result<(), Status> {
+    let Filter::Compare {
+        field: field @ Field::Path(_),
+        op,
+        value,
+    } = leaf
+    else {
+        return Ok(());
+    };
+    let values = match (op, &value.value_type) {
+        (Op::In | Op::NotIn | Op::ArrayContainsAny, Some(ValueType::ArrayValue(array))) => {
+            array.values.as_slice()
+        }
+        _ => std::slice::from_ref(value),
+    };
+    if !values.iter().any(validate::too_large_for_a_query) {
+        return Ok(());
+    }
+    let elements = if matches!(op, Op::ArrayContains | Op::ArrayContainsAny) {
+        "[*]"
+    } else {
+        ""
+    };
+    Err(Status::invalid_argument(format!(
+        "value for {}{elements} is too large to be used in a query",
+        field.display()
+    )))
 }
 
 fn collect_leaf_filters<'a>(filter: &'a Filter, out: &mut Vec<&'a Filter>) {
@@ -1409,7 +1441,7 @@ fn disjunctions(filter: &Filter) -> Option<Vec<Conjunction<'_>>> {
 
 /// Fields that need an implicit ordering: those of range, `!=`, `not-in`, `is not null` and
 /// `is not NaN` filters, anywhere in the filter (paths with array offsets too, until they are
-/// refused).
+/// refused), but not of one that matches nothing ([`matches_nothing`]).
 fn inequality_fields(filter: &Filter, out: &mut Vec<Field>) {
     match filter {
         Filter::And(filters) | Filter::Or(filters) => {
@@ -1420,14 +1452,33 @@ fn inequality_fields(filter: &Filter, out: &mut Vec<Field>) {
         Filter::Compare {
             field: field @ (Field::Path(_) | Field::Indexed(_)),
             op:
-                Op::Less | Op::LessOrEqual | Op::Greater | Op::GreaterOrEqual | Op::NotEqual | Op::NotIn,
-            ..
-        }
-        | Filter::Unary {
+                op @ (Op::Less
+                | Op::LessOrEqual
+                | Op::Greater
+                | Op::GreaterOrEqual
+                | Op::NotEqual
+                | Op::NotIn),
+            value,
+        } if !matches_nothing(*op, value) => out.push(field.clone()),
+        Filter::Unary {
             field: field @ (Field::Path(_) | Field::Indexed(_)),
             op: UnaryOp::NotNan | UnaryOp::NotNull,
         } => out.push(field.clone()),
         Filter::Compare { .. } | Filter::Unary { .. } => {}
+    }
+}
+
+/// A range bound that is null or NaN, a `!=` null, or a `not-in` of nulls alone: the official
+/// emulator orders by no field of such a filter, so an order by the key alone stands
+/// (`tools/oracle/queries.py`, #262).
+fn matches_nothing(op: Op, value: &Value) -> bool {
+    match op {
+        Op::NotEqual => is_null(value),
+        Op::NotIn => matches!(
+            &value.value_type,
+            Some(ValueType::ArrayValue(array)) if !array.values.is_empty() && array.values.iter().all(is_null)
+        ),
+        _ => is_null(value) || is_nan(value),
     }
 }
 

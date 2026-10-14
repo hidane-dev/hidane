@@ -4934,6 +4934,349 @@
    }
   },
   {
+   "name": "v < NaN, by name descending",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "LESS_THAN",
+      "value": {
+       "doubleValue": "NaN"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "v >= null, by name descending",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "GREATER_THAN_OR_EQUAL",
+      "value": {
+       "nullValue": null
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "v != null, by name descending",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "NOT_EQUAL",
+      "value": {
+       "nullValue": null
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "v not-in [null], by name descending",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "NOT_IN",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "nullValue": null
+         }
+        ]
+       }
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "v != NaN, by name descending",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "NOT_EQUAL",
+      "value": {
+       "doubleValue": "NaN"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain more fields after the key"
+   }
+  },
+  {
+   "name": "v not-in [null, 1], by name descending",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "NOT_IN",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "nullValue": null
+         },
+         {
+          "integerValue": "1"
+         }
+        ]
+       }
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain more fields after the key"
+   }
+  },
+  {
+   "name": "v > NaN and v == 1, by name descending",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "v"
+         },
+         "op": "GREATER_THAN",
+         "value": {
+          "doubleValue": "NaN"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "v"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "v > NaN and w > 1, by name descending",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "v"
+         },
+         "op": "GREATER_THAN",
+         "value": {
+          "doubleValue": "NaN"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "w"
+         },
+         "op": "GREATER_THAN",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "order by clause cannot contain more fields after the key"
+   }
+  },
+  {
    "name": "v array-contains-any [1, a]",
    "parent": "",
    "query": {
@@ -25543,6 +25886,8370 @@
    "outcome": {
     "status": "INVALID_ARGUMENT",
     "message": "Key path is empty."
+   }
+  },
+  {
+   "name": "too large for a query: a string of 1499 bytes",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "too large for a query: a string of 1500 bytes",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: 750 two-byte characters, <",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "LESS_THAN",
+      "value": {
+       "stringValue": "éééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: != 1500 bytes",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "NOT_EQUAL",
+      "value": {
+       "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: bytes, 1500",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "bytesValue": "eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "too large for a query: bytes, 1501",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "bytesValue": "eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eA=="
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: a map, 1500 bytes",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "mapValue": {
+        "fields": {
+         "k": {
+          "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "too large for a query: a map, 1501 bytes",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "mapValue": {
+        "fields": {
+         "k": {
+          "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: 187 integers",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         }
+        ]
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "too large for a query: 188 integers",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         },
+         {
+          "integerValue": "1"
+         }
+        ]
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: 1501 nulls",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         },
+         {
+          "nullValue": null
+         }
+        ]
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: 94 geo points",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         },
+         {
+          "geoPointValue": {
+           "latitude": 1,
+           "longitude": 2
+          }
+         }
+        ]
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: a vector of 187",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "mapValue": {
+        "fields": {
+         "__type__": {
+          "stringValue": "__vector__"
+         },
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            }
+           ]
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "too large for a query: a vector of 188",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "mapValue": {
+        "fields": {
+         "__type__": {
+          "stringValue": "__vector__"
+         },
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            },
+            {
+             "doubleValue": 1.5
+            }
+           ]
+          }
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: a reference, 1500 bytes",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "{documents}/t/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "too large for a query: a reference, 1501 bytes",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "{documents}/t/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: in, one of 1500 bytes",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "IN",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "integerValue": "1"
+         },
+         {
+          "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+         }
+        ]
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: in, two of 800",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "IN",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+         },
+         {
+          "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+         }
+        ]
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "too large for a query: not-in, one of 1500 bytes",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "NOT_IN",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+         }
+        ]
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: array-contains, 1500 bytes",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "ARRAY_CONTAINS",
+      "value": {
+       "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v[*] is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: array-contains-any, one of 1500 bytes",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "ARRAY_CONTAINS_ANY",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+         }
+        ]
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v[*] is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: a quoted path",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "`a.b`.c"
+      },
+      "op": "EQUAL",
+      "value": {
+       "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for a.b.c is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: the second of two",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "w"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "v"
+         },
+         "op": "EQUAL",
+         "value": {
+          "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: in a disjunction",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "OR",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "v"
+         },
+         "op": "EQUAL",
+         "value": {
+          "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "w"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: before a key filter that is not a key",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "v"
+         },
+         "op": "EQUAL",
+         "value": {
+          "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "EQUAL",
+         "value": {
+          "stringValue": "a"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: after a key filter that is not a key",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "EQUAL",
+         "value": {
+          "stringValue": "a"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "v"
+         },
+         "op": "EQUAL",
+         "value": {
+          "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "__key__ filter value must be a Key"
+   }
+  },
+  {
+   "name": "too large for a query: before an array offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "v"
+         },
+         "op": "EQUAL",
+         "value": {
+          "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a[0]"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: on an array offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "op": "EQUAL",
+      "value": {
+       "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "too large for a query: without a collection",
+   "parent": "",
+   "query": {
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for v is too large to be used in a query"
+   }
+  },
+  {
+   "name": "too large for a query: a cursor",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "t"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "startAt": {
+     "values": [
+      {
+       "stringValue": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+     ],
+     "before": true
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "document": "t/sffff"
+     },
+     {
+      "document": "t/semoji"
+     },
+     {
+      "document": "t/bytes"
+     },
+     {
+      "document": "t/bytes2"
+     },
+     {
+      "document": "t/ref"
+     },
+     {
+      "document": "t/ref2"
+     },
+     {
+      "document": "t/geo"
+     },
+     {
+      "document": "t/arr0"
+     },
+     {
+      "document": "t/arrnull"
+     },
+     {
+      "document": "t/arrnan"
+     },
+     {
+      "document": "t/arr1"
+     },
+     {
+      "document": "t/arr1f"
+     },
+     {
+      "document": "t/arr12"
+     },
+     {
+      "document": "t/arr2"
+     },
+     {
+      "document": "t/arrs"
+     },
+     {
+      "document": "t/arrmix"
+     },
+     {
+      "document": "t/arrmap"
+     },
+     {
+      "document": "t/vec"
+     },
+     {
+      "document": "t/vec3"
+     },
+     {
+      "document": "t/map0"
+     },
+     {
+      "document": "t/mapa"
+     },
+     {
+      "document": "t/mapa1f"
+     },
+     {
+      "document": "t/mapb",
+      "done": true
+     }
+    ]
    }
   },
   {

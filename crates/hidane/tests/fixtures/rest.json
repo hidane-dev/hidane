@@ -10769,6 +10769,403 @@
     "contentType": "application/json",
     "body": "{\"error\":{\"code\":400,\"message\":\"cannot specify an order when show_missing is true\",\"status\":\"INVALID_ARGUMENT\"}}"
    }
+  },
+  {
+   "name": "commit, lenient JSON: single quotes",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{'writes': [{'update': {'name': 'projects/{project}/databases/(default)/documents/lj/a', 'fields': {'v': {'stringValue': 'it\\'s \"x\"'}}}}]}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: a byte order mark",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "﻿{\"writes\": []}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: two byte order marks",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "﻿﻿{\"writes\": []}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: the non-execute prefix",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": " )]}'\n{\"writes\": []}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: the prefix without its newline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": ")]}'{\"writes\": []}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: comments",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "/* a */ {\"writes\": // b\n [] # c\n}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: an open comment after the value",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"writes\": []} /* open",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: unquoted names and strings",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{writes: [{update: {name: 'projects/{project}/databases/(default)/documents/lj/b', fields: {v.w: {stringValue: a\"b'c}, x: {doubleValue: NaN}, y: {integerValue: 007}, z: {booleanValue: TrUe}, n: {nullValue: NULL}}}}]}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: = and => after names, ; between pairs",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"writes\" => [{\"update\" = {\"name\": \"projects/{project}/databases/(default)/documents/lj/c\"; \"fields\": {}}}]}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: ; between elements",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"writes\": [{\"delete\": \"projects/{project}/databases/(default)/documents/lj/x\"}; {\"delete\": \"projects/{project}/databases/(default)/documents/lj/y\"}]}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n  }, {\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: an element left out",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"writes\": [{\"delete\": \"projects/{project}/databases/(default)/documents/lj/x\"},]}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: a pair after the last",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"writes\": [];}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: a second value",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"writes\": []} {\"writes\": 1} ]]",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: an unquoted value that ends at a slash",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"writes\": [{\"delete\": projects/{project}/databases/(default)/documents/lj/x}]}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: raw control characters and a line continuation",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"writes\": [{\"update\": {\"name\": \"projects/{project}/databases/(default)/documents/lj/d\", \"fields\": {\"v\": {\"stringValue\": \"a\tb\\\nc\"}}}}]}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: an escape Gson does not know",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"writes\": [{\"update\": {\"name\": \"projects/{project}/databases/(default)/documents/lj/e\", \"fields\": {\"v\": {\"stringValue\": \"\\x41\"}}}}]}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: a keyword with letters after it",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"writes\": [{\"update\": {\"name\": \"projects/{project}/databases/(default)/documents/lj/f\", \"fields\": {\"v\": {\"booleanValue\": truex}}}}]}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: a form feed between tokens",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{\"writes\":\f[]}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: whitespace alone",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "  \n",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit, lenient JSON: a comment alone",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "/* a */",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "the documents lenient JSON wrote",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/{project}/databases/(default)/documents/lj/a",
+     "projects/{project}/databases/(default)/documents/lj/b",
+     "projects/{project}/databases/(default)/documents/lj/c",
+     "projects/{project}/databases/(default)/documents/lj/d"
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"found\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/lj/a\",\n    \"fields\": {\n      \"v\": {\n        \"stringValue\": \"it's \\\"x\\\"\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"found\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/lj/b\",\n    \"fields\": {\n      \"v.w\": {\n        \"stringValue\": \"a\\\"b'c\"\n      },\n      \"x\": {\n        \"doubleValue\": \"NaN\"\n      },\n      \"y\": {\n        \"integerValue\": \"7\"\n      },\n      \"z\": {\n        \"booleanValue\": true\n      },\n      \"n\": {\n        \"nullValue\": null\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"found\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/lj/c\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"found\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/lj/d\",\n    \"fields\": {\n      \"v\": {\n        \"stringValue\": \"a\\tb\\nc\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n}\n]\n"
+   }
+  },
+  {
+   "name": "runQuery, lenient JSON",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{structuredQuery: {from: [{collectionId: lj}], orderBy: [{field: {fieldPath: __name__}}]}}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/lj/a\",\n    \"fields\": {\n      \"v\": {\n        \"stringValue\": \"it's \\\"x\\\"\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/lj/b\",\n    \"fields\": {\n      \"v.w\": {\n        \"stringValue\": \"a\\\"b'c\"\n      },\n      \"x\": {\n        \"doubleValue\": \"NaN\"\n      },\n      \"y\": {\n        \"integerValue\": \"7\"\n      },\n      \"z\": {\n        \"booleanValue\": true\n      },\n      \"n\": {\n        \"nullValue\": null\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/lj/c\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/(default)/documents/lj/d\",\n    \"fields\": {\n      \"v\": {\n        \"stringValue\": \"a\\tb\\nc\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "PATCH, whitespace alone",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lj/g",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": " ",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "GET, a body that does not read",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lj/a",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{not json",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/lj/a\",\n  \"fields\": {\n    \"v\": {\n      \"stringValue\": \"it's \\\"x\\\"\"\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "DELETE, a body that does not read",
+   "method": "DELETE",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lj/zz",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{not json",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "an unknown verb, a body that does not read",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:nosuchverb",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{not json",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
   }
  ]
 }
