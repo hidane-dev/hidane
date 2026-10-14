@@ -147,9 +147,11 @@ Notes:
   as the Admin SDKs do to an emulator, which skips the Rules: the official emulator's writes are
   many times as fast with it, and hidane's take about the same time either way. Every other
   scenario, the CI workloads included, is a signed-out app's, so compare `owner_writes` with
-  `operations.batch_write` and `datasets.seed_100000` to see what the credential changes. An
-  SDK's own work adds to both: through firebase-admin, 100,000 documents took 2.2 s on the
-  official emulator and 1.1 s on hidane in a single local run.
+  `operations.batch_write` and `datasets.seed_100000` to see what the credential changes. In the
+  CI workloads it changes little: in local runs of `ci`, seeding its 100 documents with the owner
+  credential took about 0.2 s less on the official emulator, out of about 4.4 s, and the tests
+  were no faster with it. An SDK's own work adds to both: through firebase-admin, 100,000
+  documents took 2.2 s on the official emulator and 1.1 s on hidane in a single local run.
 - **Same data and workload.** Every scenario writes the same documents and runs the same queries
   against both.
 - **Pinned versions.** The official jar is the one firebase-tools 15.33.0 downloads, checked
