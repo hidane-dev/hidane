@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:3690ad07c505bd85955b3d8561bf4f42c387717fff3f8eabfe27de331c27fb7f",
+ "digest": "sha256:109dabfbbbbfbe1dc133ab60f1ccb28a20f5d5857eb96c9e5036a650d71e2947",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -17,13 +17,13 @@
   "files": 81,
   "fixtures": 49,
   "transcripts": 32,
-  "answers": 23793,
-  "bytes": 14078739,
+  "answers": 23853,
+  "bytes": 14104560,
   "levels": {
    "full": 13287,
-   "reasons": 4333,
+   "reasons": 4344,
    "part": 843,
-   "status": 5138,
+   "status": 5187,
    "codes": 30,
    "none": 1,
    "differs": 161
@@ -62,7 +62,7 @@
    "rules": {
     "fixtures": 23,
     "transcripts": 2,
-    "answers": 15306
+    "answers": 15366
    },
    "export": {
     "fixtures": 1,
@@ -84,7 +84,7 @@
    "v1.22.0": {
     "fixtures": 49,
     "transcripts": 32,
-    "answers": 23793
+    "answers": 23853
    }
   },
   "by_release_source": {
@@ -1245,18 +1245,18 @@
     "release": "v1.22.0",
     "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
     "source": "git history",
-    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 in the working tree, where it changed, as at the 3 earlier commits that changed it"
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 in the working tree, where it changed, as at the 4 earlier commits that changed it"
    },
    "recorded": {
     "first_recorded": "2026-10-11",
     "last_changed": "2026-10-15"
    },
-   "bytes": 1669222,
-   "sha256": "e3c7445da32545e53be22fbfbaee64d48bc834fe50c41fef83f7027b665ff1e1",
-   "answers": 3485,
+   "bytes": 1695043,
+   "sha256": "3743e4a44d367f7d4908b629a731fc2ab13c82250e84c9d84365de81ceda5a11",
+   "answers": 3545,
    "levels": {
-    "reasons": 2402,
-    "status": 1083
+    "reasons": 2413,
+    "status": 1132
    },
    "replayed_over": [
     "REST"

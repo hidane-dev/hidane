@@ -94,10 +94,16 @@ pub(super) fn authorize(
                 let mut parts: Vec<Part<'_>> =
                     request.path.iter().map(|s| Part::Segment(s)).collect();
                 if let Some(id) = &query.group {
-                    parts.push(Part::UnknownRun);
-                    if !id.is_empty() {
-                        parts.push(Part::Segment(id));
+                    if !query.children {
+                        parts.push(Part::UnknownRun);
                     }
+                    // Without a collection ID, the collection is any one segment, as unknown as
+                    // the document ID (`tools/oracle/rules_list.py`, #325).
+                    parts.push(if id.is_empty() {
+                        Part::UnknownId
+                    } else {
+                        Part::Segment(id)
+                    });
                 }
                 parts.push(Part::UnknownId);
                 let mut resource = IndexMap::new();
@@ -135,10 +141,11 @@ fn decide(
     let coverings = covering_parts(ruleset.version, service, parts);
     let applying = statements(&coverings, Method::List);
     let mut request_value = request_value(request, Method::List);
-    // A collection group's path is not known (`tools/oracle/rules_list.py`).
+    // A collection group's path is not known, nor a list's without a collection ID
+    // (`tools/oracle/rules_list.py`).
     let path = match document {
         Some(path) => Val::path(path.clone()),
-        None if parts.contains(&Part::UnknownRun) => Val::Unknown,
+        None if request.query.as_ref().is_some_and(|q| q.group.is_some()) => Val::Unknown,
         None => Val::path(request.path.clone()),
     };
     if let Val::Map(map) = &mut request_value {

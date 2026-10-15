@@ -12,7 +12,8 @@ token for `u1` (an unsigned JWT): queries, aggregations and listings. The pairs 
 query under one condition each. A second table runs the filters of `NULLS` (null and NaN in
 every kind of filter, alone and next to other filters of the same field, and filters that repeat)
 under the conditions of `NULL_CONDITIONS`, which compare the field with a value of each type.
-Documents are written as the owner. Stdlib only.
+Pairs also show queries without a collection ID under collection wildcards (#325). Documents are
+written as the owner. Stdlib only.
 """
 
 import base64
@@ -174,6 +175,15 @@ MORE = {
     "__name__ array-contains c/d1": RUN(query(field("__name__", "ARRAY_CONTAINS", REF("c/d1")))),
     "n in [0..5] and s in [0..5]": RUN(query(both(field("n", "IN", A(*[I(k) for k in range(6)])), field("s", "IN", A(*[I(k) for k in range(6)]))))),
     "count limit -1": COUNT(query(limit=-1)),
+    # Without a collection ID (#325): the collections under the parent, or every descendant.
+    "kindless": RUN({}),
+    "kindless limit 5": RUN({"limit": 5}),
+    "kindless n == 1": RUN({"where": field("n", "EQUAL", I(1))}),
+    "kindless __name__ == c/d1": RUN({"where": field("__name__", "EQUAL", REF("c/d1"))}),
+    "kindless count": COUNT({}),
+    "kindless under c/d1": ("POST", f"{BASE}/c/d1:runQuery", {"structuredQuery": {}}),
+    "descendants": RUN({"from": [{"allDescendants": True}]}),
+    "descendants under c/d1": ("POST", f"{BASE}/c/d1:runQuery", {"structuredQuery": {"from": [{"allDescendants": True}]}}),
 }
 
 # Null and NaN in each kind of filter (a field filter with either matches nothing, but `!= NaN`
@@ -274,6 +284,27 @@ PAIRS = [
     (DOC, "__name__ array-contains c/d1", ["false", "true"]),
     (DOC, "n in [0..5] and s in [0..5]", ["false", "true"]),
     (DOC, "count limit -1", ["false", "request.query.limit == -1"]),
+    # A list without a collection ID takes its collection as one unknown segment, which a
+    # wildcard matches and binds as it binds the unknown document ID; a literal does not.
+    ("/{coll}/{d}", "kindless", ["true", "coll == null", "d == null", "request.path == null", "request.query.kind == null",
+                                "request.query.parent == null", "request.query.allDescendants"]),
+    ("/{coll}/{d}", "kindless limit 5", ["request.query.limit == 5"]),
+    ("/{coll}/{d}", "kindless n == 1", [f"{R}.n == 1", "true"]),
+    ("/{coll}/{d}", "kindless __name__ == c/d1", [f"{R}.n == 1", "coll == 'c'"]),
+    ("/{coll}/{d}", "kindless count", ["true"]),
+    ("/{coll}/{d}", "kindless under c/d1", ["true"]),
+    ("/{coll}/{d}", "descendants", ["true"]),
+    ("/c/{d}", "kindless", ["true"]),
+    ("/{rest=**}", "kindless", ["true", "rest == null"]),
+    ("/{coll}/{d}/{rest=**}", "kindless", ["true"]),
+    ("/{coll}/{d}/{rest=**}", "descendants", ["true"]),
+    ("/{coll}/{d}/{rest=**}", "descendants under c/d1", ["true"]),
+    ("/{path=**}/{coll}/{d}", "kindless", ["true"]),
+    ("/{path=**}/{coll}/{d}", "kindless under c/d1", ["true"]),
+    ("/{path=**}/{coll}/{d}", "descendants", ["true"]),
+    ("/{path=**}/{coll}/{d}", "descendants under c/d1", ["true", "coll == null"]),
+    ("/c/{x}/{coll}/{d}", "kindless under c/d1", ["true", "coll == null", "x == 'd1'"]),
+    ("/{a}/{b}/{coll}/{d}", "kindless under c/d1", ["true"]),
 ]
 
 
