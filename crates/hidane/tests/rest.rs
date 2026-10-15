@@ -108,6 +108,24 @@ fn mask_values(text: &str, key: &str, mask: &str) -> String {
     out
 }
 
+/// Timestamp values of the years 2021 to 2099, which only the server writes (`REQUEST_TIME`), as
+/// `<now>` (`tools/oracle/conformance.py`, `tools/fuzz/diff.py`).
+fn mask_now(text: &str) -> String {
+    let marker = "\"timestampValue\": \"";
+    let mut out = String::new();
+    let mut rest = text;
+    while let Some(at) = rest.find(marker) {
+        out.push_str(&rest[..at + marker.len()]);
+        rest = &rest[at + marker.len()..];
+        if rest.len() > 4 && ("2021".."2100").contains(&&rest[..4]) {
+            out.push_str("<now>");
+            rest = &rest[rest.find('"').unwrap()..];
+        }
+    }
+    out.push_str(rest);
+    out
+}
+
 /// Versions of the years 2021 to 2099 in microseconds, after `version (`, as `<version>`
 /// (`tools/oracle/rest.py`, `tools/fuzz/diff.py`).
 fn mask_versions(text: &str) -> String {
@@ -129,7 +147,7 @@ fn mask_versions(text: &str) -> String {
 
 /// The oracle's normalisation (`tools/oracle/rest.py`).
 fn normalize(text: &str) -> String {
-    let mut text = mask_versions(text).replace(PROJECT, "{project}");
+    let mut text = mask_now(&mask_versions(text)).replace(PROJECT, "{project}");
     for key in ["createTime", "updateTime", "readTime", "commitTime"] {
         text = mask_values(&text, key, "<time>");
     }
@@ -209,6 +227,24 @@ async fn rest_answers_like_the_official_emulator() {
     let fixture: Json = serde_json::from_str(include_str!("fixtures/rest.json")).unwrap();
     let cases = fixture["cases"].as_array().unwrap();
     assert!(cases.len() > 50);
+    let differences = replay(cases).await;
+    assert!(
+        differences.is_empty(),
+        "{} of {} requests differ:\n{}",
+        differences.len(),
+        cases.len(),
+        differences.join("\n")
+    );
+}
+
+/// The requests googleapis/conformance-tests says client SDKs send for create, set, update,
+/// delete, get and queries (`fixtures/conformance.json`, from `tools/oracle/conformance.py`,
+/// #44), answered as the official emulator answers them.
+#[tokio::test]
+async fn conformance_requests_answer_like_the_official_emulator() {
+    let fixture: Json = serde_json::from_str(include_str!("fixtures/conformance.json")).unwrap();
+    let cases = fixture["cases"].as_array().unwrap();
+    assert!(cases.len() > 150);
     let differences = replay(cases).await;
     assert!(
         differences.is_empty(),

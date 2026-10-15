@@ -22,8 +22,8 @@
    "evidence": [
     {
      "kind": "replay",
-     "count": 23875,
-     "description": "23,875 recorded answers of the official emulator v1.22.0 in 49 fixtures, replayed against hidane by cargo test",
+     "count": 24060,
+     "description": "24,060 recorded answers of the official emulator v1.22.0 in 50 fixtures, replayed against hidane by cargo test",
      "where": "docs/parity.md",
      "runs": "every pull request and push to main",
      "last_recorded": null
@@ -49,21 +49,21 @@
  ],
  "oracle_corpus": {
   "where": "docs/oracle-corpus.json",
-  "digest": "sha256:9ce4abe187a42029fe0dc5fa2e6ae6140ec5dd398449b7ea45bdd8af7eae3aa9",
+  "digest": "sha256:2ffc7eb87be6d799c126d793c2879c3d9f8588bd5633dcf3d5bf7ab295c11d0a",
   "releases": [
    "1.22.0"
   ],
-  "files": 90,
-  "fixtures": 49,
+  "files": 91,
+  "fixtures": 50,
   "transcripts": 41,
-  "answers": 23875,
-  "bytes": 14287468
+  "answers": 24060,
+  "bytes": 14456220
  },
  "replay": {
-  "fixtures": 49,
-  "answers": 23875,
+  "fixtures": 50,
+  "answers": 24060,
   "levels": {
-   "full": 13309,
+   "full": 13494,
    "reasons": 4344,
    "part": 843,
    "status": 5187,
@@ -108,9 +108,9 @@
     ]
    },
    "rest": {
-    "fixtures": 2,
-    "answers": 550,
-    "full": 545,
+    "fixtures": 3,
+    "answers": 735,
+    "full": 730,
     "transports": [
      "REST"
     ]
@@ -431,6 +431,7 @@
    {
     "path": "crates/hidane/tests/rest.rs",
     "replays": [
+     "crates/hidane/tests/fixtures/conformance.json",
      "crates/hidane/tests/fixtures/json_escapes.json",
      "crates/hidane/tests/fixtures/rest.json"
     ]

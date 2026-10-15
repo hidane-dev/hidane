@@ -1,0 +1,7083 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/conformance.py",
+ "source": "https://github.com/googleapis/conformance-tests/tree/998891a8dae00df121e460420cceb0abfc4e2ea1/firestore/v1 (Apache-2.0)",
+ "cases": [
+  {
+   "name": "create-all-transforms: create: all transforms in a single call",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t1/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "currentDocument": {
+       "exists": false
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "setToServerValue": "REQUEST_TIME"
+       },
+       {
+        "fieldPath": "c",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       },
+       {
+        "fieldPath": "d",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "4"
+          },
+          {
+           "integerValue": "5"
+          },
+          {
+           "integerValue": "6"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }, {\n      \"nullValue\": null\n    }, {\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create-arrayremove-multi: create: multiple ArrayRemove fields",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t2/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "currentDocument": {
+       "exists": false
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       },
+       {
+        "fieldPath": "c.d",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "4"
+          },
+          {
+           "integerValue": "5"
+          },
+          {
+           "integerValue": "6"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }, {\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create-arrayremove-nested: create: nested ArrayRemove field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t3/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "currentDocument": {
+       "exists": false
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b.c",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create-arrayremove: create: ArrayRemove with data",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t4/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "currentDocument": {
+       "exists": false
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create-arrayunion-multi: create: multiple ArrayUnion fields",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t5/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "currentDocument": {
+       "exists": false
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       },
+       {
+        "fieldPath": "c.d",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "4"
+          },
+          {
+           "integerValue": "5"
+          },
+          {
+           "integerValue": "6"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }, {\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create-arrayunion-nested: create: nested ArrayUnion field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t6/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "currentDocument": {
+       "exists": false
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b.c",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create-arrayunion: create: ArrayUnion with data",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t7/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "currentDocument": {
+       "exists": false
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create-basic: create: basic",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t8/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "currentDocument": {
+       "exists": false
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create-complex: create: complex",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t9/x/C/d",
+       "fields": {
+        "a": {
+         "arrayValue": {
+          "values": [
+           {
+            "integerValue": "1"
+           },
+           {
+            "doubleValue": 2.5
+           }
+          ]
+         }
+        },
+        "b": {
+         "mapValue": {
+          "fields": {
+           "c": {
+            "arrayValue": {
+             "values": [
+              {
+               "stringValue": "three"
+              },
+              {
+               "mapValue": {
+                "fields": {
+                 "d": {
+                  "booleanValue": true
+                 }
+                }
+               }
+              }
+             ]
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "currentDocument": {
+       "exists": false
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create-empty: create: creating or setting an empty map",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t10/x/C/d",
+       "fields": {}
+      },
+      "currentDocument": {
+       "exists": false
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create-nosplit: create: don’t split on dots",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t11/x/C/d",
+       "fields": {
+        "a.b": {
+         "mapValue": {
+          "fields": {
+           "c.d": {
+            "integerValue": "1"
+           }
+          }
+         }
+        },
+        "e": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "currentDocument": {
+       "exists": false
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create-special-chars: create: non-alpha characters in map keys",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t12/x/C/d",
+       "fields": {
+        "*": {
+         "mapValue": {
+          "fields": {
+           ".": {
+            "integerValue": "1"
+           }
+          }
+         }
+        },
+        "~": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "currentDocument": {
+       "exists": false
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create-st-alone: create: ServerTimestamp alone",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "currentDocument": {
+       "exists": false
+      },
+      "update": {
+       "fields": {},
+       "name": "projects/{project}/databases/(default)/documents/t13/x/C/d"
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create-st-multi: create: multiple ServerTimestamp fields",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t14/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "currentDocument": {
+       "exists": false
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "setToServerValue": "REQUEST_TIME"
+       },
+       {
+        "fieldPath": "c.d",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }, {\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create-st-nested: create: nested ServerTimestamp field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t15/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "currentDocument": {
+       "exists": false
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b.c",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create-st-with-empty-map: create: ServerTimestamp beside an empty map",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t16/x/C/d",
+       "fields": {
+        "a": {
+         "mapValue": {
+          "fields": {
+           "b": {
+            "mapValue": {
+             "fields": {}
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "currentDocument": {
+       "exists": false
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a.c",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "create-st: create: ServerTimestamp with data",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t17/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "currentDocument": {
+       "exists": false
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "delete-exists-precond: delete: delete with exists precondition (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t18/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "delete-exists-precond: delete: delete with exists precondition",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "delete": "projects/{project}/databases/(default)/documents/t18/x/C/d",
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "delete-no-precond: delete: delete without precondition (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t19/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "delete-no-precond: delete: delete without precondition",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "delete": "projects/{project}/databases/(default)/documents/t19/x/C/d"
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "delete-time-precond: delete: delete with last-update-time precondition (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t20/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "delete-time-precond: delete: delete with last-update-time precondition",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "delete": "projects/{project}/databases/(default)/documents/t20/x/C/d",
+      "currentDocument": {
+       "updateTime": "1970-01-01T00:00:42Z"
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the stored version (<version>) does not match the required base version (42000000)\",\"status\":\"FAILED_PRECONDITION\"}}"
+   }
+  },
+  {
+   "name": "get-basic: get: get a document",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t21/x/C/d",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/{project}\\/databases\\/(default)\\/documents\\/t21\\/x\\/C\\/d) not found.\",\"status\":\"NOT_FOUND\"}}"
+   }
+  },
+  {
+   "name": "query-cursor-docsnap-order: query: cursor methods with a document snapshot, existing orderBy",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t22/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "a"
+       },
+       "direction": "ASCENDING"
+      },
+      {
+       "field": {
+        "fieldPath": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "field": {
+        "fieldPath": "__name__"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startAt": {
+      "values": [
+       {
+        "integerValue": "7"
+       },
+       {
+        "integerValue": "8"
+       },
+       {
+        "referenceValue": "projects/{project}/databases/(default)/documents/t22/x/C/D"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-cursor-docsnap-orderby-name: query: cursor method, doc snapshot, existing orderBy __name__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t23/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "a"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "field": {
+        "fieldPath": "__name__"
+       },
+       "direction": "ASCENDING"
+      }
+     ],
+     "startAt": {
+      "values": [
+       {
+        "integerValue": "7"
+       },
+       {
+        "referenceValue": "projects/{project}/databases/(default)/documents/t23/x/C/D"
+       }
+      ],
+      "before": true
+     },
+     "endAt": {
+      "values": [
+       {
+        "integerValue": "7"
+       },
+       {
+        "referenceValue": "projects/{project}/databases/(default)/documents/t23/x/C/D"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-cursor-docsnap-where-eq: query: cursor methods with a document snapshot and an equality where clause",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t24/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "a"
+       },
+       "op": "EQUAL",
+       "value": {
+        "integerValue": "3"
+       }
+      }
+     },
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "__name__"
+       },
+       "direction": "ASCENDING"
+      }
+     ],
+     "endAt": {
+      "values": [
+       {
+        "referenceValue": "projects/{project}/databases/(default)/documents/t24/x/C/D"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-cursor-docsnap-where-neq-orderby: query: cursor method, doc snapshot, inequality where clause, and existing orderBy clause",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t25/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "a"
+       },
+       "op": "LESS_THAN",
+       "value": {
+        "integerValue": "4"
+       }
+      }
+     },
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "a"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "field": {
+        "fieldPath": "__name__"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startAt": {
+      "values": [
+       {
+        "integerValue": "7"
+       },
+       {
+        "referenceValue": "projects/{project}/databases/(default)/documents/t25/x/C/D"
+       }
+      ],
+      "before": true
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-cursor-docsnap-where-neq: query: cursor method with a document snapshot and an inequality where clause",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t26/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "a"
+       },
+       "op": "LESS_THAN_OR_EQUAL",
+       "value": {
+        "integerValue": "3"
+       }
+      }
+     },
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "a"
+       },
+       "direction": "ASCENDING"
+      },
+      {
+       "field": {
+        "fieldPath": "__name__"
+       },
+       "direction": "ASCENDING"
+      }
+     ],
+     "endAt": {
+      "values": [
+       {
+        "integerValue": "7"
+       },
+       {
+        "referenceValue": "projects/{project}/databases/(default)/documents/t26/x/C/D"
+       }
+      ],
+      "before": true
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-cursor-docsnap: query: cursor methods with a document snapshot",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t27/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "__name__"
+       },
+       "direction": "ASCENDING"
+      }
+     ],
+     "startAt": {
+      "values": [
+       {
+        "referenceValue": "projects/{project}/databases/(default)/documents/t27/x/C/D"
+       }
+      ],
+      "before": true
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-cursor-endbefore-empty-map: query: EndBefore with explicit empty map",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t28/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "a"
+       },
+       "direction": "ASCENDING"
+      }
+     ],
+     "endAt": {
+      "values": [
+       {
+        "mapValue": {
+         "fields": {}
+        }
+       }
+      ],
+      "before": true
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-cursor-startafter-docsnap: query: StartAfter with document snapshot",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t29/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "a"
+       },
+       "direction": "ASCENDING"
+      }
+     ],
+     "startAt": {
+      "values": [
+       {
+        "mapValue": {
+         "fields": {
+          "a": {
+           "stringValue": "b"
+          }
+         }
+        }
+       }
+      ],
+      "before": true
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-cursor-startat-empty-map: query: StartAt with explicit empty map",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t30/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "a"
+       },
+       "direction": "ASCENDING"
+      }
+     ],
+     "startAt": {
+      "values": [
+       {
+        "mapValue": {
+         "fields": {}
+        }
+       }
+      ],
+      "before": true
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-cursor-vals-1a: query: StartAt/EndBefore with values",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t31/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "a"
+       },
+       "direction": "ASCENDING"
+      }
+     ],
+     "startAt": {
+      "values": [
+       {
+        "integerValue": "7"
+       }
+      ],
+      "before": true
+     },
+     "endAt": {
+      "values": [
+       {
+        "integerValue": "9"
+       }
+      ],
+      "before": true
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-cursor-vals-1b: query: StartAfter/EndAt with values",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t32/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "a"
+       },
+       "direction": "ASCENDING"
+      }
+     ],
+     "startAt": {
+      "values": [
+       {
+        "integerValue": "7"
+       }
+      ]
+     },
+     "endAt": {
+      "values": [
+       {
+        "integerValue": "9"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-cursor-vals-2: query: Start/End with two values",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t33/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "a"
+       },
+       "direction": "ASCENDING"
+      },
+      {
+       "field": {
+        "fieldPath": "b"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startAt": {
+      "values": [
+       {
+        "integerValue": "7"
+       },
+       {
+        "integerValue": "8"
+       }
+      ],
+      "before": true
+     },
+     "endAt": {
+      "values": [
+       {
+        "integerValue": "9"
+       },
+       {
+        "integerValue": "10"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-cursor-vals-docid: query: cursor methods with __name__",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t34/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "__name__"
+       },
+       "direction": "ASCENDING"
+      }
+     ],
+     "startAt": {
+      "values": [
+       {
+        "referenceValue": "projects/{project}/databases/(default)/documents/t34/x/C/D1"
+       }
+      ]
+     },
+     "endAt": {
+      "values": [
+       {
+        "referenceValue": "projects/{project}/databases/(default)/documents/t34/x/C/D2"
+       }
+      ],
+      "before": true
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-cursor-vals-last-wins: query: cursor methods, last one wins",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t35/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "a"
+       },
+       "direction": "ASCENDING"
+      }
+     ],
+     "startAt": {
+      "values": [
+       {
+        "integerValue": "2"
+       }
+      ],
+      "before": true
+     },
+     "endAt": {
+      "values": [
+       {
+        "integerValue": "4"
+       }
+      ],
+      "before": true
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-offset-limit-last-wins: query: multiple Offset and Limit clauses",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t36/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "offset": 5,
+     "limit": 4
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-offset-limit: query: Offset and Limit clauses",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t37/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "offset": 2,
+     "limit": 3
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-order: query: basic OrderBy clauses",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t38/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "orderBy": [
+      {
+       "field": {
+        "fieldPath": "b"
+       },
+       "direction": "ASCENDING"
+      },
+      {
+       "field": {
+        "fieldPath": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-select-empty: query: empty Select clause",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t39/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "select": {
+      "fields": [
+       {
+        "fieldPath": "__name__"
+       }
+      ]
+     },
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-select-last-wins: query: two Select clauses",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t40/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "select": {
+      "fields": [
+       {
+        "fieldPath": "c"
+       }
+      ]
+     },
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-select: query: Select clause with some fields",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t41/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "select": {
+      "fields": [
+       {
+        "fieldPath": "a"
+       },
+       {
+        "fieldPath": "b"
+       }
+      ]
+     },
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-where-2: query: two Where clauses",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t42/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "where": {
+      "compositeFilter": {
+       "op": "AND",
+       "filters": [
+        {
+         "fieldFilter": {
+          "field": {
+           "fieldPath": "a"
+          },
+          "op": "GREATER_THAN_OR_EQUAL",
+          "value": {
+           "integerValue": "5"
+          }
+         }
+        },
+        {
+         "fieldFilter": {
+          "field": {
+           "fieldPath": "b"
+          },
+          "op": "LESS_THAN",
+          "value": {
+           "stringValue": "foo"
+          }
+         }
+        }
+       ]
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-where-NaN: query: a Where clause comparing to NaN",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t43/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "where": {
+      "unaryFilter": {
+       "op": "IS_NAN",
+       "field": {
+        "fieldPath": "a"
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-where-null: query: a Where clause comparing to null",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t44/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "where": {
+      "unaryFilter": {
+       "op": "IS_NULL",
+       "field": {
+        "fieldPath": "a"
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "query-where: query: Where clause",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/t45/x:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "C"
+      }
+     ],
+     "where": {
+      "fieldFilter": {
+       "field": {
+        "fieldPath": "a"
+       },
+       "op": "GREATER_THAN",
+       "value": {
+        "integerValue": "5"
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "set-all-transforms: set: all transforms in a single call",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t46/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "setToServerValue": "REQUEST_TIME"
+       },
+       {
+        "fieldPath": "c",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       },
+       {
+        "fieldPath": "d",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "4"
+          },
+          {
+           "integerValue": "5"
+          },
+          {
+           "integerValue": "6"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }, {\n      \"nullValue\": null\n    }, {\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-arrayremove-multi: set: multiple ArrayRemove fields",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t47/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       },
+       {
+        "fieldPath": "c.d",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "4"
+          },
+          {
+           "integerValue": "5"
+          },
+          {
+           "integerValue": "6"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }, {\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-arrayremove-nested: set: nested ArrayRemove field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t48/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b.c",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-arrayremove: set: ArrayRemove with data",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t49/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-arrayunion-merge: set: merge ArrayUnion field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t50/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b.c",
+        "appendMissingElements": {
+         "values": [
+          {
+           "stringValue": "foo"
+          },
+          {
+           "stringValue": "bar"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-arrayunion-multi: set: multiple ArrayUnion fields",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t51/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       },
+       {
+        "fieldPath": "c.d",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "4"
+          },
+          {
+           "integerValue": "5"
+          },
+          {
+           "integerValue": "6"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }, {\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-arrayunion-nested: set: nested ArrayUnion field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t52/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b.c",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-arrayunion: set: ArrayUnion with data",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t53/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-basic: set: basic",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t54/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-complex: set: complex",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t55/x/C/d",
+       "fields": {
+        "a": {
+         "arrayValue": {
+          "values": [
+           {
+            "integerValue": "1"
+           },
+           {
+            "doubleValue": 2.5
+           }
+          ]
+         }
+        },
+        "b": {
+         "mapValue": {
+          "fields": {
+           "c": {
+            "arrayValue": {
+             "values": [
+              {
+               "stringValue": "three"
+              },
+              {
+               "mapValue": {
+                "fields": {
+                 "d": {
+                  "booleanValue": true
+                 }
+                }
+               }
+              }
+             ]
+            }
+           }
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-del-merge-alone: set-merge: Delete with merge",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t56/x/C/d"
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "b.c"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-del-merge: set-merge: Delete with merge",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t57/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "b.c"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-del-mergeall: set: Delete with MergeAll",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t58/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "b.c"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-empty: set: creating or setting an empty map",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t59/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-merge-fp: set-merge: Merge with FieldPaths",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t60/x/C/d",
+       "fields": {
+        "*": {
+         "mapValue": {
+          "fields": {
+           "~": {
+            "booleanValue": true
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "`*`.`~`"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-merge-nested: set-merge: Merge with a nested field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t61/x/C/d",
+       "fields": {
+        "h": {
+         "mapValue": {
+          "fields": {
+           "g": {
+            "integerValue": "4"
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "h.g"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-merge-nonleaf: set-merge: Merge field is not a leaf",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t62/x/C/d",
+       "fields": {
+        "h": {
+         "mapValue": {
+          "fields": {
+           "f": {
+            "integerValue": "5"
+           },
+           "g": {
+            "integerValue": "6"
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "h"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-merge: set-merge: Merge with a field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t63/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-mergeall-empty: set: MergeAll can be specified with empty data.",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t64/x/C/d",
+       "fields": {}
+      },
+      "updateMask": {
+       "fieldPaths": []
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-mergeall-nested: set: MergeAll with nested fields",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t65/x/C/d",
+       "fields": {
+        "h": {
+         "mapValue": {
+          "fields": {
+           "f": {
+            "integerValue": "4"
+           },
+           "g": {
+            "integerValue": "3"
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "h.f",
+        "h.g"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-mergeall: set: MergeAll",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t66/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        },
+        "b": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "b"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-nosplit: set: don’t split on dots",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t67/x/C/d",
+       "fields": {
+        "a.b": {
+         "mapValue": {
+          "fields": {
+           "c.d": {
+            "integerValue": "1"
+           }
+          }
+         }
+        },
+        "e": {
+         "integerValue": "2"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-special-chars: set: non-alpha characters in map keys",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t68/x/C/d",
+       "fields": {
+        "*": {
+         "mapValue": {
+          "fields": {
+           ".": {
+            "integerValue": "1"
+           }
+          }
+         }
+        },
+        "~": {
+         "integerValue": "2"
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-st-alone-mergeall: set: ServerTimestamp alone with MergeAll",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "fields": {},
+       "name": "projects/{project}/databases/(default)/documents/t69/x/C/d"
+      },
+      "updateMask": {
+       "fieldPaths": []
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-st-alone: set: ServerTimestamp alone",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t70/x/C/d",
+       "fields": {}
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-st-merge-both: set-merge: ServerTimestamp with Merge of both fields",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t71/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-st-merge-nonleaf-alone: set-merge: non-leaf merge field with ServerTimestamp alone",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t72/x/C/d"
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "h"
+       ]
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "h.g",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-st-merge-nonleaf: set-merge: non-leaf merge field with ServerTimestamp",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t73/x/C/d",
+       "fields": {
+        "h": {
+         "mapValue": {
+          "fields": {
+           "f": {
+            "integerValue": "5"
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "h"
+       ]
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "h.g",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-st-merge-nowrite: set-merge: If no ordinary values in Merge, no write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "fields": {},
+       "name": "projects/{project}/databases/(default)/documents/t74/x/C/d"
+      },
+      "updateMask": {
+       "fieldPaths": []
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-st-mergeall: set: ServerTimestamp with MergeAll",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t75/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-st-multi: set: multiple ServerTimestamp fields",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t76/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "setToServerValue": "REQUEST_TIME"
+       },
+       {
+        "fieldPath": "c.d",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }, {\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-st-nested: set: nested ServerTimestamp field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t77/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b.c",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-st-nomerge: set-merge: If is ServerTimestamp not in Merge, no transform",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t78/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-st-with-empty-map: set: ServerTimestamp beside an empty map",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t79/x/C/d",
+       "fields": {
+        "a": {
+         "mapValue": {
+          "fields": {
+           "b": {
+            "mapValue": {
+             "fields": {}
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a.c",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "set-st: set: ServerTimestamp with data",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t80/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-all-transforms: update: all transforms in a single call (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t81/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-all-transforms: update: all transforms in a single call",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t81/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "setToServerValue": "REQUEST_TIME"
+       },
+       {
+        "fieldPath": "c",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       },
+       {
+        "fieldPath": "d",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "4"
+          },
+          {
+           "integerValue": "5"
+          },
+          {
+           "integerValue": "6"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }, {\n      \"nullValue\": null\n    }, {\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-arrayremove-alone: update: ArrayRemove alone (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t82/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-arrayremove-alone: update: ArrayRemove alone",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "currentDocument": {
+       "exists": true
+      },
+      "update": {
+       "fields": {},
+       "name": "projects/{project}/databases/(default)/documents/t82/x/C/d"
+      },
+      "updateMask": {
+       "fieldPaths": []
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-arrayremove-multi: update: multiple ArrayRemove fields (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t83/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-arrayremove-multi: update: multiple ArrayRemove fields",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t83/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "c"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       },
+       {
+        "fieldPath": "c.d",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "4"
+          },
+          {
+           "integerValue": "5"
+          },
+          {
+           "integerValue": "6"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }, {\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-arrayremove-nested: update: nested ArrayRemove field (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t84/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-arrayremove-nested: update: nested ArrayRemove field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t84/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "b"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b.c",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-arrayremove: update: ArrayRemove with data (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t85/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-arrayremove: update: ArrayRemove with data",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t85/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-arrayunion-alone: update: ArrayUnion alone (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t86/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-arrayunion-alone: update: ArrayUnion alone",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "currentDocument": {
+       "exists": true
+      },
+      "update": {
+       "fields": {},
+       "name": "projects/{project}/databases/(default)/documents/t86/x/C/d"
+      },
+      "updateMask": {
+       "fieldPaths": []
+      },
+      "updateTransforms": [
+       {
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        },
+        "fieldPath": "a"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-arrayunion-multi: update: multiple ArrayUnion fields (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t87/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-arrayunion-multi: update: multiple ArrayUnion fields",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t87/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "c"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       },
+       {
+        "fieldPath": "c.d",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "4"
+          },
+          {
+           "integerValue": "5"
+          },
+          {
+           "integerValue": "6"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }, {\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-arrayunion-nested: update: nested ArrayUnion field (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t88/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-arrayunion-nested: update: nested ArrayUnion field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t88/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "b"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b.c",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-arrayunion: update: ArrayUnion with data (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t89/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-arrayunion: update: ArrayUnion with data",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t89/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-basic: update: basic (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t90/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-basic: update: basic",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t90/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-complex: update: complex (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t91/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-complex: update: complex",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t91/x/C/d",
+       "fields": {
+        "a": {
+         "arrayValue": {
+          "values": [
+           {
+            "integerValue": "1"
+           },
+           {
+            "doubleValue": 2.5
+           }
+          ]
+         }
+        },
+        "b": {
+         "mapValue": {
+          "fields": {
+           "c": {
+            "arrayValue": {
+             "values": [
+              {
+               "stringValue": "three"
+              },
+              {
+               "mapValue": {
+                "fields": {
+                 "d": {
+                  "booleanValue": true
+                 }
+                }
+               }
+              }
+             ]
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "b"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-del-alone: update: Delete alone (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t92/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-del-alone: update: Delete alone",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t92/x/C/d"
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-del-dot: update: Delete with a dotted field (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t93/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-del-dot: update: Delete with a dotted field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t93/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        },
+        "b": {
+         "mapValue": {
+          "fields": {
+           "d": {
+            "integerValue": "2"
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "b.c",
+        "b.d"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-del: update: Delete (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t94/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-del: update: Delete",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t94/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "b"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-exists-true-precond: update: Exists=true precondition is valid (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t95/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-exists-true-precond: update: Exists=true precondition is valid",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t95/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-nested-transform-and-nested-value: update: Nested transforms should not affect the field mask, even\nwhen there are other values that do. Transforms should only affect the\nDocumentTransform_FieldTransform list. (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t96/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-nested-transform-and-nested-value: update: Nested transforms should not affect the field mask, even\nwhen there are other values that do. Transforms should only affect the\nDocumentTransform_FieldTransform list.",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t96/x/C/d",
+       "fields": {
+        "a": {
+         "mapValue": {
+          "fields": {
+           "b": {
+            "integerValue": "7"
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a.b"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a.c",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-all-transforms: update-paths: all transforms in a single call (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t97/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-all-transforms: update-paths: all transforms in a single call",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t97/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "setToServerValue": "REQUEST_TIME"
+       },
+       {
+        "fieldPath": "c",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       },
+       {
+        "fieldPath": "d",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "4"
+          },
+          {
+           "integerValue": "5"
+          },
+          {
+           "integerValue": "6"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }, {\n      \"nullValue\": null\n    }, {\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-arrayremove-alone: update-paths: ArrayRemove alone (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t98/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-arrayremove-alone: update-paths: ArrayRemove alone",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "currentDocument": {
+       "exists": true
+      },
+      "update": {
+       "fields": {},
+       "name": "projects/{project}/databases/(default)/documents/t98/x/C/d"
+      },
+      "updateMask": {
+       "fieldPaths": []
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-arrayremove-multi: update-paths: multiple ArrayRemove fields (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t99/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-arrayremove-multi: update-paths: multiple ArrayRemove fields",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t99/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "c"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       },
+       {
+        "fieldPath": "c.d",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "4"
+          },
+          {
+           "integerValue": "5"
+          },
+          {
+           "integerValue": "6"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }, {\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-arrayremove-nested: update-paths: nested ArrayRemove field (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t100/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-arrayremove-nested: update-paths: nested ArrayRemove field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t100/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "b"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b.c",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-arrayremove: update-paths: ArrayRemove with data (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t101/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-arrayremove: update-paths: ArrayRemove with data",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t101/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "removeAllFromArray": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-arrayunion-alone: update-paths: ArrayUnion alone (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t102/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-arrayunion-alone: update-paths: ArrayUnion alone",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "currentDocument": {
+       "exists": true
+      },
+      "update": {
+       "fields": {},
+       "name": "projects/{project}/databases/(default)/documents/t102/x/C/d"
+      },
+      "updateMask": {
+       "fieldPaths": []
+      },
+      "updateTransforms": [
+       {
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        },
+        "fieldPath": "a"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-arrayunion-multi: update-paths: multiple ArrayUnion fields (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t103/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-arrayunion-multi: update-paths: multiple ArrayUnion fields",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t103/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "c"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       },
+       {
+        "fieldPath": "c.d",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "4"
+          },
+          {
+           "integerValue": "5"
+          },
+          {
+           "integerValue": "6"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }, {\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-arrayunion-nested: update-paths: nested ArrayUnion field (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t104/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-arrayunion-nested: update-paths: nested ArrayUnion field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t104/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "b"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b.c",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-arrayunion: update-paths: ArrayUnion with data (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t105/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-arrayunion: update-paths: ArrayUnion with data",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t105/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "appendMissingElements": {
+         "values": [
+          {
+           "integerValue": "1"
+          },
+          {
+           "integerValue": "2"
+          },
+          {
+           "integerValue": "3"
+          }
+         ]
+        }
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"nullValue\": null\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-basic: update-paths: basic (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t106/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-basic: update-paths: basic",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t106/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-complex: update-paths: complex (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t107/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-complex: update-paths: complex",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t107/x/C/d",
+       "fields": {
+        "a": {
+         "arrayValue": {
+          "values": [
+           {
+            "integerValue": "1"
+           },
+           {
+            "doubleValue": 2.5
+           }
+          ]
+         }
+        },
+        "b": {
+         "mapValue": {
+          "fields": {
+           "c": {
+            "arrayValue": {
+             "values": [
+              {
+               "stringValue": "three"
+              },
+              {
+               "mapValue": {
+                "fields": {
+                 "d": {
+                  "booleanValue": true
+                 }
+                }
+               }
+              }
+             ]
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "b"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-del-alone: update-paths: Delete alone (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t108/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-del-alone: update-paths: Delete alone",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t108/x/C/d"
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-del: update-paths: Delete (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t109/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-del: update-paths: Delete",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t109/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "b"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-exists-true-precond: update-paths: Exists=true precondition is valid (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t110/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-exists-true-precond: update-paths: Exists=true precondition is valid",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t110/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-fp-del: update-paths: field paths with delete (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t111/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-fp-del: update-paths: field paths with delete",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t111/x/C/d",
+       "fields": {
+        "foo": {
+         "mapValue": {
+          "fields": {
+           "bar": {
+            "integerValue": "1"
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "foo.bar",
+        "foo.delete"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-fp-multi: update-paths: multiple-element field path (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t112/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-fp-multi: update-paths: multiple-element field path",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t112/x/C/d",
+       "fields": {
+        "a": {
+         "mapValue": {
+          "fields": {
+           "b": {
+            "integerValue": "1"
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a.b"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-fp-nosplit: update-paths: FieldPath elements are not split on dots (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t113/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-fp-nosplit: update-paths: FieldPath elements are not split on dots",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t113/x/C/d",
+       "fields": {
+        "a.b": {
+         "mapValue": {
+          "fields": {
+           "f.g": {
+            "mapValue": {
+             "fields": {
+              "n.o": {
+               "integerValue": "7"
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "`a.b`.`f.g`"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-nested-transform-and-nested-value: update-paths: Nested transforms should not affect the field mask, even\nwhen there are other values that do. Transforms should only affect the\nDocumentTransform_FieldTransform list. (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t114/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-nested-transform-and-nested-value: update-paths: Nested transforms should not affect the field mask, even\nwhen there are other values that do. Transforms should only affect the\nDocumentTransform_FieldTransform list.",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t114/x/C/d",
+       "fields": {
+        "a": {
+         "mapValue": {
+          "fields": {
+           "b": {
+            "integerValue": "7"
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a.b"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a.c",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-special-chars: update-paths: special characters (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t115/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-special-chars: update-paths: special characters",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t115/x/C/d",
+       "fields": {
+        "*": {
+         "mapValue": {
+          "fields": {
+           "`": {
+            "integerValue": "2"
+           },
+           "~": {
+            "integerValue": "1"
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "`*`.`\\``",
+        "`*`.`~`"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-st-alone: update-paths: ServerTimestamp alone (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t116/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-st-alone: update-paths: ServerTimestamp alone",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "currentDocument": {
+       "exists": true
+      },
+      "update": {
+       "fields": {},
+       "name": "projects/{project}/databases/(default)/documents/t116/x/C/d"
+      },
+      "updateMask": {
+       "fieldPaths": []
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-st-multi: update-paths: multiple ServerTimestamp fields (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t117/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-st-multi: update-paths: multiple ServerTimestamp fields",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t117/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "c"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "setToServerValue": "REQUEST_TIME"
+       },
+       {
+        "fieldPath": "c.d",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }, {\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-st-nested: update-paths: nested ServerTimestamp field (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t118/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-st-nested: update-paths: nested ServerTimestamp field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t118/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "b"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b.c",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-st-with-empty-map: update-paths: ServerTimestamp beside an empty map (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t119/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-st-with-empty-map: update-paths: ServerTimestamp beside an empty map",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t119/x/C/d",
+       "fields": {
+        "a": {
+         "mapValue": {
+          "fields": {
+           "b": {
+            "mapValue": {
+             "fields": {}
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a.c",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ],
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-st: update-paths: ServerTimestamp with data (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t120/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-st: update-paths: ServerTimestamp with data",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t120/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-uptime: update-paths: last-update-time precondition (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t121/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-paths-uptime: update-paths: last-update-time precondition",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t121/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "currentDocument": {
+       "updateTime": "1970-01-01T00:00:42Z"
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the stored version (<version>) does not match the required base version (42000000)\",\"status\":\"FAILED_PRECONDITION\"}}"
+   }
+  },
+  {
+   "name": "update-quoting: update: non-letter starting chars are quoted, except underscore (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t122/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-quoting: update: non-letter starting chars are quoted, except underscore",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t122/x/C/d",
+       "fields": {
+        "_0": {
+         "mapValue": {
+          "fields": {
+           "1": {
+            "mapValue": {
+             "fields": {
+              "+2": {
+               "integerValue": "1"
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "_0.`1`.`+2`"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-split-top-level: update: Split on dots for top-level keys only (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t123/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-split-top-level: update: Split on dots for top-level keys only",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t123/x/C/d",
+       "fields": {
+        "h": {
+         "mapValue": {
+          "fields": {
+           "g": {
+            "mapValue": {
+             "fields": {
+              "j.k": {
+               "integerValue": "6"
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "h.g"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-split: update: split on dots (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t124/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-split: update: split on dots",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t124/x/C/d",
+       "fields": {
+        "a": {
+         "mapValue": {
+          "fields": {
+           "b": {
+            "mapValue": {
+             "fields": {
+              "c": {
+               "integerValue": "1"
+              }
+             }
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a.b.c"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-st-alone: update: ServerTimestamp alone (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t125/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-st-alone: update: ServerTimestamp alone",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "currentDocument": {
+       "exists": true
+      },
+      "update": {
+       "fields": {},
+       "name": "projects/{project}/databases/(default)/documents/t125/x/C/d"
+      },
+      "updateMask": {
+       "fieldPaths": []
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-st-dot: update: ServerTimestamp with dotted field (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t126/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-st-dot: update: ServerTimestamp with dotted field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "currentDocument": {
+       "exists": true
+      },
+      "update": {
+       "fields": {},
+       "name": "projects/{project}/databases/(default)/documents/t126/x/C/d"
+      },
+      "updateMask": {
+       "fieldPaths": []
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a.b.c",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-st-multi: update: multiple ServerTimestamp fields (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t127/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-st-multi: update: multiple ServerTimestamp fields",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t127/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "c"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "setToServerValue": "REQUEST_TIME"
+       },
+       {
+        "fieldPath": "c.d",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }, {\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-st-nested: update: nested ServerTimestamp field (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t128/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-st-nested: update: nested ServerTimestamp field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t128/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a",
+        "b"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b.c",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-st-with-empty-map: update: ServerTimestamp beside an empty map (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t129/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-st-with-empty-map: update: ServerTimestamp beside an empty map",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t129/x/C/d",
+       "fields": {
+        "a": {
+         "mapValue": {
+          "fields": {
+           "b": {
+            "mapValue": {
+             "fields": {}
+            }
+           }
+          }
+         }
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "a.c",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-st: update: ServerTimestamp with data (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t130/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-st: update: ServerTimestamp with data",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t130/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "currentDocument": {
+       "exists": true
+      },
+      "updateTransforms": [
+       {
+        "fieldPath": "b",
+        "setToServerValue": "REQUEST_TIME"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"timestampValue\": \"<now>\"\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-uptime: update: last-update-time precondition (its document, created first)",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t131/x/C/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "update-uptime: update: last-update-time precondition",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/t131/x/C/d",
+       "fields": {
+        "a": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "updateMask": {
+       "fieldPaths": [
+        "a"
+       ]
+      },
+      "currentDocument": {
+       "updateTime": "1970-01-01T00:00:42Z"
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the stored version (<version>) does not match the required base version (42000000)\",\"status\":\"FAILED_PRECONDITION\"}}"
+   }
+  }
+ ]
+}

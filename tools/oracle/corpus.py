@@ -61,6 +61,7 @@ FIXTURE_CLIENTS = {
     "auth.py": ([GRPC, REST], PY_GRPCURL),
     "base_versions.py": ([REST], PY),
     "commit_checks.py": ([GRPC, REST], PY_GRPCURL),
+    "conformance.py": ([REST], PY),
     "cors.py": ([REST], PY),
     "document_writes.py": ([REST], PY),
     "export_import.py": ([REST, PROCESS], PY),
