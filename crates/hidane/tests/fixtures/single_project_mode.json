@@ -363,6 +363,26 @@
      "stdout": []
     },
     {
+     "name": "configured: bulk delete",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/emulator/v1/projects/configured:bulkDelete",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "database": "projects/configured/databases/(default)",
+      "collection_ids": [
+       "zz"
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
+     },
+     "stdout": []
+    },
+    {
      "name": "configured: gRPC GetDocument",
      "kind": "grpc",
      "rpc": "GetDocument",
@@ -917,6 +937,29 @@
      ]
     },
     {
+     "name": "other: bulk delete",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/emulator/v1/projects/other:bulkDelete",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "database": "projects/other/databases/(default)",
+      "collection_ids": [
+       "zz"
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
      "name": "other: gRPC GetDocument",
      "kind": "grpc",
      "rpc": "GetDocument",
@@ -1339,6 +1382,29 @@
      "outcome": {
       "status": 400,
       "body": "{\"error\":{\"code\":400,\"message\":\"export_directory must be a directory\",\"status\":\"FAILED_PRECONDITION\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "bulk delete: the configured path, another project's database",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/emulator/v1/projects/configured:bulkDelete",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "database": "projects/other/databases/(default)",
+      "collection_ids": [
+       "zz"
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
      },
      "stdout": [
       "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
@@ -1833,6 +1899,26 @@
      "path": "/emulator/v1/projects/configured/databases/(default)/documents/c/d",
      "headers": {
       "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: bulk delete",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/emulator/v1/projects/configured:bulkDelete",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "database": "projects/configured/databases/(default)",
+      "collection_ids": [
+       "zz"
+      ]
      },
      "outcome": {
       "status": 200,
@@ -2375,6 +2461,28 @@
      ]
     },
     {
+     "name": "other: bulk delete",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/emulator/v1/projects/other:bulkDelete",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "database": "projects/other/databases/(default)",
+      "collection_ids": [
+       "zz"
+      ]
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
      "name": "other: gRPC GetDocument",
      "kind": "grpc",
      "rpc": "GetDocument",
@@ -2744,6 +2852,28 @@
      "body": {
       "database": "projects/other/databases/(default)",
       "export_directory": "/nonexistent-hidane-dir"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "bulk delete: the configured path, another project's database",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/emulator/v1/projects/configured:bulkDelete",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "database": "projects/other/databases/(default)",
+      "collection_ids": [
+       "zz"
+      ]
      },
      "outcome": {
       "status": 400,

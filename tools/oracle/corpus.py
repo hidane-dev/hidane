@@ -60,6 +60,7 @@ FIXTURE_CLIENTS = {
     "aggregations.py": ([REST], PY),
     "auth.py": ([GRPC, REST], PY_GRPCURL),
     "base_versions.py": ([REST], PY),
+    "bulk_delete.py": ([REST], PY),
     "commit_checks.py": ([GRPC, REST], PY_GRPCURL),
     "conformance.py": ([REST], PY),
     "cors.py": ([REST], PY),

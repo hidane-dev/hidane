@@ -5,7 +5,8 @@
 //! - The project is the one a request is addressed to: a gRPC call's
 //!   `google-cloud-resource-prefix` header, else the database of its `x-goog-request-params`
 //!   header, else its name (a stream without either header is not checked); a REST path's; a
-//!   WebChannel URL's `database` parameter; an export's or import's body. The names inside a
+//!   WebChannel URL's `database` parameter; an export's, import's or bulk delete's body. The
+//!   names inside a
 //!   request (its writes' documents, references) do not count.
 //! - It is checked once the request's name is read (an invalid name is answered first), then
 //!   again once the `Authorization` header is read, before anything else: each check prints a

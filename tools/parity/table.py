@@ -558,6 +558,12 @@ RECORDINGS = {
                  "emulator's internal key, an intentional difference); a success on its status; "
                  "REST's `currentDocument.updateTime` parameter as intentionally different",
         count=base_versions),
+    f"{H}/fixtures/bulk_delete.json": dict(
+        area="admin",
+        tests=[f"{H}/rest.rs::bulk_delete_answers_like_the_official_emulator"],
+        counted="each request (the writes before a bulk delete and the query after it too)",
+        compares="in full: status, content type and body byte for byte, server times masked",
+        count=lambda f: rest(f["cases"])),
     f"{H}/fixtures/commit_checks.json": dict(
         area="documents",
         tests=[f"{H}/commit_checks.rs::the_first_error_is_the_official_one",

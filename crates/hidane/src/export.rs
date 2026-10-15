@@ -9,11 +9,14 @@
 //!   `.overall_export_metadata` file, writes that export's documents into `database`.
 //! - `--seed_from_export` (`firebase emulators:start --import`) reads an export at startup;
 //!   `firestore::seed` hands it to every database on first access.
+//! - `POST …:bulkDelete` with `{database, collection_ids, namespace_ids}` deletes, as Datastore's
+//!   bulk delete does, the documents of every collection with one of the IDs, or every document
+//!   for the namespace `""` (`tests/fixtures/bulk_delete.json`, #36).
 //!
-//! The bodies are read as protobuf-java's JSON parser reads them: either spelling of a key,
-//! `null` for an empty value, a number or a boolean as its text; any other key or shape is
-//! "Payload isn't valid for request." Error messages are the official emulator's
-//! (`tests/fixtures/export_import.json`).
+//! The bodies are read as protobuf-java's JSON parser reads them, leniently ([`crate::gson`]):
+//! either spelling of a key, `null` for an empty value, a number or a boolean as its text; any
+//! other key or shape is "Payload isn't valid for request." Error messages are the official
+//! emulator's (`tests/fixtures/export_import.json`).
 
 use std::{
     fs,
@@ -41,6 +44,7 @@ use crate::{FirestoreService, firestore::auth, rest};
 pub(crate) enum Verb {
     Export,
     Import,
+    BulkDelete,
 }
 
 /// `/emulator/v1/projects/{p}:export`, `/emulator/v1/projects/{p}/databases/{d}:import`, …
@@ -50,6 +54,7 @@ pub(crate) fn route(path: &str) -> Option<Verb> {
     let verb = match verb {
         "export" => Verb::Export,
         "import" => Verb::Import,
+        "bulkDelete" => Verb::BulkDelete,
         _ => return None,
     };
     let segments: Vec<&str> = target.split('/').collect();
@@ -75,6 +80,9 @@ pub(crate) async fn handle(
     if method != Method::POST {
         return crate::not_found_response();
     }
+    if verb == Verb::BulkDelete {
+        return bulk_delete(firestore, headers, body).await;
+    }
     let result = async {
         auth::from_header(crate::authorization(headers))?;
         let body = axum::body::to_bytes(body, MAX_BODY)
@@ -92,7 +100,48 @@ pub(crate) async fn handle(
                     .import_file(&request.database, &request.directory)
                     .await
             }
+            Verb::BulkDelete => unreachable!("answered by bulk_delete"),
         }
+    }
+    .await;
+    match result {
+        Ok(()) => crate::empty_json(),
+        Err(status) => rest::error(&status),
+    }
+}
+
+/// `:bulkDelete`: the body, its database, the `Authorization` header (between the checks of
+/// `--single_project_mode`), then the IDs, in that order (`tests/fixtures/bulk_delete.json`).
+async fn bulk_delete(firestore: FirestoreService, headers: &HeaderMap, body: Body) -> Response {
+    // A form is not a request this endpoint reads, as on the official emulator.
+    if headers
+        .get(axum::http::header::CONTENT_TYPE)
+        .and_then(|v| v.to_str().ok())
+        .is_some_and(|v| v.starts_with("application/x-www-form-urlencoded"))
+    {
+        return crate::not_found_response();
+    }
+    let result = async {
+        let body = axum::body::to_bytes(body, MAX_BODY)
+            .await
+            .map_err(|_| invalid_payload())?;
+        let request = Request::parse(&body, Verb::BulkDelete)?;
+        crate::firestore::names::database(&request.database)?;
+        firestore.admit(&request.database, || {
+            auth::from_header(crate::authorization(headers))
+        })?;
+        if request.collection_ids.is_empty() && request.namespace_ids.is_empty() {
+            return Err(Status::failed_precondition(
+                "collection_ids and namespace_ids cannot both be empty.",
+            ));
+        }
+        firestore
+            .bulk_delete(
+                &request.database,
+                &request.collection_ids,
+                &request.namespace_ids,
+            )
+            .await
     }
     .await;
     match result {
@@ -110,6 +159,35 @@ struct Request {
     database: String,
     directory: String,
     name: String,
+    collection_ids: Vec<String>,
+    namespace_ids: Vec<String>,
+}
+
+/// A scalar as protobuf-java reads it into a string: `null` empty, a number or a boolean as its
+/// text.
+fn text(value: Json) -> Result<String, Status> {
+    match value {
+        Json::Null => Ok(String::new()),
+        Json::String(s) => Ok(s),
+        Json::Number(n) => Ok(n.to_string()),
+        Json::Bool(b) => Ok(b.to_string()),
+        Json::Array(_) | Json::Object(_) => Err(invalid_payload()),
+    }
+}
+
+/// A repeated string: `null` empty, each element a scalar but `null`.
+fn texts(value: Json) -> Result<Vec<String>, Status> {
+    match value {
+        Json::Null => Ok(Vec::new()),
+        Json::Array(values) => values
+            .into_iter()
+            .map(|value| match value {
+                Json::Null => Err(invalid_payload()),
+                value => text(value),
+            })
+            .collect(),
+        _ => Err(invalid_payload()),
+    }
 }
 
 impl Request {
@@ -117,7 +195,9 @@ impl Request {
         let json = if body.iter().all(u8::is_ascii_whitespace) {
             Json::Null
         } else {
-            serde_json::from_slice(body).map_err(|_| invalid_payload())?
+            crate::gson::strict(body)
+                .and_then(|text| serde_json::from_str(&text).ok())
+                .ok_or_else(invalid_payload)?
         };
         let fields = match json {
             Json::Null => serde_json::Map::new(),
@@ -126,17 +206,18 @@ impl Request {
         };
         let mut request = Self::default();
         for (key, value) in fields {
-            let text = match value {
-                Json::Null => String::new(),
-                Json::String(s) => s,
-                Json::Number(n) => n.to_string(),
-                Json::Bool(b) => b.to_string(),
-                Json::Array(_) | Json::Object(_) => return Err(invalid_payload()),
-            };
             match (key.as_str(), verb) {
-                ("database", _) => request.database = text,
-                ("export_directory" | "exportDirectory", _) => request.directory = text,
-                ("export_name" | "exportName", Verb::Export) => request.name = text,
+                ("database", _) => request.database = text(value)?,
+                ("export_directory" | "exportDirectory", Verb::Export | Verb::Import) => {
+                    request.directory = text(value)?;
+                }
+                ("export_name" | "exportName", Verb::Export) => request.name = text(value)?,
+                ("collection_ids" | "collectionIds", Verb::BulkDelete) => {
+                    request.collection_ids = texts(value)?;
+                }
+                ("namespace_ids" | "namespaceIds", Verb::BulkDelete) => {
+                    request.namespace_ids = texts(value)?;
+                }
                 _ => return Err(invalid_payload()),
             }
         }

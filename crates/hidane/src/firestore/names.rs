@@ -332,7 +332,7 @@ impl<'a> Cursor<'a> {
             Err(self.trailing_slash())
         } else {
             Err(Status::invalid_argument(format!(
-                "{} \"{}\" has unexpected trailing characters at index {}.",
+                "{} \"{}\" has extra characters at index {}.",
                 self.what, self.name, self.pos
             )))
         }
