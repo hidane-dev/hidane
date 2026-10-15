@@ -605,6 +605,23 @@ RECORDINGS = {
         counted="each request (the writes before a bulk delete and the query after it too)",
         compares="in full: status, content type and body byte for byte, server times masked",
         count=lambda f: rest(f["cases"])),
+    f"{H}/fixtures/index_usage.json": dict(
+        area="queries",
+        tests=[f"{H}/index_usage.rs::index_usage_answers_like_the_official_emulator"],
+        counted="each query of `queries.json` and `aggregations.json` that runs, each sequence "
+                "of requests and each request to the endpoint",
+        compares="in full: what `:indexUsage` answers after each, a database's reports as a set "
+                 "(the official emulator's order changes from run to run), a sequence's answers "
+                 "too, and an endpoint's status, content type and body byte for byte",
+        count=lambda f: (each(f["cases"], REST, FULL) + each(f["sequences"], REST, FULL)
+                         + each(f["endpoints"], REST, FULL))),
+    f"{H}/fixtures/index_usage_enterprise.json": dict(
+        area="queries",
+        tests=[f"{H}/index_usage.rs::enterprise_index_usage_answers_like_the_official_emulator"],
+        counted="each sequence of requests, on an enterprise database",
+        compares="in full: the sequence's answers and what `:indexUsage` answers after it, the "
+                 "reports as a set",
+        count=lambda f: each(f["sequences"], REST, FULL)),
     f"{H}/fixtures/commit_checks.json": dict(
         area="documents",
         tests=[f"{H}/commit_checks.rs::the_first_error_is_the_official_one",

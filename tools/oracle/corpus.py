@@ -71,6 +71,7 @@ FIXTURE_CLIENTS = {
     "function_events.py": ([GRPC, REST, PROCESS], PY_GRPCURL),
     "function_triggers.py": ([REST, PROCESS], PY),
     "grpc_settings.py": ([GRPC, REST], PY_GRPCURL),
+    "index_usage.py": ([REST, WEBCHANNEL], PY),
     "json_escapes.py": ([REST, WEBCHANNEL], PY),
     "limits.py": ([REST], PY),
     "list_documents.py": ([GRPC, REST], PY_GRPCURL),

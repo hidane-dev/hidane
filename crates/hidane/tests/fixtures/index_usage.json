@@ -1,0 +1,5580 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/index_usage.py",
+ "cases": [
+  {
+   "kind": "query",
+   "name": "all of t, by name",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by v ascending (type order; documents without v left out)",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by v descending",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v == null",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v == NaN",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v == int 1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v == double 1.0",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v == -0.0",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v == int 2^53+1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v == double 2^53",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v == string a",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v == timestamp",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v == bytes",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v == reference",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v == geo point",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v == array [1]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v == empty array",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v == map {a: 1}",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v == empty map",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v == vector",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v == true",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v != int 1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v != null",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v != NaN",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v != string a",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN int 1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN string b",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN timestamp",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN array [2]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN empty map",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN vector of 2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN false",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN -Infinity",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN bytes",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN reference",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN geo point",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN NaN",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN null",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN_OR_EQUAL int 1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN_OR_EQUAL string b",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN_OR_EQUAL timestamp",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN_OR_EQUAL array [2]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN_OR_EQUAL empty map",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN_OR_EQUAL vector of 2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN_OR_EQUAL false",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN_OR_EQUAL -Infinity",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN_OR_EQUAL bytes",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN_OR_EQUAL reference",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN_OR_EQUAL geo point",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN_OR_EQUAL NaN",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v LESS_THAN_OR_EQUAL null",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN int 1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN string b",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN timestamp",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN array [2]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN empty map",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN vector of 2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN false",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN -Infinity",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN bytes",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN reference",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN geo point",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN NaN",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN null",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN_OR_EQUAL int 1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN_OR_EQUAL string b",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN_OR_EQUAL timestamp",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN_OR_EQUAL array [2]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN_OR_EQUAL empty map",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN_OR_EQUAL vector of 2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN_OR_EQUAL false",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN_OR_EQUAL -Infinity",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN_OR_EQUAL bytes",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN_OR_EQUAL reference",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN_OR_EQUAL geo point",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN_OR_EQUAL NaN",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v GREATER_THAN_OR_EQUAL null",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v array-contains int 1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v array-contains null",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v array-contains NaN",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v array-contains string a",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v array-contains map {a: 1}",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v in [1, a]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v in [null]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v in [NaN]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v in [[1]]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v in [1, 1]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v not-in [1, a]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v not-in [null]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v not-in [NaN]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v < NaN, by name descending",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v >= null, by name descending",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v != null, by name descending",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v not-in [null], by name descending",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v > NaN and v == 1, by name descending",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v array-contains-any [1, a]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v array-contains-any [null]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v IS_NULL",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v IS_NOT_NULL",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v IS_NAN",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "v IS_NOT_NAN",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a == 2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a > 1 (implicit order by a)",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a > 1 order by b",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d104/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a > 1 order by a desc",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a > 1 and b < z (two inequalities)",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d106/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "b < z and a > 1 order by a desc",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d107/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "DESCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "DESCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a != 2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a != 2 order by b",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d109/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by a",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by a desc",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by a desc, b",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d112/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "DESCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by b, a desc",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d113/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "a",
+          "order": "DESCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by m.x",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by a, __name__ desc",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d115/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "b == x order by a",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d116/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a >= 2 and b == y",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d117/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a == 1 or b == z",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "(a == 2 and b == x) or tags contains green",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d119/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a < 2 or a > 3",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a < 2 or b == z",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d121/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "or of one filter",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "and of one filter",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "nested and inside and",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d124/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "tags array-contains red",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "tags array-contains-any [blue, green]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a in [1, 3] and tags array-contains blue",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d127/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "2"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "m.x == 1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "m.x > 1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "m == {x: 1}",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "opt == null",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "opt != false",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "opt not-in [true]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "opt is not null",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "quoted field `a b` == 1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "__name__ == p3",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "__name__ > p4",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "__name__ in [p2, p5]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "__name__ not-in [p2, p5]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "__name__ != p2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "select a, m.x",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "select nothing",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "select __name__",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "select a missing field",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "select m",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by a, start at 2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by a, start after 2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by a, end at 3",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by a, end before 3",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by a, start at 2, end before 3",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by a desc, start at 2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by a, start at 2.5 (between values)",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by a, start at string (another type)",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by a, offset 2 limit 2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "offset 3",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "offset beyond the results",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "limit 0",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "limit 3",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "collection group p",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "collection group p, a > 9",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d160/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION_GROUP",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "collection group p under p/p1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "collection group p under x",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "collection p under p/p1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "collection other under p/p1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "collection group p, __name__ >= p/p2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "empty collection",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "collection group with no documents",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by __name__ asc",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a == 2 order by __name__ desc",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d169/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "array-contains + __name__ desc",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d170/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "opt is null + __name__ desc",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d171/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "opt",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "or + __name__ desc",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d172/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+         }
+        ]
+       },
+       "numQueries": "2"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "in + __name__ desc",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d173/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+         }
+        ]
+       },
+       "numQueries": "2"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a == 2 and __name__ > p1, __name__ desc",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d174/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "group p, a == 11, __name__ desc",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d175/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION_GROUP",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "where a == 1 order by a",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d176/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by a, __name__, start after (2, p2)",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by __name__, start after p3",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by __name__, start at other collection",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by __name__, start at p/p1/p/sub1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "group p order by __name__, start after p/p8",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by a desc, b, start at (2, x)",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d182/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "DESCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by a desc, b, start after (2, x)",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d183/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "DESCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by a desc, b, end before (2, y)",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d184/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "DESCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "in + array-contains-any",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d185/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "2"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "array-contains-any inside or",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "in 15 x in 2 (30 disjunctions)",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d187/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "30"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "in [1, null]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "in [1, NaN]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "not-in [1, null]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "not-in [1, NaN]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "array-contains-any [1, null]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "u is null (missing on most)",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "b == w or a < 2 (b == w lacks a)",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d194/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "not-in + order by b",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d195/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "is-nan on a string field",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a < 2 or a > 3, limit 2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "or with order by b",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d198/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "2"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "m.x > 1 and b < y (nested and plain inequality)",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d199/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "m.x",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "every collection at the root",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "every collection under p/p1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "every descendant",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "every descendant of p/p1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "no from",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "every descendant, limit 2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "every descendant in collection p (recursiveDelete range)",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "in with 30 values",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "not-in with 10 values",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "empty composite filter",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order without a direction",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "__name__ filter in another collection",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "__name__ filter on a subcollection document",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "array-contains in two branches of an or",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "array-contains or array-contains-any",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "array-contains-any in two branches of an or",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "not-in in an and of one filter",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a filter on a path into a vector",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "an order by a path into a vector",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a projection of a path into a vector",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a projection of a path into a vector alone",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "in with a value twice, and in 2",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d221/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "30"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "in with NaN twice, and in 2",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d222/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "28"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "in with an empty array twice, and in 2",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d223/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "30"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "array-contains-any with a value twice, and in 2",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d224/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "30"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "an or of one equality 31 times",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "an or of an in and an equality it holds, and in 2",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d226/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "30"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "an or of array-contains-any and an array-contains it holds, and in 2",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d227/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "30"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "one in twice, its values in another order",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "one in twice, once in a nested and",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d229/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "10"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "one conjunction in two orders, and in 2",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d230/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "m.x",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "2"
+      },
+      {
+       "index": {
+        "name": "projects/{project}/databases/d230/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "28"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "an equality twice in an and",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d231/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "30"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "one array-contains twice",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "one array-contains-any twice, its values in another order",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a > 1, __name__ > p1 and __name__ == p3",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a > 1, __name__ not-in [p1] and __name__ == p3",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a == 3 and __name__ == p3",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "opt is null and __name__ == p3",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "tags array-contains red and __name__ == p3",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a > 1 and __name__ != p3",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "filter on a.__type__",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "filter on a.b.__type__",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "unary filter on a.__type__",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "order by a.__type__",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "an order by a path ending in __type__",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a quoted __name__ is the key",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a filter on a reference to the documents root",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a filter on a reference to the database",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a filter on a map with an unknown __type__",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a filter on a vector holding NaN",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a cursor on __name__ at the documents root",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "too large for a query: a string of 1499 bytes",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "too large for a query: bytes, 1500",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "too large for a query: a map, 1500 bytes",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "too large for a query: 187 integers",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "too large for a query: a vector of 187",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "too large for a query: a reference, 1500 bytes",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "too large for a query: in, two of 800",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "too large for a query: a cursor",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "find_nearest",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "__name__ == p3 and b <= null",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "__name__ == p3 and b < NaN",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "__name__ == p3 and b != null",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "__name__ == p3 and b not-in [null]",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "an or of == NaN and == null and an equality, and in 11",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d264/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "m.x",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "11"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "an or of > NaN and > null and an equality, and in 11",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d265/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "m.x",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "11"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "an or of < NaN and >= null and an equality, and in 11",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d266/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "m.x",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "11"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "an or of == null and > null and an equality, and in 11",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d267/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "m.x",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "11"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "an or of != null and == null and an equality, and in 11",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d268/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "m.x",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "11"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "an or of array-contains NaN and null and an equality, and in 11",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d269/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "m.x",
+          "arrayConfig": "CONTAINS"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "11"
+      },
+      {
+       "index": {
+        "name": "projects/{project}/databases/d269/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "m.x",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "11"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "an or of array-contains null and an empty array and an equality, and in 11",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d270/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "m.x",
+          "arrayConfig": "CONTAINS"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "11"
+      },
+      {
+       "index": {
+        "name": "projects/{project}/databases/d270/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "m.x",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "11"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "an or of in [NaN] and in [null] and an equality, and in 11",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d271/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "m.x",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "11"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "an or of == [-0.0] and == [0.0] and an equality, and in 11",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d272/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "m.x",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "22"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "in 11 and eight equalities",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d273/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e0",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e1",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e2",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e3",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e4",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e5",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e6",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e7",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "11"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "in 24, two equalities and an inequality",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d274/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e0",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e1",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "24"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a false filter before array-contains on strings",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d275/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "arrayConfig": "CONTAINS"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a true filter or array-contains on strings",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d276/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "b",
+          "arrayConfig": "CONTAINS"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "array-contains on strings before a false filter",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d277/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "arrayConfig": "CONTAINS"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a vector holding NaN in in",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a vector holding NaN in a cursor",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "select a path below a value that is not a map",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "select a path two maps deep",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of mixed",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of ints",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of overflow",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of overflow_back",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of underflow",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of nan",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of infinities",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of infinity",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of tenths",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of negzero",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of precision",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of precision_ints",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of big_avg",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of strings",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of doubles_int_valued",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of tenths3",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of big_mixed",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of large_doubles",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of thirds",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count, sum and avg of tiny",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "avg of overflow alone",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "sum of overflow alone",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "avg of underflow alone",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "sum of underflow alone",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "avg of big_avg alone",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "sum of big_avg alone",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "avg of tenths3 alone",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "sum of tenths3 alone",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "avg of big_mixed alone",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "sum of big_mixed alone",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "avg of thirds alone",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "sum of thirds alone",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "empty collection",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count up to 2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count up to 100",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count up to 0",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count with limit 2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count with offset 2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count with limit 3 and up to 2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "sum with limit 1 (order by name)",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count where v > 0",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count order by v (documents without v left out)",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "collection group sub",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d324/collectionGroups/sub/indexes/_",
+        "queryScope": "COLLECTION_GROUP",
+        "fields": [
+         {
+          "fieldPath": "v",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "every collection",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "every descendant",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count next to sum leaves out documents without the field",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count next to avg leaves out documents without the field",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count next to sums of two fields",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d329/collectionGroups/mixed/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "v",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "w",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count and sum, offset 5 limit 1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count and sum, limit 6",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count and sum of w, order by v",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d332/collectionGroups/mixed/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "v",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "w",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "sum of a nested field",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "sum of a missing field",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "subcollection under mixed/i1",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "default aliases",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "five aggregations",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "alias with a dot",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "alias with a space",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count under a document without a collection",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "sum with limit 1 takes the smallest value",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "avg with limit 1 takes the smallest value",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count and sum with limit 2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "count and sum with offset 3 (a value that is not a number)",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "avg with offset 2",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "sums of v and u, limit 1 (u first)",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d346/collectionGroups/ordered/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "u",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "v",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "sums of u and v, limit 1 (u first)",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d347/collectionGroups/ordered/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "u",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "v",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "an inequality's field comes before the summed field",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d348/collectionGroups/ordered/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "k",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "v",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "the summed field in the direction of the last order",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d349/collectionGroups/ordered/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "k",
+          "order": "DESCENDING"
+         },
+         {
+          "fieldPath": "v",
+          "order": "DESCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "the summed field after an ascending order",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d350/collectionGroups/ordered/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "k",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "v",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "an order by the summed field",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "avg with limit 1: bytes after numbers",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "avg with offset 2: a timestamp after numbers",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "sum of a.__type__",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "a count with in 11 and eight equalities",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d355/collectionGroups/ints/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e0",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e1",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e2",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e3",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e4",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e5",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e6",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e7",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "11"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "an avg with in 14 and six equalities",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d356/collectionGroups/ints/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e0",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e1",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e2",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e3",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e4",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e5",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "v",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "14"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "an empty projection, a count",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "a projection of the name, a count",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "a projection, a count",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "ordered by the name, a count",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "ordered by the field, then the name",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "aggregation",
+   "name": "a key equality, ordered by the field",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  }
+ ],
+ "sequences": [
+  {
+   "name": "three queries, the first again",
+   "requests": [
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "compositeFilter": {
+         "op": "AND",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "a"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "b"
+            },
+            "op": "GREATER_THAN",
+            "value": {
+             "integerValue": "0"
+            }
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    },
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       "orderBy": [
+        {
+         "field": {
+          "fieldPath": "b"
+         },
+         "direction": "DESCENDING"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "d"
+        }
+       ],
+       "where": {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "tags"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       "orderBy": [
+        {
+         "field": {
+          "fieldPath": "a"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "compositeFilter": {
+         "op": "AND",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "a"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "b"
+            },
+            "op": "GREATER_THAN",
+            "value": {
+             "integerValue": "0"
+            }
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    },
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     }
+    }
+   ],
+   "answers": [
+    200,
+    200,
+    200,
+    200,
+    200
+   ],
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d363/collectionGroups/d/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+         },
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      },
+      {
+       "index": {
+        "name": "projects/{project}/databases/d363/collectionGroups/c/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "2"
+      },
+      {
+       "index": {
+        "name": "projects/{project}/databases/d363/collectionGroups/c/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "DESCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "the second first",
+   "requests": [
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "d"
+        }
+       ],
+       "where": {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "tags"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       "orderBy": [
+        {
+         "field": {
+          "fieldPath": "a"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       "orderBy": [
+        {
+         "field": {
+          "fieldPath": "b"
+         },
+         "direction": "DESCENDING"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "compositeFilter": {
+         "op": "AND",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "a"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "b"
+            },
+            "op": "GREATER_THAN",
+            "value": {
+             "integerValue": "0"
+            }
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    }
+   ],
+   "answers": [
+    200,
+    200,
+    200
+   ],
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d364/collectionGroups/d/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+         },
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      },
+      {
+       "index": {
+        "name": "projects/{project}/databases/d364/collectionGroups/c/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      },
+      {
+       "index": {
+        "name": "projects/{project}/databases/d364/collectionGroups/c/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "DESCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "a collection group without a filter, and with one",
+   "requests": [
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c",
+         "allDescendants": true
+        }
+       ]
+      }
+     }
+    },
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c",
+         "allDescendants": true
+        }
+       ],
+       "where": {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     }
+    }
+   ],
+   "answers": [
+    200,
+    200
+   ],
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d365/collectionGroups/c/indexes/_",
+        "queryScope": "COLLECTION_GROUP",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "a query that fails a later check",
+   "requests": [
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "compositeFilter": {
+         "op": "AND",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "a"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "b"
+            },
+            "op": "GREATER_THAN",
+            "value": {
+             "integerValue": "0"
+            }
+           }
+          }
+         ]
+        }
+       },
+       "limit": -1
+      }
+     }
+    }
+   ],
+   "answers": [
+    400
+   ],
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "name": "a query in a transaction it begins",
+   "requests": [
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "compositeFilter": {
+         "op": "AND",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "a"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "b"
+            },
+            "op": "GREATER_THAN",
+            "value": {
+             "integerValue": "0"
+            }
+           }
+          }
+         ]
+        }
+       }
+      },
+      "newTransaction": {
+       "readWrite": {}
+      }
+     }
+    }
+   ],
+   "answers": [
+    200
+   ],
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d367/collectionGroups/c/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "a query at a read time",
+   "requests": [
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "compositeFilter": {
+         "op": "AND",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "a"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "b"
+            },
+            "op": "GREATER_THAN",
+            "value": {
+             "integerValue": "0"
+            }
+           }
+          }
+         ]
+        }
+       }
+      },
+      "readTime": "{commitTime}"
+     }
+    }
+   ],
+   "answers": [
+    200
+   ],
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d368/collectionGroups/c/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "an aggregation of the query",
+   "requests": [
+    {
+     "rpc": "runAggregationQuery",
+     "body": {
+      "structuredAggregationQuery": {
+       "structuredQuery": {
+        "from": [
+         {
+          "collectionId": "c"
+         }
+        ],
+        "where": {
+         "compositeFilter": {
+          "op": "AND",
+          "filters": [
+           {
+            "fieldFilter": {
+             "field": {
+              "fieldPath": "a"
+             },
+             "op": "EQUAL",
+             "value": {
+              "integerValue": "1"
+             }
+            }
+           },
+           {
+            "fieldFilter": {
+             "field": {
+              "fieldPath": "b"
+             },
+             "op": "GREATER_THAN",
+             "value": {
+              "integerValue": "0"
+             }
+            }
+           }
+          ]
+         }
+        }
+       },
+       "aggregations": [
+        {
+         "count": {}
+        }
+       ]
+      }
+     }
+    }
+   ],
+   "answers": [
+    200
+   ],
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d369/collectionGroups/c/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "a listener's query",
+   "requests": [
+    {
+     "listen": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "where": {
+       "compositeFilter": {
+        "op": "AND",
+        "filters": [
+         {
+          "fieldFilter": {
+           "field": {
+            "fieldPath": "a"
+           },
+           "op": "EQUAL",
+           "value": {
+            "integerValue": "1"
+           }
+          }
+         },
+         {
+          "fieldFilter": {
+           "field": {
+            "fieldPath": "b"
+           },
+           "op": "GREATER_THAN",
+           "value": {
+            "integerValue": "0"
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    }
+   ],
+   "answers": [
+    true
+   ],
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d370/collectionGroups/c/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "cleared by a reset",
+   "requests": [
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "compositeFilter": {
+         "op": "AND",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "a"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "b"
+            },
+            "op": "GREATER_THAN",
+            "value": {
+             "integerValue": "0"
+            }
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    },
+    {
+     "reset": true
+    }
+   ],
+   "answers": [
+    200,
+    200
+   ],
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  }
+ ],
+ "endpoints": [
+  {
+   "name": "without a database",
+   "method": "GET",
+   "path": "/emulator/v1/projects/{project}:indexUsage",
+   "status": 400,
+   "content_type": "application/json",
+   "body": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+  },
+  {
+   "name": "an empty database",
+   "method": "GET",
+   "path": "/emulator/v1/projects/{project}:indexUsage?database=",
+   "status": 400,
+   "content_type": "application/json",
+   "body": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+  },
+  {
+   "name": "a database that lacks",
+   "method": "GET",
+   "path": "/emulator/v1/projects/{project}:indexUsage?database=projects/x",
+   "status": 400,
+   "content_type": "application/json",
+   "body": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"projects\\/x\\\" lacks \\\"\\/\\\" at index 10.\",\"status\":\"INVALID_ARGUMENT\"}}"
+  },
+  {
+   "name": "an invalid project ID",
+   "method": "GET",
+   "path": "/emulator/v1/projects/{project}:indexUsage?database=projects/P1/databases/(default)",
+   "status": 400,
+   "content_type": "application/json",
+   "body": "{\"error\":{\"code\":400,\"message\":\"Invalid project ID(P1) or database ID()\",\"status\":\"INVALID_ARGUMENT\"}}"
+  },
+  {
+   "name": "a database never used",
+   "method": "GET",
+   "path": "/emulator/v1/projects/{project}:indexUsage?database=projects/{project}/databases/never",
+   "status": 200,
+   "content_type": "application/json",
+   "body": "{\n}\n"
+  },
+  {
+   "name": "a report",
+   "method": "GET",
+   "path": "/emulator/v1/projects/{project}:indexUsage?database=projects/{project}/databases/used",
+   "status": 200,
+   "content_type": "application/json",
+   "body": "{\n  \"reports\": [{\n    \"index\": {\n      \"name\": \"projects/{project}/databases/used/collectionGroups/c/indexes/_\",\n      \"queryScope\": \"COLLECTION\",\n      \"fields\": [{\n        \"fieldPath\": \"`a b`\",\n        \"order\": \"ASCENDING\"\n      }, {\n        \"fieldPath\": \"tags\",\n        \"arrayConfig\": \"CONTAINS\"\n      }, {\n        \"fieldPath\": \"c\",\n        \"order\": \"DESCENDING\"\n      }, {\n        \"fieldPath\": \"__name__\",\n        \"order\": \"DESCENDING\"\n      }]\n    },\n    \"numQueries\": \"1\"\n  }]\n}\n"
+  },
+  {
+   "name": "another project in the path",
+   "method": "GET",
+   "path": "/emulator/v1/projects/other:indexUsage?database=projects/{project}/databases/used",
+   "status": 200,
+   "content_type": "application/json",
+   "body": "{\n  \"reports\": [{\n    \"index\": {\n      \"name\": \"projects/{project}/databases/used/collectionGroups/c/indexes/_\",\n      \"queryScope\": \"COLLECTION\",\n      \"fields\": [{\n        \"fieldPath\": \"`a b`\",\n        \"order\": \"ASCENDING\"\n      }, {\n        \"fieldPath\": \"tags\",\n        \"arrayConfig\": \"CONTAINS\"\n      }, {\n        \"fieldPath\": \"c\",\n        \"order\": \"DESCENDING\"\n      }, {\n        \"fieldPath\": \"__name__\",\n        \"order\": \"DESCENDING\"\n      }]\n    },\n    \"numQueries\": \"1\"\n  }]\n}\n"
+  },
+  {
+   "name": "an encoded database",
+   "method": "GET",
+   "path": "/emulator/v1/projects/{project}:indexUsage?database=projects%2F{project}%2Fdatabases%2Fused",
+   "status": 200,
+   "content_type": "application/json",
+   "body": "{\n  \"reports\": [{\n    \"index\": {\n      \"name\": \"projects/{project}/databases/used/collectionGroups/c/indexes/_\",\n      \"queryScope\": \"COLLECTION\",\n      \"fields\": [{\n        \"fieldPath\": \"`a b`\",\n        \"order\": \"ASCENDING\"\n      }, {\n        \"fieldPath\": \"tags\",\n        \"arrayConfig\": \"CONTAINS\"\n      }, {\n        \"fieldPath\": \"c\",\n        \"order\": \"DESCENDING\"\n      }, {\n        \"fieldPath\": \"__name__\",\n        \"order\": \"DESCENDING\"\n      }]\n    },\n    \"numQueries\": \"1\"\n  }]\n}\n"
+  },
+  {
+   "name": "the documents of a database",
+   "method": "GET",
+   "path": "/emulator/v1/projects/{project}:indexUsage?database=projects/{project}/databases/used/documents",
+   "status": 400,
+   "content_type": "application/json",
+   "body": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"projects\\/{project}\\/databases\\/used\\/documents\\\" has extra characters at index 36.\",\"status\":\"INVALID_ARGUMENT\"}}"
+  },
+  {
+   "name": "an empty project",
+   "method": "GET",
+   "path": "/emulator/v1/projects/:indexUsage?database=projects/{project}/databases/used",
+   "status": 200,
+   "content_type": "application/json",
+   "body": "{\n  \"reports\": [{\n    \"index\": {\n      \"name\": \"projects/{project}/databases/used/collectionGroups/c/indexes/_\",\n      \"queryScope\": \"COLLECTION\",\n      \"fields\": [{\n        \"fieldPath\": \"`a b`\",\n        \"order\": \"ASCENDING\"\n      }, {\n        \"fieldPath\": \"tags\",\n        \"arrayConfig\": \"CONTAINS\"\n      }, {\n        \"fieldPath\": \"c\",\n        \"order\": \"DESCENDING\"\n      }, {\n        \"fieldPath\": \"__name__\",\n        \"order\": \"DESCENDING\"\n      }]\n    },\n    \"numQueries\": \"1\"\n  }]\n}\n"
+  },
+  {
+   "name": "a database path",
+   "method": "GET",
+   "path": "/emulator/v1/projects/{project}/databases/d1:indexUsage",
+   "status": 404,
+   "content_type": null,
+   "body": "Not Found\n"
+  },
+  {
+   "name": "POST",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:indexUsage?database=projects/{project}/databases/d1",
+   "status": 404,
+   "content_type": null,
+   "body": "Not Found\n"
+  }
+ ]
+}

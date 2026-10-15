@@ -1,0 +1,710 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/index_usage.py",
+ "edition": "enterprise",
+ "sequences": [
+  {
+   "name": "three queries, the first again",
+   "requests": [
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "compositeFilter": {
+         "op": "AND",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "a"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "b"
+            },
+            "op": "GREATER_THAN",
+            "value": {
+             "integerValue": "0"
+            }
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    },
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       "orderBy": [
+        {
+         "field": {
+          "fieldPath": "b"
+         },
+         "direction": "DESCENDING"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "d"
+        }
+       ],
+       "where": {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "tags"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       "orderBy": [
+        {
+         "field": {
+          "fieldPath": "a"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "compositeFilter": {
+         "op": "AND",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "a"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "b"
+            },
+            "op": "GREATER_THAN",
+            "value": {
+             "integerValue": "0"
+            }
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    },
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     }
+    }
+   ],
+   "answers": [
+    200,
+    200,
+    200,
+    200,
+    200
+   ],
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "name": "the second first",
+   "requests": [
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "d"
+        }
+       ],
+       "where": {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "tags"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       "orderBy": [
+        {
+         "field": {
+          "fieldPath": "a"
+         }
+        }
+       ]
+      }
+     }
+    },
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       "orderBy": [
+        {
+         "field": {
+          "fieldPath": "b"
+         },
+         "direction": "DESCENDING"
+        }
+       ]
+      }
+     }
+    },
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "compositeFilter": {
+         "op": "AND",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "a"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "b"
+            },
+            "op": "GREATER_THAN",
+            "value": {
+             "integerValue": "0"
+            }
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    }
+   ],
+   "answers": [
+    200,
+    200,
+    200
+   ],
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "name": "a collection group without a filter, and with one",
+   "requests": [
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c",
+         "allDescendants": true
+        }
+       ]
+      }
+     }
+    },
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c",
+         "allDescendants": true
+        }
+       ],
+       "where": {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     }
+    }
+   ],
+   "answers": [
+    200,
+    200
+   ],
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "name": "a query that fails a later check",
+   "requests": [
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "compositeFilter": {
+         "op": "AND",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "a"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "b"
+            },
+            "op": "GREATER_THAN",
+            "value": {
+             "integerValue": "0"
+            }
+           }
+          }
+         ]
+        }
+       },
+       "limit": -1
+      }
+     }
+    }
+   ],
+   "answers": [
+    400
+   ],
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "name": "a query in a transaction it begins",
+   "requests": [
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "compositeFilter": {
+         "op": "AND",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "a"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "b"
+            },
+            "op": "GREATER_THAN",
+            "value": {
+             "integerValue": "0"
+            }
+           }
+          }
+         ]
+        }
+       }
+      },
+      "newTransaction": {
+       "readWrite": {}
+      }
+     }
+    }
+   ],
+   "answers": [
+    200
+   ],
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "name": "a query at a read time",
+   "requests": [
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "compositeFilter": {
+         "op": "AND",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "a"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "b"
+            },
+            "op": "GREATER_THAN",
+            "value": {
+             "integerValue": "0"
+            }
+           }
+          }
+         ]
+        }
+       }
+      },
+      "readTime": "{commitTime}"
+     }
+    }
+   ],
+   "answers": [
+    200
+   ],
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "name": "an aggregation of the query",
+   "requests": [
+    {
+     "rpc": "runAggregationQuery",
+     "body": {
+      "structuredAggregationQuery": {
+       "structuredQuery": {
+        "from": [
+         {
+          "collectionId": "c"
+         }
+        ],
+        "where": {
+         "compositeFilter": {
+          "op": "AND",
+          "filters": [
+           {
+            "fieldFilter": {
+             "field": {
+              "fieldPath": "a"
+             },
+             "op": "EQUAL",
+             "value": {
+              "integerValue": "1"
+             }
+            }
+           },
+           {
+            "fieldFilter": {
+             "field": {
+              "fieldPath": "b"
+             },
+             "op": "GREATER_THAN",
+             "value": {
+              "integerValue": "0"
+             }
+            }
+           }
+          ]
+         }
+        }
+       },
+       "aggregations": [
+        {
+         "count": {}
+        }
+       ]
+      }
+     }
+    }
+   ],
+   "answers": [
+    200
+   ],
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "name": "a listener's query",
+   "requests": [
+    {
+     "listen": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "where": {
+       "compositeFilter": {
+        "op": "AND",
+        "filters": [
+         {
+          "fieldFilter": {
+           "field": {
+            "fieldPath": "a"
+           },
+           "op": "EQUAL",
+           "value": {
+            "integerValue": "1"
+           }
+          }
+         },
+         {
+          "fieldFilter": {
+           "field": {
+            "fieldPath": "b"
+           },
+           "op": "GREATER_THAN",
+           "value": {
+            "integerValue": "0"
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    }
+   ],
+   "answers": [
+    true
+   ],
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d8/collectionGroups/c/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "cleared by a reset",
+   "requests": [
+    {
+     "rpc": "runQuery",
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ],
+       "where": {
+        "compositeFilter": {
+         "op": "AND",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "a"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "1"
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "b"
+            },
+            "op": "GREATER_THAN",
+            "value": {
+             "integerValue": "0"
+            }
+           }
+          }
+         ]
+        }
+       }
+      }
+     }
+    },
+    {
+     "reset": true
+    }
+   ],
+   "answers": [
+    200,
+    200
+   ],
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  }
+ ]
+}
