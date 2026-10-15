@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:2b042976a2898d25c9f9ceb8f0c0677e8dfb9b6c28f4abe59983835aefb69086",
+ "digest": "sha256:9ce4abe187a42029fe0dc5fa2e6ae6140ec5dd398449b7ea45bdd8af7eae3aa9",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,11 +14,11 @@
   }
  ],
  "totals": {
-  "files": 86,
+  "files": 90,
   "fixtures": 49,
-  "transcripts": 37,
+  "transcripts": 41,
   "answers": 23875,
-  "bytes": 14257927,
+  "bytes": 14287468,
   "levels": {
    "full": 13309,
    "reasons": 4344,
@@ -31,22 +31,22 @@
   "by_area": {
    "documents": {
     "fixtures": 8,
-    "transcripts": 5,
+    "transcripts": 6,
     "answers": 5749
    },
    "queries": {
     "fixtures": 4,
-    "transcripts": 8,
+    "transcripts": 9,
     "answers": 924
    },
    "transactions": {
     "fixtures": 1,
-    "transcripts": 6,
+    "transcripts": 7,
     "answers": 215
    },
    "streams": {
     "fixtures": 1,
-    "transcripts": 7,
+    "transcripts": 8,
     "answers": 49
    },
    "rest": {
@@ -83,13 +83,13 @@
   "by_release": {
    "v1.22.0": {
     "fixtures": 49,
-    "transcripts": 37,
+    "transcripts": 41,
     "answers": 23875
    }
   },
   "by_release_source": {
    "header": 24,
-   "file name": 38,
+   "file name": 42,
    "git history": 24
   }
  },
@@ -2015,6 +2015,44 @@
    "compared": "in full: the answer as the recording summarises it, each double spelled out; the steps that write `-1e-400` as intentionally different"
   },
   {
+   "path": "results/sdk-android-documents-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "documents",
+   "recorder": "tools/oracle/sdk_android/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Android SDK (firebase-firestore, in an Android emulator)",
+    "packages": [
+     {
+      "name": "com.google.firebase:firebase-firestore",
+      "version": "27.0.0",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_android/app/build.gradle.kts"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-15",
+    "last_changed": "2026-10-15"
+   },
+   "bytes": 3946,
+   "sha256": "5e8ceb356be07e7345e6bba8890aed94b5d05dfbe07ee1f3d8985aa9518dcbc0",
+   "compared_with": [
+    {
+     "path": "results/sdk-android-documents-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
    "path": "results/sdk-documents-official-v1.22.0.json",
    "kind": "transcript",
    "area": "documents",
@@ -2241,6 +2279,44 @@
    "compared_with": [
     {
      "path": "results/sdk-aggregations-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-android-queries-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "queries",
+   "recorder": "tools/oracle/sdk_android/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Android SDK (firebase-firestore, in an Android emulator)",
+    "packages": [
+     {
+      "name": "com.google.firebase:firebase-firestore",
+      "version": "27.0.0",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_android/app/build.gradle.kts"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-15",
+    "last_changed": "2026-10-15"
+   },
+   "bytes": 2459,
+   "sha256": "884036cf3b253c189abce08cd4f7c435c76ad250c816a248662e10c72c12785d",
+   "compared_with": [
+    {
+     "path": "results/sdk-android-queries-hidane.json",
      "what": "hidane",
      "result": "identical"
     }
@@ -2519,6 +2595,44 @@
    ]
   },
   {
+   "path": "results/sdk-android-transactions-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "transactions",
+   "recorder": "tools/oracle/sdk_android/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Android SDK (firebase-firestore, in an Android emulator)",
+    "packages": [
+     {
+      "name": "com.google.firebase:firebase-firestore",
+      "version": "27.0.0",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_android/app/build.gradle.kts"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-15",
+    "last_changed": "2026-10-15"
+   },
+   "bytes": 850,
+   "sha256": "dd52e98b17b7677a4036ee6fefba3dbb691ce505201650a8e1861d6aa0df5892",
+   "compared_with": [
+    {
+     "path": "results/sdk-android-transactions-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
    "path": "results/sdk-go-transactions-official-v1.22.0.json",
    "kind": "transcript",
    "area": "transactions",
@@ -2746,6 +2860,45 @@
      "path": "results/sdk-web-transactions-hidane.json",
      "what": "hidane",
      "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-android-listen-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "streams",
+   "recorder": "tools/oracle/sdk_android/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Android SDK (firebase-firestore, in an Android emulator)",
+    "packages": [
+     {
+      "name": "com.google.firebase:firebase-firestore",
+      "version": "27.0.0",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_android/app/build.gradle.kts"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-15",
+    "last_changed": "2026-10-15"
+   },
+   "bytes": 22286,
+   "sha256": "9147633f4696e7683dfaac78c27c5f88802a6a8efd5a6927382483bcb320d0b5",
+   "compared_with": [
+    {
+     "path": "results/sdk-android-listen-hidane.json",
+     "what": "hidane",
+     "result": "documented",
+     "explained_in": "results/README.md"
     }
    ]
   },

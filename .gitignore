@@ -84,6 +84,9 @@ firebase-export-*/
 # Swift packages (the iOS SDK harness), built in place or indexed by an editor.
 .build/
 .swiftpm/
+# Gradle (the Android SDK harness).
+.gradle/
+local.properties
 # Coverage and profiling.
 *.profraw
 *.profdata

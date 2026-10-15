@@ -309,6 +309,20 @@ class Detect(unittest.TestCase):
         self.assertEqual(watch.go_escape("github.com/Azure/azure-sdk"),
                          "github.com/!azure/azure-sdk")
 
+    def test_maven_reads_google_maven_for_firebase(self):
+        fetch = Fetch({
+            "https://dl.google.com/dl/android/maven2/com/google/firebase/firebase-firestore/"
+            "maven-metadata.xml":
+                "<metadata><versioning><versions><version>26.6.0</version>"
+                "<version>27.0.0</version></versions></versioning></metadata>",
+        })
+        versions, _ = watch.maven("com.google.firebase:firebase-firestore", fetch)
+        self.assertEqual(versions, {watch.STABLE: "27.0.0"})
+        # firebase-admin, in the same group, is on Maven Central.
+        with self.assertRaises(urllib.error.HTTPError):
+            watch.maven("com.google.firebase:firebase-admin", fetch)
+        self.assertTrue(fetch.asked[-1].startswith("https://repo1.maven.org/maven2/com/google/firebase/"))
+
     def test_swiftpm_reads_the_repository_releases(self):
         base = "https://api.github.com/repos/firebase/firebase-ios-sdk/releases"
         fetch = Fetch({

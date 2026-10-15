@@ -73,9 +73,9 @@
  ],
  "totals": {
   "clients": 16,
-  "verified": 12,
+  "verified": 13,
   "partially-verified": 0,
-  "not-verified": 4
+  "not-verified": 3
  },
  "clients": [
   {
@@ -2147,9 +2147,11 @@
    "transport": [
     "gRPC"
    ],
-   "status": "not-verified",
-   "version": null,
-   "official_emulator": [],
+   "status": "verified",
+   "version": "27.0.0",
+   "official_emulator": [
+    "v1.22.0"
+   ],
    "core": [
     "documents",
     "queries",
@@ -2157,18 +2159,149 @@
     "transactions",
     "listeners"
    ],
-   "exercised": [],
-   "not_exercised": [
+   "exercised": [
     "documents",
     "queries",
     "aggregations",
     "transactions",
     "listeners"
    ],
+   "not_exercised": [],
    "gaps": [],
-   "last_recorded": null,
+   "last_recorded": "2026-10-15",
    "tracking": "https://github.com/hidane-dev/hidane/issues/187",
-   "evidence": []
+   "evidence": [
+    {
+     "transcript": "sdk-android-documents",
+     "official": "results/sdk-android-documents-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-15",
+      "last_changed": "2026-10-15"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-android-documents-hidane.json",
+       "result": "identical",
+       "sha256": "5e8ceb356be07e7345e6bba8890aed94b5d05dfbe07ee1f3d8985aa9518dcbc0",
+       "recorded": {
+        "first_recorded": "2026-10-15",
+        "last_changed": "2026-10-15"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "com.google.firebase:firebase-firestore",
+       "version": "27.0.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_android/app/build.gradle.kts"
+      }
+     ],
+     "features": [
+      "documents"
+     ]
+    },
+    {
+     "transcript": "sdk-android-listen",
+     "official": "results/sdk-android-listen-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-15",
+      "last_changed": "2026-10-15"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-android-listen-hidane.json",
+       "result": "documented",
+       "explained_in": "results/README.md",
+       "sha256": "2ed723c0628770de7de6582c83b1543c8314dda773de660f582548aaaa8c8104",
+       "recorded": {
+        "first_recorded": "2026-10-15",
+        "last_changed": "2026-10-15"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "com.google.firebase:firebase-firestore",
+       "version": "27.0.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_android/app/build.gradle.kts"
+      }
+     ],
+     "features": [
+      "listeners"
+     ]
+    },
+    {
+     "transcript": "sdk-android-queries",
+     "official": "results/sdk-android-queries-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-15",
+      "last_changed": "2026-10-15"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-android-queries-hidane.json",
+       "result": "identical",
+       "sha256": "884036cf3b253c189abce08cd4f7c435c76ad250c816a248662e10c72c12785d",
+       "recorded": {
+        "first_recorded": "2026-10-15",
+        "last_changed": "2026-10-15"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "com.google.firebase:firebase-firestore",
+       "version": "27.0.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_android/app/build.gradle.kts"
+      }
+     ],
+     "features": [
+      "queries",
+      "aggregations"
+     ]
+    },
+    {
+     "transcript": "sdk-android-transactions",
+     "official": "results/sdk-android-transactions-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-15",
+      "last_changed": "2026-10-15"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-android-transactions-hidane.json",
+       "result": "identical",
+       "sha256": "dd52e98b17b7677a4036ee6fefba3dbb691ce505201650a8e1861d6aa0df5892",
+       "recorded": {
+        "first_recorded": "2026-10-15",
+        "last_changed": "2026-10-15"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "com.google.firebase:firebase-firestore",
+       "version": "27.0.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_android/app/build.gradle.kts"
+      }
+     ],
+     "features": [
+      "transactions"
+     ]
+    }
+   ]
   },
   {
    "id": "cpp-unity",
@@ -2304,6 +2437,16 @@
    "source": "docs/sdk-certification.md",
    "clients": [
     "ios"
+   ]
+  },
+  {
+   "ecosystem": "maven",
+   "name": "com.google.firebase:firebase-firestore",
+   "version": "27.0.0",
+   "what": "documents and writes, queries, aggregation queries, transactions, listeners",
+   "source": "docs/sdk-certification.md",
+   "clients": [
+    "android"
    ]
   }
  ]

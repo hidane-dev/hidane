@@ -819,6 +819,8 @@ SDK_DIFFERENCES = {
     "nodejs-system-tests": ("results/README.md",
                             "fails on the official emulator alone, which reads the vector field path"),
     "sdk-ios-listen": ("results/README.md", "reaches the iOS SDK's query listeners as two snapshots"),
+    "sdk-android-listen": ("results/README.md",
+                           "reaches the Android SDK's query listeners as two snapshots"),
 }
 # The Go, Python and Java SDKs' transcripts (tools/oracle/sdk_go/ and the others) differ in the
 # same messages.
@@ -882,7 +884,8 @@ TRANSCRIPTS = {
 }
 # One transcript per section of tools/oracle/sdk_go/, sdk_python/ and sdk_java/.
 for _sdk, _client in (("go", "Go SDK"), ("java", "Java SDK"), ("python", "Python SDK"),
-                      ("ios", "iOS SDK (FirebaseFirestore, on macOS)")):
+                      ("ios", "iOS SDK (FirebaseFirestore, on macOS)"),
+                      ("android", "Android SDK (firebase-firestore, in an Android emulator)")):
     for _section, _area in (("documents", "documents"), ("listen", "streams"),
                             ("queries", "queries"), ("transactions", "transactions")):
         TRANSCRIPTS[f"sdk-{_sdk}-{_section}"] = dict(area=_area, client=_client, transport="gRPC")
