@@ -50,7 +50,8 @@ jobs:
           for section in documents queries transactions listen; do
             target/release/hidane --host 127.0.0.1 --port 8080 > "$RUNNER_TEMP/hidane-$section.log" 2>&1 &
             pid=$!
-            timeout 30 sh -c 'until curl -fsS http://127.0.0.1:8080/ > /dev/null; do sleep 1; done'
+            # macOS has no `timeout`: up to 30 tries a second apart.
+            for _ in $(seq 30); do curl -fsS http://127.0.0.1:8080/ > /dev/null && break; sleep 1; done
             FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 "$RUNNER_TEMP/sdk_ios/.build/release/sdk_ios" "$section" \
               > "$RUNNER_TEMP/sdk-ios-$section-hidane.json"
             kill "$pid"
