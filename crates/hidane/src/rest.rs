@@ -1034,7 +1034,7 @@ pub(crate) fn java_double_text(f: f64) -> String {
 /// and the power of ten of the first. Of two equally close, Java takes the one whose last
 /// digit is even (`1000000000000003.25` is `1.0000000000000032E15`), where Rust takes the
 /// larger (#262).
-fn shortest(magnitude: f64) -> (String, i32) {
+pub(crate) fn shortest(magnitude: f64) -> (String, i32) {
     let split = |text: &str| {
         let (mantissa, exponent) = text.split_once('e').expect("exponent");
         let digits: String = mantissa.chars().filter(char::is_ascii_digit).collect();

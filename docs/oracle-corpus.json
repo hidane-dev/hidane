@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:0f7bc83da3e36c99f7889b93623f32735c16bfde561997ae717af892546d7ae7",
+ "digest": "sha256:3a2bfe2b4601ec7628b1b0d0ec31b73ea66dc3989d218c0bdb657a4e48a1a0ed",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,18 +14,18 @@
   }
  ],
  "totals": {
-  "files": 96,
-  "fixtures": 54,
+  "files": 97,
+  "fixtures": 55,
   "transcripts": 42,
-  "answers": 25076,
-  "bytes": 16699315,
+  "answers": 25298,
+  "bytes": 16858689,
   "levels": {
-   "full": 14029,
+   "full": 14088,
    "reasons": 4344,
-   "part": 1324,
+   "part": 1481,
    "status": 5187,
    "codes": 30,
-   "none": 1,
+   "none": 7,
    "differs": 161
   },
   "by_area": {
@@ -35,9 +35,9 @@
     "answers": 5749
    },
    "queries": {
-    "fixtures": 5,
+    "fixtures": 6,
     "transcripts": 9,
-    "answers": 1565
+    "answers": 1787
    },
    "transactions": {
     "fixtures": 1,
@@ -82,13 +82,13 @@
   },
   "by_release": {
    "v1.22.0": {
-    "fixtures": 54,
+    "fixtures": 55,
     "transcripts": 42,
-    "answers": 25076
+    "answers": 25298
    }
   },
   "by_release_source": {
-   "header": 29,
+   "header": 30,
    "file name": 43,
    "git history": 24
   }
@@ -428,12 +428,12 @@
     "first_recorded": "2026-10-10",
     "last_changed": "2026-10-15"
    },
-   "bytes": 134195,
-   "sha256": "ced686c4ff52d609c54c91c6c52ab6c2e6715b9930dd62a9b2e0dec4c2a169b8",
-   "answers": 188,
+   "bytes": 146400,
+   "sha256": "2299272e8514a9da1183311fcef4bc4c137233c69c32ace2512640cc005b8b7e",
+   "answers": 205,
    "levels": {
     "full": 124,
-    "part": 64
+    "part": 81
    },
    "replayed_over": [
     "gRPC"
@@ -443,6 +443,44 @@
    ],
    "counted": "each query; recorded over REST",
    "compared": "an error in full (status and message); results in part: every aggregate value with its type, not `done`, which gRPC does not carry"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/aggregations_enterprise.json",
+   "kind": "fixture",
+   "area": "queries",
+   "recorder": "tools/oracle/aggregations.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-15",
+    "last_changed": "2026-10-15"
+   },
+   "bytes": 147169,
+   "sha256": "36da586d3a7e1c0461d18b214d290278d6f3f4155d17a112004d7b09206766a5",
+   "answers": 205,
+   "levels": {
+    "full": 59,
+    "part": 140,
+    "none": 6
+   },
+   "replayed_over": [
+    "gRPC"
+   ],
+   "tests": [
+    "crates/hidane/tests/aggregations.rs::enterprise_aggregations_answer_like_the_official_emulator"
+   ],
+   "counted": "each query, on an enterprise database; recorded over REST",
+   "compared": "an error in full (status and message); results in part: every aggregate value with its type, not `done`, which gRPC does not carry, and only the counts where a limit or an offset picks documents in no defined order; sums that overflow in some orders of addition only, not at all"
   },
   {
    "path": "crates/hidane/tests/fixtures/find_nearest.json",

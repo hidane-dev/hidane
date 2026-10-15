@@ -1,0 +1,9784 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/aggregations.py",
+ "edition": "enterprise",
+ "dataset": [
+  {
+   "name": "mixed/i1",
+   "fields": {
+    "v": {
+     "integerValue": "1"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "mixed/i2",
+   "fields": {
+    "v": {
+     "integerValue": "2"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "mixed/half",
+   "fields": {
+    "v": {
+     "doubleValue": 0.5
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "mixed/str",
+   "fields": {
+    "v": {
+     "stringValue": "x"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "mixed/null",
+   "fields": {
+    "v": {
+     "nullValue": null
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "mixed/true",
+   "fields": {
+    "v": {
+     "booleanValue": true
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "mixed/arr",
+   "fields": {
+    "v": {
+     "arrayValue": {
+      "values": [
+       {
+        "integerValue": "1"
+       }
+      ]
+     }
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "mixed/map",
+   "fields": {
+    "v": {
+     "mapValue": {
+      "fields": {
+       "a": {
+        "integerValue": "1"
+       }
+      }
+     }
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "mixed/missing",
+   "fields": {
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "ints/a",
+   "fields": {
+    "v": {
+     "integerValue": "1"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "ints/b",
+   "fields": {
+    "v": {
+     "integerValue": "2"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "ints/c",
+   "fields": {
+    "v": {
+     "integerValue": "3"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "overflow/a",
+   "fields": {
+    "v": {
+     "integerValue": "9223372036854775807"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "overflow/b",
+   "fields": {
+    "v": {
+     "integerValue": "1"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "overflow_back/a",
+   "fields": {
+    "v": {
+     "integerValue": "9223372036854775807"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "overflow_back/b",
+   "fields": {
+    "v": {
+     "integerValue": "1"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "overflow_back/c",
+   "fields": {
+    "v": {
+     "integerValue": "-1"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "underflow/a",
+   "fields": {
+    "v": {
+     "integerValue": "-9223372036854775808"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "underflow/b",
+   "fields": {
+    "v": {
+     "integerValue": "-1"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "nan/a",
+   "fields": {
+    "v": {
+     "integerValue": "1"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "nan/b",
+   "fields": {
+    "v": {
+     "doubleValue": "NaN"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "infinities/a",
+   "fields": {
+    "v": {
+     "doubleValue": "Infinity"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "infinities/b",
+   "fields": {
+    "v": {
+     "doubleValue": "-Infinity"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "infinity/a",
+   "fields": {
+    "v": {
+     "doubleValue": "Infinity"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "infinity/b",
+   "fields": {
+    "v": {
+     "integerValue": "1"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "tenths/a",
+   "fields": {
+    "v": {
+     "doubleValue": 0.1
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "tenths/b",
+   "fields": {
+    "v": {
+     "doubleValue": 0.2
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "negzero/a",
+   "fields": {
+    "v": {
+     "doubleValue": -0.0
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "precision/a",
+   "fields": {
+    "v": {
+     "integerValue": "9007199254740993"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "precision/b",
+   "fields": {
+    "v": {
+     "doubleValue": 1.0
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "precision_ints/a",
+   "fields": {
+    "v": {
+     "integerValue": "9007199254740993"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "precision_ints/b",
+   "fields": {
+    "v": {
+     "integerValue": "9007199254740993"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "big_avg/a",
+   "fields": {
+    "v": {
+     "integerValue": "9223372036854775807"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "big_avg/b",
+   "fields": {
+    "v": {
+     "integerValue": "9223372036854775807"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "strings/a",
+   "fields": {
+    "v": {
+     "stringValue": "x"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "strings/b",
+   "fields": {
+    "v": {
+     "stringValue": "y"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "doubles_int_valued/a",
+   "fields": {
+    "v": {
+     "doubleValue": 1.0
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "doubles_int_valued/b",
+   "fields": {
+    "v": {
+     "doubleValue": 2.0
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "tenths3/a",
+   "fields": {
+    "v": {
+     "doubleValue": 0.1
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "tenths3/b",
+   "fields": {
+    "v": {
+     "doubleValue": 0.2
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "tenths3/c",
+   "fields": {
+    "v": {
+     "doubleValue": 0.4
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "big_mixed/a",
+   "fields": {
+    "v": {
+     "integerValue": "9223372036854775807"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "big_mixed/b",
+   "fields": {
+    "v": {
+     "doubleValue": 1.0
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "large_doubles/a",
+   "fields": {
+    "v": {
+     "doubleValue": 1e+308
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "large_doubles/b",
+   "fields": {
+    "v": {
+     "doubleValue": 1e+308
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "thirds/a",
+   "fields": {
+    "v": {
+     "integerValue": "1"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "thirds/b",
+   "fields": {
+    "v": {
+     "integerValue": "1"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "thirds/c",
+   "fields": {
+    "v": {
+     "integerValue": "2"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "tiny/a",
+   "fields": {
+    "v": {
+     "integerValue": "1"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "tiny/b",
+   "fields": {
+    "v": {
+     "doubleValue": 1e-20
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "mixed/i1/sub/x",
+   "fields": {
+    "v": {
+     "integerValue": "10"
+    }
+   }
+  },
+  {
+   "name": "other/y/sub/z",
+   "fields": {
+    "v": {
+     "integerValue": "20"
+    }
+   }
+  },
+  {
+   "name": "nested/a",
+   "fields": {
+    "m": {
+     "mapValue": {
+      "fields": {
+       "x": {
+        "integerValue": "5"
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "nested/b",
+   "fields": {
+    "m": {
+     "mapValue": {
+      "fields": {
+       "x": {
+        "doubleValue": 1.5
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "ordered/a",
+   "fields": {
+    "v": {
+     "integerValue": "5"
+    },
+    "u": {
+     "integerValue": "1"
+    },
+    "k": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "ordered/b",
+   "fields": {
+    "v": {
+     "integerValue": "1"
+    },
+    "u": {
+     "integerValue": "3"
+    },
+    "k": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "ordered/c",
+   "fields": {
+    "v": {
+     "integerValue": "3"
+    },
+    "u": {
+     "integerValue": "2"
+    },
+    "k": {
+     "integerValue": "0"
+    }
+   }
+  },
+  {
+   "name": "ordered/d",
+   "fields": {
+    "v": {
+     "stringValue": "s"
+    },
+    "u": {
+     "integerValue": "0"
+    },
+    "k": {
+     "integerValue": "2"
+    }
+   }
+  },
+  {
+   "name": "ordered/e",
+   "fields": {
+    "u": {
+     "integerValue": "9"
+    },
+    "k": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "bytes_first/d1",
+   "fields": {
+    "b": {
+     "bytesValue": "AQ=="
+    }
+   }
+  },
+  {
+   "name": "bytes_first/d2",
+   "fields": {
+    "b": {
+     "doubleValue": -0.0
+    }
+   }
+  },
+  {
+   "name": "time_first/d0",
+   "fields": {
+    "b": {
+     "timestampValue": "2020-01-01T00:00:00Z"
+    }
+   }
+  },
+  {
+   "name": "time_first/d1",
+   "fields": {
+    "b": {
+     "doubleValue": 1.0
+    }
+   }
+  },
+  {
+   "name": "time_first/d2",
+   "fields": {
+    "b": {
+     "integerValue": "0"
+    }
+   }
+  }
+ ],
+ "cases": [
+  {
+   "name": "count, sum and avg of mixed",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "mixed"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "doubleValue": 1.1666666666666667
+        },
+        "sum": {
+         "doubleValue": 3.5
+        },
+        "n": {
+         "integerValue": "9"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of ints",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "doubleValue": 2.0
+        },
+        "sum": {
+         "integerValue": "6"
+        },
+        "n": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of overflow",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "overflow"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Long overflow"
+   }
+  },
+  {
+   "name": "count, sum and avg of overflow_back",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "overflow_back"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "doubleValue": 3.0744573456182584e+18
+        },
+        "sum": {
+         "integerValue": "9223372036854775807"
+        },
+        "n": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of underflow",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "underflow"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Long overflow"
+   }
+  },
+  {
+   "name": "count, sum and avg of nan",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "nan"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "doubleValue": "NaN"
+        },
+        "sum": {
+         "doubleValue": "NaN"
+        },
+        "n": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of infinities",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "infinities"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "doubleValue": "NaN"
+        },
+        "sum": {
+         "doubleValue": "NaN"
+        },
+        "n": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of infinity",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "infinity"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "doubleValue": "Infinity"
+        },
+        "sum": {
+         "doubleValue": "Infinity"
+        },
+        "n": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of tenths",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "tenths"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "doubleValue": 0.15
+        },
+        "sum": {
+         "doubleValue": 0.3
+        },
+        "n": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of negzero",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "negzero"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "doubleValue": 0.0
+        },
+        "sum": {
+         "doubleValue": 0.0
+        },
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of precision",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "precision"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "doubleValue": 4503599627370496.0
+        },
+        "sum": {
+         "doubleValue": 9007199254740992.0
+        },
+        "n": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of precision_ints",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "precision_ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "doubleValue": 9007199254740992.0
+        },
+        "sum": {
+         "integerValue": "18014398509481986"
+        },
+        "n": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of big_avg",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "big_avg"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Long overflow"
+   }
+  },
+  {
+   "name": "count, sum and avg of strings",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "strings"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "nullValue": null
+        },
+        "sum": {
+         "nullValue": null
+        },
+        "n": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of doubles_int_valued",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "doubles_int_valued"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "doubleValue": 1.5
+        },
+        "sum": {
+         "doubleValue": 3.0
+        },
+        "n": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of tenths3",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "tenths3"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "doubleValue": 0.2333333333333333
+        },
+        "sum": {
+         "doubleValue": 0.7
+        },
+        "n": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of big_mixed",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "big_mixed"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "doubleValue": 4.611686018427388e+18
+        },
+        "sum": {
+         "doubleValue": 9.223372036854776e+18
+        },
+        "n": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of large_doubles",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "large_doubles"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "doubleValue": "Infinity"
+        },
+        "sum": {
+         "doubleValue": "Infinity"
+        },
+        "n": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of thirds",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "thirds"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "doubleValue": 1.3333333333333333
+        },
+        "sum": {
+         "integerValue": "4"
+        },
+        "n": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of tiny",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "tiny"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "doubleValue": 0.5
+        },
+        "sum": {
+         "doubleValue": 1.0
+        },
+        "n": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg of overflow alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "overflow"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Long overflow"
+   }
+  },
+  {
+   "name": "sum of overflow alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "overflow"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Long overflow"
+   }
+  },
+  {
+   "name": "avg of underflow alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "underflow"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Long overflow"
+   }
+  },
+  {
+   "name": "sum of underflow alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "underflow"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Long overflow"
+   }
+  },
+  {
+   "name": "avg of big_avg alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "big_avg"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Long overflow"
+   }
+  },
+  {
+   "name": "sum of big_avg alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "big_avg"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Long overflow"
+   }
+  },
+  {
+   "name": "avg of tenths3 alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "tenths3"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "doubleValue": 0.2333333333333333
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of tenths3 alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "tenths3"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "doubleValue": 0.7
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg of big_mixed alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "big_mixed"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "doubleValue": 4.611686018427388e+18
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of big_mixed alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "big_mixed"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "doubleValue": 9.223372036854776e+18
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg of thirds alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "thirds"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "doubleValue": 1.3333333333333333
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of thirds alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "thirds"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "4"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "empty collection",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "nothing"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "nullValue": null
+        },
+        "sum": {
+         "nullValue": null
+        },
+        "n": {
+         "integerValue": "0"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count up to 2",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "mixed"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {
+      "upTo": "2"
+     },
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "UNKNOWN",
+    "message": ""
+   }
+  },
+  {
+   "name": "count up to 100",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "mixed"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {
+      "upTo": "100"
+     },
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "UNKNOWN",
+    "message": ""
+   }
+  },
+  {
+   "name": "count up to 0",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "mixed"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {
+      "upTo": "0"
+     },
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "UNKNOWN",
+    "message": ""
+   }
+  },
+  {
+   "name": "count up to -1",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "mixed"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {
+      "upTo": "-1"
+     },
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The `up_to` value in a COUNT aggregation must be greater than or equal to zero."
+   }
+  },
+  {
+   "name": "count with limit 2",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "mixed"
+     }
+    ],
+    "limit": 2
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count with offset 2",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "mixed"
+     }
+    ],
+    "offset": 2
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "7"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count with limit 3 and up to 2",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "mixed"
+     }
+    ],
+    "limit": 3
+   },
+   "aggregations": [
+    {
+     "count": {
+      "upTo": "2"
+     },
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "UNKNOWN",
+    "message": ""
+   }
+  },
+  {
+   "name": "sum with limit 1 (order by name)",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "limit": 1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "sum": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count where v > 0",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "mixed"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "GREATER_THAN",
+      "value": {
+       "integerValue": "0"
+      }
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "sum": {
+         "doubleValue": 3.5
+        },
+        "n": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count order by v (documents without v left out)",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "mixed"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "8"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "collection group sub",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "sub",
+      "allDescendants": true
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "sum": {
+         "integerValue": "30"
+        },
+        "n": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "every collection",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": ""
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "62"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "every descendant",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "",
+      "allDescendants": true
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "64"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count next to sum leaves out documents without the field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "mixed"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "sum": {
+         "doubleValue": 3.5
+        },
+        "n": {
+         "integerValue": "9"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count next to avg leaves out documents without the field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "mixed"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "doubleValue": 1.1666666666666667
+        },
+        "n": {
+         "integerValue": "9"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count next to sums of two fields",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "mixed"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sv"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "w"
+      }
+     },
+     "alias": "sw"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "sv": {
+         "doubleValue": 3.5
+        },
+        "sw": {
+         "integerValue": "9"
+        },
+        "n": {
+         "integerValue": "9"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count and sum, offset 5 limit 1",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "mixed"
+     }
+    ],
+    "offset": 5,
+    "limit": 1
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "sum": {
+         "integerValue": "2"
+        },
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count and sum, limit 6",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "mixed"
+     }
+    ],
+    "limit": 6
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "sum": {
+         "doubleValue": 0.5
+        },
+        "n": {
+         "integerValue": "6"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count and sum of w, order by v",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "mixed"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "w"
+      }
+     },
+     "alias": "sum"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "sum": {
+         "integerValue": "8"
+        },
+        "n": {
+         "integerValue": "8"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of a nested field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "nested"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "m.x"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "m.x"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "doubleValue": 3.25
+        },
+        "sum": {
+         "doubleValue": 6.5
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of a missing field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "nope"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "nope"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "avg": {
+         "nullValue": null
+        },
+        "sum": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "subcollection under mixed/i1",
+   "parent": "mixed/i1",
+   "query": {
+    "from": [
+     {
+      "collectionId": "sub"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "default aliases",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {}
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     }
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     }
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "field_3": {
+         "doubleValue": 2.0
+        },
+        "field_1": {
+         "integerValue": "3"
+        },
+        "field_2": {
+         "integerValue": "6"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "default alias next to an explicit one",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "field_1"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     }
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation aliases contain duplicate alias: field_1."
+   }
+  },
+  {
+   "name": "five aggregations",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "a"
+    },
+    {
+     "count": {},
+     "alias": "b"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "c"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "d"
+    },
+    {
+     "count": {
+      "upTo": "1"
+     },
+     "alias": "e"
+    }
+   ],
+   "outcome": {
+    "status": "UNKNOWN",
+    "message": ""
+   }
+  },
+  {
+   "name": "six aggregations",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "a"
+    },
+    {
+     "count": {},
+     "alias": "b"
+    },
+    {
+     "count": {},
+     "alias": "c"
+    },
+    {
+     "count": {},
+     "alias": "d"
+    },
+    {
+     "count": {},
+     "alias": "e"
+    },
+    {
+     "count": {},
+     "alias": "f"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "integerValue": "3"
+        },
+        "b": {
+         "integerValue": "3"
+        },
+        "c": {
+         "integerValue": "3"
+        },
+        "d": {
+         "integerValue": "3"
+        },
+        "e": {
+         "integerValue": "3"
+        },
+        "f": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "no aggregations",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregations can not be empty."
+   }
+  },
+  {
+   "name": "duplicate alias",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "x"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "x"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation aliases contain duplicate alias: x."
+   }
+  },
+  {
+   "name": "alias with a dot",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "a.b"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a.b": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "alias with a space",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "a b"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a b": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "reserved alias",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "__x__"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "__x__": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of __name__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__name__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of an invalid field path",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a..b"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path \"a..b\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\]|(?:\\\\.))+`)"
+   }
+  },
+  {
+   "name": "sum without a field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {},
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid empty property path string."
+   }
+  },
+  {
+   "name": "aggregation without an operator",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "alias": "x"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Operator field in Aggregation is not set."
+   }
+  },
+  {
+   "name": "invalid query",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "limit": -1
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "limit is negative"
+   }
+  },
+  {
+   "name": "sum without a collection",
+   "parent": "",
+   "query": {},
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "doubleValue": "NaN"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg without a collection",
+   "parent": "",
+   "query": {},
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "doubleValue": "NaN"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count and sum of every collection",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": ""
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Long overflow"
+   }
+  },
+  {
+   "name": "sum of every descendant",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "",
+      "allDescendants": true
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "doubleValue": "NaN"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg under a document without a collection",
+   "parent": "mixed/i1",
+   "query": {},
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "doubleValue": 10.0
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count under a document without a collection",
+   "parent": "mixed/i1",
+   "query": {},
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum without a collection, with a filter",
+   "parent": "",
+   "query": {
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "doubleValue": 13.0
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum without a collection, with a negative limit",
+   "parent": "",
+   "query": {
+    "limit": -1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "limit is negative"
+   }
+  },
+  {
+   "name": "sum without a collection, and a count up to -1",
+   "parent": "",
+   "query": {},
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "count": {
+      "upTo": "-1"
+     },
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The `up_to` value in a COUNT aggregation must be greater than or equal to zero."
+   }
+  },
+  {
+   "name": "no aggregations and an invalid query",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "limit": -1
+   },
+   "aggregations": [],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregations can not be empty."
+   }
+  },
+  {
+   "name": "a count up to -1 and an invalid query",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     {
+      "field": {
+       "fieldPath": "v"
+      }
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {
+      "upTo": "-1"
+     },
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The `up_to` value in a COUNT aggregation must be greater than or equal to zero."
+   }
+  },
+  {
+   "name": "a sum of an invalid path and two negations",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "NOT_EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "NOT_EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a..b"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path \"a..b\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\]|(?:\\\\.))+`)"
+   }
+  },
+  {
+   "name": "a count up to -1 and a reserved collection ID",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "__x__"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {
+      "upTo": "-1"
+     },
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The `up_to` value in a COUNT aggregation must be greater than or equal to zero."
+   }
+  },
+  {
+   "name": "an aggregation without an operator and an empty filter",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {}
+   },
+   "aggregations": [
+    {
+     "alias": "x"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Operator field in Aggregation is not set."
+   }
+  },
+  {
+   "name": "a sum of an invalid path and a reserved collection ID",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "__x__"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a..b"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path \"a..b\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\]|(?:\\\\.))+`)"
+   }
+  },
+  {
+   "name": "no aggregations and a reserved collection ID",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "__x__"
+     }
+    ]
+   },
+   "aggregations": [],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Collection id \"__x__\" is invalid because it is reserved."
+   }
+  },
+  {
+   "name": "six aggregations and an empty filter",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {}
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "a"
+    },
+    {
+     "count": {},
+     "alias": "b"
+    },
+    {
+     "count": {},
+     "alias": "c"
+    },
+    {
+     "count": {},
+     "alias": "d"
+    },
+    {
+     "count": {},
+     "alias": "e"
+    },
+    {
+     "count": {},
+     "alias": "f"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Unknown Filter type."
+   }
+  },
+  {
+   "name": "a sum of __name__ and an invalid filter path",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a..b"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__name__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path \"a..b\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\]|(?:\\\\.))+`)"
+   }
+  },
+  {
+   "name": "a duplicate alias and a negative limit",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "limit": -1
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "x"
+    },
+    {
+     "count": {},
+     "alias": "x"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation aliases contain duplicate alias: x."
+   }
+  },
+  {
+   "name": "a reserved alias and an order without a collection",
+   "parent": "",
+   "query": {
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      }
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "__x__"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "__x__": {
+         "integerValue": "53"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a sum of __name__ and duplicate orders",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     {
+      "field": {
+       "fieldPath": "v"
+      }
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__name__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a query vector that is not a vector and no aggregations",
+   "parent": "",
+   "query": {
+    "findNearest": {
+     "queryVector": {
+      "arrayValue": {}
+     }
+    }
+   },
+   "aggregations": [],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Query Value must be of type vector."
+   }
+  },
+  {
+   "name": "a cursor with too many values and a duplicate alias",
+   "parent": "",
+   "query": {
+    "startAt": {
+     "values": [
+      {
+       "integerValue": "1"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "a"
+    },
+    {
+     "count": {},
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Cursor has too many values."
+   }
+  },
+  {
+   "name": "a filter without a value and no aggregations",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL"
+     }
+    }
+   },
+   "aggregations": [],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Cannot convert firestore.v1.Value with type unset."
+   }
+  },
+  {
+   "name": "sum with limit 1 takes the smallest value",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "limit": 1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg with limit 1 takes the smallest value",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "limit": 1
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "doubleValue": 3.0
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count and sum with limit 2",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "limit": 2
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "3"
+        },
+        "n": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count and sum with offset 3 (a value that is not a number)",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "offset": 3
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "1"
+        },
+        "n": {
+         "integerValue": "2"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg with offset 2",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "offset": 2
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "doubleValue": 3.0
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sums of v and u, limit 1 (u first)",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "limit": 1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sv"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "u"
+      }
+     },
+     "alias": "su"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "su": {
+         "integerValue": "9"
+        },
+        "sv": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sums of u and v, limit 1 (u first)",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "limit": 1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "u"
+      }
+     },
+     "alias": "su"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sv"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "su": {
+         "integerValue": "0"
+        },
+        "sv": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "an inequality's field comes before the summed field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "k"
+      },
+      "op": "GREATER_THAN",
+      "value": {
+       "integerValue": "0"
+      }
+     }
+    },
+    "limit": 1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "the summed field in the direction of the last order",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "k"
+      },
+      "direction": "DESCENDING"
+     }
+    ],
+    "limit": 2
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "5"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "the summed field after an ascending order",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "k"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "offset": 1,
+    "limit": 1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "an order by the summed field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ordered"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      },
+      "direction": "DESCENDING"
+     }
+    ],
+    "limit": 1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg with limit 1: bytes after numbers",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "bytes_first"
+     }
+    ],
+    "limit": 1
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "b"
+      }
+     }
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "field_1": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg with offset 2: a timestamp after numbers",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "time_first"
+     }
+    ],
+    "offset": 2
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "b"
+      }
+     }
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "field_1": {
+         "doubleValue": 0.0
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of __key__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__key__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path member name \"__key__\"."
+   }
+  },
+  {
+   "name": "sum of a.__key__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a.__key__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path member name \"__key__\"."
+   }
+  },
+  {
+   "name": "sum of __x__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__x__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "sum of __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of a.__type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a.__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of a.__type__.b",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a.__type__.b"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of __type__[0]",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__[0]"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of a.__name__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a.__name__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of a[0]",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of a[2147483648]",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[2147483648]"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path \"a[2147483648]\". Array offsets must be within the range [0, 2^31 - 1]."
+   }
+  },
+  {
+   "name": "avg of __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a sum of an array offset, then a reserved name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__x__"
+      }
+     },
+     "alias": "t"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "a sum of __type__, then an array offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "t"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        },
+        "t": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a sum of an array offset, then __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "t"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        },
+        "t": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a sum of __name__, then an array offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__name__"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "t"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        },
+        "t": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a sum of an array offset and a count up to -1",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "count": {
+      "upTo": "-1"
+     },
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The `up_to` value in a COUNT aggregation must be greater than or equal to zero."
+   }
+  },
+  {
+   "name": "a sum of an array offset and six aggregations",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "count": {},
+     "alias": "a"
+    },
+    {
+     "count": {},
+     "alias": "b"
+    },
+    {
+     "count": {},
+     "alias": "c"
+    },
+    {
+     "count": {},
+     "alias": "d"
+    },
+    {
+     "count": {},
+     "alias": "e"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "integerValue": "3"
+        },
+        "b": {
+         "integerValue": "3"
+        },
+        "s": {
+         "nullValue": null
+        },
+        "c": {
+         "integerValue": "3"
+        },
+        "d": {
+         "integerValue": "3"
+        },
+        "e": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a sum of an array offset and a reserved alias",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "count": {},
+     "alias": "__x__"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        },
+        "__x__": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a sum of __name__ and a reserved alias after it",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__name__"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "count": {},
+     "alias": "__x__"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        },
+        "__x__": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a sum of __type__ and a duplicate alias",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "x"
+    },
+    {
+     "count": {},
+     "alias": "x"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation aliases contain duplicate alias: x."
+   }
+  },
+  {
+   "name": "a sum of an array offset and a duplicate alias",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "x"
+    },
+    {
+     "count": {},
+     "alias": "x"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation aliases contain duplicate alias: x."
+   }
+  },
+  {
+   "name": "a duplicate alias before a sum of __name__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "x"
+    },
+    {
+     "count": {},
+     "alias": "x"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__name__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation aliases contain duplicate alias: x."
+   }
+  },
+  {
+   "name": "a duplicate alias before a reserved alias",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "x"
+    },
+    {
+     "count": {},
+     "alias": "x"
+    },
+    {
+     "count": {},
+     "alias": "__y__"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation aliases contain duplicate alias: x."
+   }
+  },
+  {
+   "name": "a reserved filter path before a sum of __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__x__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid reserved name in field path __x__"
+   }
+  },
+  {
+   "name": "a filter without a value before a sum of an array offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "EQUAL"
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Cannot convert firestore.v1.Value with type unset."
+   }
+  },
+  {
+   "name": "a sum of an array offset before duplicate orders",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     {
+      "field": {
+       "fieldPath": "v"
+      }
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a sum of __type__ before an array offset in a filter",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a[0]"
+      },
+      "op": "EQUAL",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "an array offset in the projection before a sum of __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "a[0]"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "a sum of __type__ without a collection",
+   "parent": "",
+   "query": {},
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a sum of __type__ and a negative limit",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "limit": -1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "limit is negative"
+   }
+  },
+  {
+   "name": "avg with __name__ descending twice",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "doubleValue": 2.0
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count with __name__ descending twice, without a collection",
+   "parent": "",
+   "query": {
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "62"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "count with array-contains-any on __name__ and __name__ descending",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "ARRAY_CONTAINS_ANY",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "referenceValue": "{documents}/ints/a"
+         }
+        ]
+       }
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The function array_contains(...) requires `Array` but got `ENTITY_REF`."
+   }
+  },
+  {
+   "name": "avg with array-contains-any on __name__ and __name__ descending, without a collection",
+   "parent": "",
+   "query": {
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "ARRAY_CONTAINS_ANY",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "referenceValue": "{documents}/ints/a"
+         }
+        ]
+       }
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The function array_contains(...) requires `Array` but got `ENTITY_REF`."
+   }
+  },
+  {
+   "name": "a count with in 11 and eight equalities",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e0"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e1"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e2"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e3"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e4"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e5"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e6"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e7"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "0"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "an avg with in 11 and eight equalities",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e0"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e1"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e2"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e3"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e4"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e5"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e6"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e7"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "an avg with in 14 and six equalities",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            },
+            {
+             "integerValue": "11"
+            },
+            {
+             "integerValue": "12"
+            },
+            {
+             "integerValue": "13"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e0"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e1"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e2"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e3"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e4"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e5"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a sum and an avg of two fields with in 14 and six equalities",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            },
+            {
+             "integerValue": "11"
+            },
+            {
+             "integerValue": "12"
+            },
+            {
+             "integerValue": "13"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e0"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e1"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e2"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e3"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e4"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e5"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "u"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "nullValue": null
+        },
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a sum of an equality's field with in 11 and eight equalities",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e0"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e1"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e2"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e3"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e4"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e5"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e6"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e7"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "e0"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "an empty projection",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {}
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "an empty projection, a count",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {}
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection of no fields, an avg",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": []
+    }
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection of the name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "__name__"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection of the name, a count",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "__name__"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection of the field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "v"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "6"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection of another field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "w"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection of the field and another",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "v"
+      },
+      {
+       "fieldPath": "w"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "6"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection of a map, a field in it",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "m"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "m.x"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection of a field in a map, the map",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "m.x"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "m"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection of a quoted path with a dot",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "`m.x`"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "m.x"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection of the field and the name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "v"
+      },
+      {
+       "fieldPath": "__name__"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "6"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection of the name and another field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "__name__"
+      },
+      {
+       "fieldPath": "w"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection, a count",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "v"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection, a missing field before a present one",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "v"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "w"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "t"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        },
+        "t": {
+         "integerValue": "6"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection, a present field before a missing one",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "v"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "w"
+      }
+     },
+     "alias": "t"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "6"
+        },
+        "t": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "an empty projection, a sum of __name__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {}
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__name__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "an empty projection, a sum of __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {}
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection, a sum of __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "w"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "an empty projection, a sum of an array offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {}
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection, a sum of an array offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "w"
+      }
+     ]
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "a[0]"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "an empty projection, a reserved alias",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {}
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "__x__"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "__x__": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "an empty projection, a duplicate alias",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {}
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "x"
+    },
+    {
+     "count": {},
+     "alias": "x"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation aliases contain duplicate alias: x."
+   }
+  },
+  {
+   "name": "an empty projection, a count up to -1",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {}
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "count": {
+      "upTo": "-1"
+     },
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The `up_to` value in a COUNT aggregation must be greater than or equal to zero."
+   }
+  },
+  {
+   "name": "a projection before two array-contains",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "v"
+      }
+     ]
+    },
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "c"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "an empty projection before duplicate orders",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {},
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     {
+      "field": {
+       "fieldPath": "v"
+      }
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a projection before an order by the name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "w"
+      }
+     ]
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      }
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ordered by the name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "6"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ordered by the name, a count",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ordered by the field, then the name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "6"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ordered by another field, then the name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "w"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "6"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ordered by the field, then the name, two sums",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "w"
+      }
+     },
+     "alias": "t"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "6"
+        },
+        "t": {
+         "integerValue": "3"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ordered by the name, three fields",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "m.x"
+      }
+     },
+     "alias": "a"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "`x y`"
+      }
+     },
+     "alias": "b"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "nullValue": null
+        },
+        "b": {
+         "nullValue": null
+        },
+        "s": {
+         "integerValue": "6"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ordered by the name, a field twice",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "t"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "6"
+        },
+        "t": {
+         "integerValue": "6"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ordered by another field, then the name descending",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "w"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "6"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ordered by the name descending",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "6"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ordered by the name twice",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "6"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ordered by the name, then another field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "w"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "6"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a key inequality",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "GREATER_THAN",
+      "value": {
+       "referenceValue": "{documents}/ints/a"
+      }
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "5"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a key equality",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "{documents}/ints/a"
+      }
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a key equality, ordered by the field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "{documents}/ints/a"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a key equality, ordered by another field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "{documents}/ints/a"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "w"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a key in",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "IN",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "referenceValue": "{documents}/ints/a"
+         }
+        ]
+       }
+      }
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "is null on the key",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "unaryFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "IS_NULL"
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "is null on the key, ordered by the field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "unaryFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "IS_NULL"
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "v"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "a key equality in an or",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "OR",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "v"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "EQUAL",
+         "value": {
+          "referenceValue": "{documents}/ints/a"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "1"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "an inequality on the field, ordered by the name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "v"
+      },
+      "op": "GREATER_THAN",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "5"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "an inequality on another field, ordered by the name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "w"
+      },
+      "op": "GREATER_THAN",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "an inequality on another field, ordered by the name descending",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "w"
+      },
+      "op": "GREATER_THAN",
+      "value": {
+       "integerValue": "1"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ordered by the name, a negative limit",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "limit": -1
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "limit is negative"
+   }
+  },
+  {
+   "name": "ordered by the name, without a collection",
+   "parent": "",
+   "query": {
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Long overflow"
+   }
+  },
+  {
+   "name": "ordered by the name, two array-contains",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "c"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ordered by the name, too many disjunctions",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            },
+            {
+             "integerValue": "11"
+            },
+            {
+             "integerValue": "12"
+            },
+            {
+             "integerValue": "13"
+            },
+            {
+             "integerValue": "14"
+            },
+            {
+             "integerValue": "15"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "c"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            }
+           ]
+          }
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "an inequality next to a key equality, ordered by the name",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "w"
+         },
+         "op": "GREATER_THAN",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "EQUAL",
+         "value": {
+          "referenceValue": "{documents}/ints/a"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ordered by the name, then the field",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "v"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "6"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ordered by the name, then one of two fields",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "v"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "w"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "doubleValue": 1.0
+        },
+        "s": {
+         "integerValue": "6"
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "array membership on the key",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "ARRAY_CONTAINS_ANY",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "referenceValue": "{documents}/ints/a"
+         }
+        ]
+       }
+      }
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The function array_contains(...) requires `Array` but got `ENTITY_REF`."
+   }
+  },
+  {
+   "name": "array membership on the key, duplicate orders",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "ARRAY_CONTAINS",
+      "value": {
+       "referenceValue": "{documents}/ints/a"
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "w"
+      },
+      "direction": "ASCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "w"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The function array_contains(...) requires `Array` but got `ENTITY_REF`."
+   }
+  },
+  {
+   "name": "ordered by the name, a sum of __type__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "__type__"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>"
+     }
+    ]
+   }
+  },
+  {
+   "name": "ordered by the name, a duplicate alias",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "x"
+    },
+    {
+     "count": {},
+     "alias": "x"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Aggregation aliases contain duplicate alias: x."
+   }
+  }
+ ]
+}

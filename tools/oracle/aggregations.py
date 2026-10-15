@@ -2,6 +2,11 @@
 
 Usage:
     python3 -I tools/oracle/aggregations.py 127.0.0.1:8086 > crates/hidane/tests/fixtures/aggregations.json
+    python3 -I tools/oracle/aggregations.py 127.0.0.1:8087 enterprise \
+        > crates/hidane/tests/fixtures/aggregations_enterprise.json
+
+The second records the same cases against a jar started with `--database-edition enterprise`
+(#338); the argument only labels the fixture.
 
 Seeds one project with small collections whose field `v` holds values chosen for the edges of
 `sum` and `avg` (integer overflow, NaN, infinities, precision, non-numbers), runs every case
@@ -17,6 +22,9 @@ import urllib.error
 import urllib.request
 
 HOST = sys.argv[1] if len(sys.argv) > 1 else "127.0.0.1:8080"
+EDITION = sys.argv[2] if len(sys.argv) > 2 else "standard"
+if EDITION not in ("standard", "enterprise"):
+    raise SystemExit(f"the edition is standard or enterprise, not {EDITION}")
 PROJECT = f"aggregations-{time.strftime('%H%M%S')}"
 DOCUMENTS = f"projects/{PROJECT}/databases/(default)/documents"
 I64_MAX = 9223372036854775807
@@ -44,6 +52,12 @@ COLLECTIONS = {
     "big_avg": {"a": i(I64_MAX), "b": i(I64_MAX)},
     "strings": {"a": s("x"), "b": s("y")},
     "doubles_int_valued": {"a": d(1.0), "b": d(2.0)},
+    # How an enterprise database adds doubles: as decimals (#338).
+    "tenths3": {"a": d(0.1), "b": d(0.2), "c": d(0.4)},
+    "big_mixed": {"a": i(I64_MAX), "b": d(1.0)},
+    "large_doubles": {"a": d(1e308), "b": d(1e308)},
+    "thirds": {"a": i(1), "b": i(1), "c": i(2)},
+    "tiny": {"a": i(1), "b": d(1e-20)},
 }
 DATASET = []
 for coll, docs in COLLECTIONS.items():
@@ -97,6 +111,9 @@ def case(name, query, aggregations, parent=""):
 
 for coll in COLLECTIONS:
     case(f"count, sum and avg of {coll}", q(coll), [count("n"), total("v", "sum"), avg("v", "avg")])
+for coll in ("overflow", "underflow", "big_avg", "tenths3", "big_mixed", "thirds"):
+    case(f"avg of {coll} alone", q(coll), [avg("v", "a")])
+    case(f"sum of {coll} alone", q(coll), [total("v", "s")])
 case("empty collection", q("nothing"), [count("n"), total("v", "sum"), avg("v", "avg")])
 case("count up to 2", q("mixed"), [count("n", up_to=2)])
 case("count up to 100", q("mixed"), [count("n", up_to=100)])
@@ -361,6 +378,7 @@ if __name__ == "__main__":
     json.dump({
         "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
         "generated_by": "tools/oracle/aggregations.py",
+        **({"edition": EDITION} if EDITION != "standard" else {}),
         "dataset": DATASET,
         "cases": CASES,
     }, sys.stdout, ensure_ascii=False, indent=1)
