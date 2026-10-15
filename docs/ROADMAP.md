@@ -165,7 +165,19 @@ Released in v0.5.0 (2026-10-13):
 | P2 | Differential fuzzing against the official emulator, first two batches of fixes | Done (#259, #273, #276); the rest in #262 |
 | P2 | Reproducible builds, SBOMs and image attestations | Done (#246, #254) |
 
-## 7. Backlog
+## 7. Enterprise edition
+
+**Goal**: answer a database started with `--database-edition enterprise` (firebase-tools'
+`firestore.edition: "enterprise"`) as the official emulator does.
+
+| Priority | Item | Status |
+|---|---|---|
+| P1 | Queries and aggregation queries with the pipeline semantics | Done in v0.6.0 (#341, #342) |
+| P1 | Listeners' queries | Done in v0.6.0 (#343), but 34 recorded targets are refused otherwise (#338) |
+| P1 | Pipelines (`ExecutePipeline`): every stage and function the SDKs send, in transactions too | Done (#80) |
+| P2 | The BSON types (Int32, Decimal128, ObjectId, regular expressions, MinKey and MaxKey, BSON timestamps and binary data) | Not started |
+
+## 8. Backlog
 
 - Datastore mode (`--database-mode datastore-mode`), `--index_file` / `--require_indexes` (#81)
 - `google.firestore.admin.v1` (not in the official emulator either; stays UNIMPLEMENTED)
@@ -174,13 +186,13 @@ Released in v0.5.0 (2026-10-13):
 
 The distribution channels and the license decision listed here before shipped in v0.1.0.
 
-## 8. Out of scope
+## 9. Out of scope
 
 - Realtime Database, Cloud Storage and Auth emulators (no maintained RTDB-compatible server has existed since 2021; a separate project's problem)
 - Production use. hidane is a local-development and CI emulator and must not be exposed without authentication (`SECURITY.md`)
 - Decompiling or reusing the official jar. Clean-room only: public protos, public docs, black-box observation
 
-## 9. Biggest risks (as of Phase 0)
+## 10. Biggest risks (as of Phase 0)
 
 1. **No Web support until v0.3.** Browser development is the most common local-development case and a gRPC-only v0.1 does nothing for it. Mitigation: pull REST unary into v0.1, keep the Listen / Write core transport-agnostic, and revisit the WebChannel timing in ADR 0004.
 2. **No supported replacement hook in firebase-tools.** The `java` shim works but is an awkward distribution story; an upstream PR may or may not be accepted.
