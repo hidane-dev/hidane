@@ -336,7 +336,7 @@ impl FirestoreService {
                         .entry(view.path.clone())
                         .or_insert_with(|| view.before.clone());
                 }
-                match writes::apply(batch, write, first) {
+                match writes::apply(batch, write, first, self.enterprise) {
                     Ok(result) => {
                         results.push(result);
                         if let Some(view) = view {
@@ -350,7 +350,7 @@ impl FirestoreService {
                         let applied = view.method == hidane_rules::eval::Method::Get || {
                             let mut unconditional = write.clone();
                             unconditional.current_document = None;
-                            writes::apply(batch, &unconditional, first).is_ok()
+                            writes::apply(batch, &unconditional, first, self.enterprise).is_ok()
                         };
                         if applied {
                             record(view);
@@ -415,7 +415,7 @@ impl FirestoreService {
             self.transactions
                 .check_commit(database, transaction, !writes.is_empty())?;
         }
-        let targets = writes::check(database, writes, verifies)?;
+        let targets = writes::check(database, writes, verifies, self.enterprise)?;
         self.transactions
             .commit(database, transaction, &targets, || {
                 if writes.is_empty() {
@@ -1383,7 +1383,7 @@ impl Firestore for FirestoreService {
             .map(|write| writes::check_names(&database, write))
             .collect::<Result<Vec<_>, _>>()?;
         for (write, path) in req.writes.iter().zip(&targets) {
-            writes::check_values(path, write)?;
+            writes::check_values(path, write, self.enterprise)?;
         }
         if !caller.is_admin() {
             return Err(Status::permission_denied(BATCH_WRITE_ADMIN));

@@ -23,12 +23,12 @@ firebase-tools that launches it and the official emulator it is compared with.
 
 | hidane | firebase-tools | Official emulator | Status | Evidence |
 |---|---|---|---|---|
-| 0.6.x | 15.33.0 | 1.22.0 | Verified | 30,872 recorded answers of the official emulator v1.22.0 in 60 fixtures, replayed against hidane by cargo test; 44 comparisons of SDK transcripts with the official emulator v1.22.0's: 26 identical, 18 documented differences; 2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers (last recorded 2026-10-13) |
+| 0.6.x | 15.33.0 | 1.22.0 | Verified | 35,632 recorded answers of the official emulator v1.22.0 in 61 fixtures, replayed against hidane by cargo test; 44 comparisons of SDK transcripts with the official emulator v1.22.0's: 26 identical, 18 documented differences; 2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers (last recorded 2026-10-13) |
 
 | Evidence | What the results show | Where |
 |---|---|---|
-| Oracle corpus | 102 recordings of the official emulator 1.22.0 (60 fixtures, 42 official transcripts), `sha256:588e93343bce…` | [oracle-corpus.md](oracle-corpus.md) |
-| Record and replay | 30,872 recorded answers in 60 fixtures, replayed by `cargo test` on every pull request and push to main: 19,626 in full, 4,344 decision and reasons, 1,481 in part, 5,189 status only, 30 without messages, 7 not compared, 195 intentionally different | [parity.md](parity.md) |
+| Oracle corpus | 103 recordings of the official emulator 1.22.0 (61 fixtures, 42 official transcripts), `sha256:f9ff7e1ea976…` | [oracle-corpus.md](oracle-corpus.md) |
+| Record and replay | 35,632 recorded answers in 61 fixtures, replayed by `cargo test` on every pull request and push to main: 24,305 in full, 4,344 decision and reasons, 1,481 in part, 5,189 status only, 96 without messages, 7 not compared, 210 intentionally different | [parity.md](parity.md) |
 | SDK transcripts | 44 comparisons of 42 transcript pairs: 26 identical, 18 documented differences | [parity.md](parity.md) |
 | SDK certification | 16 clients and tools: 14 verified, 0 partially verified, 2 not verified | [sdk-certification.md](sdk-certification.md) |
 | Browser | firebase-js-sdk's browser suite at `8a7e7fd`: 1,183 passed, 0 failed, 739 skipped on hidane; 1,183 passed, 0 failed on the official emulator (identical). 3 transcripts in Chromium: browser-webchannel (identical), flutter-web (documented), browser-rules (documented) | [`js-sdk-browser.yml`](../.github/workflows/js-sdk-browser.yml) |

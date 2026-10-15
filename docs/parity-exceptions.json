@@ -520,11 +520,12 @@
    "kind": "more-correct",
    "official": "An array union (`appendMissingElements`) whose operand holds an array or a vector with NaN is stored as it is",
    "firestore": null,
-   "hidane": "Refused when the transform is applied, with the message the value gets in a field (\"Nested arrays are not allowed\", \"Vector cannot contain NaN values.\")",
+   "hidane": "Refused when the transform is applied, with the message the value gets in a field (\"Nested arrays are not allowed\", \"Vector cannot contain NaN values.\"); an enterprise database, whose documents may hold arrays in arrays, refuses only the vector",
    "reason": "Bug (values a document may not hold)",
    "references": [],
    "pinned_by": [
-    "crates/hidane/tests/commit_checks.rs::the_first_error_is_the_official_one"
+    "crates/hidane/tests/commit_checks.rs::the_first_error_is_the_official_one",
+    "crates/hidane/tests/commit_checks.rs::the_first_error_is_the_official_one_on_an_enterprise_database"
    ]
   },
   {
