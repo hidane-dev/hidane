@@ -261,31 +261,31 @@ pub fn transforms(transforms: &[FieldTransform]) -> Result<(), Status> {
     Ok(())
 }
 
-/// What the fields may hold once a write's transforms are applied: no nested array and no
-/// vector with NaN. The official emulator stores an array union's operands as they are
-/// (docs/parity-exceptions.md).
-pub fn transformed(fields: &Fields) -> Result<(), Status> {
+/// What the fields may hold once a write's transforms are applied: no nested array (but on
+/// an `enterprise` database) and no vector with NaN. The official emulator stores an array
+/// union's operands as they are (docs/parity-exceptions.md).
+pub fn transformed(fields: &Fields, enterprise: bool) -> Result<(), Status> {
     fields
         .values()
-        .try_for_each(|value| transformed_value(value, false))
+        .try_for_each(|value| transformed_value(value, false, enterprise))
 }
 
-fn transformed_value(value: &Value, inside_array: bool) -> Result<(), Status> {
+fn transformed_value(value: &Value, inside_array: bool, enterprise: bool) -> Result<(), Status> {
     match &value.value_type {
         Some(ValueType::ArrayValue(array)) => {
-            if inside_array {
+            if inside_array && !enterprise {
                 return Err(Status::invalid_argument("Nested arrays are not allowed"));
             }
             array
                 .values
                 .iter()
-                .try_for_each(|element| transformed_value(element, true))
+                .try_for_each(|element| transformed_value(element, true, enterprise))
         }
         Some(ValueType::MapValue(map)) if is_vector(map) => vector_elements(map),
         Some(ValueType::MapValue(map)) => map
             .fields
             .values()
-            .try_for_each(|nested| transformed_value(nested, false)),
+            .try_for_each(|nested| transformed_value(nested, false, enterprise)),
         _ => Ok(()),
     }
 }
@@ -308,8 +308,10 @@ pub fn key(path: &ResourcePath) -> Result<(), Status> {
 /// array's elements are checked in order: an array in it is a nested array, a vector may not
 /// hold NaN, a string or bytes at most 1,048,487 bytes. A map is a nested entity, whose names
 /// count from the top-level field (an array as `array`) and may not be empty, with 20 levels
-/// of maps and arrays at most; any problem inside one is only "an invalid nested entity".
-pub fn values(path: &ResourcePath, fields: &Fields) -> Result<(), Status> {
+/// of maps and arrays at most; any problem inside one is only "an invalid nested entity". An
+/// array 21 levels down is too deep before it is a nested array. An `enterprise` database
+/// checks otherwise ([`enterprise_value`]).
+pub fn values(path: &ResourcePath, fields: &Fields, enterprise: bool) -> Result<(), Status> {
     key(path)?;
     for (name, value) in fields {
         if name.is_empty() {
@@ -323,25 +325,79 @@ pub fn values(path: &ResourcePath, fields: &Fields) -> Result<(), Status> {
             )));
         }
         match &value.value_type {
+            // An array is named `array` in the flattened name, whatever its key.
+            Some(ValueType::ArrayValue(_)) if enterprise => enterprise_value(value, "array", 1)?,
+            _ if enterprise => enterprise_value(value, name, 1)?,
             Some(ValueType::ArrayValue(array)) => {
                 for element in &array.values {
-                    property_value(element, "array", true)?;
+                    property_value(element, "array", 2)?;
                 }
             }
-            _ => property_value(value, name, false)?,
+            _ => property_value(value, name, 0)?,
         }
     }
     Ok(())
 }
 
-/// A property's value, or an element of an array (`inside_array`); `property` names it in
-/// messages. An array in an array is converted before it is refused, so a problem among its
-/// elements comes first (`tools/oracle/rest.py`, #262).
-fn property_value(value: &Value, property: &str, inside_array: bool) -> Result<(), Status> {
+fn too_deep() -> Status {
+    Status::invalid_argument("At most 20 nested array/entity values are supported.")
+}
+
+/// A value of a document on an enterprise database (`tests/fixtures/commit_checks_enterprise.json`),
+/// at `depth` levels of maps and arrays, with the flattened name `path` (where an array's key
+/// reads `array`, as on a standard database): no size limit on a value, and arrays may hold
+/// arrays, but 20 levels of maps and arrays at most; inside a map, the problems of a field's
+/// name are reported as at the top (an empty name, a flattened name over 1500 bytes, a
+/// `__type__` that names no type) and a vector may not hold NaN.
+fn enterprise_value(value: &Value, path: &str, depth: usize) -> Result<(), Status> {
     match &value.value_type {
+        Some(ValueType::ArrayValue(_) | ValueType::MapValue(_)) if depth > MAX_DEPTH => {
+            Err(too_deep())
+        }
+        Some(ValueType::ArrayValue(array)) => array
+            .values
+            .iter()
+            .try_for_each(|element| enterprise_value(element, path, depth + 1)),
+        Some(ValueType::MapValue(map)) if is_vector(map) => vector_elements(map),
+        Some(ValueType::MapValue(map)) if map.fields.contains_key(TYPE_KEY) => Err(
+            Status::invalid_argument(format!("The property.name \"{TYPE_KEY}\" is reserved.")),
+        ),
+        Some(ValueType::MapValue(map)) => {
+            for (key, nested) in &map.fields {
+                if key.is_empty() {
+                    return Err(Status::invalid_argument(
+                        "The property.name is the empty string.",
+                    ));
+                }
+                let nested_path = if matches!(nested.value_type, Some(ValueType::ArrayValue(_))) {
+                    format!("{path}.array")
+                } else {
+                    format!("{path}.{key}")
+                };
+                if nested_path.len() > MAX_NAME_BYTES {
+                    return Err(Status::invalid_argument(format!(
+                        "The flattened property.name is longer than {MAX_NAME_BYTES} bytes."
+                    )));
+                }
+                enterprise_value(nested, &nested_path, depth + 1)?;
+            }
+            Ok(())
+        }
+        _ => Ok(()),
+    }
+}
+
+/// A property's value, or an element of an array at `depth` levels of arrays (0 for a
+/// property's value itself); `property` names it in messages. An array in an array is
+/// converted before it is refused, so a problem among its elements comes first
+/// (`tools/oracle/rest.py`, #262), and one past 20 levels is too deep.
+fn property_value(value: &Value, property: &str, depth: usize) -> Result<(), Status> {
+    let inside_array = depth > 0;
+    match &value.value_type {
+        Some(ValueType::ArrayValue(_)) if depth > MAX_DEPTH => Err(too_deep()),
         Some(ValueType::ArrayValue(array)) if inside_array => {
             for element in &array.values {
-                property_value(element, property, true)?;
+                property_value(element, property, depth + 1)?;
             }
             Err(Status::invalid_argument("Nested arrays are not allowed"))
         }
@@ -413,8 +469,12 @@ fn nested_ok(value: &Value, path: &str, depth: usize) -> bool {
 
 /// A document's size by Firestore's storage size rules: its name, each field's name and value,
 /// and 32 bytes. The official emulator counts its Datastore entity's encoding instead, which
-/// comes to a few tens of bytes more (docs/parity-exceptions.md).
-pub fn size(path: &ResourcePath, fields: &Fields) -> Result<(), Status> {
+/// comes to a few tens of bytes more (docs/parity-exceptions.md). An `enterprise` database
+/// does not limit a document's size (`tests/fixtures/commit_checks_enterprise.json`).
+pub fn size(path: &ResourcePath, fields: &Fields, enterprise: bool) -> Result<(), Status> {
+    if enterprise {
+        return Ok(());
+    }
     let total = name_size(path.segments())
         + fields
             .iter()

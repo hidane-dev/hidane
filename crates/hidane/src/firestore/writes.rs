@@ -205,6 +205,7 @@ pub fn check(
     database: &str,
     writes: &[Write],
     verifies: Verifies,
+    enterprise: bool,
 ) -> Result<Vec<ResourcePath>, Status> {
     if verifies == Verifies::Checked {
         check_verifies(writes)?;
@@ -215,7 +216,7 @@ pub fn check(
         .collect::<Result<Vec<_>, _>>()?;
     check_sequences(writes)?;
     for (write, path) in writes.iter().zip(&targets) {
-        check_values(path, write)?;
+        check_values(path, write, enterprise)?;
     }
     Ok(targets)
 }
@@ -312,10 +313,10 @@ pub(super) fn base_version(time: &Timestamp) -> Result<i64, Status> {
 }
 
 /// The values of one write whose names are checked: the document an update or a transform
-/// writes, its key, then its fields.
-pub fn check_values(path: &ResourcePath, write: &Write) -> Result<(), Status> {
+/// writes, its key, then its fields, as an `enterprise` database or a standard one checks them.
+pub fn check_values(path: &ResourcePath, write: &Write, enterprise: bool) -> Result<(), Status> {
     match &write.operation {
-        Some(Operation::Update(document)) => validate::values(path, &document.fields),
+        Some(Operation::Update(document)) => validate::values(path, &document.fields, enterprise),
         Some(Operation::Transform(_)) => validate::key(path),
         _ => Ok(()),
     }
@@ -411,6 +412,7 @@ pub fn apply(
     batch: &mut dyn WriteBatch,
     write: &Write,
     first: bool,
+    enterprise: bool,
 ) -> Result<WriteResult, Status> {
     let name = target(write).expect("checked");
     let parsed = names::document(name)?;
@@ -463,9 +465,13 @@ pub fn apply(
                 }
             };
             // Transforms run after the update, in order.
-            let transform_results =
-                apply_transforms(&mut fields, &write.update_transforms, batch.commit_time())?;
-            validate::size(&path, &fields)?;
+            let transform_results = apply_transforms(
+                &mut fields,
+                &write.update_transforms,
+                batch.commit_time(),
+                enterprise,
+            )?;
+            validate::size(&path, &fields, enterprise)?;
             Ok(store(
                 batch,
                 &path,
@@ -484,8 +490,9 @@ pub fn apply(
                 &mut fields,
                 &document_transform.field_transforms,
                 batch.commit_time(),
+                enterprise,
             )?;
-            validate::size(&path, &fields)?;
+            validate::size(&path, &fields, enterprise)?;
             Ok(store(
                 batch,
                 &path,
@@ -505,6 +512,7 @@ fn apply_transforms(
     fields: &mut Fields,
     transforms: &[FieldTransform],
     commit_time: ReadTime,
+    enterprise: bool,
 ) -> Result<Vec<Value>, Status> {
     if transforms.is_empty() {
         return Ok(Vec::new());
@@ -525,7 +533,7 @@ fn apply_transforms(
         })
         .collect::<Result<Vec<_>, _>>()?;
     // An array union can bring in nested arrays and vectors with NaN.
-    validate::transformed(&transformed)?;
+    validate::transformed(&transformed, enterprise)?;
     apply_mask(fields, &transformed, &paths);
     Ok(results)
 }

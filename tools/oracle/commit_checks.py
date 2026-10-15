@@ -4,8 +4,13 @@ with a write to a document of another database (#203)?
 
 Usage (from the repository root, `grpcurl` on PATH), against a freshly started jar:
     python3 -I tools/oracle/commit_checks.py 127.0.0.1:8086 EXPORT_DIR > crates/hidane/tests/fixtures/commit_checks.json
+    python3 -I tools/oracle/commit_checks.py 127.0.0.1:8087 EXPORT_DIR enterprise \
+        > crates/hidane/tests/fixtures/commit_checks_enterprise.json
 
-EXPORT_DIR is an empty directory the jar writes an export to.
+EXPORT_DIR is an empty directory the jar writes an export to. The second runs the same cases
+against a jar started with `--database-edition enterprise`, which checks values otherwise: no
+size limit on a value or a document, arrays in arrays, 20 levels of maps and arrays, and a
+problem inside a map reported as at the top.
 
 `order`: commits with problems, each a kind of invalid write. Every ordered pair of the main
 kinds (KINDS) runs as two writes (the first kind writes document `a`, the second document `b`),
@@ -55,6 +60,9 @@ import urllib.request
 
 HOST = sys.argv[1]
 EXPORT_DIR = sys.argv[2]
+EDITION = sys.argv[3] if len(sys.argv) > 3 else "standard"
+if EDITION not in ("standard", "enterprise"):
+    raise SystemExit(f"the edition is standard or enterprise, not {EDITION}")
 PROTOS = "crates/hidane-proto/proto"
 LIMIT = 1_048_487
 
@@ -68,6 +76,13 @@ def nest(levels, bottom=None):
     v = bottom or i(1)
     for _ in range(levels):
         v = mp({"m": v})
+    return v
+
+
+def nest_arrays(levels):
+    v = i(1)
+    for _ in range(levels):
+        v = arr(v)
     return v
 
 
@@ -132,6 +147,20 @@ ALONE = {
     "an array holding a vector with NaN, then a string over the limit": lambda d: ("fields", {f"{d}_array": arr(vector("NaN"), string(LIMIT + 1))}),
     "an array holding a string over the limit, then a vector with NaN": lambda d: ("fields", {f"{d}_array": arr(string(LIMIT + 1), vector("NaN"))}),
     "a nested array 20 levels down": lambda d: ("fields", {f"{d}_deep": nest(20, arr(arr(i(1))))}),
+    # The bounds of depth and of a nested name's length, which an enterprise database counts
+    # otherwise.
+    "20 levels of maps": lambda d: ("fields", {f"{d}_deep": nest(20)}),
+    "19 levels of maps holding an array": lambda d: ("fields", {f"{d}_deep": nest(19, arr(i(1)))}),
+    "20 levels of maps holding an array": lambda d: ("fields", {f"{d}_deep": nest(20, arr(i(1)))}),
+    "18 levels of maps holding a nested array": lambda d: ("fields", {f"{d}_deep": nest(18, arr(arr(i(1))))}),
+    "19 levels of maps holding a nested array": lambda d: ("fields", {f"{d}_deep": nest(19, arr(arr(i(1))))}),
+    "20 levels of arrays": lambda d: ("fields", {f"{d}_deep": nest_arrays(20)}),
+    "21 levels of arrays": lambda d: ("fields", {f"{d}_deep": nest_arrays(21)}),
+    "a nested name of 1500 bytes in all": lambda d: ("fields", {"n": mp({"x" * 1498: i(1)})}),
+    "a nested name of 1501 bytes in all": lambda d: ("fields", {"n": mp({"x" * 1499: i(1)})}),
+    "a name in a map in an array, 1500 bytes in all": lambda d: ("fields", {"n": arr(mp({"x" * 1498: i(1)}))}),
+    "a name in a map in an array, 1501 bytes in all": lambda d: ("fields", {"n": arr(mp({"x" * 1499: i(1)}))}),
+    "a name in a map in an array named longer": lambda d: ("fields", {"nnnnnn": arr(mp({"x" * 1494: i(1)}))}),
     "a vector with NaN 21 levels down": lambda d: ("fields", {f"{d}_deep": nest(21, vector("NaN"))}),
     "a __type__ that is a string in a map with other keys": lambda d: ("fields", {f"{d}_type": mp({"__type__": {"stringValue": "x"}, "a": i(1)})}),
     "a __type__ that is null": lambda d: ("fields", {f"{d}_type": mp({"__type__": {"nullValue": "NULL_VALUE"}})}),
@@ -484,6 +513,8 @@ dump = lambda value: json.dumps(value, ensure_ascii=False)
 print("{")
 print(f' "oracle": {dump("cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)")},')
 print(f' "generated_by": {dump("tools/oracle/commit_checks.py")},')
+if EDITION != "standard":
+    print(f' "edition": {dump(EDITION)},')
 print(' "order": [\n' + ",\n".join("  " + dump(case) for case in order) + "\n ],")
 print(' "other_database": [\n' + ",\n".join("  " + dump(s) for s in steps) + "\n ]")
 print("}")

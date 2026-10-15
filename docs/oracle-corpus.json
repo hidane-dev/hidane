@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:588e93343bce697169b941391fefc1aa754dee1f1c1f134169b9e51c9462c2a2",
+ "digest": "sha256:f9ff7e1ea9767196fa82b0d71f9f61d245794aaf0f156ea28c577ca22fd11fd3",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,25 +14,25 @@
   }
  ],
  "totals": {
-  "files": 102,
-  "fixtures": 60,
+  "files": 103,
+  "fixtures": 61,
   "transcripts": 42,
-  "answers": 30872,
-  "bytes": 20079022,
+  "answers": 35632,
+  "bytes": 21215995,
   "levels": {
-   "full": 19626,
+   "full": 24305,
    "reasons": 4344,
    "part": 1481,
    "status": 5189,
-   "codes": 30,
+   "codes": 96,
    "none": 7,
-   "differs": 195
+   "differs": 210
   },
   "by_area": {
    "documents": {
-    "fixtures": 8,
+    "fixtures": 9,
     "transcripts": 6,
-    "answers": 5749
+    "answers": 10509
    },
    "queries": {
     "fixtures": 9,
@@ -82,13 +82,13 @@
   },
   "by_release": {
    "v1.22.0": {
-    "fixtures": 60,
+    "fixtures": 61,
     "transcripts": 42,
-    "answers": 30872
+    "answers": 35632
    }
   },
   "by_release_source": {
-   "header": 35,
+   "header": 36,
    "file name": 43,
    "git history": 24
   }
@@ -152,13 +152,13 @@
    },
    "recorded": {
     "first_recorded": "2026-10-13",
-    "last_changed": "2026-10-13"
+    "last_changed": "2026-10-16"
    },
-   "bytes": 1115146,
-   "sha256": "5abc1d8ff5707b231dc5e5b24de2749da275d64356d24da06e3e87df5c226444",
-   "answers": 4664,
+   "bytes": 1126780,
+   "sha256": "23049eff48f161f370b59553b2b7585cf45277394c58a29f208f4bf3d9988a9b",
+   "answers": 4712,
    "levels": {
-    "full": 4616,
+    "full": 4664,
     "codes": 29,
     "differs": 19
    },
@@ -172,6 +172,47 @@
    ],
    "counted": "each commit over each transport it was recorded over, and each step that writes to or reads after another database",
    "compared": "in full: the first error's code and message, the number of write results or `:batchWrite`'s statuses, a read's status, names found or missing; a failed precondition without its message (it prints the official emulator's internal key); the cases the test lists in `KNOWN` (array unions of arrays and of vectors with NaN) and the steps in `DIFFERS` (writes to another database, which hidane refuses, and the reads that follow) as intentionally different"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/commit_checks_enterprise.json",
+   "kind": "fixture",
+   "area": "documents",
+   "recorder": "tools/oracle/commit_checks.py",
+   "client": {
+    "over": [
+     "gRPC",
+     "REST"
+    ],
+    "using": "Python standard library and grpcurl",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-16",
+    "last_changed": "2026-10-16"
+   },
+   "bytes": 1125339,
+   "sha256": "58255e8bb0bb72c8b73ce2cddf2868a41ff2e28a5670799e74631dd40e6a8787",
+   "answers": 4712,
+   "levels": {
+    "full": 4631,
+    "codes": 66,
+    "differs": 15
+   },
+   "replayed_over": [
+    "gRPC",
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/commit_checks.rs::the_first_error_is_the_official_one_on_an_enterprise_database",
+    "crates/hidane/tests/commit_checks.rs::writes_to_another_database_are_refused_on_an_enterprise_database"
+   ],
+   "counted": "each commit over each transport it was recorded over, and each step that writes to or reads after another database, on an enterprise database",
+   "compared": "as `commit_checks.json`; the cases the test lists in `KNOWN_ENTERPRISE` (an array union of a vector with NaN) and the steps in `DIFFERS` as intentionally different"
   },
   {
    "path": "crates/hidane/tests/fixtures/document_writes.json",

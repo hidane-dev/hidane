@@ -445,9 +445,9 @@ def base_versions(f):
     return answers
 
 
-def commit_checks(f):
+def commit_checks(f, known_list="KNOWN"):
     rel = f"{H}/commit_checks.rs"
-    known, differs = rust_strings(rel, "KNOWN"), rust_strings(rel, "DIFFERS")
+    known, differs = rust_strings(rel, known_list), rust_strings(rel, "DIFFERS")
     precondition = lambda outcome: outcome.get("code") in ("NOT_FOUND", "ALREADY_EXISTS")
     answers = []
     for case in f["order"]:
@@ -635,6 +635,16 @@ RECORDINGS = {
                  "steps in `DIFFERS` (writes to another database, which hidane refuses, and the "
                  "reads that follow) as intentionally different",
         count=commit_checks),
+    f"{H}/fixtures/commit_checks_enterprise.json": dict(
+        area="documents",
+        tests=[f"{H}/commit_checks.rs::the_first_error_is_the_official_one_on_an_enterprise_database",
+               f"{H}/commit_checks.rs::writes_to_another_database_are_refused_on_an_enterprise_database"],
+        counted="each commit over each transport it was recorded over, and each step that "
+                "writes to or reads after another database, on an enterprise database",
+        compares="as `commit_checks.json`; the cases the test lists in `KNOWN_ENTERPRISE` (an "
+                 "array union of a vector with NaN) and the steps in `DIFFERS` as intentionally "
+                 "different",
+        count=lambda f: commit_checks(f, "KNOWN_ENTERPRISE")),
     f"{H}/fixtures/conformance.json": dict(
         area="rest",
         tests=[f"{H}/rest.rs::conformance_requests_answer_like_the_official_emulator"],

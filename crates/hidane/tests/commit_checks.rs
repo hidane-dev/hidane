@@ -1,5 +1,6 @@
 //! How a commit's writes are checked, against the official emulator's recordings
-//! (`fixtures/commit_checks.json`, from `tools/oracle/commit_checks.py`).
+//! (`fixtures/commit_checks.json`, and on an enterprise database
+//! `fixtures/commit_checks_enterprise.json`, from `tools/oracle/commit_checks.py`).
 //!
 //! `order` (#202): commits with problems, in two writes or in one, over REST `:commit`, gRPC
 //! `Commit`, REST `:batchWrite` and the Write stream, each in the project the recording used.
@@ -32,11 +33,12 @@ type Client = FirestoreClient<Channel>;
 
 /// Cases where hidane answers differently on purpose (docs/parity-exceptions.md): an array
 /// union's operand that holds an array or a vector with NaN is refused when the transform is
-/// applied; the official emulator stores it.
+/// applied; the official emulator stores it. An enterprise database takes arrays in arrays.
 const KNOWN: &[&str] = &[
     "an array union of an array",
     "an array union of a vector with NaN",
 ];
+const KNOWN_ENTERPRISE: &[&str] = &["an array union of a vector with NaN"];
 
 /// Steps of `other_database` where hidane answers differently on purpose: it refuses a write to
 /// a document of another database, so the reads that follow find nothing, and a batchGet
@@ -55,10 +57,10 @@ const DIFFERS: &[&str] = &[
     "an export of the request's database, imported into a database of the other name",
 ];
 
-async fn start() -> (SocketAddr, Client) {
+async fn start(enterprise: bool) -> (SocketAddr, Client) {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
-    let admin = hidane::Admin::default();
+    let admin = hidane::Admin::default().with_enterprise_edition(enterprise);
     tokio::spawn(hidane::serve(
         vec![listener],
         hidane::grpc_routes(&admin),
@@ -226,10 +228,24 @@ fn same(official: &Json, hidane: &Json) -> bool {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn the_first_error_is_the_official_one() {
-    let fixture: Json = serde_json::from_str(include_str!("fixtures/commit_checks.json")).unwrap();
+    replay_order(include_str!("fixtures/commit_checks.json"), KNOWN).await;
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn the_first_error_is_the_official_one_on_an_enterprise_database() {
+    replay_order(
+        include_str!("fixtures/commit_checks_enterprise.json"),
+        KNOWN_ENTERPRISE,
+    )
+    .await;
+}
+
+async fn replay_order(text: &str, known_cases: &[&str]) {
+    let fixture: Json = serde_json::from_str(text).unwrap();
+    let enterprise = fixture["edition"] == "enterprise";
     let cases = fixture["order"].as_array().unwrap();
     assert!(cases.len() > 1000, "only {} cases", cases.len());
-    let (addr, mut client) = start().await;
+    let (addr, mut client) = start(enterprise).await;
     let mut differences = Vec::new();
     let mut known = 0;
     for case in cases {
@@ -245,7 +261,7 @@ async fn the_first_error_is_the_official_one() {
                 .replace("{base}", &format!("{database}/documents"));
             let writes: Json = serde_json::from_str(&expand(&text)).unwrap();
             let hidane = send(addr, &mut client, transport, &database, &writes).await;
-            if KNOWN.contains(&name) {
+            if known_cases.contains(&name) {
                 // Refused when the transform is applied, with the message a field would get
                 // (`:batchWrite` reports it as the write's status).
                 let code = hidane
@@ -261,7 +277,11 @@ async fn the_first_error_is_the_official_one() {
             }
         }
     }
-    assert_eq!(known, KNOWN.len() * 4, "every known difference is recorded");
+    assert_eq!(
+        known,
+        known_cases.len() * 4,
+        "every known difference is recorded"
+    );
     assert!(
         differences.is_empty(),
         "{} answers differ:\n{}",
@@ -410,9 +430,18 @@ fn refused(step: &Json, database: &str) -> Json {
 
 #[tokio::test]
 async fn writes_to_another_database_are_refused() {
-    let fixture: Json = serde_json::from_str(include_str!("fixtures/commit_checks.json")).unwrap();
+    replay_other_database(include_str!("fixtures/commit_checks.json")).await;
+}
+
+#[tokio::test]
+async fn writes_to_another_database_are_refused_on_an_enterprise_database() {
+    replay_other_database(include_str!("fixtures/commit_checks_enterprise.json")).await;
+}
+
+async fn replay_other_database(text: &str) {
+    let fixture: Json = serde_json::from_str(text).unwrap();
     let steps = fixture["other_database"].as_array().unwrap();
-    let (addr, mut client) = start().await;
+    let (addr, mut client) = start(fixture["edition"] == "enterprise").await;
     let export = TempDir::new();
     let mut differs = 0;
     for step in steps {
