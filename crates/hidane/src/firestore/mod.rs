@@ -153,15 +153,19 @@ impl FirestoreService {
     }
 
     /// Security Rules on a query: a `list` of its collection.
+    /// Security Rules for a query as read ([`Query::read`]): they normalize its filter first,
+    /// refusing too many disjunctions before they decide, and come before the rest of the
+    /// query is checked (`tools/oracle/rules_list.py`, #262).
     fn check_list(
         &self,
         caller: &auth::Caller,
         database: &str,
-        query: &Query,
+        query: &query::Unchecked<'_>,
     ) -> Result<(), Status> {
         let Some(guard) = self.guard(caller, database) else {
             return Ok(());
         };
+        query.check_disjunctions()?;
         let (collection, view) = query.rules_view();
         let at = self.store.latest_read_time(database);
         guard
@@ -206,6 +210,7 @@ impl FirestoreService {
         let Some(requested) = requested else {
             return Ok(latest);
         };
+        writes::base_version(requested)?;
         let at = ReadTime::from_timestamp(requested);
         if at > latest {
             return Err(Status::invalid_argument(
@@ -636,7 +641,8 @@ impl Firestore for FirestoreService {
                 Some(Some(doc)) => query.run_after(&*self.store, &parent.database, at, Some(doc)),
                 None => query.run_after(&*self.store, &parent.database, at, None),
             };
-            let more = found.len() > limit;
+            // A full page has a next page, even an empty one, ordered or not (#313).
+            let more = found.len() >= limit;
             let page: Vec<_> = found.into_iter().take(limit).collect();
             return Ok(Response::new(ListDocumentsResponse {
                 next_page_token: match page.last() {
@@ -974,8 +980,17 @@ impl Firestore for FirestoreService {
                 "only structured queries are supported",
             ));
         };
-        let query = Query::parse(&database, parent.path, structured)?;
-        self.check_list(&caller, &database, &query)?;
+        // Security Rules, then the read time, come before the rest of the query is checked
+        // (`tools/oracle/rules_list.py`, `tools/oracle/queries.py`, #262). A transaction locks
+        // after it: one the checks refuse locks nothing (D085).
+        let read = Query::read(&database, parent.path, structured, |_| Ok(Vec::new()))?;
+        self.check_list(&caller, &database, &read)?;
+        if let Some(run_query_request::ConsistencySelector::ReadTime(ts)) =
+            &req.consistency_selector
+        {
+            self.read_time(&database, Some(ts))?;
+        }
+        let query = read.check()?;
         let consistency = match &req.consistency_selector {
             Some(run_query_request::ConsistencySelector::Transaction(t)) => {
                 Consistency::Transaction(t)
@@ -1075,17 +1090,23 @@ impl Firestore for FirestoreService {
                 "Only structured aggregation queries are supported.",
             ));
         };
-        let read = Aggregations::read(&q.aggregations)?;
+        let listed = Aggregations::read(&q.aggregations)?;
         let mut checked = None;
-        let mut query =
-            Query::parse_aggregated(&database, parent.path, structured, |projection| {
-                let aggregations = read.check(projection)?;
-                let fields = aggregations.fields().collect();
-                checked = Some(aggregations);
-                Ok(fields)
-            })?;
-        let aggregations = checked.expect("checked while parsing the query");
-        self.check_list(&caller, &database, &query)?;
+        let read = Query::read(&database, parent.path, structured, |projection| {
+            let aggregations = listed.check(projection)?;
+            let fields = aggregations.fields().collect();
+            checked = Some(aggregations);
+            Ok(fields)
+        })?;
+        let aggregations = checked.expect("checked while reading the query");
+        // As for RunQuery: Security Rules and the read time, the rest, then the lock.
+        self.check_list(&caller, &database, &read)?;
+        if let Some(run_aggregation_query_request::ConsistencySelector::ReadTime(ts)) =
+            &req.consistency_selector
+        {
+            self.read_time(&database, Some(ts))?;
+        }
+        let mut query = read.check()?;
         query.require(aggregations.fields());
         let consistency = match &req.consistency_selector {
             Some(run_aggregation_query_request::ConsistencySelector::Transaction(t)) => {

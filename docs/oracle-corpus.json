@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:b1e70b0a8043bb1016c76cefa42c2ae057a6eab901c09c9bd91401261f7c6c30",
+ "digest": "sha256:857fa2e462c308e4b6370d53ada55f6f4f1d3732ed7a29cc3be92108bd595058",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -17,13 +17,13 @@
   "files": 81,
   "fixtures": 49,
   "transcripts": 32,
-  "answers": 23663,
-  "bytes": 13887432,
+  "answers": 23781,
+  "bytes": 14072196,
   "levels": {
-   "full": 13205,
-   "reasons": 4320,
-   "part": 841,
-   "status": 5105,
+   "full": 13287,
+   "reasons": 4327,
+   "part": 843,
+   "status": 5132,
    "codes": 30,
    "none": 1,
    "differs": 161
@@ -37,7 +37,7 @@
    "queries": {
     "fixtures": 4,
     "transcripts": 7,
-    "answers": 838
+    "answers": 913
    },
    "transactions": {
     "fixtures": 1,
@@ -52,7 +52,7 @@
    "rest": {
     "fixtures": 2,
     "transcripts": 1,
-    "answers": 538
+    "answers": 547
    },
    "webchannel": {
     "fixtures": 1,
@@ -62,7 +62,7 @@
    "rules": {
     "fixtures": 23,
     "transcripts": 2,
-    "answers": 15260
+    "answers": 15294
    },
    "export": {
     "fixtures": 1,
@@ -84,7 +84,7 @@
    "v1.22.0": {
     "fixtures": 49,
     "transcripts": 32,
-    "answers": 23663
+    "answers": 23781
    }
   },
   "by_release_source": {
@@ -426,14 +426,14 @@
    },
    "recorded": {
     "first_recorded": "2026-10-10",
-    "last_changed": "2026-10-14"
+    "last_changed": "2026-10-15"
    },
-   "bytes": 115917,
-   "sha256": "b58c6107acc25f3f11041a45f70a5b87b1ca2114805de2b25f12cb815afe37f8",
-   "answers": 179,
+   "bytes": 134195,
+   "sha256": "ced686c4ff52d609c54c91c6c52ab6c2e6715b9930dd62a9b2e0dec4c2a169b8",
+   "answers": 188,
    "levels": {
-    "full": 117,
-    "part": 62
+    "full": 124,
+    "part": 64
    },
    "replayed_over": [
     "gRPC"
@@ -463,13 +463,13 @@
    },
    "recorded": {
     "first_recorded": "2026-10-10",
-    "last_changed": "2026-10-14"
+    "last_changed": "2026-10-15"
    },
-   "bytes": 519498,
-   "sha256": "274009b5f26d0ef4339bb0e435f98ea142785cf4d804e1cb6e3af2d9cc6cfec2",
-   "answers": 100,
+   "bytes": 526704,
+   "sha256": "67283d30d11a3709adbb76c0fab275556514ba81c2f11fccbb04cdd5a37cb54f",
+   "answers": 107,
    "levels": {
-    "full": 100
+    "full": 107
    },
    "replayed_over": [
     "REST"
@@ -499,13 +499,13 @@
    },
    "recorded": {
     "first_recorded": "2026-10-10",
-    "last_changed": "2026-10-14"
+    "last_changed": "2026-10-15"
    },
-   "bytes": 620689,
-   "sha256": "145fc85138a29593b8d861857e793327ad71dba33981561dd40222d5037ecd51",
-   "answers": 545,
+   "bytes": 753867,
+   "sha256": "ed3784fd8abc6d894ee60c03d690bafb98ce68fe6decae01ee6edd84c97dae0d",
+   "answers": 604,
    "levels": {
-    "full": 545
+    "full": 604
    },
    "replayed_over": [
     "gRPC"
@@ -700,13 +700,13 @@
    },
    "recorded": {
     "first_recorded": "2026-10-10",
-    "last_changed": "2026-10-14"
+    "last_changed": "2026-10-15"
    },
-   "bytes": 371342,
-   "sha256": "b87e824b9fd2f73ccbc599b1de8164d06c83063235bae92628016c1154f3c64f",
-   "answers": 516,
+   "bytes": 379628,
+   "sha256": "832711e2d96f2fc905b2142bc9d7cb8151e018ede03e1c355b65a3fb66ab02c4",
+   "answers": 525,
    "levels": {
-    "full": 511,
+    "full": 520,
     "status": 5
    },
    "replayed_over": [
@@ -1245,18 +1245,18 @@
     "release": "v1.22.0",
     "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
     "source": "git history",
-    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 at the commit that last changed it, as at the 2 earlier commits that changed it"
+    "evidence": "no header; tools/oracle/ names only cloud-firestore-emulator v1.22.0 in the working tree, where it changed, as at the 3 earlier commits that changed it"
    },
    "recorded": {
     "first_recorded": "2026-10-11",
-    "last_changed": "2026-10-13"
+    "last_changed": "2026-10-15"
    },
-   "bytes": 1651406,
-   "sha256": "ce75a822be9b1887a26c0385f5d7294442b976298ea1c3c87f8592fbc93b8fe4",
-   "answers": 3451,
+   "bytes": 1669222,
+   "sha256": "e3c7445da32545e53be22fbfbaee64d48bc834fe50c41fef83f7027b665ff1e1",
+   "answers": 3485,
    "levels": {
-    "reasons": 2395,
-    "status": 1056
+    "reasons": 2402,
+    "status": 1083
    },
    "replayed_over": [
     "REST"

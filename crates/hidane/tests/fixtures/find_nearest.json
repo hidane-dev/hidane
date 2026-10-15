@@ -3378,6 +3378,245 @@
     "status": 400,
     "message": "FindNearest.limit must be a positive integer of no more than 1000"
    }
+  },
+  {
+   "name": "measure before a negative query limit",
+   "query": {
+    "from": [
+     {
+      "collectionId": "v"
+     }
+    ],
+    "findNearest": {
+     "vectorField": {
+      "fieldPath": "v"
+     },
+     "queryVector": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1
+           },
+           {
+            "doubleValue": 1
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     "distanceMeasure": "DISTANCE_MEASURE_UNSPECIFIED",
+     "limit": 10
+    },
+    "limit": -1
+   },
+   "outcome": {
+    "status": 400,
+    "message": "Unknown Distance Measure."
+   }
+  },
+  {
+   "name": "limit before two array-contains",
+   "query": {
+    "from": [
+     {
+      "collectionId": "v"
+     }
+    ],
+    "findNearest": {
+     "vectorField": {
+      "fieldPath": "v"
+     },
+     "queryVector": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1
+           },
+           {
+            "doubleValue": 1
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     "distanceMeasure": "EUCLIDEAN",
+     "limit": 0
+    },
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "message": "FindNearest.limit must be a positive integer of no more than 1000"
+   }
+  },
+  {
+   "name": "measure before duplicate orders",
+   "query": {
+    "from": [
+     {
+      "collectionId": "v"
+     }
+    ],
+    "findNearest": {
+     "vectorField": {
+      "fieldPath": "v"
+     },
+     "queryVector": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1
+           },
+           {
+            "doubleValue": 1
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     "distanceMeasure": "DISTANCE_MEASURE_UNSPECIFIED",
+     "limit": 10
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "k"
+      }
+     },
+     {
+      "field": {
+       "fieldPath": "k"
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "message": "Unknown Distance Measure."
+   }
+  },
+  {
+   "name": "vector field before two array-contains",
+   "query": {
+    "from": [
+     {
+      "collectionId": "v"
+     }
+    ],
+    "findNearest": {
+     "vectorField": {
+      "fieldPath": "a..b"
+     },
+     "queryVector": {
+      "mapValue": {
+       "fields": {
+        "__type__": {
+         "stringValue": "__vector__"
+        },
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "doubleValue": 1
+           },
+           {
+            "doubleValue": 1
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     "distanceMeasure": "EUCLIDEAN",
+     "limit": 10
+    },
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "message": "Invalid property path \"a..b\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\]|(?:\\\\.))+`)"
+   }
   }
  ],
  "aggregations": [
@@ -3505,6 +3744,147 @@
      }
     }
    ]
+  },
+  {
+   "name": "a limit of 0 and no aggregations",
+   "request": {
+    "structuredAggregationQuery": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "v"
+       }
+      ],
+      "findNearest": {
+       "vectorField": {
+        "fieldPath": "v"
+       },
+       "queryVector": {
+        "mapValue": {
+         "fields": {
+          "__type__": {
+           "stringValue": "__vector__"
+          },
+          "value": {
+           "arrayValue": {
+            "values": [
+             {
+              "doubleValue": 1
+             },
+             {
+              "doubleValue": 1
+             }
+            ]
+           }
+          }
+         }
+        }
+       },
+       "distanceMeasure": "EUCLIDEAN",
+       "limit": 0
+      }
+     },
+     "aggregations": []
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "message": "FindNearest.limit must be a positive integer of no more than 1000"
+   }
+  },
+  {
+   "name": "no distance measure and no aggregations",
+   "request": {
+    "structuredAggregationQuery": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "v"
+       }
+      ],
+      "findNearest": {
+       "vectorField": {
+        "fieldPath": "v"
+       },
+       "queryVector": {
+        "mapValue": {
+         "fields": {
+          "__type__": {
+           "stringValue": "__vector__"
+          },
+          "value": {
+           "arrayValue": {
+            "values": [
+             {
+              "doubleValue": 1
+             },
+             {
+              "doubleValue": 1
+             }
+            ]
+           }
+          }
+         }
+        }
+       },
+       "distanceMeasure": "DISTANCE_MEASURE_UNSPECIFIED",
+       "limit": 10
+      }
+     },
+     "aggregations": []
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "message": "Unknown Distance Measure."
+   }
+  },
+  {
+   "name": "a vector field that is not a path and no aggregations",
+   "request": {
+    "structuredAggregationQuery": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "v"
+       }
+      ],
+      "findNearest": {
+       "vectorField": {
+        "fieldPath": "a..b"
+       },
+       "queryVector": {
+        "mapValue": {
+         "fields": {
+          "__type__": {
+           "stringValue": "__vector__"
+          },
+          "value": {
+           "arrayValue": {
+            "values": [
+             {
+              "doubleValue": 1
+             },
+             {
+              "doubleValue": 1
+             }
+            ]
+           }
+          }
+         }
+        }
+       },
+       "distanceMeasure": "EUCLIDEAN",
+       "limit": 10
+      }
+     },
+     "aggregations": []
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "message": "Invalid property path \"a..b\". Unquoted property paths must match regex ([a-zA-Z_][a-zA-Z_0-9]*), and quoted property paths must match regex (`(?:[^`\\\\]|(?:\\\\.))+`)"
+   }
   }
  ],
  "writes": [

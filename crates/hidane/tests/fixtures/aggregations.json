@@ -4887,6 +4887,1003 @@
    }
   },
   {
+   "name": "avg with __name__ descending twice",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "FAILED_PRECONDITION",
+    "message": "Firestore does not support descending key scans"
+   }
+  },
+  {
+   "name": "count with __name__ descending twice, without a collection",
+   "parent": "",
+   "query": {
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     },
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "FAILED_PRECONDITION",
+    "message": "Firestore does not support descending key scans"
+   }
+  },
+  {
+   "name": "count with array-contains-any on __name__ and __name__ descending",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "ARRAY_CONTAINS_ANY",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "referenceValue": "{documents}/ints/a"
+         }
+        ]
+       }
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "the name __key__ is reserved"
+   }
+  },
+  {
+   "name": "avg with array-contains-any on __name__ and __name__ descending, without a collection",
+   "parent": "",
+   "query": {
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "op": "ARRAY_CONTAINS_ANY",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "referenceValue": "{documents}/ints/a"
+         }
+        ]
+       }
+      }
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "DESCENDING"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "This query requires an index that has fields [v] after __name__ and Firestore does not currently support such an index. Please try the query again with additional ordering on those fields."
+   }
+  },
+  {
+   "name": "a count with in 11 and eight equalities",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e0"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e1"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e2"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e3"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e4"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e5"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e6"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e7"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "0"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "an avg with in 11 and eight equalities",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e0"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e1"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e2"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e3"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e4"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e5"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e6"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e7"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The query may not have more than 100 filters + sort orders + ancestor total. Currently there are 99 filters, 2 sort orders, and no ancestor filter."
+   }
+  },
+  {
+   "name": "an avg with in 14 and six equalities",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            },
+            {
+             "integerValue": "11"
+            },
+            {
+             "integerValue": "12"
+            },
+            {
+             "integerValue": "13"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e0"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e1"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e2"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e3"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e4"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e5"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "nullValue": null
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "a sum and an avg of two fields with in 14 and six equalities",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            },
+            {
+             "integerValue": "11"
+            },
+            {
+             "integerValue": "12"
+            },
+            {
+             "integerValue": "13"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e0"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e1"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e2"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e3"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e4"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e5"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "u"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The query may not have more than 100 filters + sort orders + ancestor total. Currently there are 98 filters, 3 sort orders, and no ancestor filter."
+   }
+  },
+  {
+   "name": "a sum of an equality's field with in 11 and eight equalities",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "ints"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e0"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e1"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e2"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e3"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e4"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e5"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e6"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "e7"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "e0"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The query may not have more than 100 filters + sort orders + ancestor total. Currently there are 99 filters, 2 sort orders, and no ancestor filter."
+   }
+  },
+  {
    "name": "an empty projection",
    "parent": "",
    "query": {

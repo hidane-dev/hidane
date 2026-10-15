@@ -64,6 +64,8 @@ E = {"vectorField": {"fieldPath": "v"}, "queryVector": vec(1, 1), "distanceMeasu
 COSINE = {**E, "distanceMeasure": "COSINE"}
 DOT = {**E, "distanceMeasure": "DOT_PRODUCT"}
 BAD_WHERE = {"where": {"fieldFilter": {"field": {"fieldPath": "a..b"}, "op": "EQUAL", "value": I(1)}}}
+TWO_ARRAY_CONTAINS = {"compositeFilter": {"op": "AND", "filters": [
+    {"fieldFilter": {"field": {"fieldPath": p}, "op": "ARRAY_CONTAINS", "value": I(1)}} for p in ("a", "b")]}}
 CURSOR = {"orderBy": [{"field": {"fieldPath": "__name__"}}], "startAt": {"values": [{"referenceValue": f"{DOCS}/v/y"}]}}
 
 QUERIES = [
@@ -137,6 +139,12 @@ QUERIES = [
     ("a query vector holding a reference", {**E, "queryVector": typed(S("__vector__"), arr({"referenceValue": "c/d"}))}, {}),
     ("a query vector holding a geo point out of range", {**E, "queryVector": typed(S("__vector__"), arr({"geoPointValue": {"latitude": 91}}))}, {}),
     ("no limit before an array offset in a filter", {k: v for k, v in E.items() if k != "limit"}, {"where": {"fieldFilter": {"field": {"fieldPath": "a[0]"}, "op": "EQUAL", "value": I(1)}}}),
+    # Its vector, limit, measure and field come with what the query names, before the rest of
+    # the query is checked (#262).
+    ("measure before a negative query limit", {**E, "distanceMeasure": "DISTANCE_MEASURE_UNSPECIFIED"}, {"limit": -1}),
+    ("limit before two array-contains", {**E, "limit": 0}, {"where": TWO_ARRAY_CONTAINS}),
+    ("measure before duplicate orders", {**E, "distanceMeasure": "DISTANCE_MEASURE_UNSPECIFIED"}, {"orderBy": [{"field": {"fieldPath": "k"}}, {"field": {"fieldPath": "k"}}]}),
+    ("vector field before two array-contains", {**E, "vectorField": {"fieldPath": "a..b"}}, {"where": TWO_ARRAY_CONTAINS}),
 ]
 
 
@@ -220,6 +228,10 @@ for name, find, extra in QUERIES:
 for name, find, aggregations in [
     ("count of the nearest 2", {**E, "limit": 2}, [{"alias": "n", "count": {}}]),
     ("sum and average of the nearest 3", {**E, "limit": 3}, [{"alias": "s", "sum": {"field": {"fieldPath": "k"}}}, {"alias": "a", "avg": {"field": {"fieldPath": "k"}}}]),
+    # find_nearest is read before the list of aggregations is checked (#262).
+    ("a limit of 0 and no aggregations", {**E, "limit": 0}, []),
+    ("no distance measure and no aggregations", {**E, "distanceMeasure": "DISTANCE_MEASURE_UNSPECIFIED"}, []),
+    ("a vector field that is not a path and no aggregations", {**E, "vectorField": {"fieldPath": "a..b"}}, []),
 ]:
     request = {"structuredAggregationQuery": {"structuredQuery": {"from": [{"collectionId": "v"}], "findNearest": find}, "aggregations": aggregations}}
     status, body = call("POST", f"/v1/{DOCS}:runAggregationQuery", request)

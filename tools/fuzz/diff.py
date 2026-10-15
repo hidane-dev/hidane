@@ -451,11 +451,28 @@ def several_targets(step):
                                           for key in ("writes", "documents"))
 
 
-def read_write_transaction(step):
-    """The body begins a read-write transaction (`newTransaction: {readWrite: …}`)."""
+def in_transaction(step):
+    """The body begins a read-write transaction (`newTransaction: {readWrite: …}`) or names one
+    (`transaction`; a read-only one locks nothing, so no lock follows from it)."""
     body = body_of(step)
-    new = body.get("newTransaction") if isinstance(body, dict) else None
-    return isinstance(new, dict) and "readWrite" in new
+    if not isinstance(body, dict):
+        return False
+    new = body.get("newTransaction")
+    return (isinstance(new, dict) and "readWrite" in new) or isinstance(body.get("transaction"), str)
+
+
+def collection_group(step):
+    """The body's query reads a collection group or every descendant (`allDescendants`), in a
+    `structuredQuery` or a `structuredAggregationQuery`."""
+    body = body_of(step)
+    if not isinstance(body, dict):
+        return False
+    query = body.get("structuredQuery")
+    aggregation = body.get("structuredAggregationQuery")
+    if query is None and isinstance(aggregation, dict):
+        query = aggregation.get("structuredQuery")
+    selectors = query.get("from") if isinstance(query, dict) else None
+    return isinstance(selectors, list) and any(isinstance(s, dict) and s.get("allDescendants") is True for s in selectors)
 
 
 # Named predicates on a request (a step of a case: its method, path, headers and body), which a
@@ -464,7 +481,8 @@ PREDICATES = {
     "lone-surrogate": lone_surrogate,
     "lenient-timestamp": lenient_timestamp,
     "long-request-line": long_request_line,
-    "read-write-transaction": read_write_transaction,
+    "collection-group": collection_group,
+    "in-transaction": in_transaction,
     "several-targets": several_targets,
 }
 
