@@ -272,6 +272,23 @@ async fn project_ids_answer_like_the_official_emulator() {
     );
 }
 
+/// `:bulkDelete`: what it deletes and how it refuses a request (`fixtures/bulk_delete.json`,
+/// from `tools/oracle/bulk_delete.py`, #36).
+#[tokio::test]
+async fn bulk_delete_answers_like_the_official_emulator() {
+    let fixture: Json = serde_json::from_str(include_str!("fixtures/bulk_delete.json")).unwrap();
+    let cases = fixture["cases"].as_array().unwrap();
+    assert!(cases.len() > 50);
+    let differences = replay(cases).await;
+    assert!(
+        differences.is_empty(),
+        "{} of {} requests differ:\n{}",
+        differences.len(),
+        cases.len(),
+        differences.join("\n")
+    );
+}
+
 /// Doubles are read correctly rounded (`doubles read correctly rounded` in `fixtures/rest.json`)
 /// only with serde_json's `float_roundtrip`. The replay above cannot tell: jsonschema, a
 /// dev-dependency, turns that feature on in every test build, so this checks that the build

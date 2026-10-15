@@ -1,0 +1,2398 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/bulk_delete.py",
+ "cases": [
+  {
+   "name": "a collection ID: write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd0/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd0/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd0/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd0/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd0/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd0/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd0/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd0/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a collection ID",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd0",
+    "collection_ids": [
+     "a"
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "a collection ID: left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd0/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd0/documents/a/1/sub/5\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd0/documents/b/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd0/documents/c/1/a/6/d/7\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd0/documents/x/1/b/4\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "two collection IDs: write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd3/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd3/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd3/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd3/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd3/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd3/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd3/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd3/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "two collection IDs",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd3",
+    "collection_ids": [
+     "a",
+     "b"
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "two collection IDs: left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd3/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd3/documents/a/1/sub/5\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd3/documents/c/1/a/6/d/7\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "a collection ID of subcollections: write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd6/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd6/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd6/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd6/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd6/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd6/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd6/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd6/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a collection ID of subcollections",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd6",
+    "collection_ids": [
+     "sub"
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "a collection ID of subcollections: left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd6/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd6/documents/a/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd6/documents/a/2\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd6/documents/b/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd6/documents/c/1/a/6/d/7\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd6/documents/x/1/a/3\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd6/documents/x/1/b/4\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "a collection ID twice: write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd9/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd9/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd9/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd9/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd9/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd9/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd9/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd9/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a collection ID twice",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd9",
+    "collectionIds": [
+     "b",
+     "b"
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "a collection ID twice: left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd9/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd9/documents/a/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd9/documents/a/1/sub/5\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd9/documents/a/2\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd9/documents/c/1/a/6/d/7\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd9/documents/x/1/a/3\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "collection IDs that name nothing: write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd12/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd12/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd12/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd12/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd12/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd12/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd12/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd12/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "collection IDs that name nothing",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd12",
+    "collection_ids": [
+     "",
+     "__x__",
+     "a/1",
+     "zz"
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "collection IDs that name nothing: left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd12/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd12/documents/a/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd12/documents/a/1/sub/5\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd12/documents/a/2\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd12/documents/b/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd12/documents/c/1/a/6/d/7\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd12/documents/x/1/a/3\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd12/documents/x/1/b/4\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "a number as a collection ID: write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd15/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd15/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd15/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd15/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd15/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd15/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd15/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd15/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a number as a collection ID",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd15",
+    "collection_ids": [
+     1
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "a number as a collection ID: left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd15/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd15/documents/a/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd15/documents/a/1/sub/5\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd15/documents/a/2\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd15/documents/b/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd15/documents/c/1/a/6/d/7\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd15/documents/x/1/a/3\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd15/documents/x/1/b/4\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "the namespace \"\": write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd18/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd18/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd18/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd18/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd18/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd18/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd18/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd18/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "the namespace \"\"",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd18",
+    "namespace_ids": [
+     ""
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "the namespace \"\": left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd18/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "another namespace: write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd21/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd21/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd21/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd21/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd21/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd21/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd21/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd21/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "another namespace",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd21",
+    "namespaceIds": [
+     "x",
+     "(default)"
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "another namespace: left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd21/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd21/documents/a/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd21/documents/a/1/sub/5\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd21/documents/a/2\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd21/documents/b/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd21/documents/c/1/a/6/d/7\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd21/documents/x/1/a/3\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd21/documents/x/1/b/4\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "a collection ID in the namespace \"\": write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd24/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd24/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd24/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd24/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd24/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd24/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd24/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd24/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a collection ID in the namespace \"\"",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd24",
+    "collection_ids": [
+     "a"
+    ],
+    "namespace_ids": [
+     ""
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "a collection ID in the namespace \"\": left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd24/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd24/documents/a/1/sub/5\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd24/documents/b/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd24/documents/c/1/a/6/d/7\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd24/documents/x/1/b/4\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "a collection ID in another namespace: write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd27/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd27/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd27/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd27/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd27/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd27/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd27/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd27/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a collection ID in another namespace",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd27",
+    "collection_ids": [
+     "a"
+    ],
+    "namespace_ids": [
+     "x"
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "a collection ID in another namespace: left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd27/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd27/documents/a/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd27/documents/a/1/sub/5\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd27/documents/a/2\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd27/documents/b/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd27/documents/c/1/a/6/d/7\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd27/documents/x/1/a/3\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd27/documents/x/1/b/4\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "the path's database is not the body's: write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd30/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd30/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd30/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd30/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd30/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd30/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd30/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd30/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "the path's database is not the body's",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/zz:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd30",
+    "collection_ids": [
+     "b"
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "the path's database is not the body's: left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd30/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd30/documents/a/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd30/documents/a/1/sub/5\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd30/documents/a/2\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd30/documents/c/1/a/6/d/7\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd30/documents/x/1/a/3\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "another project's path: write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd33/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd33/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd33/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd33/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd33/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd33/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd33/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd33/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "another project's path",
+   "method": "POST",
+   "path": "/emulator/v1/projects/other:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd33",
+    "collection_ids": [
+     "b"
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "another project's path: left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd33/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd33/documents/a/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd33/documents/a/1/sub/5\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd33/documents/a/2\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd33/documents/c/1/a/6/d/7\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd33/documents/x/1/a/3\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "without credentials: write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd36/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd36/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd36/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd36/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd36/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd36/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd36/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd36/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "without credentials",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {},
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd36",
+    "collection_ids": [
+     "a"
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "without credentials: left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd36/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd36/documents/a/1/sub/5\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd36/documents/b/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd36/documents/c/1/a/6/d/7\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd36/documents/x/1/b/4\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "an invalid credential: write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd39/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd39/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd39/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd39/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd39/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd39/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd39/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd39/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an invalid credential",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer garbage"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd39",
+    "collection_ids": [
+     "a"
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an invalid credential: left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd39/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd39/documents/a/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd39/documents/a/1/sub/5\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd39/documents/a/2\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd39/documents/b/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd39/documents/c/1/a/6/d/7\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd39/documents/x/1/a/3\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd39/documents/x/1/b/4\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "neither IDs: write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd42/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd42/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd42/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd42/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd42/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd42/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd42/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd42/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "neither IDs",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd42"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"collection_ids and namespace_ids cannot both be empty.\",\"status\":\"FAILED_PRECONDITION\"}}"
+   }
+  },
+  {
+   "name": "neither IDs: left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd42/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd42/documents/a/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd42/documents/a/1/sub/5\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd42/documents/a/2\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd42/documents/b/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd42/documents/c/1/a/6/d/7\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd42/documents/x/1/a/3\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd42/documents/x/1/b/4\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "empty lists: write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd45/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd45/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd45/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd45/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd45/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd45/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd45/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd45/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "empty lists",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd45",
+    "collection_ids": [],
+    "namespace_ids": null
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"collection_ids and namespace_ids cannot both be empty.\",\"status\":\"FAILED_PRECONDITION\"}}"
+   }
+  },
+  {
+   "name": "empty lists: left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd45/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd45/documents/a/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd45/documents/a/1/sub/5\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd45/documents/a/2\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd45/documents/b/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd45/documents/c/1/a/6/d/7\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd45/documents/x/1/a/3\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd45/documents/x/1/b/4\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "a null collection ID: write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd48/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd48/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd48/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd48/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd48/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd48/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd48/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd48/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "a null collection ID",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd48",
+    "collection_ids": [
+     null
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a null collection ID: left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd48/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd48/documents/a/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd48/documents/a/1/sub/5\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd48/documents/a/2\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd48/documents/b/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd48/documents/c/1/a/6/d/7\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd48/documents/x/1/a/3\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd48/documents/x/1/b/4\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "collection IDs as a string: write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd51/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd51/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd51/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd51/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd51/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd51/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd51/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd51/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "collection IDs as a string",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd51",
+    "collection_ids": "a"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "collection IDs as a string: left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd51/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd51/documents/a/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd51/documents/a/1/sub/5\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd51/documents/a/2\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd51/documents/b/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd51/documents/c/1/a/6/d/7\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd51/documents/x/1/a/3\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd51/documents/x/1/b/4\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "an unknown field: write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd54/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd54/documents/a/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd54/documents/a/2",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd54/documents/b/1",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd54/documents/x/1/a/3",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd54/documents/x/1/b/4",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd54/documents/a/1/sub/5",
+       "fields": {}
+      }
+     },
+     {
+      "update": {
+       "name": "projects/{project}/databases/bd54/documents/c/1/a/6/d/7",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an unknown field",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/bd54",
+    "collection_ids": [
+     "a"
+    ],
+    "export_directory": "x"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an unknown field: left",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/bd54/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "allDescendants": true
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd54/documents/a/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd54/documents/a/1/sub/5\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd54/documents/a/2\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd54/documents/b/1\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd54/documents/c/1/a/6/d/7\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd54/documents/x/1/a/3\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n},\n{\n  \"document\": {\n    \"name\": \"projects/{project}/databases/bd54/documents/x/1/b/4\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+   }
+  },
+  {
+   "name": "no body",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an empty body",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an array",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "[]",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "not JSON",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{x",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "lenient JSON",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{'database': 'projects/{project}/databases/(default)', collection_ids: ['a']}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "a null database",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": null,
+    "collection_ids": [
+     "a"
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a number as the database",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": 1,
+    "collection_ids": [
+     "a"
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"1\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a database name that lacks",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/x",
+    "collection_ids": [
+     "a"
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"projects\\/x\\\" lacks \\\"\\/\\\" at index 10.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a database name ending '/'",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/p/databases/(default)/",
+    "collection_ids": [
+     "zz"
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"projects\\/p\\/databases\\/(default)\\/\\\" has invalid trailing \\\"\\/\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a database name ending '/documents'",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/p/databases/(default)/documents",
+    "collection_ids": [
+     "zz"
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"projects\\/p\\/databases\\/(default)\\/documents\\\" has extra characters at index 30.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a database name ending '//'",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/p/databases/(default)//",
+    "collection_ids": [
+     "zz"
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"projects\\/p\\/databases\\/(default)\\/\\/\\\" has extra characters at index 30.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a database name ending ''",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/p/databases/",
+    "collection_ids": [
+     "zz"
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"projects\\/p\\/databases\\/\\\" has invalid trailing \\\"\\/\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an invalid project ID",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/P1/databases/(default)",
+    "collection_ids": [
+     "a"
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid project ID(P1) or database ID()\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "project ID '.'",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/./databases/(default)",
+    "collection_ids": [
+     "a"
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"projects\\/.\\/databases\\/(default)\\\" contains a project id \\\".\\\" at index 9.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an invalid credential, not JSON",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer garbage"
+   },
+   "compare": "exact",
+   "raw": "{x",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an invalid credential, an unknown field",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer garbage"
+   },
+   "compare": "exact",
+   "body": {
+    "x": 1
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an invalid credential, a bad database",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer garbage"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "x",
+    "collection_ids": [
+     "a"
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"x\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an invalid credential, neither IDs",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer garbage"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/(default)"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a bad database, neither IDs",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "x"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"x\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a query string",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete?x=1",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/(default)",
+    "collection_ids": [
+     "zz"
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "GET",
+   "method": "GET",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "PUT",
+   "method": "PUT",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/(default)",
+    "collection_ids": [
+     "zz"
+    ]
+   },
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "a form",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete",
+   "headers": {
+    "Authorization": "Bearer owner",
+    "Content-Type": "application/x-www-form-urlencoded"
+   },
+   "compare": "exact",
+   "raw": "database=x",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "a trailing slash",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:bulkDelete/",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/(default)",
+    "collection_ids": [
+     "zz"
+    ]
+   },
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  }
+ ]
+}

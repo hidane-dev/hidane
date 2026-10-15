@@ -70,6 +70,47 @@ impl FirestoreService {
         self.transactions.clear();
     }
 
+    /// `:bulkDelete` (checked by the caller): in one commit, the documents of `database` in a
+    /// collection whose ID is one of `collection_ids` (every collection without one), in a
+    /// namespace of `namespace_ids` (every namespace without one): Firestore has the namespace
+    /// `""` alone, so another namespace holds nothing (`tests/fixtures/bulk_delete.json`).
+    pub(crate) async fn bulk_delete(
+        &self,
+        database: &str,
+        collection_ids: &[String],
+        namespace_ids: &[String],
+    ) -> Result<(), Status> {
+        if !namespace_ids.is_empty() && !namespace_ids.iter().any(String::is_empty) {
+            return Ok(());
+        }
+        self.transactions
+            .commit(database, None, &[], || {
+                let at = self.store.latest_read_time(database);
+                let mut writes: Vec<Write> = Vec::new();
+                self.store
+                    .scan_descendants(database, &ResourcePath::root(), at, &mut |doc| {
+                        let named = doc
+                            .path
+                            .collection_id()
+                            .is_some_and(|id| collection_ids.iter().any(|c| c == id));
+                        if collection_ids.is_empty() || named {
+                            writes.push(Write {
+                                operation: Some(Operation::Delete(Name::document_name(
+                                    database, &doc.path,
+                                ))),
+                                ..Write::default()
+                            });
+                        }
+                        ControlFlow::Continue(())
+                    });
+                if writes.is_empty() {
+                    return Ok(());
+                }
+                self.commit_writes(database, &writes, None).map(|_| ())
+            })
+            .await
+    }
+
     /// Deletes the document or collection at `path` in `database` and everything below it,
     /// in one commit. The `Authorization` header is read after the path, as by the RPCs.
     pub(crate) async fn delete_tree(

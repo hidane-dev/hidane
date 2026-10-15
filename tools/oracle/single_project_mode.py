@@ -16,7 +16,7 @@ standard error and are left out).
 
 The project is the one the request is addressed to: a REST path's; a gRPC call's
 `google-cloud-resource-prefix` header, else the database of its `x-goog-request-params`
-header, else its name; a WebChannel URL's `database` parameter; an export's or import's body.
+header, else its name; a WebChannel URL's `database` parameter; an export's, import's or bulk delete's body.
 `crates/hidane/tests/single_project_mode.rs` replays the steps.
 """
 
@@ -97,6 +97,8 @@ def steps():
             rest_step(f"{project}: rule coverage", "GET", f"/emulator/v1/{d}:ruleCoverage"),
             rest_step(f"{project}: clear a database", "DELETE", f"/emulator/v1/{docs(project)}"),
             rest_step(f"{project}: delete a tree", "DELETE", f"/emulator/v1/{docs(project)}/c/d"),
+            rest_step(f"{project}: bulk delete", "POST", f"/emulator/v1/projects/{project}:bulkDelete",
+                      {"database": d, "collection_ids": ["zz"]}),
             grpc_step(f"{project}: gRPC GetDocument", "GetDocument", {"name": f"{docs(project)}/c/d"}),
             grpc_step(f"{project}: gRPC Commit", "Commit", {"database": d}),
             grpc_step(f"{project}: gRPC RunQuery", "RunQuery",
@@ -144,6 +146,8 @@ def steps():
         rest_step("export: the configured path, another project's database", "POST",
                   "/emulator/v1/projects/configured:export",
                   {"database": other, "export_directory": "/nonexistent-hidane-dir"}),
+        rest_step("bulk delete: the configured path, another project's database", "POST",
+                  "/emulator/v1/projects/configured:bulkDelete", {"database": other, "collection_ids": ["zz"]}),
         rest_step("import: the configured path, another project's database", "POST",
                   "/emulator/v1/projects/configured:import",
                   {"database": other, "export_directory": "/nonexistent-hidane-dir"}),
