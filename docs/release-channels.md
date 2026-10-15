@@ -17,15 +17,15 @@ To upgrade on your own schedule, in CI above all, pin an exact version and raise
 
 | Channel | The latest release | A pinned version |
 |---|---|---|
-| `install.sh` | `curl -fsSL https://hidane.dev/install.sh \| sh` | `curl -fsSL https://hidane.dev/install.sh \| HIDANE_VERSION=0.5.1 sh` |
-| GitHub Releases | [releases/latest](https://github.com/hidane-dev/hidane/releases/latest) | `https://github.com/hidane-dev/hidane/releases/download/v0.5.1/<archive>` |
-| GitHub Actions | `uses: hidane-dev/setup-hidane@v1` | `uses: hidane-dev/setup-hidane@v1` with `version: 0.5.1` |
-| npm | `npm install --save-dev hidane` | `npm install --save-dev --save-exact hidane@0.5.1` |
-| crates.io | `cargo install hidane` | `cargo install hidane --version 0.5.1 --locked` |
-| cargo-binstall | `cargo binstall hidane` | `cargo binstall hidane@0.5.1` |
-| pub.dev | `dart pub global activate hidane` | `dart pub global activate hidane 0.5.1` |
-| Container | `ghcr.io/hidane-dev/hidane:latest` | `ghcr.io/hidane-dev/hidane:0.5.1`, or `:0.5` for the latest patch release of 0.5 |
-| mise | `mise use github:hidane-dev/hidane` | `mise use github:hidane-dev/hidane@0.5.1` |
+| `install.sh` | `curl -fsSL https://hidane.dev/install.sh \| sh` | `curl -fsSL https://hidane.dev/install.sh \| HIDANE_VERSION=0.6.0 sh` |
+| GitHub Releases | [releases/latest](https://github.com/hidane-dev/hidane/releases/latest) | `https://github.com/hidane-dev/hidane/releases/download/v0.6.0/<archive>` |
+| GitHub Actions | `uses: hidane-dev/setup-hidane@v1` | `uses: hidane-dev/setup-hidane@v1` with `version: 0.6.0` |
+| npm | `npm install --save-dev hidane` | `npm install --save-dev --save-exact hidane@0.6.0` |
+| crates.io | `cargo install hidane` | `cargo install hidane --version 0.6.0 --locked` |
+| cargo-binstall | `cargo binstall hidane` | `cargo binstall hidane@0.6.0` |
+| pub.dev | `dart pub global activate hidane` | `dart pub global activate hidane 0.6.0` |
+| Container | `ghcr.io/hidane-dev/hidane:latest` | `ghcr.io/hidane-dev/hidane:0.6.0`, or `:0.6` for the latest patch release of 0.6 |
+| mise | `mise use github:hidane-dev/hidane` | `mise use github:hidane-dev/hidane@0.6.0` |
 | Homebrew | `brew install hidane-dev/tap/hidane` | Not possible: the tap holds the latest formula only |
 
 ## Stable, latest and LTS: a model for later
