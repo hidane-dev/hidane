@@ -323,11 +323,6 @@ impl Cli {
         if self.index_file.is_some() {
             warnings.push("--index_file is ignored in Firestore Native mode".into());
         }
-        if self.database_edition == DatabaseEdition::Enterprise {
-            warnings.push(format!(
-                "Enterprise edition features (pipelines) are not implemented yet ({ISSUES}/80)"
-            ));
-        }
         Ok(warnings)
     }
 }
