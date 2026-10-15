@@ -1480,6 +1480,24 @@
    "pinned_by": [
     "crates/hidane/tests/rest.rs::a_collection_group_query_runs_under_a_document"
    ]
+  },
+  {
+   "id": "D091",
+   "table": "intentional",
+   "area": "queries",
+   "topic": null,
+   "kind": "limitation",
+   "official": "With `--database-edition enterprise` (which firebase-tools passes for `firestore.edition: \"enterprise\"`), queries follow other semantics: `== null` and `== NaN` match; `!=`, `not-in`, `IS_NOT_NULL` and `IS_NOT_NAN` also return documents without the field or with `null`; the standard restrictions (several negations, two `array-contains`, descending key scans, orders after the key, filters and orders over every collection) do not apply; `array-contains` on a value that is not an array is an `INVALID_ARGUMENT`; and without an explicit order, results come in no defined order. 422 of the 616 cases of `tools/oracle/queries.py` answer differently",
+   "firestore": null,
+   "hidane": "Accepts the flag, then answers queries on every database as on a standard one; pipelines are `UNIMPLEMENTED` (#80)",
+   "reason": "Not implemented yet (#338): another query engine, to be recorded first. `hidane doctor` reports enterprise projects as incompatible",
+   "references": [
+    "hidane-dev/hidane#338",
+    "hidane-dev/hidane#80",
+    "tools/oracle/queries.py"
+   ],
+   "pinned_by": [],
+   "unpinned": "No test runs queries on an enterprise database yet; the standard recordings pin what hidane answers (`crates/hidane/tests/queries.rs`)"
   }
  ],
  "retired": [

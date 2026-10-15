@@ -138,8 +138,9 @@ pub const RULES_COMPILER: &str =
 pub const INDEXES: &str = "docs/parity-exceptions.md (Composite indexes)";
 
 /// Known gaps.
-pub const GAP_PIPELINES: &str =
-    "https://github.com/hidane-dev/hidane/issues/80; docs/parity-exceptions.md (ExecutePipeline)";
+pub const GAP_PIPELINES: &str = "https://github.com/hidane-dev/hidane/issues/338; \
+     https://github.com/hidane-dev/hidane/issues/80; docs/parity-exceptions.md (enterprise \
+     edition, ExecutePipeline)";
 pub const GAP_DATASTORE: &str =
     "https://github.com/hidane-dev/hidane/issues/81; docs/parity-exceptions.md";
 pub const WINDOWS: &str = "docs/adr/0006-launch-under-firebase-tools.md (Consequences)";
