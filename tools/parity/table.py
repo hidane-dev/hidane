@@ -571,6 +571,14 @@ RECORDINGS = {
                  "steps in `DIFFERS` (writes to another database, which hidane refuses, and the "
                  "reads that follow) as intentionally different",
         count=commit_checks),
+    f"{H}/fixtures/conformance.json": dict(
+        area="rest",
+        tests=[f"{H}/rest.rs::conformance_requests_answer_like_the_official_emulator"],
+        counted="each request (the conformance tests' requests, and a create before each "
+                "update or delete)",
+        compares="in full: status, content type and body byte for byte, server times, IDs and "
+                 "tokens masked",
+        count=lambda f: rest(f["cases"])),
     f"{H}/fixtures/cors.json": dict(
         area="rest", tests=[f"{H}/cors.rs::cors_answers_like_the_official_emulator"],
         counted="each request",

@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:9ce4abe187a42029fe0dc5fa2e6ae6140ec5dd398449b7ea45bdd8af7eae3aa9",
+ "digest": "sha256:2ffc7eb87be6d799c126d793c2879c3d9f8588bd5633dcf3d5bf7ab295c11d0a",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,13 +14,13 @@
   }
  ],
  "totals": {
-  "files": 90,
-  "fixtures": 49,
+  "files": 91,
+  "fixtures": 50,
   "transcripts": 41,
-  "answers": 23875,
-  "bytes": 14287468,
+  "answers": 24060,
+  "bytes": 14456220,
   "levels": {
-   "full": 13309,
+   "full": 13494,
    "reasons": 4344,
    "part": 843,
    "status": 5187,
@@ -50,9 +50,9 @@
     "answers": 49
    },
    "rest": {
-    "fixtures": 2,
+    "fixtures": 3,
     "transcripts": 1,
-    "answers": 550
+    "answers": 735
    },
    "webchannel": {
     "fixtures": 1,
@@ -82,13 +82,13 @@
   },
   "by_release": {
    "v1.22.0": {
-    "fixtures": 49,
+    "fixtures": 50,
     "transcripts": 41,
-    "answers": 23875
+    "answers": 24060
    }
   },
   "by_release_source": {
-   "header": 24,
+   "header": 25,
    "file name": 42,
    "git history": 24
   }
@@ -644,6 +644,42 @@
    ],
    "counted": "each step with an outcome",
    "compared": "as each step's `compare` marks it; without a mark in full (the response's token, write results and commit time as the recording summarises them, the error, the elapsed time)"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/conformance.json",
+   "kind": "fixture",
+   "area": "rest",
+   "recorder": "tools/oracle/conformance.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-15",
+    "last_changed": "2026-10-15"
+   },
+   "bytes": 168752,
+   "sha256": "b5efd9e3cc423f285ee3a1426026511916584b02bb5b138c85aa5197d1980e6f",
+   "answers": 185,
+   "levels": {
+    "full": 185
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/rest.rs::conformance_requests_answer_like_the_official_emulator"
+   ],
+   "counted": "each request (the conformance tests' requests, and a create before each update or delete)",
+   "compared": "in full: status, content type and body byte for byte, server times, IDs and tokens masked"
   },
   {
    "path": "crates/hidane/tests/fixtures/cors.json",
