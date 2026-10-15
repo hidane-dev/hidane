@@ -26,20 +26,29 @@ pub fn reasons(message: &str) -> Vec<&str> {
 /// `docs/parity-exceptions.md`); hidane evaluates them once, so its reasons must be among the
 /// official emulator's. Where the first pass failed on `resource` or a lookup it says
 /// `evaluation error at L6:23 for 'create' @ L6`, which stands for any reason of that statement.
-/// Other messages must be equal.
+/// Where it failed on another error, the second pass's `false` may be missing (in a batch the
+/// first pass decided on a later document or write, for an upsert's create statement): the
+/// error stands for hidane's `false` for that statement. Other messages must be equal.
 pub fn same_denial(hidane: &str, official: &str) -> bool {
     if !(official.starts_with('\n') && hidane.starts_with('\n')) {
         return hidane == official;
     }
     let official = reasons(official);
-    let failed_first: Vec<&str> = official
+    let statement = |r: &str| r.rfind(" for '").map(|at| r[at..].to_owned());
+    let failed_first: Vec<String> = official
         .iter()
         .filter(|r| r.starts_with("evaluation error at L"))
-        .filter_map(|r| r.find(" for '").map(|at| &r[at..]))
+        .filter_map(|r| statement(r))
+        .collect();
+    let errors: Vec<String> = official
+        .iter()
+        .filter(|r| !r.starts_with("false for '"))
+        .filter_map(|r| statement(r))
         .collect();
     reasons(hidane).iter().all(|r| {
         official.contains(r)
-            || r.rfind(" for '")
-                .is_some_and(|at| failed_first.contains(&&r[at..]))
+            || statement(r).is_some_and(|s| {
+                failed_first.contains(&s) || (r.starts_with("false for '") && errors.contains(&s))
+            })
     })
 }
