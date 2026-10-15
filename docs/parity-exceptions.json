@@ -141,7 +141,7 @@
    "area": "rules",
    "topic": null,
    "kind": "more-correct",
-   "official": "Rules conditions are evaluated in two passes, and a denial lists the reasons of both. In the first pass `resource.data` and lookups (`get()`, `exists()`) fail (`evaluation error at L5:22`), the `request.resource` of a write with an update mask or transforms is not computed yet (`debug(request)` shows it as `undefined`, and so does the coverage report's value of `request`, even when the first pass decides), and its lookups count against the limits of 10 and 20 (firebase-tools [#6252](https://github.com/firebase/firebase-tools/issues/6252), open since 2023). `debug()` prints in both passes, and the coverage report (`:ruleCoverage`) counts both, the first pass's failures as `{\"undefined\": {}}`",
+   "official": "Rules conditions are evaluated in two passes, and a denial lists the reasons of both. In the first pass `resource.data` and lookups (`get()`, `exists()`) fail (`evaluation error at L5:22`), the `request.resource` of a write with an update mask or transforms is not computed yet (`debug(request)` shows it as `undefined`, and so does the coverage report's value of `request`, even when the first pass decides), and its lookups count against the limits of 10 and 20 (firebase-tools [#6252](https://github.com/firebase/firebase-tools/issues/6252), open since 2023). `debug()` prints in both passes, and the coverage report (`:ruleCoverage`) counts both, the first pass's failures as `{\"undefined\": {}}`. The second pass runs only where the first did not decide: in a batch the first pass denies on a later document or write, a statement whose first pass failed on an error (`Null value error.`) shows that error alone, where the second pass would have said `false`; so does an upsert's create statement",
    "firestore": null,
    "hidane": "Evaluate once: a denial lists each statement's reason once, only the conditions' own lookups count, and `debug()` and the coverage report see one evaluation, with `request.resource` always the document as the write leaves it",
    "reason": "Bug",
@@ -150,7 +150,8 @@
    ],
    "pinned_by": [
     "crates/hidane-rules/tests/library.rs::evaluation_matches_the_official_emulator",
-    "crates/hidane-rules/tests/denials.rs::denials_name_each_statement"
+    "crates/hidane-rules/tests/denials.rs::denials_name_each_statement",
+    "crates/hidane/tests/rules_server.rs::writes_are_checked_as_create_update_or_delete"
    ]
   },
   {

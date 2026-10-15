@@ -357,11 +357,16 @@ def hidane_reasons_subset(official, hidane):
     emulator's two passes (D008) or its `false` for what was allowed (D018, D019) add the rest.
     Where its first pass failed on `resource` or a lookup it says `evaluation error at L6:23 for
     'create' @ L6`, which stands for any reason of that statement, as in the tests'
-    `same_denial`: hidane evaluates once, with what that pass lacked."""
+    `same_denial`: hidane evaluates once, with what that pass lacked. Where it failed on another
+    error, the second pass's `false` may be missing (a batch the first pass decided on a later
+    target, an upsert's create statement): the error stands for hidane's `false` there."""
     mine = reasons(hidane.get("message"))
     theirs = reasons(official.get("message"))
-    failed_first = {r[r.rindex(" for '"):] for r in theirs if r.startswith("evaluation error at L")}
-    return bool(mine) and all(r in theirs or r[r.rindex(" for '"):] in failed_first for r in mine)
+    statement = lambda r: r[r.rindex(" for '"):]
+    failed_first = {statement(r) for r in theirs if r.startswith("evaluation error at L")}
+    errors = {statement(r) for r in theirs if not r.startswith("false for '")}
+    return bool(mine) and all(r in theirs or statement(r) in failed_first
+                              or (r.startswith("false for '") and statement(r) in errors) for r in mine)
 
 
 RELATIONS = {"hidane-reasons-subset": hidane_reasons_subset}
