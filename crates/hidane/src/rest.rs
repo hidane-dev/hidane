@@ -998,24 +998,87 @@ pub(crate) fn java_double_text(f: f64) -> String {
     if f == 0.0 {
         return if f.is_sign_negative() { "-0.0" } else { "0.0" }.to_owned();
     }
+    let sign = if f < 0.0 { "-" } else { "" };
     let magnitude = f.abs();
+    let (digits, exponent) = shortest(magnitude);
     if (1e-3..1e7).contains(&magnitude) {
-        let plain = format!("{f}");
-        if plain.contains('.') {
-            plain
-        } else {
-            format!("{plain}.0")
-        }
-    } else {
-        let mut scientific = format!("{f:e}");
+        // Plain, with at least one fractional digit.
+        let (whole, fraction) = match usize::try_from(exponent) {
+            Ok(point) if point + 1 >= digits.len() => (
+                format!("{digits}{}", "0".repeat(point + 1 - digits.len())),
+                "0".to_owned(),
+            ),
+            Ok(point) => (digits[..=point].to_owned(), digits[point + 1..].to_owned()),
+            Err(_) => (
+                "0".to_owned(),
+                format!(
+                    "{}{digits}",
+                    "0".repeat(exponent.unsigned_abs() as usize - 1)
+                ),
+            ),
+        };
+        format!("{sign}{whole}.{fraction}")
+    } else if digits.len() == 1 {
         // Java prints at least two digits: when the shortest decimal has one, the two-digit
         // decimal closest to the value, which differs for a few subnormals (`4.9E-324`, where
         // the shortest is `5e-324`).
-        if !scientific.contains('.') {
-            scientific = format!("{f:.1e}");
-        }
+        let scientific = format!("{f:.1e}");
         let (mantissa, exponent) = scientific.split_once('e').expect("exponent");
         format!("{mantissa}E{exponent}")
+    } else {
+        format!("{sign}{}.{}E{exponent}", &digits[..1], &digits[1..])
+    }
+}
+
+/// The digits of the shortest decimal that reads back as `magnitude` (positive and finite),
+/// and the power of ten of the first. Of two equally close, Java takes the one whose last
+/// digit is even (`1000000000000003.25` is `1.0000000000000032E15`), where Rust takes the
+/// larger (#262).
+fn shortest(magnitude: f64) -> (String, i32) {
+    let split = |text: &str| {
+        let (mantissa, exponent) = text.split_once('e').expect("exponent");
+        let digits: String = mantissa.chars().filter(char::is_ascii_digit).collect();
+        (digits, exponent.parse::<i32>().expect("an exponent"))
+    };
+    let (digits, exponent) = split(&format!("{magnitude:e}"));
+    // The value exactly: a double has at most 767 significant digits.
+    let (exact, exact_exponent) = split(&format!("{magnitude:.800e}"));
+    if exact_exponent != exponent || exact.len() <= digits.len() {
+        return (digits, exponent);
+    }
+    let (head, tail) = exact.split_at(digits.len());
+    let tie = tail.starts_with('5') && tail[1..].bytes().all(|b| b == b'0');
+    let even = |d: &str| d.as_bytes()[d.len() - 1].is_multiple_of(2);
+    if !tie || even(&digits) {
+        return (digits, exponent);
+    }
+    // The other of the two: `head` or the decimal after it, of the same length.
+    let other = if digits == head {
+        let mut bytes = head.as_bytes().to_vec();
+        let mut i = bytes.len();
+        loop {
+            if i == 0 {
+                return (digits, exponent);
+            }
+            i -= 1;
+            if bytes[i] == b'9' {
+                bytes[i] = b'0';
+            } else {
+                bytes[i] += 1;
+                break;
+            }
+        }
+        String::from_utf8(bytes).expect("digits")
+    } else {
+        head.to_owned()
+    };
+    let reads_back = format!("{}.{}e{exponent}", &other[..1], &other[1..])
+        .parse::<f64>()
+        .is_ok_and(|parsed| parsed == magnitude);
+    if reads_back {
+        (other, exponent)
+    } else {
+        (digits, exponent)
     }
 }
 
@@ -1024,6 +1087,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[allow(clippy::excessive_precision)] // the values as Java prints them, before rounding
     fn doubles_print_like_java() {
         for (value, java) in [
             (1e7, "1.0E7"),
@@ -1048,6 +1112,20 @@ mod tests {
             (-5e-324, "-4.9E-324"),
             (1e-323, "9.9E-324"),
             (2e-323, "2.0E-323"),
+            // Two shortest decimals as close: the even one, as Java (#262).
+            (1_000_000_000_000_003.25, "1.0000000000000032E15"),
+            (1_000_000_000_149_213.25, "1.0000000001492132E15"),
+            (123_456_789_012_345.62, "1.2345678901234562E14"),
+            (1_000_000_000_035_222.75, "1.0000000000352228E15"),
+            (1_000_000_000_000_003.75, "1.0000000000000038E15"),
+            (4_503_599_627_370_497.5, "4.503599627370498E15"),
+            (1e23, "1.0E23"),
+            (9.5e21, "9.5E21"),
+            (1234.5, "1234.5"),
+            (0.00125, "0.00125"),
+            (9_999_999.999, "9999999.999"),
+            (-0.5, "-0.5"),
+            (-3.25e-5, "-3.25E-5"),
         ] {
             assert_eq!(java_double(value), java, "{value}");
         }

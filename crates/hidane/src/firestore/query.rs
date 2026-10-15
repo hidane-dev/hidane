@@ -1045,38 +1045,54 @@ fn key_values(op: Op, value: &Value) -> &[Value] {
     }
 }
 
-/// An equality on `__name__` (`==`, `in`, `is null`, `is NaN`) needs an inequality on
+/// An equality on `__name__` (`==`, `in`, `is null`, `is NaN`, and an inequality that matches
+/// nothing: a null or NaN bound, `!=` null, a `not-in` of nulls) needs an inequality on
 /// `__name__` too when another field has one (`tools/oracle/queries.py`), checked with the
-/// filter, before the orders (#262). An inequality that matches nothing ([`matches_nothing`])
-/// does not count.
-fn check_key_equality(filter: &Filter, leaves: &[(&Field, Leaf)]) -> Result<(), Status> {
-    let inequality = |kind: &Leaf| {
-        matches!(
-            kind,
-            Leaf::Compare(
-                Op::Less
-                    | Op::LessOrEqual
-                    | Op::Greater
-                    | Op::GreaterOrEqual
-                    | Op::NotEqual
-                    | Op::NotIn
-            ) | Leaf::Unary(UnaryOp::NotNan | UnaryOp::NotNull)
-        )
-    };
-    let key_equality = leaves.iter().any(|(field, kind)| {
-        **field == Field::Name
-            && matches!(
-                kind,
-                Leaf::Compare(Op::Equal | Op::In) | Leaf::Unary(UnaryOp::Null | UnaryOp::Nan)
-            )
-    });
-    let key_inequality = leaves
-        .iter()
-        .any(|(field, kind)| **field == Field::Name && inequality(kind));
+/// filter, before the orders (#262). Another field's inequality that matches nothing
+/// ([`matches_nothing`]) does not count.
+fn check_key_equality(filter: &Filter) -> Result<(), Status> {
+    fn key(filter: &Filter, equality: &mut bool, inequality: &mut bool) {
+        match filter {
+            Filter::And(filters) | Filter::Or(filters) => {
+                for filter in filters {
+                    key(filter, equality, inequality);
+                }
+            }
+            Filter::Compare {
+                field: Field::Name,
+                op,
+                value,
+            } => {
+                let range = matches!(
+                    op,
+                    Op::Less
+                        | Op::LessOrEqual
+                        | Op::Greater
+                        | Op::GreaterOrEqual
+                        | Op::NotEqual
+                        | Op::NotIn
+                );
+                if matches!(op, Op::Equal | Op::In) || (range && matches_nothing(*op, value)) {
+                    *equality = true;
+                } else if range {
+                    *inequality = true;
+                }
+            }
+            Filter::Unary {
+                field: Field::Name,
+                op,
+            } => match op {
+                UnaryOp::Null | UnaryOp::Nan => *equality = true,
+                UnaryOp::NotNull | UnaryOp::NotNan => *inequality = true,
+            },
+            Filter::Compare { .. } | Filter::Unary { .. } => {}
+        }
+    }
+    let (mut key_equality, mut key_inequality) = (false, false);
+    key(filter, &mut key_equality, &mut key_inequality);
     let mut others = Vec::new();
     inequality_fields(filter, &mut others);
-    let other_inequality = !others.is_empty();
-    if key_equality && other_inequality && !key_inequality {
+    if key_equality && !others.is_empty() && !key_inequality {
         return Err(Status::invalid_argument(
             "Equality on key is not allowed if there are other inequality fields and key does \
              not appear in inequalities.",
@@ -1175,14 +1191,12 @@ pub fn check_operators(query: &StructuredQuery) -> Result<(), Status> {
 /// operators were checked first ([`check_operators`]), the rest comes last
 /// ([`check_filter_late`]).
 fn check_filter(filter: &Filter) -> Result<(), Status> {
-    let mut leaves = Vec::new();
-    collect_leaves(filter, &mut leaves);
     if array_filters(&normalize(filter)) > 1 {
         return Err(Status::failed_precondition(
             "Only a single array-contains clause is allowed in a query",
         ));
     }
-    check_key_equality(filter, &leaves)
+    check_key_equality(filter)
 }
 
 /// The fields `sum` and `avg` read order the query after its own orders ([`Query::require`]):

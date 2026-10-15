@@ -115,6 +115,10 @@ jobs:
         uses: ./.github/actions/official-emulator
         with:
           port: "8080"
+          # Every case is a project of its own, and the emulator keeps them all: a full
+          # session ran out of the default heap (a quarter of the runner's 16 GB) in its last
+          # minute, and answered 500 from then on (#328).
+          java-options: "-Xmx10g"
       - name: Fuzz
         env:
           OFFICIAL: ${{ steps.emulator.outputs.address }}

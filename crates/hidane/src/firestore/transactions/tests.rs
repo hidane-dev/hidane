@@ -5,6 +5,7 @@
 use std::sync::Arc;
 
 use tokio::time::advance;
+use tonic::Code;
 
 use super::*;
 
@@ -171,24 +172,21 @@ async fn read_only_transactions_lock_nothing_and_cannot_write() {
     assert_eq!(status(t.read(DB, &id, &[], None)).0, Code::Aborted);
 }
 
+/// Invalid writes are refused before `commit` (`writes::check`); whatever the commit itself
+/// answers ends the transaction, an invalid argument too (a version past the stored one).
 #[tokio::test]
-async fn only_an_invalid_write_leaves_the_transaction_open() {
+async fn a_commit_ends_the_transaction_whatever_it_answers() {
     let t = Transactions::default();
-    let id = t.begin(DB, Mode::ReadWrite);
-    let invalid = t
-        .commit(DB, Some(&id), &[], || {
-            Err::<(), _>(Status::invalid_argument("bad"))
-        })
-        .await;
-    assert_eq!(status(invalid).0, Code::InvalidArgument);
-    t.read(DB, &id, &[], None).unwrap();
-    let failed = t
-        .commit(DB, Some(&id), &[], || {
-            Err::<(), _>(Status::already_exists("exists"))
-        })
-        .await;
-    assert_eq!(status(failed).0, Code::AlreadyExists);
-    assert_eq!(status(t.read(DB, &id, &[], None)).0, Code::Aborted);
+    for answer in [
+        Status::invalid_argument("Invalid base version"),
+        Status::already_exists("exists"),
+    ] {
+        let id = t.begin(DB, Mode::ReadWrite);
+        let code = answer.code();
+        let failed = t.commit(DB, Some(&id), &[], || Err::<(), _>(answer)).await;
+        assert_eq!(status(failed).0, code);
+        assert_eq!(status(t.read(DB, &id, &[], None)).0, Code::Aborted);
+    }
 }
 
 #[tokio::test(start_paused = true)]

@@ -1312,6 +1312,140 @@
    ]
   },
   {
+   "name": "a version or size error of the commit ends the transaction",
+   "steps": [
+    {
+     "op": "commit",
+     "label": "seed c/a and c/b",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 1
+      },
+      {
+       "update": "c/b",
+       "n": 1
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin T",
+     "as": "T",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQIAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "commit",
+     "label": "T writes c/a at a version past the stored one",
+     "txn": "T",
+     "writes": [
+      {
+       "update": "c/a",
+       "n": 2,
+       "future": true
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "Invalid base version, it is greater than the stored version: app: \"dev~{project}\"\npath <\n  Element {\n    type: \"c\"\n    name: \"a\"\n  }\n>\n",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "read",
+     "label": "T reads after the invalid version",
+     "txn": "T",
+     "documents": [
+      "c/a"
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "commit",
+     "label": "seed a large c/b",
+     "writes": [
+      {
+       "update": "c/b",
+       "n": 1,
+       "pad": {
+        "field": "p",
+        "bytes": 1000000
+       }
+      }
+     ],
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "begin",
+     "label": "begin U",
+     "as": "U",
+     "outcome": {
+      "status": "OK",
+      "message": "",
+      "elapsed": 0.0,
+      "result": {
+       "transaction": "EQQAAAAAAAAA"
+      }
+     }
+    },
+    {
+     "op": "commit",
+     "label": "U grows c/b past the size limit",
+     "txn": "U",
+     "writes": [
+      {
+       "update": "c/b",
+       "mask": [
+        "q"
+       ],
+       "pad": {
+        "field": "q",
+        "bytes": 100000
+       }
+      }
+     ],
+     "outcome": {
+      "status": "INVALID_ARGUMENT",
+      "message": "maximum entity size is 1048576 bytes",
+      "elapsed": 0.0
+     }
+    },
+    {
+     "op": "read",
+     "label": "U reads after the size error",
+     "txn": "U",
+     "documents": [
+      "c/b"
+     ],
+     "outcome": {
+      "status": "ABORTED",
+      "message": "The referenced transaction has expired or is no longer valid.",
+      "elapsed": 0.0
+     }
+    }
+   ]
+  },
+  {
    "name": "a commit waits for every target and stays atomic",
    "steps": [
     {

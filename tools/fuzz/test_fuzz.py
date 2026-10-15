@@ -15,6 +15,7 @@ import threading
 import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import diff  # noqa: E402
@@ -117,6 +118,22 @@ class Normalisation(unittest.TestCase):
         for p in ids:
             self.assertEqual(len(p), len("rest-000000"))
             self.assertRegex(p, r"^[a-z][a-z0-9-]+$")
+
+
+class Spacing(unittest.TestCase):
+    def test_a_request_time_step_waits_after_the_last_answer(self):
+        """#329: REQUEST_TIME has millisecond precision; hidane answers fast enough for two
+        commits to share one."""
+        transform = {"method": "POST", "path": BASE + ":commit", "body": {"writes": [{"transform": {
+            "document": "c/d", "fieldTransforms": [{"fieldPath": "t", "setToServerValue": "REQUEST_TIME"}]}}]}}
+        sender = lambda *args: (200, "application/json", "{}")
+        with mock.patch("time.sleep") as sleep:
+            diff.run("host", {"steps": [patch({}), transform]}, sender=sender)
+        self.assertEqual(len(sleep.call_args_list), 1)
+        self.assertLessEqual(sleep.call_args[0][0], diff.REQUEST_TIME_GAP)
+        with mock.patch("time.sleep") as sleep:
+            diff.run("host", {"steps": [transform, patch({})]}, sender=sender)
+        sleep.assert_not_called()
 
 
 class Classification(unittest.TestCase):
@@ -598,7 +615,6 @@ class OutOfPorts(unittest.TestCase):
         import errno
         import urllib.error
         import urllib.request
-        from unittest import mock
 
         import harness
 

@@ -240,6 +240,14 @@ def commit(*writes):
 case("PATCH a value without a type", "PATCH", B + "/fz/unset", {"fields": {"v": U}})
 case("POST a value without a type", "POST", B + "/fz?documentId=unset", {"fields": {"m": {"mapValue": {"fields": {"k": U}}}}})
 case("batchWrite a value without a type", "POST", B + ":batchWrite", commit(upd("fz/unset", {"v": U})))
+# Of two shortest decimals that read back as a double, as close to it, Java prints the one whose
+# last digit is even (#262): 1000000000000003.25 is 1.0000000000000032E15, also as an
+# increment's result.
+TIES = {f"t{k}": {"doubleValue": v} for k, v in enumerate([1000000000000003.25, 1000000000149213.25, 123456789012345.62, 1000000000035222.75, 4503599627370497.5])}
+case("doubles with two shortest decimals", "POST", B + ":commit", commit(upd("dt/a", TIES)))
+case("doubles with two shortest decimals, read", "GET", B + "/dt/a")
+case("an increment that gives a double with two shortest decimals", "POST", B + ":commit", commit(upd("dt/b", {"n": {"doubleValue": 3.25}}),
+     {"transform": {"document": NAME + "/dt/b", "fieldTransforms": [{"fieldPath": "n", "increment": {"integerValue": "1000000000000000"}}]}}))
 case("commit a value without a type in an array", "POST", B + ":commit", commit(upd("fz/unset", {"v": {"arrayValue": {"values": [U]}}})))
 case("a value without a type writes nothing", "GET", B + "/fz/unset")
 case("a reserved name, then a value without a type", "POST", B + ":commit", commit(upd("fz/unset", {"__x__": i(1), "v": U})))

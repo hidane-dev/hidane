@@ -23,6 +23,7 @@ import hashlib
 import json
 import re
 import sys
+import time
 import uuid
 from pathlib import Path
 from urllib.parse import parse_qsl, quote
@@ -78,12 +79,21 @@ def capture(text, values):
         values["updateTime"] = first["updateTime"]
 
 
+# `REQUEST_TIME` has millisecond precision on both emulators: two commits in one millisecond
+# write the same time, so the second changes nothing and moves no field (#329). The official
+# emulator never answers that fast; a step that asks for it waits this long after the last.
+REQUEST_TIME_GAP = 0.002
+
+
 def run(host, case, timeout=10.0, sender=send):
     """Sends the case's steps to `host` in a fresh project; each answer, normalised:
     `{"status", "contentType", "body"}`, or `{"status": None, "error": ...}` for no answer."""
     values = {"project": project(), "commitTime": "1970-01-01T00:00:00Z", "updateTime": "1970-01-01T00:00:00Z"}
     answers = []
+    answered = None
     for step in case["steps"]:
+        if answered is not None and "REQUEST_TIME" in json.dumps(step.get("body")) + step.get("raw", ""):
+            time.sleep(max(0.0, REQUEST_TIME_GAP - (time.monotonic() - answered)))
         path = fill(step["path"], values, True)
         headers = {k: fill(v, values, False) for k, v in step.get("headers", {}).items()}
         raw = fill(step["raw"], values, False) if "raw" in step else None
@@ -93,6 +103,8 @@ def run(host, case, timeout=10.0, sender=send):
         except (OSError, ValueError) as err:
             answers.append({"status": None, "error": type(err).__name__})
             continue
+        finally:
+            answered = time.monotonic()
         capture(text, values)
         answers.append({"status": status, "contentType": content_type, "body": normalize(text, values)})
     return answers
