@@ -80,7 +80,7 @@ impl FirestoreService {
     ) -> Result<(), Status> {
         let name = format!("{database}/documents/{path}");
         let root = names::any(&name)?.path;
-        auth::from_header(authorization)?;
+        self.admit(database, || auth::from_header(authorization))?;
         self.transactions
             .commit(database, None, &[], || {
                 let at = self.store.latest_read_time(database);

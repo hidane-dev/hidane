@@ -26,6 +26,11 @@ fn spawn(args: &[&str]) -> Child {
 
 /// Reads stdout until the official completion line and returns every line seen.
 fn wait_for_banner(child: &mut Child) -> Vec<String> {
+    banner(&stdout_lines(child))
+}
+
+/// The lines of the child's stdout, as they come.
+fn stdout_lines(child: &mut Child) -> mpsc::Receiver<String> {
     let stdout = child.stdout.take().unwrap();
     let (tx, rx) = mpsc::channel();
     thread::spawn(move || {
@@ -35,6 +40,11 @@ fn wait_for_banner(child: &mut Child) -> Vec<String> {
             }
         }
     });
+    rx
+}
+
+/// The lines of `rx` up to the official completion line.
+fn banner(rx: &mpsc::Receiver<String>) -> Vec<String> {
     let deadline = Instant::now() + Duration::from_secs(10);
     let mut lines = Vec::new();
     while let Ok(line) = rx.recv_timeout(deadline.saturating_duration_since(Instant::now())) {
@@ -201,6 +211,40 @@ fn post_shutdown_exits_zero_like_the_official_emulator() {
     assert!(response.ends_with("Shutting down...\n"), "{response}");
     let status = wait_with_timeout(&mut child, Duration::from_secs(2));
     assert_eq!(status.code(), Some(0));
+}
+
+/// With `--single_project_mode`, a request for another project than `--project_id` prints the
+/// official emulator's warning on standard output, twice (`tests/single_project_mode.rs`
+/// replays the rest, #14).
+#[test]
+fn single_project_mode_warns_on_standard_output() {
+    let mut child = spawn(&[
+        "--host",
+        "127.0.0.1",
+        "--port",
+        "0",
+        "--project_id",
+        "configured",
+        "--single_project_mode",
+        "true",
+    ]);
+    let stdout = stdout_lines(&mut child);
+    let port = port_from(&banner(&stdout));
+    let configured = "/v1/projects/configured/databases/(default)/documents/c/d";
+    let other = "/v1/projects/other/databases/(default)/documents/c/d";
+    assert!(status_line(port, "GET", configured, "").starts_with("HTTP/1.1 404"));
+    assert!(status_line(port, "GET", other, "").starts_with("HTTP/1.1 404"));
+    let warning = "Multiple projectIds are not recommended in single project mode. Requested \
+                   project ID other, but the emulator is configured for configured. To opt-out of \
+                   single project mode add/set the '\"singleProjectMode\": false' property in the \
+                   firebase.json emulators config.";
+    for _ in 0..2 {
+        let line = stdout.recv_timeout(Duration::from_secs(5)).unwrap();
+        assert_eq!(line, warning);
+    }
+    signal(&child, "-INT");
+    wait_with_timeout(&mut child, Duration::from_secs(4));
+    assert!(stdout.try_recv().is_err());
 }
 
 /// Sends one HTTP/1.1 request and returns the status line.

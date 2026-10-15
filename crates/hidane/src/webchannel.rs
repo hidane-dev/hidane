@@ -322,7 +322,10 @@ impl Channels {
         let query = rest::parse_query(query);
         let form = rest::parse_query(&String::from_utf8_lossy(body));
         match (param(&query, "SID"), param(&query, "TYPE")) {
-            (None, _) => self.handshake(service, kind, &form).await,
+            (None, _) => {
+                let database = param(&query, "database");
+                self.handshake(service, kind, database, &form).await
+            }
             (Some(sid), Some("terminate")) => {
                 let session = self.sessions.lock().expect("sessions lock").remove(sid);
                 let Some(session) = session else {
@@ -360,6 +363,7 @@ impl Channels {
         self: &Arc<Self>,
         service: FirestoreService,
         kind: Kind,
+        database: Option<&str>,
         form: &[(String, String)],
     ) -> Response {
         let authorization = param(form, "headers").and_then(|headers| {
@@ -385,9 +389,23 @@ impl Channels {
             }),
             latest,
         });
+        // The URL's database is checked before and after the header, as a gRPC call's
+        // (`crate::single_project`); a handshake the check refuses is never answered, as on
+        // the official emulator.
+        let single = service
+            .single_project()
+            .zip(database.map(crate::single_project::project));
+        let check = || single.is_none_or(|(single, project)| single.check(project).is_ok());
+        if !check() {
+            return std::future::pending().await;
+        }
         // The header is read when the stream opens, as for gRPC; a bad one is the stream's
         // error.
-        match auth::from_header(authorization.as_deref()) {
+        let caller = auth::from_header(authorization.as_deref());
+        if caller.is_ok() && !check() {
+            return std::future::pending().await;
+        }
+        match caller {
             Ok(caller) => start(&service, kind, &session, caller),
             Err(status) => {
                 session.push(&error_json(&status));

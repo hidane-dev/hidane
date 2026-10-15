@@ -23,6 +23,7 @@ impl FirestoreService {
         name: &str,
     ) -> Result<(), Status> {
         names::database(database)?;
+        self.admit(database, || Ok(()))?;
         let directory = PathBuf::from(directory);
         if directory.as_os_str().is_empty() || !directory.is_dir() {
             return Err(Status::failed_precondition(
@@ -58,6 +59,7 @@ impl FirestoreService {
     /// [`Self::import`]s it.
     pub(crate) async fn import_file(&self, database: &str, path: &str) -> Result<(), Status> {
         names::database(database)?;
+        self.admit(database, || Ok(()))?;
         let path = PathBuf::from(path);
         let documents = tokio::task::spawn_blocking(move || crate::export::read(&path))
             .await

@@ -5,7 +5,7 @@
     "compatible": 2,
     "likely_compatible": 0,
     "ok": 6,
-    "info": 2,
+    "info": 1,
     "unknown": 0,
     "incompatible": 0
   },
@@ -26,17 +26,6 @@
       "title": "Firestore emulator configured: localhost:8080",
       "details": [
         "Under `hidane exec`, hidane listens where firebase-tools tells it to: FIRESTORE_EMULATOR_HOST stays as it is"
-      ],
-      "file": "firebase.json"
-    },
-    {
-      "code": "emulators.single-project-mode",
-      "group": "firebase",
-      "status": "info",
-      "severity": "info",
-      "title": "Single project mode (the default): hidane accepts --single_project_mode but does not log the official emulator's warning for requests to other project IDs",
-      "details": [
-        "docs/parity-exceptions.md lists this difference"
       ],
       "file": "firebase.json"
     },

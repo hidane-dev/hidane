@@ -225,17 +225,6 @@ fn firebase_findings(configs: &[firebase::Config], facts: &Facts, out: &mut Vec<
                         .at(file, None),
                     );
                 }
-                if f.single_project_mode {
-                    out.push(
-                        Finding::info(
-                            "emulators.single-project-mode",
-                            g,
-                            "Single project mode (the default): hidane accepts --single_project_mode but does not log the official emulator's warning for requests to other project IDs",
-                        )
-                        .at(file, None)
-                        .detail("docs/parity-exceptions.md lists this difference"),
-                    );
-                }
                 let java: Vec<&str> = f
                     .emulators
                     .iter()

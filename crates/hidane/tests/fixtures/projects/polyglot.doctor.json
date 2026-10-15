@@ -5,7 +5,7 @@
     "compatible": 5,
     "likely_compatible": 2,
     "ok": 2,
-    "info": 4,
+    "info": 3,
     "unknown": 5,
     "incompatible": 1
   },
@@ -36,17 +36,6 @@
       "severity": "error",
       "title": "Enterprise edition: hidane does not implement pipelines yet (#80)",
       "source": "https://github.com/hidane-dev/hidane/issues/80; docs/parity-exceptions.md (ExecutePipeline)",
-      "file": "firebase.json"
-    },
-    {
-      "code": "emulators.single-project-mode",
-      "group": "firebase",
-      "status": "info",
-      "severity": "info",
-      "title": "Single project mode (the default): hidane accepts --single_project_mode but does not log the official emulator's warning for requests to other project IDs",
-      "details": [
-        "docs/parity-exceptions.md lists this difference"
-      ],
       "file": "firebase.json"
     },
     {

@@ -676,6 +676,16 @@ RECORDINGS = {
         compares="in full: status, content type and body byte for byte, server times and IDs "
                  "masked",
         count=lambda f: rest(f["cases"])),
+    f"{H}/fixtures/single_project_mode.json": dict(
+        area="admin",
+        tests=[f"{H}/single_project_mode.rs::requests_for_another_project_like_the_official_emulator"],
+        counted="each step of both runs (`--single_project_mode`, then with "
+                "`--single_project_mode_error`)",
+        compares="in full: the answer (REST status and body with server times masked, the gRPC "
+                 "code and message, the WebChannel handshake's first frame or that none came) and "
+                 "every line printed on standard output",
+        count=lambda f: [({"rest": REST, "grpc": GRPC, "webchannel": WEBCHANNEL}[s["kind"]], FULL)
+                         for run in f["runs"] for s in run["steps"]]),
     f"{H}/fixtures/queries.json": dict(
         area="queries", tests=[f"{H}/queries.rs::queries_answer_like_the_official_emulator"],
         counted="each query but the `findNearest` one; " + OVER_REST,

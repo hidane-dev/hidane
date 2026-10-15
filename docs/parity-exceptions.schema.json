@@ -23,7 +23,20 @@
         }
       }
     },
-    "differences": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/difference"}}
+    "differences": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/difference"}},
+    "retired": {
+      "type": "array",
+      "description": "The entries hidane no longer departs on, by ID (an ID is never reused), with why each went.",
+      "items": {
+        "type": "object",
+        "required": ["id", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {"type": "string", "pattern": "^D[0-9]{3}$"},
+          "reason": {"$ref": "#/$defs/text", "description": "Why the entry went, and since when."}
+        }
+      }
+    }
   },
   "$defs": {
     "kind": {"enum": ["bug-for-bug", "more-correct", "equivalent", "limitation"]},
@@ -33,7 +46,7 @@
       "required": ["id", "table", "area", "topic", "kind", "official", "firestore", "hidane", "reason", "references", "pinned_by"],
       "additionalProperties": false,
       "properties": {
-        "id": {"type": "string", "pattern": "^D[0-9]{3}$", "description": "A stable ID: D001, D002, … in the order entries were added; a new entry takes the next one, and an ID is never reused."},
+        "id": {"type": "string", "pattern": "^D[0-9]{3}$", "description": "A stable ID: D001, D002, … in the order entries were added; a new entry takes the next one, and an ID is never reused (a retired entry's ID stays in `retired`)."},
         "table": {"enum": ["intentional", "production"], "description": "The table of docs/parity-exceptions.md it is in: hidane departing from the official emulator on purpose, or the official emulator departing from production with the parity target decided."},
         "area": {"enum": ["documents", "queries", "transactions", "streams", "rest", "webchannel", "rules", "export", "admin", "values"], "description": "Its area in the parity table (tools/parity/table.py, AREAS)."},
         "topic": {"oneOf": [{"$ref": "#/$defs/text"}, {"type": "null"}], "description": "The production table's Area column; null in the other table."},
