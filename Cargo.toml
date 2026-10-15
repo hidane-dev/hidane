@@ -20,6 +20,8 @@ axum = { version = "0.8.9", default-features = false, features = ["http1", "http
 base64 = "0.23.1"
 bytes = "1.12.1"
 chrono = { version = "0.4.45", default-features = false, features = ["std"] }
+# The IANA time zones of the pipeline timestamp functions (`timestamp_trunc(..., "Asia/Tokyo")`).
+chrono-tz = { version = "0.10.4", default-features = false }
 clap = { version = "4.6.7", features = ["derive"] }
 http-body-util = "0.1.5"
 hyper = "1.12.0"
