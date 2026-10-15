@@ -193,6 +193,10 @@ EVIDENCE = {
     "sdk-web-transactions": {"firebase-js-node": ["transactions"]},
     "sdk-web-writes": {"firebase-js-node": ["documents"]},
 }
+EVIDENCE["sdk-ios-documents"] = {"ios": ["documents"]}
+EVIDENCE["sdk-ios-queries"] = {"ios": ["queries", "aggregations"]}
+EVIDENCE["sdk-ios-transactions"] = {"ios": ["transactions"]}
+EVIDENCE["sdk-ios-listen"] = {"ios": ["listeners"]}
 for _sdk in ("go", "java", "python"):
     EVIDENCE[f"sdk-{_sdk}-documents"] = {_sdk: ["documents"]}
     EVIDENCE[f"sdk-{_sdk}-queries"] = {_sdk: ["queries", "aggregations", "vector-search"]}
@@ -213,6 +217,7 @@ PACKAGE_LABELS = {
     ("maven", "com.google.cloud:google-cloud-firestore"):
         "`com.google.cloud:google-cloud-firestore` (Java)",
     ("pub", "cloud_firestore"): "`cloud_firestore` (Flutter)",
+    ("swiftpm", "FirebaseFirestore"): "`FirebaseFirestore` (firebase-ios-sdk)",
 }
 
 RESULT_ORDER = [table.IDENTICAL, table.DOCUMENTED, table.UNEXPLAINED]

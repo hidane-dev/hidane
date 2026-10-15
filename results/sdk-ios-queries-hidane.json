@@ -1,0 +1,174 @@
+[
+  {
+    "name" : "seed",
+    "ok" : "ok"
+  },
+  {
+    "name" : "all",
+    "ok" : [
+      "cities/BJ",
+      "cities/LA",
+      "cities/NY",
+      "cities/SF",
+      "cities/TOK"
+    ]
+  },
+  {
+    "name" : "pop > 1000 by pop",
+    "ok" : [
+      "cities/LA",
+      "cities/NY",
+      "cities/TOK",
+      "cities/BJ"
+    ]
+  },
+  {
+    "name" : "state == CA",
+    "ok" : [
+      "cities/LA",
+      "cities/SF"
+    ]
+  },
+  {
+    "name" : "state == null",
+    "ok" : [
+      "cities/TOK"
+    ]
+  },
+  {
+    "name" : "state != CA",
+    "ok" : [
+      "cities/NY"
+    ]
+  },
+  {
+    "name" : "state in [CA, NY]",
+    "ok" : [
+      "cities/LA",
+      "cities/NY",
+      "cities/SF"
+    ]
+  },
+  {
+    "name" : "state not-in [CA]",
+    "ok" : [
+      "cities/NY"
+    ]
+  },
+  {
+    "name" : "tags array-contains tech",
+    "ok" : [
+      "cities/SF",
+      "cities/TOK"
+    ]
+  },
+  {
+    "name" : "tags array-contains-any",
+    "ok" : [
+      "cities/LA",
+      "cities/SF"
+    ]
+  },
+  {
+    "name" : "or",
+    "ok" : [
+      "cities/SF",
+      "cities/NY"
+    ]
+  },
+  {
+    "name" : "and of an or",
+    "ok" : [
+      "cities/LA",
+      "cities/BJ"
+    ]
+  },
+  {
+    "name" : "top 2 by pop",
+    "ok" : [
+      "cities/BJ",
+      "cities/TOK"
+    ]
+  },
+  {
+    "name" : "last 2 by pop",
+    "ok" : [
+      "cities/TOK",
+      "cities/BJ"
+    ]
+  },
+  {
+    "name" : "cursors",
+    "ok" : [
+      "cities/LA",
+      "cities/NY"
+    ]
+  },
+  {
+    "name" : "cursor after a document",
+    "ok" : [
+      "cities/NY",
+      "cities/TOK",
+      "cities/BJ"
+    ]
+  },
+  {
+    "name" : "two inequalities",
+    "ok" : [
+      "cities/NY",
+      "cities/LA"
+    ]
+  },
+  {
+    "name" : "document ID in",
+    "ok" : [
+      "cities/NY",
+      "cities/SF"
+    ]
+  },
+  {
+    "error" : {
+      "code" : "FAILED_PRECONDITION"
+    },
+    "name" : "order by document ID, descending"
+  },
+  {
+    "name" : "collection group",
+    "ok" : [
+      "cities/LA/landmarks/hw",
+      "cities/SF/landmarks/gg",
+      "other/x/landmarks/e"
+    ]
+  },
+  {
+    "name" : "collection group, filtered",
+    "ok" : [
+      "cities/SF/landmarks/gg",
+      "cities/LA/landmarks/hw"
+    ]
+  },
+  {
+    "name" : "count",
+    "ok" : 2
+  },
+  {
+    "name" : "sum and average",
+    "ok" : [
+      43560,
+      {
+        "double" : "4162.4400000000005"
+      },
+      5
+    ]
+  },
+  {
+    "name" : "average of a missing field",
+    "ok" : null
+  },
+  {
+    "name" : "a query an index would serve, ordered by a missing field",
+    "ok" : [
+
+    ]
+  }
+]

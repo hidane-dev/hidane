@@ -309,6 +309,21 @@ class Detect(unittest.TestCase):
         self.assertEqual(watch.go_escape("github.com/Azure/azure-sdk"),
                          "github.com/!azure/azure-sdk")
 
+    def test_swiftpm_reads_the_repository_releases(self):
+        base = "https://api.github.com/repos/firebase/firebase-ios-sdk/releases"
+        fetch = Fetch({
+            f"{base}?per_page=100": [{"tag_name": "13.1.0", "draft": True},
+                                     {"tag_name": "13.0.1"}, {"tag_name": "13.0.0"},
+                                     {"tag_name": "13.1.0-beta.1"}, {"tag_name": "CocoaPods-x"}],
+            f"{base}/latest": {"tag_name": "13.0.1"},
+        })
+        # A draft is left out, and so is a tag that is no version.
+        versions, _ = watch.swiftpm("FirebaseFirestore", fetch)
+        self.assertEqual(versions, {watch.STABLE: "13.0.1", watch.PRERELEASE: "13.1.0-beta.1"})
+        # Only the products SWIFTPM_REPOSITORIES names are looked up.
+        with self.assertRaises(watch.Stop):
+            watch.swiftpm("Unknown", fetch)
+
 
 VERIFIED_RS = '''
 pub const VERIFIED: &[Verified] = &[

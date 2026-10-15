@@ -20,6 +20,7 @@ the release last reviewed (`verified: false`):
 | Go | `cloud.google.com/go/firestore` | `https://proxy.golang.org/<module>/@v/list` and `@latest` |
 | Maven | `com.google.cloud:google-cloud-firestore`, `com.google.firebase:firebase-admin` | `https://repo1.maven.org/maven2/<group>/<artifact>/maven-metadata.xml` |
 | pub | `cloud_firestore` | `https://pub.dev/api/packages/<name>` |
+| Swift Package Manager | `FirebaseFirestore` | the GitHub releases of the repository that publishes it (`SWIFTPM_REPOSITORIES` in `watch.py`: firebase/firebase-ios-sdk), `https://api.github.com/repos/<repository>/releases` and `/releases/latest`; drafts left out |
 
 and the official emulator: the version and SHA-256 of the jar the fixtures were recorded from
 (`.github/actions/official-emulator/pinned.sh`) and the Emulator UI verified with it. For each
@@ -43,7 +44,8 @@ Each package is seen on three channels:
 
 - **stable**: its newest final release, without a prerelease part;
 - **latest**: the release its registry hands out by default (npm's `latest` dist-tag, PyPI's
-  `info.version`, Go's `@latest`, Maven's `<latest>`, pub.dev's `latest`), shown apart from
+  `info.version`, Go's `@latest`, Maven's `<latest>`, pub.dev's `latest`, GitHub's latest
+  release), shown apart from
   stable only when it is another release;
 - **prerelease**: its newest prerelease (`rc`, `beta`, `alpha`, `dev`, `next`, `preview`) newer
   than the stable release. On npm these come from the dist-tags in `npm_prerelease_tags` (`next`,

@@ -1,0 +1,73 @@
+name: iOS SDK
+
+# Runs the iOS SDK harness (tools/oracle/sdk_ios/: firebase-ios-sdk's FirebaseFirestore, built for
+# macOS) against hidane, one section at a time, and compares each transcript with the committed
+# results/sdk-ios-<section>-hidane.json. The official emulator's transcripts were recorded by hand
+# (tools/oracle/README.md); tools/parity/table.py compares the committed pairs.
+#
+# It runs monthly, by hand, and for changes to the harness or its results (the listen section
+# waits 95 seconds). It needs no secret and gets none.
+
+on:
+  schedule:
+    - cron: "29 4 3 * *"
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "tools/oracle/sdk_ios/**"
+      - "results/sdk-ios-*.json"
+      - ".github/workflows/ios-sdk.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  macos:
+    name: FirebaseFirestore on macOS against hidane
+    # firebase-ios-sdk 13 needs Swift 6.2.1 or newer (Xcode 26).
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - name: Build hidane
+        run: cargo build --release --locked -p hidane
+      # Outside the checkout, so that nothing it downloads or builds lands in the repository.
+      - name: Build the harness
+        run: |
+          cp -R tools/oracle/sdk_ios "$RUNNER_TEMP/"
+          cd "$RUNNER_TEMP/sdk_ios" && swift build -c release
+      - name: Run each section against a fresh hidane and compare
+        run: |
+          status=0
+          for section in documents queries transactions listen; do
+            target/release/hidane --host 127.0.0.1 --port 8080 > "$RUNNER_TEMP/hidane-$section.log" 2>&1 &
+            pid=$!
+            # macOS has no `timeout`: up to 30 tries a second apart.
+            for _ in $(seq 30); do curl -fsS http://127.0.0.1:8080/ > /dev/null && break; sleep 1; done
+            FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 "$RUNNER_TEMP/sdk_ios/.build/release/sdk_ios" "$section" \
+              > "$RUNNER_TEMP/sdk-ios-$section-hidane.json"
+            kill "$pid"
+            if diff -u "results/sdk-ios-$section-hidane.json" "$RUNNER_TEMP/sdk-ios-$section-hidane.json"; then
+              echo "$section: as committed"
+            else
+              echo "::error title=iOS SDK::the $section transcript differs from results/sdk-ios-$section-hidane.json"
+              status=1
+            fi
+          done
+          exit "$status"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: sdk-ios-hidane
+          path: |
+            ${{ runner.temp }}/sdk-ios-*-hidane.json
+            ${{ runner.temp }}/hidane-*.log
+          if-no-files-found: ignore

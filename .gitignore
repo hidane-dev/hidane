@@ -81,6 +81,9 @@ firebase-export-*/
 *.pdb
 # The Go SDK harness, as `go build` names it in its directory.
 /tools/oracle/sdk_go/sdk_go
+# Swift packages (the iOS SDK harness), built in place or indexed by an editor.
+.build/
+.swiftpm/
 # Coverage and profiling.
 *.profraw
 *.profdata
