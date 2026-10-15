@@ -669,6 +669,13 @@ RECORDINGS = {
         compares="in full: the answer as the recording summarises it, each double spelled out; "
                  "the steps that write `-1e-400` as intentionally different",
         count=negative_zero),
+    f"{H}/fixtures/project_ids.json": dict(
+        area="rest",
+        tests=[f"{H}/rest.rs::project_ids_answer_like_the_official_emulator"],
+        counted="each request",
+        compares="in full: status, content type and body byte for byte, server times and IDs "
+                 "masked",
+        count=lambda f: rest(f["cases"])),
     f"{H}/fixtures/queries.json": dict(
         area="queries", tests=[f"{H}/queries.rs::queries_answer_like_the_official_emulator"],
         counted="each query but the `findNearest` one; " + OVER_REST,

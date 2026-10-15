@@ -317,14 +317,15 @@ pub(crate) async fn handle(
     if !served {
         return crate::not_found_response();
     }
-    if project.is_empty() && database.is_none() {
-        return rest::error(&Status::unknown(""));
-    }
-    let database = match names::database(&format!(
+    let named = names::database(&format!(
         "projects/{project}/databases/{}",
         database.unwrap_or("(default)")
-    )) {
+    ));
+    let database = match named {
         Ok(database) => database,
+        // Without a database, a project the official emulator cannot read is a `500` without
+        // a message (`tools/oracle/project_ids.py`).
+        Err(_) if database.is_none() => return rest::error(&Status::unknown("")),
         Err(status) => return rest::error(&status),
     };
     if method == Method::PUT {

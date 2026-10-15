@@ -255,6 +255,23 @@ async fn conformance_requests_answer_like_the_official_emulator() {
     );
 }
 
+/// Project IDs in every kind of name: which the official emulator accepts, and where it checks
+/// them (`fixtures/project_ids.json`, from `tools/oracle/project_ids.py`).
+#[tokio::test]
+async fn project_ids_answer_like_the_official_emulator() {
+    let fixture: Json = serde_json::from_str(include_str!("fixtures/project_ids.json")).unwrap();
+    let cases = fixture["cases"].as_array().unwrap();
+    assert!(cases.len() > 100);
+    let differences = replay(cases).await;
+    assert!(
+        differences.is_empty(),
+        "{} of {} requests differ:\n{}",
+        differences.len(),
+        cases.len(),
+        differences.join("\n")
+    );
+}
+
 /// Doubles are read correctly rounded (`doubles read correctly rounded` in `fixtures/rest.json`)
 /// only with serde_json's `float_roundtrip`. The replay above cannot tell: jsonschema, a
 /// dev-dependency, turns that feature on in every test build, so this checks that the build
