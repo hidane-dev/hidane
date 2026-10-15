@@ -428,6 +428,7 @@ impl Listener<'_> {
                 }
             }
             Watch::Query(query) => {
+                self.service.record_indexes(database, query);
                 for doc in query.run(store, database, at).documents {
                     watched.members.insert((*doc.path).clone(), doc.update_time);
                     self.document_change(id, database, &doc, query.projection())

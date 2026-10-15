@@ -818,6 +818,93 @@ impl Query {
         self
     }
 
+    /// The composite indexes the query would need in production, as the official emulator
+    /// reports them in `:indexUsage` (`tests/fixtures/index_usage.json`, #36): one per
+    /// conjunction of its filter in disjunctive normal form ([`index_conjunctions`]), each with
+    /// the fields of its equalities (in path order), of its `array-contains`, then the query's
+    /// orders (those it gives, those its inequalities and aggregations add) and `__name__` in
+    /// the direction of the last. A collection's index of one field in the direction of the
+    /// name exists by itself and is not reported; neither is one of the name alone, nor any for
+    /// a query over every collection.
+    pub(crate) fn needed_indexes(&self) -> Vec<super::index_usage::Index> {
+        use super::index_usage::{Index, Kind};
+        let (collection_id, group) = match &self.source {
+            Source::Collection(id) => (id.clone(), false),
+            Source::Group(id) => (id.clone(), true),
+            Source::Children | Source::Descendants => return Vec::new(),
+        };
+        let kind = |descending: bool| {
+            if descending {
+                Kind::Descending
+            } else {
+                Kind::Ascending
+            }
+        };
+        let name = self
+            .orders
+            .iter()
+            .find(|o| o.field == Field::Name)
+            .map_or(Kind::Ascending, |o| kind(o.descending));
+        let ordered: Vec<(String, Kind)> = self
+            .orders
+            .iter()
+            .filter_map(|o| match &o.field {
+                Field::Path(path) => Some((path.to_string(), kind(o.descending))),
+                Field::Name | Field::Indexed(_) => None,
+            })
+            .collect();
+        let normalized = self.filter.as_ref().map(normalize);
+        let conjunctions = normalized
+            .as_ref()
+            .map_or_else(|| vec![Vec::new()], index_conjunctions);
+        conjunctions
+            .iter()
+            .filter_map(|conjunction| {
+                let paths = |wanted: &dyn Fn(Leaf) -> bool| {
+                    let mut paths: Vec<&FieldPath> = conjunction
+                        .iter()
+                        .filter(|atom| wanted(atom.kind))
+                        .filter_map(|atom| match atom.field {
+                            Field::Path(path) => Some(path),
+                            Field::Name | Field::Indexed(_) => None,
+                        })
+                        .collect();
+                    paths.sort();
+                    paths.dedup();
+                    paths
+                };
+                let equalities = paths(&|leaf| {
+                    matches!(
+                        leaf,
+                        Leaf::Compare(Op::Equal) | Leaf::Unary(UnaryOp::Null | UnaryOp::Nan)
+                    )
+                });
+                let contains = paths(&|leaf| leaf == Leaf::Compare(Op::ArrayContains));
+                let mut fields: Vec<(String, Kind)> = equalities
+                    .iter()
+                    .map(|p| (p.to_string(), Kind::Ascending))
+                    .chain(contains.iter().map(|p| (p.to_string(), Kind::Contains)))
+                    .chain(ordered.iter().cloned())
+                    .collect();
+                let automatic = !group
+                    && match fields.as_slice() {
+                        [(_, Kind::Contains)] => name == Kind::Ascending,
+                        [(_, field)] => *field == name,
+                        _ => false,
+                    };
+                if fields.is_empty() || automatic {
+                    return None;
+                }
+                fields.push(("__name__".to_owned(), name));
+                Some(Index {
+                    collection_id: collection_id.clone(),
+                    group,
+                    fields,
+                })
+            })
+            .collect()
+    }
+
     /// Whether the query runs with the semantics of an enterprise database.
     pub fn is_enterprise(&self) -> bool {
         self.enterprise
@@ -1819,6 +1906,96 @@ fn disjunctions(filter: &Filter) -> Option<Vec<Conjunction<'_>>> {
         }]),
     }
     Some(out)
+}
+
+/// The conjunctions of a normalized filter in disjunctive normal form, as the official emulator
+/// runs them for `:indexUsage` (#36): `in` and `array-contains-any` one per value, each
+/// conjunction once (as a set of atoms), without those that cannot match (one holding a filter
+/// on null or NaN that matches nothing, [`Class::Nullish`], or equalities of one field to two
+/// values).
+fn index_conjunctions(filter: &Filter) -> Vec<Conjunction<'_>> {
+    fn add<'a>(out: &mut Vec<Conjunction<'a>>, conjunction: Conjunction<'a>) {
+        let contradicts = conjunction.iter().enumerate().any(|(i, a)| {
+            conjunction[i + 1..].iter().any(|b| {
+                a.field == b.field
+                    && a.kind == Leaf::Compare(Op::Equal)
+                    && b.kind == Leaf::Compare(Op::Equal)
+                    && !a.same(b)
+            })
+        });
+        let nothing = conjunction.iter().any(|a| a.class() == Class::Nullish);
+        if !contradicts && !nothing && !out.iter().any(|seen| same_conjunction(seen, &conjunction))
+        {
+            out.push(conjunction);
+        }
+    }
+    let mut out: Vec<Conjunction<'_>> = Vec::new();
+    match filter {
+        Filter::Or(children) => {
+            for child in children {
+                for conjunction in index_conjunctions(child) {
+                    add(&mut out, conjunction);
+                }
+            }
+        }
+        Filter::And(children) => {
+            out.push(Vec::new());
+            for child in children {
+                let terms = index_conjunctions(child);
+                let mut product = Vec::new();
+                for left in &out {
+                    for right in &terms {
+                        let mut conjunction: Conjunction<'_> = Vec::new();
+                        for atom in left.iter().chain(right) {
+                            if !conjunction.iter().any(|seen| seen.same(atom)) {
+                                conjunction.push(*atom);
+                            }
+                        }
+                        add(&mut product, conjunction);
+                    }
+                }
+                out = product;
+            }
+        }
+        Filter::Compare {
+            field,
+            op: op @ (Op::In | Op::ArrayContainsAny),
+            value,
+        } => {
+            let kind = Leaf::Compare(if *op == Op::In {
+                Op::Equal
+            } else {
+                Op::ArrayContains
+            });
+            for value in array(value) {
+                add(
+                    &mut out,
+                    vec![Atom {
+                        field,
+                        kind,
+                        value: Some(value),
+                    }],
+                );
+            }
+        }
+        Filter::Compare { field, op, value } => add(
+            &mut out,
+            vec![Atom {
+                field,
+                kind: Leaf::Compare(*op),
+                value: Some(value),
+            }],
+        ),
+        Filter::Unary { field, op } => add(
+            &mut out,
+            vec![Atom {
+                field,
+                kind: Leaf::Unary(*op),
+                value: None,
+            }],
+        ),
+    }
+    out
 }
 
 /// Fields that need an implicit ordering: those of range, `!=`, `not-in`, `is not null` and

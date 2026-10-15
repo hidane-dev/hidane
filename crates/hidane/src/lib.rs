@@ -92,6 +92,7 @@ pub struct Admin {
     rules: Arc<rules::Rules>,
     triggers: Arc<triggers::Triggers>,
     single_project: Option<Arc<single_project::SingleProject>>,
+    index_usage: Arc<firestore::index_usage::IndexUsage>,
 }
 
 impl Default for Admin {
@@ -113,6 +114,7 @@ impl Admin {
         .with_rules(Arc::clone(&self.rules))
         .with_triggers(Arc::clone(&self.triggers))
         .with_single_project(self.single_project.clone())
+        .with_index_usage(Arc::clone(&self.index_usage))
     }
 
     pub fn new(store: Arc<dyn Store>) -> Self {
@@ -127,6 +129,7 @@ impl Admin {
             rules: Arc::default(),
             triggers: Arc::default(),
             single_project: None,
+            index_usage: Arc::default(),
         }
     }
 
@@ -324,10 +327,14 @@ const MAX_CHANNEL_BODY: usize = 16 * 1024 * 1024;
 
 /// Security Rules (`/emulator/v1/projects/{p}:securityRules`, `:ruleCoverage`), export and
 /// import (`/emulator/v1/projects/{p}:export`, `:import`), the Functions emulator's trigger
-/// registrations (`/emulator/v1/projects/{p}/triggers/{key}`, `…/eventarcTrigger`), REST
-/// (`/v1/…`, `/v1beta1/…`), or 404.
+/// registrations (`/emulator/v1/projects/{p}/triggers/{key}`, `…/eventarcTrigger`), the
+/// indexes queries needed (`/emulator/v1/projects/{p}:indexUsage`), REST (`/v1/…`,
+/// `/v1beta1/…`), or 404.
 async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -> Response {
     let (parts, body) = request.into_parts();
+    if is_index_usage(parts.uri.path()) {
+        return index_usage(&admin, &parts.method, parts.uri.query());
+    }
     if let Some(route) = rules::route(parts.uri.path()) {
         return rules::handle(
             &admin.rules,
@@ -366,6 +373,34 @@ async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -
     .unwrap_or_else(not_found_response)
 }
 
+/// `/emulator/v1/projects/{p}:indexUsage`; not under a database.
+fn is_index_usage(path: &str) -> bool {
+    path.strip_prefix("/emulator/v1/projects/")
+        .and_then(|rest| rest.strip_suffix(":indexUsage"))
+        .is_some_and(|project| !project.contains('/'))
+}
+
+/// `GET /emulator/v1/projects/{p}:indexUsage?database=projects/{p}/databases/{d}`: the
+/// composite indexes the queries run on that database needed. The project of the path is not
+/// read (`tests/fixtures/index_usage.json`).
+fn index_usage(admin: &Admin, method: &axum::http::Method, query: Option<&str>) -> Response {
+    if method != axum::http::Method::GET {
+        return not_found_response();
+    }
+    let database = rest::parse_query(query.unwrap_or_default())
+        .into_iter()
+        .find_map(|(key, value)| (key == "database").then_some(value))
+        .unwrap_or_default();
+    match firestore::names::database(&database) {
+        Ok(database) => (
+            [(header::CONTENT_TYPE, "application/json")],
+            admin.index_usage.report(&database),
+        )
+            .into_response(),
+        Err(status) => rest::error(&status),
+    }
+}
+
 /// The official emulator's 404: plain text without a content type.
 fn not_found_response() -> Response {
     let mut response = text("Not Found\n");
@@ -384,6 +419,7 @@ async fn reset(State(admin): State<Admin>) -> Response {
     // does not tell them. The rulesets loaded since the start go too, with their coverage.
     admin.firestore().reset().await;
     admin.rules.reset();
+    admin.index_usage.clear();
     text("Resetting...\n")
 }
 

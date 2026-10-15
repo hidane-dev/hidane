@@ -17,6 +17,7 @@ pub(crate) mod changes;
 mod clear;
 mod export;
 mod guard;
+pub(crate) mod index_usage;
 mod listen;
 pub(crate) mod names;
 mod property_path;
@@ -103,6 +104,8 @@ pub struct FirestoreService {
     triggers: Option<Arc<crate::triggers::Triggers>>,
     /// `--single_project_mode`: what a request for another project gets.
     single_project: Option<Arc<SingleProject>>,
+    /// The composite indexes queries needed, for `:indexUsage`.
+    index_usage: Option<Arc<index_usage::IndexUsage>>,
 }
 
 impl FirestoreService {
@@ -128,6 +131,22 @@ impl FirestoreService {
     pub(crate) fn with_single_project(mut self, single: Option<Arc<SingleProject>>) -> Self {
         self.single_project = single;
         self
+    }
+
+    pub(crate) fn with_index_usage(mut self, usage: Arc<index_usage::IndexUsage>) -> Self {
+        self.index_usage = Some(usage);
+        self
+    }
+
+    /// Counts the composite indexes a query that ran on `database` needed, for `:indexUsage`.
+    /// On an enterprise database only a listener's query counts, which is checked as a standard
+    /// one, as on the official emulator (`tests/fixtures/index_usage_enterprise.json`).
+    fn record_indexes(&self, database: &str, query: &Query) {
+        if let Some(usage) = &self.index_usage
+            && !query.is_enterprise()
+        {
+            usage.record(database, query.needed_indexes());
+        }
     }
 
     /// The caller of a request addressed to `database` (a stream's: to its
@@ -248,6 +267,7 @@ impl FirestoreService {
             rules: None,
             triggers: None,
             single_project: None,
+            index_usage: None,
         }
     }
 
@@ -1066,6 +1086,7 @@ impl Firestore for FirestoreService {
             }));
         }
         let results = query.try_run(self.store.as_ref(), &database, at)?;
+        self.record_indexes(&database, &query);
         let read_time = Some(at.to_timestamp());
         let done = Some(run_query_response::ContinuationSelector::Done(true));
         // As on the official emulator: one document per response, `done` on the last one (or
@@ -1218,6 +1239,7 @@ impl Firestore for FirestoreService {
             }));
         }
         let results = query.try_run(self.store.as_ref(), &database, at)?;
+        self.record_indexes(&database, &query);
         let aggregate_fields = if enterprise {
             aggregations.compute_enterprise(&results.documents, query.projection())?
         } else {
