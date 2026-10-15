@@ -167,7 +167,6 @@ Released in v0.5.0 (2026-10-13):
 
 ## 7. Backlog
 
-- Enterprise edition pipelines (`ExecutePipeline`, #80)
 - Datastore mode (`--database-mode datastore-mode`), `--index_file` / `--require_indexes` (#81)
 - `google.firestore.admin.v1` (not in the official emulator either; stays UNIMPLEMENTED)
 - The remaining `/emulator/v1` endpoints and the gRPC `FirestoreEmulator` service (#36)

@@ -733,6 +733,15 @@ RECORDINGS = {
         compares="in full: the answer as the recording summarises it, each double spelled out; "
                  "the steps that write `-1e-400` as intentionally different",
         count=negative_zero),
+    f"{H}/fixtures/pipelines.json": dict(
+        area="queries",
+        tests=[f"{H}/pipelines.rs::pipelines_run_like_the_official_emulator"],
+        counted="each pipeline, on an enterprise database, and each sequence of requests "
+                "(transactions, read times, requests without a pipeline); " + OVER_REST,
+        compares="in full: an error's status and message; the results' names, fields and "
+                 "whether they have times, in order after a sort and as a set otherwise "
+                 "(D092); whether the response has an execution time and a transaction",
+        count=lambda f: each(f["cases"], REST, FULL) + each(f["sequences"], REST, FULL)),
     f"{H}/fixtures/project_ids.json": dict(
         area="rest",
         tests=[f"{H}/rest.rs::project_ids_answer_like_the_official_emulator"],

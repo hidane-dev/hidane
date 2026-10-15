@@ -197,8 +197,8 @@ fn firebase_findings(configs: &[firebase::Config], facts: &Facts, out: &mut Vec<
                         Finding::incompatible(
                             "firestore.enterprise-edition",
                             g,
-                            "Enterprise edition: hidane refuses some listeners' queries otherwise and does not implement pipelines yet (#338, #80)",
-                            verified::GAP_PIPELINES,
+                            "Enterprise edition: hidane refuses some listeners' queries otherwise (#338)",
+                            verified::GAP_ENTERPRISE,
                         )
                         .at(file, None),
                     ),
