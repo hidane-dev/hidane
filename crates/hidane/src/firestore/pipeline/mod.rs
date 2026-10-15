@@ -120,10 +120,12 @@ impl FirestoreService {
         database: &str,
         req: &ExecutePipelineRequest,
     ) -> Result<Vec<ExecutePipelineResponse>, Status> {
+        // A request without a pipeline is an `UNKNOWN` error without a message, as one
+        // without stages.
         let Some(execute_pipeline_request::PipelineType::StructuredPipeline(structured)) =
             &req.pipeline_type
         else {
-            return Err(Status::invalid_argument("A pipeline is required."));
+            return Err(Status::unknown(""));
         };
         let proto = structured.pipeline.clone().unwrap_or_default();
         let pipeline = parse::pipeline(&proto)?;
@@ -140,6 +142,11 @@ impl FirestoreService {
             None => Consistency::Latest,
         };
         let (at, transaction) = self.query_read_time(database, consistency, None)?;
+        // The transaction an `update` or `delete` writes in: the request's, or the one it began.
+        let writes_in = match &req.consistency_selector {
+            Some(execute_pipeline_request::ConsistencySelector::Transaction(t)) => Some(t.clone()),
+            _ => transaction.clone(),
+        };
         let env = Env {
             store: self.store.as_ref(),
             database,
@@ -148,7 +155,10 @@ impl FirestoreService {
         let rows = stages::run(&pipeline, &env, &[])?;
         let dml = pipeline.stages.last().filter(|s| s.is_dml());
         let (rows, execution_time) = match dml {
-            Some(stage) => (vec![self.commit_dml(database, stage, &rows)?], None),
+            Some(stage) => (
+                vec![self.commit_dml(database, stage, &rows, writes_in.as_deref())?],
+                None,
+            ),
             None => (rows, Some(at.to_timestamp())),
         };
         Ok(vec![ExecutePipelineResponse {
@@ -159,9 +169,16 @@ impl FirestoreService {
         }])
     }
 
-    /// Writes what an `update` or `delete` stage changes, in one commit: the row of how many
-    /// documents it changed.
-    fn commit_dml(&self, database: &str, stage: &Stage, rows: &[Row]) -> Result<Row, Status> {
+    /// Writes what an `update` or `delete` stage changes, in one commit, or in `transaction`,
+    /// whose commit writes it (`tests/fixtures/pipelines.json`): the row of how many documents
+    /// it changed.
+    fn commit_dml(
+        &self,
+        database: &str,
+        stage: &Stage,
+        rows: &[Row],
+        transaction: Option<&[u8]>,
+    ) -> Result<Row, Status> {
         let writes: Vec<Write> = rows
             .iter()
             .filter_map(|row| {
@@ -189,13 +206,25 @@ impl FirestoreService {
                 })
             })
             .collect();
-        if !writes.is_empty() {
-            self.commit_writes(database, &writes, None)?;
+        let count = writes.len();
+        match transaction {
+            Some(transaction) => {
+                let documents: Vec<ResourcePath> = rows
+                    .iter()
+                    .filter_map(|row| row.doc.as_ref().map(|doc| (*doc.path).clone()))
+                    .collect();
+                self.transactions
+                    .buffer(database, transaction, &documents, writes)?;
+            }
+            None if writes.is_empty() => {}
+            None => {
+                self.commit_writes(database, &writes, None)?;
+            }
         }
         let mut fields = hidane_core::field_path::Fields::new();
         fields.insert(
             "documents_modified".to_owned(),
-            value::int(i64::try_from(writes.len()).unwrap_or(i64::MAX)),
+            value::int(i64::try_from(count).unwrap_or(i64::MAX)),
         );
         Ok(Row {
             doc: None,

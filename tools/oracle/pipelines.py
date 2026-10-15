@@ -217,7 +217,10 @@ def run(stages, options=None, **request):
         error = json.loads(text)["error"]
         return {"status": error["status"], "message": error.get("message", "")}
     results, timed = [], []
+    global last_response
+    last_response = {}
     for response in json.loads(text):
+        last_response.update(response)
         timed.append("executionTime" in response)
         for doc in response.get("results", []):
             out = {}
@@ -232,6 +235,7 @@ def run(stages, options=None, **request):
 
 
 cases = []
+last_response = {}
 
 
 ORDERING = ("sort", "find_nearest")
@@ -687,15 +691,94 @@ def function_cases():
         case(f"{name}: an argument", x + [select(r=fn(name, fr("i")))])
 
 
+# --- requests: transactions, read times, malformed requests ---------------------------------
+
+sequences = []
+
+
+def sequence(name, steps):
+    """Runs `steps` in order, each a REST call: `begin` (a transaction, whose ID later steps
+    name as `{transaction}`), `write` (a commit; later steps name the first one's time as
+    `{time}`), `pipeline` (`:executePipeline`; a transaction it begins is the one `commit`
+    commits), `raw` (`:executePipeline` with this body), `commit` (the transaction) or `get` (a
+    document)."""
+    transaction, at, answers = None, None, []
+    for verb, arg in steps:
+        if verb == "begin":
+            status, text = call("POST", f"/v1/{DATABASE}/documents:beginTransaction", {"options": arg})
+            transaction = json.loads(text)["transaction"]
+            answers.append({"status": status})
+        elif verb == "write":
+            writes = [{"update": {"name": f"{DATABASE}/documents/{path}", "fields": fields}}
+                      for path, fields in arg.items()]
+            status, text = call("POST", f"/v1/{DATABASE}/documents:commit", {"writes": writes})
+            assert status == 200, text
+            at = at or json.loads(text)["commitTime"]
+            answers.append({"status": status})
+        elif verb == "pipeline":
+            stages, request = arg
+            request = json.loads(json.dumps(request).replace("{transaction}", transaction or "")
+                                 .replace("{time}", at or ""))
+            outcome = run(stages, **request)
+            if outcome["status"] == "OK":
+                outcome["transaction"] = "transaction" in last_response
+                transaction = last_response.get("transaction", transaction)
+            answers.append(outcome)
+        elif verb == "raw":
+            status, text = call("POST", f"/v1/{DATABASE}/documents:executePipeline", arg)
+            error = json.loads(text).get("error", {}) if status != 200 else {}
+            answers.append({"status": error.get("status", "OK"), "message": error.get("message", "")})
+        elif verb == "commit":
+            status, text = call("POST", f"/v1/{DATABASE}/documents:commit", {"transaction": transaction})
+            answers.append({"status": status})
+        elif verb == "get":
+            status, text = call("GET", f"/v1/{DATABASE}/documents/{arg}")
+            answers.append({"status": status, "fields": json.loads(text).get("fields") if status == 200 else None})
+    sequences.append({"name": name, "steps": steps, "answers": answers})
+
+
+def request_cases():
+    tx = {"tx/a": {"v": i(1)}, "tx/b": {"v": i(2)}, "tx/c": {"v": i(3)}}
+    sequence("a delete in a transaction", [
+        ("write", tx), ("begin", {"readWrite": {}}),
+        ("pipeline", ([stage("documents", {"referenceValue": "/tx/a"}), stage("delete")], {"transaction": "{transaction}"})),
+        ("get", "tx/a"), ("commit", None), ("get", "tx/a")])
+    sequence("an update in a transaction", [
+        ("begin", {"readWrite": {}}),
+        ("pipeline", ([stage("documents", {"referenceValue": "/tx/b"}), stage("update", mp(v=i(20)))], {"transaction": "{transaction}"})),
+        ("get", "tx/b"), ("commit", None), ("get", "tx/b")])
+    sequence("a read in a transaction", [
+        ("begin", {"readWrite": {}}),
+        ("pipeline", ([collection("tx"), sort((fr("__name__"), "ascending"))], {"transaction": "{transaction}"})),
+        ("commit", None)])
+    sequence("a read in a new read-only transaction", [
+        ("pipeline", ([collection("tx"), sort((fr("__name__"), "ascending"))], {"newTransaction": {"readOnly": {}}}))])
+    sequence("a read at a read time", [
+        ("write", {"tx/c": {"v": i(30)}}), ("write", {"tx/c": {"v": i(300)}}),
+        ("pipeline", ([stage("documents", {"referenceValue": "/tx/c"})], {"readTime": "{time}"})),
+        ("pipeline", ([stage("documents", {"referenceValue": "/tx/c"})], {}))])
+    sequence("requests without a pipeline", [
+        ("raw", {}), ("raw", {"structuredPipeline": {}}), ("raw", {"structuredPipeline": {"pipeline": {}}})])
+    sequence("an update in a new transaction", [
+        ("write", {"tx2/a": {"v": i(1)}}),
+        ("pipeline", ([stage("documents", {"referenceValue": "/tx2/a"}), stage("update", mp(w=i(1)))], {"newTransaction": {"readWrite": {}}})),
+        ("get", "tx2/a"), ("commit", None), ("get", "tx2/a")])
+    sequence("a read in a new read-write transaction", [
+        ("write", {"tx3/a": {"v": i(1)}}),
+        ("pipeline", ([collection("tx3")], {"newTransaction": {"readWrite": {}}})), ("commit", None)])
+
+
 def main():
     seed()
     stage_cases()
     function_cases()
+    request_cases()
     json.dump({
         "oracle": ORACLE,
         "generated_by": "tools/oracle/pipelines.py",
         "dataset": DATASET,
         "cases": cases,
+        "sequences": sequences,
     }, sys.stdout, ensure_ascii=False, indent=None, separators=(",", ":"))
     print()
 

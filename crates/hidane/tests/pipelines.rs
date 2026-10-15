@@ -123,14 +123,32 @@ fn sorted_arrays(value: Json) -> Json {
     }
 }
 
-/// The outcome of `stages`, as the recorder writes it.
+/// The outcome of a case's pipeline, as the recorder writes it.
 async fn run(addr: SocketAddr, case: &Json) -> Json {
-    let mut structured = json!({"pipeline": {"stages": fill(&case["pipeline"])}});
-    if let Some(options) = case.get("options") {
+    run_pipeline(
+        addr,
+        &case["pipeline"],
+        case.get("options"),
+        case.get("request"),
+    )
+    .await
+    .0
+}
+
+/// The outcome of `stages`, with `options` and the fields of `request`, and the transaction
+/// the response names.
+async fn run_pipeline(
+    addr: SocketAddr,
+    stages: &Json,
+    options: Option<&Json>,
+    request: Option<&Json>,
+) -> (Json, Option<String>) {
+    let mut structured = json!({"pipeline": {"stages": fill(stages)}});
+    if let Some(options) = options {
         structured["options"] = fill(options);
     }
     let mut body = json!({"structuredPipeline": structured});
-    if let Some(Json::Object(request)) = case.get("request") {
+    if let Some(Json::Object(request)) = request {
         for (k, v) in request {
             body[k] = fill(v);
         }
@@ -140,16 +158,23 @@ async fn run(addr: SocketAddr, case: &Json) -> Json {
     let text = text.replace(PROJECT, "{project}");
     if status != 200 {
         let error = &serde_json::from_str::<Json>(&text).unwrap()["error"];
-        return json!({
-            "status": error["status"],
-            "message": error.get("message").cloned().unwrap_or(json!("")),
-        });
+        return (
+            json!({
+                "status": error["status"],
+                "message": error.get("message").cloned().unwrap_or(json!("")),
+            }),
+            None,
+        );
     }
     let responses: Vec<Json> = serde_json::from_str(&text).unwrap();
     let mut results = Vec::new();
     let mut timed = false;
+    let mut transaction = None;
     for response in responses {
         timed |= response.get("executionTime").is_some();
+        if let Some(t) = response.get("transaction").and_then(Json::as_str) {
+            transaction = Some(t.to_owned());
+        }
         for doc in response["results"].as_array().into_iter().flatten() {
             let mut out = serde_json::Map::new();
             if let Some(name) = doc.get("name").and_then(Json::as_str) {
@@ -168,7 +193,104 @@ async fn run(addr: SocketAddr, case: &Json) -> Json {
             results.push(Json::Object(out));
         }
     }
-    json!({"status": "OK", "results": results, "execution_time": timed})
+    (
+        json!({"status": "OK", "results": results, "execution_time": timed}),
+        transaction,
+    )
+}
+
+async fn get(addr: SocketAddr, path: &str) -> (u16, String) {
+    let client = Client::builder(TokioExecutor::new()).build_http::<Full<Bytes>>();
+    let request = Request::builder()
+        .uri(format!("http://{addr}{path}"))
+        .header(header::AUTHORIZATION, "Bearer owner")
+        .body(Full::new(Bytes::new()))
+        .unwrap();
+    let response = client.request(request).await.unwrap();
+    let status = response.status().as_u16();
+    let bytes = response.into_body().collect().await.unwrap().to_bytes();
+    (status, String::from_utf8(bytes.to_vec()).unwrap())
+}
+
+/// Runs a sequence's steps as the recorder did: its answers.
+async fn replay_sequence(addr: SocketAddr, steps: &[Json]) -> Vec<Json> {
+    let documents = format!("/v1/{}/documents", database());
+    let mut transaction: Option<String> = None;
+    let mut at: Option<String> = None;
+    let mut answers = Vec::new();
+    for step in steps {
+        let (verb, arg) = (step[0].as_str().unwrap(), &step[1]);
+        answers.push(match verb {
+            "begin" => {
+                let path = format!("{documents}:beginTransaction");
+                let (status, text) = post(addr, &path, &json!({"options": arg})).await;
+                let body: Json = serde_json::from_str(&text).unwrap();
+                transaction = body["transaction"].as_str().map(str::to_owned);
+                json!({"status": status})
+            }
+            "write" => {
+                let writes: Vec<Json> = arg
+                    .as_object()
+                    .unwrap()
+                    .iter()
+                    .map(|(path, fields)| {
+                        json!({"update": {
+                            "name": format!("{}/documents/{path}", database()),
+                            "fields": fields,
+                        }})
+                    })
+                    .collect();
+                let path = format!("{documents}:commit");
+                let (status, text) = post(addr, &path, &json!({"writes": writes})).await;
+                let body: Json = serde_json::from_str(&text).unwrap();
+                at = at.or_else(|| body["commitTime"].as_str().map(str::to_owned));
+                json!({"status": status})
+            }
+            "pipeline" => {
+                let request = arg[1]
+                    .to_string()
+                    .replace("{transaction}", transaction.as_deref().unwrap_or_default())
+                    .replace("{time}", at.as_deref().unwrap_or_default());
+                let request: Json = serde_json::from_str(&request).unwrap();
+                let (mut outcome, began) = run_pipeline(addr, &arg[0], None, Some(&request)).await;
+                if outcome["status"] == "OK" {
+                    outcome["transaction"] = json!(began.is_some());
+                    transaction = began.or(transaction);
+                }
+                outcome
+            }
+            "raw" => {
+                let path = format!("{documents}:executePipeline");
+                let (status, text) = post(addr, &path, arg).await;
+                let error = if status == 200 {
+                    json!({})
+                } else {
+                    serde_json::from_str::<Json>(&text).unwrap()["error"].clone()
+                };
+                json!({
+                    "status": error.get("status").cloned().unwrap_or(json!("OK")),
+                    "message": error.get("message").cloned().unwrap_or(json!("")),
+                })
+            }
+            "commit" => {
+                let path = format!("{documents}:commit");
+                let body = json!({"transaction": transaction});
+                json!({"status": post(addr, &path, &body).await.0})
+            }
+            "get" => {
+                let (status, text) =
+                    get(addr, &format!("{documents}/{}", arg.as_str().unwrap())).await;
+                let fields = if status == 200 {
+                    serde_json::from_str::<Json>(&text).unwrap()["fields"].clone()
+                } else {
+                    Json::Null
+                };
+                json!({"status": status, "fields": fields})
+            }
+            other => panic!("unknown step {other}"),
+        });
+    }
+    answers
 }
 
 /// Whether the results of `case` come in a defined order: after a sort or a nearest-neighbour
@@ -254,6 +376,20 @@ async fn pipelines_run_like_the_official_emulator() {
             differences.push(format!(
                 "{name}:\n  official {expected}\n  hidane   {actual}"
             ));
+        }
+    }
+    if filter.is_empty() {
+        for sequence in fixture["sequences"].as_array().unwrap() {
+            compared += 1;
+            let answers = replay_sequence(addr, sequence["steps"].as_array().unwrap()).await;
+            let actual = numbers(json!(answers));
+            let expected = numbers(sequence["answers"].clone());
+            if actual != expected {
+                differences.push(format!(
+                    "sequence {}:\n  official {expected}\n  hidane   {actual}",
+                    sequence["name"]
+                ));
+            }
         }
     }
     assert!(

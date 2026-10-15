@@ -3,8 +3,8 @@
 //!
 //! Integers stay integers (`divide` truncates, `mod` keeps the dividend's sign, as Java's `/`
 //! and `%`) and fail on overflow; with a double, the operation is in doubles. `pow`, `exp`,
-//! `ln`, `log10` and `sqrt` give doubles; `exp` as Java's `StrictMath.exp` computes it (fdlibm),
-//! which differs from the correctly rounded value in the last bit for some arguments.
+//! `ln`, `log10` and `sqrt` give doubles; `exp` and `pow` as Java's `StrictMath` computes them
+//! (fdlibm), which differs from the correctly rounded value in the last bit for some arguments.
 
 use hidane_proto::google::firestore::v1::{Value, value::ValueType};
 use tonic::Status;
@@ -195,7 +195,7 @@ pub(super) const DEFS: &[Def] = &[
                     "pow(...) the base cannot be negative when the exponent is not an integer.",
                 ));
             }
-            Ok(Some(value::double(base.powf(exponent))))
+            Ok(Some(value::double(fdlibm_pow(base, exponent))))
         },
     },
     Def {
@@ -551,6 +551,279 @@ pub(crate) fn fdlibm_exp(x: f64) -> f64 {
     }
 }
 
+fn high(x: f64) -> i32 {
+    #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
+    let high = (x.to_bits() >> 32) as i32;
+    high
+}
+
+fn low(x: f64) -> u32 {
+    #[allow(clippy::cast_possible_truncation)]
+    let low = x.to_bits() as u32;
+    low
+}
+
+fn with_high(x: f64, high: i32) -> f64 {
+    #[allow(clippy::cast_sign_loss)]
+    let high = u64::from(high as u32);
+    f64::from_bits((high << 32) | (x.to_bits() & 0xffff_ffff))
+}
+
+fn with_low(x: f64, low: u32) -> f64 {
+    f64::from_bits((x.to_bits() & 0xffff_ffff_0000_0000) | u64::from(low))
+}
+
+/// `pow` as fdlibm's `__ieee754_pow` (Java's `StrictMath.pow`) computes it.
+#[allow(
+    clippy::many_single_char_names,
+    clippy::unreadable_literal,
+    clippy::too_many_lines,
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    clippy::cast_possible_wrap,
+    clippy::similar_names
+)]
+pub(crate) fn fdlibm_pow(x: f64, y: f64) -> f64 {
+    const BP: [f64; 2] = [1.0, 1.5];
+    const DP_H: [f64; 2] = [0.0, 5.849_624_872_207_642e-1];
+    const DP_L: [f64; 2] = [0.0, 1.350_039_202_129_749e-8];
+    const TWO53: f64 = 9_007_199_254_740_992.0;
+    const HUGE: f64 = 1.0e300;
+    const TINY: f64 = 1.0e-300;
+    const L1: f64 = 5.999_999_999_999_946_5e-1;
+    const L2: f64 = 4.285_714_285_785_502e-1;
+    const L3: f64 = 3.333_333_298_183_774_3e-1;
+    const L4: f64 = 2.727_281_238_085_34e-1;
+    const L5: f64 = 2.306_607_457_755_617_5e-1;
+    const L6: f64 = 2.069_750_178_003_384_2e-1;
+    const P1: f64 = 1.666_666_666_666_660_2e-1;
+    const P2: f64 = -2.777_777_777_701_559_3e-3;
+    const P3: f64 = 6.613_756_321_437_934e-5;
+    const P4: f64 = -1.653_390_220_546_525_2e-6;
+    const P5: f64 = 4.138_136_797_057_238_5e-8;
+    const LG2: f64 = 6.931_471_805_599_453e-1;
+    const LG2_H: f64 = 6.931_471_824_645_996e-1;
+    const LG2_L: f64 = -1.904_654_299_957_768e-9;
+    const OVT: f64 = 8.008_566_259_537_294e-17;
+    const CP: f64 = 9.617_966_939_259_756e-1;
+    const CP_H: f64 = 9.617_967_009_544_373e-1;
+    const CP_L: f64 = -7.028_461_650_952_758e-9;
+    const IVLN2: f64 = 1.442_695_040_888_963_4;
+    const IVLN2_H: f64 = 1.442_695_021_629_333_5;
+    const IVLN2_L: f64 = 1.925_962_991_126_617_5e-8;
+
+    let (hx, lx) = (high(x), low(x));
+    let (hy, ly) = (high(y), low(y));
+    let mut ix = hx & 0x7fff_ffff;
+    let iy = hy & 0x7fff_ffff;
+
+    // y == 0: x**0 = 1.
+    if (iy as u32 | ly) == 0 {
+        return 1.0;
+    }
+    // NaN.
+    if ix > 0x7ff0_0000
+        || (ix == 0x7ff0_0000 && lx != 0)
+        || iy > 0x7ff0_0000
+        || (iy == 0x7ff0_0000 && ly != 0)
+    {
+        return x + y;
+    }
+    // Whether y is an integer when x < 0: 0 not, 1 odd, 2 even.
+    let mut yisint = 0;
+    if hx < 0 {
+        if iy >= 0x4340_0000 {
+            yisint = 2;
+        } else if iy >= 0x3ff0_0000 {
+            let k = (iy >> 20) - 0x3ff;
+            if k > 20 {
+                let j = ly >> (52 - k);
+                if (j << (52 - k)) == ly {
+                    yisint = 2 - (j & 1) as i32;
+                }
+            } else if ly == 0 {
+                let j = iy >> (20 - k);
+                if (j << (20 - k)) == iy {
+                    yisint = 2 - (j & 1);
+                }
+            }
+        }
+    }
+    // Special values of y.
+    if ly == 0 {
+        if iy == 0x7ff0_0000 {
+            if ((ix - 0x3ff0_0000) as u32 | lx) == 0 {
+                return y - y;
+            } else if ix >= 0x3ff0_0000 {
+                return if hy >= 0 { y } else { 0.0 };
+            }
+            return if hy < 0 { -y } else { 0.0 };
+        }
+        if iy == 0x3ff0_0000 {
+            return if hy < 0 { 1.0 / x } else { x };
+        }
+        if hy == 0x4000_0000 {
+            return x * x;
+        }
+        if hy == 0x3fe0_0000 && hx >= 0 {
+            return x.sqrt();
+        }
+    }
+
+    let mut ax = x.abs();
+    // Special values of x.
+    if lx == 0 && (ix == 0x7ff0_0000 || ix == 0 || ix == 0x3ff0_0000) {
+        let mut z = ax;
+        if hy < 0 {
+            z = 1.0 / z;
+        }
+        if hx < 0 {
+            if ((ix - 0x3ff0_0000) | yisint) == 0 {
+                z = (z - z) / (z - z);
+            } else if yisint == 1 {
+                z = -z;
+            }
+        }
+        return z;
+    }
+
+    let mut n = (hx >> 31) + 1;
+    // (x < 0)**(non-integer) is NaN.
+    if (n | yisint) == 0 {
+        return (x - x) / (x - x);
+    }
+    let s = if (n | (yisint - 1)) == 0 { -1.0 } else { 1.0 };
+
+    let (t1, t2);
+    if iy > 0x41e0_0000 {
+        // |y| > 2**31.
+        if iy > 0x43f0_0000 {
+            if ix <= 0x3fef_ffff {
+                return if hy < 0 { HUGE * HUGE } else { TINY * TINY };
+            }
+            if ix >= 0x3ff0_0000 {
+                return if hy > 0 { HUGE * HUGE } else { TINY * TINY };
+            }
+        }
+        if ix < 0x3fef_ffff {
+            return if hy < 0 {
+                s * HUGE * HUGE
+            } else {
+                s * TINY * TINY
+            };
+        }
+        if ix > 0x3ff0_0000 {
+            return if hy > 0 {
+                s * HUGE * HUGE
+            } else {
+                s * TINY * TINY
+            };
+        }
+        let t = ax - 1.0;
+        let w = (t * t) * (0.5 - t * (0.333_333_333_333_333_3 - t * 0.25));
+        let u = IVLN2_H * t;
+        let v = t * IVLN2_L - w * IVLN2;
+        t1 = with_low(u + v, 0);
+        t2 = v - (t1 - u);
+    } else {
+        n = 0;
+        if ix < 0x0010_0000 {
+            ax *= TWO53;
+            n -= 53;
+            ix = high(ax);
+        }
+        n += (ix >> 20) - 0x3ff;
+        let j = ix & 0x000f_ffff;
+        ix = j | 0x3ff0_0000;
+        let k: usize = if j <= 0x3988E {
+            0
+        } else if j < 0xBB67A {
+            1
+        } else {
+            n += 1;
+            ix -= 0x0010_0000;
+            0
+        };
+        ax = with_high(ax, ix);
+
+        let u = ax - BP[k];
+        let v = 1.0 / (ax + BP[k]);
+        let ss = u * v;
+        let s_h = with_low(ss, 0);
+        let t_h = with_high(
+            0.0,
+            ((ix >> 1) | 0x2000_0000) + 0x0008_0000 + ((k as i32) << 18),
+        );
+        let t_l = ax - (t_h - BP[k]);
+        let s_l = v * ((u - s_h * t_h) - s_h * t_l);
+        let mut s2 = ss * ss;
+        let mut r = s2 * s2 * (L1 + s2 * (L2 + s2 * (L3 + s2 * (L4 + s2 * (L5 + s2 * L6)))));
+        r += s_l * (s_h + ss);
+        s2 = s_h * s_h;
+        let t_h = with_low(3.0 + s2 + r, 0);
+        let t_l = r - ((t_h - 3.0) - s2);
+        let u = s_h * t_h;
+        let v = s_l * t_h + t_l * ss;
+        let p_h = with_low(u + v, 0);
+        let p_l = v - (p_h - u);
+        let z_h = CP_H * p_h;
+        let z_l = CP_L * p_h + p_l * CP + DP_L[k];
+        let t = f64::from(n);
+        t1 = with_low(((z_h + z_l) + DP_H[k]) + t, 0);
+        t2 = z_l - (((t1 - t) - DP_H[k]) - z_h);
+    }
+
+    // (y1 + y2) * (t1 + t2).
+    let y1 = with_low(y, 0);
+    let p_l = (y - y1) * t1 + y * t2;
+    let mut p_h = y1 * t1;
+    let z = p_l + p_h;
+    let j = high(z);
+    let i = low(z) as i32;
+    if j >= 0x4090_0000 {
+        if ((j - 0x4090_0000) | i) != 0 || p_l + OVT > z - p_h {
+            return s * HUGE * HUGE;
+        }
+    } else if (j & 0x7fff_ffff) >= 0x4090_cc00
+        && (((j as u32).wrapping_sub(0xc090_cc00) as i32 | i) != 0 || p_l <= z - p_h)
+    {
+        return s * TINY * TINY;
+    }
+
+    // 2**(p_h + p_l).
+    let i = j & 0x7fff_ffff;
+    let mut k = (i >> 20) - 0x3ff;
+    let mut n = 0;
+    if i > 0x3fe0_0000 {
+        n = j + (0x0010_0000 >> (k + 1));
+        k = ((n & 0x7fff_ffff) >> 20) - 0x3ff;
+        let t = with_high(0.0, n & !(0x000f_ffff >> k));
+        n = ((n & 0x000f_ffff) | 0x0010_0000) >> (20 - k);
+        if j < 0 {
+            n = -n;
+        }
+        p_h -= t;
+    }
+    let t = with_low(p_l + p_h, 0);
+    let u = t * LG2_H;
+    let v = (p_l - (t - p_h)) * LG2 + t * LG2_L;
+    let mut z = u + v;
+    let w = v - (z - u);
+    let t = z * z;
+    let t1 = z - t * (P1 + t * (P2 + t * (P3 + t * (P4 + t * P5))));
+    let r = (z * t1) / (t1 - 2.0) - (w + z * w);
+    z = 1.0 - (r - z);
+    let j = high(z) + (n << 20);
+    if (j >> 20) <= 0 {
+        // A subnormal result: scale in two steps of exact powers of two.
+        let half = n / 2;
+        z = z * 2f64.powi(half) * 2f64.powi(n - half);
+    } else {
+        z = with_high(z, j);
+    }
+    s * z
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -563,6 +836,21 @@ mod tests {
         assert!(fdlibm_exp(f64::NAN).is_nan());
         assert_eq!(fdlibm_exp(f64::NEG_INFINITY), 0.0);
         assert!(fdlibm_exp(1000.0).is_infinite());
+    }
+
+    #[test]
+    fn pow_is_fdlibm() {
+        assert_eq!(fdlibm_pow(2.0, 2.5), 5.656_854_249_492_38);
+        assert_eq!(fdlibm_pow(2.0, 10.0), 1024.0);
+        assert_eq!(fdlibm_pow(2.0, 0.5), std::f64::consts::SQRT_2);
+        assert_eq!(fdlibm_pow(2.0, -3.0), 0.125);
+        assert_eq!(fdlibm_pow(2.5, 10.0), 9_536.743_164_062_5);
+        assert_eq!(fdlibm_pow(1.0, 2.0), 1.0);
+        assert_eq!(fdlibm_pow(-2.0, 3.0), -8.0);
+        assert!(fdlibm_pow(-2.0, 0.5).is_nan());
+        assert!(fdlibm_pow(2.0, f64::NAN).is_nan());
+        assert_eq!(fdlibm_pow(10.0, -2.0), 0.01);
+        assert_eq!(fdlibm_pow(3.0, 0.3), 3f64.powf(0.3));
     }
 
     #[test]

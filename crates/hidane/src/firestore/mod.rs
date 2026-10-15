@@ -999,13 +999,22 @@ impl Firestore for FirestoreService {
         let database = names::database(&req.database)?;
         let caller = self.caller(&metadata, Some(&database))?;
         let transaction = (!req.transaction.is_empty()).then_some(req.transaction.as_slice());
+        // A pipeline's `update` or `delete` in the transaction comes first.
+        let pending = transaction
+            .map(|t| self.transactions.take_pending(&database, t))
+            .unwrap_or_default();
+        let writes = if pending.is_empty() {
+            req.writes
+        } else {
+            pending.into_iter().chain(req.writes).collect()
+        };
         // The official emulator answers an empty commit with an empty response (no commit time).
         Ok(Response::new(
             match self
                 .write(
                     &database,
                     transaction,
-                    &req.writes,
+                    &writes,
                     self.guard(&caller, &database).as_ref(),
                     Verifies::Checked,
                 )
