@@ -193,6 +193,10 @@ EVIDENCE = {
     "sdk-web-transactions": {"firebase-js-node": ["transactions"]},
     "sdk-web-writes": {"firebase-js-node": ["documents"]},
 }
+EVIDENCE["sdk-android-documents"] = {"android": ["documents"]}
+EVIDENCE["sdk-android-queries"] = {"android": ["queries", "aggregations"]}
+EVIDENCE["sdk-android-transactions"] = {"android": ["transactions"]}
+EVIDENCE["sdk-android-listen"] = {"android": ["listeners"]}
 EVIDENCE["sdk-ios-documents"] = {"ios": ["documents"]}
 EVIDENCE["sdk-ios-queries"] = {"ios": ["queries", "aggregations"]}
 EVIDENCE["sdk-ios-transactions"] = {"ios": ["transactions"]}
@@ -218,6 +222,8 @@ PACKAGE_LABELS = {
         "`com.google.cloud:google-cloud-firestore` (Java)",
     ("pub", "cloud_firestore"): "`cloud_firestore` (Flutter)",
     ("swiftpm", "FirebaseFirestore"): "`FirebaseFirestore` (firebase-ios-sdk)",
+    ("maven", "com.google.firebase:firebase-firestore"):
+        "`com.google.firebase:firebase-firestore` (Android)",
 }
 
 RESULT_ORDER = [table.IDENTICAL, table.DOCUMENTED, table.UNEXPLAINED]

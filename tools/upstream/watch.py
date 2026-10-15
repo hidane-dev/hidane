@@ -276,10 +276,15 @@ def go(module, fetch):
                      "@latest")
 
 
+# Groups published to Google's Maven repository rather than Maven Central.
+GOOGLE_MAVEN_GROUPS = ("com.google.firebase",)
+
+
 def maven(coordinate, fetch):
     group, artifact = coordinate.split(":")
-    url = (f"https://repo1.maven.org/maven2/{group.replace('.', '/')}/{artifact}/"
-           "maven-metadata.xml")
+    base = ("https://dl.google.com/dl/android/maven2" if group in GOOGLE_MAVEN_GROUPS
+            else "https://repo1.maven.org/maven2")
+    url = f"{base}/{group.replace('.', '/')}/{artifact}/maven-metadata.xml"
     text = fetch(url, "application/xml").decode("utf-8")
     # A flat document: read the few elements needed with patterns rather than an XML parser.
     versions = re.findall(r"<version>\s*([^<\s]+)\s*</version>", text)

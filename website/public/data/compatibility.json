@@ -25,7 +25,7 @@
    "status": "verified",
    "evidence": [
     "23,875 recorded answers of the official emulator v1.22.0 in 49 fixtures, replayed against hidane by cargo test",
-    "39 comparisons of SDK transcripts with the official emulator v1.22.0's: 23 identical, 16 documented differences",
+    "43 comparisons of SDK transcripts with the official emulator v1.22.0's: 26 identical, 17 documented differences",
     "2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers"
    ]
   }
@@ -650,21 +650,44 @@
    "transport": [
     "gRPC"
    ],
-   "status": "not-verified",
-   "version": null,
-   "official_emulator": [],
-   "exercised": [],
-   "not_exercised": [
+   "status": "verified",
+   "version": "27.0.0",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
     "documents and writes",
     "queries",
     "aggregation queries",
     "transactions",
     "listeners"
    ],
+   "not_exercised": [],
    "gaps": [],
-   "last_recorded": null,
+   "last_recorded": "2026-10-15",
    "tracking": "https://github.com/hidane-dev/hidane/issues/187",
-   "evidence": []
+   "evidence": [
+    {
+     "name": "sdk-android-documents",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-android-documents-hidane.json"
+    },
+    {
+     "name": "sdk-android-listen",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-android-listen-hidane.json"
+    },
+    {
+     "name": "sdk-android-queries",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-android-queries-hidane.json"
+    },
+    {
+     "name": "sdk-android-transactions",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-android-transactions-hidane.json"
+    }
+   ]
   },
   {
    "id": "cpp-unity",
@@ -705,10 +728,10 @@
    "differs": 161
   },
   "transcripts": {
-   "pairs": 37,
-   "comparisons": 39,
-   "identical": 23,
-   "documented": 16,
+   "pairs": 41,
+   "comparisons": 43,
+   "identical": 26,
+   "documented": 17,
    "unexplained": 0,
    "where": "docs/parity.md"
   }

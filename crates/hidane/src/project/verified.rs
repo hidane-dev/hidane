@@ -92,6 +92,13 @@ pub const VERIFIED: &[Verified] = &[
         what: "documents and writes, queries, aggregation queries, transactions, listeners",
         source: "docs/sdk-certification.md",
     },
+    Verified {
+        ecosystem: "maven",
+        name: "com.google.firebase:firebase-firestore",
+        version: "27.0.0",
+        what: "documents and writes, queries, aggregation queries, transactions, listeners",
+        source: "docs/sdk-certification.md",
+    },
 ];
 // sdk-certification:end
 

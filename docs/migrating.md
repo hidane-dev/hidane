@@ -64,6 +64,7 @@ The verified versions:
 | `com.google.cloud:google-cloud-firestore` (Java) | 3.49.0 — documents and writes, queries, aggregation queries, vector search, transactions, listeners | [sdk-certification.md](sdk-certification.md), `results/sdk-java-*.json` |
 | `cloud_firestore` (Flutter) | 6.10.0 — Flutter Web in Chromium: documents and writes, queries, aggregation queries, transactions, listeners | [sdk-certification.md](sdk-certification.md), `results/flutter-web-*.json` |
 | `FirebaseFirestore` (firebase-ios-sdk) | 13.0.1 — documents and writes, queries, aggregation queries, transactions, listeners | [sdk-certification.md](sdk-certification.md), `results/sdk-ios-*.json` |
+| `com.google.firebase:firebase-firestore` (Android) | 27.0.0 — documents and writes, queries, aggregation queries, transactions, listeners | [sdk-certification.md](sdk-certification.md), `results/sdk-android-*.json` |
 
 <!-- sdk-certification:end -->
 

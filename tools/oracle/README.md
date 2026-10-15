@@ -316,3 +316,21 @@ cp -R tools/oracle/sdk_ios "$tmp/" && (cd "$tmp/sdk_ios" && swift build -c relea
 
 Its transcripts are in `results/sdk-ios-*.json`. `.github/workflows/ios-sdk.yml` runs it against
 hidane monthly and compares with the committed hidane transcripts.
+
+`sdk_android/` runs the same steps through the Android SDK, `com.google.firebase:firebase-firestore`
+27.0.0 (pinned in `app/build.gradle.kts`), as an instrumentation test in an Android emulator
+(#266). It builds with Gradle 9.8 and JDK 21, reaches the emulator under test on the host as
+10.0.2.2, and takes the section and the port as instrumentation arguments; the transcript is
+written to the app's external files directory:
+
+```sh
+cp -R tools/oracle/sdk_android "$tmp/" && (cd "$tmp/sdk_android" && gradle :app:assembleDebug :app:assembleDebugAndroidTest)
+adb install -r -t "$tmp/sdk_android/app/build/outputs/apk/debug/app-debug.apk"
+adb install -r -t "$tmp/sdk_android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk"
+adb shell am instrument -w -e section documents -e port 8089 dev.hidane.sdkandroid.test/androidx.test.runner.AndroidJUnitRunner
+adb pull /sdcard/Android/data/dev.hidane.sdkandroid/files/documents.json android-documents.json
+```
+
+Its transcripts are in `results/sdk-android-*.json`. `.github/workflows/android-sdk.yml` runs it
+against hidane monthly in an Android emulator (`ci.sh`) and compares with the committed hidane
+transcripts.

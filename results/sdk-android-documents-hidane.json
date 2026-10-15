@@ -1,0 +1,264 @@
+[
+  {
+    "name": "set alice",
+    "ok": {
+      "age": 30,
+      "name": "Alice",
+      "nested": {
+        "x": 1
+      },
+      "tags": [
+        "a",
+        "b"
+      ]
+    }
+  },
+  {
+    "name": "update dotted",
+    "ok": {
+      "age": 31,
+      "name": "Alice",
+      "nested": {
+        "x": 1,
+        "y": 2
+      },
+      "tags": [
+        "a",
+        "b"
+      ]
+    }
+  },
+  {
+    "name": "update with a FieldPath holding a dot",
+    "ok": {
+      "a.b": 1,
+      "age": 31,
+      "name": "Alice",
+      "nested": {
+        "x": 1,
+        "y": 2
+      },
+      "tags": [
+        "a",
+        "b"
+      ]
+    }
+  },
+  {
+    "name": "set merge",
+    "ok": {
+      "a.b": 1,
+      "age": 31,
+      "city": "Tokyo",
+      "name": "Alice",
+      "nested": {
+        "x": 1,
+        "y": 2,
+        "z": 3
+      },
+      "tags": [
+        "a",
+        "b"
+      ]
+    }
+  },
+  {
+    "name": "set mergeFields",
+    "ok": {
+      "a.b": 1,
+      "age": 31,
+      "city": "Osaka",
+      "name": "Alice",
+      "nested": {
+        "x": 1,
+        "y": 2,
+        "z": 3
+      },
+      "tags": [
+        "a",
+        "b"
+      ]
+    }
+  },
+  {
+    "name": "delete a field",
+    "ok": {
+      "a.b": 1,
+      "age": 31,
+      "name": "Alice",
+      "nested": {
+        "x": 1,
+        "y": 2,
+        "z": 3
+      },
+      "tags": [
+        "a",
+        "b"
+      ]
+    }
+  },
+  {
+    "error": {
+      "code": "NOT_FOUND"
+    },
+    "name": "update a missing document"
+  },
+  {
+    "name": "get a missing document",
+    "ok": null
+  },
+  {
+    "name": "transforms",
+    "ok": {
+      "a.b": 1,
+      "age": 33,
+      "name": "Alice",
+      "nested": {
+        "y": 2,
+        "z": 3
+      },
+      "score": {
+        "double": "1.5"
+      },
+      "seen": "timestamp",
+      "tags": [
+        "a",
+        "b",
+        "c"
+      ]
+    }
+  },
+  {
+    "name": "arrayRemove",
+    "ok": {
+      "a.b": 1,
+      "age": 33,
+      "name": "Alice",
+      "nested": {
+        "y": 2,
+        "z": 3
+      },
+      "score": {
+        "double": "1.5"
+      },
+      "seen": "timestamp",
+      "tags": [
+        "b",
+        "c"
+      ]
+    }
+  },
+  {
+    "name": "server timestamp is a timestamp",
+    "ok": true
+  },
+  {
+    "name": "a value of each type",
+    "ok": {
+      "array": [
+        1,
+        "a",
+        {
+          "m": true
+        }
+      ],
+      "big": 9223372036854775807,
+      "bool": true,
+      "bytes": {
+        "bytes": "AQL/"
+      },
+      "double": {
+        "double": "1.5"
+      },
+      "empty": "",
+      "empty map": {},
+      "geopoint": {
+        "geopoint": [
+          {
+            "double": "1.5"
+          },
+          {
+            "double": "-2.0"
+          }
+        ]
+      },
+      "infinity": {
+        "double": "Infinity"
+      },
+      "int": 1,
+      "map": {
+        "a": {
+          "b": 1
+        }
+      },
+      "minus infinity": {
+        "double": "-Infinity"
+      },
+      "nan": {
+        "double": "NaN"
+      },
+      "negative zero": {
+        "double": "-0.0"
+      },
+      "null": null,
+      "reference": {
+        "reference": "users/alice"
+      },
+      "string": "x",
+      "timestamp": {
+        "timestamp": [
+          1577836800,
+          123456000
+        ]
+      },
+      "vector": {
+        "vector": [
+          {
+            "double": "1.0"
+          },
+          {
+            "double": "2.5"
+          }
+        ]
+      },
+      "whole double": {
+        "double": "2.0"
+      }
+    }
+  },
+  {
+    "name": "a batch",
+    "ok": [
+      {
+        "n": 3
+      },
+      null
+    ]
+  },
+  {
+    "name": "a batch that fails writes nothing",
+    "ok": {
+      "error": {
+        "code": "NOT_FOUND"
+      },
+      "three": null
+    }
+  },
+  {
+    "name": "a generated ID",
+    "ok": {
+      "data": {
+        "n": 1
+      },
+      "length": 20
+    }
+  },
+  {
+    "name": "delete alice",
+    "ok": null
+  },
+  {
+    "name": "delete a missing document",
+    "ok": "ok"
+  }
+]

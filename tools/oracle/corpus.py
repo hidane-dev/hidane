@@ -117,7 +117,7 @@ TRANSCRIPT_RECORDERS = {
     "js-sdk-browser": "tools/js-sdk-browser/",
     "nodejs-system-tests": "tools/nodejs-system-tests/",
 }
-for _sdk in ("go", "ios", "java", "python"):
+for _sdk in ("android", "go", "ios", "java", "python"):
     for _section in ("documents", "listen", "queries", "transactions"):
         TRANSCRIPT_RECORDERS[f"sdk-{_sdk}-{_section}"] = f"tools/oracle/sdk_{_sdk}/"
 
@@ -134,6 +134,9 @@ PINS = [
      r"^\s*FIREBASE_JS_SDK_COMMIT: ([0-9a-f]{40})$"),
     ("tools/nodejs-system-tests/", "google-cloud-node", ".github/workflows/nodejs-system-tests.yml",
      r"^\s*GOOGLE_CLOUD_NODE_COMMIT: ([0-9a-f]{40})$"),
+    ("tools/oracle/sdk_android/", "com.google.firebase:firebase-firestore",
+     "tools/oracle/sdk_android/app/build.gradle.kts",
+     r'"com\.google\.firebase:firebase-firestore:([\w.\-]+)"'),
     ("tools/oracle/sdk_ios/", "firebase-ios-sdk", "tools/oracle/sdk_ios/Package.swift",
      r'firebase-ios-sdk\.git", exact: "([\w.\-]+)"'),
 ] + [("tools/oracle/flutter_web/", name, "tools/oracle/flutter_web/pubspec.yaml",
