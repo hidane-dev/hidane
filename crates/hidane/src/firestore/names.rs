@@ -26,15 +26,29 @@ impl Name {
 /// Parses `projects/{p}/databases/{d}`.
 pub fn database(name: &str) -> Result<String, Status> {
     let mut cursor = Cursor::new(name, "Database name");
-    cursor.literal("projects")?;
-    cursor.literal("/")?;
-    cursor.segment("project")?;
-    cursor.literal("/")?;
-    cursor.literal("databases")?;
-    cursor.literal("/")?;
-    cursor.segment("database")?;
+    cursor.database()?;
     cursor.end()?;
     Ok(name.to_owned())
+}
+
+/// The longest project ID, and the longest domain before one (`example.com:`).
+const MAX_PROJECT_ID: usize = 100;
+
+/// Whether `project` is a Cloud project ID, as the official emulator reads one
+/// (`tools/oracle/project_ids.py`): lowercase letters, digits and hyphens, not starting with a
+/// hyphen, after an optional domain and `:`, the domain of lowercase letters, digits, dots and
+/// hyphens, not starting with a dot or a hyphen; each part at most 100 bytes, either empty.
+fn project_id(project: &str) -> bool {
+    let (domain, id) = project.split_once(':').unwrap_or(("", project));
+    let part = |part: &str, dots: bool| {
+        part.len() <= MAX_PROJECT_ID
+            && !part.starts_with('-')
+            && !(dots && part.starts_with('.'))
+            && part.bytes().all(|b| {
+                b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-' || (dots && b == b'.')
+            })
+    };
+    part(domain, true) && part(id, false)
 }
 
 /// Parses a document name (an even number of path segments).
@@ -113,13 +127,7 @@ fn parse(name: &str, shape: Shape) -> Result<Name, Status> {
         Shape::Any => "Resource name",
     };
     let mut cursor = Cursor::new(name, what);
-    cursor.literal("projects")?;
-    cursor.literal("/")?;
-    cursor.segment("project")?;
-    cursor.literal("/")?;
-    cursor.literal("databases")?;
-    cursor.literal("/")?;
-    cursor.segment("database")?;
+    cursor.database()?;
     let database_end = cursor.pos;
     if shape == Shape::Reference && cursor.at_end() {
         return Ok(Name {
@@ -273,6 +281,43 @@ impl<'a> Cursor<'a> {
         Ok(&rest[..len])
     }
 
+    /// `projects/{p}/databases/{d}`, neither ID `.` nor `..`, then the project ID's check,
+    /// before the rest of the name is read (`tools/oracle/project_ids.py`). Database IDs are
+    /// not checked.
+    fn database(&mut self) -> Result<(), Status> {
+        self.literal("projects")?;
+        self.literal("/")?;
+        let project = self.id("project")?;
+        self.literal("/")?;
+        self.literal("databases")?;
+        self.literal("/")?;
+        let database = self.id("database")?;
+        if !project_id(project) {
+            let database = if database == "(default)" {
+                ""
+            } else {
+                database
+            };
+            return Err(Status::invalid_argument(format!(
+                "Invalid project ID({project}) or database ID({database})"
+            )));
+        }
+        Ok(())
+    }
+
+    /// The next segment, a `kind` ID that may be neither `.` nor `..`.
+    fn id(&mut self, kind: &str) -> Result<&'a str, Status> {
+        let start = self.pos;
+        let id = self.segment(kind)?;
+        if id == "." || id == ".." {
+            return Err(Status::invalid_argument(format!(
+                "{} \"{}\" contains a {kind} id \"{id}\" at index {start}.",
+                self.what, self.name
+            )));
+        }
+        Ok(id)
+    }
+
     fn trailing_slash(&self) -> Status {
         Status::invalid_argument(format!(
             "{} \"{}\" has invalid trailing \"/\".",
@@ -317,6 +362,43 @@ mod tests {
             2
         );
         assert!(document("projects/p/databases/d/documents/c/__id5__").is_ok());
+    }
+
+    #[test]
+    fn project_ids_as_the_official_emulator_reads_them() {
+        for valid in [
+            "p",
+            "0",
+            "p-",
+            ":",
+            ":p",
+            "p:",
+            "a.b:c",
+            "a..b:c",
+            "example.com:my-p",
+        ] {
+            assert!(project_id(valid), "{valid}");
+        }
+        for invalid in [
+            "P1", "p_1", "-p", "a:-p", ".a:b", "p.1", "a:b:c", "p~1", "pé",
+        ] {
+            assert!(!project_id(invalid), "{invalid}");
+        }
+        assert!(project_id(&"a".repeat(100)));
+        assert!(!project_id(&"a".repeat(101)));
+        assert!(project_id(&format!(
+            "{}:{}",
+            "a".repeat(100),
+            "b".repeat(100)
+        )));
+        assert_eq!(
+            err(document("projects/P1/databases/other/documents/c")),
+            "Invalid project ID(P1) or database ID(other)"
+        );
+        assert_eq!(
+            database("projects/p/databases/..").unwrap_err().message(),
+            "Database name \"projects/p/databases/..\" contains a database id \"..\" at index 21."
+        );
     }
 
     #[test]

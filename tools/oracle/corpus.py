@@ -74,6 +74,7 @@ FIXTURE_CLIENTS = {
     "limits.py": ([REST], PY),
     "list_documents.py": ([GRPC, REST], PY_GRPCURL),
     "negative_zero.py": ([GRPC, REST, WEBCHANNEL, PROCESS], PY_GRPCURL),
+    "project_ids.py": ([REST], PY),
     "queries.py": ([REST], PY),
     "read_time_and_databases.py": ([GRPC, REST], PY_GRPCURL),
     "rest.py": ([REST], PY),

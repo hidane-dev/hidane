@@ -377,17 +377,14 @@ async fn clear_database(
     Path((project, database)): Path<(String, String)>,
     headers: HeaderMap,
 ) -> Response {
-    if let Err(status) = firestore::auth::from_header(authorization(&headers)) {
+    // The name is read first, as a parent's (`tools/oracle/project_ids.py`).
+    let database = format!("projects/{}/databases/{}", project.trim(), database.trim());
+    if let Err(status) = firestore::names::parent(&format!("{database}/documents"))
+        .and_then(|_| firestore::auth::from_header(authorization(&headers)))
+    {
         return rest::error(&status);
     }
-    admin
-        .firestore()
-        .clear_database(&format!(
-            "projects/{}/databases/{}",
-            project.trim(),
-            database.trim()
-        ))
-        .await;
+    admin.firestore().clear_database(&database).await;
     empty_json()
 }
 
