@@ -35421,6 +35421,321 @@
    }
   },
   {
+   "name": "__name__ < null and a > 1",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "LESS_THAN",
+         "value": {
+          "nullValue": null
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "GREATER_THAN",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Equality on key is not allowed if there are other inequality fields and key does not appear in inequalities."
+   }
+  },
+  {
+   "name": "__name__ >= NaN and a > 1",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "GREATER_THAN_OR_EQUAL",
+         "value": {
+          "doubleValue": "NaN"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "GREATER_THAN",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Equality on key is not allowed if there are other inequality fields and key does not appear in inequalities."
+   }
+  },
+  {
+   "name": "__name__ != null and a > 1",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "NOT_EQUAL",
+         "value": {
+          "nullValue": null
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "GREATER_THAN",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Equality on key is not allowed if there are other inequality fields and key does not appear in inequalities."
+   }
+  },
+  {
+   "name": "__name__ not-in [null] and a > 1",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "NOT_IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "nullValue": null
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "GREATER_THAN",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Equality on key is not allowed if there are other inequality fields and key does not appear in inequalities."
+   }
+  },
+  {
+   "name": "__name__ != NaN and a > 1",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "NOT_EQUAL",
+         "value": {
+          "doubleValue": "NaN"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "GREATER_THAN",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "__key__ filter value must be a Key"
+   }
+  },
+  {
+   "name": "__name__ <= null, a >= 1 and an order by __name__",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "GREATER_THAN_OR_EQUAL",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "__name__"
+         },
+         "op": "LESS_THAN_OR_EQUAL",
+         "value": {
+          "nullValue": null
+         }
+        }
+       }
+      ]
+     }
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "__name__"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Equality on key is not allowed if there are other inequality fields and key does not appear in inequalities."
+   }
+  },
+  {
+   "name": "a negative limit and a negative offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "limit": -1,
+    "offset": -1
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "offset is negative"
+   }
+  },
+  {
+   "name": "a negative limit and a negative offset without a collection",
+   "parent": "",
+   "query": {
+    "limit": -1,
+    "offset": -1,
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "offset is negative"
+   }
+  },
+  {
    "name": "a <= NaN, __name__ in [p3] and a negative limit",
    "parent": "",
    "query": {
@@ -36531,6 +36846,343 @@
             "op": "EQUAL",
             "value": {
              "nullValue": null
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "m.x"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "5"
+            }
+           }
+          }
+         ]
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Too many disjunctions after normalization. Result had 33 disjunctions which is more than the maximum of 30"
+   }
+  },
+  {
+   "name": "an or of array-contains null and an empty array and an equality, and in 11",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "compositeFilter": {
+         "op": "OR",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "m.x"
+            },
+            "op": "ARRAY_CONTAINS",
+            "value": {
+             "nullValue": null
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "m.x"
+            },
+            "op": "ARRAY_CONTAINS",
+            "value": {
+             "arrayValue": {}
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "m.x"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "5"
+            }
+           }
+          }
+         ]
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "an or of array-contains an empty array and {} and an equality, and in 11",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "compositeFilter": {
+         "op": "OR",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "m.x"
+            },
+            "op": "ARRAY_CONTAINS",
+            "value": {
+             "arrayValue": {}
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "m.x"
+            },
+            "op": "ARRAY_CONTAINS",
+            "value": {
+             "mapValue": {}
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "m.x"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "5"
+            }
+           }
+          }
+         ]
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Too many disjunctions after normalization. Result had 33 disjunctions which is more than the maximum of 30"
+   }
+  },
+  {
+   "name": "an or of array-contains an empty array and [[]] and an equality, and in 11",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "compositeFilter": {
+         "op": "OR",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "m.x"
+            },
+            "op": "ARRAY_CONTAINS",
+            "value": {
+             "arrayValue": {}
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "m.x"
+            },
+            "op": "ARRAY_CONTAINS",
+            "value": {
+             "arrayValue": {
+              "values": [
+               {
+                "arrayValue": {}
+               }
+              ]
+             }
             }
            }
           },

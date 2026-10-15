@@ -19,7 +19,9 @@ Step ops (documents are relative to the project's database, e.g. "c/d"):
                 {txn?, new?,                      the aggregation query given (REST JSON, null
                  structuredAggregationQuery}      for none)
     commit      {txn?, writes}                    Commit; writes are {update | delete | verify,
-                                                  n?, exists?, reserved?, mask?, increment?}
+                                                  n?, exists?, reserved?, mask?, increment?,
+                                                  future? (an update time past any stored),
+                                                  pad? ({field, bytes}: a string that long)}
     batchWrite  {writes}                          BatchWrite
     rollback    {txn?, raw?}                      Rollback (raw: literal base64 transaction bytes)
     reset                                         POST /reset (clears every project)
@@ -175,6 +177,18 @@ SCENARIOS = [
         step("read", "L reads c/b", txn="L", documents=["c/b"]),
         step("commit", "invalid outside write to locked c/b does not wait", writes=[up("c/b", 2, reserved=True)]),
         step("commit", "outside create of locked existing c/b waits", writes=[up("c/b", 2, exists=False)]),
+    ]),
+    # What the commit itself finds ends the transaction too, an invalid argument included: a
+    # version past the stored one, a document past the size limit once merged (#262).
+    scenario("a version or size error of the commit ends the transaction", [
+        SEED_AB,
+        step("begin", "begin T", **{"as": "T"}),
+        step("commit", "T writes c/a at a version past the stored one", txn="T", writes=[up("c/a", 2, future=True)]),
+        step("read", "T reads after the invalid version", txn="T", documents=["c/a"]),
+        step("commit", "seed a large c/b", writes=[up("c/b", 1, pad={"field": "p", "bytes": 1000000})]),
+        step("begin", "begin U", **{"as": "U"}),
+        step("commit", "U grows c/b past the size limit", txn="U", writes=[up("c/b", mask=["q"], pad={"field": "q", "bytes": 100000})]),
+        step("read", "U reads after the size error", txn="U", documents=["c/b"]),
     ]),
     scenario("a commit waits for every target and stays atomic", [
         SEED_ONE,
@@ -420,9 +434,13 @@ def rest_write(base, w):
             fields["n"] = {"integerValue": str(w["n"])}
         if w.get("reserved"):
             fields["__x__"] = {"nullValue": None}
+        if "pad" in w:
+            fields[w["pad"]["field"]] = {"stringValue": "x" * w["pad"]["bytes"]}
         out = {"update": {"name": f"{base}/{w['update']}", "fields": fields}}
     if "exists" in w:
         out["currentDocument"] = {"exists": w["exists"]}
+    if w.get("future"):
+        out["currentDocument"] = {"updateTime": "2099-01-01T00:00:00Z"}
     if "mask" in w:
         out["updateMask"] = {"fieldPaths": w["mask"]}
     if "increment" in w:

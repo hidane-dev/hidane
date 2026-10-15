@@ -23,7 +23,7 @@ use std::{
 
 use hidane_core::{path::ResourcePath, store::ReadTime};
 use tokio::{sync::watch, time::Instant};
-use tonic::{Code, Status};
+use tonic::Status;
 
 /// How long a write waits for other transactions' locks (2 s on the official emulator).
 pub const LOCK_TIMEOUT: Duration = Duration::from_secs(2);
@@ -249,9 +249,10 @@ impl Transactions {
     /// holds a lock on them. Nothing else in the database can lock or commit while `commit`
     /// runs.
     ///
-    /// A transaction ends with its commit, unless `commit` rejects an invalid write
-    /// (`INVALID_ARGUMENT`): the official emulator checks those first and leaves the
-    /// transaction open.
+    /// A transaction ends with its commit, whatever `commit` answers: an invalid argument it
+    /// finds too (a version past the stored one, a document over the size limit). Invalid
+    /// writes are refused before this (`writes::check`) and leave the transaction open, as on
+    /// the official emulator (`tools/oracle/transactions.py`, #262).
     pub async fn commit<T>(
         &self,
         database: &str,
@@ -278,11 +279,7 @@ impl Transactions {
                 match db.blocked_until(owner, targets, self.idle_timeout) {
                     None => {
                         let result = commit.take().expect("commit runs once")();
-                        let rejected =
-                            matches!(&result, Err(s) if s.code() == Code::InvalidArgument);
-                        if let Some(id) = owner
-                            && !rejected
-                        {
+                        if let Some(id) = owner {
                             db.open.remove(&id);
                             drop(db);
                             self.released.send_replace(());

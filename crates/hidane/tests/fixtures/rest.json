@@ -2486,6 +2486,101 @@
    }
   },
   {
+   "name": "doubles with two shortest decimals",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/dt/a",
+       "fields": {
+        "t0": {
+         "doubleValue": 1000000000000003.2
+        },
+        "t1": {
+         "doubleValue": 1000000000149213.2
+        },
+        "t2": {
+         "doubleValue": 123456789012345.62
+        },
+        "t3": {
+         "doubleValue": 1000000000035222.8
+        },
+        "t4": {
+         "doubleValue": 4503599627370498.0
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "doubles with two shortest decimals, read",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/dt/a",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"name\": \"projects/{project}/databases/(default)/documents/dt/a\",\n  \"fields\": {\n    \"t0\": {\n      \"doubleValue\": 1.0000000000000032E15\n    },\n    \"t1\": {\n      \"doubleValue\": 1.0000000001492132E15\n    },\n    \"t2\": {\n      \"doubleValue\": 1.2345678901234562E14\n    },\n    \"t3\": {\n      \"doubleValue\": 1.0000000000352228E15\n    },\n    \"t4\": {\n      \"doubleValue\": 4.503599627370498E15\n    }\n  },\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an increment that gives a double with two shortest decimals",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/dt/b",
+       "fields": {
+        "n": {
+         "doubleValue": 3.25
+        }
+       }
+      }
+     },
+     {
+      "transform": {
+       "document": "projects/{project}/databases/(default)/documents/dt/b",
+       "fieldTransforms": [
+        {
+         "fieldPath": "n",
+         "increment": {
+          "integerValue": "1000000000000000"
+         }
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }, {\n    \"updateTime\": \"<time>\",\n    \"transformResults\": [{\n      \"doubleValue\": 1.0000000000000032E15\n    }]\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
    "name": "commit a value without a type in an array",
    "method": "POST",
    "path": "/v1/projects/{project}/databases/(default)/documents:commit",

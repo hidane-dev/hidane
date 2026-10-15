@@ -189,6 +189,15 @@ impl Context {
                     },
                 );
             }
+            if let Some(pad) = w["pad"].as_object() {
+                let bytes = usize::try_from(pad["bytes"].as_u64().unwrap()).unwrap();
+                fields.insert(
+                    pad["field"].as_str().unwrap().to_owned(),
+                    Value {
+                        value_type: Some(ValueType::StringValue("x".repeat(bytes))),
+                    },
+                );
+            }
             Operation::Update(Document {
                 name: self.name(w["update"].as_str().unwrap()),
                 fields,
@@ -197,9 +206,18 @@ impl Context {
         };
         Write {
             operation: Some(operation),
-            current_document: w["exists"].as_bool().map(|exists| Precondition {
-                condition_type: Some(ConditionType::Exists(exists)),
-            }),
+            current_document: if w["future"] == true {
+                Some(Precondition {
+                    condition_type: Some(ConditionType::UpdateTime(Timestamp {
+                        seconds: 4_070_908_800, // 2099-01-01T00:00:00Z
+                        nanos: 0,
+                    })),
+                })
+            } else {
+                w["exists"].as_bool().map(|exists| Precondition {
+                    condition_type: Some(ConditionType::Exists(exists)),
+                })
+            },
             update_mask: w["mask"].as_array().map(|paths| DocumentMask {
                 field_paths: paths
                     .iter()

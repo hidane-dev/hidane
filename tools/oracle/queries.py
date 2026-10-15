@@ -656,10 +656,19 @@ case("__name__ == p3 and b != null", q("p", where_=AND(ff("__name__", "EQUAL", r
 case("__name__ == p3 and b not-in [null]", q("p", where_=AND(ff("__name__", "EQUAL", ref("p/p3")), ff("b", "NOT_IN", arr(NULL)))))
 case("__name__ == p3 and b != NaN", q("p", where_=AND(ff("__name__", "EQUAL", ref("p/p3")), ff("b", "NOT_EQUAL", NAN))))
 case("an or of is-NaN on __name__ and m.x != null", q("p", where_=OR(uf("__name__", "IS_NAN"), ff("m.x", "NOT_EQUAL", NULL))))
+# A filter on __name__ that matches nothing (a null or NaN bound, `!=` null, a `not-in` of nulls)
+# is an equality on the key, next to another field's inequality too; `!=` NaN is an inequality.
+for label, key in [("< null", ff("__name__", "LESS_THAN", NULL)), (">= NaN", ff("__name__", "GREATER_THAN_OR_EQUAL", NAN)),
+                   ("!= null", ff("__name__", "NOT_EQUAL", NULL)), ("not-in [null]", ff("__name__", "NOT_IN", arr(NULL))),
+                   ("!= NaN", ff("__name__", "NOT_EQUAL", NAN))]:
+    case(f"__name__ {label} and a > 1", q("p", where_=AND(key, ff("a", "GREATER_THAN", i(1)))))
+case("__name__ <= null, a >= 1 and an order by __name__", q("p", where_=AND(ff("a", "GREATER_THAN_OR_EQUAL", i(1)), ff("__name__", "LESS_THAN_OR_EQUAL", NULL)), order=[asc("__name__")]))
+case("a negative limit and a negative offset", q("p", limit=-1, offset=-1))
+case("a negative limit and a negative offset without a collection", {"limit": -1, "offset": -1, "orderBy": [asc("a")]})
 case("a <= NaN, __name__ in [p3] and a negative limit", q("p", where_=AND(ff("a", "LESS_THAN_OR_EQUAL", NAN), ff("__name__", "IN", arr(ref("p/p3")))), limit=-1))
 # Disjunctions, counted as the official emulator compares conditions: on one field, an equality,
 # a range or `!=` on null, and an equality or a range on NaN, are one condition, whatever the
-# operator; so are array-contains null and NaN; -0.0 and 0.0 are one value.
+# operator; so are array-contains null, NaN and an empty array; -0.0 and 0.0 are one value.
 XYZ = ff("b", "IN", arr(s("x"), s("y"), s("z")))
 case("in with NaN and null, and in 3", q("p", where_=AND(ff("a", "IN", arr(*ints(0, 10), NAN, NULL)), XYZ)))
 case("in with -0.0 and 0.0, and in 3", q("p", where_=AND(ff("a", "IN", arr(*ints(1, 11), d(-0.0), d(0.0))), XYZ)))
@@ -672,6 +681,9 @@ for label, one, other in [
     ("!= NaN and > null", ff("m.x", "NOT_EQUAL", NAN), ff("m.x", "GREATER_THAN", NULL)),
     ("array-contains NaN and null", ff("m.x", "ARRAY_CONTAINS", NAN), ff("m.x", "ARRAY_CONTAINS", NULL)),
     ("array-contains null and == null", ff("m.x", "ARRAY_CONTAINS", NULL), ff("m.x", "EQUAL", NULL)),
+    ("array-contains null and an empty array", ff("m.x", "ARRAY_CONTAINS", NULL), ff("m.x", "ARRAY_CONTAINS", arr())),
+    ("array-contains an empty array and {}", ff("m.x", "ARRAY_CONTAINS", arr()), ff("m.x", "ARRAY_CONTAINS", mp())),
+    ("array-contains an empty array and [[]]", ff("m.x", "ARRAY_CONTAINS", arr()), ff("m.x", "ARRAY_CONTAINS", arr(arr()))),
     ("is-NaN and is-null", uf("m.x", "IS_NAN"), uf("m.x", "IS_NULL")),
     ("== NaN and is-NaN", ff("m.x", "EQUAL", NAN), uf("m.x", "IS_NAN")),
     ("> null on two fields", ff("m.x", "GREATER_THAN", NULL), ff("opt", "GREATER_THAN", NULL)),
