@@ -20,6 +20,7 @@ mod guard;
 pub(crate) mod index_usage;
 mod listen;
 pub(crate) mod names;
+mod pipeline;
 mod property_path;
 mod query;
 pub(crate) mod seed;
@@ -1321,9 +1322,10 @@ impl Firestore for FirestoreService {
             ));
         }
         self.caller(&metadata, Some(&database))?;
-        Err(Status::unimplemented(
-            "ExecutePipeline is not implemented yet (https://github.com/hidane-dev/hidane/issues/80)",
-        ))
+        let responses = self.execute(&database, &req)?;
+        Ok(Response::new(Box::pin(tokio_stream::iter(
+            responses.into_iter().map(Ok),
+        ))))
     }
 
     async fn begin_transaction(
