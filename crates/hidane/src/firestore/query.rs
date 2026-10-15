@@ -324,6 +324,9 @@ pub struct Query {
     nearest: Option<Nearest>,
     /// Run with the semantics of an enterprise database ([`Unchecked::check_enterprise`]).
     enterprise: bool,
+    /// A listener's query on an enterprise database: checked as on a standard one, but null
+    /// and NaN are values like others ([`matches_listen_values`]).
+    listen_values: bool,
 }
 
 /// What a query returns.
@@ -504,6 +507,7 @@ impl Unchecked<'_> {
             required: Vec::new(),
             nearest,
             enterprise: false,
+            listen_values: false,
         })
     }
 
@@ -560,6 +564,7 @@ impl Unchecked<'_> {
             required: Vec::new(),
             nearest,
             enterprise: true,
+            listen_values: false,
         })
     }
 }
@@ -787,6 +792,7 @@ impl Query {
         let matched = match &self.filter {
             None => true,
             Some(f) if self.enterprise => matches_enterprise(f, &field_value)?,
+            Some(f) if self.listen_values => matches_listen_values(f, &field_value),
             Some(f) => matches_filter(f, &field_value),
         };
         if !matched
@@ -802,6 +808,14 @@ impl Query {
             .iter()
             .map(|order| field_value(&order.field).cloned())
             .collect())
+    }
+
+    /// The query as a listener on an enterprise database matches documents
+    /// ([`matches_listen_values`]).
+    #[must_use]
+    pub fn with_listen_values(mut self) -> Self {
+        self.listen_values = true;
+        self
     }
 
     /// Whether the query runs with the semantics of an enterprise database.
@@ -2105,6 +2119,54 @@ fn evaluate_enterprise<'a>(
             }
         }
     })
+}
+
+/// A listener's filter on an enterprise database (`tests/fixtures/listen_queries_enterprise.json`,
+/// #338): as on a standard database, a filter never matches a document without the field; but
+/// null and NaN are values like others: `==`, `in` and `array-contains` match them, `!=`,
+/// `not-in` and `IS_NOT_NAN` take them, and a range compares each with itself.
+fn matches_listen_values<'a>(
+    filter: &Filter,
+    field_value: &impl Fn(&Field) -> Option<&'a Value>,
+) -> bool {
+    let equal = |a: &Value, b: &Value| compare(a, b) == Ordering::Equal;
+    match filter {
+        Filter::And(filters) => filters
+            .iter()
+            .all(|f| matches_listen_values(f, field_value)),
+        Filter::Or(filters) => filters
+            .iter()
+            .any(|f| matches_listen_values(f, field_value)),
+        Filter::Unary { field, op } => field_value(field).is_some_and(|v| match op {
+            UnaryOp::Null => is_null(v),
+            UnaryOp::NotNull => !is_null(v),
+            UnaryOp::Nan => is_nan(v),
+            UnaryOp::NotNan => !is_nan(v),
+        }),
+        Filter::Compare { field, op, value } => field_value(field).is_some_and(|v| {
+            let range = |accept: fn(Ordering) -> bool| {
+                if is_nan(v) || is_nan(value) {
+                    is_nan(v) && is_nan(value) && accept(Ordering::Equal)
+                } else {
+                    type_rank(v) == type_rank(value) && accept(compare(v, value))
+                }
+            };
+            match op {
+                Op::Less => range(Ordering::is_lt),
+                Op::LessOrEqual => range(Ordering::is_le),
+                Op::Greater => range(Ordering::is_gt),
+                Op::GreaterOrEqual => range(Ordering::is_ge),
+                Op::Equal => equal(v, value),
+                Op::NotEqual => !equal(v, value),
+                Op::ArrayContains => array(v).iter().any(|e| equal(e, value)),
+                Op::In => array(value).iter().any(|o| equal(v, o)),
+                Op::ArrayContainsAny => array(v)
+                    .iter()
+                    .any(|e| array(value).iter().any(|o| equal(e, o))),
+                Op::NotIn => !array(value).iter().any(|o| equal(v, o)),
+            }
+        }),
+    }
 }
 
 /// The value at an array path on an enterprise database: each offset an element of an array

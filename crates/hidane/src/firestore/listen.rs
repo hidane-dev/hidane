@@ -202,6 +202,16 @@ impl Listener<'_> {
                 "Target ID {id} is already in use."
             ))));
         }
+        // So does a query of more than one collection (D006), which RunQuery refuses with this
+        // message (`tests/fixtures/listen_queries.json`).
+        if let Some(target::TargetType::Query(query)) = &target.target_type
+            && let Some(query_target::QueryType::StructuredQuery(structured)) = &query.query_type
+            && structured.from.len() > 1
+        {
+            return Err(Err(Status::invalid_argument(
+                "StructuredQuery.from cannot have more than one collection selector.",
+            )));
+        }
         let watch = match self.parse(requested_database, &target) {
             Ok(watch) => watch,
             Err(status) => {
@@ -352,7 +362,12 @@ impl Listener<'_> {
                     Some(query_target::QueryType::StructuredQuery(q)) => q,
                     None => &default,
                 };
-                let query = Query::parse(&parent.database, parent.path, structured)?;
+                let mut query = Query::parse(&parent.database, parent.path, structured)?;
+                // An enterprise database checks a listener's query as a standard one, but
+                // matches null and NaN as values (#338).
+                if self.service.enterprise {
+                    query = query.with_listen_values();
+                }
                 (parent.database, Watch::Query(Box::new(query)))
             }
             Some(target::TargetType::Documents(documents)) => {

@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:3a2bfe2b4601ec7628b1b0d0ec31b73ea66dc3989d218c0bdb657a4e48a1a0ed",
+ "digest": "sha256:b18f37a653f321531058e8e5281e6e8f7854dd0139a76f74c90960625b927a04",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,19 +14,19 @@
   }
  ],
  "totals": {
-  "files": 97,
-  "fixtures": 55,
+  "files": 99,
+  "fixtures": 57,
   "transcripts": 42,
-  "answers": 25298,
-  "bytes": 16858689,
+  "answers": 26556,
+  "bytes": 18294898,
   "levels": {
-   "full": 14088,
+   "full": 15310,
    "reasons": 4344,
    "part": 1481,
-   "status": 5187,
+   "status": 5189,
    "codes": 30,
    "none": 7,
-   "differs": 161
+   "differs": 195
   },
   "by_area": {
    "documents": {
@@ -45,9 +45,9 @@
     "answers": 215
    },
    "streams": {
-    "fixtures": 1,
+    "fixtures": 3,
     "transcripts": 8,
-    "answers": 49
+    "answers": 1307
    },
    "rest": {
     "fixtures": 4,
@@ -82,13 +82,13 @@
   },
   "by_release": {
    "v1.22.0": {
-    "fixtures": 55,
+    "fixtures": 57,
     "transcripts": 42,
-    "answers": 25298
+    "answers": 26556
    }
   },
   "by_release_source": {
-   "header": 30,
+   "header": 32,
    "file name": 43,
    "git history": 24
   }
@@ -669,6 +669,83 @@
    ],
    "counted": "each step with an outcome, except those of the scenario marked `slow`",
    "compared": "as each step's `compare` marks it; without a mark in full (status, message, elapsed time to 0.5 s and the result, not transaction IDs)"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/listen_queries.json",
+   "kind": "fixture",
+   "area": "streams",
+   "recorder": "tools/oracle/listen_queries.py",
+   "client": {
+    "over": [
+     "REST",
+     "WebChannel"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-15",
+    "last_changed": "2026-10-15"
+   },
+   "bytes": 716664,
+   "sha256": "894bdec2314c124da3518dfc3ae956f4f58dcf3162e7967527c797dd64e6c4c1",
+   "answers": 629,
+   "levels": {
+    "full": 628,
+    "status": 1
+   },
+   "replayed_over": [
+    "gRPC"
+   ],
+   "tests": [
+    "crates/hidane/tests/listen_queries.rs::listen_targets_answer_like_the_official_emulator"
+   ],
+   "counted": "each target (the cases of `queries.json` as Listen targets), recorded over WebChannel, replayed over gRPC",
+   "compared": "in full: the documents the target holds when current, as a set, or the cause of its removal; a target that ends the stream (D006) on whether it does"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/listen_queries_enterprise.json",
+   "kind": "fixture",
+   "area": "streams",
+   "recorder": "tools/oracle/listen_queries.py",
+   "client": {
+    "over": [
+     "REST",
+     "WebChannel"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-15",
+    "last_changed": "2026-10-15"
+   },
+   "bytes": 719545,
+   "sha256": "b74fcc073ca8f4388e63ced06559b47bc31e0bb424aac92947c979c688f4e2ee",
+   "answers": 629,
+   "levels": {
+    "full": 594,
+    "status": 1,
+    "differs": 34
+   },
+   "replayed_over": [
+    "gRPC"
+   ],
+   "tests": [
+    "crates/hidane/tests/listen_queries.rs::enterprise_listen_targets_answer_like_the_official_emulator"
+   ],
+   "counted": "each target, on an enterprise database, recorded over WebChannel, replayed over gRPC",
+   "compared": "as `listen_queries.json`; the targets the test lists in `KNOWN_ENTERPRISE` as intentionally different (D091)"
   },
   {
    "path": "crates/hidane/tests/fixtures/write_stream.json",
