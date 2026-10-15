@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:cfd73c2a5b5f2fbe01d5b27d1e6372138fea53018649eab84cc21c78ed458f13",
+ "digest": "sha256:29d7881bd1fb7289b6166ce19b41bd4c977a0be3be712528e33fcccfb3a115bc",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,11 +14,11 @@
   }
  ],
  "totals": {
-  "files": 81,
+  "files": 82,
   "fixtures": 49,
-  "transcripts": 32,
+  "transcripts": 33,
   "answers": 23875,
-  "bytes": 14122665,
+  "bytes": 14225878,
   "levels": {
    "full": 13309,
    "reasons": 4344,
@@ -71,7 +71,7 @@
    },
    "admin": {
     "fixtures": 3,
-    "transcripts": 3,
+    "transcripts": 4,
     "answers": 640
    },
    "values": {
@@ -83,13 +83,13 @@
   "by_release": {
    "v1.22.0": {
     "fixtures": 49,
-    "transcripts": 32,
+    "transcripts": 33,
     "answers": 23875
    }
   },
   "by_release_source": {
    "header": 24,
-   "file name": 33,
+   "file name": 34,
    "git history": 24
   }
  },
@@ -3233,6 +3233,45 @@
      "what": "hidane",
      "result": "documented",
      "explained_in": "docs/parity-exceptions.md"
+    }
+   ]
+  },
+  {
+   "path": "results/nodejs-system-tests-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "admin",
+   "recorder": "tools/nodejs-system-tests/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "nodejs-firestore system tests (Admin SDK)",
+    "packages": [
+     {
+      "name": "google-cloud-node",
+      "version": "3821456d7810580c3c3f1256bd3d2fae4a3f5980",
+      "source": "pinned",
+      "where": ".github/workflows/nodejs-system-tests.yml"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-15",
+    "last_changed": "2026-10-15"
+   },
+   "bytes": 103213,
+   "sha256": "5624820757b8076aa704af380f898ceb332bc442910cb97bd455ce0a85341063",
+   "compared_with": [
+    {
+     "path": "results/nodejs-system-tests-hidane.json",
+     "what": "hidane, without `emulator`; the outcome of each test: 328 passed, 568 skipped, 13 failed",
+     "result": "documented",
+     "explained_in": "results/README.md"
     }
    ]
   },

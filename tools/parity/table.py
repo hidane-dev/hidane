@@ -816,6 +816,8 @@ SDK_DIFFERENCES = {
     "sdk-listen": ("results/README.md", "a batch reaches the web SDK's limit query as two"),
     "sdk-listen-resume": ("results/README.md", "the official emulator gets there in three"),
     "sdk-rules-unit-testing": ("results/README.md", "13 denial messages differ"),
+    "nodejs-system-tests": ("results/README.md",
+                            "fails on the official emulator alone, which reads the vector field path"),
 }
 # The Go, Python and Java SDKs' transcripts (tools/oracle/sdk_go/ and the others) differ in the
 # same messages.
@@ -856,6 +858,9 @@ TRANSCRIPTS = {
     "js-sdk-browser": dict(area="webchannel", client="firebase-js-sdk browser suite in Chromium",
                            transport="WebChannel, REST", ignore=("emulator",),
                            outline=suite_outline),
+    # Each test's outcome; `emulator` names the emulator the suite ran against.
+    "nodejs-system-tests": dict(area="admin", client="nodejs-firestore system tests (Admin SDK)",
+                                transport="gRPC", ignore=("emulator",), outline=suite_outline),
     "sdk-aggregations": dict(area="queries", client="Admin SDK", transport="gRPC"),
     "sdk-auth": dict(area="admin", client="rules-unit-testing, web SDK, Admin SDK",
                      transport="gRPC"),

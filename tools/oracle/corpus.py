@@ -115,6 +115,7 @@ TRANSCRIPT_RECORDERS = {
     "flutter-web": "tools/oracle/flutter_web/",
     "functions-triggers": "tools/oracle/functions/drive.mjs",
     "js-sdk-browser": "tools/js-sdk-browser/",
+    "nodejs-system-tests": "tools/nodejs-system-tests/",
 }
 for _sdk in ("go", "java", "python"):
     for _section in ("documents", "listen", "queries", "transactions"):
@@ -131,6 +132,8 @@ PINS = [
      r"<artifactId>google-cloud-firestore</artifactId>\s*<version>([\w.\-]+)</version>"),
     ("tools/js-sdk-browser/", "firebase-js-sdk", ".github/workflows/js-sdk-browser.yml",
      r"^\s*FIREBASE_JS_SDK_COMMIT: ([0-9a-f]{40})$"),
+    ("tools/nodejs-system-tests/", "google-cloud-node", ".github/workflows/nodejs-system-tests.yml",
+     r"^\s*GOOGLE_CLOUD_NODE_COMMIT: ([0-9a-f]{40})$"),
 ] + [("tools/oracle/flutter_web/", name, "tools/oracle/flutter_web/pubspec.yaml",
       rf"^  {name}: (\d[\w.\-]*)$")
      for name in ("firebase_core", "cloud_firestore", "cloud_firestore_web", "firebase_core_web")]
