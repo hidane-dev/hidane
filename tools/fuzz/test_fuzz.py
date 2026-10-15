@@ -319,10 +319,17 @@ class RequestRules(unittest.TestCase):
         self.assertFalse(diff.several_targets({"method": "GET", "path": BASE + "/c/d"}))
 
         query = {"method": "POST", "path": BASE + ":runQuery", "body": {"newTransaction": {"readWrite": {}}}}
-        self.assertTrue(diff.read_write_transaction(query))
-        self.assertFalse(diff.read_write_transaction({**query, "body": {"newTransaction": {"readOnly": {}}}}))
-        self.assertFalse(diff.read_write_transaction({**query, "body": {"transaction": "x"}}))
-        self.assertFalse(diff.read_write_transaction({**query, "raw": "null", "body": None}))
+        self.assertTrue(diff.in_transaction(query))
+        self.assertTrue(diff.in_transaction({**query, "body": {"transaction": "x"}}))
+        self.assertFalse(diff.in_transaction({**query, "body": {"newTransaction": {"readOnly": {}}}}))
+        self.assertFalse(diff.in_transaction({**query, "body": {}}))
+        self.assertFalse(diff.in_transaction({**query, "raw": "null", "body": None}))
+
+        group = {"from": [{"collectionId": "q", "allDescendants": True}]}
+        self.assertTrue(diff.collection_group({**query, "body": {"structuredQuery": group}}))
+        self.assertTrue(diff.collection_group({**query, "body": {"structuredAggregationQuery": {"structuredQuery": group}}}))
+        self.assertFalse(diff.collection_group({**query, "body": {"structuredQuery": {"from": [{"collectionId": "q"}]}}}))
+        self.assertFalse(diff.collection_group({**query, "body": {"structuredAggregationQuery": {}}}))
 
     def test_a_request_rule_matches_on_the_step_that_differs(self):
         rule = {"id": "r", "exception": "D001", "why": "w", "official": {"status": 404},
@@ -352,7 +359,7 @@ class RequestRules(unittest.TestCase):
 
     def test_an_earlier_rule_needs_an_earlier_step_and_its_answer(self):
         rule = {"id": "e", "exception": "D001", "why": "w", "official": {"status": 409},
-                "earlier": {"path": ":runQuery$", "predicates": ["read-write-transaction"], "status": 400}}
+                "earlier": {"path": ":runQuery$", "predicates": ["in-transaction"], "status": 400}}
         rules = diff.Exceptions([rule])
         query = {"method": "POST", "path": BASE + ":runQuery", "body": {"newTransaction": {"readWrite": {}}}}
         case = {"steps": [query, patch({})]}
@@ -362,6 +369,35 @@ class RequestRules(unittest.TestCase):
         self.assertIsNone(rules.match("transactions", found, case, [answer(200, "[]"), error(409, "y")]))
         self.assertIsNone(rules.match("transactions", found, case))
         self.assertIsNone(rules.match("transactions", found, {"steps": [patch({}), patch({})]}, [error(400, "x")] * 2))
+
+    def test_a_failed_query_in_a_named_transaction(self):
+        """D085: a query that names a read-write transaction and fails keeps its lock on the
+        official emulator."""
+        rules = diff.Exceptions.load()
+        begin = {"method": "POST", "path": BASE + ":batchGet", "body": {"newTransaction": {"readWrite": {}}}}
+        query = {"method": "POST", "path": BASE + ":runQuery", "body": {"structuredQuery": {"from": [{"collectionId": "q"}], "limit": -1}, "transaction": "{tx}"}}
+        write = {"method": "POST", "path": BASE + ":commit", "body": {"writes": [{"update": {"name": "q/zz"}}]}}
+        case = {"steps": [begin, query, write]}
+        official = [answer(200, "[]"), error(400, "limit is negative"), error(409, "Transaction lock timeout.", "ABORTED")]
+        found = diff.compare(case, official, [answer(200, "[]"), error(400, "limit is negative"), answer(200, "{}")])
+        self.assertEqual(rules.match("transactions", found, case, official)["id"], "failed-query-lock")
+        untransacted = {**query, "body": {"structuredQuery": {"from": [{"collectionId": "q"}], "limit": -1}}}
+        self.assertIsNone(rules.match("transactions", found, {"steps": [begin, untransacted, write]}, official))
+
+    def test_an_aggregation_over_a_collection_group_under_a_document(self):
+        """D088: the official emulator wants an index for a sum over a collection group under a
+        document; hidane runs it."""
+        rules = diff.Exceptions.load()
+        aggregation = lambda selector: {"method": "POST", "path": BASE + "/q/d0:runAggregationQuery", "body": {
+            "structuredAggregationQuery": {"structuredQuery": {"from": [selector]}, "aggregations": [{"sum": {"field": {"fieldPath": "a"}}}]}}}
+        group = aggregation({"collectionId": "q", "allDescendants": True})
+        official = [error(400, "This query requires an index that has fields [a] after __name__ and Firestore does not "
+                               "currently support such an index. Please try the query again with additional ordering on those fields.")]
+        case = {"steps": [group]}
+        found = diff.compare(case, official, [answer(200, "[]")])
+        self.assertEqual(rules.match("queries", found, case, official)["id"], "collection-group-under-document-index")
+        collection = {"steps": [aggregation({"collectionId": "q"})]}
+        self.assertIsNone(rules.match("queries", found, collection, official))
 
     def test_check_finds_bad_request_rules(self):
         bad = diff.Exceptions([{"id": "bad", "exception": "D008", "why": "w", "official": {"status": 1},

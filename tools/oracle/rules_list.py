@@ -163,6 +163,17 @@ MORE = {
     "tags array-contains null": RUN(query(field("tags", "ARRAY_CONTAINS", NULL))),
     "tags array-contains NaN": RUN(query(field("tags", "ARRAY_CONTAINS", NAN))),
     "tags array-contains-any [null, 'a']": RUN(query(field("tags", "ARRAY_CONTAINS_ANY", A(NULL, S("a"))))),
+    # Queries the official emulator refuses once Security Rules allow them (#262): the rules
+    # see what the query gives, a negative limit or offset too; only a filter of more than 30
+    # disjunctions is refused before them.
+    "limit -1": RUN(query(limit=-1)),
+    "offset -1": RUN(query(offset=-1)),
+    "orderBy n twice": RUN(query(order=[("n", "ASCENDING"), ("n", "ASCENDING")])),
+    "orderBy __name__ desc": RUN(query(order=[("__name__", "DESCENDING")])),
+    "n array-contains 1 and tags array-contains 'a'": RUN(query(both(field("n", "ARRAY_CONTAINS", I(1)), field("tags", "ARRAY_CONTAINS", S("a"))))),
+    "__name__ array-contains c/d1": RUN(query(field("__name__", "ARRAY_CONTAINS", REF("c/d1")))),
+    "n in [0..5] and s in [0..5]": RUN(query(both(field("n", "IN", A(*[I(k) for k in range(6)])), field("s", "IN", A(*[I(k) for k in range(6)]))))),
+    "count limit -1": COUNT(query(limit=-1)),
 }
 
 # Null and NaN in each kind of filter (a field filter with either matches nothing, but `!= NaN`
@@ -255,6 +266,14 @@ PAIRS = [
                                        f"{R}.tags.hasAny([[]])", f"{R}.tags.hasAny([null])", f"{R}.tags == []"]),
     (DOC, "tags array-contains NaN", [f"[] in {R}.tags", f"float('NaN') in {R}.tags"]),
     (DOC, "tags array-contains-any [null, 'a']", [f"'a' in {R}.tags", f"[] in {R}.tags", f"'a' in {R}.tags || [] in {R}.tags"]),
+    (DOC, "limit -1", ["false", "true", "request.query.limit == -1"]),
+    (DOC, "offset -1", ["false", "request.query.offset == -1"]),
+    (DOC, "orderBy n twice", ["false", "true"]),
+    (DOC, "orderBy __name__ desc", ["false", "true"]),
+    (DOC, "n array-contains 1 and tags array-contains 'a'", ["false", "true"]),
+    (DOC, "__name__ array-contains c/d1", ["false", "true"]),
+    (DOC, "n in [0..5] and s in [0..5]", ["false", "true"]),
+    (DOC, "count limit -1", ["false", "request.query.limit == -1"]),
 ]
 
 

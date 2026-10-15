@@ -628,6 +628,88 @@ case("normal form order: and(or(key >= ref, key == a string), v == 1) without a 
 case("find_nearest", q("t", findNearest={"vectorField": f("v"), "queryVector": vec(1, 2), "distanceMeasure": "EUCLIDEAN", "limit": 2}))
 
 
+# --- found by the differential fuzzer, seed 20261014 (#262) ---------------------------------
+# A descending key scan: orders by __name__ alone, descending (twice too), with no filter but on
+# the key, refused before the key before other fields and before the limit. Array-contains on
+# __name__ is a filter on a field (`the name __key__ is reserved` comes last), so a query with
+# one is no key scan; without a collection, its descending order then needs one.
+case("__name__ descending twice", q("p", order=[desc("__name__"), desc("__name__")]))
+case("__name__ descending three times", q("p", order=[desc("__name__")] * 3))
+case("__name__ descending twice without a collection", {"orderBy": [desc("__name__"), desc("__name__")]})
+case("__name__ descending, then ascending", q("p", order=[desc("__name__"), asc("__name__")]))
+case("__name__ ascending, then descending", q("p", order=[asc("__name__"), desc("__name__")]))
+case("a filter on __name__, __name__ descending twice", q("p", where_=ff("__name__", "GREATER_THAN", ref("p/p1")), order=[desc("__name__"), desc("__name__")]))
+case("an equality on a, __name__ descending twice", q("p", where_=ff("a", "EQUAL", i(1)), order=[desc("__name__"), desc("__name__")]))
+case("__name__ descending twice and a negative limit", q("p", order=[desc("__name__"), desc("__name__")], limit=-1))
+case("array-contains on __name__, __name__ descending", q("p", where_=ff("__name__", "ARRAY_CONTAINS", ref("p/p1")), order=[desc("__name__")]))
+case("array-contains on __name__, __name__ descending twice", q("p", where_=ff("__name__", "ARRAY_CONTAINS", ref("p/p1")), order=[desc("__name__"), desc("__name__")]))
+case("array-contains-any on __name__ in an or, __name__ descending, a negative offset", {"where": OR(ff("__name__", "ARRAY_CONTAINS_ANY", arr(ref("p/p1")))), "orderBy": [desc("__name__")], "offset": -1})
+case("array-contains on __name__, __name__ descending, without a collection", {"where": ff("__name__", "ARRAY_CONTAINS", ref("p/p1")), "orderBy": [desc("__name__")]})
+case("an equality on a, __name__ descending, without a collection", {"where": ff("a", "EQUAL", i(1)), "orderBy": [desc("__name__")]})
+case("a > null, __name__ descending, without a collection", {"where": ff("a", "GREATER_THAN", NULL), "orderBy": [desc("__name__")]})
+# An equality on the key next to an inequality that matches nothing (a null or NaN bound, `!=`
+# null, `not-in` of nulls) is no equality next to an inequality.
+case("is-NaN on __name__ and b <= null", q("p", where_=AND(uf("__name__", "IS_NAN"), ff("b", "LESS_THAN_OR_EQUAL", NULL))))
+case("__name__ == p3 and b <= null", q("p", where_=AND(ff("__name__", "EQUAL", ref("p/p3")), ff("b", "LESS_THAN_OR_EQUAL", NULL))))
+case("__name__ == p3 and b < NaN", q("p", where_=AND(ff("__name__", "EQUAL", ref("p/p3")), ff("b", "LESS_THAN", NAN))))
+case("__name__ == p3 and b != null", q("p", where_=AND(ff("__name__", "EQUAL", ref("p/p3")), ff("b", "NOT_EQUAL", NULL))))
+case("__name__ == p3 and b not-in [null]", q("p", where_=AND(ff("__name__", "EQUAL", ref("p/p3")), ff("b", "NOT_IN", arr(NULL)))))
+case("__name__ == p3 and b != NaN", q("p", where_=AND(ff("__name__", "EQUAL", ref("p/p3")), ff("b", "NOT_EQUAL", NAN))))
+case("an or of is-NaN on __name__ and m.x != null", q("p", where_=OR(uf("__name__", "IS_NAN"), ff("m.x", "NOT_EQUAL", NULL))))
+case("a <= NaN, __name__ in [p3] and a negative limit", q("p", where_=AND(ff("a", "LESS_THAN_OR_EQUAL", NAN), ff("__name__", "IN", arr(ref("p/p3")))), limit=-1))
+# Disjunctions, counted as the official emulator compares conditions: on one field, an equality,
+# a range or `!=` on null, and an equality or a range on NaN, are one condition, whatever the
+# operator; so are array-contains null and NaN; -0.0 and 0.0 are one value.
+XYZ = ff("b", "IN", arr(s("x"), s("y"), s("z")))
+case("in with NaN and null, and in 3", q("p", where_=AND(ff("a", "IN", arr(*ints(0, 10), NAN, NULL)), XYZ)))
+case("in with -0.0 and 0.0, and in 3", q("p", where_=AND(ff("a", "IN", arr(*ints(1, 11), d(-0.0), d(0.0))), XYZ)))
+for label, one, other in [
+    ("== NaN and == null", ff("m.x", "EQUAL", NAN), ff("m.x", "EQUAL", NULL)),
+    ("> NaN and > null", ff("m.x", "GREATER_THAN", NAN), ff("m.x", "GREATER_THAN", NULL)),
+    ("< NaN and >= null", ff("m.x", "LESS_THAN", NAN), ff("m.x", "GREATER_THAN_OR_EQUAL", NULL)),
+    ("== null and > null", ff("m.x", "EQUAL", NULL), ff("m.x", "GREATER_THAN", NULL)),
+    ("!= null and == null", ff("m.x", "NOT_EQUAL", NULL), ff("m.x", "EQUAL", NULL)),
+    ("!= NaN and > null", ff("m.x", "NOT_EQUAL", NAN), ff("m.x", "GREATER_THAN", NULL)),
+    ("array-contains NaN and null", ff("m.x", "ARRAY_CONTAINS", NAN), ff("m.x", "ARRAY_CONTAINS", NULL)),
+    ("array-contains null and == null", ff("m.x", "ARRAY_CONTAINS", NULL), ff("m.x", "EQUAL", NULL)),
+    ("is-NaN and is-null", uf("m.x", "IS_NAN"), uf("m.x", "IS_NULL")),
+    ("== NaN and is-NaN", ff("m.x", "EQUAL", NAN), uf("m.x", "IS_NAN")),
+    ("> null on two fields", ff("m.x", "GREATER_THAN", NULL), ff("opt", "GREATER_THAN", NULL)),
+    ("in [NaN] and in [null]", ff("m.x", "IN", arr(NAN)), ff("m.x", "IN", arr(NULL))),
+    ("== [-0.0] and == [0.0]", ff("m.x", "EQUAL", arr(d(-0.0))), ff("m.x", "EQUAL", arr(d(0.0)))),
+    ("== {a: NaN} and == {a: null}", ff("m.x", "EQUAL", mp(a=NAN)), ff("m.x", "EQUAL", mp(a=NULL))),
+]:
+    case(f"an or of {label} and an equality, and in 11", q("p", where_=AND(ff("a", "IN", arr(*ints(0, 11))), OR(one, other, ff("m.x", "EQUAL", i(5))))))
+# At most 100 filters, orders and ancestors: the filters of every disjunction (an equality, a
+# range or `!=` on null, and an equality or a range on NaN, count twice; a `not-in`, once per
+# value, a null twice), the orders completing the query's, and one for a parent document.
+# Checked after the limit and the offset, before whether the query needs a collection and the
+# late checks of the filter.
+def eqs(n): return [ff(f"e{k}", "EQUAL", i(1)) for k in range(n)]
+def in_eqs(values, n, *more): return AND(ff("a", "IN", arr(*ints(0, values))), *eqs(n), *more)
+case("in 11 and eight equalities", q("p", where_=in_eqs(11, 8)))
+case("in 10 and nine equalities", q("p", where_=in_eqs(10, 9)))
+case("in 11 and eight equalities, and an order", q("p", where_=in_eqs(11, 8), order=[asc("b")]))
+case("in 11 and eight equalities, under a document", q("p", where_=in_eqs(11, 8)), parent="p/p1")
+case("in 24, two equalities and an inequality", q("p", where_=in_eqs(24, 2, ff("b", "GREATER_THAN", s("a")))))
+case("in 25, two equalities and an inequality", q("p", where_=in_eqs(25, 2, ff("b", "GREATER_THAN", s("a")))))
+for label, x in [("== null", ff("x", "EQUAL", NULL)), ("> NaN", ff("x", "GREATER_THAN", NAN)), ("!= null", ff("x", "NOT_EQUAL", NULL)),
+                 ("is-null", uf("x", "IS_NULL")), ("!= NaN", ff("x", "NOT_EQUAL", NAN)), ("array-contains null", ff("x", "ARRAY_CONTAINS", NULL))]:
+    case(f"in 30, two equalities and {label}", q("p", where_=in_eqs(30, 2, x)))
+case("97 equalities and not-in [1, null]", q("p", where_=AND(*eqs(97), ff("x", "NOT_IN", arr(i(1), NULL)))))
+OVER = in_eqs(30, 3)
+case("in 30 and three equalities, without a collection", {"where": OVER})
+case("in 30 and three equalities, and an order without a collection", {"where": OVER, "orderBy": [asc("b")]})
+case("in 30, three equalities and array-contains on __name__", q("p", where_=in_eqs(30, 3, ff("__name__", "ARRAY_CONTAINS", ref("p/p1")))))
+case("in 30, three equalities and a value too large", q("p", where_=in_eqs(30, 3, ff("x", "EQUAL", s("x" * 1600)))))
+case("in 30 and three equalities, and a negative limit", q("p", where_=OVER, limit=-1))
+case("in 30 and three equalities, and duplicate orders", q("p", where_=OVER, order=[asc("b"), asc("b")]))
+case("in 30, three equalities and in 2", q("p", where_=in_eqs(30, 3, ff("b", "IN", arr(s("x"), s("y"))))))
+case("in 4 with null, in 3 and is-not-null, and an or of is-NaN and array-contains on __name__",
+     q("p", where_=AND(ff("x", "IN", arr(i(3), d("Infinity"), {"bytesValue": "AQ=="}, NULL)), AND(ff("b", "IN", arr(ts("2020-01-01T00:00:00Z"), b(False), d(-0.0))), uf("b", "IS_NOT_NULL")),
+                       OR(uf("m", "IS_NAN"), ff("__name__", "ARRAY_CONTAINS", s(""))))))
+
+
 # --- running ---------------------------------------------------------------------------------
 
 def fill(value):

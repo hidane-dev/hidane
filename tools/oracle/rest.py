@@ -188,6 +188,19 @@ case("runAggregationQuery without a query", "POST", B + ":runAggregationQuery", 
 case("runAggregationQuery without a query, in a new transaction", "POST", B + ":runAggregationQuery", {"newTransaction": {}})
 case("runAggregationQuery without a query, with a malformed transaction", "POST", B + ":runAggregationQuery", {"transaction": "AAAA"})
 case("runAggregationQuery with no aggregations and a malformed transaction", "POST", B + ":runAggregationQuery", {"structuredAggregationQuery": {}, "transaction": "AAAA"})
+# A read time is whole microseconds and not before the epoch, checked before its age, and before
+# the rest of a query once Security Rules allow it (#262).
+QC = {"from": [{"collectionId": "c"}]}
+case("runQuery at a read time with nanoseconds", "POST", B + ":runQuery", {"structuredQuery": QC, "readTime": "2020-01-01T00:00:00.000000001Z"})
+case("runQuery at a future read time with nanoseconds", "POST", B + ":runQuery", {"structuredQuery": QC, "readTime": "2999-01-01T00:00:00.000000001Z"})
+case("runQuery at a read time before the epoch", "POST", B + ":runQuery", {"structuredQuery": QC, "readTime": "0001-01-01T00:00:00Z"})
+case("batchGet at a read time with nanoseconds", "POST", B + ":batchGet", {"documents": [NAME + "/c/d"], "readTime": "2020-01-01T00:00:00.000000001Z"})
+case("runAggregationQuery at a read time before the epoch", "POST", B + ":runAggregationQuery",
+     {"structuredAggregationQuery": {"structuredQuery": QC, "aggregations": [{"count": {}}]}, "readTime": "0001-01-01T00:00:00Z"})
+case("runQuery with a negative limit, at a future read time", "POST", B + ":runQuery", {"structuredQuery": {**QC, "limit": -1}, "readTime": "2999-01-01T00:00:00Z"})
+case("runAggregationQuery with duplicate orders, at a read time too old", "POST", B + ":runAggregationQuery",
+     {"structuredAggregationQuery": {"structuredQuery": {**QC, "orderBy": [{"field": {"fieldPath": "a"}}, {"field": {"fieldPath": "a"}}]}, "aggregations": [{"count": {}}]},
+      "readTime": "2020-01-01T00:00:00Z"})
 case("runAggregationQuery with a count and no query", "POST", B + ":runAggregationQuery", {"structuredAggregationQuery": {"aggregations": [{"count": {}}]}})
 # Doubles are read correctly rounded (protobuf-java reads them through BigDecimal): these geo
 # point coordinates lose their last digit when a double is read with a faster, inexact parser.
@@ -550,6 +563,9 @@ for order in ["n", "n%20desc", "n%20asc", "n%20DESC", "n%20%20desc", "m,n", "m%2
               "__name__,n", "__name__%20desc", "__x__", "a%5B0%5D", "a..b"]:
     case(f"list ordered by {order}", "GET", B + "/lo?orderBy=" + order)
 case("list ordered by a field, a page of 2", "GET", B + "/lo?orderBy=n&pageSize=2")
+# A full page has a next page, ordered or not (#262).
+case("list ordered by a field, a page of all five", "GET", B + "/lo?orderBy=n&pageSize=5")
+case("list ordered by a field, a page of more than five", "GET", B + "/lo?orderBy=n%20desc&pageSize=6")
 case("list ordered by a field, a mask", "GET", B + "/lo?orderBy=n%20desc&mask.fieldPaths=m")
 case("list ordered by a field, showing missing documents", "GET", B + "/lo?orderBy=n&showMissing=true")
 

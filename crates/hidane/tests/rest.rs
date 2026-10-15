@@ -431,13 +431,26 @@ async fn timestamps_are_read_as_rfc_3339() {
     }
 }
 
-/// D085: a query that begins a read-write transaction and fails a check made once the
-/// transaction has begun leaves no transaction behind, so a write to what it queried does not
-/// wait for a lock (on the official emulator, it times out after 2 s).
+/// D085: a query in a read-write transaction (one it begins, or one it names) that fails a
+/// check made once the transaction holds its lock leaves no lock behind, so a write to what it
+/// queried does not wait for one (on the official emulator, it times out after 2 s).
 #[tokio::test]
 async fn a_failed_query_leaves_no_lock() {
     let addr = start().await;
     let base = "/v1/projects/lock/databases/(default)/documents";
+    let begun = send(
+        addr,
+        "POST",
+        &format!("{base}:beginTransaction"),
+        &owner(),
+        Some("{}"),
+    )
+    .await;
+    let transaction: Json = serde_json::from_str(&begun.body).unwrap();
+    let in_transaction = format!(
+        r#"{{"structuredQuery": {{"from": [{{"collectionId": "c"}}], "where": {{"unaryFilter": {{"field": {{"fieldPath": "__name__"}}, "op": "IS_NAN"}}}}}}, "transaction": "{}"}}"#,
+        transaction["transaction"].as_str().unwrap()
+    );
     for (verb, query) in [
         (
             "runQuery",
@@ -451,6 +464,7 @@ async fn a_failed_query_leaves_no_lock() {
             "runAggregationQuery",
             r#"{"structuredAggregationQuery": {"structuredQuery": {"from": [{"collectionId": "c"}], "offset": -1}, "aggregations": [{"count": {}}]}, "newTransaction": {"readWrite": {}}}"#,
         ),
+        ("runQuery", in_transaction.as_str()),
     ] {
         let failed = send(
             addr,
@@ -628,5 +642,22 @@ async fn a_collection_group_query_runs_under_a_document() {
     assert_eq!(
         results[0]["result"]["aggregateFields"]["n"]["integerValue"],
         "1"
+    );
+    // A sum without a filter or an order: the official emulator reads it as a scan of keys
+    // that needs an index.
+    let sum = r#"{"structuredAggregationQuery": {"structuredQuery": {"from": [{"collectionId": "q", "allDescendants": true}]}, "aggregations": [{"alias": "s", "sum": {"field": {"fieldPath": "a"}}}]}}"#;
+    let answer = send(
+        addr,
+        "POST",
+        &format!("{base}/p/x:runAggregationQuery"),
+        &owner(),
+        Some(sum),
+    )
+    .await;
+    assert_eq!(answer.status, 200, "{}", answer.body);
+    let results: Json = serde_json::from_str(&answer.body).unwrap();
+    assert_eq!(
+        results[0]["result"]["aggregateFields"]["s"]["integerValue"],
+        "3"
     );
 }

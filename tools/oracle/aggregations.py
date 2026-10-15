@@ -213,6 +213,25 @@ case("an array offset in the projection before a sum of __type__", q("ints", sel
 case("a sum of __type__ without a collection", {}, [total("__type__", "s")])
 case("a sum of __type__ and a negative limit", q("ints", limit=-1), [total("__type__", "s")])
 
+# Found by the differential fuzzer, seed 20261014 (#262): a descending key scan (__name__
+# descending, twice too) is refused before the fields a sum or an avg reads need an index;
+# array-contains on __name__ is a filter on a field, so a query with one is no key scan. The
+# fields a sum or an avg reads count as orders toward the most filters and orders a query has.
+NAME_DESC = {"field": f("__name__"), "direction": "DESCENDING"}
+NAME_IN = {"fieldFilter": {"field": f("__name__"), "op": "ARRAY_CONTAINS_ANY", "value": {"arrayValue": {"values": [{"referenceValue": "{documents}/ints/a"}]}}}}
+def in_eqs(values, n): return {"compositeFilter": {"op": "AND", "filters": [
+    {"fieldFilter": {"field": f("a"), "op": "IN", "value": {"arrayValue": {"values": [i(k) for k in range(values)]}}}},
+    *[{"fieldFilter": {"field": f(f"e{k}"), "op": "EQUAL", "value": i(1)}} for k in range(n)]]}}
+case("avg with __name__ descending twice", q("ints", orderBy=[NAME_DESC, NAME_DESC]), [avg("v", "a")])
+case("count with __name__ descending twice, without a collection", {"orderBy": [NAME_DESC, NAME_DESC]}, [count("n")])
+case("count with array-contains-any on __name__ and __name__ descending", q("ints", where=NAME_IN, orderBy=[NAME_DESC]), [count("n")])
+case("avg with array-contains-any on __name__ and __name__ descending, without a collection", {"where": NAME_IN, "orderBy": [NAME_DESC]}, [avg("v", "a")])
+case("a count with in 11 and eight equalities", q("ints", where=in_eqs(11, 8)), [count("n")])
+case("an avg with in 11 and eight equalities", q("ints", where=in_eqs(11, 8)), [avg("v", "a")])
+case("an avg with in 14 and six equalities", q("ints", where=in_eqs(14, 6)), [avg("v", "a")])
+case("a sum and an avg of two fields with in 14 and six equalities", q("ints", where=in_eqs(14, 6)), [total("v", "s"), avg("u", "a")])
+case("a sum of an equality's field with in 11 and eight equalities", q("ints", where=in_eqs(11, 8)), [total("e0", "s")])
+
 # A `sum` or an `avg` and the query's projection (#262), checked with the list, after the
 # reserved aliases and before each aggregation's own checks: a projection of no field but the
 # name returns keys only, and a sum or an avg of any other field is refused; any other

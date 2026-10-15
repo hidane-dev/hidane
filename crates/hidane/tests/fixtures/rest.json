@@ -1899,6 +1899,197 @@
    }
   },
   {
+   "name": "runQuery at a read time with nanoseconds",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "c"
+      }
+     ]
+    },
+    "readTime": "2020-01-01T00:00:00.000000001Z"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"timestamp cannot have more than microseconds precision\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "runQuery at a future read time with nanoseconds",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "c"
+      }
+     ]
+    },
+    "readTime": "2999-01-01T00:00:00.000000001Z"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"timestamp cannot have more than microseconds precision\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "runQuery at a read time before the epoch",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "c"
+      }
+     ]
+    },
+    "readTime": "0001-01-01T00:00:00Z"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Only timestamps past epoch are supported.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "batchGet at a read time with nanoseconds",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/{project}/databases/(default)/documents/c/d"
+    ],
+    "readTime": "2020-01-01T00:00:00.000000001Z"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"timestamp cannot have more than microseconds precision\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "runAggregationQuery at a read time before the epoch",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runAggregationQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredAggregationQuery": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    },
+    "readTime": "0001-01-01T00:00:00Z"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Only timestamps past epoch are supported.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "runQuery with a negative limit, at a future read time",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {
+     "from": [
+      {
+       "collectionId": "c"
+      }
+     ],
+     "limit": -1
+    },
+    "readTime": "2999-01-01T00:00:00Z"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"The requested 'read_time' cannot be in the future.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "runAggregationQuery with duplicate orders, at a read time too old",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runAggregationQuery",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredAggregationQuery": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "orderBy": [
+       {
+        "field": {
+         "fieldPath": "a"
+        }
+       },
+       {
+        "field": {
+         "fieldPath": "a"
+        }
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    },
+    "readTime": "2020-01-01T00:00:00Z"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"The requested 'read_time' is too old.\",\"status\":\"FAILED_PRECONDITION\"}}"
+   }
+  },
+  {
    "name": "runAggregationQuery with a count and no query",
    "method": "POST",
    "path": "/v1/projects/{project}/databases/(default)/documents:runAggregationQuery",
@@ -10860,6 +11051,34 @@
     "status": 200,
     "contentType": "application/json",
     "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/b\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/f\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      },\n      \"m\": {\n        \"stringValue\": \"a\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }],\n  \"nextPageToken\": \"<token>\"\n}\n"
+   }
+  },
+  {
+   "name": "list ordered by a field, a page of all five",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=n&pageSize=5",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/b\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/f\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      },\n      \"m\": {\n        \"stringValue\": \"a\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/d\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"2\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/a\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"3\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/e\",\n    \"fields\": {\n      \"n\": {\n        \"stringValue\": \"s\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }],\n  \"nextPageToken\": \"<token>\"\n}\n"
+   }
+  },
+  {
+   "name": "list ordered by a field, a page of more than five",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/lo?orderBy=n%20desc&pageSize=6",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"documents\": [{\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/e\",\n    \"fields\": {\n      \"n\": {\n        \"stringValue\": \"s\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/a\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"3\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/d\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"2\"\n      },\n      \"m\": {\n        \"stringValue\": \"x\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/f\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      },\n      \"m\": {\n        \"stringValue\": \"a\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }, {\n    \"name\": \"projects/{project}/databases/(default)/documents/lo/b\",\n    \"fields\": {\n      \"n\": {\n        \"integerValue\": \"1\"\n      }\n    },\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  }]\n}\n"
    }
   },
   {

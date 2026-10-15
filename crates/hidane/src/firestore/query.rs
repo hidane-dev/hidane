@@ -202,27 +202,21 @@ impl Measure {
 }
 
 impl Nearest {
-    /// The query vector, read with the rest of what the query names, before an aggregation's
-    /// list is checked (#262).
-    fn target(find: &FindNearest) -> Result<Vec<f64>, Status> {
+    /// `find_nearest` as the official emulator reads it with the rest of what the query
+    /// names, before an aggregation's list is checked (#262): its vector, its limit, its
+    /// measure, then its field. Its interplay with the query comes last ([`Nearest::check`]).
+    fn read(find: &FindNearest) -> Result<Self, Status> {
         let vector = find.query_vector.clone().unwrap_or_default();
         validate::query_value(&vector)?;
-        match vector.value_type.as_ref() {
-            None => Err(validate::unset()),
-            Some(ValueType::MapValue(map)) if is_vector(map) => validate::vector(map),
-            Some(_) => Err(Status::invalid_argument(
-                "Query Value must be of type vector.",
-            )),
-        }
-    }
-
-    /// Validates the rest of `find` in the official emulator's order, after the rest of
-    /// `query`; `target` is its vector ([`Nearest::target`]).
-    fn parse(
-        find: &FindNearest,
-        target: Vec<f64>,
-        query: &StructuredQuery,
-    ) -> Result<Self, Status> {
+        let target = match vector.value_type.as_ref() {
+            None => return Err(validate::unset()),
+            Some(ValueType::MapValue(map)) if is_vector(map) => validate::vector(map)?,
+            Some(_) => {
+                return Err(Status::invalid_argument(
+                    "Query Value must be of type vector.",
+                ));
+            }
+        };
         let limit = match find.limit {
             Some(n @ 1..=1000) => usize::try_from(n).unwrap_or(0),
             _ => {
@@ -245,6 +239,21 @@ impl Nearest {
         // `a.b` (docs/parity-exceptions.md). It is read as other paths are, and nothing more
         // is checked (#262).
         let field = PropertyPath::read(path)?.field_path();
+        Ok(Self {
+            field,
+            target,
+            measure,
+            limit,
+            threshold: find.distance_threshold,
+            result_field: (!find.distance_result_field.is_empty())
+                .then(|| find.distance_result_field.clone()),
+        })
+    }
+
+    /// The rest of `find_nearest`, after the rest of `query` but whether the orders need a
+    /// collection and the late checks of the filter: no limit, offset or cursor next to it,
+    /// and a distance field that is not reserved.
+    fn check(&self, query: &StructuredQuery) -> Result<(), Status> {
         if query.limit.is_some() {
             return Err(Status::invalid_argument(
                 "A query limit cannot be used with FindNearest",
@@ -260,23 +269,14 @@ impl Nearest {
                 "A cursor cannot be used with FindNearest",
             ));
         }
-        let result_field =
-            (!find.distance_result_field.is_empty()).then(|| find.distance_result_field.clone());
-        if let Some(name) = &result_field
+        if let Some(name) = &self.result_field
             && validate::reserved(name)
         {
             return Err(Status::invalid_argument(format!(
                 "The distanceResultField.property.name \"{name}\" is reserved."
             )));
         }
-        Ok(Self {
-            field,
-            target,
-            measure,
-            limit,
-            threshold: find.distance_threshold,
-            result_field,
-        })
+        Ok(())
     }
 
     /// The distance of `doc`, if its field holds a vector of the query vector's dimension
@@ -328,6 +328,177 @@ pub struct Results {
     pub distances: Vec<f64>,
 }
 
+/// A query as the official emulator reads it, before Security Rules and the read time
+/// (`tools/oracle/rules_list.py`, `tools/oracle/queries.py`, #262), with the rest still to check
+/// ([`Unchecked::check`]).
+pub struct Unchecked<'a> {
+    database: &'a str,
+    parent: ResourcePath,
+    query: &'a StructuredQuery,
+    source: Source,
+    filter: Option<Filter>,
+    projection: Option<Vec<FieldPath>>,
+    explicit: Vec<Order>,
+    start: Option<Bound>,
+    end: Option<Bound>,
+    nearest: Option<Nearest>,
+    /// The fields a `sum` or an `avg` reads, which order the query.
+    aggregated: Vec<FieldPath>,
+}
+
+/// What Security Rules see of a query: the collection it lists (for a collection group, the
+/// parent below which it looks), `request.query` (`offset` is 0 without one, `orderBy` maps
+/// the fields the query orders by, not those completing its order, to `ASC` / `DESC` in the
+/// order of a Java `HashMap`), `request.fields` (the projection, as `guard::rules_paths` lists
+/// it) and the filter that decides it (`tools/oracle/rules_list.py`,
+/// `rules_request_fields.py`).
+fn rules_view(
+    parent: &ResourcePath,
+    source: &Source,
+    given_orders: &[Order],
+    limit: Option<i64>,
+    offset: i64,
+    filter: Option<&Filter>,
+    projection: Option<&[FieldPath]>,
+) -> (ResourcePath, hidane_rules::eval::Query) {
+    let (path, group) = match source {
+        Source::Collection(id) => (parent.child(id.clone()), None),
+        Source::Group(id) => (parent.clone(), Some(id.clone())),
+        Source::Children | Source::Descendants => (parent.clone(), Some(String::new())),
+    };
+    let order_by: Vec<(String, String)> = given_orders
+        .iter()
+        .map(|order| {
+            // Its segments joined by `.`, nothing escaped.
+            let field = match &order.field {
+                Field::Name => "__name__".to_owned(),
+                Field::Path(path) => path.segments().join("."),
+                Field::Indexed(path) => path.to_string(),
+            };
+            let direction = if order.descending { "DESC" } else { "ASC" };
+            (field, direction.to_owned())
+        })
+        .collect();
+    let fields: Vec<&String> = order_by.iter().map(|(field, _)| field).collect();
+    let order_by = hash_order(&fields)
+        .into_iter()
+        .map(|i| order_by[i].clone())
+        .collect();
+    let query = hidane_rules::eval::Query {
+        limit,
+        offset: Some(offset),
+        order_by,
+        filter: filter.map(rules_filter),
+        group,
+        children: matches!(source, Source::Children),
+        fields: projection.map(super::guard::rules_paths),
+    };
+    (path, query)
+}
+
+impl Unchecked<'_> {
+    /// What Security Rules see of the query, as read: its limit and offset as given, negative
+    /// ones too.
+    pub fn rules_view(&self) -> (ResourcePath, hidane_rules::eval::Query) {
+        rules_view(
+            &self.parent,
+            &self.source,
+            &self.explicit,
+            self.query.limit.map(i64::from),
+            i64::from(self.query.offset),
+            self.filter.as_ref(),
+            self.projection.as_deref(),
+        )
+    }
+
+    /// What Security Rules check first: the filter normalizes to at most 30 disjunctions,
+    /// before anything else of the query is checked (`tools/oracle/rules_list.py`, #262).
+    pub fn check_disjunctions(&self) -> Result<(), Status> {
+        self.filter.as_ref().map_or(Ok(()), check_disjunctions)
+    }
+
+    /// Checks the rest of the query, after Security Rules and the read time, in the official
+    /// emulator's order (#262): the filter as a whole (array-contains, equalities on the key),
+    /// whether the fields a `sum` or an `avg` reads can be ordered
+    /// ([`check_index`]), the disjunctions; then the orders (a key before other fields,
+    /// duplicates), the limit and the offset, the rest of `find_nearest`, the number of
+    /// filters and orders ([`check_terms`]), whether the orders need a collection (a `sum` or
+    /// an `avg` orders by its field), whether the filter does, and the filters on `__name__`.
+    pub fn check(self) -> Result<Query, Status> {
+        let Self {
+            database,
+            parent,
+            query,
+            source,
+            filter,
+            projection,
+            explicit,
+            start,
+            end,
+            nearest,
+            aggregated,
+        } = self;
+        let kindless = matches!(source, Source::Children | Source::Descendants);
+        // A collection group below a document runs, as in production (D088).
+        if let Some(filter) = &filter {
+            check_filter(filter)?;
+        }
+        check_index(&explicit, filter.as_ref(), &aggregated)?;
+        if let Some(filter) = &filter {
+            check_disjunctions(filter)?;
+        }
+        let orders = complete_orders(&explicit, filter.as_ref())?;
+        let limit = match query.limit {
+            Some(n) if n < 0 => return Err(Status::invalid_argument("limit is negative")),
+            Some(n) => Some(usize::try_from(n).unwrap_or(0)),
+            None => None,
+        };
+        if query.offset < 0 {
+            return Err(Status::invalid_argument("offset is negative"));
+        }
+        let offset = usize::try_from(query.offset).unwrap_or(0);
+        if let Some(nearest) = &nearest {
+            nearest.check(query)?;
+        }
+        check_terms(
+            filter.as_ref(),
+            &orders,
+            &explicit,
+            &aggregated,
+            !parent.is_empty(),
+        )?;
+        if kindless
+            && (!aggregated.is_empty()
+                || explicit
+                    .iter()
+                    .any(|o| o.field != Field::Name || o.descending))
+        {
+            return Err(Status::invalid_argument(
+                "kind is required for all orders except __key__ ascending",
+            ));
+        }
+        if let Some(filter) = &filter {
+            check_filter_late(filter, kindless, database)?;
+        }
+        explicit.iter().try_for_each(|order| order.field.check())?;
+
+        Ok(Query {
+            parent,
+            source,
+            filter,
+            orders,
+            given_orders: explicit,
+            start,
+            end,
+            offset,
+            limit,
+            projection,
+            required: Vec::new(),
+            nearest,
+        })
+    }
+}
+
 impl Query {
     /// Validates `query` under `parent` in `database`, with the official error messages.
     pub fn parse(
@@ -335,26 +506,22 @@ impl Query {
         parent: ResourcePath,
         query: &StructuredQuery,
     ) -> Result<Self, Status> {
-        Self::parse_aggregated(database, parent, query, |_| Ok(Vec::new()))
+        Self::read(database, parent, query, |_| Ok(Vec::new()))?.check()
     }
 
-    /// Validates `query` under `parent` in the official emulator's order
-    /// (`tools/oracle/queries.py`, `tools/oracle/aggregations.py`, #262): the operators of its
-    /// filter ([`check_operators`]); then what each part names and holds (the collection, the
+    /// Reads `query` under `parent` in the official emulator's order (`tools/oracle/
+    /// queries.py`, `tools/oracle/aggregations.py`, #262): the operators of its filter
+    /// ([`check_operators`]); then what each part names and holds (the collection, the
     /// filter's kinds, paths and values, the orders' and the projection's paths, the cursors,
-    /// the query vector); then `aggregations`, the list's checks (with the projection), which
-    /// say which fields a `sum` or an `avg` reads; then the filter as a whole (array-contains,
-    /// equalities on the key), whether those fields can be ordered ([`check_index`]), the
-    /// disjunctions; then the orders (a key before other fields, duplicates), the
-    /// limit and the offset, whether the orders need a collection (a `sum` or an `avg` orders
-    /// by its field), whether the filter does, the filters on `__name__`, and the rest of
-    /// `find_nearest`.
-    pub fn parse_aggregated(
-        database: &str,
+    /// `find_nearest` but its interplay with the query); then `aggregations`, the list's checks
+    /// (with the projection), which say which fields a `sum` or an `avg` reads. The rest is
+    /// checked after Security Rules and the read time ([`Unchecked::check`]).
+    pub fn read<'a>(
+        database: &'a str,
         parent: ResourcePath,
-        query: &StructuredQuery,
+        query: &'a StructuredQuery,
         aggregations: impl FnOnce(Option<&[FieldPath]>) -> Result<Vec<FieldPath>, Status>,
-    ) -> Result<Self, Status> {
+    ) -> Result<Unchecked<'a>, Status> {
         check_operators(query)?;
         let source = match query.from.as_slice() {
             [] => Source::Children,
@@ -379,7 +546,6 @@ impl Query {
                 ));
             }
         };
-        let kindless = matches!(source, Source::Children | Source::Descendants);
         let filter = query
             .r#where
             .as_ref()
@@ -420,61 +586,20 @@ impl Query {
             |cursor: Option<&Cursor>| cursor.map(|c| parse_cursor(c, &explicit)).transpose();
         let start = bound(query.start_at.as_ref())?;
         let end = bound(query.end_at.as_ref())?;
-        let target = query
-            .find_nearest
-            .as_ref()
-            .map(Nearest::target)
-            .transpose()?;
-
+        let nearest = query.find_nearest.as_ref().map(Nearest::read).transpose()?;
         let aggregated = aggregations(projection.as_deref())?;
-        let orders_fields = !aggregated.is_empty();
-
-        if let Some(filter) = &filter {
-            check_filter(filter)?;
-        }
-        check_index(&explicit, filter.as_ref(), &aggregated)?;
-        if let Some(filter) = &filter {
-            check_disjunctions(filter)?;
-        }
-        let orders = complete_orders(&explicit, filter.as_ref())?;
-        let limit = match query.limit {
-            Some(n) if n < 0 => return Err(Status::invalid_argument("limit is negative")),
-            Some(n) => Some(usize::try_from(n).unwrap_or(0)),
-            None => None,
-        };
-        if query.offset < 0 {
-            return Err(Status::invalid_argument("offset is negative"));
-        }
-        let offset = usize::try_from(query.offset).unwrap_or(0);
-        let nearest = query
-            .find_nearest
-            .as_ref()
-            .zip(target)
-            .map(|(find, target)| Nearest::parse(find, target, query))
-            .transpose()?;
-        if kindless && (orders_fields || explicit.iter().any(|o| o.field != Field::Name)) {
-            return Err(Status::invalid_argument(
-                "kind is required for all orders except __key__ ascending",
-            ));
-        }
-        if let Some(filter) = &filter {
-            check_filter_late(filter, kindless, database)?;
-        }
-        explicit.iter().try_for_each(|order| order.field.check())?;
-
-        Ok(Self {
+        Ok(Unchecked {
+            database,
             parent,
+            query,
             source,
             filter,
-            orders,
-            given_orders: explicit,
+            projection,
+            explicit,
             start,
             end,
-            offset,
-            limit,
-            projection,
-            required: Vec::new(),
             nearest,
+            aggregated,
         })
     }
 
@@ -508,47 +633,17 @@ impl Query {
         self.required.extend(fields);
     }
 
-    /// What Security Rules see of the query: the collection it lists (for a collection group,
-    /// the parent below which it looks), `request.query` (`offset` is 0 without one, `orderBy`
-    /// maps the fields the query orders by, not those completing its order, to `ASC` / `DESC`
-    /// in the order of a Java `HashMap`), `request.fields` (the projection, as
-    /// `guard::rules_paths` lists it) and the filter that decides it
-    /// (`tools/oracle/rules_list.py`, `rules_request_fields.py`).
+    /// What Security Rules see of the query ([`rules_view`]).
     pub fn rules_view(&self) -> (ResourcePath, hidane_rules::eval::Query) {
-        let (path, group) = match &self.source {
-            Source::Collection(id) => (self.parent.child(id.clone()), None),
-            Source::Group(id) => (self.parent.clone(), Some(id.clone())),
-            Source::Children | Source::Descendants => (self.parent.clone(), Some(String::new())),
-        };
-        let order_by: Vec<(String, String)> = self
-            .given_orders
-            .iter()
-            .map(|order| {
-                // Its segments joined by `.`, nothing escaped.
-                let field = match &order.field {
-                    Field::Name => "__name__".to_owned(),
-                    Field::Path(path) => path.segments().join("."),
-                    Field::Indexed(path) => path.to_string(),
-                };
-                let direction = if order.descending { "DESC" } else { "ASC" };
-                (field, direction.to_owned())
-            })
-            .collect();
-        let fields: Vec<&String> = order_by.iter().map(|(field, _)| field).collect();
-        let order_by = hash_order(&fields)
-            .into_iter()
-            .map(|i| order_by[i].clone())
-            .collect();
-        let query = hidane_rules::eval::Query {
-            limit: self.limit.map(|n| i64::try_from(n).unwrap_or(i64::MAX)),
-            offset: Some(i64::try_from(self.offset).unwrap_or(i64::MAX)),
-            order_by,
-            filter: self.filter.as_ref().map(rules_filter),
-            group,
-            children: matches!(self.source, Source::Children),
-            fields: self.projection.as_deref().map(super::guard::rules_paths),
-        };
-        (path, query)
+        rules_view(
+            &self.parent,
+            &self.source,
+            &self.given_orders,
+            self.limit.map(|n| i64::try_from(n).unwrap_or(i64::MAX)),
+            i64::try_from(self.offset).unwrap_or(i64::MAX),
+            self.filter.as_ref(),
+            self.projection.as_deref(),
+        )
     }
 
     /// The collection ID a transaction locks for this query: the official emulator locks
@@ -952,8 +1047,9 @@ fn key_values(op: Op, value: &Value) -> &[Value] {
 
 /// An equality on `__name__` (`==`, `in`, `is null`, `is NaN`) needs an inequality on
 /// `__name__` too when another field has one (`tools/oracle/queries.py`), checked with the
-/// filter, before the orders (#262).
-fn check_key_equality(leaves: &[(&Field, Leaf)]) -> Result<(), Status> {
+/// filter, before the orders (#262). An inequality that matches nothing ([`matches_nothing`])
+/// does not count.
+fn check_key_equality(filter: &Filter, leaves: &[(&Field, Leaf)]) -> Result<(), Status> {
     let inequality = |kind: &Leaf| {
         matches!(
             kind,
@@ -977,9 +1073,9 @@ fn check_key_equality(leaves: &[(&Field, Leaf)]) -> Result<(), Status> {
     let key_inequality = leaves
         .iter()
         .any(|(field, kind)| **field == Field::Name && inequality(kind));
-    let other_inequality = leaves
-        .iter()
-        .any(|(field, kind)| **field != Field::Name && inequality(kind));
+    let mut others = Vec::new();
+    inequality_fields(filter, &mut others);
+    let other_inequality = !others.is_empty();
     if key_equality && other_inequality && !key_inequality {
         return Err(Status::invalid_argument(
             "Equality on key is not allowed if there are other inequality fields and key does \
@@ -1086,13 +1182,15 @@ fn check_filter(filter: &Filter) -> Result<(), Status> {
             "Only a single array-contains clause is allowed in a query",
         ));
     }
-    check_key_equality(&leaves)
+    check_key_equality(filter, &leaves)
 }
 
 /// The fields `sum` and `avg` read order the query after its own orders ([`Query::require`]):
 /// a query on the name (ordered by it, or with a filter on it other than array membership)
 /// needs each of them among its orders or its inequalities' fields, or no index serves it
-/// (`tools/oracle/aggregations.py`, #262). A descending key scan is refused before this.
+/// (`tools/oracle/aggregations.py`, #262). A descending key scan is refused before this
+/// ([`descending_key_scan`]); a collection group below a document, which the official
+/// emulator reads as a range of keys, runs (D088).
 fn check_index(
     explicit: &[Order],
     filter: Option<&Filter>,
@@ -1114,14 +1212,7 @@ fn check_index(
                 )
         })
     });
-    let descending_key_scan = matches!(
-        explicit,
-        [Order {
-            field: Field::Name,
-            descending: true
-        }]
-    ) && !filter.is_some_and(filters_a_property);
-    if !(key_order || key_filter) || descending_key_scan {
+    if !(key_order || key_filter) || descending_key_scan(explicit, filter) {
         return Ok(());
     }
     // A field the query orders by, wherever (after the key is refused later), or an
@@ -1167,6 +1258,53 @@ fn check_disjunctions(filter: &Filter) -> Result<(), Status> {
         )));
     }
     Ok(())
+}
+
+/// The most filters, orders and ancestors a query may have.
+const MAX_TERMS: usize = 100;
+
+/// The filters of every disjunction (as the official emulator counts them: [`Atom::weight`]),
+/// the orders that complete the query's (with the fields a `sum` or an `avg` reads), and one
+/// for a parent document: at most 100 (`tools/oracle/queries.py`, #262).
+fn check_terms(
+    filter: Option<&Filter>,
+    orders: &[Order],
+    explicit: &[Order],
+    aggregated: &[FieldPath],
+    ancestor: bool,
+) -> Result<(), Status> {
+    let normalized = filter.map(normalize);
+    let filters: usize = normalized.as_ref().and_then(disjunctions).map_or(0, |dnf| {
+        dnf.iter()
+            .map(|conjunction| conjunction.iter().map(Atom::weight).sum::<usize>())
+            .sum()
+    });
+    let mut sorts = orders.len();
+    if !explicit.iter().any(|o| o.field == Field::Name) {
+        let mut added: Vec<&FieldPath> = aggregated
+            .iter()
+            .filter(|path| {
+                !orders
+                    .iter()
+                    .any(|o| o.field == Field::Path((*path).clone()))
+            })
+            .collect();
+        added.sort();
+        added.dedup();
+        sorts += added.len();
+    }
+    if filters + sorts + usize::from(ancestor) <= MAX_TERMS {
+        return Ok(());
+    }
+    Err(Status::invalid_argument(format!(
+        "The query may not have more than {MAX_TERMS} filters + sort orders + ancestor total. \
+         Currently there are {filters} filters, {sorts} sort orders, and {}.",
+        if ancestor {
+            "one ancestor filter"
+        } else {
+            "no ancestor filter"
+        }
+    )))
 }
 
 /// The last checks of a filter, after the orders, the limit and whether the orders need a
@@ -1390,15 +1528,67 @@ struct Atom<'a> {
     value: Option<&'a Value>,
 }
 
+/// What the official emulator counts and compares an atom as (`tools/oracle/queries.py`,
+/// #262).
+#[derive(PartialEq, Eq)]
+enum Class {
+    /// An equality, a range or `!=` on null, or an equality or a range on NaN: the same
+    /// filter on a field, whatever the operator and the value, which counts twice.
+    Nullish,
+    /// `array-contains` null or NaN: the same filter on a field.
+    ContainsNullish,
+    /// Any other, its operator and value its own.
+    Plain,
+}
+
 impl Atom<'_> {
+    fn class(&self) -> Class {
+        let Some(value) = self.value.filter(|v| is_null(v) || is_nan(v)) else {
+            return Class::Plain;
+        };
+        match self.kind {
+            Leaf::Compare(
+                Op::Equal | Op::Less | Op::LessOrEqual | Op::Greater | Op::GreaterOrEqual,
+            ) => Class::Nullish,
+            Leaf::Compare(Op::NotEqual) if is_null(value) => Class::Nullish,
+            Leaf::Compare(Op::ArrayContains) => Class::ContainsNullish,
+            _ => Class::Plain,
+        }
+    }
+
     fn same(&self, other: &Self) -> bool {
-        self.field == other.field
-            && self.kind == other.kind
-            && match (self.value, other.value) {
-                (Some(a), Some(b)) => identical(a, b),
-                (None, None) => true,
-                _ => false,
+        if self.field != other.field {
+            return false;
+        }
+        match (self.class(), other.class()) {
+            (Class::Plain, Class::Plain) => {
+                self.kind == other.kind
+                    && match (self.value, other.value) {
+                        (Some(a), Some(b)) => identical(a, b),
+                        (None, None) => true,
+                        _ => false,
+                    }
             }
+            (a, b) => a == b,
+        }
+    }
+
+    /// How many filters it counts as toward the most a query may have ([`check_terms`]):
+    /// a `not-in` one per value, each null twice.
+    fn weight(&self) -> usize {
+        match (self.kind, self.value) {
+            (Leaf::Compare(Op::NotIn), Some(value)) => {
+                let mut seen: Vec<&Value> = Vec::new();
+                for v in array(value) {
+                    if !seen.iter().any(|w| identical(v, w)) {
+                        seen.push(v);
+                    }
+                }
+                seen.iter().map(|v| if is_null(v) { 2 } else { 1 }).sum()
+            }
+            _ if self.class() == Class::Nullish => 2,
+            _ => 1,
+        }
     }
 }
 
@@ -1535,9 +1725,15 @@ fn more_fields_after_the_key() -> Status {
 /// The explicit ordering, then the inequality fields it lacks (in field path order), then
 /// `__name__`; added orderings take the direction of the last explicit one.
 fn complete_orders(explicit: &[Order], filter: Option<&Filter>) -> Result<Vec<Order>, Status> {
-    // The key before other fields comes first, then duplicates (`__name__` twice is the key
-    // before another field); whether the orders need a collection is the caller's, after the
-    // limit (`tools/oracle/queries.py`, #262).
+    // A descending key scan comes first, then the key before other fields, then duplicates
+    // (`__name__` twice is the key before another field, but descending only, a descending
+    // key scan); whether the orders need a collection is the caller's, after the limit
+    // (`tools/oracle/queries.py`, #262).
+    if descending_key_scan(explicit, filter) {
+        return Err(Status::failed_precondition(
+            "Firestore does not support descending key scans",
+        ));
+    }
     if let Some(i) = explicit.iter().position(|o| o.field == Field::Name)
         && i + 1 < explicit.len()
     {
@@ -1580,22 +1776,31 @@ fn complete_orders(explicit: &[Order], filter: Option<&Filter>) -> Result<Vec<Or
             descending,
         }),
     }
-    // The official emulator scans the key range for these, and cannot do so backwards.
-    if let [only] = orders.as_slice()
-        && only.descending
-        && !filter.is_some_and(filters_a_property)
-    {
-        return Err(Status::failed_precondition(
-            "Firestore does not support descending key scans",
-        ));
-    }
     Ok(orders)
 }
 
+/// Orders by the key alone, descending (once or more), with no filter but on the key: the
+/// official emulator scans the key range for these, and cannot do so backwards.
+fn descending_key_scan(explicit: &[Order], filter: Option<&Filter>) -> bool {
+    !explicit.is_empty()
+        && explicit
+            .iter()
+            .all(|o| o.field == Field::Name && o.descending)
+        && !filter.is_some_and(filters_a_property)
+}
+
+/// Whether `filter` holds a filter on a field: array membership on `__name__` is one too, a
+/// field's (`check_key_filter`), not the key's.
 fn filters_a_property(filter: &Filter) -> bool {
     match filter {
         Filter::And(filters) | Filter::Or(filters) => filters.iter().any(filters_a_property),
-        Filter::Compare { field, .. } | Filter::Unary { field, .. } => *field != Field::Name,
+        Filter::Compare {
+            field: Field::Name,
+            op,
+            ..
+        } => matches!(op, Op::ArrayContains | Op::ArrayContainsAny),
+        Filter::Compare { .. } => true,
+        Filter::Unary { field, .. } => *field != Field::Name,
     }
 }
 

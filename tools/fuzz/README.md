@@ -91,7 +91,7 @@ was:
 |---|---|
 | `request.method`, `request.path` | the method and path of the step whose answers differ (regular expressions; the path as the case gives it, with `{project}` and the other placeholders, and its query string) |
 | `request.headers` | `{"Content-Type": "(?i)^text/"}`: a regular expression per header, names in any case; a header the step does not set is the empty string |
-| `request.predicates` | names of checks on the request (`PREDICATES` in `diff.py`), each of which must hold: `lone-surrogate` (a string of the body, key or value, holds an unpaired surrogate), `lenient-timestamp` (a string value of the body or a query parameter is shaped like a timestamp but is not RFC 3339: month 13, `2020-1-01`), `long-request-line` (the request line is longer than 4096 bytes), `read-write-transaction` (the body begins one with `newTransaction`), `several-targets` (a commit or batch write of more than one write, a batchGet of more than one document) |
+| `request.predicates` | names of checks on the request (`PREDICATES` in `diff.py`), each of which must hold: `lone-surrogate` (a string of the body, key or value, holds an unpaired surrogate), `lenient-timestamp` (a string value of the body or a query parameter is shaped like a timestamp but is not RFC 3339: month 13, `2020-1-01`), `long-request-line` (the request line is longer than 4096 bytes), `in-transaction` (the body begins a read-write transaction with `newTransaction`, or names one with `transaction`), `collection-group` (the body's query reads a collection group or every descendant), `several-targets` (a commit or batch write of more than one write, a batchGet of more than one document) |
 | `earlier` | the same keys for some step before that one, and the `status` of its answer (a number or a list; both sides answered it alike, since the first difference comes later) |
 
 ```json
@@ -101,7 +101,7 @@ was:
  "why": "…",
  "official": {"status": 409, "code": "^ABORTED$", "message": "^Transaction lock timeout\\.$"},
  "hidane": {"status": 200},
- "earlier": {"path": ":run(Aggregation)?Query$", "predicates": ["read-write-transaction"], "status": 400}
+ "earlier": {"path": ":run(Aggregation)?Query$", "predicates": ["in-transaction"], "status": 400}
 }
 ```
 

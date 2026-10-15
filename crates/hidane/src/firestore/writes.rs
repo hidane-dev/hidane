@@ -293,9 +293,10 @@ pub fn check_names(database: &str, write: &Write) -> Result<ResourcePath, Status
     Ok(parsed.path)
 }
 
-/// The version an `update_time` precondition names: its time in microseconds, which must be
-/// whole and not before the epoch (`tools/oracle/base_versions.py`).
-fn base_version(time: &Timestamp) -> Result<i64, Status> {
+/// The version a timestamp names: its time in microseconds, which must be whole and not
+/// before the epoch, for an `update_time` precondition (`tools/oracle/base_versions.py`) and
+/// a read's `read_time`, before its age (`tools/oracle/queries.py`, #262).
+pub(super) fn base_version(time: &Timestamp) -> Result<i64, Status> {
     if time.nanos % 1_000 != 0 {
         return Err(Status::invalid_argument(
             "timestamp cannot have more than microseconds precision",

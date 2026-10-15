@@ -89,11 +89,11 @@
   {
    "id": "failed-query-lock",
    "exception": "D085",
-   "why": "A query that began a read-write transaction and failed a later check leaves that transaction's lock on the official emulator, so a later write waits and times out; hidane began nothing. Matched on such a query earlier in the case: a lock timeout without one would be a lock hidane misses.",
+   "why": "A query in a read-write transaction (one it began, or one it names) that failed a later check leaves the transaction's lock on the queried collection on the official emulator, so a later write waits and times out; hidane locked nothing. Matched on such a query earlier in the case: a lock timeout without one would be a lock hidane misses.",
    "kinds": ["status"],
    "official": {"status": 409, "code": "^ABORTED$", "message": "^Transaction lock timeout\\.$"},
    "hidane": {"status": 200},
-   "earlier": {"method": "^POST$", "path": ":run(Aggregation)?Query$", "predicates": ["read-write-transaction"], "status": 400}
+   "earlier": {"method": "^POST$", "path": ":run(Aggregation)?Query$", "predicates": ["in-transaction"], "status": 400}
   },
   {
    "id": "form-encoded-post",
@@ -116,6 +116,14 @@
    "kinds": ["status", "message"],
    "official": {"status": 400, "code": "^FAILED_PRECONDITION$", "message": "^collection group queries are only allowed if they're at the root or they're an ascending primary key scan$"},
    "request": {"method": "^POST$", "path": "/documents/[^?]+:run(Aggregation)?Query$"}
+  },
+  {
+   "id": "collection-group-under-document-index",
+   "exception": "D088",
+   "why": "The official emulator reads a sum or an avg over a collection group under a document, without a filter or an order, as a scan of keys that needs an index; hidane runs it. Matched on an aggregation query of a collection group whose parent is a document.",
+   "kinds": ["status", "message"],
+   "official": {"status": 400, "code": "^INVALID_ARGUMENT$", "message": "^This query requires an index that has fields \\[.*\\] after __name__ "},
+   "request": {"method": "^POST$", "path": "/documents/[^?]+:runAggregationQuery$", "predicates": ["collection-group"]}
   }
  ]
 }
