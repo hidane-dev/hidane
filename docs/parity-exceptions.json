@@ -114,13 +114,16 @@
    "area": "streams",
    "topic": null,
    "kind": "more-correct",
-   "official": "Adding a Listen target with an ID that is in use ends the stream with `UNKNOWN` and no message",
+   "official": "Adding a Listen target with an ID that is in use, or a query target of more than one collection, ends the stream with `UNKNOWN` and no message",
    "firestore": null,
-   "hidane": "Ends it with `INVALID_ARGUMENT` \"Target ID … is already in use.\"",
+   "hidane": "Ends it with `INVALID_ARGUMENT` \"Target ID … is already in use.\", or RunQuery's \"StructuredQuery.from cannot have more than one collection selector.\"",
    "reason": "Bug (an internal error)",
-   "references": [],
+   "references": [
+    "crates/hidane/tests/listen_queries.rs"
+   ],
    "pinned_by": [
-    "crates/hidane/tests/listen.rs::target_ids_bad_targets_and_half_close"
+    "crates/hidane/tests/listen.rs::target_ids_bad_targets_and_half_close",
+    "crates/hidane/tests/listen_queries.rs::listen_targets_answer_like_the_official_emulator"
    ]
   },
   {
@@ -1487,20 +1490,20 @@
    "area": "queries",
    "topic": null,
    "kind": "limitation",
-   "official": "With `--database-edition enterprise` (which firebase-tools passes for `firestore.edition: \"enterprise\"`), queries and aggregation queries run as pipelines (`tools/oracle/queries.py`, `tools/oracle/aggregations.py`); listeners' queries presumably too, which nothing recorded shows yet",
+   "official": "With `--database-edition enterprise` (which firebase-tools passes for `firestore.edition: \"enterprise\"`), a listener's query is checked as on a standard database, but with null and NaN as values like others (`tools/oracle/listen_queries.py`): which filters match nothing changes, and with it which queries a listener refuses, how disjunctions and terms are counted, and which filters on `__name__` are refused (34 of the 629 targets of `crates/hidane/tests/fixtures/listen_queries_enterprise.json`)",
    "firestore": null,
-   "hidane": "Answers queries and aggregation queries as an enterprise database does (`crates/hidane/tests/queries.rs`, `crates/hidane/tests/aggregations.rs`), but matches the queries of listeners as on a standard database; pipelines are `UNIMPLEMENTED` (#80)",
-   "reason": "Not implemented yet (#338): listeners on an enterprise database are to be recorded first. `hidane doctor` reports enterprise projects as incompatible",
+   "hidane": "Answers queries and aggregation queries as an enterprise database does, and matches a listener's documents as one does (null and NaN equal themselves, `!=` and `not-in` take them), but refuses a listener's queries as a standard database does; pipelines are `UNIMPLEMENTED` (#80)",
+   "reason": "Not implemented yet (#338): the 34 targets are recorded, and listed in `crates/hidane/tests/listen_queries.rs`",
    "references": [
     "hidane-dev/hidane#338",
     "hidane-dev/hidane#80",
-    "tools/oracle/queries.py",
-    "tools/oracle/aggregations.py",
-    "crates/hidane/tests/queries.rs",
-    "crates/hidane/tests/aggregations.rs"
+    "tools/oracle/listen_queries.py",
+    "crates/hidane/tests/fixtures/listen_queries_enterprise.json",
+    "crates/hidane/tests/listen_queries.rs"
    ],
-   "pinned_by": [],
-   "unpinned": "No test runs listeners on an enterprise database yet; the standard recordings pin what hidane answers (`crates/hidane/tests/listen.rs`)"
+   "pinned_by": [
+    "crates/hidane/tests/listen_queries.rs::enterprise_listen_targets_answer_like_the_official_emulator"
+   ]
   }
  ],
  "retired": [

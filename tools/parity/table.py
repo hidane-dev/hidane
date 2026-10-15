@@ -301,6 +301,18 @@ def queries(f):
     return [(GRPC, FULL) for case in f["cases"] if "findNearest" not in case["query"]]
 
 
+def listen_queries(skip=()):
+    """listen_queries.rs's replay: each target's documents, or the cause of its removal, in
+    full (the documents as a set); a target that ends the stream on its status only; the
+    targets `skip` names (a `const` of the test) as intentionally different."""
+    def count(f):
+        ends = rust_strings(f"{H}/listen_queries.rs", "ENDS_THE_STREAM")
+        skipped = rust_strings(f"{H}/listen_queries.rs", skip) if skip else set()
+        return [(GRPC, DIFFERS if case["name"] in skipped else STATUS if case["name"] in ends
+                 else FULL) for case in f["cases"]]
+    return count
+
+
 def enterprise_queries(f):
     """queries.rs's replay on an enterprise database: an error in full, but an `array_contains`
     error without the type it names; documents without their order where the query's orders tie,
@@ -727,6 +739,22 @@ RECORDINGS = {
         compares="in full: each response's document, `skippedResults` and `done`, the fields of "
                  "projected documents, or the status and message",
         count=queries),
+    f"{H}/fixtures/listen_queries.json": dict(
+        area="streams",
+        tests=[f"{H}/listen_queries.rs::listen_targets_answer_like_the_official_emulator"],
+        counted="each target (the cases of `queries.json` as Listen targets), recorded over "
+                "WebChannel, replayed over gRPC",
+        compares="in full: the documents the target holds when current, as a set, or the cause "
+                 "of its removal; a target that ends the stream (D006) on whether it does",
+        count=listen_queries()),
+    f"{H}/fixtures/listen_queries_enterprise.json": dict(
+        area="streams",
+        tests=[f"{H}/listen_queries.rs::enterprise_listen_targets_answer_like_the_official_emulator"],
+        counted="each target, on an enterprise database, recorded over WebChannel, replayed "
+                "over gRPC",
+        compares="as `listen_queries.json`; the targets the test lists in `KNOWN_ENTERPRISE` "
+                 "as intentionally different (D091)",
+        count=listen_queries("KNOWN_ENTERPRISE")),
     f"{H}/fixtures/queries_enterprise.json": dict(
         area="queries",
         tests=[f"{H}/queries.rs::enterprise_queries_answer_like_the_official_emulator"],
