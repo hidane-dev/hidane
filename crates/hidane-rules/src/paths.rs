@@ -27,7 +27,7 @@ pub enum Binding {
     Segment(String),
     /// A recursive wildcard's segments; an unknown part is [`UNKNOWN_ID`] or [`UNKNOWN_RUN`].
     Path(Vec<String>),
-    /// A wildcard that took an unknown document ID.
+    /// A wildcard that took an unknown document or collection ID.
     Unbound,
 }
 
@@ -35,7 +35,8 @@ pub enum Binding {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Part<'p> {
     Segment(&'p str),
-    /// The document ID of a list: any one segment.
+    /// The document ID of a list, or the collection ID of one without (`from` with an empty
+    /// collection ID): any one segment.
     UnknownId,
     /// The parents of a collection group's collections: any number of segments.
     UnknownRun,
