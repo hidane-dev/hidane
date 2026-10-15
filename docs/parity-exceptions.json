@@ -49,11 +49,13 @@
    "area": "streams",
    "topic": null,
    "kind": "more-correct",
-   "official": "A batch that changes a limit query can reach a web SDK listener as two snapshots, the first one showing a document that the same commit deleted",
+   "official": "A batch can reach a client SDK listener as two snapshots, the first one showing a document that the same commit deleted: in the web SDK, a limit query's; in the iOS SDK, any query's (`results/sdk-ios-listen-*.json`)",
    "firestore": null,
    "hidane": "One snapshot per commit",
    "reason": "Bug (snapshots must be atomic)",
-   "references": [],
+   "references": [
+    "results/sdk-ios-listen-*.json"
+   ],
    "pinned_by": [
     "crates/hidane/tests/listen.rs::documents_leaving_a_query_are_removed"
    ]

@@ -298,3 +298,21 @@ cp -R tools/oracle/sdk_java "$tmp/" && (cd "$tmp/sdk_java" && mvn -q compile exe
 
 Their transcripts are in `results/sdk-go-*.json`, `results/sdk-python-*.json` and
 `results/sdk-java-*.json`, one pair per section.
+
+`sdk_ios/` runs the same four sections through the client SDK of Apple platforms,
+`FirebaseFirestore` 13.0.1 from firebase-ios-sdk (pinned in `Package.swift` and
+`Package.resolved`), built for macOS with Swift 5.9 or newer: the same client as on iOS, over the
+same gRPC core (#267). Reads go to the server and the cache stays in memory, so a transcript
+holds what the emulator answered; with the steps a client SDK offers (no create, no
+preconditions, no `listDocuments`), a value of each type, the filters and aggregations, a
+transaction that meets another client's write and is retried, and query and document listeners
+fed by a second client, left idle for 95 seconds once (firebase-tools#11238). Build it outside
+the repository:
+
+```sh
+cp -R tools/oracle/sdk_ios "$tmp/" && (cd "$tmp/sdk_ios" && swift build -c release)
+"$tmp/sdk_ios/.build/release/sdk_ios" documents > ios-documents.json
+```
+
+Its transcripts are in `results/sdk-ios-*.json`. `.github/workflows/ios-sdk.yml` runs it against
+hidane monthly and compares with the committed hidane transcripts.

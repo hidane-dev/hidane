@@ -73,9 +73,9 @@
  ],
  "totals": {
   "clients": 16,
-  "verified": 11,
+  "verified": 12,
   "partially-verified": 0,
-  "not-verified": 5
+  "not-verified": 4
  },
  "clients": [
   {
@@ -1958,9 +1958,11 @@
    "transport": [
     "gRPC"
    ],
-   "status": "not-verified",
-   "version": null,
-   "official_emulator": [],
+   "status": "verified",
+   "version": "13.0.1",
+   "official_emulator": [
+    "v1.22.0"
+   ],
    "core": [
     "documents",
     "queries",
@@ -1968,18 +1970,173 @@
     "transactions",
     "listeners"
    ],
-   "exercised": [],
-   "not_exercised": [
+   "exercised": [
     "documents",
     "queries",
     "aggregations",
     "transactions",
     "listeners"
    ],
+   "not_exercised": [],
    "gaps": [],
-   "last_recorded": null,
+   "last_recorded": "2026-10-15",
    "tracking": "https://github.com/hidane-dev/hidane/issues/187",
-   "evidence": []
+   "evidence": [
+    {
+     "transcript": "sdk-ios-documents",
+     "official": "results/sdk-ios-documents-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-15",
+      "last_changed": "2026-10-15"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-ios-documents-hidane.json",
+       "result": "identical",
+       "sha256": "7550d88e95d5311c40ad8f4e94fcd7790290294aa63806ce558e319e23553a9c",
+       "recorded": {
+        "first_recorded": "2026-10-15",
+        "last_changed": "2026-10-15"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "firebase-ios-sdk",
+       "version": "13.0.1",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_ios/Package.swift"
+      },
+      {
+       "name": "FirebaseFirestore",
+       "version": "13.0.1",
+       "source": "stated",
+       "where": "results/README.md"
+      }
+     ],
+     "features": [
+      "documents"
+     ]
+    },
+    {
+     "transcript": "sdk-ios-listen",
+     "official": "results/sdk-ios-listen-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-15",
+      "last_changed": "2026-10-15"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-ios-listen-hidane.json",
+       "result": "documented",
+       "explained_in": "results/README.md",
+       "sha256": "7d51d1eb73a7ede97ee7ad999c9ab96e6dbabe8002958f28b33ec0c1bcab07e1",
+       "recorded": {
+        "first_recorded": "2026-10-15",
+        "last_changed": "2026-10-15"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "firebase-ios-sdk",
+       "version": "13.0.1",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_ios/Package.swift"
+      },
+      {
+       "name": "FirebaseFirestore",
+       "version": "13.0.1",
+       "source": "stated",
+       "where": "results/README.md"
+      }
+     ],
+     "features": [
+      "listeners"
+     ]
+    },
+    {
+     "transcript": "sdk-ios-queries",
+     "official": "results/sdk-ios-queries-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-15",
+      "last_changed": "2026-10-15"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-ios-queries-hidane.json",
+       "result": "identical",
+       "sha256": "8566609509de5921ceb962b6942e562a69a6147ebfc5c83ea28e4d5398eeefbe",
+       "recorded": {
+        "first_recorded": "2026-10-15",
+        "last_changed": "2026-10-15"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "firebase-ios-sdk",
+       "version": "13.0.1",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_ios/Package.swift"
+      },
+      {
+       "name": "FirebaseFirestore",
+       "version": "13.0.1",
+       "source": "stated",
+       "where": "results/README.md"
+      }
+     ],
+     "features": [
+      "queries",
+      "aggregations"
+     ]
+    },
+    {
+     "transcript": "sdk-ios-transactions",
+     "official": "results/sdk-ios-transactions-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-15",
+      "last_changed": "2026-10-15"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-ios-transactions-hidane.json",
+       "result": "identical",
+       "sha256": "fb6738a5cf1f54e71a10e9f2ba49b92d9c24386e7c1ef38d11d4e4a956656c0e",
+       "recorded": {
+        "first_recorded": "2026-10-15",
+        "last_changed": "2026-10-15"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "firebase-ios-sdk",
+       "version": "13.0.1",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_ios/Package.swift"
+      },
+      {
+       "name": "FirebaseFirestore",
+       "version": "13.0.1",
+       "source": "stated",
+       "where": "results/README.md"
+      }
+     ],
+     "features": [
+      "transactions"
+     ]
+    }
+   ]
   },
   {
    "id": "android",
@@ -2137,6 +2294,16 @@
    "source": "docs/sdk-certification.md",
    "clients": [
     "flutter-web"
+   ]
+  },
+  {
+   "ecosystem": "swiftpm",
+   "name": "FirebaseFirestore",
+   "version": "13.0.1",
+   "what": "documents and writes, queries, aggregation queries, transactions, listeners",
+   "source": "docs/sdk-certification.md",
+   "clients": [
+    "ios"
    ]
   }
  ]

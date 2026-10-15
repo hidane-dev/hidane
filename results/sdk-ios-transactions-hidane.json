@@ -1,0 +1,59 @@
+[
+  {
+    "name" : "create in a transaction",
+    "ok" : {
+      "existed" : false,
+      "now" : {
+        "n" : 1
+      }
+    }
+  },
+  {
+    "name" : "read and increment",
+    "ok" : {
+      "now" : {
+        "n" : 2
+      },
+      "returned" : 2
+    }
+  },
+  {
+    "name" : "write only",
+    "ok" : {
+      "w" : true
+    }
+  },
+  {
+    "error" : {
+      "code" : "NOT_FOUND"
+    },
+    "name" : "update a missing document"
+  },
+  {
+    "name" : "a callback that fails",
+    "ok" : {
+      "error" : {
+        "client" : "the callback failed"
+      },
+      "now" : {
+        "n" : 2
+      }
+    }
+  },
+  {
+    "name" : "an outside write between the read and the commit",
+    "ok" : {
+      "now" : {
+        "n" : 101
+      },
+      "retried" : true,
+      "returned" : 101
+    }
+  },
+  {
+    "name" : "a batch after the transactions",
+    "ok" : {
+      "n" : 111
+    }
+  }
+]

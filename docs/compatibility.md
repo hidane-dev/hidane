@@ -23,14 +23,14 @@ firebase-tools that launches it and the official emulator it is compared with.
 
 | hidane | firebase-tools | Official emulator | Status | Evidence |
 |---|---|---|---|---|
-| 0.5.x | 15.33.0 | 1.22.0 | Verified | 23,875 recorded answers of the official emulator v1.22.0 in 49 fixtures, replayed against hidane by cargo test; 35 comparisons of SDK transcripts with the official emulator v1.22.0's: 20 identical, 15 documented differences; 2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers (last recorded 2026-10-13) |
+| 0.5.x | 15.33.0 | 1.22.0 | Verified | 23,875 recorded answers of the official emulator v1.22.0 in 49 fixtures, replayed against hidane by cargo test; 39 comparisons of SDK transcripts with the official emulator v1.22.0's: 23 identical, 16 documented differences; 2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers (last recorded 2026-10-13) |
 
 | Evidence | What the results show | Where |
 |---|---|---|
-| Oracle corpus | 82 recordings of the official emulator 1.22.0 (49 fixtures, 33 official transcripts), `sha256:29d7881bd1fb…` | [oracle-corpus.md](oracle-corpus.md) |
+| Oracle corpus | 86 recordings of the official emulator 1.22.0 (49 fixtures, 37 official transcripts), `sha256:2b042976a289…` | [oracle-corpus.md](oracle-corpus.md) |
 | Record and replay | 23,875 recorded answers in 49 fixtures, replayed by `cargo test` on every pull request and push to main: 13,309 in full, 4,344 decision and reasons, 843 in part, 5,187 status only, 30 without messages, 1 not compared, 161 intentionally different | [parity.md](parity.md) |
-| SDK transcripts | 35 comparisons of 33 transcript pairs: 20 identical, 15 documented differences | [parity.md](parity.md) |
-| SDK certification | 16 clients and tools: 11 verified, 0 partially verified, 5 not verified | [sdk-certification.md](sdk-certification.md) |
+| SDK transcripts | 39 comparisons of 37 transcript pairs: 23 identical, 16 documented differences | [parity.md](parity.md) |
+| SDK certification | 16 clients and tools: 12 verified, 0 partially verified, 4 not verified | [sdk-certification.md](sdk-certification.md) |
 | Browser | firebase-js-sdk's browser suite at `8a7e7fd`: 1,183 passed, 0 failed, 739 skipped on hidane; 1,183 passed, 0 failed on the official emulator (identical). 3 transcripts in Chromium: browser-webchannel (identical), flutter-web (documented), browser-rules (documented) | [`js-sdk-browser.yml`](../.github/workflows/js-sdk-browser.yml) |
 | Functions events | `function_events.json`: 152 recorded answers, `function_triggers.json`: 342 recorded answers; functions-triggers: 37 events on hidane, 43 on the official emulator (documented) | [parity-exceptions.md](parity-exceptions.md) |
 | Integration tests | 50 test files (`crates/*/tests/*.rs`), 34 of them replaying recordings, run on every pull request and push to main | [`crates/`](../crates/) |
@@ -84,7 +84,7 @@ Differential fuzzing has not run yet. A run is reported by writing a summary to
 | google-cloud-go `firestore` | gRPC. `NewRESTClient` does not support the emulator | verified (`cloud.google.com/go/firestore` 1.26.0) |
 | google-cloud-firestore (Python) | gRPC | verified (2.34.1) |
 | java-firestore | gRPC | verified (`com.google.cloud:google-cloud-firestore` 3.49.0) |
-| firebase-ios-sdk (iOS, macOS, tvOS, watchOS) | gRPC. Uses the Listen and Write streams | not verified |
+| firebase-ios-sdk (iOS, macOS, tvOS, watchOS) | gRPC. Uses the Listen and Write streams | verified on macOS (`FirebaseFirestore` 13.0.1): documents and writes, queries, aggregation queries, transactions and listeners, a listener idle for 95 seconds too ([sdk-certification.md](sdk-certification.md)) |
 | firebase-android-sdk | gRPC (grpc-okhttp). Uses the Listen and Write streams | not verified |
 | FlutterFire `cloud_firestore` on Android / iOS / macOS / Windows | Native SDK (gRPC) | not verified |
 | Firebase C++ SDK / Unity | iOS C++ core or Android SDK (gRPC) | not verified |

@@ -85,6 +85,13 @@ pub const VERIFIED: &[Verified] = &[
         what: "Flutter Web in Chromium: documents and writes, queries, aggregation queries, transactions, listeners",
         source: "docs/sdk-certification.md",
     },
+    Verified {
+        ecosystem: "swiftpm",
+        name: "FirebaseFirestore",
+        version: "13.0.1",
+        what: "documents and writes, queries, aggregation queries, transactions, listeners",
+        source: "docs/sdk-certification.md",
+    },
 ];
 // sdk-certification:end
 

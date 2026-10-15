@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:29d7881bd1fb7289b6166ce19b41bd4c977a0be3be712528e33fcccfb3a115bc",
+ "digest": "sha256:2b042976a2898d25c9f9ceb8f0c0677e8dfb9b6c28f4abe59983835aefb69086",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,11 +14,11 @@
   }
  ],
  "totals": {
-  "files": 82,
+  "files": 86,
   "fixtures": 49,
-  "transcripts": 33,
+  "transcripts": 37,
   "answers": 23875,
-  "bytes": 14225878,
+  "bytes": 14257927,
   "levels": {
    "full": 13309,
    "reasons": 4344,
@@ -31,22 +31,22 @@
   "by_area": {
    "documents": {
     "fixtures": 8,
-    "transcripts": 4,
+    "transcripts": 5,
     "answers": 5749
    },
    "queries": {
     "fixtures": 4,
-    "transcripts": 7,
+    "transcripts": 8,
     "answers": 924
    },
    "transactions": {
     "fixtures": 1,
-    "transcripts": 5,
+    "transcripts": 6,
     "answers": 215
    },
    "streams": {
     "fixtures": 1,
-    "transcripts": 6,
+    "transcripts": 7,
     "answers": 49
    },
    "rest": {
@@ -83,13 +83,13 @@
   "by_release": {
    "v1.22.0": {
     "fixtures": 49,
-    "transcripts": 33,
+    "transcripts": 37,
     "answers": 23875
    }
   },
   "by_release_source": {
    "header": 24,
-   "file name": 34,
+   "file name": 38,
    "git history": 24
   }
  },
@@ -2093,6 +2093,44 @@
    ]
   },
   {
+   "path": "results/sdk-ios-documents-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "documents",
+   "recorder": "tools/oracle/sdk_ios/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "iOS SDK (FirebaseFirestore, on macOS)",
+    "packages": [
+     {
+      "name": "firebase-ios-sdk",
+      "version": "13.0.1",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_ios/Package.swift"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-15",
+    "last_changed": "2026-10-15"
+   },
+   "bytes": 4098,
+   "sha256": "7550d88e95d5311c40ad8f4e94fcd7790290294aa63806ce558e319e23553a9c",
+   "compared_with": [
+    {
+     "path": "results/sdk-ios-documents-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
    "path": "results/sdk-java-documents-official-v1.22.0.json",
    "kind": "transcript",
    "area": "documents",
@@ -2291,6 +2329,44 @@
    ]
   },
   {
+   "path": "results/sdk-ios-queries-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "queries",
+   "recorder": "tools/oracle/sdk_ios/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "iOS SDK (FirebaseFirestore, on macOS)",
+    "packages": [
+     {
+      "name": "firebase-ios-sdk",
+      "version": "13.0.1",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_ios/Package.swift"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-15",
+    "last_changed": "2026-10-15"
+   },
+   "bytes": 2517,
+   "sha256": "8566609509de5921ceb962b6942e562a69a6147ebfc5c83ea28e4d5398eeefbe",
+   "compared_with": [
+    {
+     "path": "results/sdk-ios-queries-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
    "path": "results/sdk-java-queries-official-v1.22.0.json",
    "kind": "transcript",
    "area": "queries",
@@ -2478,6 +2554,44 @@
      "what": "hidane",
      "result": "documented",
      "explained_in": "docs/parity-exceptions.md"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-ios-transactions-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "transactions",
+   "recorder": "tools/oracle/sdk_ios/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "iOS SDK (FirebaseFirestore, on macOS)",
+    "packages": [
+     {
+      "name": "firebase-ios-sdk",
+      "version": "13.0.1",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_ios/Package.swift"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-15",
+    "last_changed": "2026-10-15"
+   },
+   "bytes": 881,
+   "sha256": "fb6738a5cf1f54e71a10e9f2ba49b92d9c24386e7c1ef38d11d4e4a956656c0e",
+   "compared_with": [
+    {
+     "path": "results/sdk-ios-transactions-hidane.json",
+     "what": "hidane",
+     "result": "identical"
     }
    ]
   },
@@ -2670,6 +2784,45 @@
      "path": "results/sdk-go-listen-hidane.json",
      "what": "hidane",
      "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-ios-listen-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "streams",
+   "recorder": "tools/oracle/sdk_ios/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "iOS SDK (FirebaseFirestore, on macOS)",
+    "packages": [
+     {
+      "name": "firebase-ios-sdk",
+      "version": "13.0.1",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_ios/Package.swift"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-15",
+    "last_changed": "2026-10-15"
+   },
+   "bytes": 24553,
+   "sha256": "1e76fa16ab92da8ff5c540143dab6a137fa1202cd41fa8969cf42345e94eaa10",
+   "compared_with": [
+    {
+     "path": "results/sdk-ios-listen-hidane.json",
+     "what": "hidane",
+     "result": "documented",
+     "explained_in": "results/README.md"
     }
    ]
   },
