@@ -13,7 +13,8 @@ create, patch and delete) runs under rules that allow only `create`, only `updat
 Reads: a batchGet with one document denied, a transaction's get, an aggregation and a list of
 documents. Batches: a batchGet or a commit stops at its first denied document or write and lists
 the ones checked before as `false` (D019); a batchGet denied on a document no statement matches,
-first, alone, or after one allowed, and a commit's write no statement matches after one allowed.
+first, alone, or after one allowed, and a commit's write no statement matches after one allowed;
+an error of the first pass where the second would say `false`, alone and in batches (D008).
 Stdlib only.
 """
 
@@ -111,6 +112,27 @@ call("POST", f"/v1/{DB}/documents:batchGet", {"documents": [f"{BASE}/c/a", f"{BA
 case("commit, allowed, then no statement")
 rules(PROJECT, TWO_BLOCKS)
 call(*commit(update("c/a"), update("d/x")))
+# Where the first of the two passes fails on an error that the second absorbs (`error &&
+# false`, D008), the official emulator lists the first pass's error, and the second pass's
+# `false` only where that pass runs: not for a batch the first pass decides on a later document
+# or write, and not for the create statement of an upsert of an existing document.
+ERRORS = ("rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
+          "    match /c/{d} {\n      allow get: if request.auth.uid == 'x' && resource.data.n > 5;\n"
+          "      allow create: if request.auth.uid == 'x' && request.resource.data.n > 5;\n"
+          "      allow update: if request.auth.uid == 'x' && request.resource.data.n > 5;\n"
+          "      allow delete: if request.resource.data.n < 10 && resource.data.n > 5;\n    }\n"
+          "    match /e/{d} {\n      allow get: if false;\n    }\n  }\n}\n")
+for name, (method, path, body) in {
+    "batchGet, an error the second pass absorbs": ("POST", f"/v1/{DB}/documents:batchGet", {"documents": [f"{BASE}/c/a"]}),
+    "batchGet, an error, then no statement": ("POST", f"/v1/{DB}/documents:batchGet", {"documents": [f"{BASE}/c/a", f"{BASE}/d/x"]}),
+    "batchGet, an error, then a denial": ("POST", f"/v1/{DB}/documents:batchGet", {"documents": [f"{BASE}/c/a", f"{BASE}/e/b"]}),
+    "commit, a delete with an error": commit({"delete": f"{BASE}/c/a"}),
+    "commit, a delete with an error, then no statement": commit({"delete": f"{BASE}/c/a"}, update("d/x")),
+    "REST patch with a mask, an error in both statements": ("PATCH", f"/v1/{BASE}/c/a?updateMask.fieldPaths=n", {"fields": {"n": I(2)}}),
+}.items():
+    case(name)
+    rules(PROJECT, ERRORS)
+    call(method, path, body)
 case("get in a transaction, denied")
 load(["get: if d == 'a'", "list: if true"])
 # A REST GET with ?transaction= never answers on the official emulator; batchGet does. The

@@ -242,6 +242,15 @@ class Exceptions(unittest.TestCase):
         other = self.difference("message", {**DENIAL, "message": "\nfalse for 'get' @ L5"},
                                 {**DENIAL, "message": "\nfalse for 'list' @ L6"})
         self.assertIsNone(rules.match("rules", other))
+        # Another error of the first pass, whose second pass did not run (a batch decided on a
+        # later document), stands for hidane's `false` for its statement, and only for that.
+        unpassed = {**DENIAL, "message": "\nNull value error. for 'get' @ L5, false for 'get' @ L11"}
+        absorbed = self.difference("message", unpassed, {**DENIAL, "message": "\nfalse for 'get' @ L5"})
+        self.assertEqual(rules.match("rules", absorbed)["id"], "reasons")
+        another_error = self.difference("message", unpassed, {**DENIAL, "message": "\nProperty n is undefined on object. for 'get' @ L5"})
+        self.assertIsNone(rules.match("rules", another_error))
+        another_statement = self.difference("message", unpassed, {**DENIAL, "message": "\nfalse for 'get' @ L6"})
+        self.assertIsNone(rules.match("rules", another_statement))
         wording = self.difference("message", {"status": 409, "message": "entity already exists: EntityRef[x]"},
                                   {"status": 409, "message": "Document already exists: projects/p"})
         self.assertEqual(rules.match("documents", wording)["id"], "wording")

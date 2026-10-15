@@ -78,7 +78,9 @@ accepts. Each rule names the entry of
 where the answers differ (`detail`), each side's status, error code, message and differing
 `value` (regular expressions), and a `relation` between the answers (`hidane-reasons-subset`: a
 denial listing some of the official one's reasons and nothing else, the official emulator's two
-passes, where an `evaluation error` of its first pass stands for any reason of its statement). A difference a rule matches is counted under its entry and not reported. `fuzz.py
+passes, where an `evaluation error` of its first pass stands for any reason of its statement and
+another error of its first pass for a `false` of its statement, which a second pass that did not
+run would have listed). A difference a rule matches is counted under its entry and not reported. `fuzz.py
 check` fails when a rule names an entry that is gone or is malformed; keep the rules as narrow as
 the entry's text.
 
