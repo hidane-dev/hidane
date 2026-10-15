@@ -78,8 +78,10 @@ project's firebase-tools is.
 
 Known gaps are `incompatible`:
 
-- The enterprise edition (`firestore.edition: "enterprise"`): pipelines are not implemented yet
-  ([#80](https://github.com/hidane-dev/hidane/issues/80)).
+- The enterprise edition (`firestore.edition: "enterprise"`): queries are answered as on a
+  standard database, where the official emulator answers them with other semantics
+  ([#338](https://github.com/hidane-dev/hidane/issues/338)), and pipelines are not implemented
+  yet ([#80](https://github.com/hidane-dev/hidane/issues/80)).
 - Datastore mode, through `gcloud emulators firestore start --database-mode=datastore-mode`
   ([#81](https://github.com/hidane-dev/hidane/issues/81)). A Datastore client library in the
   dependencies is `unknown`: it may talk to the separate Datastore emulator, which hidane does

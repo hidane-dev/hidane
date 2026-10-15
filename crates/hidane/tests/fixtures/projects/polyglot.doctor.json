@@ -34,8 +34,8 @@
       "group": "firebase",
       "status": "incompatible",
       "severity": "error",
-      "title": "Enterprise edition: hidane does not implement pipelines yet (#80)",
-      "source": "https://github.com/hidane-dev/hidane/issues/80; docs/parity-exceptions.md (ExecutePipeline)",
+      "title": "Enterprise edition: hidane answers queries as on a standard database and does not implement pipelines yet (#338, #80)",
+      "source": "https://github.com/hidane-dev/hidane/issues/338; https://github.com/hidane-dev/hidane/issues/80; docs/parity-exceptions.md (enterprise edition, ExecutePipeline)",
       "file": "firebase.json"
     },
     {
