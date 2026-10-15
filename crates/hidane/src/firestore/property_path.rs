@@ -208,6 +208,11 @@ impl PropertyPath {
     }
 
     /// The path is `__name__` alone: the document's name.
+    /// The segments, with their offsets.
+    pub fn segments(&self) -> &[Segment] {
+        &self.0
+    }
+
     pub fn is_name(&self) -> bool {
         matches!(self.0.as_slice(), [only] if only.is_key() && only.offsets.is_empty())
     }

@@ -42174,6 +42174,628 @@
     "status": "INVALID_ARGUMENT",
     "message": "The query may not have more than 100 filters + sort orders + ancestor total. Currently there are 102 filters, 2 sort orders, and no ancestor filter."
    }
+  },
+  {
+   "name": "a false filter before array-contains on strings",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "99"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "array-contains on a missing field before array-contains on strings",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "nope"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "FAILED_PRECONDITION",
+    "message": "Only a single array-contains clause is allowed in a query"
+   }
+  },
+  {
+   "name": "array-contains-any on a missing field before array-contains on strings",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "nope"
+         },
+         "op": "ARRAY_CONTAINS_ANY",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "1"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "FAILED_PRECONDITION",
+    "message": "Only a single array-contains clause is allowed in a query"
+   }
+  },
+  {
+   "name": "a true filter or array-contains on strings",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "OR",
+      "filters": [
+       {
+        "unaryFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "IS_NOT_NULL"
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "document": "p/p7"
+     },
+     {
+      "document": "p/p1"
+     },
+     {
+      "document": "p/p3"
+     },
+     {
+      "document": "p/p6"
+     },
+     {
+      "document": "p/p8"
+     },
+     {
+      "document": "p/p2"
+     },
+     {
+      "document": "p/p5"
+     },
+     {
+      "document": "p/p4",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "array-contains on strings before a false filter",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "b"
+         },
+         "op": "ARRAY_CONTAINS",
+         "value": {
+          "integerValue": "1"
+         }
+        }
+       },
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "EQUAL",
+         "value": {
+          "integerValue": "99"
+         }
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "a filter on an array offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "tags[0]"
+      },
+      "op": "EQUAL",
+      "value": {
+       "stringValue": "red"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "!= on an array offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "tags[1]"
+      },
+      "op": "NOT_EQUAL",
+      "value": {
+       "stringValue": "blue"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "order by an array offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "tags[1]"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid property path"
+   }
+  },
+  {
+   "name": "a reference to an ID over 1500 bytes",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "EQUAL",
+      "value": {
+       "referenceValue": "{documents}/p/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "value for a is too large to be used in a query"
+   }
+  },
+  {
+   "name": "a vector holding NaN in in",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "fieldFilter": {
+      "field": {
+       "fieldPath": "a"
+      },
+      "op": "IN",
+      "value": {
+       "arrayValue": {
+        "values": [
+         {
+          "mapValue": {
+           "fields": {
+            "__type__": {
+             "stringValue": "__vector__"
+            },
+            "value": {
+             "arrayValue": {
+              "values": [
+               {
+                "doubleValue": "NaN"
+               }
+              ]
+             }
+            }
+           }
+          }
+         }
+        ]
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "a vector holding NaN in a cursor",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     }
+    ],
+    "startAt": {
+     "values": [
+      {
+       "mapValue": {
+        "fields": {
+         "__type__": {
+          "stringValue": "__vector__"
+         },
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "doubleValue": "NaN"
+            }
+           ]
+          }
+         }
+        }
+       }
+      }
+     ],
+     "before": true
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "select a path below a value that is not a map",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "a.b"
+      }
+     ]
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "document": "p/p6"
+     },
+     {
+      "document": "p/p1"
+     },
+     {
+      "document": "p/p2"
+     },
+     {
+      "document": "p/p3"
+     },
+     {
+      "document": "p/p4"
+     },
+     {
+      "document": "p/p5"
+     },
+     {
+      "document": "p/p8",
+      "done": true
+     }
+    ],
+    "fields": {
+     "p/p6": {},
+     "p/p1": {},
+     "p/p2": {},
+     "p/p3": {},
+     "p/p4": {},
+     "p/p5": {},
+     "p/p8": {}
+    }
+   }
+  },
+  {
+   "name": "select a path two maps deep",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "select": {
+     "fields": [
+      {
+       "fieldPath": "m.x.y"
+      },
+      {
+       "fieldPath": "b"
+      }
+     ]
+    },
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "b"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "document": "p/p7"
+     },
+     {
+      "document": "p/p1"
+     },
+     {
+      "document": "p/p3"
+     },
+     {
+      "document": "p/p6"
+     },
+     {
+      "document": "p/p8"
+     },
+     {
+      "document": "p/p2"
+     },
+     {
+      "document": "p/p5"
+     },
+     {
+      "document": "p/p4",
+      "done": true
+     }
+    ],
+    "fields": {
+     "p/p7": {
+      "b": {
+       "stringValue": "w"
+      }
+     },
+     "p/p1": {
+      "b": {
+       "stringValue": "x"
+      }
+     },
+     "p/p3": {
+      "b": {
+       "stringValue": "x"
+      }
+     },
+     "p/p6": {
+      "b": {
+       "stringValue": "x"
+      }
+     },
+     "p/p8": {
+      "b": {
+       "stringValue": "x"
+      }
+     },
+     "p/p2": {
+      "b": {
+       "stringValue": "y"
+      }
+     },
+     "p/p5": {
+      "b": {
+       "stringValue": "y"
+      }
+     },
+     "p/p4": {
+      "b": {
+       "stringValue": "z"
+      }
+     }
+    }
+   }
   }
  ]
 }

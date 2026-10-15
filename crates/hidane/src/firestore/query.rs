@@ -13,11 +13,16 @@
 //!   `not-in` list containing null matches nothing.
 //! - Ordering by a field leaves out documents without it, also for the implicit ordering by
 //!   inequality fields.
+//!
+//! On an enterprise database (`--database-edition enterprise`, #338), the official emulator runs
+//! a query as a pipeline, with the semantics of the pipeline functions
+//! (`tests/fixtures/queries_enterprise.json`): see [`Unchecked::check_enterprise`] and
+//! [`matches_enterprise`].
 
 use std::{cmp::Ordering, sync::Arc};
 
 use hidane_core::{
-    field_path::{FieldPath, get},
+    field_path::{FieldPath, Fields, get},
     hash_order::hash_order,
     normalize::normalize_value,
     order::{compare, is_vector, type_rank},
@@ -317,6 +322,8 @@ pub struct Query {
     /// Fields a document must have, besides the ordered ones (those of `sum` and `avg`).
     required: Vec<FieldPath>,
     nearest: Option<Nearest>,
+    /// Run with the semantics of an enterprise database ([`Unchecked::check_enterprise`]).
+    enterprise: bool,
 }
 
 /// What a query returns.
@@ -496,6 +503,63 @@ impl Unchecked<'_> {
             projection,
             required: Vec::new(),
             nearest,
+            enterprise: false,
+        })
+    }
+
+    /// The query as an enterprise database runs it (#338): none of the checks a standard
+    /// database makes because of its indexes (the filter as a whole, the disjunctions, the
+    /// orders after the key or twice, the number of terms, orders and filters over every
+    /// collection, the filters on `__name__`), only the offset and the limit. The query is
+    /// ordered by its own orders alone; documents that tie come in no order the official
+    /// emulator keeps, so hidane orders them by name. Its filter has the semantics of the
+    /// pipeline functions ([`matches_enterprise`]).
+    pub fn check_enterprise(self) -> Result<Query, Status> {
+        let Self {
+            parent,
+            query,
+            source,
+            filter,
+            projection,
+            explicit,
+            start,
+            end,
+            nearest,
+            ..
+        } = self;
+        if query.offset < 0 {
+            return Err(Status::invalid_argument("offset is negative"));
+        }
+        let offset = usize::try_from(query.offset).unwrap_or(0);
+        let limit = match query.limit {
+            Some(n) if n < 0 => return Err(Status::invalid_argument("limit is negative")),
+            Some(n) => Some(usize::try_from(n).unwrap_or(0)),
+            None => None,
+        };
+        if let Some(filter) = &filter {
+            check_enterprise_values(filter)?;
+        }
+        let mut orders = explicit.clone();
+        if !orders.iter().any(|o| o.field == Field::Name) {
+            orders.push(Order {
+                field: Field::Name,
+                descending: false,
+            });
+        }
+        Ok(Query {
+            parent,
+            source,
+            filter,
+            orders,
+            given_orders: explicit,
+            start,
+            end,
+            offset,
+            limit,
+            projection,
+            required: Vec::new(),
+            nearest,
+            enterprise: true,
         })
     }
 }
@@ -507,7 +571,7 @@ impl Query {
         parent: ResourcePath,
         query: &StructuredQuery,
     ) -> Result<Self, Status> {
-        Self::read(database, parent, query, |_| Ok(Vec::new()))?.check()
+        Self::read(database, parent, query, false, |_| Ok(Vec::new()))?.check()
     }
 
     /// Reads `query` under `parent` in the official emulator's order (`tools/oracle/
@@ -516,14 +580,18 @@ impl Query {
     /// filter's kinds, paths and values, the orders' and the projection's paths, the cursors,
     /// `find_nearest` but its interplay with the query); then `aggregations`, the list's checks
     /// (with the projection), which say which fields a `sum` or an `avg` reads. The rest is
-    /// checked after Security Rules and the read time ([`Unchecked::check`]).
+    /// checked after Security Rules and the read time ([`Unchecked::check`]). An enterprise
+    /// database does not restrict the operators.
     pub fn read<'a>(
         database: &'a str,
         parent: ResourcePath,
         query: &'a StructuredQuery,
+        enterprise: bool,
         aggregations: impl FnOnce(Option<&[FieldPath]>) -> Result<Vec<FieldPath>, Status>,
     ) -> Result<Unchecked<'a>, Status> {
-        check_operators(query)?;
+        if !enterprise {
+            check_operators(query)?;
+        }
         let source = match query.from.as_slice() {
             [] => Source::Children,
             [selector] if selector.collection_id.is_empty() => {
@@ -698,33 +766,64 @@ impl Query {
         self.sort_key(database, doc).is_some()
     }
 
-    /// The values `doc` sorts by, or `None` when the query leaves it out.
+    /// The values `doc` sorts by, or `None` when the query leaves it out. A document an
+    /// enterprise query cannot evaluate ([`matches_enterprise`]) is left out.
     fn sort_key(&self, database: &str, doc: &StoredDocument) -> Option<Vec<Value>> {
+        self.evaluate(database, doc).ok().flatten()
+    }
+
+    /// The values `doc` sorts by, `None` when the query leaves it out, or the error an
+    /// enterprise query's filter raises on it.
+    fn evaluate(&self, database: &str, doc: &StoredDocument) -> Result<Option<Vec<Value>>, Status> {
         let fields = doc.fields();
         let name = reference(database, &doc.path);
         let field_value = |field: &Field| match field {
             Field::Name => Some(&name),
             Field::Path(path) => get(&fields, path),
+            // An enterprise database reads array offsets.
+            Field::Indexed(path) if self.enterprise => indexed(&fields, path),
             Field::Indexed(_) => None,
         };
-        if self
-            .filter
-            .as_ref()
-            .is_some_and(|f| !matches_filter(f, &field_value))
+        let matched = match &self.filter {
+            None => true,
+            Some(f) if self.enterprise => matches_enterprise(f, &field_value)?,
+            Some(f) => matches_filter(f, &field_value),
+        };
+        if !matched
             || self
                 .required
                 .iter()
                 .any(|path| get(&fields, path).is_none())
         {
-            return None;
+            return Ok(None);
         }
-        self.orders
+        Ok(self
+            .orders
             .iter()
             .map(|order| field_value(&order.field).cloned())
-            .collect()
+            .collect())
+    }
+
+    /// Whether the query runs with the semantics of an enterprise database.
+    pub fn is_enterprise(&self) -> bool {
+        self.enterprise
     }
 
     pub fn run(&self, store: &dyn Store, database: &str, at: ReadTime) -> Results {
+        self.try_run(store, database, at).unwrap_or(Results {
+            documents: Vec::new(),
+            skipped: 0,
+            distances: Vec::new(),
+        })
+    }
+
+    /// [`Self::run`], or the first error an enterprise query's filter raises.
+    pub fn try_run(
+        &self,
+        store: &dyn Store,
+        database: &str,
+        at: ReadTime,
+    ) -> Result<Results, Status> {
         let in_range = |key: &[Value]| {
             let after_start =
                 self.start
@@ -761,8 +860,16 @@ impl Query {
         type Match = (Arc<StoredDocument>, Vec<Value>);
         let mut found = 0;
         let mut matches: Vec<Match> = Vec::new();
+        let mut failed: Option<Status> = None;
         let mut visit = |doc: &Arc<StoredDocument>| {
-            if let Some(key) = self.sort_key(database, doc) {
+            let key = match self.evaluate(database, doc) {
+                Ok(key) => key,
+                Err(status) => {
+                    failed = Some(status);
+                    return std::ops::ControlFlow::Break(());
+                }
+            };
+            if let Some(key) = key {
                 if let Some(stop_at) = stop_at {
                     found += usize::from(in_range(&key));
                     matches.push((Arc::clone(doc), key));
@@ -791,6 +898,9 @@ impl Query {
                 store.scan_descendants(database, &self.parent, at, &mut visit);
             }
         }
+        if let Some(status) = failed {
+            return Err(status);
+        }
 
         let compare = |(_, a): &Match, (_, b): &Match| self.compare_keys(a, b);
         if let Some(nearest) = &self.nearest {
@@ -804,11 +914,11 @@ impl Query {
             scored.sort_by(|(_, a), (_, b)| nearest.measure.compare(*a, *b));
             scored.truncate(nearest.limit);
             let (documents, distances) = scored.into_iter().unzip();
-            return Results {
+            return Ok(Results {
                 documents,
                 skipped: 0,
                 distances,
-            };
+            });
         }
         matches.retain(|(_, key)| in_range(key));
         let skipped = self.offset.min(matches.len());
@@ -829,11 +939,11 @@ impl Query {
             .take(self.limit.unwrap_or(usize::MAX))
             .map(|(doc, _)| doc)
             .collect();
-        Results {
+        Ok(Results {
             documents,
             skipped,
             distances: Vec::new(),
-        }
+        })
     }
 
     /// Whether the query orders by the name alone, ascending.
@@ -1915,6 +2025,178 @@ fn matches_compare(v: &Value, op: Op, operand: &Value) -> bool {
                 && !array(operand).iter().any(is_null)
                 && !array(operand).iter().any(|o| equal(v, o))
         }
+    }
+}
+
+/// A filter as an enterprise database evaluates it: as the pipeline functions do
+/// (`tests/fixtures/queries_enterprise.json`, #338). `==`, `in` and `array-contains` compare
+/// like the value order, so null equals null and NaN equals NaN; `!=`, `not-in`,
+/// `IS_NOT_NULL` and `IS_NOT_NAN` are their negations, true of a document without the field;
+/// a range compares values of one type (numbers mix integers and doubles), so null is `<=` and
+/// `>=` null, and NaN only NaN. `array-contains` and `array-contains-any` are null on a missing
+/// or null value, and an `INVALID_ARGUMENT` that names its type on a value that is not an
+/// array. A conjunction stops at its first false filter and a disjunction at its first true
+/// one, left to right; a null one goes on (errors after it are raised). A document matches
+/// when its filter is true.
+fn matches_enterprise<'a>(
+    filter: &Filter,
+    field_value: &impl Fn(&Field) -> Option<&'a Value>,
+) -> Result<bool, Status> {
+    Ok(evaluate_enterprise(filter, field_value)? == Some(true))
+}
+
+/// [`matches_enterprise`]'s value of `filter`: true, false, or null (`None`).
+fn evaluate_enterprise<'a>(
+    filter: &Filter,
+    field_value: &impl Fn(&Field) -> Option<&'a Value>,
+) -> Result<Option<bool>, Status> {
+    let equal = |a: &Value, b: &Value| compare(a, b) == Ordering::Equal;
+    Ok(match filter {
+        Filter::And(filters) | Filter::Or(filters) => {
+            let and = matches!(filter, Filter::And(_));
+            let mut null = false;
+            for f in filters {
+                match evaluate_enterprise(f, field_value)? {
+                    Some(value) if value != and => return Ok(Some(value)),
+                    Some(_) => {}
+                    None => null = true,
+                }
+            }
+            if null { None } else { Some(and) }
+        }
+        Filter::Unary { field, op } => {
+            let v = field_value(field);
+            Some(match op {
+                UnaryOp::Null => v.is_some_and(is_null),
+                UnaryOp::NotNull => !v.is_some_and(is_null),
+                UnaryOp::Nan => v.is_some_and(is_nan),
+                UnaryOp::NotNan => !v.is_some_and(is_nan),
+            })
+        }
+        Filter::Compare { field, op, value } => {
+            let v = field_value(field);
+            // NaN is only equal to NaN, so `<=` and `>=` NaN match NaN.
+            let range = |accept: fn(Ordering) -> bool| {
+                v.is_some_and(|v| {
+                    if is_nan(v) || is_nan(value) {
+                        is_nan(v) && is_nan(value) && accept(Ordering::Equal)
+                    } else {
+                        type_rank(v) == type_rank(value) && accept(compare(v, value))
+                    }
+                })
+            };
+            match op {
+                Op::Less => Some(range(Ordering::is_lt)),
+                Op::LessOrEqual => Some(range(Ordering::is_le)),
+                Op::Greater => Some(range(Ordering::is_gt)),
+                Op::GreaterOrEqual => Some(range(Ordering::is_ge)),
+                Op::Equal => Some(v.is_some_and(|v| equal(v, value))),
+                Op::NotEqual => Some(!v.is_some_and(|v| equal(v, value))),
+                Op::In => Some(v.is_some_and(|v| array(value).iter().any(|o| equal(v, o)))),
+                Op::NotIn => Some(!v.is_some_and(|v| array(value).iter().any(|o| equal(v, o)))),
+                Op::ArrayContains => {
+                    array_elements(v)?.map(|elements| elements.iter().any(|e| equal(e, value)))
+                }
+                Op::ArrayContainsAny => array_elements(v)?.map(|elements| {
+                    elements
+                        .iter()
+                        .any(|e| array(value).iter().any(|o| equal(e, o)))
+                }),
+            }
+        }
+    })
+}
+
+/// The value at an array path on an enterprise database: each offset an element of an array
+/// (none past its end), each name a field of a map.
+fn indexed<'a>(fields: &'a Fields, path: &PropertyPath) -> Option<&'a Value> {
+    let mut current = fields;
+    let mut found: Option<&Value> = None;
+    for (i, segment) in path.segments().iter().enumerate() {
+        if i > 0 {
+            current = match found?.value_type.as_ref()? {
+                ValueType::MapValue(map) if !is_vector(map) => &map.fields,
+                _ => return None,
+            };
+        }
+        let mut value = current.get(&segment.name)?;
+        for &offset in &segment.offsets {
+            value = match value.value_type.as_ref()? {
+                ValueType::ArrayValue(array) => array.values.get(usize::try_from(offset).ok()?)?,
+                _ => return None,
+            };
+        }
+        found = Some(value);
+    }
+    found
+}
+
+/// The values of an enterprise query's filter, which become the constants of a pipeline: a
+/// reference's segments at most 1,500 bytes each, a vector without NaN, at any depth.
+fn check_enterprise_values(filter: &Filter) -> Result<(), Status> {
+    fn value(v: &Value) -> Result<(), Status> {
+        match &v.value_type {
+            Some(ValueType::ReferenceValue(name)) => {
+                let path = name.split_once("/documents/").map_or("", |(_, path)| path);
+                if path.split('/').any(|segment| segment.len() > 1500) {
+                    return Err(Status::invalid_argument(
+                        "Path element can be at most 1,500 bytes.",
+                    ));
+                }
+                Ok(())
+            }
+            Some(ValueType::ArrayValue(array)) => array.values.iter().try_for_each(value),
+            Some(ValueType::MapValue(map)) if is_vector(map) => {
+                let nan = hidane_core::order::vector_elements(map).iter().any(is_nan);
+                if nan {
+                    return Err(Status::invalid_argument(
+                        "Vectors cannot contain NaN values.",
+                    ));
+                }
+                Ok(())
+            }
+            Some(ValueType::MapValue(map)) => map.fields.values().try_for_each(value),
+            _ => Ok(()),
+        }
+    }
+    match filter {
+        Filter::And(filters) | Filter::Or(filters) => {
+            filters.iter().try_for_each(check_enterprise_values)
+        }
+        Filter::Compare { value: v, .. } => value(v),
+        Filter::Unary { .. } => Ok(()),
+    }
+}
+
+/// The elements `array_contains` reads: null (`None`) for a missing or null value; any other
+/// value that is not an array is an error.
+fn array_elements(v: Option<&Value>) -> Result<Option<&[Value]>, Status> {
+    match v.and_then(|v| v.value_type.as_ref()) {
+        None | Some(ValueType::NullValue(_)) => Ok(None),
+        Some(ValueType::ArrayValue(array)) => Ok(Some(&array.values)),
+        Some(other) => Err(Status::invalid_argument(format!(
+            "The function array_contains(...) requires `Array` but got `{}`.",
+            pipeline_type(other)
+        ))),
+    }
+}
+
+/// A value's type as the pipeline functions name it in their errors.
+fn pipeline_type(value: &ValueType) -> &'static str {
+    match value {
+        ValueType::NullValue(_) => "NULL",
+        ValueType::BooleanValue(_) => "BOOLEAN",
+        ValueType::IntegerValue(_) => "LONG",
+        ValueType::DoubleValue(_) => "DOUBLE",
+        ValueType::TimestampValue(_) => "TIMESTAMP",
+        ValueType::StringValue(_) => "STRING",
+        ValueType::BytesValue(_) => "BYTES",
+        ValueType::ReferenceValue(_) => "ENTITY_REF",
+        ValueType::GeoPointValue(_) => "GEO_POINT",
+        ValueType::ArrayValue(_) => "ARRAY",
+        ValueType::MapValue(map) if is_vector(map) => "VECTOR",
+        ValueType::MapValue(_) => "MAP",
+        _ => "UNKNOWN",
     }
 }
 

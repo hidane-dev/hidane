@@ -254,22 +254,33 @@ fn map_of(fields: Fields) -> Value {
 /// lists what it returns in the order of a Java `HashMap`: the masked names are visited in the
 /// order of one, and the values found are put into another (#108).
 pub fn project(fields: &Fields, paths: &[FieldPath]) -> Fields {
-    project_level(fields, &MaskTree::new(paths))
+    project_level(fields, &MaskTree::new(paths), false)
 }
 
-fn project_level(fields: &Fields, mask: &MaskTree) -> Fields {
+/// [`project`] as an enterprise database projects a query's documents: every map on the way
+/// to a selected path is there, empty where the document has nothing below it, whatever the
+/// document holds there (nothing, a value that is not a map, a vector, whose inside no path
+/// reaches).
+pub fn project_keeping_maps(fields: &Fields, paths: &[FieldPath]) -> Fields {
+    project_level(fields, &MaskTree::new(paths), true)
+}
+
+fn project_level(fields: &Fields, mask: &MaskTree, keep_maps: bool) -> Fields {
     let mut found = Vec::new();
     for (name, below) in mask.ordered() {
-        let Some(value) = fields.get(name) else {
-            continue;
-        };
+        let value = fields.get(name);
         if below.whole {
-            found.push((name.clone(), value.clone()));
-        } else if let Some(map) = map_fields(value) {
-            let inner = project_level(map, below);
-            if !inner.is_empty() {
+            if let Some(value) = value {
+                found.push((name.clone(), value.clone()));
+            }
+        } else if let Some(map) = value.and_then(map_fields) {
+            let inner = project_level(map, below, keep_maps);
+            if keep_maps || !inner.is_empty() {
                 found.push((name.clone(), map_of(inner)));
             }
+        } else if keep_maps {
+            let inner = project_level(&Fields::default(), below, keep_maps);
+            found.push((name.clone(), map_of(inner)));
         }
     }
     in_hash_order(found).collect()
@@ -467,6 +478,27 @@ mod tests {
                 &[fp("b.x"), fp("c"), fp("missing"), fp("a.not_a_map")]
             ),
             fields(&[("b", map(&[("x", int(1))])), ("c", int(3))])
+        );
+    }
+
+    #[test]
+    fn enterprise_projections_keep_the_maps_on_the_way() {
+        let doc = fields(&[("a", int(1)), ("b", map(&[("x", int(1)), ("y", int(2))]))]);
+        let empty = || map(&[]);
+        // Recorded in crates/hidane/tests/fixtures/queries_enterprise.json.
+        assert_eq!(
+            project_keeping_maps(
+                &doc,
+                &[fp("b.x"), fp("missing"), fp("a.not_a_map"), fp("m.x.y")]
+            ),
+            project_keeping_maps(
+                &fields(&[
+                    ("b", map(&[("x", int(1))])),
+                    ("a", empty()),
+                    ("m", map(&[("x", empty())])),
+                ]),
+                &[fp("b"), fp("a"), fp("m")]
+            )
         );
     }
 

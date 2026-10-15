@@ -1487,17 +1487,20 @@
    "area": "queries",
    "topic": null,
    "kind": "limitation",
-   "official": "With `--database-edition enterprise` (which firebase-tools passes for `firestore.edition: \"enterprise\"`), queries follow other semantics: `== null` and `== NaN` match; `!=`, `not-in`, `IS_NOT_NULL` and `IS_NOT_NAN` also return documents without the field or with `null`; the standard restrictions (several negations, two `array-contains`, descending key scans, orders after the key, filters and orders over every collection) do not apply; `array-contains` on a value that is not an array is an `INVALID_ARGUMENT`; and without an explicit order, results come in no defined order. 422 of the 616 cases of `tools/oracle/queries.py` answer differently",
+   "official": "With `--database-edition enterprise` (which firebase-tools passes for `firestore.edition: \"enterprise\"`), queries run as pipelines (`tools/oracle/queries.py`, `crates/hidane/tests/fixtures/queries_enterprise.json`), and so do aggregation queries: 154 of the 188 cases of `tools/oracle/aggregations.py` answer differently than on a standard database (no `done`; a `sum` of integers that overflows is an `INVALID_ARGUMENT` \"Long overflow\"; sums of doubles rounded otherwise; a `count` next to a `sum` or an `avg` counts documents without their field; `sum` and `avg` of no number are null; `count` with `up_to` is an `UNKNOWN` error; more than five aggregations and reserved aliases are answered)",
    "firestore": null,
-   "hidane": "Accepts the flag, then answers queries on every database as on a standard one; pipelines are `UNIMPLEMENTED` (#80)",
-   "reason": "Not implemented yet (#338): another query engine, to be recorded first. `hidane doctor` reports enterprise projects as incompatible",
+   "hidane": "Answers queries as an enterprise database does (`crates/hidane/tests/queries.rs`), but aggregation queries and the queries of listeners as on a standard database; pipelines are `UNIMPLEMENTED` (#80)",
+   "reason": "Not implemented yet (#338): recorded, to follow. `hidane doctor` reports enterprise projects as incompatible",
    "references": [
     "hidane-dev/hidane#338",
     "hidane-dev/hidane#80",
-    "tools/oracle/queries.py"
+    "tools/oracle/queries.py",
+    "tools/oracle/aggregations.py",
+    "crates/hidane/tests/fixtures/queries_enterprise.json",
+    "crates/hidane/tests/queries.rs"
    ],
    "pinned_by": [],
-   "unpinned": "No test runs queries on an enterprise database yet; the standard recordings pin what hidane answers (`crates/hidane/tests/queries.rs`)"
+   "unpinned": "No test runs aggregation queries or listeners on an enterprise database yet; the standard recordings pin what hidane answers (`crates/hidane/tests/aggregations.rs`)"
   }
  ],
  "retired": [
