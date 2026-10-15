@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:8a6d306673d969c9cf9d0289e9376d8bd613e9d752f7fe93c93736a86b315e37",
+ "digest": "sha256:588e93343bce697169b941391fefc1aa754dee1f1c1f134169b9e51c9462c2a2",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,13 +14,13 @@
   }
  ],
  "totals": {
-  "files": 101,
-  "fixtures": 59,
+  "files": 102,
+  "fixtures": 60,
   "transcripts": 42,
-  "answers": 26948,
-  "bytes": 18409780,
+  "answers": 30872,
+  "bytes": 20079022,
   "levels": {
-   "full": 15702,
+   "full": 19626,
    "reasons": 4344,
    "part": 1481,
    "status": 5189,
@@ -35,9 +35,9 @@
     "answers": 5749
    },
    "queries": {
-    "fixtures": 8,
+    "fixtures": 9,
     "transcripts": 9,
-    "answers": 2179
+    "answers": 6103
    },
    "transactions": {
     "fixtures": 1,
@@ -82,13 +82,13 @@
   },
   "by_release": {
    "v1.22.0": {
-    "fixtures": 59,
+    "fixtures": 60,
     "transcripts": 42,
-    "answers": 26948
+    "answers": 30872
    }
   },
   "by_release_source": {
-   "header": 34,
+   "header": 35,
    "file name": 43,
    "git history": 24
   }
@@ -591,6 +591,42 @@
    ],
    "counted": "each sequence of requests, on an enterprise database",
    "compared": "in full: the sequence's answers and what `:indexUsage` answers after it, the reports as a set"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/pipelines.json",
+   "kind": "fixture",
+   "area": "queries",
+   "recorder": "tools/oracle/pipelines.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-16",
+    "last_changed": "2026-10-16"
+   },
+   "bytes": 1669242,
+   "sha256": "bffe76e93fcd777b988d54f0a908cc41880ae392f18eb3c02d2c48a9be73fb8b",
+   "answers": 3924,
+   "levels": {
+    "full": 3924
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/pipelines.rs::pipelines_run_like_the_official_emulator"
+   ],
+   "counted": "each pipeline, on an enterprise database, and each sequence of requests (transactions, read times, requests without a pipeline); recorded over REST",
+   "compared": "in full: an error's status and message; the results' names, fields and whether they have times, in order after a sort and as a set otherwise (D092); whether the response has an execution time and a transaction"
   },
   {
    "path": "crates/hidane/tests/fixtures/queries.json",

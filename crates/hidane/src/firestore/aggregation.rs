@@ -345,7 +345,7 @@ impl Aggregations {
 /// comes after it; then every number as a double, added as decimals. Which partial sums
 /// overflow depends on that order, which the official emulator does not define.
 #[allow(clippy::cast_precision_loss)]
-fn enterprise_sum(numbers: &[&ValueType]) -> Result<Option<ValueType>, Status> {
+pub(crate) fn enterprise_sum(numbers: &[&ValueType]) -> Result<Option<ValueType>, Status> {
     let mut integers: i64 = 0;
     let mut doubles: Option<Vec<f64>> = None;
     for v in numbers {

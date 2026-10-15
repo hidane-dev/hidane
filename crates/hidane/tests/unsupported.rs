@@ -233,9 +233,11 @@ async fn ignored_and_refused_like_the_official_emulator() {
     assert!(differences.is_empty(), "{}", differences.join("\n"));
 }
 
-/// With `--database-edition enterprise`, pipelines are allowed but not implemented yet.
+/// With `--database-edition enterprise`, pipelines run over gRPC too (`tests/pipelines.rs`
+/// replays them over REST): a request without one is an `UNKNOWN` error without a message, as
+/// on the official emulator.
 #[tokio::test]
-async fn enterprise_pipelines_are_not_implemented_yet() {
+async fn enterprise_pipelines_run_over_grpc() {
     let (mut client, _) = start(true).await;
     let status = client
         .execute_pipeline(ExecutePipelineRequest {
@@ -244,10 +246,6 @@ async fn enterprise_pipelines_are_not_implemented_yet() {
         })
         .await
         .unwrap_err();
-    assert_eq!(status.code(), Code::Unimplemented);
-    assert!(
-        status.message().contains("/issues/80"),
-        "{}",
-        status.message()
-    );
+    assert_eq!(status.code(), Code::Unknown);
+    assert_eq!(status.message(), "");
 }

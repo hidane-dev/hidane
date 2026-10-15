@@ -1381,15 +1381,17 @@
    "kind": "bug-for-bug",
    "official": "Only with `--database-edition enterprise`; on a standard database `INVALID_ARGUMENT` \"ExecutePipeline requires the Database Edition to be \\`enterprise\\`.\"",
    "firestore": "Enterprise edition only",
-   "hidane": "As the official emulator on standard databases; enterprise pipelines are not implemented yet (`UNIMPLEMENTED`, #80)",
-   "reason": "Follow the emulator on standard databases (#26); enterprise pipelines are not implemented in hidane yet (`UNIMPLEMENTED`, #80)",
+   "hidane": "As the official emulator: the same error on a standard database, and pipelines on an enterprise one (`tools/oracle/pipelines.py`)",
+   "reason": "Follow the emulator (#26, #80)",
    "references": [
     "hidane-dev/hidane#80",
-    "hidane-dev/hidane#26"
+    "hidane-dev/hidane#26",
+    "tools/oracle/pipelines.py"
    ],
    "pinned_by": [
     "crates/hidane/tests/unsupported.rs::ignored_and_refused_like_the_official_emulator",
-    "crates/hidane/tests/unsupported.rs::enterprise_pipelines_are_not_implemented_yet"
+    "crates/hidane/tests/unsupported.rs::enterprise_pipelines_run_over_grpc",
+    "crates/hidane/tests/pipelines.rs::pipelines_run_like_the_official_emulator"
    ]
   },
   {
@@ -1492,17 +1494,34 @@
    "kind": "limitation",
    "official": "With `--database-edition enterprise` (which firebase-tools passes for `firestore.edition: \"enterprise\"`), a listener's query is checked as on a standard database, but with null and NaN as values like others (`tools/oracle/listen_queries.py`): which filters match nothing changes, and with it which queries a listener refuses, how disjunctions and terms are counted, and which filters on `__name__` are refused (34 of the 629 targets of `crates/hidane/tests/fixtures/listen_queries_enterprise.json`)",
    "firestore": null,
-   "hidane": "Answers queries and aggregation queries as an enterprise database does, and matches a listener's documents as one does (null and NaN equal themselves, `!=` and `not-in` take them), but refuses a listener's queries as a standard database does; pipelines are `UNIMPLEMENTED` (#80)",
+   "hidane": "Answers queries and aggregation queries as an enterprise database does, and matches a listener's documents as one does (null and NaN equal themselves, `!=` and `not-in` take them), but refuses a listener's queries as a standard database does",
    "reason": "Not implemented yet (#338): the 34 targets are recorded, and listed in `crates/hidane/tests/listen_queries.rs`",
    "references": [
     "hidane-dev/hidane#338",
-    "hidane-dev/hidane#80",
     "tools/oracle/listen_queries.py",
     "crates/hidane/tests/fixtures/listen_queries_enterprise.json",
     "crates/hidane/tests/listen_queries.rs"
    ],
    "pinned_by": [
     "crates/hidane/tests/listen_queries.rs::enterprise_listen_targets_answer_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D092",
+   "table": "intentional",
+   "area": "queries",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "A pipeline without `sort` (or `find_nearest`) returns its results in an order of its own, which is not the documents' names (`tools/oracle/pipelines.py`); so do `array_agg_distinct`'s values",
+   "firestore": null,
+   "hidane": "Reads a source's documents in name order, and every stage keeps the order of its input; `array_agg_distinct` keeps the order values first appear in",
+   "reason": "The order is not defined without `sort`; a test that relies on one fails against production too",
+   "references": [
+    "hidane-dev/hidane#80",
+    "tools/oracle/pipelines.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/pipelines.rs::pipelines_run_like_the_official_emulator"
    ]
   }
  ],

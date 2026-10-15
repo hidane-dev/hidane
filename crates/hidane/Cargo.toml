@@ -25,6 +25,8 @@ pkg-fmt = "zip"
 [dependencies]
 axum.workspace = true
 base64.workspace = true
+chrono.workspace = true
+chrono-tz.workspace = true
 clap.workspace = true
 hidane-core.workspace = true
 # `client`: `hidane benchmark` drives both emulators with the generated gRPC client.
@@ -36,6 +38,7 @@ percent-encoding.workspace = true
 prost.workspace = true
 prost-reflect.workspace = true
 prost-types.workspace = true
+regex.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 sha1.workspace = true
@@ -48,7 +51,6 @@ tower.workspace = true
 
 [dev-dependencies]
 bytes.workspace = true
-chrono.workspace = true
 http-body-util.workspace = true
 hyper-util = { workspace = true, features = ["client-legacy", "http1"] }
 jsonschema.workspace = true

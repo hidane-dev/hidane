@@ -22,6 +22,7 @@ use std::{
 };
 
 use hidane_core::{path::ResourcePath, store::ReadTime};
+use hidane_proto::google::firestore::v1::Write;
 use tokio::{sync::watch, time::Instant};
 use tonic::Status;
 
@@ -72,6 +73,9 @@ struct Open {
     last_used: Instant,
     documents: HashSet<ResourcePath>,
     collection_ids: HashSet<String>,
+    /// Writes a pipeline's `update` or `delete` made in the transaction, which its commit
+    /// applies before its own.
+    pending: Vec<Write>,
 }
 
 impl Open {
@@ -171,6 +175,7 @@ impl Transactions {
                 last_used: now,
                 documents: HashSet::new(),
                 collection_ids: HashSet::new(),
+                pending: Vec::new(),
             },
         );
         encode(id)
@@ -208,6 +213,42 @@ impl Transactions {
             txn.collection_ids.extend(collection_id.map(str::to_owned));
         }
         Ok(txn.mode)
+    }
+
+    /// Keeps `writes`, whose documents are `documents`, for `transaction`'s commit, locking
+    /// them: what a pipeline's `update` or `delete` does in a transaction.
+    pub fn buffer(
+        &self,
+        database: &str,
+        transaction: &[u8],
+        documents: &[ResourcePath],
+        writes: Vec<Write>,
+    ) -> Result<(), Status> {
+        let id = decode(transaction)?;
+        let now = Instant::now();
+        let shared = self.database(database);
+        let mut db = self.lock(&shared, now);
+        let txn = db.get(id, now)?;
+        if matches!(txn.mode, Mode::ReadOnly(_)) {
+            return Err(Status::invalid_argument(READ_ONLY));
+        }
+        txn.documents.extend(documents.iter().cloned());
+        txn.pending.extend(writes);
+        Ok(())
+    }
+
+    /// The writes [`Transactions::buffer`] kept for `transaction`, taken; none for a
+    /// transaction that is not open.
+    pub fn take_pending(&self, database: &str, transaction: &[u8]) -> Vec<Write> {
+        let Ok(id) = decode(transaction) else {
+            return Vec::new();
+        };
+        let shared = self.database(database);
+        let mut db = self.lock(&shared, Instant::now());
+        db.open
+            .get_mut(&id)
+            .map(|txn| std::mem::take(&mut txn.pending))
+            .unwrap_or_default()
     }
 
     /// The transaction a commit names, checked before anything about its writes, as on the
