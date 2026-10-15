@@ -430,6 +430,138 @@
    }
   },
   {
+   "name": "tenths3/a",
+   "fields": {
+    "v": {
+     "doubleValue": 0.1
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "tenths3/b",
+   "fields": {
+    "v": {
+     "doubleValue": 0.2
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "tenths3/c",
+   "fields": {
+    "v": {
+     "doubleValue": 0.4
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "big_mixed/a",
+   "fields": {
+    "v": {
+     "integerValue": "9223372036854775807"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "big_mixed/b",
+   "fields": {
+    "v": {
+     "doubleValue": 1.0
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "large_doubles/a",
+   "fields": {
+    "v": {
+     "doubleValue": 1e+308
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "large_doubles/b",
+   "fields": {
+    "v": {
+     "doubleValue": 1e+308
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "thirds/a",
+   "fields": {
+    "v": {
+     "integerValue": "1"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "thirds/b",
+   "fields": {
+    "v": {
+     "integerValue": "1"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "thirds/c",
+   "fields": {
+    "v": {
+     "integerValue": "2"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "tiny/a",
+   "fields": {
+    "v": {
+     "integerValue": "1"
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "name": "tiny/b",
+   "fields": {
+    "v": {
+     "doubleValue": 1e-20
+    },
+    "w": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
    "name": "mixed/i1/sub/x",
    "fields": {
     "v": {
@@ -1408,6 +1540,725 @@
    }
   },
   {
+   "name": "count, sum and avg of tenths3",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "tenths3"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "3"
+        },
+        "sum": {
+         "doubleValue": 0.7000000000000001
+        },
+        "avg": {
+         "doubleValue": 0.23333333333333336
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of big_mixed",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "big_mixed"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "2"
+        },
+        "sum": {
+         "doubleValue": 9.223372036854776e+18
+        },
+        "avg": {
+         "doubleValue": 4.611686018427388e+18
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of large_doubles",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "large_doubles"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "2"
+        },
+        "sum": {
+         "doubleValue": "Infinity"
+        },
+        "avg": {
+         "doubleValue": "Infinity"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of thirds",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "thirds"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "3"
+        },
+        "sum": {
+         "integerValue": "4"
+        },
+        "avg": {
+         "doubleValue": 1.3333333333333333
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "count, sum and avg of tiny",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "tiny"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "count": {},
+     "alias": "n"
+    },
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "sum"
+    },
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "avg"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "n": {
+         "integerValue": "2"
+        },
+        "sum": {
+         "doubleValue": 1.0
+        },
+        "avg": {
+         "doubleValue": 0.5
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg of overflow alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "overflow"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "doubleValue": 4.611686018427388e+18
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of overflow alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "overflow"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "doubleValue": 9.223372036854776e+18
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg of underflow alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "underflow"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "doubleValue": -4.611686018427388e+18
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of underflow alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "underflow"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "doubleValue": -9.223372036854776e+18
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg of big_avg alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "big_avg"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "doubleValue": 9.223372036854776e+18
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of big_avg alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "big_avg"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "doubleValue": 1.8446744073709552e+19
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg of tenths3 alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "tenths3"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "doubleValue": 0.23333333333333336
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of tenths3 alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "tenths3"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "doubleValue": 0.7000000000000001
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg of big_mixed alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "big_mixed"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "doubleValue": 4.611686018427388e+18
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of big_mixed alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "big_mixed"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "doubleValue": 9.223372036854776e+18
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "avg of thirds alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "thirds"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "avg": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "a"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "a": {
+         "doubleValue": 1.3333333333333333
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "sum of thirds alone",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "thirds"
+     }
+    ]
+   },
+   "aggregations": [
+    {
+     "sum": {
+      "field": {
+       "fieldPath": "v"
+      }
+     },
+     "alias": "s"
+    }
+   ],
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "result": {
+       "aggregateFields": {
+        "s": {
+         "integerValue": "4"
+        }
+       }
+      },
+      "readTime": "<time>",
+      "done": true
+     }
+    ]
+   }
+  },
+  {
    "name": "empty collection",
    "parent": "",
    "query": {
@@ -1896,7 +2747,7 @@
       "result": {
        "aggregateFields": {
         "n": {
-         "integerValue": "50"
+         "integerValue": "62"
         }
        }
       },
@@ -1930,7 +2781,7 @@
       "result": {
        "aggregateFields": {
         "n": {
-         "integerValue": "52"
+         "integerValue": "64"
         }
        }
       },

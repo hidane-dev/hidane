@@ -1144,7 +1144,9 @@ impl Firestore for FirestoreService {
             }
             None => &default,
         };
-        query::check_operators(structured)?;
+        if !self.enterprise {
+            query::check_operators(structured)?;
+        }
         if let Some(run_aggregation_query_request::ConsistencySelector::Transaction(t)) =
             &req.consistency_selector
         {
@@ -1159,12 +1161,25 @@ impl Firestore for FirestoreService {
         };
         let listed = Aggregations::read(&q.aggregations)?;
         let mut checked = None;
-        let read = Query::read(&database, parent.path, structured, false, |projection| {
-            let aggregations = listed.check(projection)?;
-            let fields = aggregations.fields().collect();
-            checked = Some(aggregations);
-            Ok(fields)
-        })?;
+        let enterprise = self.enterprise;
+        let read = Query::read(
+            &database,
+            parent.path,
+            structured,
+            enterprise,
+            |projection| {
+                // An enterprise database leaves no document out for the fields aggregated (#338).
+                let (aggregations, fields) = if enterprise {
+                    (listed.check_enterprise()?, Vec::new())
+                } else {
+                    let aggregations = listed.check(projection)?;
+                    let fields = aggregations.fields().collect();
+                    (aggregations, fields)
+                };
+                checked = Some(aggregations);
+                Ok(fields)
+            },
+        )?;
         let aggregations = checked.expect("checked while reading the query");
         // As for RunQuery: Security Rules and the read time, the rest, then the lock.
         self.check_list(&caller, &database, &read)?;
@@ -1173,8 +1188,13 @@ impl Firestore for FirestoreService {
         {
             self.read_time(&database, Some(ts))?;
         }
-        let mut query = read.check()?;
-        query.require(aggregations.fields());
+        let query = if enterprise {
+            read.check_enterprise()?
+        } else {
+            let mut query = read.check()?;
+            query.require(aggregations.fields());
+            query
+        };
         let consistency = match &req.consistency_selector {
             Some(run_aggregation_query_request::ConsistencySelector::Transaction(t)) => {
                 Consistency::Transaction(t)
@@ -1197,12 +1217,15 @@ impl Firestore for FirestoreService {
                 ..RunAggregationQueryResponse::default()
             }));
         }
-        let results = query.run(self.store.as_ref(), &database, at);
+        let results = query.try_run(self.store.as_ref(), &database, at)?;
+        let aggregate_fields = if enterprise {
+            aggregations.compute_enterprise(&results.documents, query.projection())?
+        } else {
+            aggregations.compute(&results.documents)
+        };
         // The official emulator also sets `done: true`, a field the published protos lack.
         responses.push(Ok(RunAggregationQueryResponse {
-            result: Some(AggregationResult {
-                aggregate_fields: aggregations.compute(&results.documents),
-            }),
+            result: Some(AggregationResult { aggregate_fields }),
             read_time: Some(at.to_timestamp()),
             ..RunAggregationQueryResponse::default()
         }));

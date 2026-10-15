@@ -170,6 +170,14 @@ def aggregations(f):
     return [(GRPC, FULL if case["outcome"]["status"] != "OK" else PART) for case in f["cases"]]
 
 
+def enterprise_aggregations(f):
+    """aggregations.rs's replay on an enterprise database: as on a standard one, but the sums
+    that overflow in some orders of addition only (`ORDER_DEPENDENT`) are not compared."""
+    skipped = rust_strings(f"{H}/aggregations.rs", "ORDER_DEPENDENT")
+    return [(GRPC, NONE if case["name"] in skipped else level)
+            for case, (_, level) in zip(f["cases"], aggregations(f))]
+
+
 # The recorded messages crates/hidane/tests/documents.rs checks hidane's against (calls of
 # `official_message`). It replays no case as a whole; keep this list in step with it.
 DOCUMENT_WRITES_CHECKED = [
@@ -554,6 +562,15 @@ RECORDINGS = {
         compares="an error in full (status and message); results in part: every aggregate value "
                  "with its type, not `done`, which gRPC does not carry",
         count=aggregations),
+    f"{H}/fixtures/aggregations_enterprise.json": dict(
+        area="queries",
+        tests=[f"{H}/aggregations.rs::enterprise_aggregations_answer_like_the_official_emulator"],
+        counted="each query, on an enterprise database; " + OVER_REST,
+        compares="an error in full (status and message); results in part: every aggregate value "
+                 "with its type, not `done`, which gRPC does not carry, and only the counts where "
+                 "a limit or an offset picks documents in no defined order; sums that overflow "
+                 "in some orders of addition only, not at all",
+        count=enterprise_aggregations),
     f"{H}/fixtures/auth.json": dict(
         area="admin", tests=[f"{H}/auth.rs::authorization_is_read_like_the_official_emulator"],
         counted="each case",
