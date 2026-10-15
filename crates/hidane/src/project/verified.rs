@@ -33,7 +33,7 @@ pub const VERIFIED: &[Verified] = &[
         ecosystem: "npm",
         name: "@google-cloud/firestore",
         version: "9.3.1",
-        what: "over gRPC, with the default settings: documents and writes, queries, aggregation queries, vector search, transactions, listeners",
+        what: "over gRPC, with the default settings: documents and writes, queries, aggregation queries, vector search, transactions, listeners, clearing data",
         source: "docs/sdk-certification.md",
     },
     Verified {

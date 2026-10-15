@@ -30,8 +30,8 @@
     },
     {
      "kind": "transcripts",
-     "count": 34,
-     "description": "34 comparisons of SDK transcripts with the official emulator v1.22.0's: 20 identical, 14 documented differences",
+     "count": 35,
+     "description": "35 comparisons of SDK transcripts with the official emulator v1.22.0's: 20 identical, 15 documented differences",
      "where": "docs/parity.md",
      "runs": "recorded",
      "last_recorded": null
@@ -49,15 +49,15 @@
  ],
  "oracle_corpus": {
   "where": "docs/oracle-corpus.json",
-  "digest": "sha256:cfd73c2a5b5f2fbe01d5b27d1e6372138fea53018649eab84cc21c78ed458f13",
+  "digest": "sha256:29d7881bd1fb7289b6166ce19b41bd4c977a0be3be712528e33fcccfb3a115bc",
   "releases": [
    "1.22.0"
   ],
-  "files": 81,
+  "files": 82,
   "fixtures": 49,
-  "transcripts": 32,
+  "transcripts": 33,
   "answers": 23875,
-  "bytes": 14122665
+  "bytes": 14225878
  },
  "replay": {
   "fixtures": 49,
@@ -170,10 +170,10 @@
   "where": "docs/parity.md"
  },
  "transcripts": {
-  "pairs": 32,
-  "comparisons": 34,
+  "pairs": 33,
+  "comparisons": 35,
   "identical": 20,
-  "documented": 14,
+  "documented": 15,
   "unexplained": 0,
   "where": "docs/parity.md"
  },

@@ -25,7 +25,7 @@
    "status": "verified",
    "evidence": [
     "23,875 recorded answers of the official emulator v1.22.0 in 49 fixtures, replayed against hidane by cargo test",
-    "34 comparisons of SDK transcripts with the official emulator v1.22.0's: 20 identical, 14 documented differences",
+    "35 comparisons of SDK transcripts with the official emulator v1.22.0's: 20 identical, 15 documented differences",
     "2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers"
    ]
   }
@@ -205,13 +205,19 @@
     "aggregation queries",
     "vector search",
     "transactions",
-    "listeners"
+    "listeners",
+    "clearing data"
    ],
    "not_exercised": [],
    "gaps": [],
-   "last_recorded": "2026-10-10",
+   "last_recorded": "2026-10-15",
    "tracking": null,
    "evidence": [
+    {
+     "name": "nodejs-system-tests",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/nodejs-system-tests-hidane.json"
+    },
     {
      "name": "sdk-aggregations",
      "result": "identical",
@@ -676,10 +682,10 @@
    "differs": 161
   },
   "transcripts": {
-   "pairs": 32,
-   "comparisons": 34,
+   "pairs": 33,
+   "comparisons": 35,
    "identical": 20,
-   "documented": 14,
+   "documented": 15,
    "unexplained": 0,
    "where": "docs/parity.md"
   }
