@@ -276,13 +276,14 @@ def go(module, fetch):
                      "@latest")
 
 
-# Groups published to Google's Maven repository rather than Maven Central.
-GOOGLE_MAVEN_GROUPS = ("com.google.firebase",)
+# Artifacts published to Google's Maven repository rather than Maven Central (the Android SDKs;
+# com.google.firebase:firebase-admin is on Maven Central).
+GOOGLE_MAVEN = ("com.google.firebase:firebase-firestore",)
 
 
 def maven(coordinate, fetch):
     group, artifact = coordinate.split(":")
-    base = ("https://dl.google.com/dl/android/maven2" if group in GOOGLE_MAVEN_GROUPS
+    base = ("https://dl.google.com/dl/android/maven2" if coordinate in GOOGLE_MAVEN
             else "https://repo1.maven.org/maven2")
     url = f"{base}/{group.replace('.', '/')}/{artifact}/maven-metadata.xml"
     text = fetch(url, "application/xml").decode("utf-8")

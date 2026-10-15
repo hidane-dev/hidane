@@ -496,6 +496,20 @@ public class Transcript {
         }
     }
 
+    /** Waits until each of `names` has sent a snapshot (at most a minute): on a slow device the
+     * first snapshots can take longer than the quiet time of a step. */
+    private void awaitFirst(List<String> names) throws InterruptedException {
+        long deadline = System.currentTimeMillis() + 60_000;
+        while (System.currentTimeMillis() < deadline) {
+            synchronized (lock) {
+                List<String> seen = new ArrayList<>();
+                for (Object[] e : entries) seen.add((String) e[0]);
+                if (seen.containsAll(names)) return;
+            }
+            Thread.sleep(50);
+        }
+    }
+
     interface Action { void run() throws Exception; }
 
     private void listenStep(String name, Action action) throws InterruptedException {
@@ -559,6 +573,8 @@ public class Transcript {
             registrations.add(query(executor, "group landmarks", db.collectionGroup("landmarks")));
             registrations.add(document(executor, "doc SF", db.document("cities/SF")));
             registrations.add(document(executor, "doc NY", db.document("cities/NY")));
+            awaitFirst(Arrays.asList("all", "pop > 1000", "top 2 by pop", "CA by pop", "group landmarks",
+                    "doc SF", "doc NY"));
         });
         listenStep("add NY (enters several queries)", () -> await(cities.document("NY").set(data("pop", 8300L, "state", "NY"))));
         listenStep("update SF (stays in all)", () -> await(cities.document("SF").update("pop", 870L)));

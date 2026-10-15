@@ -318,6 +318,10 @@ class Detect(unittest.TestCase):
         })
         versions, _ = watch.maven("com.google.firebase:firebase-firestore", fetch)
         self.assertEqual(versions, {watch.STABLE: "27.0.0"})
+        # firebase-admin, in the same group, is on Maven Central.
+        with self.assertRaises(urllib.error.HTTPError):
+            watch.maven("com.google.firebase:firebase-admin", fetch)
+        self.assertTrue(fetch.asked[-1].startswith("https://repo1.maven.org/maven2/com/google/firebase/"))
 
     def test_swiftpm_reads_the_repository_releases(self):
         base = "https://api.github.com/repos/firebase/firebase-ios-sdk/releases"

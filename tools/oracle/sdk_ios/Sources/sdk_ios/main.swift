@@ -401,6 +401,16 @@ final class Log: @unchecked Sendable {
         }
     }
 
+    /// Waits until each of `names` has sent a snapshot (at most a minute): on a slow machine the
+    /// first snapshots can take longer than the quiet time of a step.
+    func awaitFirst(_ names: Set<String>) async {
+        let deadline = Date().addingTimeInterval(60)
+        while Date() < deadline {
+            if lock.withLock({ names.isSubset(of: Set(entries.map { $0.0 })) }) { return }
+            try? await Task.sleep(nanoseconds: 50_000_000)
+        }
+    }
+
     /// Waits until no snapshot came for 300 ms (at least 150 ms), then takes what came.
     func quiet() async -> [(String, [String: Any])] {
         try? await Task.sleep(nanoseconds: 150_000_000)
@@ -471,6 +481,7 @@ func listen() async {
         registrations.append(query("group landmarks", db.collectionGroup("landmarks")))
         registrations.append(document("doc SF", db.document("cities/SF")))
         registrations.append(document("doc NY", db.document("cities/NY")))
+        await log.awaitFirst(["all", "pop > 1000", "top 2 by pop", "CA by pop", "group landmarks", "doc SF", "doc NY"])
     }
     await listenStep("add NY (enters several queries)") {
         try await cities.document("NY").setData(["pop": 8300, "state": "NY"])

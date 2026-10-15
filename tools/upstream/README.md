@@ -18,7 +18,7 @@ the release last reviewed (`verified: false`):
 | npm | `firebase-tools`, `firebase`, `firebase-admin`, `@google-cloud/firestore`, `firebase-functions`, `@firebase/rules-unit-testing` | `https://registry.npmjs.org/-/package/<name>/dist-tags` |
 | PyPI | `google-cloud-firestore`, `firebase-admin` | `https://pypi.org/pypi/<name>/json` |
 | Go | `cloud.google.com/go/firestore` | `https://proxy.golang.org/<module>/@v/list` and `@latest` |
-| Maven | `com.google.cloud:google-cloud-firestore`, `com.google.firebase:firebase-admin`, `com.google.firebase:firebase-firestore` | `https://repo1.maven.org/maven2/<group>/<artifact>/maven-metadata.xml`; for the groups of `GOOGLE_MAVEN_GROUPS` in `watch.py` (`com.google.firebase`), Google's Maven repository, `https://dl.google.com/dl/android/maven2/<group>/<artifact>/maven-metadata.xml` |
+| Maven | `com.google.cloud:google-cloud-firestore`, `com.google.firebase:firebase-admin`, `com.google.firebase:firebase-firestore` | `https://repo1.maven.org/maven2/<group>/<artifact>/maven-metadata.xml`; for the artifacts of `GOOGLE_MAVEN` in `watch.py` (`com.google.firebase:firebase-firestore`), Google's Maven repository, `https://dl.google.com/dl/android/maven2/<group>/<artifact>/maven-metadata.xml` |
 | pub | `cloud_firestore` | `https://pub.dev/api/packages/<name>` |
 | Swift Package Manager | `FirebaseFirestore` | the GitHub releases of the repository that publishes it (`SWIFTPM_REPOSITORIES` in `watch.py`: firebase/firebase-ios-sdk), `https://api.github.com/repos/<repository>/releases` and `/releases/latest`; drafts left out |
 
