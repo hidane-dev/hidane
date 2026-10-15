@@ -25,7 +25,7 @@
    "status": "verified",
    "evidence": [
     "24,435 recorded answers of the official emulator v1.22.0 in 53 fixtures, replayed against hidane by cargo test",
-    "43 comparisons of SDK transcripts with the official emulator v1.22.0's: 26 identical, 17 documented differences",
+    "44 comparisons of SDK transcripts with the official emulator v1.22.0's: 26 identical, 18 documented differences",
     "2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers"
    ]
   }
@@ -260,21 +260,31 @@
     "REST",
     "gRPC"
    ],
-   "status": "not-verified",
-   "version": null,
-   "official_emulator": [],
-   "exercised": [],
-   "not_exercised": [
+   "status": "verified",
+   "version": "9.3.1",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
     "documents and writes",
     "queries",
     "aggregation queries",
+    "vector search",
     "transactions",
-    "listeners"
+    "listeners",
+    "clearing data"
    ],
+   "not_exercised": [],
    "gaps": [],
-   "last_recorded": null,
+   "last_recorded": "2026-10-15",
    "tracking": null,
-   "evidence": []
+   "evidence": [
+    {
+     "name": "nodejs-system-tests-rest",
+     "result": "documented",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/nodejs-system-tests-rest-hidane.json"
+    }
+   ]
   },
   {
    "id": "rules-unit-testing",
@@ -728,10 +738,10 @@
    "differs": 161
   },
   "transcripts": {
-   "pairs": 41,
-   "comparisons": 43,
+   "pairs": 42,
+   "comparisons": 44,
    "identical": 26,
-   "documented": 17,
+   "documented": 18,
    "unexplained": 0,
    "where": "docs/parity.md"
   }

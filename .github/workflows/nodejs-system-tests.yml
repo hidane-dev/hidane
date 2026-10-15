@@ -1,10 +1,11 @@
 name: nodejs-firestore system tests
 
 # Runs the system tests of the Node.js server SDK (@google-cloud/firestore, google-cloud-node's
-# handwritten/firestore, `system-test:emulator:grpc`) at a pinned commit against hidane, and
-# compares each test's outcome with the run against the official emulator kept in
-# results/nodejs-system-tests-official-v1.22.0.json (tools/nodejs-system-tests/README.md). It
-# fails on a test that passes there and not on hidane, unless
+# handwritten/firestore, `system-test:emulator:grpc` and `system-test:emulator:rest`) at a pinned
+# commit against hidane, over gRPC and over REST, and compares each test's outcome with the run
+# against the official emulator kept in results/nodejs-system-tests-official-v1.22.0.json and
+# results/nodejs-system-tests-rest-official-v1.22.0.json (tools/nodejs-system-tests/README.md).
+# It fails on a test that passes there and not on hidane, unless
 # tools/nodejs-system-tests/expected-failures.txt lists it, and on a listed test that passes.
 #
 # It runs weekly, by hand, and for changes to the server, the runner or the recorded results.
@@ -45,10 +46,23 @@ env:
   GOOGLE_CLOUD_NODE_COMMIT: 3821456d7810580c3c3f1256bd3d2fae4a3f5980
 
 jobs:
-  grpc:
-    name: gRPC against hidane
+  suite:
+    name: ${{ matrix.name }} against hidane
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: gRPC
+            transport: grpc
+            results: nodejs-system-tests
+          - name: REST
+            transport: rest
+            results: nodejs-system-tests-rest
+    env:
+      TRANSPORT: ${{ matrix.transport }}
+      RESULTS: ${{ matrix.results }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -81,20 +95,20 @@ jobs:
           target/release/hidane --host 127.0.0.1 --port 8080 > "$RUNNER_TEMP/hidane.log" 2>&1 &
           timeout 30 sh -c 'until curl -fsS http://127.0.0.1:8080/ > /dev/null; do sleep 1; done'
       - name: Run the system tests
-        run: tools/nodejs-system-tests/run.sh google-cloud-node 8080 "$RUNNER_TEMP/report.json"
+        run: tools/nodejs-system-tests/run.sh google-cloud-node 8080 "$RUNNER_TEMP/report.json" "$TRANSPORT"
       - name: Compare with the official emulator
         run: |
           node tools/nodejs-system-tests/results.mjs "$GOOGLE_CLOUD_NODE_COMMIT" hidane "$RUNNER_TEMP/report.json" \
-            > "$RUNNER_TEMP/nodejs-system-tests-hidane.json"
-          node tools/nodejs-system-tests/compare.mjs results/nodejs-system-tests-official-v1.22.0.json \
-            "$RUNNER_TEMP/nodejs-system-tests-hidane.json" tools/nodejs-system-tests/expected-failures.txt
+            "$TRANSPORT" > "$RUNNER_TEMP/$RESULTS-hidane.json"
+          node tools/nodejs-system-tests/compare.mjs "results/$RESULTS-official-v1.22.0.json" \
+            "$RUNNER_TEMP/$RESULTS-hidane.json" tools/nodejs-system-tests/expected-failures.txt
       # The run's results (as committed in results/), Mocha's report and hidane's log.
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: ${{ !cancelled() }}
         with:
-          name: nodejs-system-tests-hidane
+          name: ${{ matrix.results }}-hidane
           path: |
-            ${{ runner.temp }}/nodejs-system-tests-hidane.json
+            ${{ runner.temp }}/${{ matrix.results }}-hidane.json
             ${{ runner.temp }}/report.json
             ${{ runner.temp }}/hidane.log
           if-no-files-found: ignore

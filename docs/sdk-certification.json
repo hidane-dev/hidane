@@ -73,9 +73,9 @@
  ],
  "totals": {
   "clients": 16,
-  "verified": 13,
+  "verified": 14,
   "partially-verified": 0,
-  "not-verified": 3
+  "not-verified": 2
  },
  "clients": [
   {
@@ -641,7 +641,7 @@
        "path": "results/nodejs-system-tests-hidane.json",
        "result": "documented",
        "explained_in": "results/README.md",
-       "sha256": "19c444b78bc3024527354b51695419b7821f7537eb95c71b5177f54ddf41a053",
+       "sha256": "1e63aaea31f262918b75d502907825ff03fe4180215bda873f341f8561a994b2",
        "recorded": {
         "first_recorded": "2026-10-15",
         "last_changed": "2026-10-15"
@@ -891,9 +891,11 @@
     "REST",
     "gRPC"
    ],
-   "status": "not-verified",
-   "version": null,
-   "official_emulator": [],
+   "status": "verified",
+   "version": "9.3.1",
+   "official_emulator": [
+    "v1.22.0"
+   ],
    "core": [
     "documents",
     "queries",
@@ -901,18 +903,66 @@
     "transactions",
     "listeners"
    ],
-   "exercised": [],
-   "not_exercised": [
+   "exercised": [
     "documents",
     "queries",
     "aggregations",
+    "vector-search",
     "transactions",
-    "listeners"
+    "listeners",
+    "clear"
    ],
+   "not_exercised": [],
    "gaps": [],
-   "last_recorded": null,
+   "last_recorded": "2026-10-15",
    "tracking": null,
-   "evidence": []
+   "evidence": [
+    {
+     "transcript": "nodejs-system-tests-rest",
+     "official": "results/nodejs-system-tests-rest-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-15",
+      "last_changed": "2026-10-15"
+     },
+     "compared": [
+      {
+       "path": "results/nodejs-system-tests-rest-hidane.json",
+       "result": "documented",
+       "explained_in": "results/README.md",
+       "sha256": "3c3097a037a811649b64c09574de24b42428f4fceb537fd6d8e82daead454a7d",
+       "recorded": {
+        "first_recorded": "2026-10-15",
+        "last_changed": "2026-10-15"
+       }
+      }
+     ],
+     "result": "documented",
+     "packages": [
+      {
+       "name": "google-cloud-node",
+       "version": "3821456d7810580c3c3f1256bd3d2fae4a3f5980",
+       "source": "pinned",
+       "where": ".github/workflows/nodejs-system-tests.yml"
+      },
+      {
+       "name": "@google-cloud/firestore",
+       "version": "9.3.1",
+       "source": "stated",
+       "where": "results/README.md"
+      }
+     ],
+     "features": [
+      "documents",
+      "queries",
+      "aggregations",
+      "vector-search",
+      "transactions",
+      "listeners",
+      "clear"
+     ]
+    }
+   ]
   },
   {
    "id": "rules-unit-testing",
@@ -2353,10 +2403,11 @@
    "ecosystem": "npm",
    "name": "@google-cloud/firestore",
    "version": "9.3.1",
-   "what": "over gRPC, with the default settings: documents and writes, queries, aggregation queries, vector search, transactions, listeners, clearing data",
+   "what": "over gRPC, with the default settings and with `preferRest`",
    "source": "docs/sdk-certification.md",
    "clients": [
-    "admin-node"
+    "admin-node",
+    "admin-node-prefer-rest"
    ]
   },
   {

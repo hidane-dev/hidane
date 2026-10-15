@@ -30,8 +30,8 @@
     },
     {
      "kind": "transcripts",
-     "count": 43,
-     "description": "43 comparisons of SDK transcripts with the official emulator v1.22.0's: 26 identical, 17 documented differences",
+     "count": 44,
+     "description": "44 comparisons of SDK transcripts with the official emulator v1.22.0's: 26 identical, 18 documented differences",
      "where": "docs/parity.md",
      "runs": "recorded",
      "last_recorded": null
@@ -49,15 +49,15 @@
  ],
  "oracle_corpus": {
   "where": "docs/oracle-corpus.json",
-  "digest": "sha256:e23de111d09caa240dd581253ce04425f4b2e1d37986a1378f5a9159da721b7f",
+  "digest": "sha256:a4ee002dc5433a6acd5cae36b8ca0f49f8a2e5d6fdb014d9319df84476d6f40f",
   "releases": [
    "1.22.0"
   ],
-  "files": 94,
+  "files": 95,
   "fixtures": 53,
-  "transcripts": 41,
+  "transcripts": 42,
   "answers": 24435,
-  "bytes": 15784982
+  "bytes": 15888241
  },
  "replay": {
   "fixtures": 53,
@@ -171,10 +171,10 @@
   "where": "docs/parity.md"
  },
  "transcripts": {
-  "pairs": 41,
-  "comparisons": 43,
+  "pairs": 42,
+  "comparisons": 44,
   "identical": 26,
-  "documented": 17,
+  "documented": 18,
   "unexplained": 0,
   "where": "docs/parity.md"
  },
@@ -182,9 +182,9 @@
   "where": "docs/sdk-certification.json",
   "totals": {
    "clients": 16,
-   "verified": 13,
+   "verified": 14,
    "partially-verified": 0,
-   "not-verified": 3
+   "not-verified": 2
   },
   "by_status": {
    "verified": [
@@ -192,6 +192,7 @@
     "firebase-js-lite",
     "firebase-js-browser",
     "admin-node",
+    "admin-node-prefer-rest",
     "rules-unit-testing",
     "firebase-tools",
     "firebase-functions",
@@ -204,7 +205,6 @@
    ],
    "partially-verified": [],
    "not-verified": [
-    "admin-node-prefer-rest",
     "flutter-native",
     "cpp-unity"
    ]

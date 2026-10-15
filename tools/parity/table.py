@@ -849,6 +849,7 @@ SDK_DIFFERENCES = {
     "sdk-rules-unit-testing": ("results/README.md", "13 denial messages differ"),
     "nodejs-system-tests": ("results/README.md",
                             "fails on the official emulator alone, which reads the vector field path"),
+    "nodejs-system-tests-rest": ("results/README.md", "and the same one more (D033)"),
     "sdk-ios-listen": ("results/README.md", "reaches the iOS SDK's query listeners as two snapshots"),
     "sdk-android-listen": ("results/README.md",
                            "reaches the Android SDK's query listeners as two snapshots"),
@@ -895,6 +896,10 @@ TRANSCRIPTS = {
     # Each test's outcome; `emulator` names the emulator the suite ran against.
     "nodejs-system-tests": dict(area="admin", client="nodejs-firestore system tests (Admin SDK)",
                                 transport="gRPC", ignore=("emulator",), outline=suite_outline),
+    "nodejs-system-tests-rest": dict(area="rest",
+                                     client="nodejs-firestore system tests (Admin SDK) over REST",
+                                     transport="REST", ignore=("emulator",),
+                                     outline=suite_outline),
     "sdk-aggregations": dict(area="queries", client="Admin SDK", transport="gRPC"),
     "sdk-auth": dict(area="admin", client="rules-unit-testing, web SDK, Admin SDK",
                      transport="gRPC"),
