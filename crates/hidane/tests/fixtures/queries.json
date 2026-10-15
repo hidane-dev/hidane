@@ -36873,6 +36873,343 @@
    }
   },
   {
+   "name": "an or of array-contains null and an empty array and an equality, and in 11",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "compositeFilter": {
+         "op": "OR",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "m.x"
+            },
+            "op": "ARRAY_CONTAINS",
+            "value": {
+             "nullValue": null
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "m.x"
+            },
+            "op": "ARRAY_CONTAINS",
+            "value": {
+             "arrayValue": {}
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "m.x"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "5"
+            }
+           }
+          }
+         ]
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK",
+    "responses": [
+     {
+      "done": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "an or of array-contains an empty array and {} and an equality, and in 11",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "compositeFilter": {
+         "op": "OR",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "m.x"
+            },
+            "op": "ARRAY_CONTAINS",
+            "value": {
+             "arrayValue": {}
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "m.x"
+            },
+            "op": "ARRAY_CONTAINS",
+            "value": {
+             "mapValue": {}
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "m.x"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "5"
+            }
+           }
+          }
+         ]
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Too many disjunctions after normalization. Result had 33 disjunctions which is more than the maximum of 30"
+   }
+  },
+  {
+   "name": "an or of array-contains an empty array and [[]] and an equality, and in 11",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "where": {
+     "compositeFilter": {
+      "op": "AND",
+      "filters": [
+       {
+        "fieldFilter": {
+         "field": {
+          "fieldPath": "a"
+         },
+         "op": "IN",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "integerValue": "0"
+            },
+            {
+             "integerValue": "1"
+            },
+            {
+             "integerValue": "2"
+            },
+            {
+             "integerValue": "3"
+            },
+            {
+             "integerValue": "4"
+            },
+            {
+             "integerValue": "5"
+            },
+            {
+             "integerValue": "6"
+            },
+            {
+             "integerValue": "7"
+            },
+            {
+             "integerValue": "8"
+            },
+            {
+             "integerValue": "9"
+            },
+            {
+             "integerValue": "10"
+            }
+           ]
+          }
+         }
+        }
+       },
+       {
+        "compositeFilter": {
+         "op": "OR",
+         "filters": [
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "m.x"
+            },
+            "op": "ARRAY_CONTAINS",
+            "value": {
+             "arrayValue": {}
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "m.x"
+            },
+            "op": "ARRAY_CONTAINS",
+            "value": {
+             "arrayValue": {
+              "values": [
+               {
+                "arrayValue": {}
+               }
+              ]
+             }
+            }
+           }
+          },
+          {
+           "fieldFilter": {
+            "field": {
+             "fieldPath": "m.x"
+            },
+            "op": "EQUAL",
+            "value": {
+             "integerValue": "5"
+            }
+           }
+          }
+         ]
+        }
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Too many disjunctions after normalization. Result had 33 disjunctions which is more than the maximum of 30"
+   }
+  },
+  {
    "name": "an or of is-NaN and is-null and an equality, and in 11",
    "parent": "",
    "query": {

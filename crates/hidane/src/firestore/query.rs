@@ -1550,7 +1550,7 @@ enum Class {
     /// An equality, a range or `!=` on null, or an equality or a range on NaN: the same
     /// filter on a field, whatever the operator and the value, which counts twice.
     Nullish,
-    /// `array-contains` null or NaN: the same filter on a field.
+    /// `array-contains` null, NaN or an empty array: the same filter on a field.
     ContainsNullish,
     /// Any other, its operator and value its own.
     Plain,
@@ -1558,6 +1558,13 @@ enum Class {
 
 impl Atom<'_> {
     fn class(&self) -> Class {
+        if self.kind == Leaf::Compare(Op::ArrayContains)
+            && self.value.is_some_and(|v| {
+                matches!(&v.value_type, Some(ValueType::ArrayValue(array)) if array.values.is_empty())
+            })
+        {
+            return Class::ContainsNullish;
+        }
         let Some(value) = self.value.filter(|v| is_null(v) || is_nan(v)) else {
             return Class::Plain;
         };
