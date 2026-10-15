@@ -293,6 +293,18 @@ def queries(f):
     return [(GRPC, FULL) for case in f["cases"] if "findNearest" not in case["query"]]
 
 
+def enterprise_queries(f):
+    """queries.rs's replay on an enterprise database: an error in full, but an `array_contains`
+    error without the type it names; documents without their order where the query's orders tie,
+    and without which ones a limit or an offset picks there."""
+    def level(outcome):
+        if outcome["status"] != "OK":
+            return PART if "requires `Array`" in outcome.get("message", "") else FULL
+        return PART
+    return [(GRPC, level(case["outcome"])) for case in f["cases"]
+            if "findNearest" not in case["query"]]
+
+
 def rest(cases):
     """Cases in the format of `tools/oracle/rest.py`'s fixture."""
     return [(REST, compare_mark(case)) for case in cases]
@@ -698,6 +710,15 @@ RECORDINGS = {
         compares="in full: each response's document, `skippedResults` and `done`, the fields of "
                  "projected documents, or the status and message",
         count=queries),
+    f"{H}/fixtures/queries_enterprise.json": dict(
+        area="queries",
+        tests=[f"{H}/queries.rs::enterprise_queries_answer_like_the_official_emulator"],
+        counted="each query but the `findNearest` one, on an enterprise database; " + OVER_REST,
+        compares="an error in full but the type an `array_contains` error names; the documents "
+                 "of the responses, `skippedResults`, `done` and the fields of projected "
+                 "documents, in the order of the values the query orders by (documents that tie "
+                 "come in no defined order, and a limit or an offset picks any of them)",
+        count=enterprise_queries),
     f"{H}/fixtures/read_time_and_databases.json": dict(
         area="documents",
         tests=[f"{H}/read_time_and_databases.rs::read_times_up_to_the_window",

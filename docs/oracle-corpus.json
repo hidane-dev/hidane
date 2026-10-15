@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:a4ee002dc5433a6acd5cae36b8ca0f49f8a2e5d6fdb014d9319df84476d6f40f",
+ "digest": "sha256:0f7bc83da3e36c99f7889b93623f32735c16bfde561997ae717af892546d7ae7",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,15 +14,15 @@
   }
  ],
  "totals": {
-  "files": 95,
-  "fixtures": 53,
+  "files": 96,
+  "fixtures": 54,
   "transcripts": 42,
-  "answers": 24435,
-  "bytes": 15888241,
+  "answers": 25076,
+  "bytes": 16699315,
   "levels": {
-   "full": 13869,
+   "full": 14029,
    "reasons": 4344,
-   "part": 843,
+   "part": 1324,
    "status": 5187,
    "codes": 30,
    "none": 1,
@@ -35,9 +35,9 @@
     "answers": 5749
    },
    "queries": {
-    "fixtures": 4,
+    "fixtures": 5,
     "transcripts": 9,
-    "answers": 924
+    "answers": 1565
    },
    "transactions": {
     "fixtures": 1,
@@ -82,13 +82,13 @@
   },
   "by_release": {
    "v1.22.0": {
-    "fixtures": 53,
+    "fixtures": 54,
     "transcripts": 42,
-    "answers": 24435
+    "answers": 25076
    }
   },
   "by_release_source": {
-   "header": 28,
+   "header": 29,
    "file name": 43,
    "git history": 24
   }
@@ -501,11 +501,11 @@
     "first_recorded": "2026-10-10",
     "last_changed": "2026-10-15"
    },
-   "bytes": 766463,
-   "sha256": "1d534756fd7e91bbd7bc55708ccddc0892ffc0b98db27ef10f5fa4670a97cd85",
-   "answers": 615,
+   "bytes": 777831,
+   "sha256": "f8666304a46c0422c367a5033d9cd75abbe01355df4bc22fab867960ab453087",
+   "answers": 628,
    "levels": {
-    "full": 615
+    "full": 628
    },
    "replayed_over": [
     "gRPC"
@@ -515,6 +515,43 @@
    ],
    "counted": "each query but the `findNearest` one; recorded over REST",
    "compared": "in full: each response's document, `skippedResults` and `done`, the fields of projected documents, or the status and message"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/queries_enterprise.json",
+   "kind": "fixture",
+   "area": "queries",
+   "recorder": "tools/oracle/queries.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-15",
+    "last_changed": "2026-10-15"
+   },
+   "bytes": 799706,
+   "sha256": "c2cbc629fb336844fd02665faf45981f76847c985bdbe8f9c3147b1a41c95466",
+   "answers": 628,
+   "levels": {
+    "full": 147,
+    "part": 481
+   },
+   "replayed_over": [
+    "gRPC"
+   ],
+   "tests": [
+    "crates/hidane/tests/queries.rs::enterprise_queries_answer_like_the_official_emulator"
+   ],
+   "counted": "each query but the `findNearest` one, on an enterprise database; recorded over REST",
+   "compared": "an error in full but the type an `array_contains` error names; the documents of the responses, `skippedResults`, `done` and the fields of projected documents, in the order of the values the query orders by (documents that tie come in no defined order, and a limit or an offset picks any of them)"
   },
   {
    "path": "crates/hidane/tests/fixtures/unsupported.json",

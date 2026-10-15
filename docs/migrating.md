@@ -78,8 +78,8 @@ project's firebase-tools is.
 
 Known gaps are `incompatible`:
 
-- The enterprise edition (`firestore.edition: "enterprise"`): queries are answered as on a
-  standard database, where the official emulator answers them with other semantics
+- The enterprise edition (`firestore.edition: "enterprise"`): queries follow its semantics, but
+  aggregation queries and listeners are answered as on a standard database
   ([#338](https://github.com/hidane-dev/hidane/issues/338)), and pipelines are not implemented
   yet ([#80](https://github.com/hidane-dev/hidane/issues/80)).
 - Datastore mode, through `gcloud emulators firestore start --database-mode=datastore-mode`

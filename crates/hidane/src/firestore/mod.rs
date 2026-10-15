@@ -1012,7 +1012,9 @@ impl Firestore for FirestoreService {
         // The operators of the query's filter come first, then the transaction the request
         // reads in: a malformed or ended one is reported before anything else about the query
         // (`tools/oracle/transactions.py`, `tools/oracle/queries.py`, #262).
-        if let Some(run_query_request::QueryType::StructuredQuery(structured)) = &req.query_type {
+        if let Some(run_query_request::QueryType::StructuredQuery(structured)) = &req.query_type
+            && !self.enterprise
+        {
             query::check_operators(structured)?;
         }
         if let Some(run_query_request::ConsistencySelector::Transaction(t)) =
@@ -1029,14 +1031,20 @@ impl Firestore for FirestoreService {
         // Security Rules, then the read time, come before the rest of the query is checked
         // (`tools/oracle/rules_list.py`, `tools/oracle/queries.py`, #262). A transaction locks
         // after it: one the checks refuse locks nothing (D085).
-        let read = Query::read(&database, parent.path, structured, |_| Ok(Vec::new()))?;
+        let read = Query::read(&database, parent.path, structured, self.enterprise, |_| {
+            Ok(Vec::new())
+        })?;
         self.check_list(&caller, &database, &read)?;
         if let Some(run_query_request::ConsistencySelector::ReadTime(ts)) =
             &req.consistency_selector
         {
             self.read_time(&database, Some(ts))?;
         }
-        let query = read.check()?;
+        let query = if self.enterprise {
+            read.check_enterprise()?
+        } else {
+            read.check()?
+        };
         let consistency = match &req.consistency_selector {
             Some(run_query_request::ConsistencySelector::Transaction(t)) => {
                 Consistency::Transaction(t)
@@ -1057,13 +1065,19 @@ impl Firestore for FirestoreService {
                 ..RunQueryResponse::default()
             }));
         }
-        let results = query.run(self.store.as_ref(), &database, at);
+        let results = query.try_run(self.store.as_ref(), &database, at)?;
         let read_time = Some(at.to_timestamp());
         let done = Some(run_query_response::ContinuationSelector::Done(true));
         // As on the official emulator: one document per response, `done` on the last one (or
         // on a response of its own when nothing matched), and the number of documents
-        // `offset` skipped on every response but the last.
-        let skipped = i32::try_from(results.skipped).unwrap_or(i32::MAX);
+        // `offset` skipped on every response but the last. An enterprise database sends
+        // neither on a document (`tests/fixtures/queries_enterprise.json`).
+        let enterprise = query.is_enterprise();
+        let skipped = if enterprise {
+            0
+        } else {
+            i32::try_from(results.skipped).unwrap_or(i32::MAX)
+        };
         let count = results.documents.len();
         if count == 0 {
             responses.push(Ok(RunQueryResponse {
@@ -1086,13 +1100,20 @@ impl Firestore for FirestoreService {
                     );
                     document_with(&database, doc, fields, query.projection())
                 }
+                _ if enterprise => {
+                    let fields = doc.fields();
+                    let projected = query
+                        .projection()
+                        .map(|paths| hidane_core::field_path::project_keeping_maps(&fields, paths));
+                    document_with(&database, doc, projected.unwrap_or(fields), None)
+                }
                 _ => to_document(&database, doc, query.projection()),
             };
             responses.push(Ok(RunQueryResponse {
                 document: Some(document),
                 read_time,
                 skipped_results: if last { 0 } else { skipped },
-                continuation_selector: if last { done } else { None },
+                continuation_selector: if last && !enterprise { done } else { None },
                 ..RunQueryResponse::default()
             }));
         }
@@ -1138,7 +1159,7 @@ impl Firestore for FirestoreService {
         };
         let listed = Aggregations::read(&q.aggregations)?;
         let mut checked = None;
-        let read = Query::read(&database, parent.path, structured, |projection| {
+        let read = Query::read(&database, parent.path, structured, false, |projection| {
             let aggregations = listed.check(projection)?;
             let fields = aggregations.fields().collect();
             checked = Some(aggregations);

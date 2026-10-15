@@ -2,6 +2,11 @@
 
 Usage:
     python3 -I tools/oracle/queries.py 127.0.0.1:8086 > crates/hidane/tests/fixtures/queries.json
+    python3 -I tools/oracle/queries.py 127.0.0.1:8087 enterprise \
+        > crates/hidane/tests/fixtures/queries_enterprise.json
+
+The second records the same cases against a jar started with `--database-edition enterprise`
+(#338), whose queries follow other semantics; the argument only labels the fixture.
 
 Seeds one project with two datasets, runs every case through REST `:runQuery`, and records the
 outcome. The fixture keeps the dataset and the queries next to the outcomes, so
@@ -25,6 +30,9 @@ import urllib.error
 import urllib.request
 
 HOST = sys.argv[1] if len(sys.argv) > 1 else "127.0.0.1:8080"
+EDITION = sys.argv[2] if len(sys.argv) > 2 else "standard"
+if EDITION not in ("standard", "enterprise"):
+    raise SystemExit(f"the edition is standard or enterprise, not {EDITION}")
 PROJECT = f"queries-{time.strftime('%H%M%S')}"
 DOCUMENTS = f"projects/{PROJECT}/databases/(default)/documents"
 
@@ -722,6 +730,27 @@ case("in 4 with null, in 3 and is-not-null, and an or of is-NaN and array-contai
                        OR(uf("m", "IS_NAN"), ff("__name__", "ARRAY_CONTAINS", s(""))))))
 
 
+# --- what an enterprise database evaluates otherwise (#338) ----------------------------------
+# A filter as a pipeline: left to right, a conjunction stops at a false filter and a
+# disjunction at a true one, but array-contains on a missing or null value is null and goes on.
+case("a false filter before array-contains on strings", q("p", where_=AND(ff("a", "EQUAL", i(99)), ff("b", "ARRAY_CONTAINS", i(1)))))
+case("array-contains on a missing field before array-contains on strings", q("p", where_=AND(ff("nope", "ARRAY_CONTAINS", i(1)), ff("b", "ARRAY_CONTAINS", i(1)))))
+case("array-contains-any on a missing field before array-contains on strings", q("p", where_=AND(ff("nope", "ARRAY_CONTAINS_ANY", arr(i(1))), ff("b", "ARRAY_CONTAINS", i(1)))))
+case("a true filter or array-contains on strings", q("p", where_=OR(uf("b", "IS_NOT_NULL"), ff("b", "ARRAY_CONTAINS", i(1)))))
+case("array-contains on strings before a false filter", q("p", where_=AND(ff("b", "ARRAY_CONTAINS", i(1)), ff("a", "EQUAL", i(99)))))
+# Array offsets read elements.
+case("a filter on an array offset", q("p", where_=ff("tags[0]", "EQUAL", s("red"))))
+case("!= on an array offset", q("p", where_=ff("tags[1]", "NOT_EQUAL", s("blue"))))
+case("order by an array offset", q("p", order=[asc("tags[1]")]))
+# The values a filter compares with.
+case("a reference to an ID over 1500 bytes", q("p", where_=ff("a", "EQUAL", ref("p/" + "x" * 1501))))
+case("a vector holding NaN in in", q("p", where_=ff("a", "IN", arr(mp(__type__=s("__vector__"), value=arr(NAN))))))
+case("a vector holding NaN in a cursor", q("p", order=[asc("a")], start=cur(mp(__type__=s("__vector__"), value=arr(NAN)), before=True)))
+# Projections keep the maps on the way to a selected path.
+case("select a path below a value that is not a map", q("p", select={"fields": [f("a.b")]}, order=[asc("a")]))
+case("select a path two maps deep", q("p", select={"fields": [f("m.x.y"), f("b")]}, order=[asc("b")]))
+
+
 # --- running ---------------------------------------------------------------------------------
 
 def fill(value):
@@ -780,6 +809,7 @@ for c in CASES:
 json.dump({
     "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
     "generated_by": "tools/oracle/queries.py",
+    **({"edition": EDITION} if EDITION != "standard" else {}),
     "dataset": DATASET,
     "cases": CASES,
 }, sys.stdout, ensure_ascii=False, indent=1)
