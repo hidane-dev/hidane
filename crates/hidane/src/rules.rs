@@ -295,6 +295,7 @@ const MAX_BODY: usize = 16 * 1024 * 1024;
 
 pub(crate) async fn handle(
     rules: &Rules,
+    single: Option<&crate::single_project::SingleProject>,
     (project, database, verb): (&str, Option<&str>, Verb),
     method: &Method,
     query: Option<&str>,
@@ -328,6 +329,9 @@ pub(crate) async fn handle(
         Err(_) if database.is_none() => return rest::error(&Status::unknown("")),
         Err(status) => return rest::error(&status),
     };
+    if let Some(Err(status)) = single.map(|single| single.admit(project, || Ok(()))) {
+        return rest::error(&status);
+    }
     if method == Method::PUT {
         return put(rules, &database, body).await;
     }

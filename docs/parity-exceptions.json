@@ -1081,24 +1081,6 @@
    ]
   },
   {
-   "id": "D067",
-   "table": "intentional",
-   "area": "admin",
-   "topic": null,
-   "kind": "limitation",
-   "official": "With `--single_project_mode` (which firebase-tools passes unless `emulators.singleProjectMode` is `false`), a request for a project ID other than `--project_id` is served and a warning is logged, as the flag's `--help` text says (`crates/hidane/src/cli.rs`); with `--single_project_mode_error`, its help says the mismatch is an error instead. The warning's wording is not recorded",
-   "firestore": null,
-   "hidane": "Accepts both flags and requires `--project_id` with `--single_project_mode`, as the official emulator does, then serves every project ID without a warning or an error",
-   "reason": "Not implemented: firebase-tools does not pass `--single_project_mode_error` (it is not among the Firestore emulator's arguments in its `src/emulator/downloadableEmulators.ts`), so under it the difference is a log line, and requests are answered the same. `hidane doctor` reports it for projects in single project mode",
-   "references": [
-    "crates/hidane/src/cli.rs"
-   ],
-   "pinned_by": [
-    "crates/hidane/src/cli.rs::official_consistency_checks",
-    "crates/hidane/src/cli.rs::every_official_flag_is_accepted"
-   ]
-  },
-  {
    "id": "D068",
    "table": "intentional",
    "area": "documents",
@@ -1498,6 +1480,12 @@
    "pinned_by": [
     "crates/hidane/tests/rest.rs::a_collection_group_query_runs_under_a_document"
    ]
+  }
+ ],
+ "retired": [
+  {
+   "id": "D067",
+   "reason": "hidane does what the official emulator does since #14: with `--single_project_mode`, a request for another project than `--project_id` prints the official warning on standard output, twice; with `--single_project_mode_error`, it is an `INVALID_ARGUMENT` with that message, and a WebChannel handshake is never answered (`tools/oracle/single_project_mode.py`)"
   }
  ]
 }

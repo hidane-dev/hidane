@@ -99,6 +99,7 @@ FIXTURE_CLIENTS = {
     "rules_warnings.py": ([REST], PY),
     "rules_writes.py": ([REST], PY),
     "same_document_writes.py": ([REST], PY),
+    "single_project_mode.py": ([GRPC, REST, WEBCHANNEL, PROCESS], PY_GRPCURL),
     "transactions.py": ([GRPC, REST], PY_GRPCURL),
     "transforms.py": ([REST], PY),
     "unsupported.py": ([GRPC, REST], PY_GRPCURL),

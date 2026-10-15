@@ -1,0 +1,2886 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/single_project_mode.py",
+ "runs": [
+  {
+   "name": "warning",
+   "flags": [
+    "--project_id",
+    "configured",
+    "--single_project_mode",
+    "true"
+   ],
+   "steps": [
+    {
+     "name": "configured: get",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/configured/databases/(default)/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 404,
+      "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/configured\\/databases\\/(default)\\/documents\\/c\\/d) not found.\",\"status\":\"NOT_FOUND\"}}"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: list",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/configured/databases/(default)/documents/c",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: create",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents/c?documentId=x",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "fields": {}
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"name\": \"projects/configured/databases/(default)/documents/c/x\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: patch",
+     "kind": "rest",
+     "method": "PATCH",
+     "path": "/v1/projects/configured/databases/(default)/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "fields": {}
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"name\": \"projects/configured/databases/(default)/documents/c/d\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: delete",
+     "kind": "rest",
+     "method": "DELETE",
+     "path": "/v1/projects/configured/databases/(default)/documents/c/x",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: commit",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents:commit",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/configured/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: batchGet",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents:batchGet",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "documents": [
+       "projects/configured/databases/(default)/documents/c/d"
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "body": "[\n{\n  \"found\": {\n    \"name\": \"projects/configured/databases/(default)/documents/c/d\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n}\n]\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: runQuery",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents:runQuery",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ]
+      }
+     },
+     "outcome": {
+      "status": 200,
+      "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/configured/databases/(default)/documents/c/d\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: runAggregationQuery",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents:runAggregationQuery",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "structuredAggregationQuery": {
+       "structuredQuery": {
+        "from": [
+         {
+          "collectionId": "c"
+         }
+        ]
+       },
+       "aggregations": [
+        {
+         "count": {}
+        }
+       ]
+      }
+     },
+     "outcome": {
+      "status": 200,
+      "body": "[\n{\n  \"result\": {\n    \"aggregateFields\": {\n      \"field_1\": {\n        \"integerValue\": \"1\"\n      }\n    }\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: listCollectionIds",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents:listCollectionIds",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"collectionIds\": [\"c\"]\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: beginTransaction",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents:beginTransaction",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: rollback",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents:rollback",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "transaction": "eA=="
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Invalid transaction.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: batchWrite",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents:batchWrite",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/configured/databases/(default)/documents/c/e",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"status\": [{\n  }]\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: named database",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/configured/databases/other-db/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 404,
+      "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/configured\\/databases\\/other-db\\/documents\\/c\\/d) not found.\",\"status\":\"NOT_FOUND\"}}"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: rules, put",
+     "kind": "rest",
+     "method": "PUT",
+     "path": "/emulator/v1/projects/configured:securityRules",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "rules": {
+       "files": [
+        {
+         "name": "firestore.rules",
+         "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if true;\n    }\n  }\n}\n"
+        }
+       ]
+      }
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: rules, get",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/emulator/v1/projects/configured:securityRules",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"rules\": {\n    \"files\": [{\n      \"content\": \"rules_version = '2';\\nservice cloud.firestore {\\n  match /databases/{database}/documents {\\n    match /{document=**} {\\n      allow read, write: if true;\\n    }\\n  }\\n}\\n\",\n      \"name\": \"firestore.rules\"\n    }]\n  }\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: rules of a database, get",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/emulator/v1/projects/configured/databases/(default):securityRules",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"rules\": {\n    \"files\": [{\n      \"content\": \"rules_version = '2';\\nservice cloud.firestore {\\n  match /databases/{database}/documents {\\n    match /{document=**} {\\n      allow read, write: if true;\\n    }\\n  }\\n}\\n\",\n      \"name\": \"firestore.rules\"\n    }]\n  }\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: rule coverage",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/emulator/v1/projects/configured/databases/(default):ruleCoverage",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"rules\": {\n    \"files\": [{\n      \"content\": \"rules_version = '2';\\nservice cloud.firestore {\\n  match /databases/{database}/documents {\\n    match /{document=**} {\\n      allow read, write: if true;\\n    }\\n  }\\n}\\n\",\n      \"name\": \"firestore.rules\"\n    }]\n  }\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: clear a database",
+     "kind": "rest",
+     "method": "DELETE",
+     "path": "/emulator/v1/projects/configured/databases/(default)/documents",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: delete a tree",
+     "kind": "rest",
+     "method": "DELETE",
+     "path": "/emulator/v1/projects/configured/databases/(default)/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: gRPC GetDocument",
+     "kind": "grpc",
+     "rpc": "GetDocument",
+     "prefix": null,
+     "request": {
+      "name": "projects/configured/databases/(default)/documents/c/d"
+     },
+     "outcome": {
+      "code": "NOT_FOUND",
+      "message": "Document (projects/configured/databases/(default)/documents/c/d) not found."
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: gRPC Commit",
+     "kind": "grpc",
+     "rpc": "Commit",
+     "prefix": null,
+     "request": {
+      "database": "projects/configured/databases/(default)"
+     },
+     "outcome": {
+      "code": "OK"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: gRPC RunQuery",
+     "kind": "grpc",
+     "rpc": "RunQuery",
+     "prefix": null,
+     "request": {
+      "parent": "projects/configured/databases/(default)/documents",
+      "structured_query": {
+       "from": [
+        {
+         "collection_id": "c"
+        }
+       ]
+      }
+     },
+     "outcome": {
+      "code": "OK"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: gRPC Write",
+     "kind": "grpc",
+     "rpc": "Write",
+     "prefix": "projects/configured/databases/(default)",
+     "request": {
+      "database": "projects/configured/databases/(default)"
+     },
+     "outcome": {
+      "code": "OK"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: gRPC Listen",
+     "kind": "grpc",
+     "rpc": "Listen",
+     "prefix": "projects/configured/databases/(default)",
+     "request": {
+      "database": "projects/configured/databases/(default)",
+      "add_target": {
+       "target_id": 1,
+       "documents": {
+        "documents": [
+         "projects/configured/databases/(default)/documents/c/a"
+        ]
+       }
+      }
+     },
+     "outcome": {
+      "code": "OK"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: WebChannel Write",
+     "kind": "webchannel",
+     "rpc": "Write",
+     "database": "projects/configured/databases/(default)",
+     "message": {
+      "database": "projects/configured/databases/(default)"
+     },
+     "outcome": {
+      "answered": true,
+      "status": 200,
+      "frame": [
+       [
+        0,
+        [
+         "c",
+         "<sid>",
+         "",
+         8,
+         12,
+         30000
+        ]
+       ]
+      ]
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: WebChannel Listen",
+     "kind": "webchannel",
+     "rpc": "Listen",
+     "database": "projects/configured/databases/(default)",
+     "message": {
+      "database": "projects/configured/databases/(default)",
+      "addTarget": {
+       "targetId": 2,
+       "documents": {
+        "documents": [
+         "projects/configured/databases/(default)/documents/c/a"
+        ]
+       }
+      }
+     },
+     "outcome": {
+      "answered": true,
+      "status": 200,
+      "frame": [
+       [
+        0,
+        [
+         "c",
+         "<sid>",
+         "",
+         8,
+         12,
+         30000
+        ]
+       ]
+      ]
+     },
+     "stdout": []
+    },
+    {
+     "name": "other: get",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/other/databases/(default)/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 404,
+      "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/other\\/databases\\/(default)\\/documents\\/c\\/d) not found.\",\"status\":\"NOT_FOUND\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: list",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/other/databases/(default)/documents/c",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: create",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents/c?documentId=x",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "fields": {}
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"name\": \"projects/other/databases/(default)/documents/c/x\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: patch",
+     "kind": "rest",
+     "method": "PATCH",
+     "path": "/v1/projects/other/databases/(default)/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "fields": {}
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"name\": \"projects/other/databases/(default)/documents/c/d\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: delete",
+     "kind": "rest",
+     "method": "DELETE",
+     "path": "/v1/projects/other/databases/(default)/documents/c/x",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: commit",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:commit",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/other/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: batchGet",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:batchGet",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "documents": [
+       "projects/other/databases/(default)/documents/c/d"
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "body": "[\n{\n  \"found\": {\n    \"name\": \"projects/other/databases/(default)/documents/c/d\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n}\n]\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: runQuery",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:runQuery",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ]
+      }
+     },
+     "outcome": {
+      "status": 200,
+      "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/other/databases/(default)/documents/c/d\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: runAggregationQuery",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:runAggregationQuery",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "structuredAggregationQuery": {
+       "structuredQuery": {
+        "from": [
+         {
+          "collectionId": "c"
+         }
+        ]
+       },
+       "aggregations": [
+        {
+         "count": {}
+        }
+       ]
+      }
+     },
+     "outcome": {
+      "status": 200,
+      "body": "[\n{\n  \"result\": {\n    \"aggregateFields\": {\n      \"field_1\": {\n        \"integerValue\": \"1\"\n      }\n    }\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: listCollectionIds",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:listCollectionIds",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"collectionIds\": [\"c\"]\n}\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: beginTransaction",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:beginTransaction",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: rollback",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:rollback",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "transaction": "eA=="
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Invalid transaction.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: batchWrite",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:batchWrite",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/other/databases/(default)/documents/c/e",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"status\": [{\n  }]\n}\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: named database",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/other/databases/other-db/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 404,
+      "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/other\\/databases\\/other-db\\/documents\\/c\\/d) not found.\",\"status\":\"NOT_FOUND\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: rules, put",
+     "kind": "rest",
+     "method": "PUT",
+     "path": "/emulator/v1/projects/other:securityRules",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "rules": {
+       "files": [
+        {
+         "name": "firestore.rules",
+         "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if true;\n    }\n  }\n}\n"
+        }
+       ]
+      }
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: rules, get",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/emulator/v1/projects/other:securityRules",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"rules\": {\n    \"files\": [{\n      \"content\": \"rules_version = '2';\\nservice cloud.firestore {\\n  match /databases/{database}/documents {\\n    match /{document=**} {\\n      allow read, write: if true;\\n    }\\n  }\\n}\\n\",\n      \"name\": \"firestore.rules\"\n    }]\n  }\n}\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: rules of a database, get",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/emulator/v1/projects/other/databases/(default):securityRules",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"rules\": {\n    \"files\": [{\n      \"content\": \"rules_version = '2';\\nservice cloud.firestore {\\n  match /databases/{database}/documents {\\n    match /{document=**} {\\n      allow read, write: if true;\\n    }\\n  }\\n}\\n\",\n      \"name\": \"firestore.rules\"\n    }]\n  }\n}\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: rule coverage",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/emulator/v1/projects/other/databases/(default):ruleCoverage",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"rules\": {\n    \"files\": [{\n      \"content\": \"rules_version = '2';\\nservice cloud.firestore {\\n  match /databases/{database}/documents {\\n    match /{document=**} {\\n      allow read, write: if true;\\n    }\\n  }\\n}\\n\",\n      \"name\": \"firestore.rules\"\n    }]\n  }\n}\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: clear a database",
+     "kind": "rest",
+     "method": "DELETE",
+     "path": "/emulator/v1/projects/other/databases/(default)/documents",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: delete a tree",
+     "kind": "rest",
+     "method": "DELETE",
+     "path": "/emulator/v1/projects/other/databases/(default)/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: gRPC GetDocument",
+     "kind": "grpc",
+     "rpc": "GetDocument",
+     "prefix": null,
+     "request": {
+      "name": "projects/other/databases/(default)/documents/c/d"
+     },
+     "outcome": {
+      "code": "NOT_FOUND",
+      "message": "Document (projects/other/databases/(default)/documents/c/d) not found."
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: gRPC Commit",
+     "kind": "grpc",
+     "rpc": "Commit",
+     "prefix": null,
+     "request": {
+      "database": "projects/other/databases/(default)"
+     },
+     "outcome": {
+      "code": "OK"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: gRPC RunQuery",
+     "kind": "grpc",
+     "rpc": "RunQuery",
+     "prefix": null,
+     "request": {
+      "parent": "projects/other/databases/(default)/documents",
+      "structured_query": {
+       "from": [
+        {
+         "collection_id": "c"
+        }
+       ]
+      }
+     },
+     "outcome": {
+      "code": "OK"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: gRPC Write",
+     "kind": "grpc",
+     "rpc": "Write",
+     "prefix": "projects/other/databases/(default)",
+     "request": {
+      "database": "projects/other/databases/(default)"
+     },
+     "outcome": {
+      "code": "OK"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: gRPC Listen",
+     "kind": "grpc",
+     "rpc": "Listen",
+     "prefix": "projects/other/databases/(default)",
+     "request": {
+      "database": "projects/other/databases/(default)",
+      "add_target": {
+       "target_id": 1,
+       "documents": {
+        "documents": [
+         "projects/other/databases/(default)/documents/c/a"
+        ]
+       }
+      }
+     },
+     "outcome": {
+      "code": "OK"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: WebChannel Write",
+     "kind": "webchannel",
+     "rpc": "Write",
+     "database": "projects/other/databases/(default)",
+     "message": {
+      "database": "projects/other/databases/(default)"
+     },
+     "outcome": {
+      "answered": true,
+      "status": 200,
+      "frame": [
+       [
+        0,
+        [
+         "c",
+         "<sid>",
+         "",
+         8,
+         12,
+         30000
+        ]
+       ]
+      ]
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: WebChannel Listen",
+     "kind": "webchannel",
+     "rpc": "Listen",
+     "database": "projects/other/databases/(default)",
+     "message": {
+      "database": "projects/other/databases/(default)",
+      "addTarget": {
+       "targetId": 2,
+       "documents": {
+        "documents": [
+         "projects/other/databases/(default)/documents/c/a"
+        ]
+       }
+      }
+     },
+     "outcome": {
+      "answered": true,
+      "status": 200,
+      "frame": [
+       [
+        0,
+        [
+         "c",
+         "<sid>",
+         "",
+         8,
+         12,
+         30000
+        ]
+       ]
+      ]
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "configured path, a reference to another project",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents:commit",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/configured/databases/(default)/documents/c/r",
+         "fields": {
+          "r": {
+           "referenceValue": "projects/other/databases/(default)/documents/c/d"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "another project's path, a reference to the configured project",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:commit",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/other/databases/(default)/documents/c/r",
+         "fields": {
+          "r": {
+           "referenceValue": "projects/configured/databases/(default)/documents/c/d"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "gRPC: a name of another project, the configured prefix",
+     "kind": "grpc",
+     "rpc": "GetDocument",
+     "prefix": "projects/configured/databases/(default)",
+     "request": {
+      "name": "projects/other/databases/(default)/documents/c/d"
+     },
+     "outcome": {
+      "code": "NOT_FOUND",
+      "message": "Document (projects/other/databases/(default)/documents/c/d) not found."
+     },
+     "stdout": []
+    },
+    {
+     "name": "gRPC: the configured name, another project's prefix",
+     "kind": "grpc",
+     "rpc": "GetDocument",
+     "prefix": "projects/other/databases/(default)",
+     "request": {
+      "name": "projects/configured/databases/(default)/documents/c/d"
+     },
+     "outcome": {
+      "code": "NOT_FOUND",
+      "message": "Document (projects/configured/databases/(default)/documents/c/d) not found."
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "gRPC Write: the configured prefix, another project's database",
+     "kind": "grpc",
+     "rpc": "Write",
+     "prefix": "projects/configured/databases/(default)",
+     "request": {
+      "database": "projects/other/databases/(default)"
+     },
+     "outcome": {
+      "code": "OK"
+     },
+     "stdout": []
+    },
+    {
+     "name": "gRPC Write: another project's prefix, the configured database",
+     "kind": "grpc",
+     "rpc": "Write",
+     "prefix": "projects/other/databases/(default)",
+     "request": {
+      "database": "projects/configured/databases/(default)"
+     },
+     "outcome": {
+      "code": "OK"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "gRPC: the configured name, another project's request params",
+     "kind": "grpc",
+     "rpc": "GetDocument",
+     "prefix": null,
+     "request": {
+      "name": "projects/configured/databases/(default)/documents/c/d"
+     },
+     "params": "database=projects%2Fother%2Fdatabases%2F(default)",
+     "outcome": {
+      "code": "NOT_FOUND",
+      "message": "Document (projects/configured/databases/(default)/documents/c/d) not found."
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "gRPC: the configured prefix, another project's request params",
+     "kind": "grpc",
+     "rpc": "GetDocument",
+     "prefix": "projects/configured/databases/(default)",
+     "request": {
+      "name": "projects/configured/databases/(default)/documents/c/d"
+     },
+     "params": "database=projects%2Fother%2Fdatabases%2F(default)",
+     "outcome": {
+      "code": "NOT_FOUND",
+      "message": "Document (projects/configured/databases/(default)/documents/c/d) not found."
+     },
+     "stdout": []
+    },
+    {
+     "name": "gRPC Write: another project's request params, the configured database",
+     "kind": "grpc",
+     "rpc": "Write",
+     "prefix": null,
+     "request": {
+      "database": "projects/configured/databases/(default)"
+     },
+     "params": "database=projects%2Fother%2Fdatabases%2F(default)",
+     "outcome": {
+      "code": "OK"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "WebChannel Write: the configured URL, another project's database",
+     "kind": "webchannel",
+     "rpc": "Write",
+     "database": "projects/configured/databases/(default)",
+     "message": {
+      "database": "projects/other/databases/(default)"
+     },
+     "outcome": {
+      "answered": true,
+      "status": 200,
+      "frame": [
+       [
+        0,
+        [
+         "c",
+         "<sid>",
+         "",
+         8,
+         12,
+         30000
+        ]
+       ]
+      ]
+     },
+     "stdout": []
+    },
+    {
+     "name": "WebChannel Write: another project's URL, the configured database",
+     "kind": "webchannel",
+     "rpc": "Write",
+     "database": "projects/other/databases/(default)",
+     "message": {
+      "database": "projects/configured/databases/(default)"
+     },
+     "outcome": {
+      "answered": true,
+      "status": 200,
+      "frame": [
+       [
+        0,
+        [
+         "c",
+         "<sid>",
+         "",
+         8,
+         12,
+         30000
+        ]
+       ]
+      ]
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "export: another project's path, the configured database",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/emulator/v1/projects/other:export",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "database": "projects/configured/databases/(default)",
+      "export_directory": "/nonexistent-hidane-dir"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"export_directory must be a directory\",\"status\":\"FAILED_PRECONDITION\"}}"
+     },
+     "stdout": []
+    },
+    {
+     "name": "export: the configured path, another project's database",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/emulator/v1/projects/configured:export",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "database": "projects/other/databases/(default)",
+      "export_directory": "/nonexistent-hidane-dir"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"export_directory must be a directory\",\"status\":\"FAILED_PRECONDITION\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "import: the configured path, another project's database",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/emulator/v1/projects/configured:import",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "database": "projects/other/databases/(default)",
+      "export_directory": "/nonexistent-hidane-dir"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Failed to parse overall export metadata file\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "another project: an invalid Authorization header",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/other/databases/(default)/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer not-a-jwt"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"invalid jwt\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "another project: a reserved document ID",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/other/databases/(default)/documents/c/__x__",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Resource id \\\"__x__\\\" is invalid because it is reserved.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": []
+    },
+    {
+     "name": "another project: an invalid query",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:runQuery",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "structuredQuery": {
+       "limit": -1
+      }
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"limit is negative\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "another project: an invalid write",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:commit",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "bad",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Document name \\\"bad\\\" lacks \\\"projects\\\" at index 0.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "an invalid project ID",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/Other/databases/(default)/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Invalid project ID(Other) or database ID()\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": []
+    },
+    {
+     "name": "another project, case aside",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/configured-2/databases/(default)/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 404,
+      "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/configured-2\\/databases\\/(default)\\/documents\\/c\\/d) not found.\",\"status\":\"NOT_FOUND\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not recommended in single project mode. Requested project ID configured-2, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config.",
+      "Multiple projectIds are not recommended in single project mode. Requested project ID configured-2, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    }
+   ]
+  },
+  {
+   "name": "error",
+   "flags": [
+    "--project_id",
+    "configured",
+    "--single_project_mode",
+    "true",
+    "--single_project_mode_error",
+    "true"
+   ],
+   "steps": [
+    {
+     "name": "configured: get",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/configured/databases/(default)/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 404,
+      "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/configured\\/databases\\/(default)\\/documents\\/c\\/d) not found.\",\"status\":\"NOT_FOUND\"}}"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: list",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/configured/databases/(default)/documents/c",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: create",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents/c?documentId=x",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "fields": {}
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"name\": \"projects/configured/databases/(default)/documents/c/x\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: patch",
+     "kind": "rest",
+     "method": "PATCH",
+     "path": "/v1/projects/configured/databases/(default)/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "fields": {}
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"name\": \"projects/configured/databases/(default)/documents/c/d\",\n  \"createTime\": \"<time>\",\n  \"updateTime\": \"<time>\"\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: delete",
+     "kind": "rest",
+     "method": "DELETE",
+     "path": "/v1/projects/configured/databases/(default)/documents/c/x",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: commit",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents:commit",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/configured/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: batchGet",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents:batchGet",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "documents": [
+       "projects/configured/databases/(default)/documents/c/d"
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "body": "[\n{\n  \"found\": {\n    \"name\": \"projects/configured/databases/(default)/documents/c/d\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\"\n}\n]\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: runQuery",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents:runQuery",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ]
+      }
+     },
+     "outcome": {
+      "status": 200,
+      "body": "[\n{\n  \"document\": {\n    \"name\": \"projects/configured/databases/(default)/documents/c/d\",\n    \"createTime\": \"<time>\",\n    \"updateTime\": \"<time>\"\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: runAggregationQuery",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents:runAggregationQuery",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "structuredAggregationQuery": {
+       "structuredQuery": {
+        "from": [
+         {
+          "collectionId": "c"
+         }
+        ]
+       },
+       "aggregations": [
+        {
+         "count": {}
+        }
+       ]
+      }
+     },
+     "outcome": {
+      "status": 200,
+      "body": "[\n{\n  \"result\": {\n    \"aggregateFields\": {\n      \"field_1\": {\n        \"integerValue\": \"1\"\n      }\n    }\n  },\n  \"readTime\": \"<time>\",\n  \"done\": true\n}\n]\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: listCollectionIds",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents:listCollectionIds",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"collectionIds\": [\"c\"]\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: beginTransaction",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents:beginTransaction",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: rollback",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents:rollback",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "transaction": "eA=="
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Invalid transaction.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: batchWrite",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents:batchWrite",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/configured/databases/(default)/documents/c/e",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"status\": [{\n  }]\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: named database",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/configured/databases/other-db/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 404,
+      "body": "{\"error\":{\"code\":404,\"message\":\"Document (projects\\/configured\\/databases\\/other-db\\/documents\\/c\\/d) not found.\",\"status\":\"NOT_FOUND\"}}"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: rules, put",
+     "kind": "rest",
+     "method": "PUT",
+     "path": "/emulator/v1/projects/configured:securityRules",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "rules": {
+       "files": [
+        {
+         "name": "firestore.rules",
+         "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if true;\n    }\n  }\n}\n"
+        }
+       ]
+      }
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: rules, get",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/emulator/v1/projects/configured:securityRules",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"rules\": {\n    \"files\": [{\n      \"content\": \"rules_version = '2';\\nservice cloud.firestore {\\n  match /databases/{database}/documents {\\n    match /{document=**} {\\n      allow read, write: if true;\\n    }\\n  }\\n}\\n\",\n      \"name\": \"firestore.rules\"\n    }]\n  }\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: rules of a database, get",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/emulator/v1/projects/configured/databases/(default):securityRules",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"rules\": {\n    \"files\": [{\n      \"content\": \"rules_version = '2';\\nservice cloud.firestore {\\n  match /databases/{database}/documents {\\n    match /{document=**} {\\n      allow read, write: if true;\\n    }\\n  }\\n}\\n\",\n      \"name\": \"firestore.rules\"\n    }]\n  }\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: rule coverage",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/emulator/v1/projects/configured/databases/(default):ruleCoverage",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"rules\": {\n    \"files\": [{\n      \"content\": \"rules_version = '2';\\nservice cloud.firestore {\\n  match /databases/{database}/documents {\\n    match /{document=**} {\\n      allow read, write: if true;\\n    }\\n  }\\n}\\n\",\n      \"name\": \"firestore.rules\"\n    }]\n  }\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: clear a database",
+     "kind": "rest",
+     "method": "DELETE",
+     "path": "/emulator/v1/projects/configured/databases/(default)/documents",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: delete a tree",
+     "kind": "rest",
+     "method": "DELETE",
+     "path": "/emulator/v1/projects/configured/databases/(default)/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: gRPC GetDocument",
+     "kind": "grpc",
+     "rpc": "GetDocument",
+     "prefix": null,
+     "request": {
+      "name": "projects/configured/databases/(default)/documents/c/d"
+     },
+     "outcome": {
+      "code": "NOT_FOUND",
+      "message": "Document (projects/configured/databases/(default)/documents/c/d) not found."
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: gRPC Commit",
+     "kind": "grpc",
+     "rpc": "Commit",
+     "prefix": null,
+     "request": {
+      "database": "projects/configured/databases/(default)"
+     },
+     "outcome": {
+      "code": "OK"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: gRPC RunQuery",
+     "kind": "grpc",
+     "rpc": "RunQuery",
+     "prefix": null,
+     "request": {
+      "parent": "projects/configured/databases/(default)/documents",
+      "structured_query": {
+       "from": [
+        {
+         "collection_id": "c"
+        }
+       ]
+      }
+     },
+     "outcome": {
+      "code": "OK"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: gRPC Write",
+     "kind": "grpc",
+     "rpc": "Write",
+     "prefix": "projects/configured/databases/(default)",
+     "request": {
+      "database": "projects/configured/databases/(default)"
+     },
+     "outcome": {
+      "code": "OK"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: gRPC Listen",
+     "kind": "grpc",
+     "rpc": "Listen",
+     "prefix": "projects/configured/databases/(default)",
+     "request": {
+      "database": "projects/configured/databases/(default)",
+      "add_target": {
+       "target_id": 1,
+       "documents": {
+        "documents": [
+         "projects/configured/databases/(default)/documents/c/a"
+        ]
+       }
+      }
+     },
+     "outcome": {
+      "code": "OK"
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: WebChannel Write",
+     "kind": "webchannel",
+     "rpc": "Write",
+     "database": "projects/configured/databases/(default)",
+     "message": {
+      "database": "projects/configured/databases/(default)"
+     },
+     "outcome": {
+      "answered": true,
+      "status": 200,
+      "frame": [
+       [
+        0,
+        [
+         "c",
+         "<sid>",
+         "",
+         8,
+         12,
+         30000
+        ]
+       ]
+      ]
+     },
+     "stdout": []
+    },
+    {
+     "name": "configured: WebChannel Listen",
+     "kind": "webchannel",
+     "rpc": "Listen",
+     "database": "projects/configured/databases/(default)",
+     "message": {
+      "database": "projects/configured/databases/(default)",
+      "addTarget": {
+       "targetId": 2,
+       "documents": {
+        "documents": [
+         "projects/configured/databases/(default)/documents/c/a"
+        ]
+       }
+      }
+     },
+     "outcome": {
+      "answered": true,
+      "status": 200,
+      "frame": [
+       [
+        0,
+        [
+         "c",
+         "<sid>",
+         "",
+         8,
+         12,
+         30000
+        ]
+       ]
+      ]
+     },
+     "stdout": []
+    },
+    {
+     "name": "other: get",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/other/databases/(default)/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: list",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/other/databases/(default)/documents/c",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: create",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents/c?documentId=x",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "fields": {}
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: patch",
+     "kind": "rest",
+     "method": "PATCH",
+     "path": "/v1/projects/other/databases/(default)/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "fields": {}
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: delete",
+     "kind": "rest",
+     "method": "DELETE",
+     "path": "/v1/projects/other/databases/(default)/documents/c/x",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: commit",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:commit",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/other/databases/(default)/documents/c/d",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: batchGet",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:batchGet",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "documents": [
+       "projects/other/databases/(default)/documents/c/d"
+      ]
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: runQuery",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:runQuery",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ]
+      }
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: runAggregationQuery",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:runAggregationQuery",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "structuredAggregationQuery": {
+       "structuredQuery": {
+        "from": [
+         {
+          "collectionId": "c"
+         }
+        ]
+       },
+       "aggregations": [
+        {
+         "count": {}
+        }
+       ]
+      }
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: listCollectionIds",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:listCollectionIds",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {},
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: beginTransaction",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:beginTransaction",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {},
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: rollback",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:rollback",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "transaction": "eA=="
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: batchWrite",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:batchWrite",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/other/databases/(default)/documents/c/e",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: named database",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/other/databases/other-db/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: rules, put",
+     "kind": "rest",
+     "method": "PUT",
+     "path": "/emulator/v1/projects/other:securityRules",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "rules": {
+       "files": [
+        {
+         "name": "firestore.rules",
+         "content": "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n    match /{document=**} {\n      allow read, write: if true;\n    }\n  }\n}\n"
+        }
+       ]
+      }
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: rules, get",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/emulator/v1/projects/other:securityRules",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: rules of a database, get",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/emulator/v1/projects/other/databases/(default):securityRules",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: rule coverage",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/emulator/v1/projects/other/databases/(default):ruleCoverage",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: clear a database",
+     "kind": "rest",
+     "method": "DELETE",
+     "path": "/emulator/v1/projects/other/databases/(default)/documents",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: delete a tree",
+     "kind": "rest",
+     "method": "DELETE",
+     "path": "/emulator/v1/projects/other/databases/(default)/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: gRPC GetDocument",
+     "kind": "grpc",
+     "rpc": "GetDocument",
+     "prefix": null,
+     "request": {
+      "name": "projects/other/databases/(default)/documents/c/d"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: gRPC Commit",
+     "kind": "grpc",
+     "rpc": "Commit",
+     "prefix": null,
+     "request": {
+      "database": "projects/other/databases/(default)"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: gRPC RunQuery",
+     "kind": "grpc",
+     "rpc": "RunQuery",
+     "prefix": null,
+     "request": {
+      "parent": "projects/other/databases/(default)/documents",
+      "structured_query": {
+       "from": [
+        {
+         "collection_id": "c"
+        }
+       ]
+      }
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: gRPC Write",
+     "kind": "grpc",
+     "rpc": "Write",
+     "prefix": "projects/other/databases/(default)",
+     "request": {
+      "database": "projects/other/databases/(default)"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: gRPC Listen",
+     "kind": "grpc",
+     "rpc": "Listen",
+     "prefix": "projects/other/databases/(default)",
+     "request": {
+      "database": "projects/other/databases/(default)",
+      "add_target": {
+       "target_id": 1,
+       "documents": {
+        "documents": [
+         "projects/other/databases/(default)/documents/c/a"
+        ]
+       }
+      }
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: WebChannel Write",
+     "kind": "webchannel",
+     "rpc": "Write",
+     "database": "projects/other/databases/(default)",
+     "message": {
+      "database": "projects/other/databases/(default)"
+     },
+     "outcome": {
+      "answered": false
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "other: WebChannel Listen",
+     "kind": "webchannel",
+     "rpc": "Listen",
+     "database": "projects/other/databases/(default)",
+     "message": {
+      "database": "projects/other/databases/(default)",
+      "addTarget": {
+       "targetId": 2,
+       "documents": {
+        "documents": [
+         "projects/other/databases/(default)/documents/c/a"
+        ]
+       }
+      }
+     },
+     "outcome": {
+      "answered": false
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "configured path, a reference to another project",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/configured/databases/(default)/documents:commit",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/configured/databases/(default)/documents/c/r",
+         "fields": {
+          "r": {
+           "referenceValue": "projects/other/databases/(default)/documents/c/d"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+     },
+     "stdout": []
+    },
+    {
+     "name": "another project's path, a reference to the configured project",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:commit",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "projects/other/databases/(default)/documents/c/r",
+         "fields": {
+          "r": {
+           "referenceValue": "projects/configured/databases/(default)/documents/c/d"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "gRPC: a name of another project, the configured prefix",
+     "kind": "grpc",
+     "rpc": "GetDocument",
+     "prefix": "projects/configured/databases/(default)",
+     "request": {
+      "name": "projects/other/databases/(default)/documents/c/d"
+     },
+     "outcome": {
+      "code": "NOT_FOUND",
+      "message": "Document (projects/other/databases/(default)/documents/c/d) not found."
+     },
+     "stdout": []
+    },
+    {
+     "name": "gRPC: the configured name, another project's prefix",
+     "kind": "grpc",
+     "rpc": "GetDocument",
+     "prefix": "projects/other/databases/(default)",
+     "request": {
+      "name": "projects/configured/databases/(default)/documents/c/d"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "gRPC Write: the configured prefix, another project's database",
+     "kind": "grpc",
+     "rpc": "Write",
+     "prefix": "projects/configured/databases/(default)",
+     "request": {
+      "database": "projects/other/databases/(default)"
+     },
+     "outcome": {
+      "code": "OK"
+     },
+     "stdout": []
+    },
+    {
+     "name": "gRPC Write: another project's prefix, the configured database",
+     "kind": "grpc",
+     "rpc": "Write",
+     "prefix": "projects/other/databases/(default)",
+     "request": {
+      "database": "projects/configured/databases/(default)"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "gRPC: the configured name, another project's request params",
+     "kind": "grpc",
+     "rpc": "GetDocument",
+     "prefix": null,
+     "request": {
+      "name": "projects/configured/databases/(default)/documents/c/d"
+     },
+     "params": "database=projects%2Fother%2Fdatabases%2F(default)",
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "gRPC: the configured prefix, another project's request params",
+     "kind": "grpc",
+     "rpc": "GetDocument",
+     "prefix": "projects/configured/databases/(default)",
+     "request": {
+      "name": "projects/configured/databases/(default)/documents/c/d"
+     },
+     "params": "database=projects%2Fother%2Fdatabases%2F(default)",
+     "outcome": {
+      "code": "NOT_FOUND",
+      "message": "Document (projects/configured/databases/(default)/documents/c/d) not found."
+     },
+     "stdout": []
+    },
+    {
+     "name": "gRPC Write: another project's request params, the configured database",
+     "kind": "grpc",
+     "rpc": "Write",
+     "prefix": null,
+     "request": {
+      "database": "projects/configured/databases/(default)"
+     },
+     "params": "database=projects%2Fother%2Fdatabases%2F(default)",
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "WebChannel Write: the configured URL, another project's database",
+     "kind": "webchannel",
+     "rpc": "Write",
+     "database": "projects/configured/databases/(default)",
+     "message": {
+      "database": "projects/other/databases/(default)"
+     },
+     "outcome": {
+      "answered": true,
+      "status": 200,
+      "frame": [
+       [
+        0,
+        [
+         "c",
+         "<sid>",
+         "",
+         8,
+         12,
+         30000
+        ]
+       ]
+      ]
+     },
+     "stdout": []
+    },
+    {
+     "name": "WebChannel Write: another project's URL, the configured database",
+     "kind": "webchannel",
+     "rpc": "Write",
+     "database": "projects/other/databases/(default)",
+     "message": {
+      "database": "projects/configured/databases/(default)"
+     },
+     "outcome": {
+      "answered": false
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "export: another project's path, the configured database",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/emulator/v1/projects/other:export",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "database": "projects/configured/databases/(default)",
+      "export_directory": "/nonexistent-hidane-dir"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"export_directory must be a directory\",\"status\":\"FAILED_PRECONDITION\"}}"
+     },
+     "stdout": []
+    },
+    {
+     "name": "export: the configured path, another project's database",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/emulator/v1/projects/configured:export",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "database": "projects/other/databases/(default)",
+      "export_directory": "/nonexistent-hidane-dir"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "import: the configured path, another project's database",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/emulator/v1/projects/configured:import",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "database": "projects/other/databases/(default)",
+      "export_directory": "/nonexistent-hidane-dir"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "another project: an invalid Authorization header",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/other/databases/(default)/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer not-a-jwt"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "another project: a reserved document ID",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/other/databases/(default)/documents/c/__x__",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Resource id \\\"__x__\\\" is invalid because it is reserved.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": []
+    },
+    {
+     "name": "another project: an invalid query",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:runQuery",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "structuredQuery": {
+       "limit": -1
+      }
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "another project: an invalid write",
+     "kind": "rest",
+     "method": "POST",
+     "path": "/v1/projects/other/databases/(default)/documents:commit",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "body": {
+      "writes": [
+       {
+        "update": {
+         "name": "bad",
+         "fields": {}
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID other, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    },
+    {
+     "name": "an invalid project ID",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/Other/databases/(default)/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Invalid project ID(Other) or database ID()\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": []
+    },
+    {
+     "name": "another project, case aside",
+     "kind": "rest",
+     "method": "GET",
+     "path": "/v1/projects/configured-2/databases/(default)/documents/c/d",
+     "headers": {
+      "Authorization": "Bearer owner"
+     },
+     "outcome": {
+      "status": 400,
+      "body": "{\"error\":{\"code\":400,\"message\":\"Multiple projectIds are not permitted in single project mode. Requested project ID configured-2, but the emulator is configured for configured. To opt-out of single project mode add\\/set the '\\\"singleProjectMode\\\": false' property in the firebase.json emulators config.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     },
+     "stdout": [
+      "Multiple projectIds are not permitted in single project mode. Requested project ID configured-2, but the emulator is configured for configured. To opt-out of single project mode add/set the '\"singleProjectMode\": false' property in the firebase.json emulators config."
+     ]
+    }
+   ]
+  }
+ ]
+}

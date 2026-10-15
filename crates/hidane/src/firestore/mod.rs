@@ -66,7 +66,11 @@ use hidane_proto::google::{
 use prost_types::Timestamp;
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::ReceiverStream;
-use tonic::{Request, Response, Status, Streaming, async_trait, codegen::BoxStream};
+use tonic::{
+    Request, Response, Status, Streaming, async_trait, codegen::BoxStream, metadata::MetadataMap,
+};
+
+use crate::single_project::{self, SingleProject};
 
 use self::{
     aggregation::Aggregations,
@@ -97,6 +101,8 @@ pub struct FirestoreService {
     rules: Option<Arc<crate::rules::Rules>>,
     /// The Functions emulator's Firestore triggers, which commits send events to.
     triggers: Option<Arc<crate::triggers::Triggers>>,
+    /// `--single_project_mode`: what a request for another project gets.
+    single_project: Option<Arc<SingleProject>>,
 }
 
 impl FirestoreService {
@@ -117,6 +123,45 @@ impl FirestoreService {
     pub(crate) fn with_triggers(mut self, triggers: Arc<crate::triggers::Triggers>) -> Self {
         self.triggers = Some(triggers);
         self
+    }
+
+    pub(crate) fn with_single_project(mut self, single: Option<Arc<SingleProject>>) -> Self {
+        self.single_project = single;
+        self
+    }
+
+    /// The caller of a request addressed to `database` (a stream's: to its
+    /// `google-cloud-resource-prefix` header alone), between the checks of
+    /// `--single_project_mode` (`crate::single_project`).
+    fn caller(
+        &self,
+        metadata: &MetadataMap,
+        database: Option<&str>,
+    ) -> Result<auth::Caller, Status> {
+        match (
+            &self.single_project,
+            single_project::requested(metadata, database),
+        ) {
+            (Some(single), Some(project)) => single.admit(&project, || auth::caller(metadata)),
+            _ => auth::caller(metadata),
+        }
+    }
+
+    /// What `read` reads (the `Authorization` header, or nothing) between the checks of
+    /// `--single_project_mode` for a request addressed to `database`, outside gRPC.
+    pub(crate) fn admit<T>(
+        &self,
+        database: &str,
+        read: impl FnOnce() -> Result<T, Status>,
+    ) -> Result<T, Status> {
+        match &self.single_project {
+            Some(single) => single.admit(single_project::project(database), read),
+            None => read(),
+        }
+    }
+
+    pub(crate) fn single_project(&self) -> Option<&SingleProject> {
+        self.single_project.as_deref()
     }
 
     /// Sends the events of a commit to `database` at `at` (`changes`, in the order `writes`
@@ -202,6 +247,7 @@ impl FirestoreService {
             seeder: None,
             rules: None,
             triggers: None,
+            single_project: None,
         }
     }
 
@@ -470,7 +516,7 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<Document>, Status> {
         let (metadata, _, req) = request.into_parts();
         let name = names::document(&req.name)?;
-        let caller = auth::caller(&metadata)?;
+        let caller = self.caller(&metadata, Some(&name.database))?;
         let at = match &req.consistency_selector {
             Some(get_document_request::ConsistencySelector::Transaction(transaction)) => self
                 .read_in(
@@ -517,7 +563,7 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<ListDocumentsResponse>, Status> {
         let (metadata, _, req) = request.into_parts();
         let parent = names::parent(&req.parent)?;
-        let caller = auth::caller(&metadata)?;
+        let caller = self.caller(&metadata, Some(&parent.database))?;
         names::collection_id(&req.collection_id)?;
         // An empty collection ID lists every collection directly under the parent.
         let every_collection = req.collection_id.is_empty();
@@ -731,7 +777,7 @@ impl Firestore for FirestoreService {
             names::document_id(&req.document_id)?;
             req.document_id.clone()
         };
-        let caller = auth::caller(&metadata)?;
+        let caller = self.caller(&metadata, Some(&parent.database))?;
         if req.collection_id.is_empty() {
             return Err(Status::invalid_argument(
                 "collectionId is the empty string.",
@@ -780,7 +826,7 @@ impl Firestore for FirestoreService {
         // No document is a document without a name, as on the official emulator.
         let document = req.document.unwrap_or_default();
         let name = names::document(&document.name)?;
-        let caller = auth::caller(&metadata)?;
+        let caller = self.caller(&metadata, Some(&name.database))?;
         let write = Write {
             operation: Some(Operation::Update(document)),
             update_mask: req.update_mask,
@@ -813,7 +859,7 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<()>, Status> {
         let (metadata, _, req) = request.into_parts();
         let name = names::document(&req.name)?;
-        let caller = auth::caller(&metadata)?;
+        let caller = self.caller(&metadata, Some(&name.database))?;
         let write = Write {
             operation: Some(Operation::Delete(req.name)),
             current_document: req.current_document,
@@ -837,7 +883,7 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<BoxStream<BatchGetDocumentsResponse>>, Status> {
         let (metadata, _, req) = request.into_parts();
         let database = names::database(&req.database)?;
-        let caller = auth::caller(&metadata)?;
+        let caller = self.caller(&metadata, Some(&database))?;
         // A document named more than once is read and answered once, where it is first named,
         // as on the official emulator (#262).
         let mut documents: Vec<(&String, ResourcePath)> = Vec::with_capacity(req.documents.len());
@@ -930,7 +976,7 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<CommitResponse>, Status> {
         let (metadata, _, req) = request.into_parts();
         let database = names::database(&req.database)?;
-        let caller = auth::caller(&metadata)?;
+        let caller = self.caller(&metadata, Some(&database))?;
         let transaction = (!req.transaction.is_empty()).then_some(req.transaction.as_slice());
         // The official emulator answers an empty commit with an empty response (no commit time).
         Ok(Response::new(
@@ -959,7 +1005,7 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<BoxStream<RunQueryResponse>>, Status> {
         let (metadata, _, req) = request.into_parts();
         let parent = names::parent(&req.parent)?;
-        let caller = auth::caller(&metadata)?;
+        let caller = self.caller(&metadata, Some(&parent.database))?;
         let database = parent.database;
         // `explain_options` is ignored, as on the official emulator: the same results, no
         // explain metrics.
@@ -1059,7 +1105,7 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<BoxStream<RunAggregationQueryResponse>>, Status> {
         let (metadata, _, req) = request.into_parts();
         let parent = names::parent(&req.parent)?;
-        let caller = auth::caller(&metadata)?;
+        let caller = self.caller(&metadata, Some(&parent.database))?;
         let database = parent.database;
         // `explain_options` is ignored, as on the official emulator: the same results, no
         // explain metrics.
@@ -1146,7 +1192,7 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<Streaming<WriteRequest>>,
     ) -> Result<Response<BoxStream<WriteResponse>>, Status> {
-        let caller = auth::caller(request.metadata())?;
+        let caller = self.caller(request.metadata(), None)?;
         let mut requests = request.into_inner();
         let (responses, receiver) = mpsc::channel(16);
         let service = self.clone();
@@ -1165,7 +1211,7 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<Streaming<ListenRequest>>,
     ) -> Result<Response<BoxStream<ListenResponse>>, Status> {
-        let caller = auth::caller(request.metadata())?;
+        let caller = self.caller(request.metadata(), None)?;
         let mut requests = request.into_inner();
         let (responses, receiver) = mpsc::channel(256);
         let service = self.clone();
@@ -1200,7 +1246,7 @@ impl Firestore for FirestoreService {
         request: Request<ExecutePipelineRequest>,
     ) -> Result<Response<BoxStream<ExecutePipelineResponse>>, Status> {
         let (metadata, _, req) = request.into_parts();
-        names::database(&req.database)?;
+        let database = names::database(&req.database)?;
         // A standard-edition database refuses pipelines before reading the header, as on the
         // official emulator.
         if !self.enterprise {
@@ -1208,7 +1254,7 @@ impl Firestore for FirestoreService {
                 "ExecutePipeline requires the Database Edition to be `enterprise`.",
             ));
         }
-        auth::caller(&metadata)?;
+        self.caller(&metadata, Some(&database))?;
         Err(Status::unimplemented(
             "ExecutePipeline is not implemented yet (https://github.com/hidane-dev/hidane/issues/80)",
         ))
@@ -1220,7 +1266,7 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<BeginTransactionResponse>, Status> {
         let (metadata, _, req) = request.into_parts();
         let database = names::database(&req.database)?;
-        auth::caller(&metadata)?;
+        self.caller(&metadata, Some(&database))?;
         Ok(Response::new(BeginTransactionResponse {
             transaction: self.begin(&database, req.options.as_ref())?,
         }))
@@ -1229,7 +1275,7 @@ impl Firestore for FirestoreService {
     async fn rollback(&self, request: Request<RollbackRequest>) -> Result<Response<()>, Status> {
         let (metadata, _, req) = request.into_parts();
         let database = names::database(&req.database)?;
-        auth::caller(&metadata)?;
+        self.caller(&metadata, Some(&database))?;
         self.transactions.rollback(&database, &req.transaction)?;
         Ok(Response::new(()))
     }
@@ -1240,7 +1286,7 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<BatchWriteResponse>, Status> {
         let (metadata, _, req) = request.into_parts();
         let database = names::database(&req.database)?;
-        let caller = auth::caller(&metadata)?;
+        let caller = self.caller(&metadata, Some(&database))?;
         let mut seen = HashSet::new();
         if !req
             .writes
@@ -1308,7 +1354,7 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<ListCollectionIdsResponse>, Status> {
         let (metadata, _, req) = request.into_parts();
         let parent = names::parent(&req.parent)?;
-        let caller = auth::caller(&metadata)?;
+        let caller = self.caller(&metadata, Some(&parent.database))?;
         if req.page_size < 0 {
             return Err(Status::invalid_argument(
                 "page_size must be greater than or equal to zero.",

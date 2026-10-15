@@ -174,6 +174,10 @@ async fn run(args: Vec<OsString>) -> ExitCode {
     if let Some(documents) = seed {
         admin = admin.with_seed(documents);
     }
+    // `Cli::validate` has made sure a project is named.
+    if let (true, Some(project)) = (cli.single_project_mode, cli.project_id.as_deref()) {
+        admin = admin.with_single_project(project, cli.single_project_mode_error);
+    }
     if let (Some(path), Some((content, ruleset))) = (cli.rules.as_deref(), rules) {
         admin.rules().set_default(path, content, ruleset);
     }

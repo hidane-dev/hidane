@@ -25,6 +25,7 @@ mod ordered_json;
 pub mod project;
 mod rest;
 pub mod rules;
+pub mod single_project;
 pub mod triggers;
 mod webchannel;
 mod websocket;
@@ -90,6 +91,7 @@ pub struct Admin {
     seeder: Option<Arc<Seeder>>,
     rules: Arc<rules::Rules>,
     triggers: Arc<triggers::Triggers>,
+    single_project: Option<Arc<single_project::SingleProject>>,
 }
 
 impl Default for Admin {
@@ -110,6 +112,7 @@ impl Admin {
         .with_seeder(self.seeder.clone())
         .with_rules(Arc::clone(&self.rules))
         .with_triggers(Arc::clone(&self.triggers))
+        .with_single_project(self.single_project.clone())
     }
 
     pub fn new(store: Arc<dyn Store>) -> Self {
@@ -123,6 +126,7 @@ impl Admin {
             seeder: None,
             rules: Arc::default(),
             triggers: Arc::default(),
+            single_project: None,
         }
     }
 
@@ -148,6 +152,19 @@ impl Admin {
         });
         self.seeder = Some(seeder);
         self
+    }
+
+    /// `--project_id project --single_project_mode`, and `--single_project_mode_error` if
+    /// `error`: requests for another project print a warning, or fail.
+    #[must_use]
+    pub fn with_single_project(mut self, project: impl Into<String>, error: bool) -> Self {
+        self.single_project = Some(Arc::new(single_project::SingleProject::new(project, error)));
+        self
+    }
+
+    /// `--single_project_mode`, if given.
+    pub fn single_project(&self) -> Option<&single_project::SingleProject> {
+        self.single_project.as_deref()
     }
 
     /// `--database-edition enterprise`.
@@ -314,6 +331,7 @@ async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -
     if let Some(route) = rules::route(parts.uri.path()) {
         return rules::handle(
             &admin.rules,
+            admin.single_project(),
             route,
             &parts.method,
             parts.uri.query(),
@@ -379,12 +397,15 @@ async fn clear_database(
 ) -> Response {
     // The name is read first, as a parent's (`tools/oracle/project_ids.py`).
     let database = format!("projects/{}/databases/{}", project.trim(), database.trim());
-    if let Err(status) = firestore::names::parent(&format!("{database}/documents"))
-        .and_then(|_| firestore::auth::from_header(authorization(&headers)))
-    {
+    let firestore = admin.firestore();
+    if let Err(status) = firestore::names::parent(&format!("{database}/documents")).and_then(|_| {
+        firestore.admit(&database, || {
+            firestore::auth::from_header(authorization(&headers))
+        })
+    }) {
         return rest::error(&status);
     }
-    admin.firestore().clear_database(&database).await;
+    firestore.clear_database(&database).await;
     empty_json()
 }
 

@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:8c396604166a666905a990abe83ec75f3520e2480ec0744d6583ef2ede5b795b",
+ "digest": "sha256:d4502e5e663278b662ee051babcbb8ec28829ecfa767d536f9135495eda947b0",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,13 +14,13 @@
   }
  ],
  "totals": {
-  "files": 92,
-  "fixtures": 51,
+  "files": 93,
+  "fixtures": 52,
   "transcripts": 41,
-  "answers": 24200,
-  "bytes": 15586783,
+  "answers": 24348,
+  "bytes": 15699925,
   "levels": {
-   "full": 13634,
+   "full": 13782,
    "reasons": 4344,
    "part": 843,
    "status": 5187,
@@ -70,9 +70,9 @@
     "answers": 70
    },
    "admin": {
-    "fixtures": 3,
+    "fixtures": 4,
     "transcripts": 4,
-    "answers": 640
+    "answers": 788
    },
    "values": {
     "fixtures": 5,
@@ -82,13 +82,13 @@
   },
   "by_release": {
    "v1.22.0": {
-    "fixtures": 51,
+    "fixtures": 52,
     "transcripts": 41,
-    "answers": 24200
+    "answers": 24348
    }
   },
   "by_release_source": {
-   "header": 26,
+   "header": 27,
    "file name": 42,
    "git history": 24
   }
@@ -1890,6 +1890,47 @@
    ],
    "counted": "each registration, in both runs",
    "compared": "in full: status, content type and body"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/single_project_mode.json",
+   "kind": "fixture",
+   "area": "admin",
+   "recorder": "tools/oracle/single_project_mode.py",
+   "client": {
+    "over": [
+     "gRPC",
+     "REST",
+     "WebChannel",
+     "process"
+    ],
+    "using": "Python standard library and grpcurl",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-15",
+    "last_changed": "2026-10-15"
+   },
+   "bytes": 113142,
+   "sha256": "cd938bbc974ebf098dd0fef4f1a4a8b707b4ae678bc2355d40b1d088469bbb6d",
+   "answers": 148,
+   "levels": {
+    "full": 148
+   },
+   "replayed_over": [
+    "gRPC",
+    "REST",
+    "WebChannel"
+   ],
+   "tests": [
+    "crates/hidane/tests/single_project_mode.rs::requests_for_another_project_like_the_official_emulator"
+   ],
+   "counted": "each step of both runs (`--single_project_mode`, then with `--single_project_mode_error`)",
+   "compared": "in full: the answer (REST status and body with server times masked, the gRPC code and message, the WebChannel handshake's first frame or that none came) and every line printed on standard output"
   },
   {
    "path": "crates/hidane-core/tests/fixtures/value_order.json",
