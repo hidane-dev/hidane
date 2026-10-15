@@ -33,9 +33,9 @@ pub(super) const DEFS: &[Def] = &[
         check: Some(check_map),
         eval: |call, scope| {
             let mut fields = Fields::new();
-            for pair in call.args.chunks_exact(2) {
-                let key = pair[0].literal_string().unwrap_or_default();
-                if let Some(v) = scope.eval(&pair[1])? {
+            for [key, value] in call.args.as_chunks::<2>().0 {
+                let key = key.literal_string().unwrap_or_default();
+                if let Some(v) = scope.eval(value)? {
                     fields.insert(key.to_owned(), v);
                 }
             }
@@ -70,14 +70,14 @@ pub(super) const DEFS: &[Def] = &[
 
 /// `map(key, value, ...)`: an even number of arguments, each key a string literal, once.
 fn check_map(args: &[Expr]) -> Result<(), Status> {
-    if args.len() % 2 != 0 {
+    if !args.len().is_multiple_of(2) {
         return Err(Status::invalid_argument(
             "'map' function must have an even number of arguments",
         ));
     }
     let mut keys: Vec<&str> = Vec::new();
-    for pair in args.chunks_exact(2) {
-        let Some(key) = pair[0].literal_string() else {
+    for [key, _] in args.as_chunks::<2>().0 {
+        let Some(key) = key.literal_string() else {
             return Err(Status::invalid_argument(
                 "map keys must be constants/literals",
             ));
@@ -112,14 +112,10 @@ fn current_document(scope: &Scope<'_>) -> Value {
                 ),
             ),
         );
-        fields.insert(
-            "__create_time__".to_owned(),
-            value::timestamp(doc.create_time),
-        );
-        fields.insert(
-            "__update_time__".to_owned(),
-            value::timestamp(doc.update_time),
-        );
+        if let Some((created, updated)) = doc.times {
+            fields.insert("__create_time__".to_owned(), value::timestamp(created));
+            fields.insert("__update_time__".to_owned(), value::timestamp(updated));
+        }
     }
     value::map(fields)
 }

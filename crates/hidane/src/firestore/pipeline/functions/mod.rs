@@ -29,12 +29,14 @@ mod time;
 mod types;
 mod vectors;
 
+/// A check of a function's literal arguments, when the pipeline is read.
+pub(crate) type Check = fn(&[Expr]) -> Result<(), Status>;
+
 /// A function: how it is called, checked and evaluated.
 pub(crate) struct Def {
     pub(crate) name: &'static str,
     pub(crate) signatures: &'static [Signature],
-    /// Checks of literal arguments, when the pipeline is read.
-    pub(crate) check: Option<fn(&[Expr]) -> Result<(), Status>>,
+    pub(crate) check: Option<Check>,
     pub(crate) eval: fn(&Call, &Scope<'_>) -> Eval,
 }
 

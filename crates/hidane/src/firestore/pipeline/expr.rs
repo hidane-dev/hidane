@@ -71,12 +71,12 @@ impl Expr {
     }
 }
 
-/// The document a row came from.
+/// The document a row came from: its path, and its create and update times, which a `select`
+/// that keeps `__name__` drops.
 #[derive(Debug, Clone)]
 pub(crate) struct Meta {
     pub(crate) path: Arc<ResourcePath>,
-    pub(crate) create_time: Timestamp,
-    pub(crate) update_time: Timestamp,
+    pub(crate) times: Option<(Timestamp, Timestamp)>,
 }
 
 /// A row of a pipeline: a document's fields, or what stages made of them, with the variables
@@ -228,9 +228,11 @@ impl<'a> Scope<'a> {
         .eval(expr)
     }
 
-    /// Runs a subpipeline, which sees the variables visible here.
+    /// Runs a subpipeline, which sees the variables visible here, and whose `subcollection`
+    /// reads below this row's document.
     pub(crate) fn run(&self, pipeline: &Pipeline) -> Result<Vec<Row>, Status> {
-        stages::run(pipeline, self.env, &self.visible_variables())
+        let document = self.row.doc.as_ref().map(|doc| doc.path.as_ref());
+        stages::run(pipeline, self.env, &self.visible_variables(), document)
     }
 }
 
@@ -245,11 +247,13 @@ pub(crate) fn field_of(row: &Row, field: &Field, database: &str) -> Option<Value
         Field::CreateTime => row
             .doc
             .as_ref()
-            .map(|doc| value::timestamp(doc.create_time)),
+            .and_then(|doc| doc.times)
+            .map(|(created, _)| value::timestamp(created)),
         Field::UpdateTime => row
             .doc
             .as_ref()
-            .map(|doc| value::timestamp(doc.update_time)),
+            .and_then(|doc| doc.times)
+            .map(|(_, updated)| value::timestamp(updated)),
         Field::Path(path) => get(&row.fields, path).cloned(),
     }
 }

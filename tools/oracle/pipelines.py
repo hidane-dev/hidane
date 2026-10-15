@@ -429,6 +429,25 @@ def stage_cases():
     case("a scalar subpipeline of no result", [books, limit(1), select(x=fn("scalar", {"pipelineValue": {"stages": [collection("nothing")]}}))])
     case("an array subpipeline", [books, limit(1), select(x=fn("array", {"pipelineValue": {"stages": [collection("books/b1/reviews"), sort((fr("stars"), "ascending")), select(s=fr("stars"))]}}))])
     case("current_document", [books, where(eq(title, s("Stub"))), select(doc=fn("current_document"))])
+    reviews = lambda *more: {"pipelineValue": {"stages": [stage("subcollection", s("reviews")), *more]}}
+    case("subcollection in an array subpipeline", [books, where(eq(title, s("Dune"))), stage("add_fields", mp(
+        r=fn("array", reviews(sort((fr("stars"), "ascending")), select(s=fr("stars")))))), select(t=title, r=fr("r"))])
+    case("subcollection that has no documents", [books, where(eq(title, s("Kindred"))), select(
+        r=fn("array", reviews(select(s=fr("stars")))))])
+    case("subcollection in a scalar subpipeline", [books, sort((fr("__name__"), "ascending")), select(
+        n=fn("scalar", reviews(stage("aggregate", mp(n=fn("count")), mp()))))])
+    case("subcollection without a document", [books, where(eq(title, s("Dune"))), select(t=title), select(
+        r=fn("array", reviews(select(s=fr("stars")))))])
+    case("subcollection first", [stage("subcollection", s("reviews"))])
+    case("subcollection of a path", [books, where(eq(title, s("Dune"))), select(
+        r=fn("array", {"pipelineValue": {"stages": [stage("subcollection", s("reviews/r1/x"))]}}))])
+    case("subcollection of a reference", [books, where(eq(title, s("Dune"))), select(
+        r=fn("array", {"pipelineValue": {"stages": [stage("subcollection", {"referenceValue": "/reviews"})]}}))])
+    case("subcollection without arguments", [books, where(eq(title, s("Dune"))), select(
+        r=fn("array", {"pipelineValue": {"stages": [stage("subcollection")]}}))])
+    case("select __name__ as itself", [books, where(eq(title, s("Dune"))), select(t=title, __name__=fr("__name__"))])
+    case("select __name__ as itself and sort", [books, select(t=title, __name__=fr("__name__")),
+                                                 sort((fr("__name__"), "descending")), limit(2)])
     case("array_filter", [books, where(eq(title, s("Dune"))), select(x=fn("array_filter", fr("tags"), s("t"), fn("not_equal", var("t"), s("space"))))])
     case("array_filter not a boolean", [books, where(eq(title, s("Dune"))), select(x=fn("array_filter", fr("tags"), s("t"), var("t")))])
     case("array_transform", [books, where(eq(title, s("Dune"))), select(x=fn("array_transform", fr("tags"), s("t"), fn("char_length", var("t"))))])
@@ -442,6 +461,11 @@ def stage_cases():
     case("update after select", [collection("nums"), select(x=fr("x")), stage("update", mp(z=i(1)))])
     case("update without arguments", [stage("documents", {"referenceValue": "/nums/n2"}), stage("update")])
     case("update twice", [stage("documents", {"referenceValue": "/nums/n2"}), stage("update", mp(z=i(1))), stage("update", mp(z=i(2)))])
+    case("update after add_fields", [stage("documents", {"referenceValue": "/nums/n3"}),
+                                     stage("add_fields", mp(extra=fr("__name__"))), stage("update", mp(z=i(2)))])
+    case("update after remove_fields", [stage("documents", {"referenceValue": "/nums/n3"}),
+                                        stage("remove_fields", fr("y")), stage("update", mp(z=i(3)))])
+    case("update after add_fields and remove_fields, read", [stage("documents", {"referenceValue": "/nums/n3"})])
     case("delete", [stage("documents", {"referenceValue": "/nums/n7"}), stage("delete")])
     case("delete then read", [stage("documents", {"referenceValue": "/nums/n7"})])
     case("delete a missing document", [stage("documents", {"referenceValue": "/nums/zz"}), stage("delete")])
@@ -655,6 +679,13 @@ FUNCTIONS = {
     "document_matches": [(s("x"),)],
     "score": [()],
     "between": [("i", "i0", "i2")],
+    # The aggregate functions in a scalar expression: `sum` adds an array's elements.
+    "sum": [("ai",), ("an",), ("ae",), ("a",), (fn("array", fr("big"), fr("i")),),
+            (fn("array", fr("d"), fr("nan")),), (fn("array", fr("i"), fr("s")),)],
+    "average": [("ai",)],
+    "count": [("ai",)],
+    "first": [("ai",)],
+    "last": [("ai",)],
 }
 NONDETERMINISTIC = {
     "rand": [(fn("type", fn("rand")),), (fn("and", fn("greater_than_or_equal", fn("rand"), d(0.0)),

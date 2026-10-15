@@ -21,15 +21,17 @@ use super::{
 };
 
 /// Runs `pipeline`; its rows start with the variables `vars` (a subpipeline's: those visible
-/// where it is evaluated).
+/// where it is evaluated), and its `subcollection` reads below `document` (the document of the
+/// row a subpipeline is evaluated for; none, it reads nothing).
 pub(crate) fn run(
     pipeline: &Pipeline,
     env: &Env<'_>,
     vars: &[(String, Value)],
+    document: Option<&ResourcePath>,
 ) -> Result<Vec<Row>, Status> {
     let mut rows = Vec::new();
     for stage in &pipeline.stages {
-        rows = apply(stage, rows, env, vars)?;
+        rows = apply(stage, rows, env, vars, document)?;
     }
     Ok(rows)
 }
@@ -38,8 +40,7 @@ fn document_row(doc: &Arc<StoredDocument>, vars: &[(String, Value)]) -> Row {
     Row {
         doc: Some(Meta {
             path: Arc::clone(&doc.path),
-            create_time: doc.create_time,
-            update_time: doc.update_time,
+            times: Some((doc.create_time, doc.update_time)),
         }),
         fields: doc.fields(),
         vars: vars.to_vec(),
@@ -56,6 +57,7 @@ fn apply(
     rows: Vec<Row>,
     env: &Env<'_>,
     vars: &[(String, Value)],
+    document: Option<&ResourcePath>,
 ) -> Result<Vec<Row>, Status> {
     let (store, database, at) = (env.store, env.database, env.at);
     let mut scanned = Vec::new();
@@ -66,6 +68,12 @@ fn apply(
     Ok(match stage {
         Stage::Collection(path) => {
             store.scan_collection(database, path, at, &mut collect);
+            scanned
+        }
+        Stage::Subcollection(id) => {
+            if let Some(document) = document {
+                store.scan_collection(database, &document.child(id.as_str()), at, &mut collect);
+            }
             scanned
         }
         Stage::CollectionGroup(id) => {
@@ -94,7 +102,7 @@ fn apply(
             }
             kept
         }
-        Stage::Select(fields) => rows
+        Stage::Select(fields, keep_name) => rows
             .iter()
             .map(|row| {
                 let mut out = Fields::new();
@@ -104,7 +112,10 @@ fn apply(
                     }
                 }
                 Ok(Row {
-                    doc: None,
+                    doc: row.doc.as_ref().filter(|_| *keep_name).map(|doc| Meta {
+                        path: Arc::clone(&doc.path),
+                        times: None,
+                    }),
                     fields: out,
                     vars: row.vars.clone(),
                 })
@@ -292,7 +303,7 @@ fn apply(
             .collect(),
         Stage::Union(other) => {
             let mut rows = rows;
-            rows.extend(run(other, env, vars)?);
+            rows.extend(run(other, env, vars, document)?);
             rows
         }
         Stage::Unnest {
@@ -435,12 +446,14 @@ pub(crate) fn distance(measure: Measure, a: &[f64], b: &[f64]) -> Option<f64> {
                 .sqrt(),
         ),
         Measure::Cosine => {
-            let norm = |v: &[f64]| v.iter().map(|x| x * x).sum::<f64>().sqrt();
-            let (na, nb) = (norm(a), norm(b));
-            if na == 0.0 || nb == 0.0 {
+            // One square root of the product, as `cosine_distance` computes it: two would
+            // make vectors of one direction differ in the last bit.
+            let squares = |v: &[f64]| v.iter().map(|x| x * x).sum::<f64>();
+            let product = squares(a) * squares(b);
+            if product == 0.0 {
                 return None;
             }
-            Some(1.0 - dot / (na * nb))
+            Some(1.0 - dot / product.sqrt())
         }
     }
 }

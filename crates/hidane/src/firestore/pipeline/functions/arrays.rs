@@ -1,4 +1,4 @@
-//! Arrays: `array_concat`, `array_contains`, `array_contains_all`, `array_contains_any`,
+//! Arrays: `sum`, `array_concat`, `array_contains`, `array_contains_all`, `array_contains_any`,
 //! `array_length`, `array_reverse`, `array_first`, `array_first_n`, `array_last`, `array_last_n`,
 //! `array_get`, `array_index_of`, `array_index_of_all`, `array_slice`, `array_filter`,
 //! `array_transform`, `maximum`, `minimum`, `maximum_n`, `minimum_n`.
@@ -14,7 +14,8 @@
 //!
 //! `maximum` and `minimum` take an array or two values or more, `maximum_n` and `minimum_n` an
 //! array and a count: they compare in Firestore's order across types (NaN below every other
-//! number) and skip null values.
+//! number) and skip null values. `sum` of an array adds its numbers, as the `aggregate` stage's
+//! `sum` does.
 //!
 //! The official emulator does not check how many arguments `array_reverse` and `array_slice`
 //! get when it reads them against a signature: a count they do not take fails without a
@@ -33,6 +34,12 @@ use crate::firestore::pipeline::{
 };
 
 pub(super) const DEFS: &[Def] = &[
+    Def {
+        name: "sum",
+        signatures: &[Signature::fixed("sum(x: array[any]): number", 1)],
+        check: None,
+        eval: array_sum,
+    },
     Def {
         name: "array_concat",
         signatures: &[Signature::variadic(
@@ -504,4 +511,26 @@ fn extremes(call: &Call, scope: &Scope<'_>, function: &str, wanted: Ordering) ->
     });
     sorted.truncate(n);
     Ok(Some(value::array(sorted.into_iter().cloned().collect())))
+}
+
+/// `sum` of an array (`arraySum()` in the SDKs): its numbers added as the `aggregate` stage's
+/// `sum` adds them, other elements left out; null without any.
+fn array_sum(call: &Call, scope: &Scope<'_>) -> Eval {
+    let elements = match scope.eval(&call.args[0])? {
+        None => return null(),
+        Some(v) => match v.value_type {
+            Some(ValueType::ArrayValue(array)) => array.values,
+            _ if crate::firestore::pipeline::value::is_null(&v) => return null(),
+            _ => return Err(requires("array_sum", "Array", &v)),
+        },
+    };
+    let numbers: Vec<&ValueType> = elements
+        .iter()
+        .filter_map(|v| v.value_type.as_ref())
+        .filter(|v| matches!(v, ValueType::IntegerValue(_) | ValueType::DoubleValue(_)))
+        .collect();
+    match crate::firestore::aggregation::enterprise_sum(&numbers)? {
+        Some(sum) => Ok(Some(crate::firestore::pipeline::value::of(sum))),
+        None => null(),
+    }
 }

@@ -32,13 +32,6 @@ impl Num {
             Self::Double(d) => d,
         }
     }
-
-    pub(crate) fn value(self) -> Value {
-        match self {
-            Self::Int(i) => value::int(i),
-            Self::Double(d) => value::double(d),
-        }
-    }
 }
 
 /// A numeric operand: `None` for null or absent, an error naming `expected` for any other type.
@@ -468,7 +461,12 @@ fn signed(d: f64, magnitude: &str) -> f64 {
 }
 
 /// `exp` as fdlibm's `__ieee754_exp` (Java's `StrictMath.exp`) computes it.
-#[allow(clippy::many_single_char_names, clippy::unreadable_literal)]
+#[allow(
+    clippy::many_single_char_names,
+    clippy::unreadable_literal,
+    clippy::approx_constant,
+    clippy::excessive_precision
+)]
 pub(crate) fn fdlibm_exp(x: f64) -> f64 {
     const HALF: [f64; 2] = [0.5, -0.5];
     const HUGE: f64 = 1.0e+300;
@@ -526,10 +524,8 @@ pub(crate) fn fdlibm_exp(x: f64) -> f64 {
             lo = t * LN2_LO[0];
         }
         x = hi - lo;
-    } else if hx < 0x3e30_0000 {
-        if HUGE + x > 1.0 {
-            return 1.0 + x;
-        }
+    } else if hx < 0x3e30_0000 && HUGE + x > 1.0 {
+        return 1.0 + x;
     }
 
     let t = x * x;
@@ -581,7 +577,9 @@ fn with_low(x: f64, low: u32) -> f64 {
     clippy::cast_possible_truncation,
     clippy::cast_sign_loss,
     clippy::cast_possible_wrap,
-    clippy::similar_names
+    clippy::similar_names,
+    clippy::approx_constant,
+    clippy::excessive_precision
 )]
 pub(crate) fn fdlibm_pow(x: f64, y: f64) -> f64 {
     const BP: [f64; 2] = [1.0, 1.5];
@@ -653,7 +651,7 @@ pub(crate) fn fdlibm_pow(x: f64, y: f64) -> f64 {
     if ly == 0 {
         if iy == 0x7ff0_0000 {
             if ((ix - 0x3ff0_0000) as u32 | lx) == 0 {
-                return y - y;
+                return f64::NAN;
             } else if ix >= 0x3ff0_0000 {
                 return if hy >= 0 { y } else { 0.0 };
             }
@@ -679,7 +677,7 @@ pub(crate) fn fdlibm_pow(x: f64, y: f64) -> f64 {
         }
         if hx < 0 {
             if ((ix - 0x3ff0_0000) | yisint) == 0 {
-                z = (z - z) / (z - z);
+                z = f64::NAN;
             } else if yisint == 1 {
                 z = -z;
             }
@@ -690,7 +688,7 @@ pub(crate) fn fdlibm_pow(x: f64, y: f64) -> f64 {
     let mut n = (hx >> 31) + 1;
     // (x < 0)**(non-integer) is NaN.
     if (n | yisint) == 0 {
-        return (x - x) / (x - x);
+        return f64::NAN;
     }
     let s = if (n | (yisint - 1)) == 0 { -1.0 } else { 1.0 };
 

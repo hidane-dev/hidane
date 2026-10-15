@@ -22,13 +22,13 @@ pub(super) const DEFS: &[Def] = &[
         signatures: &[Signature::variadic("switch_on(x: any*): any?", 2)],
         check: None,
         eval: |call, scope| {
-            let mut cases = call.args.chunks_exact(2);
-            for case in cases.by_ref() {
-                if is_true(scope, &case[0])? {
-                    return scope.eval(&case[1]);
+            let (cases, default) = call.args.as_chunks::<2>();
+            for [condition, result] in cases {
+                if is_true(scope, condition)? {
+                    return scope.eval(result);
                 }
             }
-            match cases.remainder() {
+            match default {
                 [default] => scope.eval(default),
                 _ => Err(tonic::Status::invalid_argument(
                     "all switch cases evaluate to false, and no default provided",

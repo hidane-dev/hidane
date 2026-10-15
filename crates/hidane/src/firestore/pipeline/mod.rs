@@ -17,7 +17,7 @@ mod value;
 
 use hidane_core::{field_path::FieldPath, path::ResourcePath};
 use hidane_proto::google::firestore::v1::{
-    Document, DocumentMask, ExecutePipelineRequest, ExecutePipelineResponse, Precondition, Write,
+    Document, ExecutePipelineRequest, ExecutePipelineResponse, Precondition, Write,
     execute_pipeline_request, precondition, write,
 };
 use tonic::Status;
@@ -34,11 +34,15 @@ pub(crate) struct Pipeline {
 #[derive(Debug, Clone)]
 pub(crate) enum Stage {
     Collection(ResourcePath),
+    /// A subcollection of the document of the row a subpipeline is evaluated for.
+    Subcollection(String),
     CollectionGroup(String),
     Database,
     Documents(Vec<ResourcePath>),
     Where(Expr),
-    Select(Vec<(FieldPath, Expr)>),
+    /// The fields to make, and whether the rows keep their document's name
+    /// (`{__name__: __name__}`).
+    Select(Vec<(FieldPath, Expr)>, bool),
     AddFields(Vec<(FieldPath, Expr)>),
     RemoveFields(Vec<FieldPath>),
     ReplaceWith(Expr, Mode),
@@ -73,7 +77,11 @@ impl Stage {
     fn is_input(&self) -> bool {
         matches!(
             self,
-            Self::Collection(_) | Self::CollectionGroup(_) | Self::Database | Self::Documents(_)
+            Self::Collection(_)
+                | Self::Subcollection(_)
+                | Self::CollectionGroup(_)
+                | Self::Database
+                | Self::Documents(_)
         )
     }
 
@@ -84,7 +92,7 @@ impl Stage {
     /// The name of a stage whose rows have no document name.
     fn drops_names(&self) -> Option<&'static str> {
         match self {
-            Self::Select(_) => Some("select"),
+            Self::Select(_, false) => Some("select"),
             Self::Aggregate { .. } => Some("aggregate"),
             Self::Distinct(_) => Some("distinct"),
             Self::ReplaceWith(_, Mode::FullReplace) => Some("replace_with"),
@@ -128,7 +136,7 @@ impl FirestoreService {
             return Err(Status::unknown(""));
         };
         let proto = structured.pipeline.clone().unwrap_or_default();
-        let pipeline = parse::pipeline(&proto)?;
+        let pipeline = parse::pipeline(&proto, false)?;
         let consistency = match &req.consistency_selector {
             Some(execute_pipeline_request::ConsistencySelector::Transaction(t)) => {
                 Consistency::Transaction(t)
@@ -152,7 +160,7 @@ impl FirestoreService {
             database,
             at,
         };
-        let rows = stages::run(&pipeline, &env, &[])?;
+        let rows = stages::run(&pipeline, &env, &[], None)?;
         let dml = pipeline.stages.last().filter(|s| s.is_dml());
         let (rows, execution_time) = match dml {
             Some(stage) => (
@@ -185,15 +193,14 @@ impl FirestoreService {
                 let doc = row.doc.as_ref()?;
                 let name = Name::document_name(database, &doc.path);
                 Some(match stage {
-                    Stage::Update(fields) => Write {
+                    // The row as the stages before left it replaces the document: fields
+                    // they added or removed are written too.
+                    Stage::Update(_) => Write {
                         operation: Some(write::Operation::Update(Document {
                             name,
                             fields: row.fields.clone(),
                             ..Document::default()
                         })),
-                        update_mask: Some(DocumentMask {
-                            field_paths: fields.iter().map(|(path, _)| path.to_string()).collect(),
-                        }),
                         current_document: Some(Precondition {
                             condition_type: Some(precondition::ConditionType::Exists(true)),
                         }),
@@ -240,8 +247,8 @@ fn result(database: &str, row: &Row) -> Document {
         Some(doc) => Document {
             name: Name::document_name(database, &doc.path),
             fields: row.fields.clone(),
-            create_time: Some(doc.create_time),
-            update_time: Some(doc.update_time),
+            create_time: doc.times.map(|(created, _)| created),
+            update_time: doc.times.map(|(_, updated)| updated),
         },
         None => Document {
             fields: row.fields.clone(),

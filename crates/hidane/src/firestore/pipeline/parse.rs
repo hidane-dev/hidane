@@ -25,6 +25,7 @@ struct Spec {
 fn spec(name: &str) -> Option<Spec> {
     let (signature, min, max, options): (&'static str, usize, Option<usize>, &[&str]) = match name {
         "collection" => ("collection(collection_name: Collection)", 1, Some(1), &[]),
+        "subcollection" => ("subcollection(collection_id: String)", 1, Some(1), &[]),
         "collection_group" => (
             "collection_group(ancestor: Path, collection_id: String)",
             2,
@@ -82,8 +83,9 @@ fn spec(name: &str) -> Option<Spec> {
     })
 }
 
-/// Reads a pipeline: its stages, then whether they come in an order it runs.
-pub(crate) fn pipeline(proto: &Proto) -> Result<Pipeline, Status> {
+/// Reads a pipeline: its stages, then whether they come in an order it runs. A `nested` one
+/// (an argument of `scalar(...)` or `array(...)`) may start with `subcollection`.
+pub(crate) fn pipeline(proto: &Proto, nested: bool) -> Result<Pipeline, Status> {
     if proto.stages.is_empty() {
         return Err(Status::unknown(""));
     }
@@ -92,6 +94,17 @@ pub(crate) fn pipeline(proto: &Proto) -> Result<Pipeline, Status> {
         .iter()
         .map(stage)
         .collect::<Result<Vec<_>, _>>()?;
+    let misplaced = stages
+        .iter()
+        .enumerate()
+        .any(|(i, s)| matches!(s, Stage::Subcollection(_)) && (i > 0 || !nested));
+    if misplaced {
+        return Err(Status::invalid_argument(
+            "The 'subcollection(...)' stage can only be used at the start of a nested \
+             pipeline.\n\nCheck that this stage is used at the beginning of an array or scalar \
+             sub-pipeline.",
+        ));
+    }
     if !stages[0].is_input() {
         return Err(Status::invalid_argument(
             "The first stage in a pipeline query must be an input stage.",
@@ -175,18 +188,24 @@ fn stage(proto: &ProtoStage) -> Result<Stage, Status> {
             Stage::Documents(paths)
         }
         "where" => Stage::Where(expr(&args[0])?),
-        "select" | "add_fields" => {
-            let fields = aliases(name, "fields", &args[0])?;
-            if name == "select" && fields.is_empty() {
+        "select" => {
+            let (fields, keep_name) = aliases_keeping_name(name, "fields", &args[0], true)?;
+            if fields.is_empty() && !keep_name {
                 return Err(Status::invalid_argument(
                     "The 'select(...)' stage requires at least one field.",
                 ));
             }
-            if name == "select" {
-                Stage::Select(fields)
-            } else {
-                Stage::AddFields(fields)
+            Stage::Select(fields, keep_name)
+        }
+        "add_fields" => Stage::AddFields(aliases(name, "fields", &args[0])?),
+        "subcollection" => {
+            let id = string("collection_id", &args[0])?;
+            if id.contains('/') {
+                return Err(Status::invalid_argument(format!(
+                    "Collection id \"{id}\" is invalid because it contains \"/\"."
+                )));
             }
+            Stage::Subcollection(id.to_owned())
         }
         "remove_fields" => Stage::RemoveFields(
             args.iter()
@@ -290,7 +309,7 @@ fn stage(proto: &ProtoStage) -> Result<Stage, Status> {
                     "The 'union(...)' stage must have at least one stage.",
                 ));
             }
-            Stage::Union(Box::new(pipeline(other)?))
+            Stage::Union(Box::new(pipeline(other, false)?))
         }
         "unnest" => {
             let source = expr(&args[0])?;
@@ -386,7 +405,7 @@ fn path_of(what: &str, text: &str, document: bool) -> Result<ResourcePath, Statu
             "{what} \"{text}\" has an empty segment."
         )));
     }
-    if (segments.len() % 2 == 0) != document {
+    if segments.len().is_multiple_of(2) != document {
         return Err(lacks(text.len()));
     }
     Ok(ResourcePath::from_segments(
@@ -396,19 +415,37 @@ fn path_of(what: &str, text: &str, document: bool) -> Result<ResourcePath, Statu
 
 /// A map of field paths to expressions (`select`, `add_fields`, `update`).
 fn aliases(stage: &str, argument: &str, v: &Value) -> Result<Vec<(FieldPath, Expr)>, Status> {
-    map_of(argument, v)?
-        .iter()
-        .map(|(alias, v)| {
-            if alias == "__name__" {
-                return Err(Status::invalid_argument(format!(
-                    "Stage '{stage}': field name '__name__' is reserved and can not be \
-                     overwritten."
-                )));
+    let (fields, _) = aliases_keeping_name(stage, argument, v, false)?;
+    Ok(fields)
+}
+
+/// [`aliases`], and with `keep`, whether the map keeps `__name__` as itself (`select`'s
+/// `{__name__: __name__}`, which keeps the document's name): `__name__` as any other alias is
+/// refused.
+fn aliases_keeping_name(
+    stage: &str,
+    argument: &str,
+    v: &Value,
+    keep: bool,
+) -> Result<(Vec<(FieldPath, Expr)>, bool), Status> {
+    let mut kept = false;
+    let mut fields = Vec::new();
+    for (alias, v) in map_of(argument, v)? {
+        if alias == "__name__" {
+            if keep
+                && matches!(&v.value_type, Some(ValueType::FieldReferenceValue(f)) if f == "__name__")
+            {
+                kept = true;
+                continue;
             }
-            let path = FieldPath::parse(alias).map_err(Status::invalid_argument)?;
-            Ok((path, expr(v)?))
-        })
-        .collect()
+            return Err(Status::invalid_argument(format!(
+                "Stage '{stage}': field name '__name__' is reserved and can not be overwritten."
+            )));
+        }
+        let path = FieldPath::parse(alias).map_err(Status::invalid_argument)?;
+        fields.push((path, expr(v)?));
+    }
+    Ok((fields, kept))
 }
 
 /// An alias that must be a top-level field (`aggregate`, `distinct`).
@@ -587,7 +624,7 @@ pub(crate) fn expr(v: &Value) -> Result<Expr, Status> {
         }
         Some(ValueType::FieldReferenceValue(path)) => Expr::Field(Field::parse(path)?),
         Some(ValueType::VariableReferenceValue(name)) => Expr::Variable(name.clone()),
-        Some(ValueType::PipelineValue(p)) => Expr::Pipeline(Box::new(pipeline(p)?)),
+        Some(ValueType::PipelineValue(p)) => Expr::Pipeline(Box::new(pipeline(p, true)?)),
         Some(ValueType::ArrayValue(array)) => {
             let items = array
                 .values
