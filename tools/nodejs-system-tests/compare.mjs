@@ -5,7 +5,8 @@
 // - a test that passed on the official emulator and did not pass on hidane, unless listed;
 // - a listed test that passed on hidane (the list must stay honest: take it out);
 // - a listed test the official run does not pass (the list is for differences only);
-// - runs of different google-cloud-node commits, or a test of one run that the other lacks.
+// - runs of different google-cloud-node commits or transports, or a test of one run that the
+//   other lacks.
 //
 //   node compare.mjs <official.json> <hidane.json> <expected-failures.txt>
 
@@ -33,6 +34,12 @@ if (official['google-cloud-node'] !== hidane['google-cloud-node']) {
   problems.push(
     `the runs are of different google-cloud-node commits: ${official['google-cloud-node']} (official) and ` +
       `${hidane['google-cloud-node']} (hidane); record the official run again at the pinned commit`
+  );
+}
+
+if (official.transport !== hidane.transport) {
+  problems.push(
+    `the runs are over different transports: ${official.transport} (official) and ${hidane.transport} (hidane)`
   );
 }
 

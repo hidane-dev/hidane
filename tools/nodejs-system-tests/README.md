@@ -4,8 +4,9 @@ Runs the system tests of the Node.js server SDK, `@google-cloud/firestore`, agai
 and compares hidane's outcomes with the official emulator's (#42). The tests are the SDK's own,
 from [google-cloud-node](https://github.com/googleapis/google-cloud-node)'s
 `handwritten/firestore/dev/system-test`. They create documents and run queries, aggregations,
-listeners, transactions, bulk writes, bundles and recursive deletes over gRPC against
-`127.0.0.1:<port>`, as `pnpm run system-test:emulator:grpc` does there (it starts no emulator).
+listeners, transactions, bulk writes, bundles and recursive deletes against `127.0.0.1:<port>`,
+over gRPC as `pnpm run system-test:emulator:grpc` does there, and over REST as
+`system-test:emulator:rest` does (neither starts an emulator).
 
 The suite runs at the commit pinned in `.github/workflows/nodejs-system-tests.yml`
 (`GOOGLE_CLOUD_NODE_COMMIT`), which runs it against hidane weekly and for changes to the server.
@@ -13,9 +14,10 @@ The suite runs at the commit pinned in `.github/workflows/nodejs-system-tests.ym
 | File | What it does |
 |---|---|
 | `setup.sh` | Installs the Firestore package of a checkout with its own package manager (pnpm 10), without install scripts, and compiles it and the tests to `build/` |
-| `run.sh` | Runs `build/system-test` with Mocha against `127.0.0.1:<port>` and writes Mocha's JSON report |
+| `run.sh` | Runs `build/system-test` with Mocha against `127.0.0.1:<port>`, over gRPC or REST, and writes Mocha's JSON report |
+| `metadata.py` | Over REST, stands in for the metadata server: the SDK asks google-auth-library for credentials there too, and gets the token `owner`, which both emulators read as the administrator's (nothing reaches Google) |
 | `results.mjs` | Turns a report into `results/nodejs-system-tests-*.json`: each test's ID and outcome, nothing else |
-| `compare.mjs` | Fails on a test that passes on the official emulator and not on hidane, unless `expected-failures.txt` lists it; on a listed test that passes; and on runs of different commits or tests |
+| `compare.mjs` | Fails on a test that passes on the official emulator and not on hidane, unless `expected-failures.txt` lists it; on a listed test that passes; and on runs of different commits, transports or tests |
 | `expected-failures.txt` | The tests expected to fail on hidane, each with its reason (none now) |
 
 ## Running it
@@ -33,13 +35,16 @@ node tools/nodejs-system-tests/compare.mjs results/nodejs-system-tests-official-
   hidane.json tools/nodejs-system-tests/expected-failures.txt
 ```
 
+Over REST, pass `rest` to `run.sh` and `results.mjs`, start the emulator afresh, and compare with
+`results/nodejs-system-tests-rest-official-v1.22.0.json`.
+
 The tests take about 15 seconds against either emulator; setting up the checkout takes a few
 minutes. To record the official emulator again, start the jar with an English locale (see
 `tools/oracle/README.md`) and pass `"official v1.22.0"` as the emulator's name.
 
 ## What the results hold
 
-At the pinned commit, 909 tests:
+At the pinned commit, 909 tests, with the same outcomes over gRPC and REST:
 
 | | Official emulator v1.22.0 | hidane |
 |---|--:|--:|
@@ -59,10 +64,6 @@ At the pinned commit, 909 tests:
 
 ## What is left out
 
-- **REST** (`system-test:emulator:rest`, `FIRESTORE_PREFER_REST=true`). Over REST the SDK looks
-  for Google credentials even with `FIRESTORE_EMULATOR_HOST` set, and 269 tests fail with "Could
-  not load the default credentials" on either emulator. The REST surface is covered by
-  `tools/oracle/rest.py` and the web SDK Lite transcript (`results/sdk-rest-*.json`).
 - **c8.** `bin/run-test.cjs` runs Mocha under c8 for coverage; `run.sh` runs Mocha alone, with a
   timeout of a minute per test in place of 20 minutes, so a hanging test fails rather than stalls
   the run.

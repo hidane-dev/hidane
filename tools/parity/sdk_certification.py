@@ -175,6 +175,10 @@ EVIDENCE = {
     "nodejs-system-tests": {"admin-node": ["documents", "queries", "aggregations",
                                            "vector-search", "transactions", "listeners",
                                            "clear"]},
+    # With `preferRest`, the SDK's listeners still use gRPC.
+    "nodejs-system-tests-rest": {"admin-node-prefer-rest": ["documents", "queries", "aggregations",
+                                                            "vector-search", "transactions",
+                                                            "listeners", "clear"]},
     "sdk-aggregations": {"admin-node": ["aggregations"]},
     "sdk-auth": {"rules-unit-testing": ["security-rules"]},
     "sdk-clear": {"rules-unit-testing": ["clear"]},

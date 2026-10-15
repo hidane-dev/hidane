@@ -2,13 +2,13 @@
 // (its file, relative to build/, then its full title, joined with " > ") and its outcome,
 // sorted, without times, paths or messages.
 //
-//   node results.mjs <google-cloud-node commit> <emulator> <mocha-report.json> > results.json
+//   node results.mjs <google-cloud-node commit> <emulator> <mocha-report.json> [grpc|rest] > results.json
 
 import { readFileSync } from 'node:fs';
 
-const [commit, emulator, reportPath] = process.argv.slice(2);
-if (!commit || !emulator || !reportPath) {
-  console.error('usage: node results.mjs <google-cloud-node commit> <emulator> <mocha-report.json>');
+const [commit, emulator, reportPath, transport = 'grpc'] = process.argv.slice(2);
+if (!commit || !emulator || !reportPath || !['grpc', 'rest'].includes(transport)) {
+  console.error('usage: node results.mjs <google-cloud-node commit> <emulator> <mocha-report.json> [grpc|rest]');
   process.exit(2);
 }
 
@@ -59,6 +59,7 @@ for (const key of sorted) counts[outcomes.get(key)]++;
 const result = {
   'google-cloud-node': commit,
   emulator,
+  transport,
   counts,
   tests: Object.fromEntries(sorted.map(key => [key, outcomes.get(key)]))
 };

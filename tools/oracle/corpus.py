@@ -120,6 +120,7 @@ TRANSCRIPT_RECORDERS = {
     "functions-triggers": "tools/oracle/functions/drive.mjs",
     "js-sdk-browser": "tools/js-sdk-browser/",
     "nodejs-system-tests": "tools/nodejs-system-tests/",
+    "nodejs-system-tests-rest": "tools/nodejs-system-tests/",
 }
 for _sdk in ("android", "go", "ios", "java", "python"):
     for _section in ("documents", "listen", "queries", "transactions"):
