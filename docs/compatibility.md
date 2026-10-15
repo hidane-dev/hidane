@@ -41,8 +41,8 @@ firebase-tools that launches it and the official emulator it is compared with.
 
 How to read them:
 
-- **hidane** is the tree the report is generated from, named by its series (`0.5.x` for the
-  workspace version 0.5.1). CI replays the fixtures against it on every pull request and on
+- **hidane** is the tree the report is generated from, named by its series (`0.6.x` for the
+  workspace version 0.6.0). CI replays the fixtures against it on every pull request and on
   `main`, so on a commit of `main` the replayed answers match. Transcripts are recorded once and
   committed: their evidence carries the date they were last recorded.
 - **firebase-tools** is the version the transcripts made under `firebase emulators:exec` ran

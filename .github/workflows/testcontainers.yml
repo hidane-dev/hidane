@@ -8,7 +8,7 @@ name: Testcontainers
 # The image is built from this commit with packaging/docker/Dockerfile, from the same kind of
 # context as the release workflow's: a change to hidane or to the image is tested before a release
 # publishes it, and the gcloud modules need hidane 0.5.0 or newer. The tests also run against the
-# published v0.5.1 image, pinned by digest, which users can pull today.
+# published v0.6.0 image, pinned by digest, which users can pull today.
 
 on:
   push:
@@ -43,8 +43,8 @@ concurrency:
 env:
   # The image built from this commit, loaded into each job's Docker; never pushed.
   SOURCE_IMAGE: hidane:testcontainers
-  # ghcr.io/hidane-dev/hidane:0.5.1 (linux/amd64, linux/arm64).
-  PUBLISHED_IMAGE: ghcr.io/hidane-dev/hidane@sha256:056328d07730c00c9d8c53e8d3c0273ef302b7fb24f1f13379151391d5834739
+  # ghcr.io/hidane-dev/hidane:0.6.0 (linux/amd64, linux/arm64).
+  PUBLISHED_IMAGE: ghcr.io/hidane-dev/hidane@sha256:bb5fd17a8efe01ded3803ccdab7b794152f0dd2ee112f6ccb27201774fc722ba
 
 jobs:
   image:
@@ -112,7 +112,7 @@ jobs:
         env:
           HIDANE_IMAGE: ${{ env.SOURCE_IMAGE }}
         run: mvn -B -ntp test
-      - name: The published v0.5.1 image, through the gcloud module and as a generic container
+      - name: The published v0.6.0 image, through the gcloud module and as a generic container
         env:
           HIDANE_IMAGE: ${{ env.PUBLISHED_IMAGE }}
         run: mvn -B -ntp test
@@ -145,7 +145,7 @@ jobs:
         env:
           HIDANE_IMAGE: ${{ env.SOURCE_IMAGE }}
         run: npm test
-      - name: The published v0.5.1 image, through the gcloud module and as a generic container
+      - name: The published v0.6.0 image, through the gcloud module and as a generic container
         env:
           HIDANE_IMAGE: ${{ env.PUBLISHED_IMAGE }}
         run: npm test
@@ -178,7 +178,7 @@ jobs:
         env:
           HIDANE_IMAGE: ${{ env.SOURCE_IMAGE }}
         run: pytest -v
-      - name: The published v0.5.1 image, as a generic container
+      - name: The published v0.6.0 image, as a generic container
         env:
           HIDANE_IMAGE: ${{ env.PUBLISHED_IMAGE }}
         run: pytest -v
@@ -209,7 +209,7 @@ jobs:
         env:
           HIDANE_IMAGE: ${{ env.SOURCE_IMAGE }}
         run: go test -count=1 -v ./...
-      - name: The published v0.5.1 image, through the gcloud module and as a generic container
+      - name: The published v0.6.0 image, through the gcloud module and as a generic container
         env:
           HIDANE_IMAGE: ${{ env.PUBLISHED_IMAGE }}
         run: go test -count=1 -v ./...
