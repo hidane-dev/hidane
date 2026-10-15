@@ -19,7 +19,9 @@
     {"ecosystem": "maven", "name": "com.google.firebase:firebase-admin", "version": "9.11.0",
      "verified": false,
      "note": "Not verified itself: its Firestore client is com.google.cloud:google-cloud-firestore."},
-    {"ecosystem": "pub", "name": "cloud_firestore", "version": "6.10.0", "verified": true}
+    {"ecosystem": "pub", "name": "cloud_firestore", "version": "6.10.0", "verified": true},
+    {"ecosystem": "swiftpm", "name": "FirebaseFirestore", "version": "13.0.1", "verified": true,
+     "note": "A product of firebase/firebase-ios-sdk, whose GitHub releases are watched."}
   ],
   "emulator": {
     "name": "cloud-firestore-emulator",

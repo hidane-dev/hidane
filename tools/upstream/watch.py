@@ -55,7 +55,7 @@ SDK_CERTIFICATION = "docs/sdk-certification.json"
 COMPATIBILITY = "docs/compatibility.json"
 SCHEMA_VERSION = 1
 
-ECOSYSTEMS = ("npm", "pypi", "go", "maven", "pub")
+ECOSYSTEMS = ("npm", "pypi", "go", "maven", "pub", "swiftpm")
 STABLE, LATEST, PRERELEASE, UNRELEASED = "stable", "latest", "prerelease", "unreleased"
 REQUESTED = "requested"  # a jar the canary was asked to run against by hand
 REQUEST_SOURCE = "a request by hand"
@@ -73,7 +73,12 @@ PYPI_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,99}")
 GO_MODULE = re.compile(r"[a-z0-9.-]{1,100}(?:/[A-Za-z0-9._~-]{1,100}){1,8}")
 MAVEN_NAME = re.compile(r"[A-Za-z0-9_.-]{1,100}:[A-Za-z0-9_.-]{1,100}")
 PUB_NAME = re.compile(r"[a-z][a-z0-9_]{0,63}")
-NAMES = {"npm": NPM_NAME, "pypi": PYPI_NAME, "go": GO_MODULE, "maven": MAVEN_NAME, "pub": PUB_NAME}
+SWIFTPM_NAME = re.compile(r"[A-Za-z][A-Za-z0-9_-]{0,99}")
+NAMES = {"npm": NPM_NAME, "pypi": PYPI_NAME, "go": GO_MODULE, "maven": MAVEN_NAME, "pub": PUB_NAME,
+         "swiftpm": SWIFTPM_NAME}
+# A Swift package product has no registry of its own: its versions are the GitHub releases of
+# the repository that publishes it, which only this list names.
+SWIFTPM_REPOSITORIES = {"FirebaseFirestore": "firebase/firebase-ios-sdk"}
 
 FIREBASE_TOOLS = "firebase-tools"
 FIREBASE_TOOLS_DEFAULT_BRANCH = "main"
@@ -296,6 +301,24 @@ def pub(name, fetch):
     return from_list(versions, latest, url, "latest")
 
 
+def swiftpm(product, fetch):
+    repository = SWIFTPM_REPOSITORIES.get(product)
+    if repository is None:
+        raise Stop(f"swiftpm:{product}: no repository in SWIFTPM_REPOSITORIES")
+    url = f"https://api.github.com/repos/{repository}/releases?per_page=100"
+    releases = fetch_json(fetch, url, "application/vnd.github+json")
+    if not isinstance(releases, list):
+        raise Stop(f"{url}: not a list of releases")
+    versions = [r["tag_name"] for r in releases
+                if isinstance(r, dict) and isinstance(r.get("tag_name"), str) and not r.get("draft")]
+    latest = fetch_json(fetch, f"https://api.github.com/repos/{repository}/releases/latest",
+                        "application/vnd.github+json")
+    tag = latest.get("tag_name") if isinstance(latest, dict) else None
+    if not isinstance(tag, str):
+        raise Stop(f"{url}: the latest release has no tag_name")
+    return from_list(versions, tag, url, "releases/latest")
+
+
 def observe(package, fetch, prerelease_tags):
     ecosystem, name = package["ecosystem"], package["name"]
     if ecosystem == "npm":
@@ -308,6 +331,8 @@ def observe(package, fetch, prerelease_tags):
         return maven(name, fetch)
     if ecosystem == "pub":
         return pub(name, fetch)
+    if ecosystem == "swiftpm":
+        return swiftpm(name, fetch)
     raise Stop(f"{ecosystem}: not a watched ecosystem")
 
 
