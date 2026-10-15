@@ -663,6 +663,8 @@ for label, key in [("< null", ff("__name__", "LESS_THAN", NULL)), (">= NaN", ff(
                    ("!= NaN", ff("__name__", "NOT_EQUAL", NAN))]:
     case(f"__name__ {label} and a > 1", q("p", where_=AND(key, ff("a", "GREATER_THAN", i(1)))))
 case("__name__ <= null, a >= 1 and an order by __name__", q("p", where_=AND(ff("a", "GREATER_THAN_OR_EQUAL", i(1)), ff("__name__", "LESS_THAN_OR_EQUAL", NULL)), order=[asc("__name__")]))
+case("a negative limit and a negative offset", q("p", limit=-1, offset=-1))
+case("a negative limit and a negative offset without a collection", {"limit": -1, "offset": -1, "orderBy": [asc("a")]})
 case("a <= NaN, __name__ in [p3] and a negative limit", q("p", where_=AND(ff("a", "LESS_THAN_OR_EQUAL", NAN), ff("__name__", "IN", arr(ref("p/p3")))), limit=-1))
 # Disjunctions, counted as the official emulator compares conditions: on one field, an equality,
 # a range or `!=` on null, and an equality or a range on NaN, are one condition, whatever the

@@ -421,7 +421,7 @@ impl Unchecked<'_> {
     /// emulator's order (#262): the filter as a whole (array-contains, equalities on the key),
     /// whether the fields a `sum` or an `avg` reads can be ordered
     /// ([`check_index`]), the disjunctions; then the orders (a key before other fields,
-    /// duplicates), the limit and the offset, the rest of `find_nearest`, the number of
+    /// duplicates), the offset and the limit, the rest of `find_nearest`, the number of
     /// filters and orders ([`check_terms`]), whether the orders need a collection (a `sum` or
     /// an `avg` orders by its field), whether the filter does, and the filters on `__name__`.
     pub fn check(self) -> Result<Query, Status> {
@@ -448,15 +448,16 @@ impl Unchecked<'_> {
             check_disjunctions(filter)?;
         }
         let orders = complete_orders(&explicit, filter.as_ref())?;
+        // The offset, then the limit (#262).
+        if query.offset < 0 {
+            return Err(Status::invalid_argument("offset is negative"));
+        }
+        let offset = usize::try_from(query.offset).unwrap_or(0);
         let limit = match query.limit {
             Some(n) if n < 0 => return Err(Status::invalid_argument("limit is negative")),
             Some(n) => Some(usize::try_from(n).unwrap_or(0)),
             None => None,
         };
-        if query.offset < 0 {
-            return Err(Status::invalid_argument("offset is negative"));
-        }
-        let offset = usize::try_from(query.offset).unwrap_or(0);
         if let Some(nearest) = &nearest {
             nearest.check(query)?;
         }

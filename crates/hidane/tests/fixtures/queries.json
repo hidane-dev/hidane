@@ -35699,6 +35699,43 @@
    }
   },
   {
+   "name": "a negative limit and a negative offset",
+   "parent": "",
+   "query": {
+    "from": [
+     {
+      "collectionId": "p"
+     }
+    ],
+    "limit": -1,
+    "offset": -1
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "offset is negative"
+   }
+  },
+  {
+   "name": "a negative limit and a negative offset without a collection",
+   "parent": "",
+   "query": {
+    "limit": -1,
+    "offset": -1,
+    "orderBy": [
+     {
+      "field": {
+       "fieldPath": "a"
+      },
+      "direction": "ASCENDING"
+     }
+    ]
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "offset is negative"
+   }
+  },
+  {
    "name": "a <= NaN, __name__ in [p3] and a negative limit",
    "parent": "",
    "query": {

@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:e3a74833fa0299da29e6f96391c9ffdeebbbefe041ff069014827abcf4632755",
+ "digest": "sha256:ff1a8a2585644d513a35477b51d657ae647ba221d03770d4b89ea0514be95874",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -17,10 +17,10 @@
   "files": 81,
   "fixtures": 49,
   "transcripts": 32,
-  "answers": 23870,
-  "bytes": 14115325,
+  "answers": 23872,
+  "bytes": 14115974,
   "levels": {
-   "full": 13304,
+   "full": 13306,
    "reasons": 4344,
    "part": 843,
    "status": 5187,
@@ -37,7 +37,7 @@
    "queries": {
     "fixtures": 4,
     "transcripts": 7,
-    "answers": 919
+    "answers": 921
    },
    "transactions": {
     "fixtures": 1,
@@ -84,7 +84,7 @@
    "v1.22.0": {
     "fixtures": 49,
     "transcripts": 32,
-    "answers": 23870
+    "answers": 23872
    }
   },
   "by_release_source": {
@@ -501,11 +501,11 @@
     "first_recorded": "2026-10-10",
     "last_changed": "2026-10-15"
    },
-   "bytes": 759123,
-   "sha256": "a81f1aaf4d573ec6729514541d2c8152293d47d2c26abe238a8812a79daa4850",
-   "answers": 610,
+   "bytes": 759772,
+   "sha256": "288a6ef6eb91a91c24504a7014c2ed84f54784a1b846c416111418fe99e68dbd",
+   "answers": 612,
    "levels": {
-    "full": 610
+    "full": 612
    },
    "replayed_over": [
     "gRPC"
