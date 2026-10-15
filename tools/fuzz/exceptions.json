@@ -89,10 +89,9 @@
   {
    "id": "failed-query-lock",
    "exception": "D085",
-   "why": "A query in a read-write transaction (one it began, or one it names) that failed a later check leaves the transaction's lock on the queried collection on the official emulator, so a later write waits and times out; hidane locked nothing. Matched on such a query earlier in the case: a lock timeout without one would be a lock hidane misses.",
+   "why": "A query in a read-write transaction (one it began, or one it names) that failed a later check leaves the transaction's lock on the queried collection on the official emulator, so a later write waits and times out; hidane locked nothing and answers what the write answers without the lock (its result, or a precondition's error). Matched on such a query earlier in the case: a lock timeout without one would be a lock hidane misses.",
    "kinds": ["status"],
    "official": {"status": 409, "code": "^ABORTED$", "message": "^Transaction lock timeout\\.$"},
-   "hidane": {"status": 200},
    "earlier": {"method": "^POST$", "path": ":run(Aggregation)?Query$", "predicates": ["in-transaction"], "status": 400}
   },
   {
