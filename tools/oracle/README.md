@@ -339,6 +339,17 @@ cp -R tools/oracle/sdk_datastore_java "$tmp/" && (cd "$tmp/sdk_datastore_java" &
 
 Its transcripts are in `results/sdk-datastore-java-*.json` and `results/sdk-datastore-java-http-*.json`.
 
+`sdk_datastore_go/` runs the same sections through the Go client library of Datastore,
+`cloud.google.com/go/datastore` 1.27.0 (pinned in `go.mod` and `go.sum`; Go 1.26 or newer),
+over gRPC, the only transport it has:
+
+```sh
+(cd tools/oracle/sdk_datastore_go && go build -o "$tmp/sdk_datastore_go" .) && \
+  DATASTORE_EMULATOR_HOST=127.0.0.1:8086 "$tmp/sdk_datastore_go" entities > go-entities.json
+```
+
+Its transcripts are in `results/sdk-datastore-go-*.json`.
+
 `sdk_ios/` runs the same four sections through the client SDK of Apple platforms,
 `FirebaseFirestore` 13.0.1 from firebase-ios-sdk (pinned in `Package.swift` and
 `Package.resolved`), built for macOS with Swift 5.9 or newer: the same client as on iOS, over the

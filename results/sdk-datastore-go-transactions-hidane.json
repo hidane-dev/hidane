@@ -1,0 +1,70 @@
+[
+ {
+  "name": "read and write in a transaction",
+  "ok": 70
+ },
+ {
+  "name": "roll back",
+  "ok": 70
+ },
+ {
+  "error": {
+   "client": "stop"
+  },
+  "name": "an error rolls back"
+ },
+ {
+  "name": "after it",
+  "ok": 70
+ },
+ {
+  "name": "read only",
+  "ok": 70
+ },
+ {
+  "error": {
+   "code": "INVALID_ARGUMENT",
+   "message": "Cannot modify entities in a read-only transaction."
+  },
+  "name": "a write in a read-only transaction"
+ },
+ {
+  "name": "an ancestor query in a transaction",
+  "ok": [
+   1,
+   2,
+   3
+  ]
+ },
+ {
+  "name": "a count in a transaction",
+  "ok": 3
+ },
+ {
+  "name": "a missing entity in a transaction",
+  "ok": null
+ },
+ {
+  "error": {
+   "client": "datastore: transaction expired"
+  },
+  "name": "read in a rolled-back transaction"
+ },
+ {
+  "error": {
+   "client": "datastore: transaction expired"
+  },
+  "name": "commit twice"
+ },
+ {
+  "name": "after it, the balance",
+  "ok": 50
+ },
+ {
+  "name": "an incomplete key in a transaction",
+  "ok": {
+   "complete": true,
+   "read": 1
+  }
+ }
+]

@@ -137,11 +137,15 @@ for _sdk in ("java", "python"):
     for _section in ("entities", "queries", "transactions"):
         for _name in (f"sdk-datastore-{_sdk}-{_section}", f"sdk-datastore-{_sdk}-http-{_section}"):
             TRANSCRIPT_RECORDERS[_name] = f"tools/oracle/sdk_datastore_{_sdk}/"
+for _section in ("entities", "queries", "transactions"):
+    TRANSCRIPT_RECORDERS[f"sdk-datastore-go-{_section}"] = "tools/oracle/sdk_datastore_go/"
 
 # Versions a recorder pins: (recorder, package, file, a pattern whose group 1 is the version).
 PINS = [
     ("tools/oracle/sdk_go/", "cloud.google.com/go/firestore", "tools/oracle/sdk_go/go.mod",
      r"^\s*cloud\.google\.com/go/firestore v([\w.\-]+)$"),
+    ("tools/oracle/sdk_datastore_go/", "cloud.google.com/go/datastore",
+     "tools/oracle/sdk_datastore_go/go.mod", r"^\s*cloud\.google\.com/go/datastore v([\w.\-]+)$"),
     ("tools/oracle/sdk_python/", "google-cloud-firestore",
      "tools/oracle/sdk_python/requirements.txt", r"^google-cloud-firestore==([\w.\-]+)$"),
     ("tools/oracle/sdk_datastore_python/", "google-cloud-datastore",

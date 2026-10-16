@@ -72,8 +72,8 @@
   }
  ],
  "totals": {
-  "clients": 18,
-  "verified": 16,
+  "clients": 19,
+  "verified": 17,
   "partially-verified": 0,
   "not-verified": 2
  },
@@ -1991,6 +1991,136 @@
    ]
   },
   {
+   "id": "datastore-go",
+   "client": "google-cloud-go datastore, in Datastore mode",
+   "ecosystem": "go",
+   "package": "cloud.google.com/go/datastore",
+   "platform": "Go",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "verified",
+   "version": "1.27.0",
+   "official_emulator": [
+    "v1.22.0"
+   ],
+   "core": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions"
+   ],
+   "exercised": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-16",
+   "tracking": null,
+   "evidence": [
+    {
+     "transcript": "sdk-datastore-go-entities",
+     "official": "results/sdk-datastore-go-entities-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-16",
+      "last_changed": "2026-10-16"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-datastore-go-entities-hidane.json",
+       "result": "identical",
+       "sha256": "ecc83f4a050ff5785fc6b0c1ca9ab273525acba41cb43951a6ca621dc5f0d081",
+       "recorded": {
+        "first_recorded": "2026-10-16",
+        "last_changed": "2026-10-16"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "cloud.google.com/go/datastore",
+       "version": "1.27.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_datastore_go/go.mod"
+      }
+     ],
+     "features": [
+      "documents"
+     ]
+    },
+    {
+     "transcript": "sdk-datastore-go-queries",
+     "official": "results/sdk-datastore-go-queries-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-16",
+      "last_changed": "2026-10-16"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-datastore-go-queries-hidane.json",
+       "result": "identical",
+       "sha256": "19d91a8306ac2c9c743356c966b35b5b21f5931be867d58d3ca20421b2b160bf",
+       "recorded": {
+        "first_recorded": "2026-10-16",
+        "last_changed": "2026-10-16"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "cloud.google.com/go/datastore",
+       "version": "1.27.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_datastore_go/go.mod"
+      }
+     ],
+     "features": [
+      "queries",
+      "aggregations"
+     ]
+    },
+    {
+     "transcript": "sdk-datastore-go-transactions",
+     "official": "results/sdk-datastore-go-transactions-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-16",
+      "last_changed": "2026-10-16"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-datastore-go-transactions-hidane.json",
+       "result": "identical",
+       "sha256": "d3f4e08b7c60719e6168a6b997f934ae9bc4e92a9a6100f2d57c45f33bd274af",
+       "recorded": {
+        "first_recorded": "2026-10-16",
+        "last_changed": "2026-10-16"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "cloud.google.com/go/datastore",
+       "version": "1.27.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_datastore_go/go.mod"
+      }
+     ],
+     "features": [
+      "transactions"
+     ]
+    }
+   ]
+  },
+  {
    "id": "go",
    "client": "google-cloud-go firestore",
    "ecosystem": "go",
@@ -2924,6 +3054,16 @@
    "source": "docs/sdk-certification.md",
    "clients": [
     "datastore-java"
+   ]
+  },
+  {
+   "ecosystem": "go",
+   "name": "cloud.google.com/go/datastore",
+   "version": "1.27.0",
+   "what": "documents and writes, queries, aggregation queries, transactions",
+   "source": "docs/sdk-certification.md",
+   "clients": [
+    "datastore-go"
    ]
   },
   {

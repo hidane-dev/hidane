@@ -23,14 +23,14 @@ firebase-tools that launches it and the official emulator it is compared with.
 
 | hidane | firebase-tools | Official emulator | Status | Evidence |
 |---|---|---|---|---|
-| 0.6.x | 15.33.0 | 1.22.0 | Verified | 36,845 recorded answers of the official emulator v1.22.0 in 66 fixtures, replayed against hidane by cargo test; 56 comparisons of SDK transcripts with the official emulator v1.22.0's: 38 identical, 18 documented differences; 2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers (last recorded 2026-10-13) |
+| 0.6.x | 15.33.0 | 1.22.0 | Verified | 36,845 recorded answers of the official emulator v1.22.0 in 66 fixtures, replayed against hidane by cargo test; 59 comparisons of SDK transcripts with the official emulator v1.22.0's: 41 identical, 18 documented differences; 2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers (last recorded 2026-10-13) |
 
 | Evidence | What the results show | Where |
 |---|---|---|
-| Oracle corpus | 120 recordings of the official emulator 1.22.0 (66 fixtures, 54 official transcripts), `sha256:0b949ba19ba9…` | [oracle-corpus.md](oracle-corpus.md) |
+| Oracle corpus | 123 recordings of the official emulator 1.22.0 (66 fixtures, 57 official transcripts), `sha256:b8aef3b4f3ac…` | [oracle-corpus.md](oracle-corpus.md) |
 | Record and replay | 36,845 recorded answers in 66 fixtures, replayed by `cargo test` on every pull request and push to main: 25,507 in full, 4,344 decision and reasons, 1,481 in part, 5,197 status only, 96 without messages, 7 not compared, 213 intentionally different | [parity.md](parity.md) |
-| SDK transcripts | 56 comparisons of 54 transcript pairs: 38 identical, 18 documented differences | [parity.md](parity.md) |
-| SDK certification | 18 clients and tools: 16 verified, 0 partially verified, 2 not verified | [sdk-certification.md](sdk-certification.md) |
+| SDK transcripts | 59 comparisons of 57 transcript pairs: 41 identical, 18 documented differences | [parity.md](parity.md) |
+| SDK certification | 19 clients and tools: 17 verified, 0 partially verified, 2 not verified | [sdk-certification.md](sdk-certification.md) |
 | Browser | firebase-js-sdk's browser suite at `8a7e7fd`: 1,183 passed, 0 failed, 739 skipped on hidane; 1,183 passed, 0 failed on the official emulator (identical). 3 transcripts in Chromium: browser-webchannel (identical), flutter-web (documented), browser-rules (documented) | [`js-sdk-browser.yml`](../.github/workflows/js-sdk-browser.yml) |
 | Functions events | `function_events.json`: 152 recorded answers, `function_triggers.json`: 342 recorded answers; functions-triggers: 37 events on hidane, 43 on the official emulator (documented) | [parity-exceptions.md](parity-exceptions.md) |
 | Integration tests | 55 test files (`crates/*/tests/*.rs`), 39 of them replaying recordings, run on every pull request and push to main | [`crates/`](../crates/) |

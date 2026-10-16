@@ -25,7 +25,7 @@
    "status": "verified",
    "evidence": [
     "36,845 recorded answers of the official emulator v1.22.0 in 66 fixtures, replayed against hidane by cargo test",
-    "56 comparisons of SDK transcripts with the official emulator v1.22.0's: 38 identical, 18 documented differences",
+    "59 comparisons of SDK transcripts with the official emulator v1.22.0's: 41 identical, 18 documented differences",
     "2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers"
    ]
   }
@@ -563,6 +563,48 @@
    ]
   },
   {
+   "id": "datastore-go",
+   "client": "google-cloud-go datastore, in Datastore mode",
+   "ecosystem": "go",
+   "package": "cloud.google.com/go/datastore",
+   "platform": "Go",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "verified",
+   "version": "1.27.0",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "transactions"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-16",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "sdk-datastore-go-entities",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-go-entities-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-go-queries",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-go-queries-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-go-transactions",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-go-transactions-hidane.json"
+    }
+   ]
+  },
+  {
    "id": "go",
    "client": "google-cloud-go firestore",
    "ecosystem": "go",
@@ -854,9 +896,9 @@
    "differs": 213
   },
   "transcripts": {
-   "pairs": 54,
-   "comparisons": 56,
-   "identical": 38,
+   "pairs": 57,
+   "comparisons": 59,
+   "identical": 41,
    "documented": 18,
    "unexplained": 0,
    "where": "docs/parity.md"

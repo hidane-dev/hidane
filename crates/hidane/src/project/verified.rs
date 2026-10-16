@@ -80,6 +80,13 @@ pub const VERIFIED: &[Verified] = &[
     },
     Verified {
         ecosystem: "go",
+        name: "cloud.google.com/go/datastore",
+        version: "1.27.0",
+        what: "documents and writes, queries, aggregation queries, transactions",
+        source: "docs/sdk-certification.md",
+    },
+    Verified {
+        ecosystem: "go",
         name: "cloud.google.com/go/firestore",
         version: "1.26.0",
         what: "documents and writes, queries, aggregation queries, vector search, transactions, listeners",

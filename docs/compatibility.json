@@ -30,8 +30,8 @@
     },
     {
      "kind": "transcripts",
-     "count": 56,
-     "description": "56 comparisons of SDK transcripts with the official emulator v1.22.0's: 38 identical, 18 documented differences",
+     "count": 59,
+     "description": "59 comparisons of SDK transcripts with the official emulator v1.22.0's: 41 identical, 18 documented differences",
      "where": "docs/parity.md",
      "runs": "recorded",
      "last_recorded": null
@@ -49,15 +49,15 @@
  ],
  "oracle_corpus": {
   "where": "docs/oracle-corpus.json",
-  "digest": "sha256:0b949ba19ba9e55c8a02a8abfa10f9517fb9502ee4ac76a294f8a3f33a34594b",
+  "digest": "sha256:b8aef3b4f3aca9c352b3c9f7fdde9f63a010a2f04531dbcff461cffe18267a29",
   "releases": [
    "1.22.0"
   ],
-  "files": 120,
+  "files": 123,
   "fixtures": 66,
-  "transcripts": 54,
+  "transcripts": 57,
   "answers": 36845,
-  "bytes": 26282410
+  "bytes": 26297494
  },
  "replay": {
   "fixtures": 66,
@@ -179,9 +179,9 @@
   "where": "docs/parity.md"
  },
  "transcripts": {
-  "pairs": 54,
-  "comparisons": 56,
-  "identical": 38,
+  "pairs": 57,
+  "comparisons": 59,
+  "identical": 41,
   "documented": 18,
   "unexplained": 0,
   "where": "docs/parity.md"
@@ -189,8 +189,8 @@
  "sdk_certification": {
   "where": "docs/sdk-certification.json",
   "totals": {
-   "clients": 18,
-   "verified": 16,
+   "clients": 19,
+   "verified": 17,
    "partially-verified": 0,
    "not-verified": 2
   },
@@ -207,6 +207,7 @@
     "python",
     "datastore-python",
     "datastore-java",
+    "datastore-go",
     "go",
     "java",
     "flutter-web",

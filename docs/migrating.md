@@ -62,6 +62,7 @@ The verified versions:
 | `google-cloud-firestore` (Python) | 2.34.1 — documents and writes, queries, aggregation queries, vector search, transactions, listeners | [sdk-certification.md](sdk-certification.md), `results/sdk-python-*.json` |
 | `google-cloud-datastore` (Python, Datastore mode) | 2.27.0 — documents and writes, queries, aggregation queries, transactions | [sdk-certification.md](sdk-certification.md), `results/sdk-datastore-python-entities-*.json`, `results/sdk-datastore-python-http-entities-*.json`, `results/sdk-datastore-python-http-queries-*.json`, `results/sdk-datastore-python-http-transactions-*.json`, `results/sdk-datastore-python-queries-*.json`, `results/sdk-datastore-python-transactions-*.json` |
 | `com.google.cloud:google-cloud-datastore` (Java, Datastore mode) | 3.7.0 — documents and writes, queries, aggregation queries, transactions | [sdk-certification.md](sdk-certification.md), `results/sdk-datastore-java-entities-*.json`, `results/sdk-datastore-java-http-entities-*.json`, `results/sdk-datastore-java-http-queries-*.json`, `results/sdk-datastore-java-http-transactions-*.json`, `results/sdk-datastore-java-queries-*.json`, `results/sdk-datastore-java-transactions-*.json` |
+| `cloud.google.com/go/datastore` (Datastore mode) | 1.27.0 — documents and writes, queries, aggregation queries, transactions | [sdk-certification.md](sdk-certification.md), `results/sdk-datastore-go-entities-*.json`, `results/sdk-datastore-go-queries-*.json`, `results/sdk-datastore-go-transactions-*.json` |
 | `cloud.google.com/go/firestore` | 1.26.0 — documents and writes, queries, aggregation queries, vector search, transactions, listeners | [sdk-certification.md](sdk-certification.md), `results/sdk-go-*.json` |
 | `com.google.cloud:google-cloud-firestore` (Java) | 3.49.0 — documents and writes, queries, aggregation queries, vector search, transactions, listeners | [sdk-certification.md](sdk-certification.md), `results/sdk-java-*.json` |
 | `cloud_firestore` (Flutter) | 6.10.0 — Flutter Web in Chromium: documents and writes, queries, aggregation queries, transactions, listeners | [sdk-certification.md](sdk-certification.md), `results/flutter-web-*.json` |
@@ -86,8 +87,8 @@ Known gaps are `incompatible`:
 - Datastore mode, through `gcloud emulators firestore start --database-mode=datastore-mode`
   ([#81](https://github.com/hidane-dev/hidane/issues/81)): `hidane --database-mode datastore-mode`
   serves entities, transactions, queries, aggregations, GQL and `--require_indexes`, over gRPC
-  and REST (JSON or protobuf); `google-cloud-datastore` (Python and Java) is verified against
-  it. A
+  and REST (JSON or protobuf); the Python, Java and Go client libraries of Datastore are
+  verified against it. A
   Datastore client library in the
   dependencies is `unknown`: it may talk to the separate Datastore emulator, which hidane does
   not replace.

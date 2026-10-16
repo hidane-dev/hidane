@@ -143,6 +143,10 @@ CLIENTS = [
          package="com.google.cloud:google-cloud-datastore", platform="JVM",
          transport=[GRPC, REST], core=["documents", "queries", "aggregations", "transactions"],
          scope="over gRPC and over HTTP, against `--database-mode datastore-mode`"),
+    dict(id="datastore-go", client="google-cloud-go datastore, in Datastore mode", ecosystem="go",
+         package="cloud.google.com/go/datastore", platform="Go", transport=[GRPC],
+         core=["documents", "queries", "aggregations", "transactions"],
+         scope="over gRPC, against `--database-mode datastore-mode`"),
     dict(id="go", client="google-cloud-go firestore", ecosystem="go",
          package="cloud.google.com/go/firestore", platform="Go", transport=[GRPC], core=SDK,
          scope="over gRPC", compatibility="google-cloud-go `firestore`"),
@@ -225,6 +229,7 @@ for _section, _features in (("entities", ["documents"]),
     for _sdk in ("java", "python"):
         EVIDENCE[f"sdk-datastore-{_sdk}-{_section}"] = {f"datastore-{_sdk}": _features}
         EVIDENCE[f"sdk-datastore-{_sdk}-http-{_section}"] = {f"datastore-{_sdk}": _features}
+    EVIDENCE[f"sdk-datastore-go-{_section}"] = {"datastore-go": _features}
 
 # How docs/migrating.md names each package hidane doctor judges.
 PACKAGE_LABELS = {
@@ -238,6 +243,7 @@ PACKAGE_LABELS = {
     ("pypi", "google-cloud-firestore"): "`google-cloud-firestore` (Python)",
     ("pypi", "google-cloud-datastore"): "`google-cloud-datastore` (Python, Datastore mode)",
     ("go", "cloud.google.com/go/firestore"): "`cloud.google.com/go/firestore`",
+    ("go", "cloud.google.com/go/datastore"): "`cloud.google.com/go/datastore` (Datastore mode)",
     ("maven", "com.google.cloud:google-cloud-firestore"):
         "`com.google.cloud:google-cloud-firestore` (Java)",
     ("maven", "com.google.cloud:google-cloud-datastore"):
