@@ -114,10 +114,7 @@ class Session:
         self.args = args
         self.exceptions = exceptions
         self.out = out
-        self.areas = tuple(args.areas.split(",")) if args.areas else gen.AREAS
-        for area in self.areas:
-            if area not in gen.AREAS:
-                raise Stop(f"unknown area {area!r}; the areas are {', '.join(gen.AREAS)}")
+        self.areas = areas(args)
         self.by_area = {area: {"cases": 0, "differing": 0, "accepted": 0, "unexplained": 0, "flaky": 0}
                         for area in self.areas}
         self.signatures = {}
@@ -238,7 +235,7 @@ class Session:
         distinct = {outcome: sum(1 for e in entries if e["outcome"] == outcome)
                     for outcome in ("unexplained", "accepted", "flaky")}
         summary = {
-            "seed": self.args.seed, "first_case": self.args.first, "next_case": last,
+            "seed": self.args.seed, "mode": self.args.mode, "first_case": self.args.first, "next_case": last,
             "official_emulator": {"version": version, "sha256": sha256},
             "hidane": dict(self.args.hidane_build or UNKNOWN_BUILD),
             "duration_seconds": duration, "stopped": self.stopped,
@@ -254,12 +251,37 @@ class Session:
         return summary
 
 
+def areas(args):
+    """The areas `--areas` names, all of `--mode`'s by default."""
+    known = gen.MODES[args.mode]
+    chosen = tuple(args.areas.split(",")) if args.areas else known
+    for area in chosen:
+        if area not in known:
+            raise Stop(f"unknown area {area!r} in {args.mode}; its areas are {', '.join(known)}")
+    return chosen
+
+
+def serving_mode(host):
+    """The mode `host` was started in: only Datastore mode answers a Datastore lookup."""
+    try:
+        status, _, _ = send(host, "POST", "/v1/projects/fuzz-mode:lookup", {"keys": []}, {}, None, 10)
+    except (OSError, ValueError):
+        return None
+    return "datastore-mode" if status == 200 else "firestore-native"
+
+
+def in_mode(summary):
+    return " in Datastore mode" if summary.get("mode") == "datastore-mode" else ""
+
+
 def run_entry(summary, areas):
     """The run as an entry of results/differential-fuzzing.json (docs/compatibility.schema.json's `fuzzing_run`)."""
     return {
-        "name": f"REST, seed {summary['seed']}, cases {summary['first_case']} to {summary['next_case'] - 1}",
+        "name": f"REST{in_mode(summary)}, seed {summary['seed']}, cases {summary['first_case']} to "
+                f"{summary['next_case'] - 1}",
         "date": datetime.date.today().isoformat(),
-        "target": "REST requests to both emulators: " + ", ".join(areas),
+        "target": f"REST requests to both emulators{in_mode(summary)}: " + ", ".join(areas),
+        "mode": summary["mode"],
         "official_emulator": summary["official_emulator"]["version"],
         "hidane": summary["hidane"],
         "cases": summary["cases"],
@@ -284,7 +306,7 @@ def cell(text):
 
 
 def markdown(summary):
-    lines = [f"## Differential fuzzing, seed {summary['seed']}", ""]
+    lines = [f"## Differential fuzzing{in_mode(summary)}, seed {summary['seed']}", ""]
     lines.append(f"{summary['cases']} cases (from case {summary['first_case']}) against the official emulator "
                  f"v{summary['official_emulator']['version']} and {build_text(summary['hidane'])} in "
                  f"{summary['duration_seconds']} s; "
@@ -321,6 +343,10 @@ def markdown(summary):
 def cmd_run(args):
     if not answers(args.official) or not answers(args.hidane):
         raise Stop("both emulators must answer GET / before the run")
+    for side in ("official", "hidane"):
+        mode = serving_mode(getattr(args, side))
+        if mode != args.mode:
+            raise Stop(f"the {side} emulator runs in {mode}, not {args.mode} (--database-mode, --mode)")
     out = Path(args.out).resolve()
     if out == ROOT or ROOT in out.parents:
         raise Stop("--out must be outside the repository (differences are reviewed, not committed)")
@@ -342,8 +368,7 @@ def cmd_replay(args):
 
 
 def cmd_show(args):
-    areas = tuple(args.areas.split(",")) if args.areas else gen.AREAS
-    print(json.dumps(gen.case(args.seed, args.case, areas), ensure_ascii=False, indent=1))
+    print(json.dumps(gen.case(args.seed, args.case, areas(args)), ensure_ascii=False, indent=1))
 
 
 def cmd_check(_args):
@@ -376,6 +401,7 @@ def main(argv=None):
     sub = parser.add_subparsers(dest="command", required=True)
     run = sub.add_parser("run", help="fuzz both emulators")
     replay = sub.add_parser("replay", help="run one case (or a difference file) on both emulators")
+    show = sub.add_parser("show", help="print a generated case")
     for p in (run, replay):
         p.add_argument("--official", required=True, help="the official emulator's host:port")
         p.add_argument("--hidane", required=True, help="hidane's host:port")
@@ -384,7 +410,11 @@ def main(argv=None):
     run.add_argument("--cases", type=int, default=500)
     run.add_argument("--first", type=int, default=0, help="the first case's index")
     run.add_argument("--minutes", type=float, default=0, help="stop sending new cases after this long (0: no limit)")
-    run.add_argument("--areas", default="", help=f"comma-separated, from {','.join(gen.AREAS)} (default: all)")
+    for p in (run, show):
+        p.add_argument("--mode", choices=tuple(gen.MODES), default="firestore-native",
+                       help="the mode both emulators run in (`--database-mode`), which picks the areas")
+        p.add_argument("--areas", default="", help="comma-separated, from the mode's: " + "; ".join(
+            f"{mode}: {','.join(names)}" for mode, names in gen.MODES.items()) + " (default: all of the mode's)")
     run.add_argument("--minimize-budget", type=int, default=150, help="candidates to try per difference")
     run.add_argument("--minimize-seconds", type=float, default=60, help="time to minimise each difference")
     run.add_argument("--official-version", type=lambda v: tuple(v.split(":", 1)), default=pinned(),
@@ -394,10 +424,8 @@ def main(argv=None):
                           "from), for the files written (default: unknown)")
     run.add_argument("--out", required=True, help="a directory outside the repository")
     replay.add_argument("file")
-    show = sub.add_parser("show", help="print a generated case")
     show.add_argument("--seed", type=int, required=True)
     show.add_argument("--case", type=int, required=True)
-    show.add_argument("--areas", default="")
     sub.add_parser("check", help="check exceptions.json against docs/parity-exceptions.json")
     record = sub.add_parser("record", help="add a run.json to results/differential-fuzzing.json")
     record.add_argument("file")

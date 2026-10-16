@@ -34,7 +34,10 @@ LABEL_COLOR = "5319e7"
 LABEL_DESCRIPTION = "A difference from the official emulator found by differential fuzzing (tools/fuzz/)"
 EXTRA_LABELS = ["area:parity"]
 SEVERITY = {"crash": 0, "data": 1, "status": 2, "order": 3, "message": 4}
-AREAS = {"documents", "queries", "transactions", "batches", "transforms", "rules", "malformed"}
+# gen.py's areas; Datastore mode's run in an artifact of their own (fuzz.py run --mode).
+DATASTORE_AREAS = {"datastore-entities", "datastore-queries", "datastore-transactions", "datastore-gql",
+                   "datastore-malformed"}
+AREAS = {"documents", "queries", "transactions", "batches", "transforms", "rules", "malformed"} | DATASTORE_AREAS
 SIGNATURE = re.compile(r"^(crash|status|message|order|data)-[a-z0-9-]{1,40}-[0-9a-f]{12}$")
 VERB = re.compile(r"^[A-Za-z :]{1,40}$")
 CODE = re.compile(r"^[A-Z_]{1,40}$")
@@ -119,13 +122,17 @@ def body(f, run, first_run):
         lines += ["", "Error messages (escaped):", "", "```text"]
         lines += [f"{side}: {quote(message)}" for side, message in messages]
         lines += ["```"]
+    datastore = f["area"] in DATASTORE_AREAS
     lines += [
         "",
-        f"The minimised case is `differences/{f['signature']}.json` in the run's `fuzz` artifact. To see it "
-        "and run it again (tools/fuzz/README.md):",
+        f"The minimised case is `differences/{f['signature']}.json` in the run's "
+        f"`{'fuzz-datastore' if datastore else 'fuzz'}` artifact. To see it and run it again "
+        f"({'both emulators started with `--database-mode datastore-mode`, ' if datastore else ''}"
+        "tools/fuzz/README.md):",
         "",
         "```sh",
-        f"python3 -I tools/fuzz/fuzz.py show --seed {f['seed']} --case {f['case']}",
+        f"python3 -I tools/fuzz/fuzz.py show --seed {f['seed']} --case {f['case']}"
+        f"{' --mode datastore-mode' if datastore else ''}",
         "python3 -I tools/fuzz/fuzz.py replay --official <host:port> --hidane <host:port> "
         f"differences/{f['signature']}.json",
         "```",
