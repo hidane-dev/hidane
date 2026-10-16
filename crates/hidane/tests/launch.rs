@@ -243,6 +243,70 @@ fn a_gcloud_command_line_after_sh_c_runs_the_emulator() {
     );
 }
 
+/// `gcloud emulators firestore start --database-mode=datastore-mode`, as Testcontainers' Go module
+/// passes it with `WithDatastoreMode()` (#81): the banner names the mode, the Datastore API is
+/// served and the Firestore API refused.
+#[test]
+fn a_gcloud_command_line_in_datastore_mode_serves_datastore() {
+    let port = TcpListener::bind("127.0.0.1:0")
+        .unwrap()
+        .local_addr()
+        .unwrap()
+        .port();
+    let script = format!(
+        "gcloud beta emulators firestore start --host-port 127.0.0.1:{port} --database-mode=datastore-mode --project=demo-hidane"
+    );
+    let mut child = Command::new(BIN)
+        .args(["/bin/sh", "-c", &script])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let mut stdout = child.stdout.take().unwrap();
+    let mut seen = String::new();
+    let mut buf = [0; 256];
+    while !seen.contains("Dev App Server is now running.") {
+        let n = stdout.read(&mut buf).unwrap();
+        assert!(n > 0, "no banner: {seen}");
+        seen.push_str(&String::from_utf8_lossy(&buf[..n]));
+    }
+    assert!(
+        seen.contains("Database Mode: CLOUD_FIRESTORE_IN_DATASTORE_MODE"),
+        "{seen}"
+    );
+    let request = |head: &str, body: &str| {
+        let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+        stream
+            .write_all(
+                format!(
+                    "{head} HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{body}",
+                    body.len()
+                )
+                .as_bytes(),
+            )
+            .unwrap();
+        let mut answer = String::new();
+        stream.read_to_string(&mut answer).unwrap();
+        answer
+    };
+    let lookup = request(
+        "POST /v1/projects/demo-hidane:lookup",
+        r#"{"keys":[{"path":[{"kind":"Task","name":"t1"}]}]}"#,
+    );
+    assert!(lookup.starts_with("HTTP/1.1 200"), "{lookup}");
+    assert!(lookup.contains("\"missing\""), "{lookup}");
+    let firestore = request(
+        "GET /v1/projects/demo-hidane/databases/(default)/documents/c/d",
+        "",
+    );
+    assert!(
+        firestore.contains("Database mode not set to Firestore Mode"),
+        "{firestore}"
+    );
+    request("POST /shutdown", "");
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
+
 /// hidane's image has no shell: a script that is not a gcloud command line it serves stops
 /// with the reason, and a flag hidane rejects stops it as it would stop hidane.
 #[test]
