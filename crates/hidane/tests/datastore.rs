@@ -370,6 +370,106 @@ async fn checks_come_in_the_official_emulators_order() {
     );
 }
 
+/// `{repeat:<c>:<n>}` stands for `<c>` repeated `<n>` times (`tools/oracle/datastore_commit_checks.py`).
+fn expand(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut rest = text;
+    while let Some(at) = rest.find("{repeat:") {
+        out.push_str(&rest[..at]);
+        let token = &rest[at + "{repeat:".len()..];
+        let end = token.find('}').unwrap();
+        let (c, n) = token[..end].rsplit_once(':').unwrap();
+        out.push_str(&c.repeat(n.parse().unwrap()));
+        rest = &token[end + 1..];
+    }
+    out.push_str(rest);
+    out
+}
+
+/// `the stored version (<version>)`, as the recorder masks the version a `FAIL` strategy
+/// prints.
+fn stored_version_masked(text: &str) -> String {
+    let marker = "the stored version (";
+    let mut out = String::new();
+    let mut rest = text;
+    while let Some(at) = rest.find(marker) {
+        out.push_str(&rest[..at + marker.len()]);
+        rest = &rest[at + marker.len()..];
+        let digits = rest.bytes().take_while(u8::is_ascii_digit).count();
+        if digits == 16 {
+            out.push_str("<version>");
+            rest = &rest[digits..];
+        }
+    }
+    out.push_str(rest);
+    out
+}
+
+/// Which problem of a commit or a lookup is reported first, and the late checks of a commit
+/// next to what is stored (`fixtures/datastore_commit_checks.json`, from
+/// `tools/oracle/datastore_commit_checks.py`): each case in a project of its own, after the
+/// fixture's seed.
+#[tokio::test]
+async fn commit_checks_come_in_the_official_emulators_order() {
+    let fixture: Json =
+        serde_json::from_str(include_str!("fixtures/datastore_commit_checks.json")).unwrap();
+    let cases = fixture["cases"].as_array().unwrap();
+    assert!(cases.len() > 3900);
+    let seed = fixture["seed"].to_string();
+    let addr = start().await;
+    let mut differences = Vec::new();
+    for (n, case) in cases.iter().enumerate() {
+        let project = format!("commit-checks-{n}");
+        let seeded = send(
+            addr,
+            "POST",
+            &format!("/v1/projects/{project}:commit"),
+            Some(&seed),
+            Some("application/json"),
+        )
+        .await;
+        assert_eq!(seeded.status, 200, "{}", seeded.body);
+        let steps: Vec<&Json> = match case.get("steps") {
+            Some(steps) => steps.as_array().unwrap().iter().collect(),
+            None => vec![case],
+        };
+        let mut transaction = String::from("{tx}");
+        for (i, step) in steps.into_iter().enumerate() {
+            let path = step["path"]
+                .as_str()
+                .unwrap()
+                .replace("{project}", &project);
+            let body = expand(&step["body"].to_string()).replace("{tx}", &transaction);
+            let answer = send(addr, "POST", &path, Some(&body), Some("application/json")).await;
+            if path.ends_with(":beginTransaction") {
+                let begun: Json = serde_json::from_str(&answer.body).unwrap();
+                transaction = begun["transaction"].as_str().unwrap().to_owned();
+            }
+            let expected = &step["outcome"];
+            let wanted = expand(expected["body"].as_str().unwrap());
+            let actual = stored_version_masked(&normalize(&answer.body, &project));
+            if i64::from(answer.status) != expected["status"].as_i64().unwrap()
+                || answer.content_type.as_deref() != expected["contentType"].as_str()
+                || actual != wanted
+            {
+                differences.push(format!(
+                    "{} (step {i}):\n    official {} {wanted}\n    hidane   {} {actual}",
+                    case["name"].as_str().unwrap(),
+                    expected["status"],
+                    answer.status,
+                ));
+            }
+        }
+    }
+    assert!(
+        differences.is_empty(),
+        "{} of {} requests differ:\n{}",
+        differences.len(),
+        cases.len(),
+        differences.join("\n")
+    );
+}
+
 /// The same service over gRPC, on the same port, and the Firestore API refused there too.
 #[tokio::test]
 async fn datastore_mode_serves_grpc_and_refuses_firestore() {

@@ -8,7 +8,8 @@
 //! ([`Transactions`]): the official emulator locks, waits and expires them alike in both modes,
 //! with the same messages, a key's lock kept under [`keys::lock_path`]. What is served so far:
 //! `Lookup`, `Commit`, `BeginTransaction`, `Rollback`, `AllocateIds` and `ReserveIds`
-//! (`tests/fixtures/datastore_entities.json`), and structured `RunQuery` and
+//! (`tests/fixtures/datastore_entities.json`; commits and lookups refused in the official
+//! emulator's order, `tests/fixtures/datastore_commit_checks.json`), and structured `RunQuery` and
 //! `RunAggregationQuery` ([`query`], `tests/fixtures/datastore_queries.json`), refused in the
 //! official emulator's order ([`checks`], `tests/fixtures/datastore_checks.json`), and GQL
 //! ([`gql`], `tests/fixtures/datastore_gql.json`), with the indexes `--require_indexes` asks for
@@ -86,10 +87,29 @@ struct Data {
 #[derive(Default)]
 struct DatabaseData {
     entities: BTreeMap<Located, Stored>,
+    /// The version each deleted entity was deleted at, which a lookup tells of it.
+    deleted: BTreeMap<Located, i64>,
     /// The last ID allocated: one counter per database, whatever the kind or the namespace.
     allocated: u64,
     /// When the database was first used, in microseconds: reads before it are too old.
     created: i64,
+}
+
+impl DatabaseData {
+    /// Writes `entity` under `located`, or deletes what is there at version `micros`.
+    fn put(&mut self, located: Located, entity: Option<Stored>, micros: i64) {
+        match entity {
+            Some(entity) => {
+                self.deleted.remove(&located);
+                self.entities.insert(located, entity);
+            }
+            None => {
+                if self.entities.remove(&located).is_some() {
+                    self.deleted.insert(located, micros);
+                }
+            }
+        }
+    }
 }
 
 #[derive(Clone)]
@@ -341,8 +361,44 @@ enum Checked {
         key: keys::Checked,
         properties: Properties,
         mask: Option<Vec<String>>,
+        late: Late,
     },
-    Delete(Located),
+    Delete(Located, Late),
+}
+
+/// What is checked of a mutation once every mutation has been read, in order and next to what
+/// is stored ([`apply`]).
+struct Late {
+    /// The version the mutation was made at: its `base_version`, or its `update_time` in
+    /// microseconds.
+    required: Option<i64>,
+    /// Its `conflict_resolution_strategy`.
+    resolution: i32,
+    nested_arrays: bool,
+    index_entries: usize,
+    size: usize,
+}
+
+impl Late {
+    fn of(
+        mutation: &hidane_proto::google::datastore::v1::Mutation,
+        written: Option<(&keys::Checked, &Properties)>,
+    ) -> Self {
+        let required = match &mutation.conflict_detection_strategy {
+            Some(mutation::ConflictDetectionStrategy::BaseVersion(v)) => Some(*v),
+            Some(mutation::ConflictDetectionStrategy::UpdateTime(t)) => {
+                Some(t.seconds * 1_000_000 + i64::from(t.nanos) / 1_000)
+            }
+            None => None,
+        };
+        Self {
+            required,
+            resolution: mutation.conflict_resolution_strategy,
+            nested_arrays: written.is_some_and(|(_, p)| values::nested_arrays(p)),
+            index_entries: written.map_or(0, |(_, p)| values::index_entries(p)),
+            size: written.map_or(0, |(key, p)| values::entity_size(key, p)),
+        }
+    }
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -363,12 +419,16 @@ impl Datastore for DatastoreService {
         self.indexes(&database)?;
         let mut wanted: Vec<Located> = Vec::with_capacity(req.keys.len());
         for key in &req.keys {
-            let located = keys::check(key, &database, Rules::Read, Last::Complete)?
+            let located = keys::check(key, &database, Rules::Lookup, Last::Complete)?
                 .complete()
                 .expect("checked complete");
             if !wanted.contains(&located) {
                 wanted.push(located);
             }
+        }
+        read_options_shape(req.read_options.as_ref())?;
+        if let Some(mask) = &req.property_mask {
+            values::check_paths(&mask.paths)?;
         }
         let mut response = LookupResponse::default();
         match req.read_options.and_then(|o| o.consistency_type) {
@@ -425,6 +485,7 @@ impl Datastore for DatastoreService {
                         key,
                         properties: Properties::new(),
                     }),
+                    version: stored.deleted.get(located).copied().unwrap_or_default(),
                     ..EntityResult::default()
                 }),
             }
@@ -476,48 +537,60 @@ impl Datastore for DatastoreService {
                 }
             }
         };
-        if let Commit::Transactional(t) = &how {
-            self.state
-                .transactions
-                .check_commit(&name, t, !req.mutations.is_empty())?;
-        }
-        // Every mutation is checked before anything is written.
+        let any = !req.mutations.is_empty();
+        // Each mutation's operation, key, properties, partition and mask, in order; what
+        // `Late` keeps comes once they all are read.
         let mut checked = Vec::with_capacity(req.mutations.len());
-        for mutation in req.mutations {
-            let mask = mutation.property_mask.map(|m| m.paths);
-            checked.push(match mutation.operation {
+        for mutation in &req.mutations {
+            let (key, write) = match &mutation.operation {
                 None => return Err(Status::invalid_argument("Mutation is missing operation.")),
-                Some(mutation::Operation::Delete(key)) => Checked::Delete(
-                    keys::check(&key, &database, Rules::Write, Last::Complete)?
-                        .complete()
-                        .expect("checked complete"),
-                ),
-                Some(operation) => {
-                    let (op, entity) = match operation {
-                        mutation::Operation::Insert(e) => (Op::Insert, e),
-                        mutation::Operation::Update(e) => (Op::Update, e),
-                        mutation::Operation::Upsert(e) => (Op::Upsert, e),
-                        mutation::Operation::Delete(_) => unreachable!("handled above"),
+                Some(mutation::Operation::Delete(key)) => (key, None),
+                Some(
+                    mutation::Operation::Insert(e)
+                    | mutation::Operation::Update(e)
+                    | mutation::Operation::Upsert(e),
+                ) => {
+                    let op = match &mutation.operation {
+                        Some(mutation::Operation::Insert(_)) => Op::Insert,
+                        Some(mutation::Operation::Update(_)) => Op::Update,
+                        _ => Op::Upsert,
                     };
-                    let last = if op == Op::Update {
-                        Last::Complete
-                    } else {
-                        Last::Either
+                    let Some(key) = &e.key else {
+                        return Err(Status::invalid_argument("Entity is missing key."));
                     };
-                    let key = keys::check(
-                        &entity.key.clone().unwrap_or_default(),
-                        &database,
-                        Rules::Write,
-                        last,
-                    )?;
-                    values::check_properties(&entity.properties, &database)?;
-                    let mut properties = entity.properties;
+                    (key, Some((op, &e.properties)))
+                }
+            };
+            let last = match write {
+                Some((Op::Insert | Op::Upsert, _)) => Last::Either,
+                _ => Last::Complete,
+            };
+            let checked_key = keys::check_unpartitioned(key, Rules::Write, last)?;
+            if let Some((_, properties)) = write {
+                values::check_properties(properties, &database)?;
+            }
+            keys::check_partition(key, &database)?;
+            if mutation.conflict_detection_strategy.is_some() && checked_key.complete().is_none() {
+                return Err(Status::invalid_argument(
+                    "conflict detection is not allowed for incomplete keys",
+                ));
+            }
+            let mask = mutation.property_mask.as_ref().map(|m| m.paths.clone());
+            if let Some(paths) = &mask {
+                values::check_paths(paths)?;
+            }
+            let late = Late::of(mutation, write.map(|(_, p)| (&checked_key, p)));
+            checked.push(match write {
+                None => Checked::Delete(checked_key.complete().expect("checked complete"), late),
+                Some((op, properties)) => {
+                    let mut properties = properties.clone();
                     values::normalize(&mut properties, &database);
                     Checked::Write {
                         op,
-                        key,
+                        key: checked_key,
                         properties,
                         mask,
+                        late,
                     }
                 }
             });
@@ -526,7 +599,7 @@ impl Datastore for DatastoreService {
             .iter()
             .filter_map(|c| match c {
                 Checked::Write { key, .. } => key.complete(),
-                Checked::Delete(located) => Some(located.clone()),
+                Checked::Delete(located, _) => Some(located.clone()),
             })
             .collect();
         if matches!(how, Commit::NonTransactional) {
@@ -536,6 +609,9 @@ impl Datastore for DatastoreService {
                     "A non-transactional commit may not contain multiple mutations affecting the same entity.",
                 ));
             }
+        }
+        if let Commit::Transactional(t) = &how {
+            self.state.transactions.check_commit(&name, t, any)?;
         }
         let targets: Vec<_> = complete.iter().map(keys::lock_path).collect();
         let owner = match &how {
@@ -550,7 +626,7 @@ impl Datastore for DatastoreService {
             .transactions
             .commit(&name, owner, &targets, move || {
                 let mut data = state.data.lock().unwrap_or_else(PoisonError::into_inner);
-                apply(&mut data, &database, checked)
+                apply(&mut data, &database, checked, transactional)
             })
             .await?;
         let (results, micros) = response;
@@ -781,6 +857,66 @@ impl Datastore for DatastoreService {
     }
 }
 
+/// What a request's read options are refused for before anything else of them: a consistency
+/// left unspecified, a read time not after the epoch (to the microsecond), an empty transaction.
+fn read_options_shape(options: Option<&ReadOptions>) -> Result<(), Status> {
+    match options.and_then(|o| o.consistency_type.as_ref()) {
+        Some(read_options::ConsistencyType::ReadConsistency(0)) => Err(Status::invalid_argument(
+            "ReadConsistency must be specified.",
+        )),
+        Some(read_options::ConsistencyType::ReadTime(time))
+            if time.seconds < 0 || (time.seconds == 0 && time.nanos < 1_000) =>
+        {
+            Err(Status::invalid_argument(
+                "Only timestamps past epoch are supported.",
+            ))
+        }
+        Some(read_options::ConsistencyType::Transaction(t)) if t.is_empty() => Err(
+            Status::invalid_argument("a transaction cannot be the empty string."),
+        ),
+        _ => Ok(()),
+    }
+}
+
+/// The checks of a mutation made once every mutation is read: a resolution strategy without a
+/// detection strategy, nested arrays, the number of index values, then the base version of an
+/// insert (none) and of an update (not zero).
+fn late_checks(
+    late: &Late,
+    located: Option<&Located>,
+    op: Option<Op>,
+    database: &Database,
+) -> Result<(), Status> {
+    if late.resolution != mutation::ConflictResolutionStrategy::StrategyUnspecified as i32
+        && late.required.is_none()
+    {
+        return Err(Status::invalid_argument(
+            "cannot set a conflict resolution strategy if no detection strategy was set",
+        ));
+    }
+    if late.nested_arrays {
+        return Err(Status::invalid_argument("Nested arrays are not allowed"));
+    }
+    if late.index_entries > values::MAX_INDEX_ENTRIES {
+        return Err(Status::invalid_argument("Too many indexed properties"));
+    }
+    if let (Some(required), Some(located)) = (late.required, located) {
+        if op == Some(Op::Insert) && required > 0 {
+            return Err(Status::invalid_argument(format!(
+                "Cannot insert an entity with a base version greater than zero: {}",
+                keys::proto_text(database, located)
+            )));
+        }
+        if op == Some(Op::Update) && required == 0 {
+            return Err(Status::invalid_argument(format!(
+                "Cannot update an entity with a base version set to zero: {}",
+                keys::proto_text(database, located)
+            )));
+        }
+    }
+    Ok(())
+}
+
 /// The properties a query's sums and averages read.
 fn aggregated(list: &[aggregation_query::Aggregation]) -> Vec<String> {
     use aggregation_query::aggregation::Operator;
@@ -865,42 +1001,58 @@ fn apply(
     data: &mut Data,
     database: &Database,
     checked: Vec<Checked>,
+    transactional: bool,
 ) -> Result<(Vec<MutationResult>, i64), Status> {
-    // The checks against what is stored come first, so a failing mutation writes nothing.
-    {
-        let stored = data.database(database);
-        for mutation in &checked {
-            if let Checked::Write { op, key, .. } = mutation
-                && let Some(located) = key.complete()
-            {
-                let exists = stored.entities.contains_key(&located);
-                if *op == Op::Insert && exists {
-                    return Err(Status::already_exists(format!(
-                        "entity already exists: {}",
-                        keys::entity_ref(database, &located)
-                    )));
-                }
-                if *op == Op::Update && !exists {
-                    return Err(Status::not_found(format!(
-                        "no entity to update: {}",
-                        keys::proto_text(database, &located)
-                    )));
-                }
-            }
-        }
-    }
     let micros = data.next_micros();
     let stored = data.database(database);
-    let mut results = Vec::with_capacity(checked.len());
+    // Each mutation's late checks, then the checks against the entity as the mutations before
+    // it left it, then the mutation itself (`tests/fixtures/datastore_commit_checks.json`). A
+    // transaction writes everything or nothing; a non-transactional commit keeps the mutations
+    // before one that fails, as the official emulator does.
+    let mut working: BTreeMap<Located, Option<Stored>> = BTreeMap::new();
+    let mut written: Vec<(Located, bool, bool)> = Vec::with_capacity(checked.len());
     for mutation in checked {
-        match mutation {
-            Checked::Delete(located) => {
-                stored.entities.remove(&located);
-                results.push(MutationResult {
-                    version: micros,
-                    ..MutationResult::default()
-                });
+        let (late, located, op) = match &mutation {
+            Checked::Write { op, key, late, .. } => (late, key.complete(), Some(*op)),
+            Checked::Delete(located, late) => (late, Some(located.clone()), None),
+        };
+        late_checks(late, located.as_ref(), op, database)?;
+        let current = located.as_ref().and_then(|l| match working.get(l) {
+            Some(entity) => entity.clone(),
+            None => stored.entities.get(l).cloned(),
+        });
+        if late.resolution == mutation::ConflictResolutionStrategy::Fail as i32
+            && let Some(required) = late.required
+        {
+            let version = current.as_ref().map_or(0, |e| e.version);
+            if version != required {
+                return Err(Status::failed_precondition(format!(
+                    "the stored version ({version}) does not match the required base version ({required})"
+                )));
             }
+        }
+        if let (Some(op), Some(located)) = (op, &located) {
+            if op == Op::Insert && current.is_some() {
+                return Err(Status::already_exists(format!(
+                    "entity already exists: {}",
+                    keys::entity_ref(database, located)
+                )));
+            }
+            if op == Op::Update && current.is_none() {
+                return Err(Status::not_found(format!(
+                    "no entity to update: {}",
+                    keys::proto_text(database, located)
+                )));
+            }
+        }
+        if late.size > values::MAX_ENTITY_BYTES {
+            return Err(Status::invalid_argument(format!(
+                "maximum entity size is {} bytes",
+                values::MAX_ENTITY_BYTES
+            )));
+        }
+        let (located, entity, allocated) = match mutation {
+            Checked::Delete(located, _) => (located, None, false),
             Checked::Write {
                 key,
                 properties,
@@ -914,9 +1066,7 @@ fn apply(
                         (key.with_id(scattered(stored.allocated)), true)
                     }
                 };
-                let previous = stored.entities.get(&located);
-                let created = previous.map_or(micros, |p| p.created);
-                let properties = match (mask, previous) {
+                let properties = match (mask, &current) {
                     (Some(paths), Some(previous)) => {
                         let mut merged = previous.properties.clone();
                         for path in &paths {
@@ -937,25 +1087,55 @@ fn apply(
                         .collect(),
                     (None, _) => properties,
                 };
-                results.push(MutationResult {
-                    key: allocated.then(|| database.key(&located)),
-                    version: micros,
-                    create_time: Some(timestamp(created)),
-                    update_time: Some(timestamp(micros)),
-                    ..MutationResult::default()
-                });
-                stored.entities.insert(
-                    located,
-                    Stored {
+                // A write that changes nothing keeps the entity's version and times.
+                let entity = match &current {
+                    Some(previous) if previous.properties == properties => previous.clone(),
+                    _ => Stored {
                         properties,
                         version: micros,
-                        created,
+                        created: current.as_ref().map_or(micros, |p| p.created),
                         updated: micros,
                     },
-                );
+                };
+                (located, Some(entity), allocated)
             }
+        };
+        let deleted = entity.is_none();
+        if transactional {
+            working.insert(located.clone(), entity);
+        } else {
+            stored.put(located.clone(), entity, micros);
         }
+        written.push((located, allocated, deleted));
     }
+    for (located, entity) in working {
+        stored.put(located, entity, micros);
+    }
+    // Each result tells of its entity as the commit left it.
+    let results = written
+        .into_iter()
+        .map(|(located, allocated, deleted)| {
+            let key = allocated.then(|| database.key(&located));
+            match stored
+                .entities
+                .get(&located)
+                .filter(|_| !deleted || transactional)
+            {
+                Some(entity) => MutationResult {
+                    key,
+                    version: entity.version,
+                    create_time: Some(timestamp(entity.created)),
+                    update_time: Some(timestamp(entity.updated)),
+                    ..MutationResult::default()
+                },
+                None => MutationResult {
+                    key,
+                    version: micros,
+                    ..MutationResult::default()
+                },
+            }
+        })
+        .collect();
     Ok((results, micros))
 }
 

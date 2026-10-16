@@ -22,8 +22,8 @@
    "evidence": [
     {
      "kind": "replay",
-     "count": 41575,
-     "description": "41,575 recorded answers of the official emulator v1.22.0 in 71 fixtures, replayed against hidane by cargo test",
+     "count": 45586,
+     "description": "45,586 recorded answers of the official emulator v1.22.0 in 72 fixtures, replayed against hidane by cargo test",
      "where": "docs/parity.md",
      "runs": "every pull request and push to main",
      "last_recorded": null
@@ -49,21 +49,21 @@
  ],
  "oracle_corpus": {
   "where": "docs/oracle-corpus.json",
-  "digest": "sha256:7700d448559416aca12aeb4589347935ee872df5eac4bf5a5fdaec8bb8eedae9",
+  "digest": "sha256:927d1e2fdd16879f26ca8c4e3358e11dff05b8a5c6ba871cee3a15ccd0fb572c",
   "releases": [
    "1.22.0"
   ],
-  "files": 131,
-  "fixtures": 71,
+  "files": 132,
+  "fixtures": 72,
   "transcripts": 60,
-  "answers": 41575,
-  "bytes": 29126280
+  "answers": 45586,
+  "bytes": 31528125
  },
  "replay": {
-  "fixtures": 71,
-  "answers": 41575,
+  "fixtures": 72,
+  "answers": 45586,
   "levels": {
-   "full": 30207,
+   "full": 34218,
    "reasons": 4344,
    "part": 1495,
    "status": 5197,
@@ -167,9 +167,9 @@
     ]
    },
    "datastore": {
-    "fixtures": 9,
-    "answers": 5906,
-    "full": 5879,
+    "fixtures": 10,
+    "answers": 9917,
+    "full": 9890,
     "transports": [
      "gRPC",
      "REST"
@@ -353,6 +353,7 @@
     "path": "crates/hidane/tests/datastore.rs",
     "replays": [
      "crates/hidane/tests/fixtures/datastore_checks.json",
+     "crates/hidane/tests/fixtures/datastore_commit_checks.json",
      "crates/hidane/tests/fixtures/datastore_entities.json",
      "crates/hidane/tests/fixtures/datastore_export.json",
      "crates/hidane/tests/fixtures/datastore_firestore_api.json",

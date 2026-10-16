@@ -143,8 +143,10 @@ fn valid_app_id(app: &str) -> bool {
 pub enum Rules {
     /// A key that is written: reserved kinds and names are refused.
     Write,
-    /// A key that is read, or a key value: reserved kinds and names are allowed.
+    /// A key value: reserved kinds and names are allowed.
     Read,
+    /// A key that is looked up: reserved kinds, names and namespaces are allowed.
+    Lookup,
 }
 
 /// What a key's last element must be.
@@ -220,18 +222,50 @@ fn namespace_ok(namespace: &str) -> bool {
             .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'-' | b'_'))
 }
 
-/// Checks `key`, of a request on `database`.
+/// Checks `key`, of a request on `database`: its partition ([`check_partition`]), then the
+/// rest ([`check_unpartitioned`]).
 pub fn check(key: &Key, database: &Database, rules: Rules, last: Last) -> Result<Checked, Status> {
-    let partition = key.partition_id.clone().unwrap_or_default();
-    if !partition.project_id.is_empty() && partition.project_id != database.project {
+    check_partition(key, database)?;
+    check_unpartitioned(key, rules, last)
+}
+
+/// `project#database`, `project` for the default database, as `mismatched databases` says.
+fn partition_name(project: &str, database: &str) -> String {
+    if database.is_empty() {
+        format!("<unknown!>~{project}")
+    } else {
+        format!("<unknown!>~{project}#{database}")
+    }
+}
+
+/// Whether `key` is in the request's database: a key that names a project or a database names
+/// both of the request's (an empty project is not the request's).
+pub fn check_partition(key: &Key, database: &Database) -> Result<(), Status> {
+    let Some(partition) = &key.partition_id else {
+        return Ok(());
+    };
+    let named = !partition.project_id.is_empty() || !partition.database_id.is_empty();
+    if named
+        && (partition.project_id != database.project || partition.database_id != database.database)
+    {
         return Err(Status::invalid_argument(format!(
-            "mismatched databases within request: <unknown!>~{} vs. <unknown!>~{}",
-            database.project, partition.project_id
+            "mismatched databases within request: {} vs. {}",
+            partition_name(&database.project, &database.database),
+            partition_name(&partition.project_id, &partition.database_id)
         )));
     }
-    let namespace = partition.namespace_id;
+    Ok(())
+}
+
+/// Checks `key` but its partition's project and database: its namespace, then its path.
+pub fn check_unpartitioned(key: &Key, rules: Rules, last: Last) -> Result<Checked, Status> {
+    let namespace = key
+        .partition_id
+        .as_ref()
+        .map(|p| p.namespace_id.clone())
+        .unwrap_or_default();
     if !namespace.is_empty() {
-        if reserved(&namespace) {
+        if rules != Rules::Lookup && reserved(&namespace) {
             return Err(Status::invalid_argument(format!(
                 "The namespace id \"{namespace}\" is reserved."
             )));
@@ -313,22 +347,57 @@ pub fn check(key: &Key, database: &Database, rules: Rules, last: Last) -> Result
 }
 
 /// A complete key as the official emulator prints one in protocol-buffer text, in "no entity to
-/// update": `app: "p"`, the namespace, then each element.
+/// update": `app: "p"`, the namespace, each element, then a database but the default one. IDs
+/// from 2,000,000,000 up are written
+/// in hexadecimal (`0x77359400`), and strings escaped as [`quoted`] says.
 pub fn proto_text(database: &Database, located: &Located) -> String {
-    let mut out = format!("app: \"{}\"\n", database.project);
+    let mut out = format!("app: {}\n", quoted(&database.project));
     if !located.namespace.is_empty() {
-        out.push_str(&format!("name_space: \"{}\"\n", located.namespace));
+        out.push_str(&format!("name_space: {}\n", quoted(&located.namespace)));
     }
     out.push_str("path <\n");
     for (kind, id) in &located.path {
-        out.push_str(&format!("  Element {{\n    type: \"{kind}\"\n"));
+        out.push_str(&format!("  Element {{\n    type: {}\n", quoted(kind)));
         match id {
+            Id::Id(n) if *n >= 2_000_000_000 => out.push_str(&format!("    id: {n:#x}\n")),
             Id::Id(n) => out.push_str(&format!("    id: {n}\n")),
-            Id::Name(name) => out.push_str(&format!("    name: \"{name}\"\n")),
+            Id::Name(name) => out.push_str(&format!("    name: {}\n", quoted(name))),
         }
         out.push_str("  }\n");
     }
     out.push_str(">\n");
+    if !database.database.is_empty() {
+        out.push_str(&format!("database_id: {}\n", quoted(&database.database)));
+    }
+    out
+}
+
+/// A string in the official emulator's protocol-buffer text: in double quotes, `"` and `\`
+/// escaped, `\b`, `\t`, `\n`, `\f` and `\r` as such, other characters below a space and
+/// those from U+007F to U+00FF as three octal digits, from U+0100 up as `\u` and the four hex
+/// digits of each UTF-16 unit.
+fn quoted(text: &str) -> String {
+    let mut out = String::from("\"");
+    for c in text.chars() {
+        match c {
+            '"' => out.push_str("\\\""),
+            '\\' => out.push_str("\\\\"),
+            '\u{8}' => out.push_str("\\b"),
+            '\t' => out.push_str("\\t"),
+            '\n' => out.push_str("\\n"),
+            '\u{c}' => out.push_str("\\f"),
+            '\r' => out.push_str("\\r"),
+            ' '..='~' => out.push(c),
+            '\0'..='\u{ff}' => out.push_str(&format!("\\{:03o}", u32::from(c))),
+            _ => {
+                let mut units = [0u16; 2];
+                for unit in c.encode_utf16(&mut units) {
+                    out.push_str(&format!("\\u{unit:04x}"));
+                }
+            }
+        }
+    }
+    out.push('"');
     out
 }
 
