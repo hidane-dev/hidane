@@ -537,3 +537,115 @@ async fn indexes_answer_like_the_official_emulator() {
         differences.join("\n")
     );
 }
+
+/// One request with `headers` and a body of bytes; the status, the content type and the body.
+async fn send_bytes(
+    addr: SocketAddr,
+    method: &str,
+    path: &str,
+    headers: &[(&str, &str)],
+    body: &[u8],
+) -> (u16, Option<String>, Vec<u8>) {
+    let mut request =
+        format!("{method} {path} HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n");
+    for (name, value) in headers {
+        request.push_str(&format!("{name}: {value}\r\n"));
+    }
+    if method == "POST" {
+        request.push_str(&format!("Content-Length: {}\r\n", body.len()));
+    }
+    request.push_str("\r\n");
+    let mut bytes = request.into_bytes();
+    if method == "POST" {
+        bytes.extend_from_slice(body);
+    }
+    let mut stream = TcpStream::connect(addr).await.unwrap();
+    stream.write_all(&bytes).await.unwrap();
+    let mut raw = Vec::new();
+    stream.read_to_end(&mut raw).await.unwrap();
+    let end = raw.windows(4).position(|w| w == b"\r\n\r\n").unwrap();
+    let head = String::from_utf8(raw[..end].to_vec()).unwrap();
+    let mut body = raw[end + 4..].to_vec();
+    let mut lines = head.lines();
+    let status = lines.next().unwrap()[9..12].parse().unwrap();
+    let mut content_type = None;
+    for line in lines {
+        let (name, value) = line.split_once(": ").unwrap();
+        match name.to_ascii_lowercase().as_str() {
+            "content-type" => content_type = Some(value.to_owned()),
+            "transfer-encoding" if value == "chunked" => {
+                let (mut rest, mut out) = (&body[..], Vec::new());
+                loop {
+                    let line = rest.windows(2).position(|w| w == b"\r\n").unwrap();
+                    let size = std::str::from_utf8(&rest[..line]).unwrap().trim();
+                    let size = usize::from_str_radix(size, 16).unwrap();
+                    if size == 0 {
+                        break;
+                    }
+                    out.extend_from_slice(&rest[line + 2..line + 2 + size]);
+                    rest = &rest[line + 4 + size..];
+                }
+                body = out;
+            }
+            _ => {}
+        }
+    }
+    (status, content_type, body)
+}
+
+/// REST in protobuf (`fixtures/datastore_protobuf.json`, from
+/// `tools/oracle/datastore_protobuf.py`), as the Java and Python client libraries send it over
+/// HTTP: which `Content-Type` is read how, each verb's answer, and errors as a
+/// `google.rpc.Status`.
+#[tokio::test]
+async fn protobuf_answers_like_the_official_emulator() {
+    use base64::Engine;
+    let fixture: Json =
+        serde_json::from_str(include_str!("fixtures/datastore_protobuf.json")).unwrap();
+    assert_eq!(fixture["mode"], "datastore-mode");
+    let addr = start().await;
+    let b64 = base64::engine::general_purpose::STANDARD;
+    let cases = fixture["cases"].as_array().unwrap();
+    assert!(cases.len() > 50);
+    let mut differences = Vec::new();
+    for case in cases {
+        let name = case["name"].as_str().unwrap();
+        let headers: Vec<(&str, &str)> = case["headers"]
+            .as_object()
+            .unwrap()
+            .iter()
+            .map(|(k, v)| (k.as_str(), v.as_str().unwrap()))
+            .collect();
+        let body = b64.decode(case["body"].as_str().unwrap()).unwrap();
+        let (status, content_type, answer) = send_bytes(
+            addr,
+            case["method"].as_str().unwrap(),
+            case["path"].as_str().unwrap(),
+            &headers,
+            &body,
+        )
+        .await;
+        let expected = &case["outcome"];
+        let body_differs = case["compare"] == "exact"
+            && expected["body"].as_str() != Some(b64.encode(&answer).as_str());
+        if i64::from(status) != expected["status"].as_i64().unwrap()
+            || content_type.as_deref() != expected["contentType"].as_str()
+            || body_differs
+        {
+            differences.push(format!(
+                "{name}:\n    official {} {:?} {:?}\n    hidane   {status} {content_type:?} {:?}",
+                expected["status"],
+                expected["contentType"].as_str(),
+                expected["body"].as_str().map(|b| b64.decode(b).unwrap()),
+                String::from_utf8_lossy(&answer)
+            ));
+        }
+    }
+    assert!(
+        differences.is_empty(),
+        "{} of {} requests differ:\n{}",
+        differences.len(),
+        cases.len(),
+        differences.join("\n")
+    );
+}

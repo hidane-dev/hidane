@@ -49,6 +49,7 @@ evaluation errors exist in English only, and under another locale each of them b
 | `datastore_entities.py` | How does the official emulator in `--database-mode datastore-mode` store and read entities (#81)? The Firestore API refused; `allocateIds` (scattered IDs, one counter per database) and `reserveIds`; `commit` with each mutation, each kind of value read back, and each invalid key, value and request (with the official messages); `lookup` and its read options; transactions (begin, commit, rollback, read-only, a lock held by another). Takes a jar started with `--database-mode datastore-mode` | `crates/hidane/tests/fixtures/datastore_entities.json` | `crates/hidane/tests/datastore.rs` |
 | `datastore_gql.py` | How does the official emulator in `--database-mode datastore-mode` read GQL (#81)? Each clause of the GQL reference's grammar (`SELECT`, `DISTINCT ON`, `FROM`, `WHERE` with every operator and both directions, `ORDER BY`, `LIMIT`, `OFFSET` with cursors), each kind of literal (strings and escapes, numbers, `KEY`, `DATETIME`, `BLOB`, `ARRAY`) and binding, literals refused, aggregations (`SELECT COUNT(*)`, `AGGREGATE … OVER`), and the lexical and syntax errors of its parser; each answer holds the structured query the text reads as. Takes a jar started with `--database-mode datastore-mode` | `crates/hidane/tests/fixtures/datastore_gql.json` | `crates/hidane/tests/datastore.rs` |
 | `datastore_indexes.py` | Which queries does the official emulator in `--database-mode datastore-mode` serve with `--require_indexes` (#81)? Starts the jar once per run (the jar and `java` as arguments), each with its flags and an `index.yaml` of its own: queries that need no index, one the file defines or one it does not (kinds and ancestors, the key, equalities in their order, inequalities, orders and directions, projections, `distinctOn`, `OR`, sums and averages, GQL, namespaces, projects and transactions), which refusals come before the index and which after, `--index_file` without `--require_indexes` and the reverse, when the file is read, and how each spelling or mistake in the file is read | `crates/hidane/tests/fixtures/datastore_indexes.json` | `crates/hidane/tests/datastore.rs` |
+| `datastore_protobuf.py` | How does the official emulator in `--database-mode datastore-mode` answer REST requests in protobuf (#81), as the Java and Python client libraries send them over HTTP? Which `Content-Type` is read as protobuf (exactly `application/x-protobuf`), which as JSON and which is not found; each verb in protobuf, and errors as a `google.rpc.Status`. Takes a jar started with `--database-mode datastore-mode` | `crates/hidane/tests/fixtures/datastore_protobuf.json` | `crates/hidane/tests/datastore.rs` |
 | `datastore_queries.py` | How does the official emulator in `--database-mode datastore-mode` answer queries (#81)? Over a dataset of every value type, arrays, entity values, an ancestry and namespaces: kinds and orders (values of every type ordered together), every filter operator against values of every type, composite filters, keys and ancestors, projections, keys-only and `distinctOn` (one result per index value of the properties ordered, compared or projected), limits, offsets and cursors (each cursor named, so a replay sends its own), `__kind__`, `__namespace__` and `__property__`, the queries it refuses, and `runAggregationQuery` (count, sum, avg, aliases, limits). Takes a jar started with `--database-mode datastore-mode` | `crates/hidane/tests/fixtures/datastore_queries.json` | `crates/hidane/tests/datastore.rs` |
 | `export_import.py` | What do exports hold, byte for byte (LevelDB logs of App Engine entities), what does an import write where, how do `:export` and `:import` answer bad requests and damaged files, when does `--seed_from_export` seed which database, and how does a managed export's layout import? Takes the jar and `java` as arguments to start emulators of its own | `crates/hidane/tests/fixtures/export_import.json` | `crates/hidane/tests/export_import.rs` |
 | `bulk_delete.py` | What does `POST /emulator/v1/projects/{p}:bulkDelete` delete, and how does it refuse a request? (Datastore's bulk delete: the documents of every collection with one of `collection_ids`, at any depth, not those below them; the namespace `""` is every document, another none; the body's database whatever the path; the body, its database, the `Authorization` header and the IDs checked in that order) | `crates/hidane/tests/fixtures/bulk_delete.json` | `crates/hidane/tests/rest.rs` |
@@ -309,6 +310,23 @@ cp -R tools/oracle/sdk_java "$tmp/" && (cd "$tmp/sdk_java" && mvn -q compile exe
 
 Their transcripts are in `results/sdk-go-*.json`, `results/sdk-python-*.json` and
 `results/sdk-java-*.json`, one pair per section.
+
+`sdk_datastore_python/` runs steps through the Python client library of Datastore,
+`google-cloud-datastore` 2.27.0 (`requirements.txt`; run with Python 3.13), against an emulator
+started with `--database-mode datastore-mode` (#81), named by `DATASTORE_EMULATOR_HOST`. It takes
+a section, `entities` (every value type, keys and IDs, namespaces, the official messages of what
+is refused), `queries` (filters, orders, projections, `distinct_on`, cursors, ancestors, metadata
+kinds, aggregations) or `transactions`, and wants a fresh emulator per section. The client speaks
+gRPC; with `GOOGLE_CLOUD_DISABLE_GRPC=true` it speaks HTTP, REST with protobuf bodies:
+
+```sh
+python3 -m venv "$tmp/venv" && "$tmp/venv/bin/pip" install -r tools/oracle/sdk_datastore_python/requirements.txt
+DATASTORE_EMULATOR_HOST=127.0.0.1:8086 "$tmp/venv/bin/python" -I tools/oracle/sdk_datastore_python/transcript.py entities > entities.json
+DATASTORE_EMULATOR_HOST=127.0.0.1:8087 GOOGLE_CLOUD_DISABLE_GRPC=true "$tmp/venv/bin/python" -I tools/oracle/sdk_datastore_python/transcript.py entities > http-entities.json
+```
+
+Their transcripts are in `results/sdk-datastore-python-*.json` (over gRPC) and
+`results/sdk-datastore-python-http-*.json` (over HTTP), one pair per section.
 
 `sdk_ios/` runs the same four sections through the client SDK of Apple platforms,
 `FirebaseFirestore` 13.0.1 from firebase-ios-sdk (pinned in `Package.swift` and

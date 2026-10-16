@@ -357,10 +357,17 @@ async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -
     let (parts, body) = request.into_parts();
     if let Some(service) = &admin.datastore {
         if let Some((project, verb)) = datastore::rest::route(parts.uri.path()) {
-            return datastore::rest::handle(service, &parts.method, &project, &verb, body).await;
+            return datastore::rest::handle(
+                service,
+                &parts.method,
+                &parts.headers,
+                &project,
+                &verb,
+                body,
+            )
+            .await;
         }
-        let path = parts.uri.path();
-        if path.starts_with("/v1/") || path.starts_with("/v1beta1/") {
+        if is_firestore_rest(parts.uri.path()) {
             return rest::error(&datastore::firestore_refused());
         }
     }
@@ -403,6 +410,24 @@ async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -
     )
     .await
     .unwrap_or_else(not_found_response)
+}
+
+/// A path of the Firestore REST API (`/v1/projects/{p}/databases/{d}/documents…`), which
+/// Datastore mode refuses; another `/v1/` path is not found there, as on the official emulator
+/// (`tests/fixtures/datastore_protobuf.json`).
+fn is_firestore_rest(path: &str) -> bool {
+    let Some(rest) = path
+        .strip_prefix("/v1/")
+        .or_else(|| path.strip_prefix("/v1beta1/"))
+    else {
+        return false;
+    };
+    let parts: Vec<&str> = rest.splitn(6, '/').collect();
+    matches!(
+        parts.as_slice(),
+        ["projects", _, "databases", _, documents, ..]
+            if documents.split(':').next() == Some("documents")
+    )
 }
 
 /// `/emulator/v1/projects/{p}:indexUsage`; not under a database.

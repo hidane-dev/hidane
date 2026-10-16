@@ -135,6 +135,10 @@ CLIENTS = [
     dict(id="python", client="google-cloud-firestore (Python)", ecosystem="pypi",
          package="google-cloud-firestore", platform="Python", transport=[GRPC], core=SDK,
          scope="over gRPC", compatibility="google-cloud-firestore (Python)"),
+    dict(id="datastore-python", client="google-cloud-datastore (Python), in Datastore mode",
+         ecosystem="pypi", package="google-cloud-datastore", platform="Python",
+         transport=[GRPC, REST], core=["documents", "queries", "aggregations", "transactions"],
+         scope="over gRPC and over HTTP, against `--database-mode datastore-mode`"),
     dict(id="go", client="google-cloud-go firestore", ecosystem="go",
          package="cloud.google.com/go/firestore", platform="Go", transport=[GRPC], core=SDK,
          scope="over gRPC", compatibility="google-cloud-go `firestore`"),
@@ -211,6 +215,12 @@ for _sdk in ("go", "java", "python"):
     EVIDENCE[f"sdk-{_sdk}-transactions"] = {_sdk: ["transactions"]}
     EVIDENCE[f"sdk-{_sdk}-listen"] = {_sdk: ["listeners"]}
 
+for _section, _features in (("entities", ["documents"]),
+                            ("queries", ["queries", "aggregations"]),
+                            ("transactions", ["transactions"])):
+    EVIDENCE[f"sdk-datastore-python-{_section}"] = {"datastore-python": _features}
+    EVIDENCE[f"sdk-datastore-python-http-{_section}"] = {"datastore-python": _features}
+
 # How docs/migrating.md names each package hidane doctor judges.
 PACKAGE_LABELS = {
     ("npm", "firebase"): "`firebase` (JS SDK)",
@@ -221,6 +231,7 @@ PACKAGE_LABELS = {
     ("npm", "firebase-functions"): "`firebase-functions` (Firestore triggers under the "
                                    "Functions emulator)",
     ("pypi", "google-cloud-firestore"): "`google-cloud-firestore` (Python)",
+    ("pypi", "google-cloud-datastore"): "`google-cloud-datastore` (Python, Datastore mode)",
     ("go", "cloud.google.com/go/firestore"): "`cloud.google.com/go/firestore`",
     ("maven", "com.google.cloud:google-cloud-firestore"):
         "`com.google.cloud:google-cloud-firestore` (Java)",

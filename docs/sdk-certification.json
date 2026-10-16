@@ -72,8 +72,8 @@
   }
  ],
  "totals": {
-  "clients": 16,
-  "verified": 14,
+  "clients": 17,
+  "verified": 15,
   "partially-verified": 0,
   "not-verified": 2
  },
@@ -1535,6 +1535,234 @@
    ]
   },
   {
+   "id": "datastore-python",
+   "client": "google-cloud-datastore (Python), in Datastore mode",
+   "ecosystem": "pypi",
+   "package": "google-cloud-datastore",
+   "platform": "Python",
+   "transport": [
+    "gRPC",
+    "REST"
+   ],
+   "status": "verified",
+   "version": "2.27.0",
+   "official_emulator": [
+    "v1.22.0"
+   ],
+   "core": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions"
+   ],
+   "exercised": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-16",
+   "tracking": null,
+   "evidence": [
+    {
+     "transcript": "sdk-datastore-python-entities",
+     "official": "results/sdk-datastore-python-entities-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-16",
+      "last_changed": "2026-10-16"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-datastore-python-entities-hidane.json",
+       "result": "identical",
+       "sha256": "2e9a231786f74ae40e4be443c45374678ba5fa21e8300c1ddc5424c2a124adf9",
+       "recorded": {
+        "first_recorded": "2026-10-16",
+        "last_changed": "2026-10-16"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "google-cloud-datastore",
+       "version": "2.27.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_datastore_python/requirements.txt"
+      }
+     ],
+     "features": [
+      "documents"
+     ]
+    },
+    {
+     "transcript": "sdk-datastore-python-http-entities",
+     "official": "results/sdk-datastore-python-http-entities-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-16",
+      "last_changed": "2026-10-16"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-datastore-python-http-entities-hidane.json",
+       "result": "identical",
+       "sha256": "98cdbcac0e3b118852acd8bd2f01049cbb7e9ed2061cce50746920ae3fd9540a",
+       "recorded": {
+        "first_recorded": "2026-10-16",
+        "last_changed": "2026-10-16"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "google-cloud-datastore",
+       "version": "2.27.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_datastore_python/requirements.txt"
+      }
+     ],
+     "features": [
+      "documents"
+     ]
+    },
+    {
+     "transcript": "sdk-datastore-python-http-queries",
+     "official": "results/sdk-datastore-python-http-queries-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-16",
+      "last_changed": "2026-10-16"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-datastore-python-http-queries-hidane.json",
+       "result": "identical",
+       "sha256": "45ab1522ade2971885b0a09bf1eea5b9738c3cae966d573cd3c660d244a75b78",
+       "recorded": {
+        "first_recorded": "2026-10-16",
+        "last_changed": "2026-10-16"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "google-cloud-datastore",
+       "version": "2.27.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_datastore_python/requirements.txt"
+      }
+     ],
+     "features": [
+      "queries",
+      "aggregations"
+     ]
+    },
+    {
+     "transcript": "sdk-datastore-python-http-transactions",
+     "official": "results/sdk-datastore-python-http-transactions-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-16",
+      "last_changed": "2026-10-16"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-datastore-python-http-transactions-hidane.json",
+       "result": "identical",
+       "sha256": "4ecf18929e14f0bf46ee4f254bcc92e398db92b40fc678f1e97363bf19ec1676",
+       "recorded": {
+        "first_recorded": "2026-10-16",
+        "last_changed": "2026-10-16"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "google-cloud-datastore",
+       "version": "2.27.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_datastore_python/requirements.txt"
+      }
+     ],
+     "features": [
+      "transactions"
+     ]
+    },
+    {
+     "transcript": "sdk-datastore-python-queries",
+     "official": "results/sdk-datastore-python-queries-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-16",
+      "last_changed": "2026-10-16"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-datastore-python-queries-hidane.json",
+       "result": "identical",
+       "sha256": "e0955d0439c5ec1575ebf424d8d56eefa79cc0f9a1ef93645f1c15e7352fe76c",
+       "recorded": {
+        "first_recorded": "2026-10-16",
+        "last_changed": "2026-10-16"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "google-cloud-datastore",
+       "version": "2.27.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_datastore_python/requirements.txt"
+      }
+     ],
+     "features": [
+      "queries",
+      "aggregations"
+     ]
+    },
+    {
+     "transcript": "sdk-datastore-python-transactions",
+     "official": "results/sdk-datastore-python-transactions-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-16",
+      "last_changed": "2026-10-16"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-datastore-python-transactions-hidane.json",
+       "result": "identical",
+       "sha256": "4ecf18929e14f0bf46ee4f254bcc92e398db92b40fc678f1e97363bf19ec1676",
+       "recorded": {
+        "first_recorded": "2026-10-16",
+        "last_changed": "2026-10-16"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "google-cloud-datastore",
+       "version": "2.27.0",
+       "source": "pinned",
+       "where": "tools/oracle/sdk_datastore_python/requirements.txt"
+      }
+     ],
+     "features": [
+      "transactions"
+     ]
+    }
+   ]
+  },
+  {
    "id": "go",
    "client": "google-cloud-go firestore",
    "ecosystem": "go",
@@ -2448,6 +2676,16 @@
    "source": "docs/sdk-certification.md",
    "clients": [
     "python"
+   ]
+  },
+  {
+   "ecosystem": "pypi",
+   "name": "google-cloud-datastore",
+   "version": "2.27.0",
+   "what": "documents and writes, queries, aggregation queries, transactions",
+   "source": "docs/sdk-certification.md",
+   "clients": [
+    "datastore-python"
    ]
   },
   {

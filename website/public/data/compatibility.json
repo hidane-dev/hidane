@@ -24,8 +24,8 @@
    "official_emulator": "1.22.0",
    "status": "verified",
    "evidence": [
-    "36,791 recorded answers of the official emulator v1.22.0 in 65 fixtures, replayed against hidane by cargo test",
-    "44 comparisons of SDK transcripts with the official emulator v1.22.0's: 26 identical, 18 documented differences",
+    "36,845 recorded answers of the official emulator v1.22.0 in 66 fixtures, replayed against hidane by cargo test",
+    "50 comparisons of SDK transcripts with the official emulator v1.22.0's: 32 identical, 18 documented differences",
     "2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers"
    ]
   }
@@ -447,6 +447,64 @@
    ]
   },
   {
+   "id": "datastore-python",
+   "client": "google-cloud-datastore (Python), in Datastore mode",
+   "ecosystem": "pypi",
+   "package": "google-cloud-datastore",
+   "platform": "Python",
+   "transport": [
+    "gRPC",
+    "REST"
+   ],
+   "status": "verified",
+   "version": "2.27.0",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "transactions"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-16",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "sdk-datastore-python-entities",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-python-entities-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-python-http-entities",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-python-http-entities-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-python-http-queries",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-python-http-queries-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-python-http-transactions",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-python-http-transactions-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-python-queries",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-python-queries-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-python-transactions",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-python-transactions-hidane.json"
+    }
+   ]
+  },
+  {
    "id": "go",
    "client": "google-cloud-go firestore",
    "ecosystem": "go",
@@ -726,21 +784,21 @@
   }
  ],
  "parity": {
-  "fixtures": 65,
-  "answers": 36791,
+  "fixtures": 66,
+  "answers": 36845,
   "levels": {
-   "full": 25461,
+   "full": 25507,
    "reasons": 4344,
    "part": 1481,
-   "status": 5189,
+   "status": 5197,
    "codes": 96,
    "none": 7,
    "differs": 213
   },
   "transcripts": {
-   "pairs": 42,
-   "comparisons": 44,
-   "identical": 26,
+   "pairs": 48,
+   "comparisons": 50,
+   "identical": 32,
    "documented": 18,
    "unexplained": 0,
    "where": "docs/parity.md"

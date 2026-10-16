@@ -1,0 +1,816 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/datastore_protobuf.py",
+ "mode": "datastore-mode",
+ "cases": [
+  {
+   "name": "reserveIds, Content-Type 'application/x-protobuf'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "CgcSBQoBVBAF",
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/x-protobuf",
+    "body": ""
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type 'application/json'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "ewp9Cg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type 'application/json; charset=utf-8'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "application/json; charset=utf-8"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "ewp9Cg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type 'application/jsonx'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "application/jsonx"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "ewp9Cg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type 'application/json+protobuf'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "application/json+protobuf"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "ewp9Cg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type 'text/plain'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "text/plain"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "ewp9Cg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type 'text/plain; charset=utf-8'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "text/plain; charset=utf-8"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "ewp9Cg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type None",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {},
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "ewp9Cg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type ''",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": ""
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "ewp9Cg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type 'application/x-protobuf; charset=utf-8'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "application/x-protobuf; charset=utf-8"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Tm90IEZvdW5kCg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type 'APPLICATION/X-PROTOBUF'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "APPLICATION/X-PROTOBUF"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Tm90IEZvdW5kCg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type 'application/JSON'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "application/JSON"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Tm90IEZvdW5kCg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type 'application/octet-stream'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "application/octet-stream"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Tm90IEZvdW5kCg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type 'application/protobuf'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "application/protobuf"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Tm90IEZvdW5kCg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type 'application/x-protobuffer'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "application/x-protobuffer"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Tm90IEZvdW5kCg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type 'text/x-protobuf'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "text/x-protobuf"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Tm90IEZvdW5kCg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type 'application/xml'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "application/xml"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Tm90IEZvdW5kCg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type 'text/html'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "text/html"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Tm90IEZvdW5kCg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type 'application/x-www-form-urlencoded'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "application/x-www-form-urlencoded"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Tm90IEZvdW5kCg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type 'multipart/form-data'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "multipart/form-data"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Tm90IEZvdW5kCg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type '*/*'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "*/*"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Tm90IEZvdW5kCg=="
+   }
+  },
+  {
+   "name": "reserveIds, Content-Type 'x'",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "x"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Tm90IEZvdW5kCg=="
+   }
+  },
+  {
+   "name": "reserveIds, a JSON body as protobuf",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "eyJrZXlzIjogW3sicGF0aCI6IFt7ImtpbmQiOiAiVCIsICJpZCI6ICI1In1dfV19",
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/x-protobuf",
+    "body": "CAMSIFBheWxvYWQgaXNuJ3QgdmFsaWQgZm9yIHJlcXVlc3Qu"
+   }
+  },
+  {
+   "name": "reserveIds, a protobuf body as JSON",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": "CgcSBQoBVBAF",
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "eyJlcnJvciI6eyJjb2RlIjo0MDAsIm1lc3NhZ2UiOiJQYXlsb2FkIGlzbid0IHZhbGlkIGZvciByZXF1ZXN0LiIsInN0YXR1cyI6IklOVkFMSURfQVJHVU1FTlQifX0="
+   }
+  },
+  {
+   "name": "reserveIds, protobuf, Accept JSON",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "application/x-protobuf",
+    "Accept": "application/json"
+   },
+   "body": "CgcSBQoBVBAF",
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/x-protobuf",
+    "body": ""
+   }
+  },
+  {
+   "name": "reserveIds, protobuf with ?alt=json",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds?alt=json",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "CgcSBQoBVBAF",
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/x-protobuf",
+    "body": ""
+   }
+  },
+  {
+   "name": "an unknown verb in protobuf",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:unknownVerb",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "CgcSBQoBVBAF",
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Tm90IEZvdW5kCg=="
+   }
+  },
+  {
+   "name": "GET lookup in protobuf",
+   "method": "GET",
+   "path": "/v1/projects/demo-protobuf:lookup",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "",
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Tm90IEZvdW5kCg=="
+   }
+  },
+  {
+   "name": "a path with a slash in protobuf",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf/x:lookup",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "",
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Tm90IEZvdW5kCg=="
+   }
+  },
+  {
+   "name": "reserveIds",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "CgcSBQoBVBAF",
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/x-protobuf",
+    "body": ""
+   }
+  },
+  {
+   "name": "reserveIds without keys",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:reserveIds",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "",
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/x-protobuf",
+    "body": "CAkSJ0xpc3Qgb2YgSWRzIHRvIHJlc2VydmUgY2Fubm90IGJlIGVtcHR5Lg=="
+   }
+  },
+  {
+   "name": "allocateIds, two",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:allocateIds",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "CgUSAwoBVAoMCgUiA25zMRIDCgFU",
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/x-protobuf",
+    "body": "Ch8KDxINZGVtby1wcm90b2J1ZhIMCgFUEICAgICAgIAKCiQKFBINZGVtby1wcm90b2J1ZiIDbnMxEgwKAVQQgICAgICAgAk="
+   }
+  },
+  {
+   "name": "allocateIds, a complete key",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:allocateIds",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "CgcSBQoBVBAB",
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/x-protobuf",
+    "body": "CAMSLUtleSBwYXRoIGVsZW1lbnQgbXVzdCBub3QgYmUgY29tcGxldGU6IFtUOiAxXQ=="
+   }
+  },
+  {
+   "name": "lookup, empty",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:lookup",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "",
+   "compare": "status",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/x-protobuf",
+    "body": null
+   }
+  },
+  {
+   "name": "lookup, missing",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:lookup",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "GggSBgoBVBoBYQ==",
+   "compare": "status",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/x-protobuf",
+    "body": null
+   }
+  },
+  {
+   "name": "lookup, a key without a path",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:lookup",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "GgA=",
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/x-protobuf",
+    "body": "CAMSEktleSBwYXRoIGlzIGVtcHR5Lg=="
+   }
+  },
+  {
+   "name": "lookup, an ID 0",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:lookup",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "GgcSBQoBVBAA",
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/x-protobuf",
+    "body": "CAMSKUtleSBwYXRoIGlkIGlzIGludmFsaWQuIE11c3Qgbm90IGJlIHplcm8u"
+   }
+  },
+  {
+   "name": "commit, upsert",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:commit",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "KAIyFTITCggSBgoBVBoBYRoHCgFuEgIQAQ==",
+   "compare": "status",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/x-protobuf",
+    "body": null
+   }
+  },
+  {
+   "name": "lookup, found",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:lookup",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "GggSBgoBVBoBYQ==",
+   "compare": "status",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/x-protobuf",
+    "body": null
+   }
+  },
+  {
+   "name": "commit, insert an existing entity",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:commit",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "KAIyFSITCggSBgoBVBoBYRoHCgFuEgIQAg==",
+   "compare": "exact",
+   "outcome": {
+    "status": 409,
+    "contentType": "application/x-protobuf",
+    "body": "CAYSR2VudGl0eSBhbHJlYWR5IGV4aXN0czogRW50aXR5UmVmW3BhcnRpdGlvblJlZj1kZW1vLXByb3RvYnVmLCBwYXRoPS9UL2Fd"
+   }
+  },
+  {
+   "name": "commit, a reserved kind",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:commit",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "KAIyGTIXCgwSCgoFX194X18aAWEaBwoBbhICEAE=",
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/x-protobuf",
+    "body": "CAMSHVRoZSBraW5kICJfX3hfXyIgaXMgcmVzZXJ2ZWQu"
+   }
+  },
+  {
+   "name": "commit, no mode",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:commit",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "MhUyEwoIEgYKAVQaAWIaBwoBbhICEAE=",
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/x-protobuf",
+    "body": "CAMSK3RyYW5zYWN0aW9uYWwgY29tbWl0IHJlcXVpcmVzIGEgdHJhbnNhY3Rpb24="
+   }
+  },
+  {
+   "name": "commit, a transaction that is not ours",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:commit",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "KAEKAgEC",
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/x-protobuf",
+    "body": "CAMSFEludmFsaWQgdHJhbnNhY3Rpb24u"
+   }
+  },
+  {
+   "name": "beginTransaction",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:beginTransaction",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "",
+   "compare": "status",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/x-protobuf",
+    "body": null
+   }
+  },
+  {
+   "name": "rollback, a transaction that is not ours",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:rollback",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "CgIBAg==",
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/x-protobuf",
+    "body": "CAMSFEludmFsaWQgdHJhbnNhY3Rpb24u"
+   }
+  },
+  {
+   "name": "rollback, no transaction",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:rollback",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "",
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/x-protobuf",
+    "body": "CAMSFHRyYW5zYWN0aW9uIHJlcXVpcmVk"
+   }
+  },
+  {
+   "name": "runQuery, kind T",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:runQuery",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "GgUaAwoBVA==",
+   "compare": "status",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/x-protobuf",
+    "body": null
+   }
+  },
+  {
+   "name": "runQuery, GQL",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:runQuery",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "OhMKD1NFTEVDVCAqIEZST00gVBAB",
+   "compare": "status",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/x-protobuf",
+    "body": null
+   }
+  },
+  {
+   "name": "runQuery, a GQL syntax error",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:runQuery",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "OhEKDVNFTEVDVCAqIEZST00QAQ==",
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/x-protobuf",
+    "body": "CAMSckVuY291bnRlcmVkICI8RU9GPiIgYXQgbGluZSAxLCBjb2x1bW4gMTMuCldhcyBleHBlY3Rpbmcgb25lIG9mOgogICAgPFVOUVVPVEVEX05BTUU+IC4uLgogICAgPFFVT1RFRF9OQU1FPiAuLi4KICAgIA=="
+   }
+  },
+  {
+   "name": "runQuery, neither query",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:runQuery",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "",
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/x-protobuf",
+    "body": "CAMSOW9uZSBvZiBmaWVsZHMgUXVlcnkucXVlcnkgYW5kIFF1ZXJ5LmdxbF9xdWVyeSBtdXN0IGJlIHNldA=="
+   }
+  },
+  {
+   "name": "runAggregationQuery, no aggregations",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "GgcKBRoDCgFU",
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/x-protobuf",
+    "body": "CAMSHkFnZ3JlZ2F0aW9ucyBjYW4gbm90IGJlIGVtcHR5Lg=="
+   }
+  },
+  {
+   "name": "runAggregationQuery, count",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "Gg4KBRoDCgFUGgUKADoBbg==",
+   "compare": "status",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/x-protobuf",
+    "body": null
+   }
+  },
+  {
+   "name": "a body that is not protobuf",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:lookup",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "////",
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/x-protobuf",
+    "body": "CAMSIFBheWxvYWQgaXNuJ3QgdmFsaWQgZm9yIHJlcXVlc3Qu"
+   }
+  },
+  {
+   "name": "a string that is not UTF-8",
+   "method": "POST",
+   "path": "/v1/projects/demo-protobuf:lookup",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "body": "GgUSAwoB/w==",
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/x-protobuf",
+    "body": "CAMSIFBheWxvYWQgaXNuJ3QgdmFsaWQgZm9yIHJlcXVlc3Qu"
+   }
+  }
+ ]
+}

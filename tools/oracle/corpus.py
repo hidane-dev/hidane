@@ -67,6 +67,7 @@ FIXTURE_CLIENTS = {
     "datastore_entities.py": ([REST], PY),
     "datastore_gql.py": ([REST], PY),
     "datastore_indexes.py": ([REST, PROCESS], PY),
+    "datastore_protobuf.py": ([REST], PY),
     "datastore_queries.py": ([REST], PY),
     "document_writes.py": ([REST], PY),
     "export_import.py": ([REST, PROCESS], PY),
@@ -132,6 +133,9 @@ TRANSCRIPT_RECORDERS = {
 for _sdk in ("android", "go", "ios", "java", "python"):
     for _section in ("documents", "listen", "queries", "transactions"):
         TRANSCRIPT_RECORDERS[f"sdk-{_sdk}-{_section}"] = f"tools/oracle/sdk_{_sdk}/"
+for _section in ("entities", "queries", "transactions"):
+    for _name in (f"sdk-datastore-python-{_section}", f"sdk-datastore-python-http-{_section}"):
+        TRANSCRIPT_RECORDERS[_name] = "tools/oracle/sdk_datastore_python/"
 
 # Versions a recorder pins: (recorder, package, file, a pattern whose group 1 is the version).
 PINS = [
@@ -139,6 +143,8 @@ PINS = [
      r"^\s*cloud\.google\.com/go/firestore v([\w.\-]+)$"),
     ("tools/oracle/sdk_python/", "google-cloud-firestore",
      "tools/oracle/sdk_python/requirements.txt", r"^google-cloud-firestore==([\w.\-]+)$"),
+    ("tools/oracle/sdk_datastore_python/", "google-cloud-datastore",
+     "tools/oracle/sdk_datastore_python/requirements.txt", r"^google-cloud-datastore==([\w.\-]+)$"),
     ("tools/oracle/sdk_java/", "com.google.cloud:google-cloud-firestore",
      "tools/oracle/sdk_java/pom.xml",
      r"<artifactId>google-cloud-firestore</artifactId>\s*<version>([\w.\-]+)</version>"),

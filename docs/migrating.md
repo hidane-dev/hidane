@@ -60,6 +60,7 @@ The verified versions:
 | `firebase-tools` | 15.33.0 — export and import, launch under firebase emulators:exec | [sdk-certification.md](sdk-certification.md), `results/export-import-*.json`, `results/functions-triggers-*.json` |
 | `firebase-functions` (Firestore triggers under the Functions emulator) | 6.6.0 — Firestore triggers, v1 and v2 | [sdk-certification.md](sdk-certification.md), `results/functions-triggers-*.json` |
 | `google-cloud-firestore` (Python) | 2.34.1 — documents and writes, queries, aggregation queries, vector search, transactions, listeners | [sdk-certification.md](sdk-certification.md), `results/sdk-python-*.json` |
+| `google-cloud-datastore` (Python, Datastore mode) | 2.27.0 — documents and writes, queries, aggregation queries, transactions | [sdk-certification.md](sdk-certification.md), `results/sdk-datastore-*.json` |
 | `cloud.google.com/go/firestore` | 1.26.0 — documents and writes, queries, aggregation queries, vector search, transactions, listeners | [sdk-certification.md](sdk-certification.md), `results/sdk-go-*.json` |
 | `com.google.cloud:google-cloud-firestore` (Java) | 3.49.0 — documents and writes, queries, aggregation queries, vector search, transactions, listeners | [sdk-certification.md](sdk-certification.md), `results/sdk-java-*.json` |
 | `cloud_firestore` (Flutter) | 6.10.0 — Flutter Web in Chromium: documents and writes, queries, aggregation queries, transactions, listeners | [sdk-certification.md](sdk-certification.md), `results/flutter-web-*.json` |
@@ -83,8 +84,8 @@ Known gaps are `incompatible`:
   ([#338](https://github.com/hidane-dev/hidane/issues/338)).
 - Datastore mode, through `gcloud emulators firestore start --database-mode=datastore-mode`
   ([#81](https://github.com/hidane-dev/hidane/issues/81)): `hidane --database-mode datastore-mode`
-  serves entities, transactions, queries, aggregations, GQL and `--require_indexes`; the
-  Datastore client libraries are not tested against it yet. A
+  serves entities, transactions, queries, aggregations, GQL and `--require_indexes`, over gRPC
+  and REST (JSON or protobuf); `google-cloud-datastore` (Python) is verified against it. A
   Datastore client library in the
   dependencies is `unknown`: it may talk to the separate Datastore emulator, which hidane does
   not replace.

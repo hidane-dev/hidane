@@ -22,16 +22,16 @@
    "evidence": [
     {
      "kind": "replay",
-     "count": 36791,
-     "description": "36,791 recorded answers of the official emulator v1.22.0 in 65 fixtures, replayed against hidane by cargo test",
+     "count": 36845,
+     "description": "36,845 recorded answers of the official emulator v1.22.0 in 66 fixtures, replayed against hidane by cargo test",
      "where": "docs/parity.md",
      "runs": "every pull request and push to main",
      "last_recorded": null
     },
     {
      "kind": "transcripts",
-     "count": 44,
-     "description": "44 comparisons of SDK transcripts with the official emulator v1.22.0's: 26 identical, 18 documented differences",
+     "count": 50,
+     "description": "50 comparisons of SDK transcripts with the official emulator v1.22.0's: 32 identical, 18 documented differences",
      "where": "docs/parity.md",
      "runs": "recorded",
      "last_recorded": null
@@ -49,24 +49,24 @@
  ],
  "oracle_corpus": {
   "where": "docs/oracle-corpus.json",
-  "digest": "sha256:dadc35197eb2cd2b0df41c715672ef70e8985732ba4f6067850de347afdb2cf8",
+  "digest": "sha256:97d82d7b0f1ebc3da5311ff3827e6146d281d57143ffb33f2f20349c59214001",
   "releases": [
    "1.22.0"
   ],
-  "files": 107,
-  "fixtures": 65,
-  "transcripts": 42,
-  "answers": 36791,
-  "bytes": 26196525
+  "files": 114,
+  "fixtures": 66,
+  "transcripts": 48,
+  "answers": 36845,
+  "bytes": 26251982
  },
  "replay": {
-  "fixtures": 65,
-  "answers": 36791,
+  "fixtures": 66,
+  "answers": 36845,
   "levels": {
-   "full": 25461,
+   "full": 25507,
    "reasons": 4344,
    "part": 1481,
-   "status": 5189,
+   "status": 5197,
    "codes": 96,
    "none": 7,
    "differs": 213
@@ -166,9 +166,9 @@
     ]
    },
    "datastore": {
-    "fixtures": 4,
-    "answers": 1159,
-    "full": 1156,
+    "fixtures": 5,
+    "answers": 1213,
+    "full": 1202,
     "transports": [
      "REST"
     ]
@@ -179,9 +179,9 @@
   "where": "docs/parity.md"
  },
  "transcripts": {
-  "pairs": 42,
-  "comparisons": 44,
-  "identical": 26,
+  "pairs": 48,
+  "comparisons": 50,
+  "identical": 32,
   "documented": 18,
   "unexplained": 0,
   "where": "docs/parity.md"
@@ -189,8 +189,8 @@
  "sdk_certification": {
   "where": "docs/sdk-certification.json",
   "totals": {
-   "clients": 16,
-   "verified": 14,
+   "clients": 17,
+   "verified": 15,
    "partially-verified": 0,
    "not-verified": 2
   },
@@ -205,6 +205,7 @@
     "firebase-tools",
     "firebase-functions",
     "python",
+    "datastore-python",
     "go",
     "java",
     "flutter-web",
@@ -349,6 +350,7 @@
      "crates/hidane/tests/fixtures/datastore_entities.json",
      "crates/hidane/tests/fixtures/datastore_gql.json",
      "crates/hidane/tests/fixtures/datastore_indexes.json",
+     "crates/hidane/tests/fixtures/datastore_protobuf.json",
      "crates/hidane/tests/fixtures/datastore_queries.json"
     ]
    },

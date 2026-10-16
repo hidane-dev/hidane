@@ -65,6 +65,13 @@ pub const VERIFIED: &[Verified] = &[
         source: "docs/sdk-certification.md",
     },
     Verified {
+        ecosystem: "pypi",
+        name: "google-cloud-datastore",
+        version: "2.27.0",
+        what: "documents and writes, queries, aggregation queries, transactions",
+        source: "docs/sdk-certification.md",
+    },
+    Verified {
         ecosystem: "go",
         name: "cloud.google.com/go/firestore",
         version: "1.26.0",
