@@ -1,0 +1,2257 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/datastore_projects.py",
+ "runs": [
+  {
+   "mode": "firestore-native",
+   "flags": [],
+   "reflection": [
+    "google.datastore.v1.Datastore",
+    "google.firestore.emulator.v1.FirestoreEmulator",
+    "google.firestore.v1.Firestore",
+    "google.firestore.v1beta1.Firestore",
+    "grpc.reflection.v1alpha.ServerReflection"
+   ],
+   "grpc": [
+    {
+     "name": "Lookup, project ''",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": ""
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "The app id is the empty string."
+     }
+    },
+    {
+     "name": "Lookup, project 'a'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'x'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "x"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project '1'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "1"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project '0'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "0"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'a-b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a-b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'a-'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a-"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'p--'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "p--"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project '1a'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "1a"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'A'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "A"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"A\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'aB'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "aB"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"aB\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project '-a'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "-a"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"-a\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project '-'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "-"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"-\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project '--'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "--"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"--\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a_b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a_b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a_b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a.b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a.b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a.b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a/b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a/b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a/b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'é'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "é"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"é\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a:b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a:b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'google.com:proj'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "google.com:proj"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project ':'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": ":"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project ':a'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": ":a"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'a:'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a:"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project '1:2'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "1:2"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'a.b:c'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a.b:c"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'a-:b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a-:b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'a.:b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a.:b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'a..b:c'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a..b:c"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'a:-b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a:-b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a:-b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project '-a:b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "-a:b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"-a:b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'A:b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "A:b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"A:b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a:B'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a:B"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a:B\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project '.a:b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": ".a:b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\".a:b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a::b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a::b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a::b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'domain.com:a:b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "domain.com:a:b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"domain.com:a:b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'dev~p'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "dev~p"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 's~p'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "s~p"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'b~a'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "b~a"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'aa~p'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "aa~p"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project '-~p'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "-~p"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'a-b~p'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a-b~p"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'dev~a:b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "dev~a:b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Lookup, project 'dev~'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "dev~"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"dev~\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project '~'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "~"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"~\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project '~a'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "~a"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"~a\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a~'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a~"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a~\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'A~p'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "A~p"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"A~p\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'dev~A'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "dev~A"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"dev~A\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'dev~a b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "dev~a b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"dev~a b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a~b~c'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a~b~c"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a~b~c\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, an empty project",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": ""
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "The app id is the empty string."
+     }
+    },
+    {
+     "name": "RunQuery, an empty project",
+     "rpc": "RunQuery",
+     "request": {
+      "project_id": ""
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "The app id is the empty string."
+     }
+    },
+    {
+     "name": "RunAggregationQuery, an empty project",
+     "rpc": "RunAggregationQuery",
+     "request": {
+      "project_id": ""
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "The app id is the empty string."
+     }
+    },
+    {
+     "name": "BeginTransaction, an empty project",
+     "rpc": "BeginTransaction",
+     "request": {
+      "project_id": ""
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "The app id is the empty string."
+     }
+    },
+    {
+     "name": "Commit, an empty project",
+     "rpc": "Commit",
+     "request": {
+      "project_id": ""
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "The app id is the empty string."
+     }
+    },
+    {
+     "name": "Rollback, an empty project",
+     "rpc": "Rollback",
+     "request": {
+      "project_id": ""
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "The app id is the empty string."
+     }
+    },
+    {
+     "name": "AllocateIds, an empty project",
+     "rpc": "AllocateIds",
+     "request": {
+      "project_id": ""
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "The app id is the empty string."
+     }
+    },
+    {
+     "name": "ReserveIds, an empty project",
+     "rpc": "ReserveIds",
+     "request": {
+      "project_id": ""
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "The app id is the empty string."
+     }
+    },
+    {
+     "name": "Lookup, a project",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "demo-projects"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "RunQuery, a project",
+     "rpc": "RunQuery",
+     "request": {
+      "project_id": "demo-projects"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "RunAggregationQuery, a project",
+     "rpc": "RunAggregationQuery",
+     "request": {
+      "project_id": "demo-projects"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "BeginTransaction, a project",
+     "rpc": "BeginTransaction",
+     "request": {
+      "project_id": "demo-projects"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Commit, a project",
+     "rpc": "Commit",
+     "request": {
+      "project_id": "demo-projects"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "Rollback, a project",
+     "rpc": "Rollback",
+     "request": {
+      "project_id": "demo-projects"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "AllocateIds, a project",
+     "rpc": "AllocateIds",
+     "request": {
+      "project_id": "demo-projects"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    },
+    {
+     "name": "ReserveIds, a project",
+     "rpc": "ReserveIds",
+     "request": {
+      "project_id": "demo-projects"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+     }
+    }
+   ],
+   "cases": [
+    {
+     "name": "lookup",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:lookup",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T",
+          "name": "a"
+         }
+        ]
+       }
+      ]
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "beginTransaction",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:beginTransaction",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {},
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "commit",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:commit",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "mode": "NON_TRANSACTIONAL"
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "rollback",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:rollback",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "transaction": "AAAA"
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "allocateIds",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:allocateIds",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T"
+         }
+        ]
+       }
+      ]
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "reserveIds",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:reserveIds",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T",
+          "id": "5"
+         }
+        ]
+       }
+      ]
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "runQuery",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "query": {}
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "runAggregationQuery",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:runAggregationQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "aggregationQuery": {
+       "aggregations": [
+        {
+         "count": {}
+        }
+       ]
+      }
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "lookup, an unknown field",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:lookup",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "x": 1
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "lookup, a project with capitals",
+     "method": "POST",
+     "path": "/v1/projects/Demo:lookup",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T",
+          "name": "a"
+         }
+        ]
+       }
+      ]
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"\\\"Demo\\\" is an invalid app id.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "lookup, a project with a space",
+     "method": "POST",
+     "path": "/v1/projects/a%20b:lookup",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T",
+          "name": "a"
+         }
+        ]
+       }
+      ]
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"\\\"a b\\\" is an invalid app id.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "lookup, a partitioned project",
+     "method": "POST",
+     "path": "/v1/projects/dev~p:lookup",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T",
+          "name": "a"
+         }
+        ]
+       }
+      ]
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "lookup, a domain project",
+     "method": "POST",
+     "path": "/v1/projects/google.com:p:lookup",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T",
+          "name": "a"
+         }
+        ]
+       }
+      ]
+     },
+     "outcome": {
+      "status": 404,
+      "contentType": null,
+      "body": "Not Found\n"
+     }
+    },
+    {
+     "name": "lookup, an empty project",
+     "method": "POST",
+     "path": "/v1/projects/:lookup",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T",
+          "name": "a"
+         }
+        ]
+       }
+      ]
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"The app id is the empty string.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "an unknown verb",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:frobnicate",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {},
+     "outcome": {
+      "status": 404,
+      "contentType": null,
+      "body": "Not Found\n"
+     }
+    },
+    {
+     "name": "GET lookup",
+     "method": "GET",
+     "path": "/v1/projects/demo-projects:lookup",
+     "headers": {},
+     "compare": "exact",
+     "outcome": {
+      "status": 404,
+      "contentType": null,
+      "body": "Not Found\n"
+     }
+    }
+   ]
+  },
+  {
+   "mode": "datastore-mode",
+   "flags": [
+    "--database-mode",
+    "datastore-mode"
+   ],
+   "reflection": [
+    "google.datastore.v1.Datastore",
+    "google.firestore.emulator.v1.FirestoreEmulator",
+    "google.firestore.v1.Firestore",
+    "google.firestore.v1beta1.Firestore",
+    "grpc.reflection.v1alpha.ServerReflection"
+   ],
+   "grpc": [
+    {
+     "name": "Lookup, project ''",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": ""
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "The app id is the empty string."
+     }
+    },
+    {
+     "name": "Lookup, project 'a'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project 'x'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "x"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project '1'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "1"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project '0'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "0"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project 'a-b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a-b"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project 'a-'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a-"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project 'p--'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "p--"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project '1a'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "1a"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project 'A'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "A"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"A\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'aB'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "aB"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"aB\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project '-a'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "-a"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"-a\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project '-'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "-"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"-\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project '--'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "--"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"--\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a_b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a_b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a_b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a.b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a.b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a.b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a/b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a/b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a/b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'é'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "é"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"é\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a:b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a:b"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project 'google.com:proj'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "google.com:proj"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project ':'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": ":"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project ':a'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": ":a"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project 'a:'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a:"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project '1:2'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "1:2"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project 'a.b:c'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a.b:c"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project 'a-:b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a-:b"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project 'a.:b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a.:b"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project 'a..b:c'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a..b:c"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project 'a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Lookup, project 'a:-b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a:-b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a:-b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project '-a:b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "-a:b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"-a:b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'A:b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "A:b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"A:b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a:B'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a:B"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a:B\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project '.a:b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": ".a:b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\".a:b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a::b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a::b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a::b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'domain.com:a:b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "domain.com:a:b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"domain.com:a:b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'dev~p'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "dev~p"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"dev~p\" is an invalid project id."
+     }
+    },
+    {
+     "name": "Lookup, project 's~p'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "s~p"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"s~p\" is an invalid project id."
+     }
+    },
+    {
+     "name": "Lookup, project 'b~a'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "b~a"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"b~a\" is an invalid project id."
+     }
+    },
+    {
+     "name": "Lookup, project 'aa~p'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "aa~p"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"aa~p\" is an invalid project id."
+     }
+    },
+    {
+     "name": "Lookup, project '-~p'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "-~p"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"-~p\" is an invalid project id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a-b~p'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a-b~p"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a-b~p\" is an invalid project id."
+     }
+    },
+    {
+     "name": "Lookup, project 'dev~a:b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "dev~a:b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"dev~a:b\" is an invalid project id."
+     }
+    },
+    {
+     "name": "Lookup, project 'dev~'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "dev~"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"dev~\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project '~'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "~"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"~\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project '~a'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "~a"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"~a\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a~'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a~"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a~\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'A~p'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "A~p"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"A~p\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'dev~A'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "dev~A"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"dev~A\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'dev~a b'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "dev~a b"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"dev~a b\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, project 'a~b~c'",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "a~b~c"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "\"a~b~c\" is an invalid app id."
+     }
+    },
+    {
+     "name": "Lookup, an empty project",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": ""
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "The app id is the empty string."
+     }
+    },
+    {
+     "name": "RunQuery, an empty project",
+     "rpc": "RunQuery",
+     "request": {
+      "project_id": ""
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "The app id is the empty string."
+     }
+    },
+    {
+     "name": "RunAggregationQuery, an empty project",
+     "rpc": "RunAggregationQuery",
+     "request": {
+      "project_id": ""
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "The app id is the empty string."
+     }
+    },
+    {
+     "name": "BeginTransaction, an empty project",
+     "rpc": "BeginTransaction",
+     "request": {
+      "project_id": ""
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "The app id is the empty string."
+     }
+    },
+    {
+     "name": "Commit, an empty project",
+     "rpc": "Commit",
+     "request": {
+      "project_id": ""
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "The app id is the empty string."
+     }
+    },
+    {
+     "name": "Rollback, an empty project",
+     "rpc": "Rollback",
+     "request": {
+      "project_id": ""
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "The app id is the empty string."
+     }
+    },
+    {
+     "name": "AllocateIds, an empty project",
+     "rpc": "AllocateIds",
+     "request": {
+      "project_id": ""
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "The app id is the empty string."
+     }
+    },
+    {
+     "name": "ReserveIds, an empty project",
+     "rpc": "ReserveIds",
+     "request": {
+      "project_id": ""
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "The app id is the empty string."
+     }
+    },
+    {
+     "name": "Lookup, a project",
+     "rpc": "Lookup",
+     "request": {
+      "project_id": "demo-projects"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "RunQuery, a project",
+     "rpc": "RunQuery",
+     "request": {
+      "project_id": "demo-projects"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "one of fields Query.query and Query.gql_query must be set"
+     }
+    },
+    {
+     "name": "RunAggregationQuery, a project",
+     "rpc": "RunAggregationQuery",
+     "request": {
+      "project_id": "demo-projects"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "one of fields aggregation_query and gql_query must be set"
+     }
+    },
+    {
+     "name": "BeginTransaction, a project",
+     "rpc": "BeginTransaction",
+     "request": {
+      "project_id": "demo-projects"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "Commit, a project",
+     "rpc": "Commit",
+     "request": {
+      "project_id": "demo-projects"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "transactional commit requires a transaction"
+     }
+    },
+    {
+     "name": "Rollback, a project",
+     "rpc": "Rollback",
+     "request": {
+      "project_id": "demo-projects"
+     },
+     "outcome": {
+      "code": "INVALID_ARGUMENT",
+      "message": "transaction required"
+     }
+    },
+    {
+     "name": "AllocateIds, a project",
+     "rpc": "AllocateIds",
+     "request": {
+      "project_id": "demo-projects"
+     },
+     "outcome": {
+      "code": "OK"
+     }
+    },
+    {
+     "name": "ReserveIds, a project",
+     "rpc": "ReserveIds",
+     "request": {
+      "project_id": "demo-projects"
+     },
+     "outcome": {
+      "code": "FAILED_PRECONDITION",
+      "message": "List of Ids to reserve cannot be empty."
+     }
+    }
+   ],
+   "cases": [
+    {
+     "name": "lookup",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:lookup",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T",
+          "name": "a"
+         }
+        ]
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"missing\": [{\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"demo-projects\"\n        },\n        \"path\": [{\n          \"kind\": \"T\",\n          \"name\": \"a\"\n        }]\n      }\n    }\n  }],\n  \"readTime\": \"<time>\"\n}\n"
+     }
+    },
+    {
+     "name": "beginTransaction",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:beginTransaction",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+     }
+    },
+    {
+     "name": "commit",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:commit",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "mode": "NON_TRANSACTIONAL"
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n}\n"
+     }
+    },
+    {
+     "name": "rollback",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:rollback",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "transaction": "AAAA"
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Invalid transaction.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "allocateIds",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:allocateIds",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T"
+         }
+        ]
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"keys\": [{\n    \"partitionId\": {\n      \"projectId\": \"demo-projects\"\n    },\n    \"path\": [{\n      \"kind\": \"T\",\n      \"id\": \"5629499534213120\"\n    }]\n  }]\n}\n"
+     }
+    },
+    {
+     "name": "reserveIds",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:reserveIds",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T",
+          "id": "5"
+         }
+        ]
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n}\n"
+     }
+    },
+    {
+     "name": "runQuery",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "query": {}
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "name": "runAggregationQuery",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:runAggregationQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "aggregationQuery": {
+       "aggregations": [
+        {
+         "count": {}
+        }
+       ]
+      }
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"property_1\": {\n          \"integerValue\": \"0\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "name": "lookup, an unknown field",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:lookup",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "x": 1
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "lookup, a project with capitals",
+     "method": "POST",
+     "path": "/v1/projects/Demo:lookup",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T",
+          "name": "a"
+         }
+        ]
+       }
+      ]
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"\\\"Demo\\\" is an invalid app id.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "lookup, a project with a space",
+     "method": "POST",
+     "path": "/v1/projects/a%20b:lookup",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T",
+          "name": "a"
+         }
+        ]
+       }
+      ]
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"\\\"a b\\\" is an invalid app id.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "lookup, a partitioned project",
+     "method": "POST",
+     "path": "/v1/projects/dev~p:lookup",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T",
+          "name": "a"
+         }
+        ]
+       }
+      ]
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"\\\"dev~p\\\" is an invalid project id.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "lookup, a domain project",
+     "method": "POST",
+     "path": "/v1/projects/google.com:p:lookup",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T",
+          "name": "a"
+         }
+        ]
+       }
+      ]
+     },
+     "outcome": {
+      "status": 404,
+      "contentType": null,
+      "body": "Not Found\n"
+     }
+    },
+    {
+     "name": "lookup, an empty project",
+     "method": "POST",
+     "path": "/v1/projects/:lookup",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T",
+          "name": "a"
+         }
+        ]
+       }
+      ]
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"The app id is the empty string.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "an unknown verb",
+     "method": "POST",
+     "path": "/v1/projects/demo-projects:frobnicate",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "compare": "exact",
+     "body": {},
+     "outcome": {
+      "status": 404,
+      "contentType": null,
+      "body": "Not Found\n"
+     }
+    },
+    {
+     "name": "GET lookup",
+     "method": "GET",
+     "path": "/v1/projects/demo-projects:lookup",
+     "headers": {},
+     "compare": "exact",
+     "outcome": {
+      "status": 404,
+      "contentType": null,
+      "body": "Not Found\n"
+     }
+    }
+   ]
+  }
+ ]
+}

@@ -386,18 +386,22 @@ const MAX_CHANNEL_BODY: usize = 16 * 1024 * 1024;
 /// `/v1beta1/…`), or 404.
 async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -> Response {
     let (parts, body) = request.into_parts();
-    if let Some(service) = &admin.datastore {
-        if let Some((project, verb)) = datastore::rest::route(parts.uri.path()) {
-            return datastore::rest::handle(
-                service,
-                &parts.method,
-                &parts.headers,
-                &project,
-                &verb,
-                body,
-            )
-            .await;
-        }
+    if let Some((project, verb)) = datastore::rest::route(parts.uri.path()) {
+        let service = admin
+            .datastore
+            .clone()
+            .unwrap_or_else(datastore::DatastoreService::refusing);
+        return datastore::rest::handle(
+            &service,
+            &parts.method,
+            &parts.headers,
+            &project,
+            &verb,
+            body,
+        )
+        .await;
+    }
+    if admin.datastore.is_some() {
         // The emulator's own endpoints fail in this mode, as on the official emulator; the
         // Firestore API is routed and refused by the Firestore service.
         if is_index_usage(parts.uri.path())
@@ -603,14 +607,16 @@ pub fn grpc_routes(admin: &Admin) -> Router {
     let mut routes = tonic::service::Routes::new(firestore)
         .add_service(reflection_v1)
         .add_service(reflection_v1alpha);
-    if let Some(service) = &admin.datastore {
-        routes = routes.add_service(
-            hidane_proto::google::datastore::v1::datastore_server::DatastoreServer::new(
-                service.clone(),
-            )
+    // The Datastore API is served in both modes, as on the official emulator: Firestore Native
+    // mode refuses each request once its project is read.
+    let datastore = admin
+        .datastore
+        .clone()
+        .unwrap_or_else(datastore::DatastoreService::refusing);
+    routes = routes.add_service(
+        hidane_proto::google::datastore::v1::datastore_server::DatastoreServer::new(datastore)
             .max_decoding_message_size(MAX_GRPC_MESSAGE),
-        );
-    }
+    );
     routes
         .into_axum_router()
         // `google.firestore.v1beta1.Firestore` is the same service under its earlier name, as

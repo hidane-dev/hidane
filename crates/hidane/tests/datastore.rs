@@ -923,3 +923,143 @@ async fn the_firestore_api_is_refused_as_on_the_official_emulator() {
         differences.join("\n")
     );
 }
+
+/// A Datastore request's project, in both modes (`fixtures/datastore_projects.json`, from
+/// `tools/oracle/datastore_projects.py`): App Engine's app IDs, then, in Firestore Native mode,
+/// the Datastore API refused, then a partitioned ID refused as a project; over gRPC and REST.
+/// Reflection lists the Datastore service in both modes.
+#[tokio::test]
+async fn projects_are_read_as_on_the_official_emulator() {
+    use hidane_proto::google::datastore::v1::{
+        AllocateIdsRequest, BeginTransactionRequest, CommitRequest, LookupRequest,
+        ReserveIdsRequest, RollbackRequest, RunAggregationQueryRequest, RunQueryRequest,
+        datastore_client::DatastoreClient,
+    };
+    use prost_reflect::{DescriptorPool, DynamicMessage};
+
+    let fixture: Json =
+        serde_json::from_str(include_str!("fixtures/datastore_projects.json")).unwrap();
+    let pool = DescriptorPool::decode(hidane_proto::FILE_DESCRIPTOR_SET).unwrap();
+    fn build<T: prost::Message + Default>(pool: &DescriptorPool, rpc: &str, json: &Json) -> T {
+        let descriptor = pool
+            .get_message_by_name(&format!("google.datastore.v1.{rpc}Request"))
+            .unwrap();
+        DynamicMessage::deserialize(descriptor, json.clone())
+            .unwrap()
+            .transcode_to::<T>()
+            .unwrap()
+    }
+    let mut differences = Vec::new();
+    let mut count = 0;
+    for run in fixture["runs"].as_array().unwrap() {
+        let mode = run["mode"].as_str().unwrap();
+        let addr =
+            start_with(hidane::Admin::default().with_datastore_mode(mode == "datastore-mode"))
+                .await;
+        let channel = tonic::transport::Channel::from_shared(format!("http://{addr}"))
+            .unwrap()
+            .connect()
+            .await
+            .unwrap();
+        let mut client = DatastoreClient::new(channel);
+        for call in run["grpc"].as_array().unwrap() {
+            count += 1;
+            let rpc = call["rpc"].as_str().unwrap();
+            let request = &call["request"];
+            let status = match rpc {
+                "Lookup" => client
+                    .lookup(build::<LookupRequest>(&pool, rpc, request))
+                    .await
+                    .err(),
+                "RunQuery" => client
+                    .run_query(build::<RunQueryRequest>(&pool, rpc, request))
+                    .await
+                    .err(),
+                "RunAggregationQuery" => client
+                    .run_aggregation_query(build::<RunAggregationQueryRequest>(&pool, rpc, request))
+                    .await
+                    .err(),
+                "BeginTransaction" => client
+                    .begin_transaction(build::<BeginTransactionRequest>(&pool, rpc, request))
+                    .await
+                    .err(),
+                "Commit" => client
+                    .commit(build::<CommitRequest>(&pool, rpc, request))
+                    .await
+                    .err(),
+                "Rollback" => client
+                    .rollback(build::<RollbackRequest>(&pool, rpc, request))
+                    .await
+                    .err(),
+                "AllocateIds" => client
+                    .allocate_ids(build::<AllocateIdsRequest>(&pool, rpc, request))
+                    .await
+                    .err(),
+                "ReserveIds" => client
+                    .reserve_ids(build::<ReserveIdsRequest>(&pool, rpc, request))
+                    .await
+                    .err(),
+                other => panic!("no call for {other}"),
+            };
+            let expected = &call["outcome"];
+            let code = status.as_ref().map_or_else(
+                || "OK".to_owned(),
+                |s| {
+                    let mut name = String::new();
+                    for (i, c) in format!("{:?}", s.code()).chars().enumerate() {
+                        if c.is_uppercase() && i > 0 {
+                            name.push('_');
+                        }
+                        name.push(c.to_ascii_uppercase());
+                    }
+                    name
+                },
+            );
+            let message = status.as_ref().map(|s| s.message().to_owned());
+            if code != expected["code"].as_str().unwrap()
+                || message.as_deref() != expected["message"].as_str()
+            {
+                differences.push(format!(
+                    "[{mode}] {}: official {expected}, hidane {code} {message:?}",
+                    call["name"]
+                ));
+            }
+        }
+        let cases = run["cases"].as_array().unwrap();
+        count += cases.len();
+        for difference in replay_cases(addr, cases, &[], None, "no-such-project").await {
+            differences.push(format!("[{mode}] {difference}"));
+        }
+        // Reflection: the services of the descriptors hidane serves it from, but those D035
+        // leaves out (the emulator's admin API and v1beta1, which has no descriptors).
+        let set = <prost_types::FileDescriptorSet as prost::Message>::decode(
+            hidane_proto::FILE_DESCRIPTOR_SET,
+        )
+        .unwrap();
+        let listed: Vec<String> = set
+            .file
+            .iter()
+            .flat_map(|f| {
+                f.service
+                    .iter()
+                    .map(move |s| format!("{}.{}", f.package(), s.name()))
+            })
+            .collect();
+        for service in run["reflection"].as_array().unwrap() {
+            let service = service.as_str().unwrap();
+            let left_out = service.starts_with("grpc.reflection.")
+                || service == "google.firestore.emulator.v1.FirestoreEmulator"
+                || service == "google.firestore.v1beta1.Firestore";
+            if !left_out && !listed.iter().any(|l| l == service) {
+                differences.push(format!("[{mode}] reflection does not list {service}"));
+            }
+        }
+    }
+    assert!(count > 150);
+    assert!(
+        differences.is_empty(),
+        "{} differ:\n{}",
+        differences.len(),
+        differences.join("\n")
+    );
+}

@@ -80,6 +80,64 @@ impl Database {
     }
 }
 
+/// A request's project, as the official emulator reads it before anything else
+/// (`tests/fixtures/datastore_projects.json`): App Engine's app IDs, an optional domain before a
+/// `:` (dots allowed there) and a display ID of up to 100 lowercase letters, digits and hyphens,
+/// not starting with a hyphen; a partition before a `~` passes, to be refused as a project
+/// ([`check_project_id`]).
+pub fn check_app_id(project: &str) -> Result<(), Status> {
+    if project.is_empty() {
+        return Err(Status::invalid_argument("The app id is the empty string."));
+    }
+    let app = match project.split_once('~') {
+        Some((partition, app)) if !partition.is_empty() && partition.bytes().all(id_byte) => {
+            if app.is_empty() { None } else { Some(app) }
+        }
+        Some(_) => None,
+        None => Some(project),
+    };
+    if app.is_some_and(valid_app_id) {
+        Ok(())
+    } else {
+        Err(Status::invalid_argument(format!(
+            "\"{project}\" is an invalid app id."
+        )))
+    }
+}
+
+/// A partitioned app ID (`dev~p`) is no project, in Datastore mode.
+pub fn check_project_id(project: &str) -> Result<(), Status> {
+    if project.contains('~') {
+        return Err(Status::invalid_argument(format!(
+            "\"{project}\" is an invalid project id."
+        )));
+    }
+    Ok(())
+}
+
+fn id_byte(b: u8) -> bool {
+    b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-'
+}
+
+/// `[domain:]display`, without a partition.
+fn valid_app_id(app: &str) -> bool {
+    let starts_well = |s: &str| s.bytes().next().is_some_and(|b| b != b'-' && b != b'.');
+    let display_ok = |display: &str| {
+        display.len() <= 100
+            && display.bytes().all(id_byte)
+            && (display.is_empty() || starts_well(display))
+    };
+    match app.split_once(':') {
+        None => !app.is_empty() && display_ok(app),
+        Some((domain, display)) => {
+            !display.contains(':')
+                && display_ok(display)
+                && domain.bytes().all(|b| id_byte(b) || b == b'.')
+                && (domain.is_empty() || starts_well(domain))
+        }
+    }
+}
+
 /// How strictly a key is read.
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub enum Rules {

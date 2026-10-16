@@ -596,16 +596,18 @@
    "area": "admin",
    "topic": null,
    "kind": "limitation",
-   "official": "Server reflection lists `google.firestore.v1beta1.Firestore` (and cannot describe it), `google.firestore.emulator.v1.FirestoreEmulator` and `google.datastore.v1.Datastore`",
+   "official": "Server reflection lists `google.firestore.v1beta1.Firestore` (and cannot describe it), `google.firestore.emulator.v1.FirestoreEmulator` and `google.datastore.v1.Datastore`, in both modes (`tools/oracle/datastore_projects.py`)",
    "firestore": null,
-   "hidane": "Lists `google.firestore.v1.Firestore` and reflection; v1beta1 answers without being listed; the emulator admin API (#36) and Datastore mode (#81) are not served yet",
+   "hidane": "Lists `google.firestore.v1.Firestore`, `google.datastore.v1.Datastore` and reflection; v1beta1 answers without being listed; the emulator admin API's gRPC service (#36) is not served",
    "reason": "Reflection is for tools; v1beta1 has no descriptors here",
    "references": [
     "hidane-dev/hidane#36",
-    "hidane-dev/hidane#81"
+    "hidane-dev/hidane#81",
+    "tools/oracle/datastore_projects.py"
    ],
-   "pinned_by": [],
-   "unpinned": "No test lists services over reflection; `grpc_settings.rs` only checks that v1beta1 answers like v1, which both emulators share."
+   "pinned_by": [
+    "crates/hidane/tests/datastore.rs::projects_are_read_as_on_the_official_emulator"
+   ]
   },
   {
    "id": "D036",

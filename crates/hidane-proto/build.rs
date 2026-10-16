@@ -12,8 +12,8 @@ use prost::Message;
 
 const PROTOS: &[&str] = &["google/firestore/v1/firestore.proto"];
 
-/// Datastore mode's API (#81), generated but not in the descriptor sets above: hidane does not
-/// serve it yet, and reflection lists what the descriptors hold.
+/// Datastore mode's API (#81), served in both modes as on the official emulator, which lists it
+/// over reflection too.
 const DATASTORE: &[&str] = &["google/datastore/v1/datastore.proto"];
 
 /// The messages written by hand in `src/ordered.rs`: package, message, the Rust type, and the map
@@ -56,20 +56,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let out = PathBuf::from(env::var("OUT_DIR")?);
     println!("cargo:rerun-if-changed={}", root.display());
 
-    let fds = protox::Compiler::new([&root])?
-        .include_imports(true)
-        .include_source_info(true)
-        .open_files(PROTOS)?
-        .file_descriptor_set();
-    fs::write(out.join("hidane_descriptor.bin"), fds.encode_to_vec())?;
-
-    // The code of both APIs, from one descriptor set. JSON reads both, through the ordered
-    // descriptors; reflection lists Firestore's alone (above).
+    // The code of both APIs, from one descriptor set: reflection lists both; JSON reads both,
+    // through the ordered descriptors.
     let all = protox::Compiler::new([&root])?
         .include_imports(true)
         .include_source_info(true)
         .open_files(PROTOS.iter().chain(DATASTORE))?
         .file_descriptor_set();
+    fs::write(out.join("hidane_descriptor.bin"), all.encode_to_vec())?;
     fs::write(
         out.join("hidane_descriptor_ordered.bin"),
         ordered(all.clone()).encode_to_vec(),

@@ -54,6 +54,10 @@ pub fn firestore_refused() -> Status {
     Status::invalid_argument(FIRESTORE_REFUSED)
 }
 
+/// What the Datastore API answers in Firestore Native mode, over gRPC and REST, once it has read
+/// the request's project (`tests/fixtures/datastore_projects.json`).
+pub const DATASTORE_REFUSED: &str = "Database mode not set to Datastore Mode. If using the gCloud CLI, please specify the --database-mode flag.";
+
 /// The Datastore service, sharing its state between gRPC and REST.
 #[derive(Clone, Default)]
 pub struct DatastoreService {
@@ -66,6 +70,8 @@ struct State {
     transactions: Transactions,
     /// `--require_indexes`: the indexes queries need.
     enforcement: Option<indexes::Enforcement>,
+    /// Firestore Native mode: every request is refused once its project is read.
+    refused: bool,
 }
 
 #[derive(Default)]
@@ -171,6 +177,28 @@ impl DatastoreService {
                 ..State::default()
             }),
         }
+    }
+
+    /// The Datastore API of Firestore Native mode: it reads a request's project, then refuses it
+    /// ([`DATASTORE_REFUSED`]), as the official emulator does.
+    pub fn refusing() -> Self {
+        Self {
+            state: Arc::new(State {
+                refused: true,
+                ..State::default()
+            }),
+        }
+    }
+
+    /// A request's database, its project read first: an app ID, then, in Firestore Native mode,
+    /// refused, then a project ID (`tests/fixtures/datastore_projects.json`).
+    fn admit(&self, project: String, database: String) -> Result<Database, Status> {
+        keys::check_app_id(&project)?;
+        if self.state.refused {
+            return Err(Status::invalid_argument(DATASTORE_REFUSED));
+        }
+        keys::check_project_id(&project)?;
+        Ok(Database { project, database })
     }
 
     /// Every entity of every database, and every open transaction (`POST /reset`); the index
@@ -329,10 +357,7 @@ impl Datastore for DatastoreService {
         request: Request<LookupRequest>,
     ) -> Result<Response<LookupResponse>, Status> {
         let req = request.into_inner();
-        let database = Database {
-            project: req.project_id,
-            database: req.database_id,
-        };
+        let database = self.admit(req.project_id, req.database_id)?;
         self.indexes(&database)?;
         let mut wanted: Vec<Located> = Vec::with_capacity(req.keys.len());
         for key in &req.keys {
@@ -411,10 +436,7 @@ impl Datastore for DatastoreService {
         request: Request<BeginTransactionRequest>,
     ) -> Result<Response<BeginTransactionResponse>, Status> {
         let req = request.into_inner();
-        let database = Database {
-            project: req.project_id,
-            database: req.database_id,
-        };
+        let database = self.admit(req.project_id, req.database_id)?;
         self.indexes(&database)?;
         let transaction = self.begin(&database, req.transaction_options.as_ref())?;
         Ok(Response::new(BeginTransactionResponse { transaction }))
@@ -425,10 +447,7 @@ impl Datastore for DatastoreService {
         request: Request<CommitRequest>,
     ) -> Result<Response<CommitResponse>, Status> {
         let req = request.into_inner();
-        let database = Database {
-            project: req.project_id,
-            database: req.database_id,
-        };
+        let database = self.admit(req.project_id, req.database_id)?;
         self.indexes(&database)?;
         let name = database.name();
         let transaction = match req.transaction_selector {
@@ -549,13 +568,10 @@ impl Datastore for DatastoreService {
         request: Request<RollbackRequest>,
     ) -> Result<Response<RollbackResponse>, Status> {
         let req = request.into_inner();
+        let database = self.admit(req.project_id, req.database_id)?;
         if req.transaction.is_empty() {
             return Err(Status::invalid_argument("transaction required"));
         }
-        let database = Database {
-            project: req.project_id,
-            database: req.database_id,
-        };
         self.indexes(&database)?;
         self.state
             .transactions
@@ -568,10 +584,7 @@ impl Datastore for DatastoreService {
         request: Request<AllocateIdsRequest>,
     ) -> Result<Response<AllocateIdsResponse>, Status> {
         let req = request.into_inner();
-        let database = Database {
-            project: req.project_id,
-            database: req.database_id,
-        };
+        let database = self.admit(req.project_id, req.database_id)?;
         self.indexes(&database)?;
         let checked = req
             .keys
@@ -595,10 +608,7 @@ impl Datastore for DatastoreService {
         request: Request<RunQueryRequest>,
     ) -> Result<Response<RunQueryResponse>, Status> {
         let req = request.into_inner();
-        let database = Database {
-            project: req.project_id,
-            database: req.database_id,
-        };
+        let database = self.admit(req.project_id, req.database_id)?;
         let defined = self.indexes(&database)?;
         let namespace = Self::namespace(req.partition_id, &database)?;
         let mut echo = None;
@@ -648,10 +658,7 @@ impl Datastore for DatastoreService {
         request: Request<RunAggregationQueryRequest>,
     ) -> Result<Response<RunAggregationQueryResponse>, Status> {
         let req = request.into_inner();
-        let database = Database {
-            project: req.project_id,
-            database: req.database_id,
-        };
+        let database = self.admit(req.project_id, req.database_id)?;
         let defined = self.indexes(&database)?;
         let namespace = Self::namespace(req.partition_id, &database)?;
         let aggregation = match req.query_type {
@@ -668,7 +675,7 @@ impl Datastore for DatastoreService {
             }
             None => {
                 return Err(Status::invalid_argument(
-                    "one of fields Query.query and Query.gql_query must be set",
+                    "one of fields aggregation_query and gql_query must be set",
                 ));
             }
         };
@@ -754,10 +761,7 @@ impl Datastore for DatastoreService {
         request: Request<ReserveIdsRequest>,
     ) -> Result<Response<ReserveIdsResponse>, Status> {
         let req = request.into_inner();
-        let database = Database {
-            project: req.project_id,
-            database: req.database_id,
-        };
+        let database = self.admit(req.project_id, req.database_id)?;
         self.indexes(&database)?;
         if req.keys.is_empty() {
             return Err(Status::failed_precondition(
