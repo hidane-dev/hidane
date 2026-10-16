@@ -13,6 +13,7 @@
 //! ([`gql`], `tests/fixtures/datastore_gql.json`), with the indexes `--require_indexes` asks for
 //! ([`indexes`], `tests/fixtures/datastore_indexes.json`).
 
+mod export;
 mod gql;
 mod indexes;
 pub(crate) mod keys;

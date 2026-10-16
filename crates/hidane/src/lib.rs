@@ -182,6 +182,23 @@ impl Admin {
         self
     }
 
+    /// `--import-data` in Datastore mode: the entities of an export, each in the project and
+    /// database its key names. After [`Admin::with_datastore_mode`]; nothing in Firestore Native
+    /// mode.
+    #[must_use]
+    pub fn with_datastore_seed(
+        self,
+        entities: Vec<(
+            hidane_proto::google::datastore::v1::Key,
+            hidane_proto::ordered::Properties,
+        )>,
+    ) -> Self {
+        if let Some(datastore) = &self.datastore {
+            datastore.seed(entities);
+        }
+        self
+    }
+
     /// `--require_indexes` in Datastore mode: queries need the indexes `--index_file` defines
     /// (`file`), read as the official emulator reads them (#81). After
     /// [`Admin::with_datastore_mode`]; nothing in Firestore Native mode.
@@ -387,7 +404,15 @@ async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -
         .await;
     }
     if let Some(verb) = export::route(parts.uri.path()) {
-        return export::handle(admin.firestore(), verb, &parts.method, &parts.headers, body).await;
+        return export::handle(
+            admin.firestore(),
+            admin.datastore.as_ref(),
+            verb,
+            &parts.method,
+            &parts.headers,
+            body,
+        )
+        .await;
     }
     if let Some(route) = triggers::route(parts.uri.path()) {
         return triggers::handle(

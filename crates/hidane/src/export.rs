@@ -9,6 +9,8 @@
 //!   `.overall_export_metadata` file, writes that export's documents into `database`.
 //! - `--seed_from_export` (`firebase emulators:start --import`) reads an export at startup;
 //!   `firestore::seed` hands it to every database on first access.
+//! - In Datastore mode, `:export`, `:import` and `--import-data` are the Datastore service's
+//!   (`datastore::export`), with entities in that mode's format.
 //! - `POST …:bulkDelete` with `{database, collection_ids, namespace_ids}` deletes, as Datastore's
 //!   bulk delete does, the documents of every collection with one of the IDs, or every document
 //!   for the namespace `""` (`tests/fixtures/bulk_delete.json`, #36).
@@ -35,10 +37,11 @@ use hidane_core::{
     export::{self, ExportedDocument, OverallError, Pointer, entity, log},
     store::StoredDocument,
 };
+use hidane_proto::{google::datastore::v1::Key, ordered::Properties};
 use serde_json::Value as Json;
 use tonic::Status;
 
-use crate::{FirestoreService, firestore::auth, rest};
+use crate::{FirestoreService, datastore::DatastoreService, firestore::auth, rest};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Verb {
@@ -72,6 +75,7 @@ const MAX_BODY: usize = 16 * 1024 * 1024;
 
 pub(crate) async fn handle(
     firestore: FirestoreService,
+    datastore: Option<&DatastoreService>,
     verb: Verb,
     method: &Method,
     headers: &HeaderMap,
@@ -89,18 +93,28 @@ pub(crate) async fn handle(
             .await
             .map_err(|_| invalid_payload())?;
         let request = Request::parse(&body, verb)?;
-        match verb {
-            Verb::Export => {
+        match (verb, datastore) {
+            (Verb::Export, Some(datastore)) => {
+                datastore
+                    .export(&request.database, &request.directory, &request.name)
+                    .await
+            }
+            (Verb::Import, Some(datastore)) => {
+                datastore
+                    .import_file(&request.database, &request.directory)
+                    .await
+            }
+            (Verb::Export, None) => {
                 firestore
                     .export(&request.database, &request.directory, &request.name)
                     .await
             }
-            Verb::Import => {
+            (Verb::Import, None) => {
                 firestore
                     .import_file(&request.database, &request.directory)
                     .await
             }
-            Verb::BulkDelete => unreachable!("answered by bulk_delete"),
+            (Verb::BulkDelete, _) => unreachable!("answered by bulk_delete"),
         }
     }
     .await;
@@ -240,9 +254,25 @@ pub(crate) fn write(
     database_id: &str,
     documents: &[Arc<StoredDocument>],
 ) -> io::Result<()> {
+    write_records(
+        directory,
+        name,
+        documents
+            .iter()
+            .map(|doc| entity::encode(project, database_id, &doc.path, &doc.fields())),
+    )
+}
+
+/// Writes `records`, each an encoded entity, as the export `directory/name`.
+pub(crate) fn write_records(
+    directory: &Path,
+    name: &str,
+    records: impl ExactSizeIterator<Item = Vec<u8>>,
+) -> io::Result<()> {
     let started = now_micros();
     let root = directory.join(name);
-    let pointer = if documents.is_empty() {
+    let count = records.len();
+    let pointer = if count == 0 {
         fs::create_dir_all(&root)?;
         None
     } else {
@@ -251,13 +281,8 @@ pub(crate) fn write(
         fs::create_dir_all(kind)?;
         let output = BufWriter::new(fs::File::create(kind.join(export::OUTPUT))?);
         let mut log = log::Writer::new(output);
-        for doc in documents {
-            log.add_record(&entity::encode(
-                project,
-                database_id,
-                &doc.path,
-                &doc.fields(),
-            ))?;
+        for record in records {
+            log.add_record(&record)?;
         }
         let bytes = log.len();
         log.into_inner().flush()?;
@@ -267,7 +292,7 @@ pub(crate) fn write(
         )?;
         Some(Pointer {
             path: export::KIND_METADATA.to_owned(),
-            entities: documents.len() as u64,
+            entities: count as u64,
             bytes,
         })
     };
@@ -280,6 +305,24 @@ pub(crate) fn write(
 /// Reads the export whose `.overall_export_metadata` file is `path`. The error is the
 /// official emulator's message.
 pub fn read(path: &Path) -> Result<Vec<ExportedDocument>, String> {
+    read_records(path)?
+        .iter()
+        .map(|record| entity::decode(record).map_err(|_| "Invalid record".to_owned()))
+        .collect()
+}
+
+/// Reads the entities of the export whose `.overall_export_metadata` file is `path`, written in
+/// Datastore mode (`hidane_core::export::datastore`): each key and its properties.
+pub fn read_datastore(path: &Path) -> Result<Vec<(Key, Properties)>, String> {
+    read_records(path)?
+        .iter()
+        .map(|record| export::datastore::decode(record).map_err(|_| "Invalid record".to_owned()))
+        .collect()
+}
+
+/// The records of every output file of the export whose `.overall_export_metadata` file is
+/// `path`.
+fn read_records(path: &Path) -> Result<Vec<Vec<u8>>, String> {
     const UNPARSABLE: &str = "Failed to parse overall export metadata file";
     let data = fs::read(path).map_err(|_| UNPARSABLE.to_owned())?;
     let pointers = export::parse_overall_metadata(&data).map_err(|err| {
@@ -290,7 +333,7 @@ pub fn read(path: &Path) -> Result<Vec<ExportedDocument>, String> {
         .to_owned()
     })?;
     let base = path.parent().unwrap_or(Path::new(""));
-    let mut documents = Vec::new();
+    let mut records = Vec::new();
     for pointer in pointers {
         let metadata_path = base.join(&pointer);
         let metadata =
@@ -307,12 +350,11 @@ pub fn read(path: &Path) -> Result<Vec<ExportedDocument>, String> {
             let data = fs::read(&output_path)
                 .map_err(|_| format!("Failed parse entity file:{}", output_path.display()))?;
             for record in log::records(&data) {
-                let record = record.map_err(|err| err.to_string())?;
-                documents.push(entity::decode(&record).map_err(|_| "Invalid record".to_owned())?);
+                records.push(record.map_err(|err| err.to_string())?.to_vec());
             }
         }
     }
-    Ok(documents)
+    Ok(records)
 }
 
 /// A file that cannot be opened, as Java's `FileNotFoundException` puts it.

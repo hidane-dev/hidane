@@ -670,6 +670,17 @@ RECORDINGS = {
                  "as intentionally different (D025)",
         count=lambda f: [(REST, DIFFERS if case["name"] in rust_strings(f"{H}/datastore.rs", "KNOWN")
                           else FULL) for case in f["cases"]]),
+    f"{H}/fixtures/datastore_export.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::export_and_import_like_the_official_emulator"],
+        counted="each request of each run, to a server started with `--database-mode "
+                "datastore-mode` (and `--import-data`, where the run says so), and each export "
+                "written; " + OVER_REST,
+        compares="in full: status, content type and body byte for byte, server times, versions "
+                 "and cursors masked; an export's overall metadata byte for byte, its output's "
+                 "records as a set (D093), its other files by size",
+        count=lambda f: [(REST, FULL) for run in f["runs"]
+                         for _ in [*run["cases"], *run.get("exports", {})]]),
     f"{H}/fixtures/datastore_gql.json": dict(
         area="datastore",
         tests=[f"{H}/datastore.rs::gql_answers_like_the_official_emulator"],

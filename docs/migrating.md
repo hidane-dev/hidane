@@ -87,12 +87,10 @@ Known gaps are `incompatible`:
   ([#338](https://github.com/hidane-dev/hidane/issues/338)).
 - Datastore mode, through `gcloud emulators firestore start --database-mode=datastore-mode`
   ([#81](https://github.com/hidane-dev/hidane/issues/81)): `hidane --database-mode datastore-mode`
-  serves entities, transactions, queries, aggregations, GQL and `--require_indexes`, over gRPC
-  and REST (JSON or protobuf); the Node.js, Python, Java and Go client libraries of Datastore
-  are verified against it. A
-  Datastore client library in the
-  dependencies is `unknown`: it may talk to the separate Datastore emulator, which hidane does
-  not replace.
+  serves entities, transactions, queries, aggregations, GQL, `--require_indexes`, export and
+  import, over gRPC and REST (JSON or protobuf); the Node.js, Python, Java and Go client
+  libraries of Datastore are verified against it. A Datastore client library in the dependencies
+  is `unknown`: it may talk to the separate Datastore emulator, which hidane does not replace.
 - A rules file that does not compile: hidane would start without it. hidane's compiler makes the
   official emulator's checks (`crates/hidane/tests/fixtures/rules_compile.json`), so the official
   emulator most likely rejects the file too; if it does not, please report it.

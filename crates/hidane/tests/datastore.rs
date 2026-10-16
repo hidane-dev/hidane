@@ -129,8 +129,8 @@ fn mask_values(text: &str, key: &str, mask: &str) -> String {
 }
 
 /// The recorder's masking (`tools/oracle/datastore_entities.py`).
-fn normalize(text: &str) -> String {
-    let mut text = text.replace(PROJECT, "{project}");
+fn normalize(text: &str, project: &str) -> String {
+    let mut text = text.replace(project, "{project}");
     for key in ["createTime", "updateTime", "readTime", "commitTime"] {
         text = mask_values(&text, key, "<time>");
     }
@@ -158,7 +158,14 @@ async fn replay(fixture: &Json, known: &[&str]) -> Vec<String> {
     assert_eq!(fixture["mode"], "datastore-mode");
     let addr = start().await;
     seed(addr, fixture).await;
-    replay_cases(addr, fixture["cases"].as_array().unwrap(), known, None).await
+    replay_cases(
+        addr,
+        fixture["cases"].as_array().unwrap(),
+        known,
+        None,
+        PROJECT,
+    )
+    .await
 }
 
 /// Writes the fixture's dataset, if it has one.
@@ -185,12 +192,15 @@ async fn seed(addr: SocketAddr, fixture: &Json) {
 
 /// Sends each case in order and compares the answers. A step that writes the index file
 /// (`write_index_file`) writes `dir/index.yaml`, or removes it.
+/// `{project}` in the cases reads `project`, `{dir}` reads `dir`.
 async fn replay_cases(
     addr: SocketAddr,
     cases: &[Json],
     known: &[&str],
     dir: Option<&std::path::Path>,
+    project: &str,
 ) -> Vec<String> {
+    let shown_dir = dir.map(|d| d.to_str().unwrap().to_owned());
     // Transactions and cursors the server gave, by the names the fixture gives them.
     let mut labels: Vec<(String, String)> = Vec::new();
     let mut differences = Vec::new();
@@ -204,12 +214,15 @@ async fn replay_cases(
             }
             continue;
         }
-        let path = case["path"].as_str().unwrap().replace("{project}", PROJECT);
+        let path = case["path"].as_str().unwrap().replace("{project}", project);
         let mut body = match (case.get("raw"), case.get("body")) {
-            (Some(raw), _) => Some(raw.as_str().unwrap().replace("{project}", PROJECT)),
-            (None, Some(body)) => Some(body.to_string().replace("{project}", PROJECT)),
+            (Some(raw), _) => Some(raw.as_str().unwrap().replace("{project}", project)),
+            (None, Some(body)) => Some(body.to_string().replace("{project}", project)),
             (None, None) => None,
         };
+        if let (Some(text), Some(dir)) = (&mut body, &shown_dir) {
+            *text = text.replace("{dir}", dir);
+        }
         if let Some(text) = &mut body {
             for (label, value) in &labels {
                 *text = text.replace(&format!("\"<{label}>\""), &format!("\"{value}\""));
@@ -245,7 +258,10 @@ async fn replay_cases(
             continue;
         }
         let expected = &case["outcome"];
-        let actual = normalize(&answer.body);
+        let actual = match &shown_dir {
+            Some(dir) => normalize(&answer.body.replace(dir.as_str(), "{dir}"), project),
+            None => normalize(&answer.body, project),
+        };
         if i64::from(answer.status) != expected["status"].as_i64().unwrap()
             || answer.content_type.as_deref() != expected["contentType"].as_str()
             || actual != expected["body"].as_str().unwrap()
@@ -524,7 +540,7 @@ async fn indexes_answer_like_the_official_emulator() {
             .iter()
             .filter_map(|k| k.strip_prefix(name)?.strip_prefix(": "))
             .collect();
-        for difference in replay_cases(addr, list, &known, Some(&dir)).await {
+        for difference in replay_cases(addr, list, &known, Some(&dir), PROJECT).await {
             differences.push(format!("[{name}] {difference}"));
         }
         std::fs::remove_dir_all(&dir).unwrap();
@@ -646,6 +662,117 @@ async fn protobuf_answers_like_the_official_emulator() {
         "{} of {} requests differ:\n{}",
         differences.len(),
         cases.len(),
+        differences.join("\n")
+    );
+}
+
+/// An export as the fixture records it: each file relative to the export (its name as `<name>`),
+/// an overall metadata file byte for byte, an output file as its records, sorted (D093), any
+/// other file as its size.
+fn export_tree(root: &std::path::Path, name: &str) -> Json {
+    use base64::Engine;
+    let b64 = base64::engine::general_purpose::STANDARD;
+    let mut files = std::collections::BTreeMap::new();
+    let mut stack = vec![root.to_path_buf()];
+    while let Some(dir) = stack.pop() {
+        for entry in std::fs::read_dir(&dir).unwrap() {
+            let path = entry.unwrap().path();
+            if path.is_dir() {
+                stack.push(path);
+                continue;
+            }
+            let relative = path
+                .strip_prefix(root)
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .replace(name, "<name>");
+            let data = std::fs::read(&path).unwrap();
+            let file = path.file_name().unwrap().to_str().unwrap();
+            let shown = if file.starts_with("output-") {
+                let mut records: Vec<String> = hidane_core::export::log::records(&data)
+                    .map(|r| b64.encode(r.unwrap()))
+                    .collect();
+                records.sort();
+                serde_json::json!({ "records": records })
+            } else if file.ends_with(".overall_export_metadata") {
+                serde_json::json!({ "bytes": b64.encode(&data) })
+            } else {
+                serde_json::json!({ "size": data.len() })
+            };
+            files.insert(relative, shown);
+        }
+    }
+    serde_json::to_value(files).unwrap()
+}
+
+/// Export and import in Datastore mode (`fixtures/datastore_export.json`, from
+/// `tools/oracle/datastore_export.py`): each export's files, `--import-data`, `:import`, and the
+/// requests refused.
+#[tokio::test]
+async fn export_and_import_like_the_official_emulator() {
+    use base64::Engine;
+    let fixture: Json =
+        serde_json::from_str(include_str!("fixtures/datastore_export.json")).unwrap();
+    assert_eq!(fixture["mode"], "datastore-mode");
+    let b64 = base64::engine::general_purpose::STANDARD;
+    let mut cases = 0;
+    let mut differences = Vec::new();
+    for (n, run) in fixture["runs"].as_array().unwrap().iter().enumerate() {
+        let name = run["name"].as_str().unwrap();
+        let dir = std::env::temp_dir().join(format!(
+            "hidane-datastore-export-{}-{n}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(dir.join("out")).unwrap();
+        for (relative, data) in fixture["files"].as_object().unwrap() {
+            let path = dir.join("files").join(relative);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(&path, b64.decode(data.as_str().unwrap()).unwrap()).unwrap();
+        }
+        let flags: Vec<String> = run["flags"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|f| f.as_str().unwrap().replace("{dir}", dir.to_str().unwrap()))
+            .collect();
+        let mut admin = hidane::Admin::default().with_datastore_mode(true);
+        if let Some(i) = flags.iter().position(|f| f == "--import-data") {
+            let entities =
+                hidane::export::read_datastore(std::path::Path::new(&flags[i + 1])).unwrap();
+            admin = admin.with_datastore_seed(entities);
+        }
+        let addr = start_with(admin).await;
+        let list = run["cases"].as_array().unwrap();
+        cases += list.len();
+        for difference in replay_cases(addr, list, &[], Some(&dir), "demo-export").await {
+            differences.push(format!("[{name}] {difference}"));
+        }
+        if let Some(exports) = run.get("exports") {
+            let mut written = serde_json::Map::new();
+            for entry in std::fs::read_dir(dir.join("out")).unwrap() {
+                let entry = entry.unwrap().file_name().into_string().unwrap();
+                let shown = if entry.starts_with("datastore_export_") {
+                    "datastore_export_<seconds>".to_owned()
+                } else {
+                    entry.clone()
+                };
+                written.insert(shown, export_tree(&dir.join("out").join(&entry), &entry));
+            }
+            let written = Json::Object(written);
+            if &written != exports {
+                differences.push(format!(
+                    "[{name}] the exports:\n    official {exports}\n    hidane   {written}"
+                ));
+            }
+        }
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+    assert!(cases > 30);
+    assert!(
+        differences.is_empty(),
+        "{} of {cases} requests differ:\n{}",
+        differences.len(),
         differences.join("\n")
     );
 }
