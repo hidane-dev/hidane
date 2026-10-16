@@ -7,7 +7,9 @@
 //! lexical error names the character and what came before it in the token; a syntax error names
 //! the token it met and the tokens it expected there. hidane's parser is written by hand; where
 //! it fails, it names the token met and the tokens the official emulator was recorded to expect
-//! at that point of the grammar.
+//! at that point of the grammar, and it lexes, checks and refuses in the official emulator's
+//! order (`tests/fixtures/datastore_gql_errors.json`, from
+//! `tools/oracle/datastore_gql_errors.py`).
 
 use std::collections::HashMap;
 
@@ -54,13 +56,22 @@ struct Token {
     column: usize,
 }
 
-/// The words GQL reads as keywords (the others it reserves are names to the parser).
+/// The words GQL reads as keywords, whatever their case (the others it reserves, such as `KEY`
+/// or `FIRST`, are names to the parser).
 const KEYWORDS: &[&str] = &[
+    "aggregate",
+    "ancestor",
     "and",
+    "as",
     "asc",
+    "avg",
     "by",
+    "child",
     "contains",
+    "count",
+    "count_up_to",
     "desc",
+    "descendant",
     "distinct",
     "false",
     "from",
@@ -75,11 +86,12 @@ const KEYWORDS: &[&str] = &[
     "on",
     "or",
     "order",
+    "over",
+    "parent",
     "select",
+    "sum",
     "true",
     "where",
-    "ancestor",
-    "descendant",
 ];
 
 /// How a JavaCC parser names a token kind in its messages.
@@ -120,15 +132,14 @@ fn add_escapes(text: &str) -> String {
     out
 }
 
-struct Lexer<'a> {
+struct Lexer {
     chars: Vec<char>,
     pos: usize,
     line: usize,
     column: usize,
-    text: &'a str,
 }
 
-impl Lexer<'_> {
+impl Lexer {
     fn peek(&self) -> Option<char> {
         self.chars.get(self.pos).copied()
     }
@@ -145,7 +156,9 @@ impl Lexer<'_> {
         Some(c)
     }
 
-    /// A lexical error: `found` (`None` for the end) after `prefix` of the current token.
+    /// A lexical error: `found` (`None` for the end) after `prefix` of the current token, as
+    /// JavaCC writes it. JavaCC leaves the prefix out when it read at most one character, the
+    /// end not counted (`'` at the end), and the official emulator drops the empty prefix.
     fn error(&self, found: Option<char>, prefix: &str) -> Status {
         let at = match found {
             Some(c) => format!("'{}' ({}), ", add_escapes(&c.to_string()), c as u32),
@@ -153,199 +166,213 @@ impl Lexer<'_> {
         };
         // The column of the character met, or just past the last one at the end.
         let column = self.column + 1;
-        invalid(format!(
-            "Lexical error at line {}, column {column}.  Encountered: {at}after prefix \"{}\"",
-            self.line.max(1),
-            add_escapes(prefix)
-        ))
+        let message = format!(
+            "Lexical error at line {}, column {column}.  Encountered: {at}",
+            self.line.max(1)
+        );
+        if prefix.is_empty() || (found.is_none() && prefix.chars().count() <= 1) {
+            invalid(message.trim_end())
+        } else {
+            invalid(format!("{message}after prefix \"{}\"", add_escapes(prefix)))
+        }
     }
 
-    fn tokens(mut self) -> Result<Vec<Token>, Status> {
-        let _ = self.text;
-        let mut out = Vec::new();
-        loop {
-            while self.peek().is_some_and(char::is_whitespace) {
-                self.bump();
-            }
-            let (line, column) = (self.line, self.column + 1);
-            let Some(c) = self.peek() else {
-                // JavaCC puts the end where the last character was, or at 0:0 for nothing.
-                let (line, column) = if self.chars.is_empty() {
-                    (0, 0)
-                } else {
-                    (self.line, self.column)
-                };
-                out.push(Token {
-                    kind: Kind::Eof,
-                    image: String::new(),
-                    text: String::new(),
-                    line,
-                    column,
-                });
-                return Ok(out);
+    /// The next token, lexed when the parser needs it.
+    fn next_token(&mut self) -> Result<Token, Status> {
+        while self.peek().is_some_and(char::is_whitespace) {
+            self.bump();
+        }
+        let (line, column) = (self.line, self.column + 1);
+        let Some(c) = self.peek() else {
+            // JavaCC puts the end where the last character was, or at 0:0 for nothing.
+            let (line, column) = if self.chars.is_empty() {
+                (0, 0)
+            } else {
+                (self.line, self.column)
             };
-            let start = self.pos;
-            let token = |kind: Kind, lexer: &Self, text: String| Token {
-                image: lexer.chars[start..lexer.pos].iter().collect(),
-                kind,
-                text,
+            return Ok(Token {
+                kind: Kind::Eof,
+                image: String::new(),
+                text: String::new(),
                 line,
                 column,
-            };
-            match c {
-                '\'' | '"' => {
-                    self.bump();
-                    let mut text = String::new();
-                    loop {
-                        let prefix: String = self.chars[start..self.pos].iter().collect();
-                        match self.bump() {
-                            None => return Err(self.error(None, &prefix)),
-                            Some(q) if q == c => {
-                                if self.peek() == Some(c) {
-                                    self.bump();
-                                    text.push(c);
-                                } else {
-                                    break;
-                                }
+            });
+        };
+        let start = self.pos;
+        let token = |kind: Kind, lexer: &Self, text: String| Token {
+            image: lexer.chars[start..lexer.pos].iter().collect(),
+            kind,
+            text,
+            line,
+            column,
+        };
+        match c {
+            '\'' | '"' | '`' => {
+                self.bump();
+                let kind = match c {
+                    '\'' => Kind::SingleQuoted,
+                    '"' => Kind::DoubleQuoted,
+                    _ => Kind::QuotedName,
+                };
+                let mut text = String::new();
+                // Where a quote that a quote follows ended the token: JavaCC goes back
+                // there when what the second quote began does not end.
+                let mut accepted: Option<(usize, usize, usize, String)> = None;
+                let failed = loop {
+                    let prefix: String = self.chars[start..self.pos].iter().collect();
+                    match self.bump() {
+                        None => break self.error(None, &prefix),
+                        Some(q) if q == c => {
+                            if self.peek() == Some(c) {
+                                accepted = Some((self.pos, self.line, self.column, text.clone()));
+                                self.bump();
+                                text.push(c);
+                            } else {
+                                return Ok(token(kind, self, text));
                             }
-                            Some('\\') => {
-                                let prefix: String = self.chars[start..self.pos].iter().collect();
-                                match self.peek() {
-                                    Some(e) => {
-                                        let escaped = match e {
-                                            '\\' => "\\",
-                                            '0' => "\0",
-                                            'b' => "\u{8}",
-                                            'n' => "\n",
-                                            'r' => "\r",
-                                            't' => "\t",
-                                            'Z' => "\u{1a}",
-                                            '\'' => "'",
-                                            '"' => "\"",
-                                            '`' => "`",
-                                            '%' => "\\%",
-                                            '_' => "\\_",
-                                            other => return Err(self.error(Some(other), &prefix)),
-                                        };
-                                        self.bump();
-                                        text.push_str(escaped);
-                                    }
-                                    None => return Err(self.error(None, &prefix)),
-                                }
-                            }
-                            Some('\n') => return Err(self.error(Some('\n'), &prefix)),
-                            Some(other) => text.push(other),
                         }
-                    }
-                    let kind = if c == '\'' {
-                        Kind::SingleQuoted
-                    } else {
-                        Kind::DoubleQuoted
-                    };
-                    out.push(token(kind, &self, text));
-                }
-                '`' => {
-                    self.bump();
-                    let mut text = String::new();
-                    loop {
-                        let prefix: String = self.chars[start..self.pos].iter().collect();
-                        match self.bump() {
-                            None => return Err(self.error(None, &prefix)),
-                            Some('`') => {
-                                if self.peek() == Some('`') {
-                                    self.bump();
-                                    text.push('`');
-                                } else {
-                                    break;
-                                }
-                            }
-                            Some('\n') => return Err(self.error(Some('\n'), &prefix)),
-                            Some(other) => text.push(other),
+                        Some('\\') if c != '`' => {
+                            let prefix: String = self.chars[start..self.pos].iter().collect();
+                            let Some(e) = self.peek() else {
+                                break self.error(None, &prefix);
+                            };
+                            let escaped = match e {
+                                '\\' => "\\",
+                                '0' => "\0",
+                                'b' => "\u{8}",
+                                'n' => "\n",
+                                'r' => "\r",
+                                't' => "\t",
+                                'Z' => "\u{1a}",
+                                '\'' => "'",
+                                '"' => "\"",
+                                '`' => "`",
+                                '%' => "\\%",
+                                '_' => "\\_",
+                                other => break self.error(Some(other), &prefix),
+                            };
+                            self.bump();
+                            text.push_str(escaped);
                         }
+                        Some('\n') => break self.error(Some('\n'), &prefix),
+                        Some(other) => text.push(other),
                     }
-                    out.push(token(Kind::QuotedName, &self, text));
+                };
+                let Some((pos, line, column, text)) = accepted else {
+                    return Err(failed);
+                };
+                (self.pos, self.line, self.column) = (pos, line, column);
+                Ok(token(kind, self, text))
+            }
+            '@' => {
+                self.bump();
+                // A binding site has a name or a number.
+                match self.peek() {
+                    None => return Err(self.error(None, "@")),
+                    Some(n) if !name_char(n) => return Err(self.error(Some(n), "@")),
+                    Some(_) => {}
                 }
-                '@' => {
+                let mut text = String::new();
+                while let Some(n) = self.peek().filter(|c| name_char(*c)) {
                     self.bump();
-                    let mut text = String::new();
-                    while let Some(n) = self.peek().filter(|c| name_char(*c)) {
+                    text.push(n);
+                }
+                let kind = if !text.is_empty() && text.chars().all(|c| c.is_ascii_digit()) {
+                    Kind::PositionBinding
+                } else {
+                    Kind::NameBinding
+                };
+                Ok(token(kind, self, text))
+            }
+            c if c.is_ascii_digit()
+                || ((c == '+' || c == '-' || c == '.')
+                    && self
+                        .chars
+                        .get(self.pos + 1)
+                        .is_some_and(|n| n.is_ascii_digit() || (*n == '.' && c != '.'))) =>
+            {
+                self.bump();
+                let mut double = c == '.';
+                while let Some(d) = self.peek() {
+                    if d.is_ascii_digit() {
                         self.bump();
-                        text.push(n);
-                    }
-                    let kind = if !text.is_empty() && text.chars().all(|c| c.is_ascii_digit()) {
-                        Kind::PositionBinding
-                    } else {
-                        Kind::NameBinding
-                    };
-                    out.push(token(kind, &self, text));
-                }
-                c if c.is_ascii_digit()
-                    || ((c == '+' || c == '-' || c == '.')
-                        && self
-                            .chars
-                            .get(self.pos + 1)
-                            .is_some_and(|n| n.is_ascii_digit() || (*n == '.' && c != '.'))) =>
-                {
-                    self.bump();
-                    let mut double = c == '.';
-                    while let Some(d) = self.peek() {
-                        if d.is_ascii_digit() {
-                            self.bump();
-                        } else if d == '.' && !double {
-                            double = true;
-                            self.bump();
-                        } else if (d == 'e' || d == 'E')
+                    } else if d == '.' && !double {
+                        double = true;
+                        self.bump();
+                    } else if d == 'e' || d == 'E' {
+                        // An exponent's digits may be missing ("1e", a double that does not
+                        // read); its sign comes only with them.
+                        double = true;
+                        self.bump();
+                        if self.peek().is_some_and(|s| s == '+' || s == '-')
                             && self
                                 .chars
                                 .get(self.pos + 1)
-                                .is_some_and(|n| n.is_ascii_digit() || *n == '+' || *n == '-')
+                                .is_some_and(char::is_ascii_digit)
                         {
-                            double = true;
                             self.bump();
-                            if self.peek().is_some_and(|s| s == '+' || s == '-') {
-                                self.bump();
-                            }
-                        } else {
-                            break;
                         }
+                        while self.peek().is_some_and(|d| d.is_ascii_digit()) {
+                            self.bump();
+                        }
+                        break;
+                    } else {
+                        break;
                     }
-                    let text: String = self.chars[start..self.pos].iter().collect();
-                    out.push(token(
-                        if double { Kind::Double } else { Kind::Integer },
-                        &self,
-                        text,
-                    ));
                 }
-                c if name_char(c) && !c.is_ascii_digit() => {
-                    while self.peek().is_some_and(name_char) {
+                let text: String = self.chars[start..self.pos].iter().collect();
+                Ok(token(
+                    if double { Kind::Double } else { Kind::Integer },
+                    self,
+                    text,
+                ))
+            }
+            c if name_char(c) && !c.is_ascii_digit() => {
+                while self.peek().is_some_and(name_char) {
+                    self.bump();
+                }
+                let text: String = self.chars[start..self.pos].iter().collect();
+                let lower = text.to_ascii_lowercase();
+                let kind = match KEYWORDS.iter().find(|k| **k == lower) {
+                    Some(k) => Kind::Keyword(k),
+                    None => Kind::Name,
+                };
+                Ok(token(kind, self, text))
+            }
+            _ => {
+                let two: String = self.chars[self.pos..(self.pos + 2).min(self.chars.len())]
+                    .iter()
+                    .collect();
+                let punct = [
+                    "!=", "<=", ">=", "<", ">", "=", "(", ")", ",", "*", "+", ".",
+                ]
+                .into_iter()
+                .find(|p| two.starts_with(p));
+                match punct {
+                    Some(p) => {
+                        for _ in 0..p.chars().count() {
+                            self.bump();
+                        }
+                        Ok(token(Kind::Punct(p), self, p.to_owned()))
+                    }
+                    // `!` begins `!=` only.
+                    None if c == '!' => {
                         self.bump();
-                    }
-                    let text: String = self.chars[start..self.pos].iter().collect();
-                    let lower = text.to_ascii_lowercase();
-                    let kind = match KEYWORDS.iter().find(|k| **k == lower) {
-                        Some(k) => Kind::Keyword(k),
-                        None => Kind::Name,
-                    };
-                    out.push(token(kind, &self, text));
-                }
-                _ => {
-                    let two: String = self.chars[self.pos..(self.pos + 2).min(self.chars.len())]
-                        .iter()
-                        .collect();
-                    let punct = [
-                        "!=", "<=", ">=", "<", ">", "=", "(", ")", ",", "*", "+", ".",
-                    ]
-                    .into_iter()
-                    .find(|p| two.starts_with(p));
-                    match punct {
-                        Some(p) => {
-                            for _ in 0..p.chars().count() {
+                        match self.peek() {
+                            Some(n) if self.pos + 1 == self.chars.len() => {
                                 self.bump();
+                                Err(self.error(None, &format!("!{n}")))
                             }
-                            out.push(token(Kind::Punct(p), &self, p.to_owned()));
+                            Some(n) => Err(self.error(Some(n), "!")),
+                            None => Err(self.error(None, "")),
                         }
-                        None => return Err(self.error(Some(c), "")),
                     }
+                    // A character no token begins with: at the end, the end is met.
+                    None if self.pos + 1 == self.chars.len() => {
+                        self.bump();
+                        Err(self.error(None, ""))
+                    }
+                    None => Err(self.error(Some(c), "")),
                 }
             }
         }
@@ -356,105 +383,174 @@ fn name_char(c: char) -> bool {
     c.is_ascii_alphanumeric() || c == '_' || c == '$' || (c as u32) >= 0x80
 }
 
-// --- what the parser reads ----------------------------------------------------------------------
+// --- the parser ---------------------------------------------------------------------------------
+//
+// The official emulator's parser is JavaCC's: it lexes a token when it needs it, so a lexical
+// error comes only once the parser reaches it, and it acts on each part as it reads it, so a
+// binding that is not given or a literal that is not allowed is refused where it is written,
+// before the rest of the text is read. It has lexed one token more by then, as it has before it
+// reports a syntax error: a lexical error there comes first. A token is the longest that lexes,
+// so a quote doubled, then not closed, ends the token at the first. A syntax error lists what
+// JavaCC lists at that point: the tokens the grammar allowed there, in the order JavaCC numbers
+// them, then, repeated, those its lookaheads tried there. The lists below are those.
 
-/// A value as written: a literal, a binding, or a function of literals.
-#[derive(Debug, Clone)]
-enum Written {
-    Literal(Value, String),
-    Named(String),
-    Positional(usize),
+/// What a request reads a text as: `RunQuery` entity queries, `RunAggregationQuery`
+/// aggregations. Each refuses the other kind as soon as it tells it apart.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Expect {
+    Entities,
+    Aggregation,
 }
 
-#[derive(Debug, Clone)]
+const ENTITY_QUERY_EXPECTED: &str = "Expecting ENTITY_QUERY, but got AGGREGATION_QUERY. Use Datastore.RunAggregationQuery API instead for such queries.";
+const AGGREGATION_QUERY_EXPECTED: &str = "Expecting AGGREGATION_QUERY, but got ENTITY_QUERY. Use Datastore.RunQuery API instead for such queries.";
+
+const EOF: &str = "<EOF>";
+const N: &str = "<UNQUOTED_NAME>";
+const QN: &str = "<QUOTED_NAME>";
+const INT: &str = "<INTEGER>";
+const SQ: &str = "<SINGLE_QUOTE_STRING>";
+const DQ: &str = "<DOUBLE_QUOTE_STRING>";
+const NB: &str = "<NAME_BINDING_SITE>";
+const PB: &str = "<POSITION_BINDING_SITE>";
+
+/// What may start a value.
+const VALUE: &[&str] = &[
+    "\"false\"",
+    "\"null\"",
+    "\"true\"",
+    INT,
+    "<DOUBLE>",
+    SQ,
+    DQ,
+    N,
+    NB,
+    PB,
+];
+/// What may start an aggregation: a function.
+const FUNCTION: &[&str] = &["\"avg\"", "\"count\"", "\"count_up_to\"", "\"sum\"", N];
+/// What may follow a property and start a condition's operator.
+const OPERATOR: &[&str] = &[
+    "\"contains\"",
+    "\"has\"",
+    "\"in\"",
+    "\"is\"",
+    "\"not\"",
+    "\"=\"",
+    "\"!=\"",
+    "\"<\"",
+    "\"<=\"",
+    "\">\"",
+    "\">=\"",
+    "\".\"",
+];
+/// What may follow a value that comes first in a condition.
+const REVERSED_OPERATOR: &[&str] = &[
+    "\"has\"", "\"in\"", "\"=\"", "\"!=\"", "\"<\"", "\"<=\"", "\">\"", "\">=\"",
+];
+const POSITION: &[&str] = &[INT, NB, PB];
+const NAME: &[&str] = &[N, QN];
+
+/// Where a select's clauses end: at the end of the text, before the `)` of `OVER (…)`, or at
+/// the end of a `SELECT` of aggregations.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Within {
+    Top,
+    Over,
+}
+
+/// A condition: a property compared with a value, or conditions joined.
 enum Cond {
     And(Vec<Cond>),
     Or(Vec<Cond>),
     Leaf {
         property: String,
         op: property_filter::Operator,
-        value: Box<Written>,
+        value: Value,
     },
 }
 
-/// A result position: an integer, or a binding (a cursor or an integer).
-#[derive(Debug, Clone)]
-enum Position {
-    Integer(i64, String),
-    Named(String),
-    Positional(usize),
-}
-
-#[derive(Debug, Default)]
+/// What a select reads: the query, and whether its properties were listed (`SELECT a, b`) or
+/// not (`SELECT *`).
 struct Select {
-    star: bool,
-    properties: Vec<String>,
-    distinct: bool,
-    distinct_on: Vec<String>,
-    kind: Option<String>,
-    cond: Option<Cond>,
-    orders: Vec<(String, bool)>,
-    limit: Option<(Option<Position>, Position)>,
-    offset: Option<(Position, Option<Position>)>,
+    query: Query,
 }
 
-/// An aggregation as written: its function (`count`, `count_up_to`, `sum`, `avg`), its
-/// argument, and its alias.
-type WrittenAggregation = (String, Option<String>, Option<String>);
-
-#[derive(Debug)]
-struct Aggregate {
-    aggregations: Vec<WrittenAggregation>,
-    over: Select,
-}
-
-#[derive(Debug)]
-enum Parsed {
-    Entities(Select),
-    Aggregation(Aggregate),
-}
-
-const VALUE_START: &[&str] = &[
-    "\"false\"",
-    "\"null\"",
-    "\"true\"",
-    "<INTEGER>",
-    "<DOUBLE>",
-    "<SINGLE_QUOTE_STRING>",
-    "<DOUBLE_QUOTE_STRING>",
-    "<UNQUOTED_NAME>",
-    "<NAME_BINDING_SITE>",
-    "<POSITION_BINDING_SITE>",
-];
-
-const POSITION_START: &[&str] = &[
-    "<INTEGER>",
-    "<UNQUOTED_NAME>",
-    "<NAME_BINDING_SITE>",
-    "<POSITION_BINDING_SITE>",
-];
-
-struct Parser {
+struct Parser<'a> {
+    lexer: Lexer,
     tokens: Vec<Token>,
+    /// The lexical error met after `tokens`, once met.
+    lexical: Option<Status>,
     at: usize,
+    bindings: Bindings<'a>,
+    /// A refusal that comes once the whole text is read.
+    refused: Option<Status>,
+    /// The request's namespace, a key's when it names no partition.
+    namespace: &'a str,
 }
 
-impl Parser {
-    fn peek(&self) -> &Token {
-        &self.tokens[self.at]
-    }
-
-    fn next(&mut self) -> Token {
-        let token = self.tokens[self.at].clone();
-        if self.at + 1 < self.tokens.len() {
-            self.at += 1;
+impl<'a> Parser<'a> {
+    /// The token `ahead` tokens on, lexed now if it was not.
+    fn look(&mut self, ahead: usize) -> Result<&Token, Status> {
+        while self.tokens.len() <= self.at + ahead {
+            if let Some(error) = &self.lexical {
+                return Err(error.clone());
+            }
+            if self.tokens.last().is_some_and(|t| t.kind == Kind::Eof) {
+                let eof = self.tokens.last().expect("checked").clone();
+                self.tokens.push(eof);
+                continue;
+            }
+            match self.lexer.next_token() {
+                Ok(token) => self.tokens.push(token),
+                Err(error) => {
+                    self.lexical = Some(error.clone());
+                    return Err(error);
+                }
+            }
         }
-        token
+        Ok(&self.tokens[self.at + ahead])
     }
 
-    /// A syntax error at the next token, which is none of `expected`.
-    fn error(&self, expected: &[&str]) -> Status {
-        let token = self.peek();
+    fn peek(&mut self) -> Result<&Token, Status> {
+        self.look(0)
+    }
+
+    /// The next token, consumed. JavaCC has lexed the token after it before it acts on it, so
+    /// a lexical error there comes first.
+    fn next(&mut self) -> Result<Token, Status> {
+        let token = self.peek()?.clone();
+        self.at += 1;
+        if token.kind != Kind::Eof {
+            self.peek()?;
+        }
+        Ok(token)
+    }
+
+    fn kind(&mut self) -> Result<Kind, Status> {
+        Ok(self.peek()?.kind.clone())
+    }
+
+    fn is_keyword(&mut self, keyword: &str) -> Result<bool, Status> {
+        Ok(matches!(self.peek()?.kind, Kind::Keyword(k) if k == keyword))
+    }
+
+    fn is_punct(&mut self, punct: &str) -> Result<bool, Status> {
+        Ok(matches!(self.peek()?.kind, Kind::Punct(p) if p == punct))
+    }
+
+    /// A syntax error at the next token, which is none of `expected`. JavaCC has lexed the
+    /// token after it too, so a lexical error there comes first.
+    fn error(&mut self, expected: &[&str]) -> Status {
+        let token = match self.peek() {
+            Ok(token) => token.clone(),
+            Err(lexical) => return lexical,
+        };
+        if token.kind != Kind::Eof
+            && let Err(lexical) = self.look(1)
+        {
+            return lexical;
+        }
         let encountered = match token.kind {
             Kind::Eof => "<EOF>".to_owned(),
             ref kind => format!(" {} \"{} \"", image_of(kind), add_escapes(&token.image)),
@@ -471,7 +567,7 @@ impl Parser {
         for e in expected {
             message.push_str(e);
             message.push(' ');
-            if *e != "<EOF>" {
+            if *e != EOF {
                 message.push_str("...");
             }
             message.push_str("\n    ");
@@ -479,368 +575,659 @@ impl Parser {
         invalid(message)
     }
 
-    fn is_keyword(&self, keyword: &str) -> bool {
-        self.peek().kind == Kind::Keyword(keyword_static(keyword))
-    }
-
-    fn is_punct(&self, punct: &str) -> bool {
-        matches!(self.peek().kind, Kind::Punct(p) if p == punct)
-    }
-
-    fn is_name(&self, name: &str) -> bool {
-        self.peek().kind == Kind::Name && self.peek().text.eq_ignore_ascii_case(name)
-    }
-
     fn keyword(&mut self, keyword: &str, expected: &[&str]) -> Result<(), Status> {
-        if self.is_keyword(keyword) {
-            self.next();
+        if self.is_keyword(keyword)? {
+            self.next()?;
             Ok(())
         } else {
             Err(self.error(expected))
         }
     }
 
-    fn punct(&mut self, punct: &str) -> Result<(), Status> {
-        if self.is_punct(punct) {
-            self.next();
+    fn punct(&mut self, punct: &str, expected: &[&str]) -> Result<(), Status> {
+        if self.is_punct(punct)? {
+            self.next()?;
             Ok(())
         } else {
-            Err(self.error(&[&format!("\"{punct}\"")]))
+            Err(self.error(expected))
         }
     }
 
-    /// A name: unquoted or quoted.
     fn name(&mut self, expected: &[&str]) -> Result<String, Status> {
-        match self.peek().kind {
-            Kind::Name | Kind::QuotedName => Ok(self.next().text),
+        match self.kind()? {
+            Kind::Name | Kind::QuotedName => Ok(self.next()?.text),
             _ => Err(self.error(expected)),
         }
     }
 
-    /// A property name: names joined with `.`.
-    fn property(&mut self, expected: &[&str]) -> Result<String, Status> {
-        let mut name = self.name(expected)?;
-        while self.is_punct(".") {
-            self.next();
+    /// Refuses a name just read that `(` follows, in a select of entities: a function, which
+    /// makes it an aggregation.
+    fn not_function(&mut self) -> Result<(), Status> {
+        if self.is_punct("(")? {
+            return Err(invalid(ENTITY_QUERY_EXPECTED));
+        }
+        Ok(())
+    }
+
+    /// The rest of a property, its names joined with `.`.
+    fn dotted(&mut self, mut name: String) -> Result<String, Status> {
+        while self.is_punct(".")? {
+            self.next()?;
             name.push('.');
-            name.push_str(&self.name(expected)?);
+            name.push_str(&self.name(NAME)?);
         }
         Ok(name)
     }
 
-    fn query(&mut self) -> Result<Parsed, Status> {
-        if self.is_name("aggregate") {
-            self.next();
-            let aggregations = self.aggregations()?;
-            if !self.is_name("over") {
-                return Err(self.error(&["\"over\""]));
-            }
-            self.next();
-            self.punct("(")?;
-            let over = self.select()?;
-            self.punct(")")?;
-            if self.peek().kind != Kind::Eof {
-                return Err(self.error(&["<EOF>"]));
-            }
-            let Parsed::Entities(over) = over else {
-                return Err(self.error(&["\"select\""]));
-            };
-            return Ok(Parsed::Aggregation(Aggregate { aggregations, over }));
-        }
-        let parsed = self.select()?;
-        if self.peek().kind != Kind::Eof {
-            return Err(self.error(&["<EOF>"]));
-        }
-        Ok(parsed)
-    }
-
-    fn aggregation_start(&self) -> bool {
-        ["count", "count_up_to", "sum", "avg"]
-            .iter()
-            .any(|f| self.is_name(f))
-            && matches!(
-                self.tokens.get(self.at + 1).map(|t| &t.kind),
-                Some(Kind::Punct("("))
-            )
-    }
-
-    fn aggregations(&mut self) -> Result<Vec<WrittenAggregation>, Status> {
+    /// `expected`, the end of the select (`<EOF>` first, or `)` after the keywords) put in.
+    fn ending(
+        within: Within,
+        keywords: &[&'static str],
+        rest: &[&'static str],
+    ) -> Vec<&'static str> {
         let mut out = Vec::new();
+        if within == Within::Top {
+            out.push(EOF);
+        }
+        out.extend_from_slice(keywords);
+        if within == Within::Over {
+            out.push("\")\"");
+        }
+        out.extend_from_slice(rest);
+        out
+    }
+
+    // --- queries ---------------------------------------------------------------------------------
+
+    fn read(&mut self, expect: Expect) -> Result<Read, Status> {
+        let read = match expect {
+            Expect::Entities => {
+                if self.is_keyword("aggregate")? {
+                    return Err(invalid(ENTITY_QUERY_EXPECTED));
+                }
+                self.keyword("select", &["\"select\""])?;
+                Read::Entities(self.select(Within::Top)?.query)
+            }
+            Expect::Aggregation => {
+                if self.is_keyword("aggregate")? {
+                    self.next()?;
+                    Read::Aggregation(self.aggregate()?)
+                } else {
+                    self.keyword("select", &["\"aggregate\"", "\"select\""])?;
+                    Read::Aggregation(self.select_aggregations()?)
+                }
+            }
+        };
+        Ok(read)
+    }
+
+    /// Whether the next tokens are a function and its `(`.
+    fn function_ahead(&mut self) -> Result<bool, Status> {
+        let first = matches!(
+            self.kind()?,
+            Kind::Keyword("avg" | "count" | "count_up_to" | "sum") | Kind::Name
+        );
+        Ok(first && matches!(self.look(1)?.kind, Kind::Punct("(")))
+    }
+
+    /// `AGGREGATE` functions `OVER (` a select `)`.
+    fn aggregate(&mut self) -> Result<AggregationQuery, Status> {
+        let mut aggregations = Vec::new();
         loop {
-            let function = self.name(&["<UNQUOTED_NAME>"])?.to_ascii_lowercase();
-            self.punct("(")?;
-            let argument = match function.as_str() {
-                "count" => {
-                    self.punct("*")?;
-                    None
+            let mut aggregation = self.function(false)?;
+            if self.is_keyword("as")? {
+                self.next()?;
+                aggregation.alias = self.name(NAME)?;
+                aggregations.push(aggregation);
+                if self.is_punct(",")? {
+                    self.next()?;
+                    continue;
                 }
-                "count_up_to" => match self.peek().kind {
-                    Kind::Integer => Some(self.next().text),
-                    _ => return Err(self.error(&["<INTEGER>"])),
-                },
-                "sum" | "avg" => Some(self.property(&["<UNQUOTED_NAME>", "<QUOTED_NAME>"])?),
-                other => {
-                    return Err(invalid(format!(
-                        "Unknown function \"{}\".",
-                        other.to_ascii_uppercase()
-                    )));
+                self.keyword("over", &["\"over\"", "\",\""])?;
+            } else {
+                aggregations.push(aggregation);
+                if self.is_punct(",")? {
+                    self.next()?;
+                    continue;
                 }
-            };
-            self.punct(")")?;
-            let alias = if self.is_name("as") || self.is_keyword("as") {
-                self.next();
-                Some(self.name(&["<UNQUOTED_NAME>"])?)
-            } else {
-                None
-            };
-            out.push((function, argument, alias));
-            if self.is_punct(",") {
-                self.next();
-            } else {
-                return Ok(out);
+                self.keyword("over", &["\"as\"", "\"over\"", "\",\""])?;
             }
+            break;
         }
-    }
-
-    fn select(&mut self) -> Result<Parsed, Status> {
+        self.punct("(", &["\"(\""])?;
         self.keyword("select", &["\"select\""])?;
-        if self.aggregation_start() {
-            let aggregations = self.aggregations()?;
-            let mut over = Select::default();
-            if self.is_keyword("from") {
-                self.next();
-                over.kind = Some(self.name(&["<UNQUOTED_NAME>", "<QUOTED_NAME>"])?);
-            }
-            if self.is_keyword("where") {
-                self.next();
-                over.cond = Some(self.compound()?);
-            }
-            if self.peek().kind != Kind::Eof && !self.is_punct(")") {
-                return Err(self.error(&["<EOF>", "\"where\""]));
-            }
-            return Ok(Parsed::Aggregation(Aggregate { aggregations, over }));
+        let over = self.select(Within::Over)?;
+        self.punct(")", &["\")\""])?;
+        if self.kind()? != Kind::Eof {
+            return Err(self.error(&[EOF]));
         }
-        let mut select = Select::default();
-        if self.is_keyword("distinct") {
-            self.next();
-            if self.is_keyword("on") {
-                self.next();
-                self.punct("(")?;
-                loop {
-                    select
-                        .distinct_on
-                        .push(self.property(&["<UNQUOTED_NAME>"])?);
-                    if self.is_punct(",") {
-                        self.next();
-                    } else {
-                        break;
-                    }
-                }
-                self.punct(")")?;
-            } else {
-                select.distinct = true;
-            }
-        }
-        if self.is_punct("*") {
-            self.next();
-            select.star = true;
-        } else {
-            loop {
-                select
-                    .properties
-                    .push(self.property(&["\"*\"", "<UNQUOTED_NAME>"])?);
-                if self.is_punct(",") {
-                    self.next();
-                } else {
-                    break;
-                }
-            }
-        }
-        if self.is_keyword("from") {
-            self.next();
-            select.kind = Some(self.name(&["<UNQUOTED_NAME>", "<QUOTED_NAME>"])?);
-        }
-        if self.is_keyword("where") {
-            self.next();
-            select.cond = Some(self.compound()?);
-        }
-        if self.is_keyword("order") {
-            self.next();
-            self.keyword("by", &["\"by\""])?;
-            loop {
-                let property = self.property(&["<UNQUOTED_NAME>"])?;
-                let descending = if self.is_keyword("desc") {
-                    self.next();
-                    true
-                } else {
-                    if self.is_keyword("asc") {
-                        self.next();
-                    }
-                    false
-                };
-                select.orders.push((property, descending));
-                if self.is_punct(",") {
-                    self.next();
-                } else {
-                    break;
-                }
-            }
-        }
-        if self.is_keyword("limit") {
-            self.next();
-            if self.is_name("first") {
-                self.next();
-                self.punct("(")?;
-                let cursor = self.position()?;
-                self.punct(",")?;
-                let count = self.position()?;
-                self.punct(")")?;
-                select.limit = Some((Some(cursor), count));
-            } else {
-                select.limit = Some((None, self.position()?));
-            }
-            if !self.is_keyword("offset") && self.peek().kind != Kind::Eof && !self.is_punct(")") {
-                return Err(self.error(&["<EOF>", "\"offset\""]));
-            }
-        }
-        if self.is_keyword("offset") {
-            self.next();
-            let first = self.position()?;
-            let plus = if self.is_punct("+") {
-                self.next();
-                Some(self.position()?)
-            } else {
-                None
-            };
-            select.offset = Some((first, plus));
-        }
-        if self.peek().kind != Kind::Eof && !self.is_punct(")") {
-            return Err(self.error(&[
-                "<EOF>",
-                "\"group\"",
-                "\"limit\"",
-                "\"offset\"",
-                "\"order\"",
-                "\"where\"",
-            ]));
-        }
-        Ok(Parsed::Entities(select))
-    }
-
-    fn position(&mut self) -> Result<Position, Status> {
-        match self.peek().kind {
-            Kind::Integer => {
-                let token = self.next();
-                let n = parse_integer(&token.text)?;
-                Ok(Position::Integer(n, token.image))
-            }
-            Kind::NameBinding => Ok(Position::Named(self.next().text)),
-            Kind::PositionBinding => {
-                Ok(Position::Positional(self.next().text.parse().unwrap_or(0)))
-            }
-            _ => Err(self.error(POSITION_START)),
-        }
-    }
-
-    /// Conditions joined by `AND` (binding tighter) and `OR`, and parentheses.
-    fn compound(&mut self) -> Result<Cond, Status> {
-        let mut ors = vec![self.conjunction()?];
-        while self.is_keyword("or") {
-            self.next();
-            ors.push(self.conjunction()?);
-        }
-        Ok(if ors.len() == 1 {
-            ors.pop().expect("one")
-        } else {
-            Cond::Or(ors)
+        Ok(AggregationQuery {
+            aggregations,
+            query_type: Some(aggregation_query::QueryType::NestedQuery(over.query)),
         })
     }
 
-    fn conjunction(&mut self) -> Result<Cond, Status> {
-        let mut ands = vec![self.term()?];
-        while self.is_keyword("and") {
-            self.next();
-            ands.push(self.term()?);
-        }
-        Ok(if ands.len() == 1 {
-            ands.pop().expect("one")
-        } else {
-            Cond::And(ands)
-        })
-    }
-
-    fn term(&mut self) -> Result<Cond, Status> {
-        if self.is_punct("(") {
-            self.next();
-            let inner = self.compound()?;
-            self.punct(")")?;
-            return Ok(inner);
-        }
-        // A property first (a name not followed by `(`), or a value first.
-        let token = self.peek().clone();
-        let property_first = matches!(token.kind, Kind::Name | Kind::QuotedName)
-            && !matches!(
-                self.tokens.get(self.at + 1).map(|t| &t.kind),
-                Some(Kind::Punct("("))
-            );
-        if property_first {
-            let property = self.property(&["\"(\""])?;
-            use property_filter::Operator as O;
-            if self.is_keyword("is") {
-                self.next();
-                self.keyword("null", &["\"null\""])?;
-                return Ok(Cond::Leaf {
-                    property,
-                    op: O::Equal,
-                    value: Box::new(Written::Literal(
-                        Value {
-                            value_type: Some(ValueType::NullValue(0)),
-                            ..Value::default()
-                        },
-                        "NULL".into(),
-                    )),
-                });
+    /// `SELECT` functions, then `FROM` and `WHERE`: an aggregation over a kind. A select of
+    /// entities is refused as soon as it starts.
+    fn select_aggregations(&mut self) -> Result<AggregationQuery, Status> {
+        if !self.function_ahead()? {
+            match self.kind()? {
+                Kind::Keyword("distinct") | Kind::Punct("*") => {
+                    self.next()?;
+                }
+                // A property is read whole first.
+                Kind::Name | Kind::QuotedName => {
+                    let name = self.next()?.text;
+                    self.dotted(name)?;
+                }
+                _ => return Err(self.error(&["\"distinct\"", N, QN, "\"*\"", N])),
             }
-            let op = if self.is_keyword("contains") {
-                self.next();
-                O::Equal
-            } else if self.is_keyword("has") {
-                self.next();
-                self.keyword("ancestor", &["\"ancestor\""])?;
-                O::HasAncestor
-            } else if self.is_keyword("in") {
-                self.next();
-                O::In
-            } else if self.is_keyword("not") {
-                self.next();
-                self.keyword("in", &["\"in\""])?;
-                O::NotIn
-            } else {
-                let op = match self.peek().kind {
-                    Kind::Punct("=") => O::Equal,
-                    Kind::Punct("!=") => O::NotEqual,
-                    Kind::Punct("<") => O::LessThan,
-                    Kind::Punct("<=") => O::LessThanOrEqual,
-                    Kind::Punct(">") => O::GreaterThan,
-                    Kind::Punct(">=") => O::GreaterThanOrEqual,
-                    _ => {
-                        return Err(
-                            self.error(&["\"=\"", "\"!=\"", "\"<\"", "\"<=\"", "\">\"", "\">=\""])
-                        );
-                    }
+            return Err(invalid(AGGREGATION_QUERY_EXPECTED));
+        }
+        let mut aggregations = Vec::new();
+        loop {
+            let mut aggregation = self.function(false)?;
+            let aliased = self.is_keyword("as")?;
+            if aliased {
+                self.next()?;
+                aggregation.alias = self.name(NAME)?;
+            }
+            aggregations.push(aggregation);
+            if self.is_punct(",")? {
+                self.next()?;
+                continue;
+            }
+            let mut query = Query::default();
+            if self.is_keyword("from")? {
+                self.next()?;
+                query.kind = vec![KindExpression {
+                    name: self.name(NAME)?,
+                }];
+            } else if !self.is_keyword("where")? && self.kind()? != Kind::Eof {
+                let expected: &[&str] = if aliased {
+                    &[EOF, "\"from\"", "\"where\"", "\",\""]
+                } else {
+                    &[EOF, "\"as\"", "\"from\"", "\"where\"", "\",\""]
                 };
-                self.next();
-                op
-            };
-            let value = self.value()?;
-            return Ok(Cond::Leaf {
-                property,
-                op,
-                value: Box::new(value),
+                return Err(self.error(expected));
+            }
+            let mut dotted = false;
+            if self.is_keyword("where")? {
+                self.next()?;
+                let (cond, ended) = self.or_cond()?;
+                dotted = ended;
+                query.filter = Some(filter(cond));
+            } else if self.kind()? != Kind::Eof {
+                return Err(self.error(&[EOF, "\"where\""]));
+            }
+            if self.kind()? != Kind::Eof {
+                let expected: &[&str] = if dotted {
+                    &[EOF, "\"and\"", "\"or\"", "\".\""]
+                } else {
+                    &[EOF, "\"and\"", "\"or\""]
+                };
+                return Err(self.error(expected));
+            }
+            return Ok(AggregationQuery {
+                aggregations,
+                query_type: Some(aggregation_query::QueryType::NestedQuery(query)),
             });
         }
+    }
+
+    /// An aggregation: a function, `(`, its argument, `)`. A function first in a select of
+    /// entities (`entities_first`) that is not one makes the query an aggregation, refused.
+    fn function(&mut self, entities_first: bool) -> Result<aggregation_query::Aggregation, Status> {
+        use aggregation_query::aggregation::{Avg, Count, Operator, Sum};
+        let token = self.peek()?.clone();
+        let function = match &token.kind {
+            Kind::Keyword(k @ ("avg" | "count" | "count_up_to" | "sum")) => (*k).to_owned(),
+            Kind::Name => token.text.clone(),
+            _ => return Err(self.error(FUNCTION)),
+        };
+        self.next()?;
+        self.punct("(", &["\"(\""])?;
+        let operator = match function.as_str() {
+            "count" => {
+                if self.is_punct("*")? {
+                    self.next()?;
+                    self.punct(")", &["\")\""])?;
+                    Operator::Count(Count::default())
+                } else {
+                    // Refused once the property's first name is read.
+                    self.name(&[N, QN, "\"*\""])?;
+                    return Err(invalid(
+                        "Cloud Datastore only supports counts over the entire result set (i.e. `COUNT(*)`)",
+                    ));
+                }
+            }
+            "count_up_to" => {
+                if self.kind()? != Kind::Integer {
+                    return Err(self.error(&[INT]));
+                }
+                let token = self.next()?;
+                self.literal(&token.image)?;
+                let up_to = parse_integer(&token.text)?;
+                self.punct(")", &["\")\""])?;
+                Operator::Count(Count { up_to: Some(up_to) })
+            }
+            "sum" | "avg" => {
+                let name = self.name(NAME)?;
+                let property = self.dotted(name)?;
+                self.punct(")", &["\")\"", "\".\""])?;
+                if function == "sum" {
+                    Operator::Sum(Sum {
+                        property: Some(reference(&property)),
+                    })
+                } else {
+                    Operator::Avg(Avg {
+                        property: Some(reference(&property)),
+                    })
+                }
+            }
+            _ if entities_first => return Err(invalid(ENTITY_QUERY_EXPECTED)),
+            _ => {
+                return Err(invalid(format!(
+                    "Unexpected aggregation function: {function}"
+                )));
+            }
+        };
+        Ok(aggregation_query::Aggregation {
+            alias: String::new(),
+            operator: Some(operator),
+        })
+    }
+
+    /// The rest of a select of entities, after `SELECT`, up to its end (the end of the text or
+    /// the `)` of `OVER (…)`, which it leaves).
+    fn select(&mut self, within: Within) -> Result<Select, Status> {
+        let mut query = Query::default();
+        // Functions here are an aggregation, which this query is not: refused once read.
+        let mut start: &[&str] = &[
+            "\"avg\"",
+            "\"count\"",
+            "\"count_up_to\"",
+            "\"distinct\"",
+            "\"sum\"",
+            N,
+            "\"*\"",
+            N,
+            N,
+        ];
+        let mut distinct = false;
+        if self.is_keyword("distinct")? {
+            self.next()?;
+            start = &[
+                "\"avg\"",
+                "\"count\"",
+                "\"count_up_to\"",
+                "\"on\"",
+                "\"sum\"",
+                N,
+                "\"*\"",
+                N,
+                N,
+            ];
+            if self.is_keyword("on")? {
+                self.next()?;
+                self.punct("(", &["\"(\""])?;
+                let mut expected: &[&str] = &[N, QN, N];
+                loop {
+                    let quoted = self.kind()? == Kind::QuotedName;
+                    let name = self.name(expected)?;
+                    if !quoted {
+                        self.not_function()?;
+                    }
+                    let property = self.dotted(name)?;
+                    query.distinct_on.push(reference(&property));
+                    if self.is_punct(",")? {
+                        self.next()?;
+                        expected = &[N, QN, N];
+                        continue;
+                    }
+                    self.punct(")", &["\")\"", "\",\"", "\".\""])?;
+                    break;
+                }
+                start = &[
+                    "\"avg\"",
+                    "\"count\"",
+                    "\"count_up_to\"",
+                    "\"sum\"",
+                    N,
+                    "\"*\"",
+                    N,
+                    N,
+                ];
+            } else {
+                distinct = true;
+            }
+        }
+        let named_function =
+            self.kind()? == Kind::Name && matches!(self.look(1)?.kind, Kind::Punct("("));
+        if named_function
+            || matches!(
+                self.kind()?,
+                Kind::Keyword("avg" | "count" | "count_up_to" | "sum")
+            )
+        {
+            let mut first = true;
+            loop {
+                self.function(first)?;
+                first = false;
+                if self.is_keyword("as")? {
+                    self.next()?;
+                    self.name(NAME)?;
+                }
+                if self.is_punct(",")? {
+                    self.next()?;
+                    continue;
+                }
+                return Err(invalid(ENTITY_QUERY_EXPECTED));
+            }
+        }
+        let star = self.is_punct("*")?;
+        let mut after: Vec<&'static str>;
+        if star {
+            self.next()?;
+            after = Self::ending(
+                within,
+                &[
+                    "\"from\"",
+                    "\"group\"",
+                    "\"limit\"",
+                    "\"offset\"",
+                    "\"order\"",
+                    "\"where\"",
+                ],
+                &[],
+            );
+        } else {
+            let mut expected: Vec<&str> = start.to_vec();
+            let mut item = 0;
+            loop {
+                let quoted = self.kind()? == Kind::QuotedName;
+                let name = self.name(&expected)?;
+                if !quoted {
+                    self.not_function()?;
+                }
+                // The first item's lookaheads list more, while it is one name.
+                let property = if item == 0 && self.is_punct(".")? {
+                    self.next()?;
+                    let mut property = format!("{name}.{}", self.name(&[N, QN, N, QN, QN])?);
+                    property = self.dotted(property)?;
+                    item = 1;
+                    property
+                } else {
+                    self.dotted(name)?
+                };
+                let first = item == 0;
+                query.projection.push(Projection {
+                    property: Some(reference(&property)),
+                });
+                if self.is_punct(",")? {
+                    self.next()?;
+                    expected = if item == 0 {
+                        vec![N, QN, N, N, QN, N]
+                    } else {
+                        vec![N, QN, N]
+                    };
+                    item += 1;
+                    continue;
+                }
+                let rest: &[&str] = match (first, quoted) {
+                    (true, false) => &["\",\"", "\".\"", "\".\"", "\",\"", "\",\""],
+                    (true, true) => &["\",\"", "\".\"", "\".\"", "\",\""],
+                    (false, _) => &["\",\"", "\".\""],
+                };
+                after = Self::ending(
+                    within,
+                    &[
+                        "\"from\"",
+                        "\"group\"",
+                        "\"limit\"",
+                        "\"offset\"",
+                        "\"order\"",
+                        "\"where\"",
+                    ],
+                    rest,
+                );
+                break;
+            }
+            if distinct {
+                query.distinct_on = query
+                    .projection
+                    .iter()
+                    .filter_map(|p| p.property.clone())
+                    .collect();
+            }
+        }
+        if self.is_keyword("from")? {
+            self.next()?;
+            query.kind = vec![KindExpression {
+                name: self.name(NAME)?,
+            }];
+            after = Self::ending(
+                within,
+                &[
+                    "\"group\"",
+                    "\"limit\"",
+                    "\"offset\"",
+                    "\"order\"",
+                    "\"where\"",
+                ],
+                &[],
+            );
+        }
+        if self.is_keyword("where")? {
+            self.next()?;
+            let (cond, dotted) = self.or_cond()?;
+            query.filter = Some(filter(cond));
+            after = Self::ending(
+                within,
+                &[
+                    "\"and\"",
+                    "\"group\"",
+                    "\"limit\"",
+                    "\"offset\"",
+                    "\"or\"",
+                    "\"order\"",
+                ],
+                if dotted { &["\".\""] } else { &[] },
+            );
+        }
+        if self.is_keyword("group")? {
+            self.next()?;
+            self.keyword("by", &["\"by\""])?;
+            return Err(invalid("GROUP BY not supported."));
+        }
+        if self.is_keyword("order")? {
+            self.next()?;
+            self.keyword("by", &["\"by\""])?;
+            loop {
+                let name = self.name(NAME)?;
+                let property = self.dotted(name)?;
+                let mut direction = property_order::Direction::Ascending;
+                let mut rest: &[&str] = &["\",\"", "\".\""];
+                let mut keywords: &[&str] = &["\"asc\"", "\"desc\"", "\"limit\"", "\"offset\""];
+                if self.is_keyword("asc")? || self.is_keyword("desc")? {
+                    if self.is_keyword("desc")? {
+                        direction = property_order::Direction::Descending;
+                    }
+                    self.next()?;
+                    keywords = &["\"limit\"", "\"offset\""];
+                    rest = &["\",\""];
+                }
+                query.order.push(PropertyOrder {
+                    property: Some(reference(&property)),
+                    direction: direction as i32,
+                });
+                if self.is_punct(",")? {
+                    self.next()?;
+                    continue;
+                }
+                after = Self::ending(within, keywords, rest);
+                break;
+            }
+        }
+        if self.is_keyword("limit")? {
+            self.next()?;
+            self.limit(&mut query)?;
+            after = Self::ending(within, &["\"offset\""], &[]);
+        }
+        if self.is_keyword("offset")? {
+            self.next()?;
+            let first = self.position("offset")?;
+            let integer = first.is_ok();
+            match first {
+                Ok(n) => query.offset = bounded(n, "offset")?,
+                Err(cursor) => query.start_cursor = cursor,
+            }
+            if self.is_punct("+")? {
+                self.next()?;
+                if integer {
+                    return Err(invalid("Encountered \"+\" after integer offset."));
+                }
+                if let Ok(n) = self.position("offset")? {
+                    query.offset = bounded(n, "offset")?;
+                }
+            } else {
+                after = Self::ending(within, &[], &["\"+\""]);
+            }
+        }
+        let ended = match within {
+            Within::Top => self.kind()? == Kind::Eof,
+            Within::Over => self.is_punct(")")?,
+        };
+        if !ended {
+            return Err(self.error(&after));
+        }
+        Ok(Select { query })
+    }
+
+    /// `LIMIT`'s count (an integer, a binding), or `FIRST(` a count `,` a cursor `)`.
+    fn limit(&mut self, query: &mut Query) -> Result<(), Status> {
+        if self.kind()? == Kind::Name {
+            let name = self.next()?.text;
+            if !name.eq_ignore_ascii_case("first") {
+                return Err(invalid(format!(
+                    "Unexpected name \"{name}\" (after LIMIT)."
+                )));
+            }
+            self.punct("(", &["\"(\""])?;
+            let count = self.position("limit")?;
+            if let Ok(n) = count {
+                query.limit = Some(bounded(n, "limit")?);
+            }
+            self.punct(",", &["\",\""])?;
+            let cursor_token = self.peek()?.clone();
+            let cursor = self.position("limit")?;
+            if cursor.is_ok() && cursor_token.kind != Kind::Integer && count.is_ok() {
+                return Err(invalid(format!(
+                    "Binding site {} for limit bound to non-cursor parameter.",
+                    cursor_token.image
+                )));
+            }
+            let cursor_image = cursor_token.image;
+            match (count, cursor) {
+                (Ok(_), Err(cursor)) => query.start_cursor = cursor,
+                (Err(cursor), Ok(n)) => {
+                    query.start_cursor = cursor;
+                    query.limit = Some(bounded(n, "limit")?);
+                }
+                (_, _) => {
+                    return Err(invalid(format!(
+                        "Expected limit cursor instead of {cursor_image}."
+                    )));
+                }
+            }
+            self.punct(")", &["\")\""])?;
+            return Ok(());
+        }
         if !matches!(
-            token.kind,
+            self.kind()?,
+            Kind::Integer | Kind::NameBinding | Kind::PositionBinding
+        ) {
+            return Err(self.error(&[INT, N, NB, PB]));
+        }
+        match self.position("limit")? {
+            Ok(n) => query.limit = Some(bounded(n, "limit")?),
+            Err(cursor) => query.end_cursor = cursor,
+        }
+        Ok(())
+    }
+
+    /// An integer or a binding of `LIMIT` or `OFFSET` (`site`): `Ok` a number, `Err` a cursor.
+    fn position(&mut self, site: &str) -> Result<Result<i64, Vec<u8>>, Status> {
+        match self.kind()? {
+            Kind::Integer => {
+                let token = self.next()?;
+                self.literal(&token.image)?;
+                Ok(Ok(parse_integer(&token.text)?))
+            }
+            Kind::NameBinding | Kind::PositionBinding => {
+                let token = self.next()?;
+                let parameter = self.bindings.parameter(&token)?;
+                match parameter.parameter_type.as_ref() {
+                    Some(ParameterType::Cursor(cursor)) => Ok(Err(cursor.clone())),
+                    Some(ParameterType::Value(Value {
+                        value_type: Some(ValueType::IntegerValue(n)),
+                        ..
+                    })) => Ok(Ok(*n)),
+                    Some(ParameterType::Value(_)) => Err(invalid(format!(
+                        "Binding site {} for {site} bound to non-integer value parameter.",
+                        token.image
+                    ))),
+                    None => Err(invalid("A GQL query parameter is empty.")),
+                }
+            }
+            _ => Err(self.error(POSITION)),
+        }
+    }
+
+    // --- conditions ------------------------------------------------------------------------------
+
+    /// Conditions joined by `OR`; and whether the last one ends with a property.
+    fn or_cond(&mut self) -> Result<(Cond, bool), Status> {
+        let (first, mut dotted) = self.and_cond()?;
+        let mut ors = vec![first];
+        while self.is_keyword("or")? {
+            self.next()?;
+            let (next, ended) = self.and_cond()?;
+            ors.push(next);
+            dotted = ended;
+        }
+        Ok((
+            if ors.len() == 1 {
+                ors.pop().expect("one")
+            } else {
+                Cond::Or(ors)
+            },
+            dotted,
+        ))
+    }
+
+    fn and_cond(&mut self) -> Result<(Cond, bool), Status> {
+        let (first, mut dotted) = self.term()?;
+        let mut ands = vec![first];
+        while self.is_keyword("and")? {
+            self.next()?;
+            let (next, ended) = self.term()?;
+            ands.push(next);
+            dotted = ended;
+        }
+        Ok((
+            if ands.len() == 1 {
+                ands.pop().expect("one")
+            } else {
+                Cond::And(ands)
+            },
+            dotted,
+        ))
+    }
+
+    fn value_start(kind: &Kind) -> bool {
+        matches!(
+            kind,
             Kind::Integer
                 | Kind::Double
                 | Kind::SingleQuoted
@@ -848,96 +1235,246 @@ impl Parser {
                 | Kind::NameBinding
                 | Kind::PositionBinding
                 | Kind::Keyword("true" | "false" | "null")
-                | Kind::Name
-        ) {
-            return Err(self.error(&["\"(\""]));
-        }
-        let value = self.value()?;
-        use property_filter::Operator as O;
-        let op = if self.is_keyword("in") {
-            self.next();
-            O::Equal
-        } else if self.is_keyword("has") {
-            self.next();
-            self.keyword("descendant", &["\"descendant\""])?;
-            O::HasAncestor
-        } else {
-            let op = match self.peek().kind {
-                Kind::Punct("=") => O::Equal,
-                Kind::Punct("!=") => O::NotEqual,
-                // A value first: the comparison turned around.
-                Kind::Punct("<") => O::GreaterThan,
-                Kind::Punct("<=") => O::GreaterThanOrEqual,
-                Kind::Punct(">") => O::LessThan,
-                Kind::Punct(">=") => O::LessThanOrEqual,
-                _ => {
-                    return Err(
-                        self.error(&["\"=\"", "\"!=\"", "\"<\"", "\"<=\"", "\">\"", "\">=\""])
-                    );
-                }
+        )
+    }
+
+    /// A condition: in parentheses, a value first (a value and an operator, or a function and
+    /// its `(`, ahead), or a property first.
+    fn term(&mut self) -> Result<(Cond, bool), Status> {
+        let first = self.kind()?;
+        if first == Kind::Punct("(") {
+            self.next()?;
+            let (inner, dotted) = self.or_cond()?;
+            let expected: &[&str] = if dotted {
+                &["\"and\"", "\"or\"", "\")\"", "\".\""]
+            } else {
+                &["\"and\"", "\"or\"", "\")\""]
             };
-            self.next();
-            op
+            self.punct(")", expected)?;
+            return Ok((inner, false));
+        }
+        let second = match first {
+            Kind::Eof => Kind::Eof,
+            _ => self.look(1)?.kind.clone(),
         };
-        let property = self.property(&["<UNQUOTED_NAME>", "<QUOTED_NAME>"])?;
+        let value_first = (Self::value_start(&first)
+            && matches!(
+                second,
+                Kind::Keyword("has" | "in") | Kind::Punct("=" | "!=" | "<" | "<=" | ">" | ">=")
+            ))
+            || (first == Kind::Name && second == Kind::Punct("("));
+        if value_first {
+            return self.value_first().map(|cond| (cond, true));
+        }
+        if matches!(first, Kind::Name | Kind::QuotedName) {
+            return self.property_first().map(|cond| (cond, false));
+        }
+        if Self::value_start(&first) {
+            return Err(self.error(&[N, QN, N, N, N]));
+        }
+        Err(self.error(&["\"(\""]))
+    }
+
+    /// A value, an operator, a property: `2 < a`, `'red' IN tags`, `KEY(…) HAS DESCENDANT
+    /// __key__`.
+    fn value_first(&mut self) -> Result<Cond, Status> {
+        use property_filter::Operator as O;
+        let value = self.value()?;
+        let op = match self.kind()? {
+            Kind::Keyword("in") => {
+                self.next()?;
+                O::In
+            }
+            Kind::Keyword("has") => {
+                self.next()?;
+                if self.is_keyword("child")? {
+                    self.next()?;
+                    self.refused.get_or_insert_with(|| {
+                        invalid("The 'HAS_PARENT' filter is not supported.")
+                    });
+                    O::HasAncestor
+                } else {
+                    self.keyword("descendant", &["\"child\"", "\"descendant\""])?;
+                    O::HasAncestor
+                }
+            }
+            Kind::Punct(p @ ("=" | "!=" | "<" | "<=" | ">" | ">=")) => {
+                self.next()?;
+                match p {
+                    "=" => O::Equal,
+                    "!=" => O::NotEqual,
+                    // A value first: the comparison turned around.
+                    "<" => O::GreaterThan,
+                    "<=" => O::GreaterThanOrEqual,
+                    ">" => O::LessThan,
+                    _ => O::LessThanOrEqual,
+                }
+            }
+            _ => return Err(self.error(REVERSED_OPERATOR)),
+        };
+        let name = self.name(NAME)?;
+        let property = self.dotted(name)?;
         Ok(Cond::Leaf {
             property,
-            op,
-            value: Box::new(value),
+            op: in_or_equal(op, &value),
+            value,
         })
     }
 
-    fn value(&mut self) -> Result<Written, Status> {
-        let token = self.peek().clone();
-        let literal = |value_type: ValueType| {
-            Written::Literal(
-                Value {
-                    value_type: Some(value_type),
-                    ..Value::default()
-                },
-                token.image.clone(),
-            )
-        };
-        let written = match &token.kind {
-            Kind::Keyword("true") => literal(ValueType::BooleanValue(true)),
-            Kind::Keyword("false") => literal(ValueType::BooleanValue(false)),
-            Kind::Keyword("null") => literal(ValueType::NullValue(0)),
-            Kind::Integer => literal(ValueType::IntegerValue(parse_integer(&token.text)?)),
-            Kind::Double => literal(ValueType::DoubleValue(parse_double(&token.text))),
-            Kind::SingleQuoted | Kind::DoubleQuoted => {
-                literal(ValueType::StringValue(token.text.clone()))
+    /// A property, an operator, a value.
+    fn property_first(&mut self) -> Result<Cond, Status> {
+        use property_filter::Operator as O;
+        let name = self.name(NAME)?;
+        let property = self.dotted(name)?;
+        let op = match self.kind()? {
+            // `CONTAINS` reads as `IN`: an equality unless the value is an array.
+            Kind::Keyword("contains" | "in") => O::In,
+            Kind::Keyword("has") => {
+                self.next()?;
+                if self.is_keyword("parent")? {
+                    self.refused.get_or_insert_with(|| {
+                        invalid("The 'HAS_PARENT' filter is not supported.")
+                    });
+                } else if !self.is_keyword("ancestor")? {
+                    return Err(self.error(&["\"ancestor\"", "\"parent\""]));
+                }
+                self.next()?;
+                let value = self.value()?;
+                return Ok(Cond::Leaf {
+                    property,
+                    op: O::HasAncestor,
+                    value,
+                });
             }
-            Kind::NameBinding => Written::Named(token.text.clone()),
-            Kind::PositionBinding => Written::Positional(token.text.parse().unwrap_or(0)),
-            Kind::Name => {
-                self.next();
-                return self.function(&token);
+            Kind::Keyword("not") => {
+                self.next()?;
+                if !(self.is_keyword("in")? || self.is_keyword("contains")?) {
+                    return Err(self.error(&["\"contains\"", "\"in\""]));
+                }
+                O::NotIn
             }
-            _ => return Err(self.error(VALUE_START)),
+            Kind::Keyword("is") => {
+                self.next()?;
+                if !self.is_keyword("null")? {
+                    return Err(self.error(&["\"null\""]));
+                }
+                let token = self.next()?;
+                self.literal(&token.image)?;
+                return Ok(Cond::Leaf {
+                    property,
+                    op: O::Equal,
+                    value: Value {
+                        value_type: Some(ValueType::NullValue(0)),
+                        ..Value::default()
+                    },
+                });
+            }
+            Kind::Punct("=") => O::Equal,
+            Kind::Punct("!=") => O::NotEqual,
+            Kind::Punct("<") => O::LessThan,
+            Kind::Punct("<=") => O::LessThanOrEqual,
+            Kind::Punct(">") => O::GreaterThan,
+            Kind::Punct(">=") => O::GreaterThanOrEqual,
+            _ => return Err(self.error(OPERATOR)),
         };
-        self.next();
-        Ok(written)
+        self.next()?;
+        let value = self.value()?;
+        Ok(Cond::Leaf {
+            property,
+            op: in_or_equal(op, &value),
+            value,
+        })
     }
 
-    /// `KEY(…)`, `ARRAY(…)`, `BLOB('…')` or `DATETIME('…')`.
-    fn function(&mut self, name: &Token) -> Result<Written, Status> {
-        let function = name.text.to_ascii_uppercase();
-        if !["KEY", "ARRAY", "BLOB", "DATETIME"].contains(&function.as_str()) {
-            return Err(invalid(format!("Unknown function \"{}\".", name.text)));
+    // --- values ----------------------------------------------------------------------------------
+
+    /// Refuses a literal (`image`, as written) where literals are not allowed.
+    fn literal(&self, image: &str) -> Result<(), Status> {
+        if self.bindings.allow_literals {
+            Ok(())
+        } else {
+            Err(invalid(format!("Disallowed literal: {image}.")))
         }
-        self.punct("(")?;
-        let value_type = match function.as_str() {
+    }
+
+    fn value(&mut self) -> Result<Value, Status> {
+        let token = self.peek()?.clone();
+        if !(Self::value_start(&token.kind) || token.kind == Kind::Name) {
+            return Err(self.error(VALUE));
+        }
+        self.next()?;
+        let value_type = match &token.kind {
+            Kind::Keyword("true") => ValueType::BooleanValue(true),
+            Kind::Keyword("false") => ValueType::BooleanValue(false),
+            Kind::Keyword("null") => ValueType::NullValue(0),
+            Kind::Integer => {
+                self.literal(&token.image)?;
+                ValueType::IntegerValue(parse_integer(&token.text)?)
+            }
+            Kind::Double => {
+                self.literal(&token.image)?;
+                ValueType::DoubleValue(parse_double(&token.text).ok_or_else(|| {
+                    invalid(format!(
+                        "Invalid double literal: For input string: \"{}\"",
+                        token.text
+                    ))
+                })?)
+            }
+            Kind::SingleQuoted | Kind::DoubleQuoted => ValueType::StringValue(token.text.clone()),
+            Kind::NameBinding | Kind::PositionBinding => {
+                let parameter = self.bindings.parameter(&token)?;
+                return match parameter.parameter_type.as_ref() {
+                    Some(ParameterType::Value(value)) => Ok(value.clone()),
+                    None => Err(invalid("A GQL query parameter is empty.")),
+                    Some(ParameterType::Cursor(_)) => Err(invalid(format!(
+                        "Binding site {} for value bound to non-value parameter.",
+                        token.image
+                    ))),
+                };
+            }
+            _ => {
+                let function = token.text.to_ascii_uppercase();
+                if !matches!(function.as_str(), "KEY" | "ARRAY" | "BLOB" | "DATETIME") {
+                    return Err(invalid(format!("Unknown function \"{}\".", token.text)));
+                }
+                self.literal(&token.image)?;
+                return self.function_value(&function);
+            }
+        };
+        if matches!(
+            token.kind,
+            Kind::Keyword(_) | Kind::SingleQuoted | Kind::DoubleQuoted
+        ) {
+            self.literal(&token.image)?;
+        }
+        Ok(Value {
+            value_type: Some(value_type),
+            ..Value::default()
+        })
+    }
+
+    /// The rest of `KEY(…)`, `ARRAY(…)`, `BLOB('…')` or `DATETIME('…')`, after its name.
+    fn function_value(&mut self, function: &str) -> Result<Value, Status> {
+        self.punct("(", &["\"(\""])?;
+        let value_type = match function {
             "KEY" => ValueType::KeyValue(self.key()?),
             "ARRAY" => {
                 let mut values = Vec::new();
-                loop {
-                    match self.value()? {
-                        Written::Literal(v, _) => values.push(v),
-                        _ => return Err(invalid("A binding site may not be in an ARRAY.")),
+                if self.is_punct(")")? {
+                    self.next()?;
+                } else {
+                    let mut expected: Vec<&str> = VALUE.to_vec();
+                    expected.push("\")\"");
+                    if !(Self::value_start(&self.kind()?) || self.kind()? == Kind::Name) {
+                        return Err(self.error(&expected));
                     }
-                    if self.is_punct(",") {
-                        self.next();
-                    } else {
+                    loop {
+                        values.push(self.value()?);
+                        if self.is_punct(",")? {
+                            self.next()?;
+                            continue;
+                        }
+                        self.punct(")", &["\")\"", "\",\""])?;
                         break;
                     }
                 }
@@ -949,84 +1486,94 @@ impl Parser {
                     .then(|| URL_SAFE_NO_PAD.decode(&text).ok())
                     .flatten()
                     .ok_or_else(|| invalid(format!("Invalid blob text: \"{text}\".")))?;
+                self.punct(")", &["\")\""])?;
                 ValueType::BlobValue(bytes)
             }
-            _ => {
+            "DATETIME" => {
                 let text = self.string()?;
-                ValueType::TimestampValue(parse_datetime(&text).ok_or_else(|| {
-                    invalid(format!(
-                        "Invalid datetime text (does not match pattern): \"{text}\""
-                    ))
-                })?)
+                let time = parse_datetime(&text).map_err(|why| datetime_refused(&text, why))?;
+                self.punct(")", &["\")\""])?;
+                ValueType::TimestampValue(time)
             }
+            _ => unreachable!("a function value is one of these"),
         };
-        self.punct(")")?;
-        Ok(Written::Literal(
-            Value {
-                value_type: Some(value_type),
-                ..Value::default()
-            },
-            function,
-        ))
+        Ok(Value {
+            value_type: Some(value_type),
+            ..Value::default()
+        })
     }
 
     fn string(&mut self) -> Result<String, Status> {
-        match self.peek().kind {
-            Kind::SingleQuoted | Kind::DoubleQuoted => Ok(self.next().text),
-            _ => Err(self.error(&["<SINGLE_QUOTE_STRING>", "<DOUBLE_QUOTE_STRING>"])),
+        match self.kind()? {
+            Kind::SingleQuoted | Kind::DoubleQuoted => Ok(self.next()?.text),
+            _ => Err(self.error(&[SQ, DQ])),
         }
     }
 
+    /// `KEY(`'s partition: `PROJECT('…')` then `NAMESPACE('…')`, each with its `,`, when they
+    /// come; neither, the request's namespace.
     fn key(&mut self) -> Result<Key, Status> {
         let mut partition = PartitionId::default();
-        if self.is_name("project")
-            && matches!(
-                self.tokens.get(self.at + 1).map(|t| &t.kind),
-                Some(Kind::Punct("("))
-            )
-        {
-            self.next();
-            self.punct("(")?;
-            partition.project_id = self.string()?;
-            self.punct(")")?;
-            self.punct(",")?;
+        let (mut project, mut namespace) = (false, false);
+        loop {
+            let function = match &self.peek()?.kind {
+                Kind::Name => self.peek()?.text.to_ascii_lowercase(),
+                _ => break,
+            };
+            if !matches!(function.as_str(), "project" | "namespace")
+                || !matches!(self.look(1)?.kind, Kind::Punct("("))
+            {
+                break;
+            }
+            self.next()?;
+            if function == "project" {
+                if project {
+                    return Err(invalid("A key may have at most one project."));
+                }
+                if namespace {
+                    return Err(invalid("A key's project must precede its namespace."));
+                }
+                project = true;
+            } else {
+                if namespace {
+                    return Err(invalid("A key may have at most one namespace."));
+                }
+                namespace = true;
+            }
+            self.next()?;
+            let text = self.string()?;
+            self.punct(")", &["\")\""])?;
+            self.punct(",", &["\",\""])?;
+            if function == "project" {
+                partition.project_id = text;
+            } else {
+                partition.namespace_id = text;
+            }
         }
-        if self.is_name("namespace")
-            && matches!(
-                self.tokens.get(self.at + 1).map(|t| &t.kind),
-                Some(Kind::Punct("("))
-            )
-        {
-            self.next();
-            self.punct("(")?;
-            partition.namespace_id = self.string()?;
-            self.punct(")")?;
-            self.punct(",")?;
+        if !project && !namespace {
+            partition.namespace_id = self.namespace.to_owned();
         }
         let mut path = Vec::new();
+        let mut expected: &[&str] = &[N, QN, N];
         loop {
-            let kind = self.name(&["<UNQUOTED_NAME>", "<QUOTED_NAME>"])?;
-            self.punct(",")?;
-            let id = match self.peek().kind {
-                Kind::Integer => IdType::Id(parse_integer(&self.next().text)?),
-                Kind::SingleQuoted | Kind::DoubleQuoted => IdType::Name(self.next().text),
-                _ => {
-                    return Err(self.error(&[
-                        "<INTEGER>",
-                        "<SINGLE_QUOTE_STRING>",
-                        "<DOUBLE_QUOTE_STRING>",
-                    ]));
-                }
+            let kind = self.name(expected)?;
+            self.punct(",", &["\",\""])?;
+            let id = match self.kind()? {
+                Kind::Integer => IdType::Id(parse_integer(&self.next()?.text)?),
+                Kind::SingleQuoted | Kind::DoubleQuoted => IdType::Name(self.next()?.text),
+                _ => return Err(self.error(&[INT, SQ, DQ])),
             };
             path.push(PathElement {
                 kind,
                 id_type: Some(id),
             });
-            if self.is_punct(",") {
-                self.next();
-            } else {
-                break;
+            if self.is_punct(",")? {
+                self.next()?;
+                expected = NAME;
+                continue;
             }
+            self.punct(")", &["\")\"", "\",\""])?;
+            break;
         }
         Ok(Key {
             partition_id: Some(partition),
@@ -1035,12 +1582,23 @@ impl Parser {
     }
 }
 
-fn keyword_static(keyword: &str) -> &'static str {
-    KEYWORDS
-        .iter()
-        .find(|k| **k == keyword)
-        .copied()
-        .unwrap_or("")
+/// `IN` a value that is not an array: an equality.
+fn in_or_equal(op: property_filter::Operator, value: &Value) -> property_filter::Operator {
+    if op == property_filter::Operator::In
+        && !matches!(value.value_type, Some(ValueType::ArrayValue(_)))
+    {
+        property_filter::Operator::Equal
+    } else {
+        op
+    }
+}
+
+/// A `LIMIT` or `OFFSET` count (`what`), refused below 0 or beyond 32 bits.
+fn bounded(n: i64, what: &str) -> Result<i32, Status> {
+    if n < 0 {
+        return Err(invalid(format!("The {what} {n} is < 0.")));
+    }
+    i32::try_from(n).map_err(|_| invalid(format!("The {what} {n} is too large.")))
 }
 
 fn parse_integer(text: &str) -> Result<i64, Status> {
@@ -1051,7 +1609,8 @@ fn parse_integer(text: &str) -> Result<i64, Status> {
     })
 }
 
-fn parse_double(text: &str) -> f64 {
+/// A double as Java reads one (`1.`, `.5`, `+.5`), or `None` (`1e`).
+fn parse_double(text: &str) -> Option<f64> {
     let text = text.strip_prefix('+').unwrap_or(text);
     let text = if text.ends_with('.') {
         format!("{text}0")
@@ -1065,72 +1624,119 @@ fn parse_double(text: &str) -> f64 {
     } else {
         text
     };
-    text.parse().unwrap_or(f64::NAN)
+    text.parse().ok()
 }
 
-/// `YYYY-MM-DDThh:mm:ss[.S…]` then `Z` or an offset other than ±00:00.
-fn parse_datetime(text: &str) -> Option<Timestamp> {
+/// Why a `DATETIME` text does not read: as the official emulator words it, or an internal
+/// error (a time a timestamp cannot hold).
+fn datetime_refused(text: &str, reason: Option<&str>) -> Status {
+    match reason {
+        Some(reason) => invalid(format!("Invalid datetime text ({reason}): \"{text}\"")),
+        None => Status::unknown(""),
+    }
+}
+
+/// `YYYY-MM-DDThh:mm:ss[.S…]` (`t` too, up to six fractional digits) then `Z` (or `z`) or an
+/// offset other than ±00:00, read as Java's `GregorianCalendar` reads it, strictly: the date is
+/// Julian before 15 October 1582, the ten days before that do not exist, and the offset is
+/// from -13:00 to +14:00. `Err` the reason it does not read (`None`: beyond a timestamp).
+fn parse_datetime(text: &str) -> Result<Timestamp, Option<&'static str>> {
+    const PATTERN: Option<&str> = Some("does not match pattern");
+    const PARSE: Option<&str> = Some("parse failure");
+    let number = |s: &str| -> Option<i64> {
+        (!s.is_empty() && s.bytes().all(|b| b.is_ascii_digit()))
+            .then(|| s.parse().ok())
+            .flatten()
+    };
+    let field = |range: std::ops::Range<usize>| text.get(range).and_then(number);
     let bytes = text.as_bytes();
     if bytes.len() < 20
         || bytes[4] != b'-'
         || bytes[7] != b'-'
-        || bytes[10] != b'T'
+        || !matches!(bytes[10], b'T' | b't')
         || bytes[13] != b':'
         || bytes[16] != b':'
     {
-        return None;
+        return Err(PATTERN);
     }
-    let num = |range: std::ops::Range<usize>| -> Option<i64> {
-        let s = text.get(range)?;
-        s.bytes()
-            .all(|b| b.is_ascii_digit())
-            .then(|| s.parse().ok())
-            .flatten()
+    let [
+        Some(year),
+        Some(month),
+        Some(day),
+        Some(hour),
+        Some(minute),
+        Some(second),
+    ] = [0..4, 5..7, 8..10, 11..13, 14..16, 17..19].map(field)
+    else {
+        return Err(PATTERN);
     };
-    let (year, month, day) = (num(0..4)?, num(5..7)?, num(8..10)?);
-    let (hour, minute, second) = (num(11..13)?, num(14..16)?, num(17..19)?);
     let mut rest = &text[19..];
     let mut nanos = 0i64;
     if let Some(fraction) = rest.strip_prefix('.') {
-        let digits = fraction.bytes().take_while(u8::is_ascii_digit).count();
-        if digits == 0 || digits > 9 {
-            return None;
+        let n = fraction.bytes().take_while(u8::is_ascii_digit).count();
+        if n == 0 || n > 6 {
+            return Err(PATTERN);
         }
-        let padded = format!("{:0<9}", &fraction[..digits]);
-        nanos = padded.parse().ok()?;
-        rest = &fraction[digits..];
+        nanos = number(&format!("{:0<9}", &fraction[..n])).ok_or(PATTERN)?;
+        rest = &fraction[n..];
     }
-    let offset = if rest == "Z" {
+    let offset = if rest == "Z" || rest == "z" {
         0
     } else {
-        let sign = match rest.as_bytes().first()? {
-            b'+' => 1,
-            b'-' => -1,
-            _ => return None,
+        let sign = match rest.as_bytes().first() {
+            Some(b'+') => 1,
+            Some(b'-') => -1,
+            _ => return Err(PATTERN),
         };
         if rest.len() != 6 || rest.as_bytes()[3] != b':' {
-            return None;
+            return Err(PATTERN);
         }
-        let (h, m): (i64, i64) = (rest[1..3].parse().ok()?, rest[4..6].parse().ok()?);
+        let (Some(h), Some(m)) = (number(&rest[1..3]), number(&rest[4..6])) else {
+            return Err(PATTERN);
+        };
         if h == 0 && m == 0 {
-            return None;
+            return Err(Some("zero offset must be Z"));
         }
-        sign * (h * 3600 + m * 60)
+        let offset = sign * (h * 3600 + m * 60);
+        if m > 59 || !(-13 * 3600..=14 * 3600).contains(&offset) {
+            return Err(PARSE);
+        }
+        offset
     };
-    if !(1..=12).contains(&month)
-        || !(1..=31).contains(&day)
-        || hour > 23
-        || minute > 59
-        || second > 59
-    {
-        return None;
+    // The Julian calendar up to 4 October 1582, the Gregorian from 15 October.
+    let julian = (year, month, day) < (1582, 10, 15);
+    if (year, month) == (1582, 10) && (5..15).contains(&day) {
+        return Err(PARSE);
     }
-    let days = days_from_civil(year, month, day);
+    let leap = if julian {
+        year % 4 == 0
+    } else {
+        year % 4 == 0 && (year % 100 != 0 || year % 400 == 0)
+    };
+    let month_days = match month {
+        1 | 3 | 5 | 7 | 8 | 10 | 12 => 31,
+        4 | 6 | 9 | 11 => 30,
+        2 if leap => 29,
+        2 => 28,
+        _ => return Err(PARSE),
+    };
+    if year < 1 || !(1..=month_days).contains(&day) || hour > 23 || minute > 59 || second > 59 {
+        return Err(PARSE);
+    }
+    let days = if julian {
+        days_from_julian(year, month, day)
+    } else {
+        days_from_civil(year, month, day)
+    };
     let seconds = days * 86_400 + hour * 3600 + minute * 60 + second - offset;
+    // 0001-01-01T00:00:00Z to 9999-12-31T23:59:59Z.
+    if !(-62_135_596_800..=253_402_300_799).contains(&seconds) {
+        return Err(None);
+    }
     #[allow(clippy::cast_possible_truncation)]
-    Some(Timestamp {
+    Ok(Timestamp {
         seconds,
-        nanos: (nanos - nanos % 1_000) as i32,
+        nanos: nanos as i32,
     })
 }
 
@@ -1144,7 +1750,15 @@ fn days_from_civil(year: i64, month: i64, day: i64) -> i64 {
     era * 146_097 + doe - 719_468
 }
 
-// --- bindings and translation -------------------------------------------------------------------
+/// The days from 1970-01-01 to a date of the Julian calendar, by its Julian day number.
+fn days_from_julian(year: i64, month: i64, day: i64) -> i64 {
+    let a = (14 - month) / 12;
+    let y = year + 4800 - a;
+    let m = month + 12 * a - 3;
+    day + (153 * m + 2) / 5 + 365 * y + y / 4 - 32_083 - 2_440_588
+}
+
+// --- bindings ----------------------------------------------------------------------------------
 
 struct Bindings<'a> {
     named: HashMap<&'a str, &'a GqlQueryParameter>,
@@ -1153,73 +1767,23 @@ struct Bindings<'a> {
     allow_literals: bool,
 }
 
-impl Bindings<'_> {
-    fn parameter(&mut self, site: &Written) -> Result<Option<&GqlQueryParameter>, Status> {
-        Ok(match site {
-            Written::Literal(..) => None,
-            Written::Named(name) => Some(
-                self.named
-                    .get(name.as_str())
-                    .copied()
-                    .ok_or_else(|| invalid(format!("Absent named binding: {name}.")))?,
-            ),
-            Written::Positional(n) => {
-                let parameter = n
-                    .checked_sub(1)
-                    .and_then(|i| self.positional.get(i))
-                    .ok_or_else(|| invalid(format!("Absent positional binding: {n}.")))?;
-                self.used[n - 1] = true;
-                Some(parameter)
-            }
-        })
-    }
-
-    fn value(&mut self, written: &Written) -> Result<Value, Status> {
-        if let Written::Literal(value, image) = written {
-            if !self.allow_literals {
-                return Err(invalid(format!("Disallowed literal: {image}.")));
-            }
-            return Ok(value.clone());
+impl<'a> Bindings<'a> {
+    /// The parameter a binding site names: refused when there is none.
+    fn parameter(&mut self, site: &Token) -> Result<&'a GqlQueryParameter, Status> {
+        if site.kind == Kind::NameBinding {
+            return self
+                .named
+                .get(site.text.as_str())
+                .copied()
+                .ok_or_else(|| invalid(format!("Absent named binding: {}.", site.text)));
         }
-        let site = match written {
-            Written::Named(name) => format!("@{name}"),
-            Written::Positional(n) => format!("@{n}"),
-            Written::Literal(..) => unreachable!("handled above"),
-        };
-        match self
-            .parameter(written)?
-            .and_then(|p| p.parameter_type.as_ref())
-        {
-            Some(ParameterType::Value(value)) => Ok(value.clone()),
-            _ => Err(invalid(format!(
-                "Binding site {site} for value bound to non-value parameter."
-            ))),
-        }
-    }
-
-    /// A position: an integer, or a cursor (`Err` with the cursor).
-    fn position(&mut self, position: &Position) -> Result<Result<i64, Vec<u8>>, Status> {
-        let site = match position {
-            Position::Integer(n, image) => {
-                if !self.allow_literals {
-                    return Err(invalid(format!("Disallowed literal: {image}.")));
-                }
-                return Ok(Ok(*n));
-            }
-            Position::Named(name) => Written::Named(name.clone()),
-            Position::Positional(n) => Written::Positional(*n),
-        };
-        match self
-            .parameter(&site)?
-            .and_then(|p| p.parameter_type.as_ref())
-        {
-            Some(ParameterType::Cursor(cursor)) => Ok(Err(cursor.clone())),
-            Some(ParameterType::Value(Value {
-                value_type: Some(ValueType::IntegerValue(n)),
-                ..
-            })) => Ok(Ok(*n)),
-            _ => Err(invalid("A GQL query parameter is empty.")),
-        }
+        let n: usize = site.text.parse().unwrap_or(0);
+        let parameter = n
+            .checked_sub(1)
+            .and_then(|i| self.positional.get(i))
+            .ok_or_else(|| invalid(format!("Absent positional binding: {n}.")))?;
+        self.used[n - 1] = true;
+        Ok(parameter)
     }
 }
 
@@ -1229,100 +1793,54 @@ fn reference(name: &str) -> PropertyReference {
     }
 }
 
-fn translate_cond(cond: &Cond, bindings: &mut Bindings<'_>) -> Result<Filter, Status> {
+fn filter(cond: Cond) -> Filter {
     let filter_type = match cond {
-        Cond::And(children) | Cond::Or(children) => {
-            let op = if matches!(cond, Cond::And(_)) {
-                composite_filter::Operator::And
-            } else {
-                composite_filter::Operator::Or
-            };
-            FilterType::CompositeFilter(CompositeFilter {
-                op: op as i32,
-                filters: children
-                    .iter()
-                    .map(|c| translate_cond(c, bindings))
-                    .collect::<Result<_, _>>()?,
-            })
-        }
+        Cond::And(children) => FilterType::CompositeFilter(CompositeFilter {
+            op: composite_filter::Operator::And as i32,
+            filters: children.into_iter().map(filter).collect(),
+        }),
+        Cond::Or(children) => FilterType::CompositeFilter(CompositeFilter {
+            op: composite_filter::Operator::Or as i32,
+            filters: children.into_iter().map(filter).collect(),
+        }),
         Cond::Leaf {
             property,
             op,
             value,
         } => FilterType::PropertyFilter(PropertyFilter {
-            property: Some(reference(property)),
-            op: *op as i32,
-            value: Some(bindings.value(value)?),
+            property: Some(reference(&property)),
+            op: op as i32,
+            value: Some(value),
         }),
     };
-    Ok(Filter {
+    Filter {
         filter_type: Some(filter_type),
-    })
+    }
 }
 
-fn translate_select(select: &Select, bindings: &mut Bindings<'_>) -> Result<Query, Status> {
-    let mut query = Query::default();
-    if let Some(kind) = &select.kind {
-        query.kind = vec![KindExpression { name: kind.clone() }];
+/// A named binding's name: not empty, of name characters, not reserved, not a number's start.
+fn binding_name(name: &str) -> Result<(), Status> {
+    if name.is_empty() {
+        return Err(invalid(
+            "The GQL query parameter name is empty. is the empty string.",
+        ));
     }
-    if !select.star {
-        query.projection = select
-            .properties
-            .iter()
-            .map(|p| Projection {
-                property: Some(reference(p)),
-            })
-            .collect();
+    if !name.chars().all(name_char) {
+        return Err(invalid(format!(
+            "GQL query parameter name \"{name}\" contains an invalid character."
+        )));
     }
-    if select.distinct {
-        query.distinct_on = select.properties.iter().map(|p| reference(p)).collect();
-    } else {
-        query.distinct_on = select.distinct_on.iter().map(|p| reference(p)).collect();
+    if super::keys::reserved(name) {
+        return Err(invalid(format!(
+            "The GQL query parameter name \"{name}\" is reserved."
+        )));
     }
-    if let Some(cond) = &select.cond {
-        query.filter = Some(translate_cond(cond, bindings)?);
+    if name.starts_with(|c: char| c.is_ascii_digit()) {
+        return Err(invalid(format!(
+            "GQL query parameter name \"{name}\" starts with a digit."
+        )));
     }
-    query.order = select
-        .orders
-        .iter()
-        .map(|(property, descending)| PropertyOrder {
-            property: Some(reference(property)),
-            direction: if *descending {
-                property_order::Direction::Descending as i32
-            } else {
-                property_order::Direction::Ascending as i32
-            },
-        })
-        .collect();
-    if let Some((cursor, count)) = &select.limit {
-        if let Some(cursor) = cursor {
-            match bindings.position(cursor)? {
-                Err(bytes) => query.start_cursor = bytes,
-                Ok(n) => query.offset = i32::try_from(n).unwrap_or(i32::MAX),
-            }
-        }
-        match bindings.position(count)? {
-            Ok(n) => {
-                if n < 0 {
-                    return Err(invalid(format!("The limit {n} is < 0.")));
-                }
-                query.limit = Some(i32::try_from(n).unwrap_or(i32::MAX));
-            }
-            Err(bytes) => query.end_cursor = bytes,
-        }
-    }
-    if let Some((first, plus)) = &select.offset {
-        match bindings.position(first)? {
-            Ok(n) => query.offset = i32::try_from(n).unwrap_or(i32::MAX),
-            Err(bytes) => query.start_cursor = bytes,
-        }
-        if let Some(plus) = plus
-            && let Ok(n) = bindings.position(plus)?
-        {
-            query.offset = i32::try_from(n).unwrap_or(i32::MAX);
-        }
-    }
-    Ok(query)
+    Ok(())
 }
 
 /// What a GQL query reads as.
@@ -1331,73 +1849,53 @@ pub enum Read {
     Aggregation(AggregationQuery),
 }
 
-/// Reads `gql`: its bindings checked, its text parsed and translated.
-pub fn read(gql: &GqlQuery) -> Result<Read, Status> {
-    for name in gql.named_bindings.keys() {
-        if name.starts_with(|c: char| c.is_ascii_digit()) {
-            return Err(invalid(format!(
-                "GQL query parameter name \"{name}\" starts with a digit."
-            )));
+/// Reads `gql` as `expect` says: its bindings checked, its text parsed and translated.
+pub fn read(gql: &GqlQuery, namespace: &str, expect: Expect) -> Result<Read, Status> {
+    // Each named binding's name, then its parameter, then the positional ones'. The official
+    // emulator takes the named ones in the order they came; hidane by name.
+    let mut named: Vec<(&String, &GqlQueryParameter)> = gql.named_bindings.iter().collect();
+    named.sort_by(|a, b| a.0.cmp(b.0));
+    for (name, parameter) in named {
+        binding_name(name)?;
+        if parameter.parameter_type.is_none() {
+            return Err(invalid("A GQL query parameter is empty."));
         }
     }
     if gql
-        .named_bindings
-        .values()
-        .chain(&gql.positional_bindings)
+        .positional_bindings
+        .iter()
         .any(|p| p.parameter_type.is_none())
     {
         return Err(invalid("A GQL query parameter is empty."));
     }
-    let tokens = Lexer {
-        chars: gql.query_string.chars().collect(),
-        pos: 0,
-        line: 1,
-        column: 0,
-        text: &gql.query_string,
+    let mut parser = Parser {
+        lexer: Lexer {
+            chars: gql.query_string.chars().collect(),
+            pos: 0,
+            line: 1,
+            column: 0,
+        },
+        tokens: Vec::new(),
+        lexical: None,
+        at: 0,
+        bindings: Bindings {
+            named: gql
+                .named_bindings
+                .iter()
+                .map(|(k, v)| (k.as_str(), v))
+                .collect(),
+            positional: &gql.positional_bindings,
+            used: vec![false; gql.positional_bindings.len()],
+            allow_literals: gql.allow_literals,
+        },
+        refused: None,
+        namespace,
+    };
+    let read = parser.read(expect)?;
+    if let Some(refused) = parser.refused {
+        return Err(refused);
     }
-    .tokens()?;
-    let parsed = Parser { tokens, at: 0 }.query()?;
-    let mut bindings = Bindings {
-        named: gql
-            .named_bindings
-            .iter()
-            .map(|(k, v)| (k.as_str(), v))
-            .collect(),
-        positional: &gql.positional_bindings,
-        used: vec![false; gql.positional_bindings.len()],
-        allow_literals: gql.allow_literals,
-    };
-    let read = match parsed {
-        Parsed::Entities(select) => Read::Entities(translate_select(&select, &mut bindings)?),
-        Parsed::Aggregation(aggregate) => {
-            let nested = translate_select(&aggregate.over, &mut bindings)?;
-            let mut aggregations = Vec::new();
-            for (function, argument, alias) in aggregate.aggregations {
-                use aggregation_query::aggregation::{Avg, Count, Operator, Sum};
-                let operator = match function.as_str() {
-                    "count" => Operator::Count(Count::default()),
-                    "count_up_to" => Operator::Count(Count {
-                        up_to: argument.as_deref().map(parse_integer).transpose()?,
-                    }),
-                    "sum" => Operator::Sum(Sum {
-                        property: argument.as_deref().map(reference),
-                    }),
-                    _ => Operator::Avg(Avg {
-                        property: argument.as_deref().map(reference),
-                    }),
-                };
-                aggregations.push(aggregation_query::Aggregation {
-                    alias: alias.unwrap_or_default(),
-                    operator: Some(operator),
-                });
-            }
-            Read::Aggregation(AggregationQuery {
-                aggregations,
-                query_type: Some(aggregation_query::QueryType::NestedQuery(nested)),
-            })
-        }
-    };
-    if let Some(unused) = bindings.used.iter().position(|used| !used) {
+    if let Some(unused) = parser.bindings.used.iter().position(|used| !used) {
         return Err(invalid(format!(
             "Unused positional binding: {}.",
             unused + 1
@@ -1411,11 +1909,15 @@ mod tests {
     use super::*;
 
     fn gql(text: &str) -> Result<Read, Status> {
-        read(&GqlQuery {
-            query_string: text.into(),
-            allow_literals: true,
-            ..GqlQuery::default()
-        })
+        read(
+            &GqlQuery {
+                query_string: text.into(),
+                allow_literals: true,
+                ..GqlQuery::default()
+            },
+            "",
+            Expect::Entities,
+        )
     }
 
     #[test]
@@ -1436,11 +1938,30 @@ mod tests {
     }
 
     #[test]
-    fn datetimes_read_with_offsets() {
+    fn datetimes_read_as_javas_calendar_reads_them() {
         let ts = parse_datetime("2021-06-01T21:00:00.500000+09:00").unwrap();
         assert_eq!(ts.seconds, 1_622_548_800);
         assert_eq!(ts.nanos, 500_000_000);
-        assert!(parse_datetime("2020-01-01").is_none());
-        assert!(parse_datetime("2020-01-01T00:00:00+00:00").is_none());
+        assert_eq!(
+            parse_datetime("2020-01-01").unwrap_err(),
+            Some("does not match pattern")
+        );
+        assert_eq!(
+            parse_datetime("2020-01-01T00:00:00+00:00").unwrap_err(),
+            Some("zero offset must be Z")
+        );
+        assert_eq!(
+            parse_datetime("2019-02-29T00:00:00Z").unwrap_err(),
+            Some("parse failure")
+        );
+        // Julian before the Gregorian calendar: 4 October 1582 is the day before 15 October.
+        let julian = parse_datetime("1582-10-04t00:00:00z").unwrap();
+        let gregorian = parse_datetime("1582-10-15T00:00:00Z").unwrap();
+        assert_eq!(gregorian.seconds - julian.seconds, 86_400);
+        assert_eq!(
+            parse_datetime("1582-10-10T00:00:00Z").unwrap_err(),
+            Some("parse failure")
+        );
+        assert_eq!(parse_datetime("0001-01-01T00:00:00Z").unwrap_err(), None);
     }
 }

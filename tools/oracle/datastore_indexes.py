@@ -125,6 +125,18 @@ indexes:
   - name: b
   - name: d
   - name: a
+# Kind R: what a query does not order by follows its last order's direction.
+- kind: R
+  properties:
+  - name: t
+    direction: desc
+  - name: a
+    direction: desc
+- kind: R
+  properties:
+  - name: u
+    direction: desc
+  - name: a
 """
 
 ANCESTOR = pf("__key__", "HAS_ANCESTOR", {"keyValue": key(("P", "p0"))})
@@ -243,6 +255,16 @@ def enforced():
     query("a > 0, __key__ above p1", {**PK, "filter": AND(GT("a", I(0)), GT("__key__", KEY))})
     query("__key__ above p1 order by c", {**PK, "filter": GT("__key__", KEY), "order": [asc("c")]})
     query("__key__ above p1, project a", {**PK, "filter": GT("__key__", KEY), "projection": PROJ("a")})
+    # --- what a query does not order by, after a descending order -----------------------------
+    RK = {"kind": kind("R")}
+    query("R: project a, order by t descending", {**RK, "projection": PROJ("a"), "order": [desc("t")]})
+    query("R: project a, order by u descending", {**RK, "projection": PROJ("a"), "order": [desc("u")]})
+    query("R: a > 0 order by t descending", {**RK, "filter": GT("a", I(0)), "order": [desc("t")]})
+    query("R: a > 0 order by u descending", {**RK, "filter": GT("a", I(0)), "order": [desc("u")]})
+    query("R: distinct on t, a, order by t descending", {**RK, "distinctOn": DISTINCT("t", "a"), "order": [desc("t")]})
+    agg("R: sum of a, order by t descending", {**RK, "order": [desc("t")]}, SUM("a"))
+    agg("R: sum of a, order by u descending", {**RK, "order": [desc("u")]}, SUM("a"))
+    query("R: __key__ above, order by t descending", {**RK, "filter": GT("__key__", {"keyValue": key(("R", "r"))}), "order": [desc("t")]})
     # --- OR -----------------------------------------------------------------------------------
     query("OR(a = 1 and b = y, c = 1)", {**PK, "filter": OR(AND(EQ("a", I(1)), EQ("b", S("y"))), EQ("c", I(1)))})
     query("OR(a = 1 and b = y, b = y and a = 1)", {**PK, "filter": OR(AND(EQ("a", I(1)), EQ("b", S("y"))), AND(EQ("b", S("y")), EQ("a", I(1))))})

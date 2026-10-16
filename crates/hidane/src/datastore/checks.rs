@@ -11,20 +11,23 @@
 //! any, as its value.
 
 use hidane_proto::google::datastore::v1::{
-    AggregationQuery, Filter, Key, PropertyFilter, Query,
+    AggregationQuery, Filter, Key, PropertyFilter, Query, Value,
     aggregation_query::aggregation::Operator as Aggregation, composite_filter, filter::FilterType,
     property_filter::Operator, property_order::Direction, value::ValueType,
 };
 use tonic::Status;
 
-use super::keys::{Database, Id, Located, entity_ref};
-use super::query::{MAX_IN, MAX_NOT_IN, cursor_parses};
+use super::keys::{Database, Id, Located, entity_ref, reserved};
+use super::query::{MAX_IN, MAX_NOT_IN, cursor_parses, cursors_match};
 
 /// The first refusal that comes once the query's index is found, or the first before it.
 pub type Checked = Result<Option<Status>, Status>;
 
 /// The most aggregations one query may have.
 pub const MAX_AGGREGATIONS: usize = 5;
+
+/// The most disjunctions a query's filter may make in disjunctive normal form.
+const MAX_DISJUNCTIONS: usize = 30;
 
 const UNIQUE_ANCESTOR: &str = "All disjunctions must have a common and unique ancestor constraint.";
 const KINDLESS_ORDER: &str = "kind is required for all orders except __key__ ascending";
@@ -51,6 +54,120 @@ fn filters(filter: Option<&Filter>) -> Vec<(&Filter, bool)> {
         walk(filter, false, &mut out);
     }
     out
+}
+
+/// Whether a filter is a `HAS_ANCESTOR` filter, which the official emulator takes out of the
+/// filter as the query's ancestor before it normalizes the rest.
+fn bare_ancestor(filter: &Filter) -> bool {
+    matches!(&filter.filter_type,
+        Some(FilterType::PropertyFilter(p)) if operator(p) == Some(Operator::HasAncestor))
+}
+
+/// A filter in disjunctive normal form as the official emulator normalizes it: without its
+/// `HAS_ANCESTOR` filters, an `IN` an equality per value, each conjunction once (as a set) and
+/// each filter once in it. `None` once a conjunction would make more than twice the most
+/// disjunctions allowed: the official emulator stops counting there.
+fn normalized(filter: &Filter) -> Option<Vec<Vec<PropertyFilter>>> {
+    fn add(out: &mut Vec<Vec<PropertyFilter>>, conjunction: Vec<PropertyFilter>) {
+        let same = |seen: &Vec<PropertyFilter>| {
+            seen.len() == conjunction.len() && seen.iter().all(|f| conjunction.contains(f))
+        };
+        if !out.iter().any(same) {
+            out.push(conjunction);
+        }
+    }
+    let mut out = Vec::new();
+    match &filter.filter_type {
+        _ if bare_ancestor(filter) => out.push(Vec::new()),
+        Some(FilterType::CompositeFilter(composite))
+            if composite.op == composite_filter::Operator::Or as i32 =>
+        {
+            for child in composite.filters.iter().filter(|f| !bare_ancestor(f)) {
+                for conjunction in normalized(child)? {
+                    add(&mut out, conjunction);
+                }
+            }
+        }
+        Some(FilterType::CompositeFilter(composite)) => {
+            let children: Vec<&Filter> = composite
+                .filters
+                .iter()
+                .filter(|f| !bare_ancestor(f))
+                .collect();
+            let Some((first, rest)) = children.split_first() else {
+                return Some(vec![Vec::new()]);
+            };
+            out = normalized(first)?;
+            for child in rest {
+                let terms = normalized(child)?;
+                if out.len() * terms.len() > 2 * MAX_DISJUNCTIONS {
+                    return None;
+                }
+                let mut product = Vec::new();
+                for left in &out {
+                    for right in &terms {
+                        let mut conjunction: Vec<PropertyFilter> = Vec::new();
+                        for f in left.iter().chain(right) {
+                            if !conjunction.contains(f) {
+                                conjunction.push(f.clone());
+                            }
+                        }
+                        add(&mut product, conjunction);
+                    }
+                }
+                out = product;
+            }
+        }
+        Some(FilterType::PropertyFilter(property)) => match (operator(property), value(property)) {
+            (Some(Operator::In), Some(ValueType::ArrayValue(array))) => {
+                for v in &array.values {
+                    add(
+                        &mut out,
+                        vec![PropertyFilter {
+                            property: property.property.clone(),
+                            op: Operator::Equal as i32,
+                            value: Some(v.clone()),
+                        }],
+                    );
+                }
+            }
+            _ => out.push(vec![property.clone()]),
+        },
+        None => out.push(Vec::new()),
+    }
+    Some(out)
+}
+
+/// At most 30 disjunctions in disjunctive normal form.
+fn disjunctions(query: &Query) -> Result<(), Status> {
+    let Some(filter) = &query.filter else {
+        return Ok(());
+    };
+    let Some(conjunctions) = normalized(filter) else {
+        return Err(invalid(format!(
+            "Too many disjunctions after normalization, the maximum is {MAX_DISJUNCTIONS}"
+        )));
+    };
+    if conjunctions.len() > MAX_DISJUNCTIONS {
+        return Err(invalid(format!(
+            "Too many disjunctions after normalization. Result had {} disjunctions which is more than the maximum of {MAX_DISJUNCTIONS}",
+            conjunctions.len()
+        )));
+    }
+    Ok(())
+}
+
+/// The property filters of a query's filter in disjunctive normal form, conjunction by
+/// conjunction, as the checks made once its index is found walk them.
+fn normalized_filters(query: &Query) -> Vec<PropertyFilter> {
+    query
+        .filter
+        .as_ref()
+        .and_then(normalized)
+        .unwrap_or_default()
+        .into_iter()
+        .flatten()
+        .collect()
 }
 
 /// The property filters among `all`, in order.
@@ -195,7 +312,8 @@ fn ordered_beyond_key(query: &Query, all: &[(&Filter, bool)]) -> bool {
     explicit || distinct || unequal || projected
 }
 
-/// The projection checks: distinct on the key, a property projected twice.
+/// The projection checks: distinct on the key, a reserved name projected, a property projected
+/// twice (the key may be), distinct on a reserved name.
 fn projection(query: &Query) -> Result<(), Status> {
     if query.distinct_on.iter().any(|p| p.name == "__key__") {
         return Err(invalid(
@@ -205,10 +323,24 @@ fn projection(query: &Query) -> Result<(), Status> {
     let mut projected: Vec<&str> = Vec::new();
     for p in &query.projection {
         let name = p.property.as_ref().map_or("", |p| p.name.as_str());
+        if name == "__key__" {
+            continue;
+        }
+        if reserved(name) {
+            return Err(invalid(format!(
+                "projections are not supported for the property: {name}"
+            )));
+        }
         if projected.contains(&name) {
             return Err(invalid("Cannot project a property multiple times."));
         }
         projected.push(name);
+    }
+    if let Some(p) = query.distinct_on.iter().find(|p| reserved(&p.name)) {
+        return Err(invalid(format!(
+            "Group by is not supported for the property: {}",
+            p.name
+        )));
     }
     Ok(())
 }
@@ -223,6 +355,18 @@ fn projected_equality(query: &Query, filter: &PropertyFilter) -> Result<(), Stat
     {
         return Err(invalid(
             "Cannot use projection on a property with an equality filter.",
+        ));
+    }
+    Ok(())
+}
+
+/// A filter by equality on a property the query is distinct on.
+fn grouped_equality(query: &Query, filter: &PropertyFilter) -> Result<(), Status> {
+    if matches!(operator(filter), Some(Operator::Equal | Operator::In))
+        && query.distinct_on.iter().any(|p| p.name == name(filter))
+    {
+        return Err(invalid(
+            "Cannot use group by on a property with an equality filter.",
         ));
     }
     Ok(())
@@ -260,12 +404,8 @@ pub fn entity_query(query: &Query, namespace: &str, database: &Database) -> Chec
     for (filter, _) in &all {
         entity_shape(filter)?;
     }
-    let ancestors: Vec<bool> = properties(&all)
-        .filter(|(f, _)| operator(f) == Some(Operator::HasAncestor))
-        .map(|(_, in_or)| in_or)
-        .collect();
-    if ancestors.len() > 1 || ancestors.contains(&true) {
-        return Err(invalid(UNIQUE_ANCESTOR));
+    if let Some(filter) = &query.filter {
+        common_ancestor(filter).map_err(|()| invalid(UNIQUE_ANCESTOR))?;
     }
     if query.kind.iter().any(|k| k.name.is_empty()) {
         return Err(invalid("The kind is the empty string."));
@@ -297,12 +437,64 @@ pub fn entity_query(query: &Query, namespace: &str, database: &Database) -> Chec
     if query.kind.len() > 1 {
         return Err(invalid("multiple kinds not supported"));
     }
+    ancestors_alone(&all)?;
     for (filter, _) in properties(&all) {
         operand_shape(filter)?;
     }
     cursors(query)?;
+    disjunctions(query)?;
     duplicate_order(query)?;
     Ok(entity_late(query, namespace, database, &all).err())
+}
+
+/// The ancestor a filter holds to: its own (`HAS_ANCESTOR`), the one of a conjunction's
+/// filters that have one, or the one every filter of a disjunction holds to. `Err` when the
+/// filters of a conjunction hold to different ones, or those of a disjunction do not all hold
+/// to the same one (or all to none).
+fn common_ancestor(filter: &Filter) -> Result<Option<&Value>, ()> {
+    match &filter.filter_type {
+        Some(FilterType::PropertyFilter(property)) => Ok((operator(property)
+            == Some(Operator::HasAncestor))
+        .then_some(property.value.as_ref())
+        .flatten()),
+        Some(FilterType::CompositeFilter(composite)) => {
+            let ancestors = composite
+                .filters
+                .iter()
+                .map(common_ancestor)
+                .collect::<Result<Vec<_>, ()>>()?;
+            if composite.op == composite_filter::Operator::Or as i32 {
+                match ancestors.split_first() {
+                    Some((first, rest)) if rest.iter().all(|a| a == first) => Ok(*first),
+                    Some(_) => Err(()),
+                    None => Ok(None),
+                }
+            } else {
+                let mut found = None;
+                for ancestor in ancestors.into_iter().flatten() {
+                    if found.is_some_and(|f| f != ancestor) {
+                        return Err(());
+                    }
+                    found = Some(ancestor);
+                }
+                Ok(found)
+            }
+        }
+        None => Ok(None),
+    }
+}
+
+/// A disjunction of `HAS_ANCESTOR` filters alone is an internal error on the official emulator:
+/// without them ([`normalized`]), it is empty.
+fn ancestors_alone(all: &[(&Filter, bool)]) -> Result<(), Status> {
+    let alone = all.iter().any(|(filter, _)| {
+        matches!(&filter.filter_type, Some(FilterType::CompositeFilter(c))
+            if c.op == composite_filter::Operator::Or as i32 && c.filters.iter().all(bare_ancestor))
+    });
+    if alone {
+        return Err(Status::unknown(""));
+    }
+    Ok(())
 }
 
 /// A filter's own parts, as `RunQuery` checks them first.
@@ -348,7 +540,7 @@ fn entity_shape(filter: &Filter) -> Result<(), Status> {
                         ));
                     }
                 }
-                (Operator::In | Operator::NotIn | Operator::HasAncestor, _) => {}
+                (Operator::In | Operator::NotIn, _) => {}
                 (_, ValueType::ArrayValue(_)) => {
                     return Err(invalid("A list value is not allowed"));
                 }
@@ -466,7 +658,7 @@ fn entity_late(
         return Err(invalid(KINDLESS_ORDER));
     }
     projection(query)?;
-    for (filter, _) in properties(all) {
+    for filter in &normalized_filters(query) {
         if operator(filter) == Some(Operator::HasAncestor) {
             continue;
         }
@@ -479,8 +671,10 @@ fn entity_late(
             )));
         }
         projected_equality(query, filter)?;
+        grouped_equality(query, filter)?;
     }
     grouped_first(query)?;
+    cursors_match(query)?;
     metadata(query, database, all)
 }
 
@@ -504,10 +698,12 @@ fn metadata(query: &Query, database: &Database, all: &[(&Filter, bool)]) -> Resu
             "Projections are not supported for the kind: {kind}"
         )));
     }
-    if query.order.iter().any(|o| {
-        o.property.as_ref().is_some_and(|p| p.name == "__key__")
-            && o.direction == Direction::Descending as i32
-    }) {
+    // Only the first order counts.
+    if query
+        .order
+        .first()
+        .is_some_and(|o| o.direction == Direction::Descending as i32)
+    {
         return Err(invalid("Only ascending order on __key__ supported"));
     }
     for (filter, _) in properties(all) {
@@ -546,10 +742,6 @@ fn aggregated(operator: Option<&Aggregation>) -> Option<&str> {
     }
 }
 
-fn reserved(name: &str) -> bool {
-    name.len() >= 4 && name.starts_with("__") && name.ends_with("__")
-}
-
 /// The checks of `RunAggregationQuery`: its aggregations and the query they run over, in
 /// `namespace`.
 pub fn aggregation_query(
@@ -576,17 +768,19 @@ pub fn aggregation_query(
         return Err(invalid("multiple kinds not supported"));
     }
     let all = filters(query.filter.as_ref());
-    let mut ancestors = 0;
+    let mut ancestors = Vec::new();
     for (filter, _) in &all {
         nested_shape(filter, &mut ancestors)?;
     }
+    ancestors_alone(&all)?;
     cursors(query)?;
+    disjunctions(query)?;
     duplicate_order(query)?;
     Ok(aggregation_late(aggregation, query, namespace, &all).err())
 }
 
 /// A filter of an aggregation's query, as its first checks see it.
-fn nested_shape(filter: &Filter, ancestors: &mut usize) -> Result<(), Status> {
+fn nested_shape<'a>(filter: &'a Filter, ancestors: &mut Vec<&'a Value>) -> Result<(), Status> {
     match &filter.filter_type {
         None => Err(invalid("Missing filter operator.")),
         Some(FilterType::CompositeFilter(composite)) => {
@@ -611,9 +805,12 @@ fn nested_shape(filter: &Filter, ancestors: &mut usize) -> Result<(), Status> {
                 return Err(invalid("Value missing type."));
             }
             operand_shape(property)?;
-            if op == Operator::HasAncestor {
-                *ancestors += 1;
-                if *ancestors > 1 {
+            if op == Operator::HasAncestor
+                && let Some(ancestor) = &property.value
+                && !ancestors.contains(&ancestor)
+            {
+                ancestors.push(ancestor);
+                if ancestors.len() > 1 {
                     return Err(invalid("duplicate ancestor or parent constraint"));
                 }
             }
@@ -709,7 +906,13 @@ fn aggregation_late(
     if query.kind.iter().any(|k| k.name.is_empty()) {
         return Err(invalid("The query kind is the empty string."));
     }
-    if query.kind.is_empty() && ordered_beyond_key(query, all) {
+    // Without a kind, a sum or an average orders by its property too.
+    if query.kind.is_empty()
+        && (ordered_beyond_key(query, all)
+            || list
+                .iter()
+                .any(|a| aggregated(a.operator.as_ref()).is_some()))
+    {
         return Err(invalid(KINDLESS_ORDER));
     }
     if query
@@ -720,14 +923,18 @@ fn aggregation_late(
         return Err(invalid(EMPTY_SEGMENT));
     }
     projection(query)?;
-    for (filter, _) in properties(all) {
+    for filter in &normalized_filters(query) {
         if name(filter).is_empty() {
             return Err(invalid(EMPTY_SEGMENT));
         }
         if operator(filter) == Some(Operator::HasAncestor) {
             continue;
         }
+        if name(filter) == "__key__" {
+            key_operands(filter, namespace)?;
+        }
         projected_equality(query, filter)?;
+        grouped_equality(query, filter)?;
         // An array in an operand is an internal error on the official emulator.
         if operands(filter)
             .iter()
@@ -735,9 +942,7 @@ fn aggregation_late(
         {
             return Err(Status::unknown(""));
         }
-        if name(filter) == "__key__" {
-            key_operands(filter, namespace)?;
-        } else if query.kind.is_empty() {
+        if name(filter) != "__key__" && query.kind.is_empty() {
             return Err(invalid(format!(
                 "kind is required for filter: {}",
                 name(filter)
@@ -747,5 +952,6 @@ fn aggregation_late(
     if names(query).any(|n| n.is_none_or(str::is_empty)) {
         return Err(invalid(EMPTY_SEGMENT));
     }
-    grouped_first(query)
+    grouped_first(query)?;
+    cursors_match(query)
 }

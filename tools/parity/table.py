@@ -720,6 +720,14 @@ RECORDINGS = {
                  "the text reads as, the results, the parser's messages), server times, "
                  "versions, transaction IDs and cursors masked",
         count=lambda f: [(REST, FULL) for _ in f["cases"]]),
+    f"{H}/fixtures/datastore_gql_errors.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::gql_is_refused_like_the_official_emulator"],
+        counted="each GQL text (a query cut after each of its tokens, and texts with bindings of "
+                "their own), to a server started with `--database-mode datastore-mode`; " + OVER_REST,
+        compares="in full: status, content type and body byte for byte, server times, versions and "
+                 "cursors masked",
+        count=lambda f: [(REST, FULL) for _ in f["cases"]]),
     f"{H}/fixtures/datastore_indexes.json": dict(
         area="datastore",
         tests=[f"{H}/datastore.rs::indexes_answer_like_the_official_emulator"],

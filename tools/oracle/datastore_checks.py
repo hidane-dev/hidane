@@ -16,20 +16,27 @@ problems of the aggregations and of the query they run over); then the queries o
 kinds or namespaces). The database is empty: these are refused before anything is read.
 
 What the recording shows. A query's filters are walked three times: first each filter's own
-parts (an operator, a name, a value, no array or entity operand but in `IN`); later the
-operands of `IN`, `NOT_IN` and `HAS_ANCESTOR`; last, once the query's index is found, keys of
-`__key__` filters, a property filter without a kind and an equality on a projected property,
-each filter in turn. Between them come, in order: one ancestor, outside disjunctions; the kind's
-name; empty names; limit, offset; one `NOT_EQUAL` or `NOT_IN`, and no `NOT_IN` with `IN` or
-`OR`; one kind; cursors; orders; then, after the index, the ancestor's namespace, orders without
-a kind (the explicit ones, then the distinct, inequality and projected properties), distinct on
-the key, a property projected twice, and the queries of kinds and namespaces. (With
-`--require_indexes`, `datastore_indexes.json`, looking up the index of a query without a kind
-refuses its orders and property filters already.) An aggregation's
-query goes through other checks, worded otherwise (`Missing filter operator.`, `limit is
-negative`): its aggregations' operators first, a second ancestor is a duplicate, and an
-ancestor in a disjunction, `NOT_IN` with `IN`, several `NOT_EQUAL` and entity operands pass,
-while an array in an operand is an internal error (`UNKNOWN`, no message).
+parts (an operator, a name, a value, no array or entity operand but in `IN`, `HAS_ANCESTOR`'s
+too); later the operands of `IN`, `NOT_IN` and `HAS_ANCESTOR`; last, once the query's index is
+found, the filter in disjunctive normal form (without its ancestor, an `IN` an equality per
+value), conjunction by conjunction: keys of `__key__` filters, a property filter without a kind,
+an equality on a projected property, then on one the query is distinct on. Between them come,
+in order: one ancestor, the same for every disjunction (each filter of a conjunction holds to
+it, each of a disjunction alike, or none); the kind's name; empty names; limit, offset; one
+`NOT_EQUAL` or `NOT_IN`, and no `NOT_IN` with `IN` or `OR`; one kind; a disjunction of ancestors
+alone (an internal error); cursors; at most 30 disjunctions; orders; then, after the index, the
+ancestor's namespace, orders without a kind (the explicit ones, then the distinct, inequality
+and projected properties), distinct on the key, a reserved name projected (`__`, at least one
+character, `__`), a property projected twice (the key may be), distinct on a reserved name, the
+walk above, distinct properties ordered first, the cursors' kind, and the queries of kinds and
+namespaces (refused only a first order descending). (With `--require_indexes`,
+`datastore_indexes.json`, looking up the index of a query without a kind refuses its orders and
+property filters already.) An aggregation's query goes through other checks, worded otherwise
+(`Missing filter operator.`, `limit is negative`): its aggregations' operators first, a second
+ancestor that is another one is a duplicate, and an ancestor in a disjunction, `NOT_IN` with
+`IN`, several `NOT_EQUAL` and entity operands pass, while an array in an operand is an internal
+error (`UNKNOWN`, no message), after the key's operands and the equalities on projected and
+distinct properties and before a property filter without a kind.
 
 Each case is a request and its answer in the format of `datastore_entities.json` (without what
 `every_case` gives them all), on one line. `crates/hidane/tests/datastore.rs` replays it.
@@ -99,6 +106,9 @@ def prop(name):
     return {"property": {"name": name}}
 
 
+ANCESTOR = pf("__key__", "HAS_ANCESTOR", {"keyValue": key("K", "a")})
+
+
 # A problem of a query: the parts of the query it sets (`filter` is a filter joined with the
 # other problem's), by name.
 QUERY = {
@@ -158,6 +168,14 @@ QUERY = {
     "IN entities": {"filter": pf("a", "IN", array({"entityValue": {}}))},
     "a key in another namespace": {"filter": pf("__key__", "EQUAL", {"keyValue": key("K", "a", ns="x")})},
     "a distinct on an empty name": {"projection": [prop("a")], "distinctOn": [{"name": ""}]},
+    "an ancestor that is a list": {"filter": pf("__key__", "HAS_ANCESTOR", array(ONE))},
+    "an ancestor that is an entity": {"filter": pf("__key__", "HAS_ANCESTOR", {"entityValue": {}})},
+    "a reserved name projected": {"projection": [prop("__x__")]},
+    "distinct on a reserved name": {"distinctOn": [{"name": "__x__"}]},
+    "distinct on an equality": {"distinctOn": [{"name": "a"}], "filter": pf("a", "EQUAL", ONE)},
+    "a kind query ordered descending by a property": {"kind": [{"name": "__kind__"}],
+                                                      "order": [{**prop("a"), "direction": "DESCENDING"}]},
+    "36 disjunctions": {"filter": composite("AND", pf("d", "IN", numbers(6)), pf("e", "IN", numbers(6)))},
 }
 
 # A problem of an aggregation query: aggregations it adds, and parts of the nested query it sets.
@@ -211,6 +229,10 @@ AGGREGATION = {
     "a key in another namespace": {"filter": pf("__key__", "EQUAL", {"keyValue": key("K", "a", ns="x")})},
     "an order on an empty name": {"order": [prop("")]},
     "a sum of a reserved name": {"aggregations": [{"sum": {"property": {"name": "__x__"}}, "alias": "rn"}]},
+    "a reserved name projected": {"projection": [prop("__x__")]},
+    "distinct on a reserved name": {"distinctOn": [{"name": "__x__"}]},
+    "distinct on an equality": {"distinctOn": [{"name": "a"}], "filter": pf("a", "EQUAL", ONE)},
+    "36 disjunctions": {"filter": composite("AND", pf("d", "IN", numbers(6)), pf("e", "IN", numbers(6)))},
 }
 
 # Problems of an aggregation's query in one part, where the pairs cannot put two.
@@ -249,6 +271,14 @@ AGGREGATION_PARTS = {
     "an alias with a space": {"aggregations": [{"count": {}, "alias": "a b"}]},
     "a sum of a dotted name": {"aggregations": [{"sum": {"property": {"name": "e.x"}}}]},
     "a sum of a reserved name": {"aggregations": [{"sum": {"property": {"name": "__x__"}}}]},
+    "the same ancestor twice": {"filter": composite("AND", ANCESTOR, ANCESTOR)},
+    "an ancestor and a disjunction without it": {"filter": composite("AND", ANCESTOR, composite(
+        "OR", ANCESTOR, pf("a", "EQUAL", ONE)))},
+    "a disjunction of the same ancestor alone": {"filter": composite("OR", ANCESTOR, ANCESTOR)},
+    "the key projected twice": {"projection": [prop("__key__"), prop("__key__")]},
+    "a kind of four underscores": {"kind": [{"name": "____"}]},
+    "a sum of four underscores": {"aggregations": [{"sum": {"property": {"name": "____"}}}]},
+    "an alias of four underscores": {"aggregations": [{"count": {}, "alias": "____"}]},
 }
 
 
@@ -317,6 +347,34 @@ PARTS = {
     "a kindless query with a key projection": {"kind": [], "projection": [prop("__key__")]},
     "a kindless query distinct on the key": {"kind": [], "projection": [prop("__key__")], "distinctOn": [{"name": "__key__"}]},
     "a kindless query with an inequality on the key": {"kind": [], "filter": pf("__key__", "GREATER_THAN", {"keyValue": key("K", "a")})},
+    "the same ancestor twice": {"filter": composite("AND", ANCESTOR, ANCESTOR)},
+    "the same ancestor in each disjunction": {"filter": composite(
+        "OR", composite("AND", ANCESTOR, pf("a", "EQUAL", ONE)), composite("AND", ANCESTOR, pf("b", "EQUAL", ONE)))},
+    "an ancestor and a disjunction without it": {"filter": composite("AND", ANCESTOR, composite(
+        "OR", ANCESTOR, pf("a", "EQUAL", ONE)))},
+    "a disjunction of the same ancestor alone": {"filter": composite("OR", ANCESTOR, ANCESTOR)},
+    "a disjunction of the same ancestor, alone and with more": {"filter": composite(
+        "OR", ANCESTOR, ANCESTOR, composite("AND", ANCESTOR, pf("a", "EQUAL", ONE)))},
+    "a disjunction of the same ancestor alone, with two NOT_EQUAL": {"filter": composite(
+        "AND", composite("OR", ANCESTOR, ANCESTOR), pf("a", "NOT_EQUAL", ONE), pf("b", "NOT_EQUAL", ONE))},
+    "a disjunction of the same ancestor alone, IN an empty array": {"filter": composite(
+        "AND", composite("OR", ANCESTOR, ANCESTOR), pf("a", "IN", array()))},
+    "the key projected twice": {"projection": [prop("__key__"), prop("__key__")]},
+    "a reserved name projected twice": {"projection": [prop("__x__"), prop("__x__")]},
+    "a reserved name projected, distinct on another": {"projection": [prop("__x__")],
+                                                        "distinctOn": [{"name": "__y__"}]},
+    "distinct on a projected equality": {"projection": [prop("a")], "distinctOn": [{"name": "a"}],
+                                         "filter": pf("a", "EQUAL", ONE)},
+    "a namespace query ordered descending by a property": kind_query(
+        "__namespace__", order=[{**prop("a"), "direction": "DESCENDING"}]),
+    "a property query ordered descending by a property": kind_query(
+        "__property__", order=[{**prop("a"), "direction": "DESCENDING"}]),
+    "a kind query ordered by a property, then descending": kind_query(
+        order=[prop("a"), {**prop("b"), "direction": "DESCENDING"}]),
+    "four underscores projected": {"projection": [prop("____")]},
+    "distinct on four underscores": {"distinctOn": [{"name": "____"}]},
+    "a property projected twice, then a reserved name": {"projection": [prop("a"), prop("a"), prop("__x__")]},
+    "a reserved name projected, then a property twice": {"projection": [prop("__x__"), prop("a"), prop("a")]},
 }
 
 

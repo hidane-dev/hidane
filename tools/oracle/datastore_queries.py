@@ -277,6 +277,19 @@ query("two kinds", {"kind": [{"name": "T"}, {"name": "P"}]})
 query("an empty kind name", {"kind": [{"name": ""}]})
 query("a property name __x__", {"kind": kind("T"), "filter": pf("__x__", "EQUAL", I(1))})
 query("in another project's namespace", {"kind": kind("T")}, partitionId={"projectId": "elsewhere"})
+# What a query does not order by follows its last order's direction; the key, unless a filter
+# compares it, ascending.
+query("project a, order by b descending", {"kind": kind("P"), "projection": [asc("a")], "order": [desc("b")]})
+query("project a, b, order by b descending", {"kind": kind("P"), "projection": [asc("a"), asc("b")], "order": [desc("b")]})
+query("a > 0 order by b descending", {"kind": kind("P"), "filter": pf("a", "GREATER_THAN", I(0)), "order": [desc("b")]})
+query("distinct on b, a, order by b descending", {"kind": kind("P"), "distinctOn": [{"name": "b"}, {"name": "a"}],
+                                                  "order": [desc("b")]})
+query("the key above p1, order by b descending", {"kind": kind("P"), "filter": pf("__key__", "GREATER_THAN", KEY(("P", "p1"))),
+                                                   "order": [desc("b")]})
+query("the key above p1, project a, order by b descending", {
+    "kind": kind("P"), "filter": pf("__key__", "GREATER_THAN", KEY(("P", "p1"))), "projection": [asc("a")],
+    "order": [desc("b")]})
+query("order by b descending", {"kind": kind("P"), "order": [desc("b")]})
 query("a reserved namespace", {"kind": kind("T")}, partitionId={"namespaceId": "__x__"})
 case("a query and a GQL query", "runQuery", {"query": {"kind": kind("T")}, "gqlQuery": {"queryString": "SELECT * FROM T"}})
 case("neither query", "runQuery", {})
@@ -306,6 +319,11 @@ agg("no aggregations", {"kind": kind("P")})
 agg("six aggregations", {"kind": kind("P")}, *[{"count": {}, "alias": f"n{i}"} for i in range(6)])
 agg("five aggregations", {"kind": kind("P")}, *[{"count": {}, "alias": f"n{i}"} for i in range(5)])
 agg("count with a projection", {"kind": kind("P"), "projection": [{"property": {"name": "a"}}]}, {"count": {}, "alias": "n"})
+TIMES = pf("__key__", "IN", ARR(KEY(("T", "ts")), KEY(("T", "ts2")), KEY(("T", "int2"))))
+agg("sum and avg of timestamps, as microseconds", {"kind": kind("T"), "filter": TIMES},
+    {"sum": {"property": {"name": "v"}}, "alias": "s"}, {"avg": {"property": {"name": "v"}}, "alias": "m"})
+agg("sum of projected timestamps", {"kind": kind("T"), "filter": TIMES, "projection": [{"property": {"name": "v"}}]},
+    {"sum": {"property": {"name": "v"}}, "alias": "s"})
 case("an aggregation without a query", "runAggregationQuery", {"aggregationQuery": {"aggregations": [{"count": {}}]}})
 
 

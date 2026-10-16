@@ -517,9 +517,91 @@ pub fn plan(query: &Query, database: &Database, namespace: &str) -> Result<Plan,
         .filter
         .as_ref()
         .map(|f| condition(f, &database.project));
+    let orders = orders(query, cond.as_ref(), &projection);
+    let row_properties: Vec<String> = orders.iter().filter_map(|(f, _)| f.clone()).collect();
+    let cursor = |bytes: &[u8]| -> Result<Option<Position>, Status> {
+        if bytes.is_empty() {
+            return Ok(None);
+        }
+        Position::decode(bytes)
+            .map(Some)
+            .ok_or_else(|| invalid("Error parsing protocol message"))
+    };
+    let start = cursor(&query.start_cursor)?;
+    let end = cursor(&query.end_cursor)?;
+    let keys_only = !projection.is_empty() && projection.iter().all(|p| p == "__key__");
+    let projected: Vec<String> = projection
+        .iter()
+        .filter(|p| *p != "__key__")
+        .cloned()
+        .collect();
+    Ok(Plan {
+        project: database.project.clone(),
+        namespace: namespace.to_owned(),
+        kind,
+        cond,
+        orders,
+        row_properties,
+        projection: (!projection.is_empty() && !keys_only).then_some(projected),
+        keys_only,
+        distinct_on: query.distinct_on.iter().map(|p| p.name.clone()).collect(),
+        offset: usize::try_from(query.offset).unwrap_or(0),
+        limit: query.limit.map(|n| usize::try_from(n).unwrap_or(0)),
+        start,
+        end,
+    })
+}
+
+/// A query's cursors, as the official emulator checks them once the query passed its other
+/// checks: each of the query's kind, and with no more values than the query orders by.
+pub(super) fn cursors_match(query: &Query) -> Result<(), Status> {
+    let projection: Vec<String> = query
+        .projection
+        .iter()
+        .map(|p| {
+            p.property
+                .as_ref()
+                .map(|p| p.name.clone())
+                .unwrap_or_default()
+        })
+        .collect();
+    let cond = query.filter.as_ref().map(|f| condition(f, ""));
+    let ordered = orders(query, cond.as_ref(), &projection)
+        .iter()
+        .filter(|(f, _)| f.is_some())
+        .count();
+    let kind = query.kind.first().map(|k| k.name.as_str());
+    for bytes in [&query.start_cursor, &query.end_cursor] {
+        let Some(position) = Position::decode(bytes) else {
+            continue;
+        };
+        if let (Some(kind), Some((cursor_kind, _))) = (kind, position.key.path.last())
+            && kind != cursor_kind
+        {
+            return Err(invalid(format!(
+                "The query kind is {kind} but cursor.postfix_position.key kind is {cursor_kind}."
+            )));
+        }
+        if position.values.len() > ordered {
+            return Err(invalid("cursor does not match query"));
+        }
+    }
+    Ok(())
+}
+
+/// The orders of a query's rows: its explicit orders, then the distinct and inequality
+/// properties (by name; the key last when a filter compares it) and the projected properties
+/// (by name) not ordered yet, then the key (`None`). What the query does not order by
+/// explicitly follows its last explicit order's direction; a key ordered last only for being
+/// last, ascending.
+fn orders(
+    query: &Query,
+    cond: Option<&Cond>,
+    projection: &[String],
+) -> Vec<(Option<String>, bool)> {
     let mut inequalities = Vec::new();
     let mut equalities = Vec::new();
-    if let Some(cond) = &cond {
+    if let Some(cond) = cond {
         filter_properties(cond, &mut inequalities, &mut equalities);
     }
     inequalities.sort();
@@ -538,59 +620,41 @@ pub fn plan(query: &Query, database: &Database, namespace: &str) -> Result<Plan,
             )
         })
         .collect();
-    let projected: Vec<String> = projection
+    let mut by_name: Vec<String> = projection
         .iter()
         .filter(|p| *p != "__key__")
         .cloned()
         .collect();
-    let distinct_on: Vec<String> = query.distinct_on.iter().map(|p| p.name.clone()).collect();
-    // The row's order: the explicit orders, then the distinct, inequality and projected
-    // properties (by name) not ordered yet, ascending, then the key.
-    let mut by_name = projected.clone();
     by_name.sort_unstable();
-    let mut orders = explicit.clone();
-    for name in distinct_on.iter().chain(&inequalities).chain(&by_name) {
-        if !orders.iter().any(|(f, _)| f.as_deref() == Some(name)) {
-            orders.push((Some(name.clone()), false));
+    let distinct_on: Vec<String> = query.distinct_on.iter().map(|p| p.name.clone()).collect();
+    let last = explicit.last().is_some_and(|(_, descending)| *descending);
+    let mut orders = explicit;
+    let add = |orders: &mut Vec<(Option<String>, bool)>, name: Option<&String>, descending| {
+        if !orders.iter().any(|(f, _)| f.as_ref() == name) {
+            orders.push((name.cloned(), descending));
         }
-    }
-    if !orders.iter().any(|(f, _)| f.is_none()) {
-        orders.push((None, false));
-    }
-    let row_properties: Vec<String> = orders.iter().filter_map(|(f, _)| f.clone()).collect();
-    let cursor = |bytes: &[u8]| -> Result<Option<Position>, Status> {
-        if bytes.is_empty() {
-            return Ok(None);
-        }
-        let position =
-            Position::decode(bytes).ok_or_else(|| invalid("Error parsing protocol message"))?;
-        if let (Some(kind), Some((cursor_kind, _))) = (&kind, position.key.path.last())
-            && kind != cursor_kind
-        {
-            return Err(invalid(format!(
-                "The query kind is {kind} but cursor.postfix_position.key kind is {cursor_kind}."
-            )));
-        }
-        Ok(Some(position))
     };
-    let start = cursor(&query.start_cursor)?;
-    let end = cursor(&query.end_cursor)?;
-    let keys_only = projection == ["__key__"];
-    Ok(Plan {
-        project: database.project.clone(),
-        namespace: namespace.to_owned(),
-        kind,
-        cond,
-        orders,
-        row_properties,
-        projection: (!projection.is_empty() && !keys_only).then_some(projected),
-        keys_only,
-        distinct_on,
-        offset: usize::try_from(query.offset).unwrap_or(0),
-        limit: query.limit.map(|n| usize::try_from(n).unwrap_or(0)),
-        start,
-        end,
-    })
+    for name in distinct_on.iter().chain(&inequalities) {
+        add(&mut orders, Some(name), last);
+    }
+    // The key, when a filter compares it, is the last inequality.
+    if cond.is_some_and(key_inequality) {
+        add(&mut orders, None, last);
+    }
+    for name in &by_name {
+        add(&mut orders, Some(name), last);
+    }
+    add(&mut orders, None, false);
+    orders
+}
+
+/// Whether a condition compares the key with an inequality.
+fn key_inequality(cond: &Cond) -> bool {
+    match cond {
+        Cond::And(children) | Cond::Or(children) => children.iter().any(key_inequality),
+        Cond::Key { op, .. } => op.inequality(),
+        Cond::Prop { .. } | Cond::Ancestor(_) => false,
+    }
 }
 
 /// One result: an entity, and its values of the row properties.
@@ -723,7 +787,7 @@ fn select<'a>(
         let kind = &key.path.last().expect("a complete key").0;
         match &plan.kind {
             Some(wanted) if wanted != kind => continue,
-            None if is_reserved(kind) => continue,
+            None if super::keys::reserved(kind) => continue,
             _ => {}
         }
         for row in rows(key, entity, plan) {
@@ -844,10 +908,6 @@ pub fn run(
         batch.end_cursor = position(last).encode();
     }
     batch
-}
-
-pub fn is_reserved(kind: &str) -> bool {
-    kind.len() >= 4 && kind.starts_with("__") && kind.ends_with("__")
 }
 
 /// `__kind__` and `__namespace__`: the kinds of every namespace, the namespaces (the default

@@ -8,7 +8,7 @@ use hidane_proto::{
 };
 use tonic::Status;
 
-use super::keys::{self, Database, Last, Rules};
+use super::keys::{self, Database, Last, Rules, reserved};
 
 /// The longest property name, and the longest indexed string or blob, in bytes.
 const MAX_INDEXED: usize = 1500;
@@ -20,10 +20,6 @@ const MAX_MEANING: i32 = 26;
 pub const MAX_INDEX_ENTRIES: usize = 5000;
 /// The largest entity, as [`entity_size`] counts it.
 pub const MAX_ENTITY_BYTES: usize = 1_048_576;
-
-fn reserved(name: &str) -> bool {
-    name.len() >= 4 && name.starts_with("__") && name.ends_with("__")
-}
 
 /// Checks the properties of an entity that is written, in order. Nested arrays, the number of
 /// index values and the entity's size come later ([`nested_arrays`], [`index_entries`],

@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:c128b51d13d11837998be811b5ae5d891abc23248f50935a1851c0a4104f56c6",
+ "digest": "sha256:cd5711743698454188d0af3df85c83d4d28ed552aeaa9084722b4913c40aafbf",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,13 +14,13 @@
   }
  ],
  "totals": {
-  "files": 133,
-  "fixtures": 73,
+  "files": 134,
+  "fixtures": 74,
   "transcripts": 60,
-  "answers": 45612,
-  "bytes": 31543435,
+  "answers": 48086,
+  "bytes": 33047999,
   "levels": {
-   "full": 34244,
+   "full": 36718,
    "reasons": 4344,
    "part": 1495,
    "status": 5197,
@@ -80,20 +80,20 @@
     "answers": 278
    },
    "datastore": {
-    "fixtures": 11,
+    "fixtures": 12,
     "transcripts": 18,
-    "answers": 9943
+    "answers": 12417
    }
   },
   "by_release": {
    "v1.22.0": {
-    "fixtures": 73,
+    "fixtures": 74,
     "transcripts": 60,
-    "answers": 45612
+    "answers": 48086
    }
   },
   "by_release_source": {
-   "header": 48,
+   "header": 49,
    "file name": 61,
    "git history": 24
   }
@@ -2532,11 +2532,11 @@
     "first_recorded": "2026-10-17",
     "last_changed": "2026-10-17"
    },
-   "bytes": 2655257,
-   "sha256": "68cb1aad2a86c3cd7d3a81e47f753ed018b75c06c3124a4b2ecbd91f5e2c2814",
-   "answers": 4423,
+   "bytes": 3366247,
+   "sha256": "5fe78ff9a019fcce461dfcd6cfbd103e7c1f6d6994a966fe7db2117c001e4f4a",
+   "answers": 5499,
    "levels": {
-    "full": 4423
+    "full": 5499
    },
    "replayed_over": [
     "REST"
@@ -2733,6 +2733,42 @@
    "compared": "in full: status, content type and body byte for byte (the structured query the text reads as, the results, the parser's messages), server times, versions, transaction IDs and cursors masked"
   },
   {
+   "path": "crates/hidane/tests/fixtures/datastore_gql_errors.json",
+   "kind": "fixture",
+   "area": "datastore",
+   "recorder": "tools/oracle/datastore_gql_errors.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-17",
+    "last_changed": "2026-10-17"
+   },
+   "bytes": 744458,
+   "sha256": "4e704d899217a71562cd61846858aaf08e39da84bfea1642a1d13585740690ca",
+   "answers": 1381,
+   "levels": {
+    "full": 1381
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/datastore.rs::gql_is_refused_like_the_official_emulator"
+   ],
+   "counted": "each GQL text (a query cut after each of its tokens, and texts with bindings of their own), to a server started with `--database-mode datastore-mode`; recorded over REST",
+   "compared": "in full: status, content type and body byte for byte, server times, versions and cursors masked"
+  },
+  {
    "path": "crates/hidane/tests/fixtures/datastore_indexes.json",
    "kind": "fixture",
    "area": "datastore",
@@ -2752,13 +2788,13 @@
    },
    "recorded": {
     "first_recorded": "2026-10-16",
-    "last_changed": "2026-10-16"
+    "last_changed": "2026-10-17"
    },
-   "bytes": 725394,
-   "sha256": "da64d63b8161b892b079d19ce2f915955717b4c9c518879ca93ac134666e32d3",
-   "answers": 599,
+   "bytes": 733241,
+   "sha256": "655574ac05a631fba374b67cb706faf38f4a67947b7fbbeb9260c793578f2aad",
+   "answers": 607,
    "levels": {
-    "full": 599
+    "full": 607
    },
    "replayed_over": [
     "REST"
@@ -2901,13 +2937,13 @@
    },
    "recorded": {
     "first_recorded": "2026-10-16",
-    "last_changed": "2026-10-16"
+    "last_changed": "2026-10-17"
    },
-   "bytes": 2177833,
-   "sha256": "3a0fbff6b9a78ce3fb2b02b9e541d2378b851dc8e19e31fc1bf6e584081ee660",
-   "answers": 231,
+   "bytes": 2219102,
+   "sha256": "4a5fb4dcc698ec6717b7bd195c6c9e8c176d11f189c16833906d5963a824e452",
+   "answers": 240,
    "levels": {
-    "full": 231
+    "full": 240
    },
    "replayed_over": [
     "REST"
