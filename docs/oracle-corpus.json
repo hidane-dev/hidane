@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:97d82d7b0f1ebc3da5311ff3827e6146d281d57143ffb33f2f20349c59214001",
+ "digest": "sha256:0b949ba19ba9e55c8a02a8abfa10f9517fb9502ee4ac76a294f8a3f33a34594b",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,11 +14,11 @@
   }
  ],
  "totals": {
-  "files": 114,
+  "files": 120,
   "fixtures": 66,
-  "transcripts": 48,
+  "transcripts": 54,
   "answers": 36845,
-  "bytes": 26251982,
+  "bytes": 26282410,
   "levels": {
    "full": 25507,
    "reasons": 4344,
@@ -81,20 +81,20 @@
    },
    "datastore": {
     "fixtures": 5,
-    "transcripts": 6,
+    "transcripts": 12,
     "answers": 1213
    }
   },
   "by_release": {
    "v1.22.0": {
     "fixtures": 66,
-    "transcripts": 48,
+    "transcripts": 54,
     "answers": 36845
    }
   },
   "by_release_source": {
    "header": 41,
-   "file name": 49,
+   "file name": 55,
    "git history": 24
   }
  },
@@ -4359,6 +4359,234 @@
      "what": "hidane",
      "result": "documented",
      "explained_in": "results/README.md"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-datastore-java-entities-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "datastore",
+   "recorder": "tools/oracle/sdk_datastore_java/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Datastore Java client (google-cloud-datastore)",
+    "packages": [
+     {
+      "name": "com.google.cloud:google-cloud-datastore",
+      "version": "3.7.0",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_datastore_java/pom.xml"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-16",
+    "last_changed": "2026-10-16"
+   },
+   "bytes": 6215,
+   "sha256": "131e02e8769f7478fa039f595c534387f466d8e50a332245fcddf7dd1d0a5fe1",
+   "compared_with": [
+    {
+     "path": "results/sdk-datastore-java-entities-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-datastore-java-http-entities-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "datastore",
+   "recorder": "tools/oracle/sdk_datastore_java/",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Datastore Java client (google-cloud-datastore) over HTTP",
+    "packages": [
+     {
+      "name": "com.google.cloud:google-cloud-datastore",
+      "version": "3.7.0",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_datastore_java/pom.xml"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-16",
+    "last_changed": "2026-10-16"
+   },
+   "bytes": 5757,
+   "sha256": "fadb5b9a04edd0559b8cf8fa7d3e69d09c3f13ddc0c2400a14d0574c8d8f11c6",
+   "compared_with": [
+    {
+     "path": "results/sdk-datastore-java-http-entities-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-datastore-java-http-queries-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "datastore",
+   "recorder": "tools/oracle/sdk_datastore_java/",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Datastore Java client (google-cloud-datastore) over HTTP",
+    "packages": [
+     {
+      "name": "com.google.cloud:google-cloud-datastore",
+      "version": "3.7.0",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_datastore_java/pom.xml"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-16",
+    "last_changed": "2026-10-16"
+   },
+   "bytes": 8264,
+   "sha256": "767a6f3277a5096ff674aa05cea9e1af86d56bda7c4649a1ae58601284a2d763",
+   "compared_with": [
+    {
+     "path": "results/sdk-datastore-java-http-queries-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-datastore-java-http-transactions-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "datastore",
+   "recorder": "tools/oracle/sdk_datastore_java/",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Datastore Java client (google-cloud-datastore) over HTTP",
+    "packages": [
+     {
+      "name": "com.google.cloud:google-cloud-datastore",
+      "version": "3.7.0",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_datastore_java/pom.xml"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-16",
+    "last_changed": "2026-10-16"
+   },
+   "bytes": 828,
+   "sha256": "d3f4df0df1ac7a53f557f5ee58ca106e093c61e428d03ec527e679276486b41b",
+   "compared_with": [
+    {
+     "path": "results/sdk-datastore-java-http-transactions-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-datastore-java-queries-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "datastore",
+   "recorder": "tools/oracle/sdk_datastore_java/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Datastore Java client (google-cloud-datastore)",
+    "packages": [
+     {
+      "name": "com.google.cloud:google-cloud-datastore",
+      "version": "3.7.0",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_datastore_java/pom.xml"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-16",
+    "last_changed": "2026-10-16"
+   },
+   "bytes": 8468,
+   "sha256": "c1b09be5300f0c9661b6a551c5e948087d6ac58f470b0c63b56124d3f4895579",
+   "compared_with": [
+    {
+     "path": "results/sdk-datastore-java-queries-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-datastore-java-transactions-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "datastore",
+   "recorder": "tools/oracle/sdk_datastore_java/",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Datastore Java client (google-cloud-datastore)",
+    "packages": [
+     {
+      "name": "com.google.cloud:google-cloud-datastore",
+      "version": "3.7.0",
+      "source": "pinned",
+      "where": "tools/oracle/sdk_datastore_java/pom.xml"
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-16",
+    "last_changed": "2026-10-16"
+   },
+   "bytes": 896,
+   "sha256": "39cee2280b49ecb73060fa6ddfe3842fd3b9a78f9f5d94f1db6411f1b882012f",
+   "compared_with": [
+    {
+     "path": "results/sdk-datastore-java-transactions-hidane.json",
+     "what": "hidane",
+     "result": "identical"
     }
    ]
   },

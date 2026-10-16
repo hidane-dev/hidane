@@ -25,7 +25,7 @@
    "status": "verified",
    "evidence": [
     "36,845 recorded answers of the official emulator v1.22.0 in 66 fixtures, replayed against hidane by cargo test",
-    "50 comparisons of SDK transcripts with the official emulator v1.22.0's: 32 identical, 18 documented differences",
+    "56 comparisons of SDK transcripts with the official emulator v1.22.0's: 38 identical, 18 documented differences",
     "2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers"
    ]
   }
@@ -505,6 +505,64 @@
    ]
   },
   {
+   "id": "datastore-java",
+   "client": "java-datastore, in Datastore mode",
+   "ecosystem": "maven",
+   "package": "com.google.cloud:google-cloud-datastore",
+   "platform": "JVM",
+   "transport": [
+    "gRPC",
+    "REST"
+   ],
+   "status": "verified",
+   "version": "3.7.0",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "transactions"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-16",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "sdk-datastore-java-entities",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-java-entities-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-java-http-entities",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-java-http-entities-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-java-http-queries",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-java-http-queries-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-java-http-transactions",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-java-http-transactions-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-java-queries",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-java-queries-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-java-transactions",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-java-transactions-hidane.json"
+    }
+   ]
+  },
+  {
    "id": "go",
    "client": "google-cloud-go firestore",
    "ecosystem": "go",
@@ -796,9 +854,9 @@
    "differs": 213
   },
   "transcripts": {
-   "pairs": 48,
-   "comparisons": 50,
-   "identical": 32,
+   "pairs": 54,
+   "comparisons": 56,
+   "identical": 38,
    "documented": 18,
    "unexplained": 0,
    "where": "docs/parity.md"

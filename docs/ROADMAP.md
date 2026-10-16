@@ -182,8 +182,8 @@ Released in v0.5.0 (2026-10-13):
 
 - Datastore mode (`--database-mode datastore-mode`, #81, [ADR 0009](adr/0009-datastore-mode.md)): keys,
   values, lookups, commits, transactions, IDs, queries, aggregations, GQL and
-  `--require_indexes` with `--index_file` are served, REST in protobuf too; the Python client
-  library is verified against both emulators, the Go, Java and Node.js ones come next
+  `--require_indexes` with `--index_file` are served, REST in protobuf too; the Python and Java
+  client libraries are verified against both emulators, the Go and Node.js ones come next
 - `google.firestore.admin.v1` (not in the official emulator either; stays UNIMPLEMENTED)
 - The remaining `/emulator/v1` endpoints and the gRPC `FirestoreEmulator` service (#36)
 - Runs against production Firestore and the production Rules API (needs a GCP project, #82)

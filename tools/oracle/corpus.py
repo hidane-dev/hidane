@@ -133,9 +133,10 @@ TRANSCRIPT_RECORDERS = {
 for _sdk in ("android", "go", "ios", "java", "python"):
     for _section in ("documents", "listen", "queries", "transactions"):
         TRANSCRIPT_RECORDERS[f"sdk-{_sdk}-{_section}"] = f"tools/oracle/sdk_{_sdk}/"
-for _section in ("entities", "queries", "transactions"):
-    for _name in (f"sdk-datastore-python-{_section}", f"sdk-datastore-python-http-{_section}"):
-        TRANSCRIPT_RECORDERS[_name] = "tools/oracle/sdk_datastore_python/"
+for _sdk in ("java", "python"):
+    for _section in ("entities", "queries", "transactions"):
+        for _name in (f"sdk-datastore-{_sdk}-{_section}", f"sdk-datastore-{_sdk}-http-{_section}"):
+            TRANSCRIPT_RECORDERS[_name] = f"tools/oracle/sdk_datastore_{_sdk}/"
 
 # Versions a recorder pins: (recorder, package, file, a pattern whose group 1 is the version).
 PINS = [
@@ -148,6 +149,9 @@ PINS = [
     ("tools/oracle/sdk_java/", "com.google.cloud:google-cloud-firestore",
      "tools/oracle/sdk_java/pom.xml",
      r"<artifactId>google-cloud-firestore</artifactId>\s*<version>([\w.\-]+)</version>"),
+    ("tools/oracle/sdk_datastore_java/", "com.google.cloud:google-cloud-datastore",
+     "tools/oracle/sdk_datastore_java/pom.xml",
+     r"<artifactId>google-cloud-datastore</artifactId>\s*<version>([\w.\-]+)</version>"),
     ("tools/js-sdk-browser/", "firebase-js-sdk", ".github/workflows/js-sdk-browser.yml",
      r"^\s*FIREBASE_JS_SDK_COMMIT: ([0-9a-f]{40})$"),
     ("tools/nodejs-system-tests/", "google-cloud-node", ".github/workflows/nodejs-system-tests.yml",

@@ -72,6 +72,13 @@ pub const VERIFIED: &[Verified] = &[
         source: "docs/sdk-certification.md",
     },
     Verified {
+        ecosystem: "maven",
+        name: "com.google.cloud:google-cloud-datastore",
+        version: "3.7.0",
+        what: "documents and writes, queries, aggregation queries, transactions",
+        source: "docs/sdk-certification.md",
+    },
+    Verified {
         ecosystem: "go",
         name: "cloud.google.com/go/firestore",
         version: "1.26.0",

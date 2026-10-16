@@ -1076,14 +1076,15 @@ for _sdk, _client in (("go", "Go SDK"), ("java", "Java SDK"), ("python", "Python
                             ("queries", "queries"), ("transactions", "transactions")):
         TRANSCRIPTS[f"sdk-{_sdk}-{_section}"] = dict(area=_area, client=_client, transport="gRPC")
 
-# One transcript per section of tools/oracle/sdk_datastore_python/, over gRPC and over HTTP.
-for _section in ("entities", "queries", "transactions"):
-    TRANSCRIPTS[f"sdk-datastore-python-{_section}"] = dict(
-        area="datastore", client="Datastore Python client (google-cloud-datastore)",
-        transport="gRPC")
-    TRANSCRIPTS[f"sdk-datastore-python-http-{_section}"] = dict(
-        area="datastore", client="Datastore Python client (google-cloud-datastore) over HTTP",
-        transport="REST")
+# One transcript per section of tools/oracle/sdk_datastore_python/ and sdk_datastore_java/, over
+# gRPC and over HTTP.
+for _sdk, _client in (("python", "Datastore Python client (google-cloud-datastore)"),
+                      ("java", "Datastore Java client (google-cloud-datastore)")):
+    for _section in ("entities", "queries", "transactions"):
+        TRANSCRIPTS[f"sdk-datastore-{_sdk}-{_section}"] = dict(
+            area="datastore", client=_client, transport="gRPC")
+        TRANSCRIPTS[f"sdk-datastore-{_sdk}-http-{_section}"] = dict(
+            area="datastore", client=f"{_client} over HTTP", transport="REST")
 
 # JSON files in results/ that are neither a transcript nor a replayed recording.
 IGNORED = {

@@ -83,15 +83,15 @@ each is run against both emulators and the results compared.
 | [firebase-js-sdk](https://github.com/firebase/firebase-js-sdk) | Apache-2.0 | Which transport it uses in the browser, in Node and in Lite; the WebChannel requests it makes; the mock tokens rules-unit-testing builds (`createMockUserToken`); its copy of `write.proto` with `verify` | [`docs/compatibility.md`](../compatibility.md), [`docs/webchannel.md`](../webchannel.md), `crates/hidane/src/webchannel.rs`, `crates/hidane/src/firestore/auth.rs`, `crates/hidane-proto/proto/README.md` |
 | Server SDKs: [nodejs-firestore](https://github.com/googleapis/nodejs-firestore), [google-cloud-go](https://github.com/googleapis/google-cloud-go), [python-firestore](https://github.com/googleapis/python-firestore), [java-firestore](https://github.com/googleapis/java-firestore) | Apache-2.0 | Which transport and RPCs each uses against an emulator, and how each finds it | [`docs/compatibility.md`](../compatibility.md) |
 | Mobile SDKs: [firebase-ios-sdk](https://github.com/firebase/firebase-ios-sdk), [firebase-android-sdk](https://github.com/firebase/firebase-android-sdk) | Apache-2.0 | Which transport they use (gRPC, the Listen and Write streams) | [`docs/compatibility.md`](../compatibility.md) |
-| Datastore client libraries (#81, added by #356): [python-datastore](https://github.com/googleapis/python-datastore), [google-cloud-go](https://github.com/googleapis/google-cloud-go) `datastore`, [java-datastore](https://github.com/googleapis/java-datastore), [nodejs-datastore](https://github.com/googleapis/nodejs-datastore) | Apache-2.0 | Which transport and RPCs each uses against an emulator (`DATASTORE_EMULATOR_HOST`), and what it sends | `tools/oracle/sdk_datastore_python/` (python-datastore); the others planned (#81) |
+| Datastore client libraries (#81, added by #356): [python-datastore](https://github.com/googleapis/python-datastore), [google-cloud-go](https://github.com/googleapis/google-cloud-go) `datastore`, [java-datastore](https://github.com/googleapis/java-datastore), [nodejs-datastore](https://github.com/googleapis/nodejs-datastore) | Apache-2.0 | Which transport and RPCs each uses against an emulator (`DATASTORE_EMULATOR_HOST`), and what it sends | `tools/oracle/sdk_datastore_python/` (python-datastore), `tools/oracle/sdk_datastore_java/` (java-datastore); the others planned (#81) |
 
 Their behaviour against both emulators:
 
 - `tools/oracle/sdk_*.mjs`, `tools/oracle/sdk_go/`, `tools/oracle/sdk_python/`,
   `tools/oracle/sdk_java/`, `tools/oracle/webchannel/` and `tools/oracle/flutter_web/` run the
-  same steps through an SDK against each emulator, and `tools/oracle/sdk_datastore_python/`
-  through the Python client library of Datastore against each in Datastore mode; the
-  transcripts are in `results/`.
+  same steps through an SDK against each emulator, and `tools/oracle/sdk_datastore_python/` and
+  `tools/oracle/sdk_datastore_java/` through the Python and Java client libraries of Datastore
+  against each in Datastore mode; the transcripts are in `results/`.
 - `tools/js-sdk-browser/` runs firebase-js-sdk's own Firestore browser test suite against each.
 - `hidane exec -- firebase emulators:start` runs firebase-tools with hidane in place of the jar,
   and the Emulator UI is used against it ([`docs/compatibility.md`](../compatibility.md));
