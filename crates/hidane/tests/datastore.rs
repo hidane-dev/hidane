@@ -470,6 +470,94 @@ async fn commit_checks_come_in_the_official_emulators_order() {
     );
 }
 
+/// How long a write waits for another transaction's lock (`fixtures/datastore_locks.json`, from
+/// `tools/oracle/datastore_locks.py`): 2 s in a transaction, 60 s outside one, the reader kept
+/// in use meanwhile. The scenarios run at once; a write's wait matches when it is within 5 s of
+/// the official emulator's.
+#[tokio::test]
+async fn lock_waits_like_the_official_emulator() {
+    let fixture: Json =
+        serde_json::from_str(include_str!("fixtures/datastore_locks.json")).unwrap();
+    let keep_alive = fixture["keep_alive_seconds"].as_u64().unwrap();
+    let addr = start().await;
+    let runs: Vec<_> = fixture["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .enumerate()
+        .map(|(n, case)| tokio::spawn(replay_locks(addr, n, case.clone(), keep_alive)))
+        .collect();
+    let mut differences = Vec::new();
+    for run in runs {
+        differences.extend(run.await.unwrap());
+    }
+    assert!(differences.is_empty(), "{}", differences.join("\n"));
+}
+
+async fn replay_locks(addr: SocketAddr, n: usize, case: Json, keep_alive: u64) -> Vec<String> {
+    let project = format!("locks-{n}");
+    let name = case["name"].as_str().unwrap();
+    let steps = case["steps"].as_array().unwrap();
+    let mut began: Vec<String> = Vec::new();
+    let mut differences = Vec::new();
+    for (i, step) in steps.iter().enumerate() {
+        let fill = |text: String| {
+            let text = text.replace("{reader}", began.first().map_or("", String::as_str));
+            text.replace("{writer}", began.get(1).map_or("", String::as_str))
+        };
+        let path = step["path"]
+            .as_str()
+            .unwrap()
+            .replace("{project}", &project);
+        let body = fill(step["body"].to_string());
+        let last = i + 1 == steps.len();
+        // The reader stays in use while the write waits.
+        let keeper = last.then(|| {
+            let lookup = format!(
+                r#"{{"keys":[{{"path":[{{"kind":"K","name":"z"}}]}}],"readOptions":{{"transaction":"{}"}}}}"#,
+                began[0]
+            );
+            let path = format!("/v1/projects/{project}:lookup");
+            tokio::spawn(async move {
+                loop {
+                    tokio::time::sleep(std::time::Duration::from_secs(keep_alive)).await;
+                    send(addr, "POST", &path, Some(&lookup), Some("application/json")).await;
+                }
+            })
+        });
+        let start = std::time::Instant::now();
+        let answer = send(addr, "POST", &path, Some(&body), Some("application/json")).await;
+        if let Some(keeper) = keeper {
+            keeper.abort();
+            let waited = start.elapsed().as_secs_f64();
+            let official = case["waited"].as_f64().unwrap();
+            if (waited - official).abs() > 5.0 {
+                differences.push(format!(
+                    "{name}: the write waited {waited:.1} s, the official emulator's {official} s"
+                ));
+            }
+        }
+        if path.ends_with(":beginTransaction") {
+            let begun: Json = serde_json::from_str(&answer.body).unwrap();
+            began.push(begun["transaction"].as_str().unwrap().to_owned());
+        }
+        let expected = &step["outcome"];
+        let actual = normalize(&answer.body, &project);
+        if i64::from(answer.status) != expected["status"].as_i64().unwrap()
+            || answer.content_type.as_deref() != expected["contentType"].as_str()
+            || actual != expected["body"].as_str().unwrap()
+        {
+            differences.push(format!(
+                "{name} (step {i}):\n    official {} {}\n    hidane   {} {actual}",
+                expected["status"],
+                expected["body"].as_str().unwrap(),
+                answer.status,
+            ));
+        }
+    }
+    differences
+}
+
 /// The same service over gRPC, on the same port, and the Firestore API refused there too.
 #[tokio::test]
 async fn datastore_mode_serves_grpc_and_refuses_firestore() {

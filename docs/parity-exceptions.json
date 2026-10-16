@@ -457,11 +457,13 @@
    "area": "transactions",
    "topic": null,
    "kind": "equivalent",
-   "official": "A write that starts waiting for a lock shortly before the holding transaction expires still times out after 2 s: the expiry is only noticed at the next request",
+   "official": "A write that starts waiting for a lock shortly before the holding transaction expires still times out after 2 s: the expiry is only noticed at the next request. In Datastore mode a write outside a transaction waits 60 s, longer than an unused holder lives, and either times out or goes through, by chance (`tools/oracle/datastore_locks.py` keeps its holders in use)",
    "firestore": null,
    "hidane": "The write proceeds when the holding transaction expires",
    "reason": "Timing detail with the same outcome a moment later",
-   "references": [],
+   "references": [
+    "tools/oracle/datastore_locks.py"
+   ],
    "pinned_by": [
     "crates/hidane/src/firestore/transactions/tests.rs::a_waiting_write_proceeds_when_the_blocking_transaction_expires"
    ]

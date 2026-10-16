@@ -28,7 +28,8 @@ observation; the sources are listed in [`clean-room/SOURCES.md`](../clean-room/S
   `__kind__` and `__namespace__` queries list the kinds and namespaces.
 - An entity's version is its last commit time in microseconds. Cursors are opaque bytes.
 - Transactions lock as Firestore's do in the official emulator: a conflicting commit waits, then
-  fails with `ABORTED` "Transaction lock timeout." Read-only transactions refuse writes.
+  fails with `ABORTED` "Transaction lock timeout." (after 2 s in a transaction, 60 s outside
+  one, `tools/oracle/datastore_locks.py`). Read-only transactions refuse writes.
 - Errors carry their own texts, some of them a key printed as protocol-buffer text
   ("no entity to update: app: …").
 

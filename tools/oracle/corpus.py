@@ -71,6 +71,7 @@ FIXTURE_CLIENTS = {
     "datastore_firestore_api.py": ([GRPC, REST], PY_GRPCURL),
     "datastore_gql.py": ([REST], PY),
     "datastore_indexes.py": ([REST, PROCESS], PY),
+    "datastore_locks.py": ([REST], PY),
     "datastore_projects.py": ([GRPC, REST, PROCESS], PY_GRPCURL),
     "datastore_protobuf.py": ([REST], PY),
     "datastore_queries.py": ([REST], PY),

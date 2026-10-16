@@ -30,6 +30,10 @@ use tonic::Status;
 pub const LOCK_TIMEOUT: Duration = Duration::from_secs(2);
 /// How long an unused transaction stays open (60 s since its last request, as measured).
 pub const IDLE_TIMEOUT: Duration = Duration::from_secs(60);
+/// How long a write outside a transaction waits for another transaction's lock in Datastore
+/// mode: 60 s on the official emulator, a write in a transaction 2 s as in Firestore Native mode
+/// (`tests/fixtures/datastore_locks.json`).
+pub const OUTSIDE_LOCK_TIMEOUT: Duration = Duration::from_secs(60);
 
 const LOCK_TIMEOUT_MESSAGE: &str = "Transaction lock timeout.";
 const EXPIRED: &str = "The referenced transaction has expired or is no longer valid.";
@@ -57,6 +61,9 @@ pub struct Transactions {
     /// Bumped whenever locks are released, to wake waiting writes.
     released: watch::Sender<()>,
     lock_timeout: Duration,
+    /// How long a write outside a transaction waits: [`LOCK_TIMEOUT`] too, but in Datastore
+    /// mode ([`OUTSIDE_LOCK_TIMEOUT`]).
+    outside_lock_timeout: Duration,
     idle_timeout: Duration,
 }
 
@@ -139,8 +146,16 @@ impl Transactions {
             databases: Mutex::default(),
             released: watch::Sender::new(()),
             lock_timeout,
+            outside_lock_timeout: lock_timeout,
             idle_timeout,
         }
+    }
+
+    /// The same, a write outside a transaction waiting `timeout` instead.
+    #[must_use]
+    pub fn with_outside_lock_timeout(mut self, timeout: Duration) -> Self {
+        self.outside_lock_timeout = timeout;
+        self
     }
 
     fn database(&self, database: &str) -> Arc<Mutex<Database>> {
@@ -303,7 +318,12 @@ impl Transactions {
     ) -> Result<T, Status> {
         let owner = transaction.map(decode).transpose()?;
         let shared = self.database(database);
-        let deadline = Instant::now() + self.lock_timeout;
+        let deadline = Instant::now()
+            + if owner.is_some() {
+                self.lock_timeout
+            } else {
+                self.outside_lock_timeout
+            };
         let mut commit = Some(commit);
         loop {
             // Subscribe before looking, so a release between the look and the wait wakes us.
