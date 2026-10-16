@@ -4,7 +4,7 @@
 //! anything they would not read answered "Payload isn't valid for request.". A body sent as
 //! `application/x-protobuf`, as the Java and Python client libraries send it over HTTP, is
 //! read and answered as protobuf, an error as a `google.rpc.Status`
-//! (`tests/fixtures/datastore_protobuf.json`).
+//! (`tests/fixtures/datastore_protobuf.json`); any other is read as JSON (D086).
 
 use axum::{
     body::{Body, to_bytes},
@@ -45,20 +45,18 @@ enum Format {
     Protobuf,
 }
 
-/// The format a `Content-Type` names, as the official emulator tells them apart: protobuf for
-/// exactly `application/x-protobuf`, JSON for none, `application/json…` or `text/plain…`;
-/// anything else is not served (404).
-fn format(headers: &HeaderMap) -> Option<Format> {
-    let Some(value) = headers.get(header::CONTENT_TYPE) else {
-        return Some(Format::Json);
-    };
-    match value.to_str().ok()?.trim() {
-        "application/x-protobuf" => Some(Format::Protobuf),
-        "" => Some(Format::Json),
-        other if other.starts_with("application/json") || other.starts_with("text/plain") => {
-            Some(Format::Json)
-        }
-        _ => None,
+/// The format a `Content-Type` names: protobuf for exactly `application/x-protobuf`, as the
+/// official emulator tells them apart; JSON for anything else, where the official emulator serves
+/// only none, `application/json…` and `text/plain…` and answers the rest with a bare 404 (D086).
+fn format(headers: &HeaderMap) -> Format {
+    let protobuf = headers
+        .get(header::CONTENT_TYPE)
+        .and_then(|v| v.to_str().ok())
+        .is_some_and(|v| v.trim() == "application/x-protobuf");
+    if protobuf {
+        Format::Protobuf
+    } else {
+        Format::Json
     }
 }
 
@@ -156,9 +154,7 @@ pub(crate) async fn handle(
     if !known.contains(&verb) {
         return crate::not_found_response();
     }
-    let Some(format) = format(headers) else {
-        return crate::not_found_response();
-    };
+    let format = format(headers);
     let Ok(bytes) = to_bytes(body, MAX_BODY).await else {
         return failure(format, &invalid_payload());
     };

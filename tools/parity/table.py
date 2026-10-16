@@ -681,6 +681,18 @@ RECORDINGS = {
                  "records as a set (D093), its other files by size",
         count=lambda f: [(REST, FULL) for run in f["runs"]
                          for _ in [*run["cases"], *run.get("exports", {})]]),
+    f"{H}/fixtures/datastore_firestore_api.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::the_firestore_api_is_refused_as_on_the_official_emulator"],
+        counted="each request to the Firestore API and to the emulator's own endpoints, to a "
+                "server started with `--database-mode datastore-mode`, over REST and gRPC",
+        compares="in full: REST status, content type and body byte for byte; gRPC code and "
+                 "message; the requests the test lists in `KNOWN_CONTENT_TYPES` as "
+                 "intentionally different (D086)",
+        count=lambda f: [(REST, DIFFERS if case["name"] in rust_strings(f"{H}/datastore.rs",
+                                                                        "KNOWN_CONTENT_TYPES")
+                          else FULL) for case in f["cases"]]
+                        + [(GRPC, FULL) for _ in f["grpc"]]),
     f"{H}/fixtures/datastore_gql.json": dict(
         area="datastore",
         tests=[f"{H}/datastore.rs::gql_answers_like_the_official_emulator"],
@@ -707,8 +719,11 @@ RECORDINGS = {
         counted="each request, to a server started with `--database-mode datastore-mode`, its "
                 "body in protobuf or JSON as its `Content-Type` says; " + OVER_REST,
         compares="in full: status, content type and body byte for byte, where the answer holds no "
-                 "time or version; status and content type where it does",
-        count=lambda f: [(REST, FULL if case["compare"] == "exact" else STATUS)
+                 "time or version; status and content type where it does; the requests the test "
+                 "lists in `KNOWN_CONTENT_TYPES` as intentionally different (D086)",
+        count=lambda f: [(REST, DIFFERS if case["name"] in rust_strings(f"{H}/datastore.rs",
+                                                                         "KNOWN_CONTENT_TYPES")
+                          else FULL if case["compare"] == "exact" else STATUS)
                          for case in f["cases"]]),
     f"{H}/fixtures/datastore_queries.json": dict(
         area="datastore",

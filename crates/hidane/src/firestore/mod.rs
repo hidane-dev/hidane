@@ -110,6 +110,10 @@ pub struct FirestoreService {
     /// `--require_indexes` in Firestore Native mode: every query is refused, as the official
     /// emulator refuses it (`tests/fixtures/startup_flags.json`).
     refuse_queries: bool,
+    /// `--database-mode datastore-mode`: every request is refused once its names are read, as the
+    /// official emulator refuses the Firestore API there
+    /// (`tests/fixtures/datastore_firestore_api.json`).
+    datastore_mode: bool,
 }
 
 /// What a query answers with `--require_indexes` in Firestore Native mode.
@@ -123,6 +127,11 @@ impl FirestoreService {
 
     pub(crate) fn with_enterprise_edition(mut self, enterprise: bool) -> Self {
         self.enterprise = enterprise;
+        self
+    }
+
+    pub(crate) fn with_datastore_mode(mut self, datastore_mode: bool) -> Self {
+        self.datastore_mode = datastore_mode;
         self
     }
 
@@ -170,6 +179,10 @@ impl FirestoreService {
         metadata: &MetadataMap,
         database: Option<&str>,
     ) -> Result<auth::Caller, Status> {
+        // Every request reads its names, then asks who calls: in Datastore mode, it stops here.
+        if self.datastore_mode {
+            return Err(crate::datastore::firestore_refused());
+        }
         match (
             &self.single_project,
             single_project::requested(metadata, database),
@@ -282,6 +295,7 @@ impl FirestoreService {
             single_project: None,
             index_usage: None,
             refuse_queries: false,
+            datastore_mode: false,
         }
     }
 
@@ -1339,6 +1353,10 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<BoxStream<ExecutePipelineResponse>>, Status> {
         let (metadata, _, req) = request.into_parts();
         let database = names::database(&req.database)?;
+        // Datastore mode refuses the Firestore API first.
+        if self.datastore_mode {
+            return Err(crate::datastore::firestore_refused());
+        }
         // A standard-edition database refuses pipelines before reading the header, as on the
         // official emulator.
         if !self.enterprise {

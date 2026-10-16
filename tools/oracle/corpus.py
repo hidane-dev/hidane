@@ -66,6 +66,7 @@ FIXTURE_CLIENTS = {
     "cors.py": ([REST], PY),
     "datastore_entities.py": ([REST], PY),
     "datastore_export.py": ([REST, PROCESS], PY),
+    "datastore_firestore_api.py": ([GRPC, REST], PY_GRPCURL),
     "datastore_gql.py": ([REST], PY),
     "datastore_indexes.py": ([REST, PROCESS], PY),
     "datastore_protobuf.py": ([REST], PY),
