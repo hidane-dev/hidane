@@ -210,9 +210,9 @@ impl Nearest {
     /// `find_nearest` as the official emulator reads it with the rest of what the query
     /// names, before an aggregation's list is checked (#262): its vector, its limit, its
     /// measure, then its field. Its interplay with the query comes last ([`Nearest::check`]).
-    fn read(find: &FindNearest) -> Result<Self, Status> {
+    fn read(find: &FindNearest, bson: bool) -> Result<Self, Status> {
         let vector = find.query_vector.clone().unwrap_or_default();
-        validate::query_value(&vector)?;
+        validate::query_value(&vector, bson)?;
         let target = match vector.value_type.as_ref() {
             None => return Err(validate::unset()),
             Some(ValueType::MapValue(map)) if is_vector(map) => validate::vector(map)?,
@@ -570,13 +570,16 @@ impl Unchecked<'_> {
 }
 
 impl Query {
-    /// Validates `query` under `parent` in `database`, with the official error messages.
+    /// Validates `query` under `parent` in `database`, with the official error messages; with
+    /// `bson`, on an enterprise database, its values may be BSON values
+    /// ([`hidane_core::bson`]).
     pub fn parse(
         database: &str,
         parent: ResourcePath,
         query: &StructuredQuery,
+        bson: bool,
     ) -> Result<Self, Status> {
-        Self::read(database, parent, query, false, |_| Ok(Vec::new()))?.check()
+        Self::read_values(database, parent, query, false, bson, |_| Ok(Vec::new()))?.check()
     }
 
     /// Reads `query` under `parent` in the official emulator's order (`tools/oracle/
@@ -592,6 +595,27 @@ impl Query {
         parent: ResourcePath,
         query: &'a StructuredQuery,
         enterprise: bool,
+        aggregations: impl FnOnce(Option<&[FieldPath]>) -> Result<Vec<FieldPath>, Status>,
+    ) -> Result<Unchecked<'a>, Status> {
+        Self::read_values(
+            database,
+            parent,
+            query,
+            enterprise,
+            enterprise,
+            aggregations,
+        )
+    }
+
+    /// [`Query::read`], with `bson` saying whether its values may be BSON values apart from
+    /// whether its operators are an enterprise database's (a listener's on one are a standard
+    /// database's).
+    fn read_values<'a>(
+        database: &'a str,
+        parent: ResourcePath,
+        query: &'a StructuredQuery,
+        enterprise: bool,
+        bson: bool,
         aggregations: impl FnOnce(Option<&[FieldPath]>) -> Result<Vec<FieldPath>, Status>,
     ) -> Result<Unchecked<'a>, Status> {
         if !enterprise {
@@ -623,7 +647,7 @@ impl Query {
         let filter = query
             .r#where
             .as_ref()
-            .map(parse_filter)
+            .map(|filter| parse_filter(filter, bson))
             .transpose()?
             .flatten();
         // The projection, read and checked as a mask is, before the orders (#262).
@@ -657,10 +681,14 @@ impl Query {
             .collect::<Result<Vec<_>, Status>>()?;
 
         let bound =
-            |cursor: Option<&Cursor>| cursor.map(|c| parse_cursor(c, &explicit)).transpose();
+            |cursor: Option<&Cursor>| cursor.map(|c| parse_cursor(c, &explicit, bson)).transpose();
         let start = bound(query.start_at.as_ref())?;
         let end = bound(query.end_at.as_ref())?;
-        let nearest = query.find_nearest.as_ref().map(Nearest::read).transpose()?;
+        let nearest = query
+            .find_nearest
+            .as_ref()
+            .map(|find| Nearest::read(find, bson))
+            .transpose()?;
         let aggregated = aggregations(projection.as_deref())?;
         Ok(Unchecked {
             database,
@@ -1123,7 +1151,7 @@ fn reference(database: &str, path: &ResourcePath) -> Value {
 
 /// `None` for a filter that constrains nothing (an empty composite filter). A filter of no kind
 /// is refused, wherever it is (`tools/oracle/queries.py`, #262).
-fn parse_filter(filter: &structured_query::Filter) -> Result<Option<Filter>, Status> {
+fn parse_filter(filter: &structured_query::Filter, bson: bool) -> Result<Option<Filter>, Status> {
     match &filter.filter_type {
         None => Err(Status::invalid_argument("Unknown Filter type.")),
         Some(FilterType::CompositeFilter(composite)) => {
@@ -1139,7 +1167,7 @@ fn parse_filter(filter: &structured_query::Filter) -> Result<Option<Filter>, Sta
                 };
             let mut filters = Vec::with_capacity(composite.filters.len());
             for filter in &composite.filters {
-                filters.extend(parse_filter(filter)?);
+                filters.extend(parse_filter(filter, bson)?);
             }
             Ok((!filters.is_empty()).then(|| combine(filters)))
         }
@@ -1148,7 +1176,7 @@ fn parse_filter(filter: &structured_query::Filter) -> Result<Option<Filter>, Sta
             use field_filter::Operator as F;
             let field = Field::parse(field_filter.field.as_ref())?;
             let value = field_filter.value.clone().unwrap_or_default();
-            validate::query_value(&value)?;
+            validate::query_value(&value, bson)?;
             let op = match F::try_from(field_filter.op) {
                 Ok(F::LessThan) => Op::Less,
                 Ok(F::LessThanOrEqual) => Op::LessOrEqual,
@@ -2129,7 +2157,7 @@ fn filters_a_property(filter: &Filter) -> bool {
 
 /// A cursor holds at most one value per explicit ordering, each with a type (#262);
 /// `__name__` takes references.
-fn parse_cursor(cursor: &Cursor, explicit: &[Order]) -> Result<Bound, Status> {
+fn parse_cursor(cursor: &Cursor, explicit: &[Order], bson: bool) -> Result<Bound, Status> {
     if cursor.values.len() > explicit.len() {
         return Err(Status::invalid_argument("Cursor has too many values."));
     }
@@ -2138,7 +2166,7 @@ fn parse_cursor(cursor: &Cursor, explicit: &[Order]) -> Result<Bound, Status> {
         .iter()
         .zip(explicit)
         .map(|(value, order)| {
-            validate::query_value(value)?;
+            validate::query_value(value, bson)?;
             if order.field == Field::Name
                 && !matches!(value.value_type, Some(ValueType::ReferenceValue(_)))
             {
@@ -2159,8 +2187,9 @@ fn is_null(value: &Value) -> bool {
     matches!(value.value_type, None | Some(ValueType::NullValue(_)))
 }
 
+/// A double NaN, or a decimal128 one on an enterprise database: they equal each other.
 fn is_nan(value: &Value) -> bool {
-    matches!(value.value_type, Some(ValueType::DoubleValue(d)) if d.is_nan())
+    hidane_core::bson::is_nan(value)
 }
 
 /// Equality for `==`, `in`, `array-contains` and their negations: null and NaN equal nothing.
@@ -2650,7 +2679,7 @@ mod tests {
 
     /// The documents' paths, and how many documents the scans visited.
     fn run(store: &Counting, query: &StructuredQuery) -> (Vec<String>, usize) {
-        let query = Query::parse(DB, ResourcePath::root(), query).unwrap();
+        let query = Query::parse(DB, ResourcePath::root(), query, false).unwrap();
         store.visited.store(0, Atomic::Relaxed);
         let at = store.latest_read_time(DB);
         let results = query.run(store, DB, at);

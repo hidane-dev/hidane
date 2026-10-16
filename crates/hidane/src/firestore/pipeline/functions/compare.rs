@@ -2,7 +2,8 @@
 //!
 //! Values are equal when Firestore orders them together (`1 == 1.0`, `-0.0 == 0`), null equals
 //! null and NaN equals NaN; an absent value equals only another. A range compares values of one
-//! type (numbers mix integers and doubles): null is `<=` and `>=` null, and NaN only NaN.
+//! type (numbers mix integers, doubles and the BSON numbers): null is `<=` and `>=` null, and
+//! NaN (a double or a decimal128) only NaN.
 
 use std::cmp::Ordering;
 
@@ -99,7 +100,7 @@ pub(crate) fn ordering(a: Option<&Value>, b: Option<&Value>) -> Option<Ordering>
         (Some(a), Some(b)) => (a, b),
         _ => return None,
     };
-    let nan = |v: &Value| matches!(v.value_type, Some(ValueType::DoubleValue(d)) if d.is_nan());
+    let nan = hidane_core::bson::is_nan;
     if nan(a) || nan(b) {
         return (nan(a) && nan(b)).then_some(Ordering::Equal);
     }

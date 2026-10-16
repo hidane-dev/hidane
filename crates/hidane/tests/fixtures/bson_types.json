@@ -1,0 +1,5141 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/bson_types.py",
+ "edition": "enterprise",
+ "values": {
+  "null": {
+   "nullValue": null
+  },
+  "min": {
+   "mapValue": {
+    "fields": {
+     "__min__": {
+      "nullValue": null
+     }
+    }
+   }
+  },
+  "max": {
+   "mapValue": {
+    "fields": {
+     "__max__": {
+      "nullValue": null
+     }
+    }
+   }
+  },
+  "false": {
+   "booleanValue": false
+  },
+  "true": {
+   "booleanValue": true
+  },
+  "nan": {
+   "doubleValue": "NaN"
+  },
+  "ninf": {
+   "doubleValue": "-Infinity"
+  },
+  "neg": {
+   "integerValue": "-5"
+  },
+  "zero": {
+   "integerValue": "0"
+  },
+  "one": {
+   "integerValue": "1"
+  },
+  "onef": {
+   "doubleValue": 1.0
+  },
+  "half": {
+   "doubleValue": 0.5
+  },
+  "two": {
+   "integerValue": "2"
+  },
+  "inf": {
+   "doubleValue": "Infinity"
+  },
+  "big": {
+   "integerValue": "9223372036854775807"
+  },
+  "i32neg": {
+   "mapValue": {
+    "fields": {
+     "__int__": {
+      "integerValue": "-5"
+     }
+    }
+   }
+  },
+  "i32zero": {
+   "mapValue": {
+    "fields": {
+     "__int__": {
+      "integerValue": "0"
+     }
+    }
+   }
+  },
+  "i32one": {
+   "mapValue": {
+    "fields": {
+     "__int__": {
+      "integerValue": "1"
+     }
+    }
+   }
+  },
+  "i32two": {
+   "mapValue": {
+    "fields": {
+     "__int__": {
+      "integerValue": "2"
+     }
+    }
+   }
+  },
+  "decnan": {
+   "mapValue": {
+    "fields": {
+     "__decimal128__": {
+      "stringValue": "NaN"
+     }
+    }
+   }
+  },
+  "decninf": {
+   "mapValue": {
+    "fields": {
+     "__decimal128__": {
+      "stringValue": "-Infinity"
+     }
+    }
+   }
+  },
+  "decneg": {
+   "mapValue": {
+    "fields": {
+     "__decimal128__": {
+      "stringValue": "-1.2e3"
+     }
+    }
+   }
+  },
+  "deczero": {
+   "mapValue": {
+    "fields": {
+     "__decimal128__": {
+      "stringValue": "0"
+     }
+    }
+   }
+  },
+  "decnz": {
+   "mapValue": {
+    "fields": {
+     "__decimal128__": {
+      "stringValue": "-0"
+     }
+    }
+   }
+  },
+  "decone": {
+   "mapValue": {
+    "fields": {
+     "__decimal128__": {
+      "stringValue": "1"
+     }
+    }
+   }
+  },
+  "dechalf": {
+   "mapValue": {
+    "fields": {
+     "__decimal128__": {
+      "stringValue": "0.5"
+     }
+    }
+   }
+  },
+  "decsmall": {
+   "mapValue": {
+    "fields": {
+     "__decimal128__": {
+      "stringValue": "1.2e-3"
+     }
+    }
+   }
+  },
+  "decinf": {
+   "mapValue": {
+    "fields": {
+     "__decimal128__": {
+      "stringValue": "Infinity"
+     }
+    }
+   }
+  },
+  "decbig": {
+   "mapValue": {
+    "fields": {
+     "__decimal128__": {
+      "stringValue": "9223372036854775808"
+     }
+    }
+   }
+  },
+  "ts": {
+   "timestampValue": "2020-01-01T00:00:00Z"
+  },
+  "bts1": {
+   "mapValue": {
+    "fields": {
+     "__request_timestamp__": {
+      "mapValue": {
+       "fields": {
+        "seconds": {
+         "integerValue": "1"
+        },
+        "increment": {
+         "integerValue": "1"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "bts2": {
+   "mapValue": {
+    "fields": {
+     "__request_timestamp__": {
+      "mapValue": {
+       "fields": {
+        "seconds": {
+         "integerValue": "1"
+        },
+        "increment": {
+         "integerValue": "2"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "bts3": {
+   "mapValue": {
+    "fields": {
+     "__request_timestamp__": {
+      "mapValue": {
+       "fields": {
+        "seconds": {
+         "integerValue": "2"
+        },
+        "increment": {
+         "integerValue": "0"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "str": {
+   "stringValue": "a"
+  },
+  "strb": {
+   "stringValue": "b"
+  },
+  "bytes": {
+   "bytesValue": "AQI="
+  },
+  "bin1": {
+   "mapValue": {
+    "fields": {
+     "__binary__": {
+      "bytesValue": "AQEC"
+     }
+    }
+   }
+  },
+  "bin2": {
+   "mapValue": {
+    "fields": {
+     "__binary__": {
+      "bytesValue": "AQED"
+     }
+    }
+   }
+  },
+  "bin128": {
+   "mapValue": {
+    "fields": {
+     "__binary__": {
+      "bytesValue": "gAU="
+     }
+    }
+   }
+  },
+  "ref": {
+   "referenceValue": "{database}/documents/c/x"
+  },
+  "oid1": {
+   "mapValue": {
+    "fields": {
+     "__oid__": {
+      "stringValue": "507f191e810c19729de860ea"
+     }
+    }
+   }
+  },
+  "oid2": {
+   "mapValue": {
+    "fields": {
+     "__oid__": {
+      "stringValue": "507f191e810c19729de860eb"
+     }
+    }
+   }
+  },
+  "geo": {
+   "geoPointValue": {
+    "latitude": 1,
+    "longitude": 2
+   }
+  },
+  "re1": {
+   "mapValue": {
+    "fields": {
+     "__regex__": {
+      "mapValue": {
+       "fields": {
+        "pattern": {
+         "stringValue": "a"
+        },
+        "options": {
+         "stringValue": ""
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "re2": {
+   "mapValue": {
+    "fields": {
+     "__regex__": {
+      "mapValue": {
+       "fields": {
+        "pattern": {
+         "stringValue": "a"
+        },
+        "options": {
+         "stringValue": "i"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "re3": {
+   "mapValue": {
+    "fields": {
+     "__regex__": {
+      "mapValue": {
+       "fields": {
+        "pattern": {
+         "stringValue": "b"
+        },
+        "options": {
+         "stringValue": ""
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "arr": {
+   "arrayValue": {
+    "values": [
+     {
+      "integerValue": "1"
+     }
+    ]
+   }
+  },
+  "vec": {
+   "mapValue": {
+    "fields": {
+     "__type__": {
+      "stringValue": "__vector__"
+     },
+     "value": {
+      "arrayValue": {
+       "values": [
+        {
+         "doubleValue": 1.0
+        }
+       ]
+      }
+     }
+    }
+   }
+  },
+  "map": {
+   "mapValue": {
+    "fields": {
+     "a": {
+      "integerValue": "1"
+     }
+    }
+   }
+  }
+ },
+ "operands": {
+  "min": {
+   "mapValue": {
+    "fields": {
+     "__min__": {
+      "nullValue": null
+     }
+    }
+   }
+  },
+  "max": {
+   "mapValue": {
+    "fields": {
+     "__max__": {
+      "nullValue": null
+     }
+    }
+   }
+  },
+  "int32 1": {
+   "mapValue": {
+    "fields": {
+     "__int__": {
+      "integerValue": "1"
+     }
+    }
+   }
+  },
+  "integer 1": {
+   "integerValue": "1"
+  },
+  "double 1": {
+   "doubleValue": 1.0
+  },
+  "decimal 1": {
+   "mapValue": {
+    "fields": {
+     "__decimal128__": {
+      "stringValue": "1"
+     }
+    }
+   }
+  },
+  "decimal 1.0": {
+   "mapValue": {
+    "fields": {
+     "__decimal128__": {
+      "stringValue": "1.0"
+     }
+    }
+   }
+  },
+  "decimal NaN": {
+   "mapValue": {
+    "fields": {
+     "__decimal128__": {
+      "stringValue": "NaN"
+     }
+    }
+   }
+  },
+  "double NaN": {
+   "doubleValue": "NaN"
+  },
+  "decimal -0": {
+   "mapValue": {
+    "fields": {
+     "__decimal128__": {
+      "stringValue": "-0"
+     }
+    }
+   }
+  },
+  "object id": {
+   "mapValue": {
+    "fields": {
+     "__oid__": {
+      "stringValue": "507f191e810c19729de860ea"
+     }
+    }
+   }
+  },
+  "regex": {
+   "mapValue": {
+    "fields": {
+     "__regex__": {
+      "mapValue": {
+       "fields": {
+        "pattern": {
+         "stringValue": "a"
+        },
+        "options": {
+         "stringValue": ""
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "bson timestamp": {
+   "mapValue": {
+    "fields": {
+     "__request_timestamp__": {
+      "mapValue": {
+       "fields": {
+        "seconds": {
+         "integerValue": "1"
+        },
+        "increment": {
+         "integerValue": "2"
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  "binary": {
+   "mapValue": {
+    "fields": {
+     "__binary__": {
+      "bytesValue": "AQEC"
+     }
+    }
+   }
+  },
+  "bytes": {
+   "bytesValue": "AQI="
+  },
+  "null": {
+   "nullValue": null
+  }
+ },
+ "writes": [
+  {
+   "name": "min key",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__min__": {
+       "nullValue": null
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__min__": {
+       "nullValue": null
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "max key",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__max__": {
+       "nullValue": null
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__max__": {
+       "nullValue": null
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "min key holding 1",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__min__": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Field __min__ must be null; founds LONG."
+   }
+  },
+  {
+   "name": "max key with another key",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__max__": {
+       "nullValue": null
+      },
+      "a": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "field name '__max__' is reserved."
+   }
+  },
+  {
+   "name": "object id",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__oid__": {
+       "stringValue": "507f191e810c19729de860ea"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__oid__": {
+       "stringValue": "507f191e810c19729de860ea"
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "object id in capitals",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__oid__": {
+       "stringValue": "507F191E810C19729DE860EA"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid object ID hex string."
+   }
+  },
+  {
+   "name": "object id too short",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__oid__": {
+       "stringValue": "foo"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Object ID hex string has incorrect length."
+   }
+  },
+  {
+   "name": "object id of 24 non-hex characters",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__oid__": {
+       "stringValue": "zzzzzzzzzzzzzzzzzzzzzzzz"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid object ID hex string."
+   }
+  },
+  {
+   "name": "object id that is an integer",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__oid__": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Field __oid__ must be a string; founds LONG."
+   }
+  },
+  {
+   "name": "regex",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__regex__": {
+       "mapValue": {
+        "fields": {
+         "pattern": {
+          "stringValue": "^foo"
+         },
+         "options": {
+          "stringValue": "i"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__regex__": {
+       "mapValue": {
+        "fields": {
+         "pattern": {
+          "stringValue": "^foo"
+         },
+         "options": {
+          "stringValue": "i"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "regex without options",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__regex__": {
+       "mapValue": {
+        "fields": {
+         "pattern": {
+          "stringValue": "^foo"
+         },
+         "options": {
+          "stringValue": ""
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__regex__": {
+       "mapValue": {
+        "fields": {
+         "pattern": {
+          "stringValue": "^foo"
+         },
+         "options": {
+          "stringValue": ""
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "regex with every option",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__regex__": {
+       "mapValue": {
+        "fields": {
+         "pattern": {
+          "stringValue": "a"
+         },
+         "options": {
+          "stringValue": "imsux"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__regex__": {
+       "mapValue": {
+        "fields": {
+         "pattern": {
+          "stringValue": "a"
+         },
+         "options": {
+          "stringValue": "imsux"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "regex with an unknown option",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__regex__": {
+       "mapValue": {
+        "fields": {
+         "pattern": {
+          "stringValue": "foo"
+         },
+         "options": {
+          "stringValue": "a"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid regex option 'a'. Supported options are 'i', 'm', 's', 'u', and 'x'."
+   }
+  },
+  {
+   "name": "regex with options out of order",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__regex__": {
+       "mapValue": {
+        "fields": {
+         "pattern": {
+          "stringValue": "a"
+         },
+         "options": {
+          "stringValue": "xi"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Regex options must be sorted."
+   }
+  },
+  {
+   "name": "regex with a repeated option",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__regex__": {
+       "mapValue": {
+        "fields": {
+         "pattern": {
+          "stringValue": "a"
+         },
+         "options": {
+          "stringValue": "ii"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Duplicate regex option 'i'."
+   }
+  },
+  {
+   "name": "regex that does not compile",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__regex__": {
+       "mapValue": {
+        "fields": {
+         "pattern": {
+          "stringValue": "("
+         },
+         "options": {
+          "stringValue": ""
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__regex__": {
+       "mapValue": {
+        "fields": {
+         "pattern": {
+          "stringValue": "("
+         },
+         "options": {
+          "stringValue": ""
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "regex without a pattern",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__regex__": {
+       "mapValue": {
+        "fields": {
+         "options": {
+          "stringValue": "i"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "__regex__ map is missing value for key \"pattern\"."
+   }
+  },
+  {
+   "name": "regex without options key",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__regex__": {
+       "mapValue": {
+        "fields": {
+         "pattern": {
+          "stringValue": "a"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "__regex__ map is missing value for key \"options\"."
+   }
+  },
+  {
+   "name": "regex with another key",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__regex__": {
+       "mapValue": {
+        "fields": {
+         "pattern": {
+          "stringValue": "a"
+         },
+         "options": {
+          "stringValue": ""
+         },
+         "other": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__regex__": {
+       "mapValue": {
+        "fields": {
+         "pattern": {
+          "stringValue": "a"
+         },
+         "options": {
+          "stringValue": ""
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "regex that is a string",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__regex__": {
+       "stringValue": "a"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Field __regex__ must be a map; founds STRING."
+   }
+  },
+  {
+   "name": "int32",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__int__": {
+       "integerValue": "-57"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__int__": {
+       "integerValue": "-57"
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "int32 zero",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__int__": {
+       "integerValue": "0"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__int__": {
+       "integerValue": "0"
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "int32 max",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__int__": {
+       "integerValue": "2147483647"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__int__": {
+       "integerValue": "2147483647"
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "int32 min",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__int__": {
+       "integerValue": "-2147483648"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__int__": {
+       "integerValue": "-2147483648"
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "int32 too large",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__int__": {
+       "integerValue": "2147483648"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The field '__int__' value (2,147,483,648) is too large to be converted to a 32-bit integer."
+   }
+  },
+  {
+   "name": "int32 too small",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__int__": {
+       "integerValue": "-2147483650"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The field '__int__' value (-2,147,483,650) is too large to be converted to a 32-bit integer."
+   }
+  },
+  {
+   "name": "int32 that is a double",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__int__": {
+       "doubleValue": 1.0
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Field __int__ must be a long; founds DOUBLE."
+   }
+  },
+  {
+   "name": "int32 that is a string",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__int__": {
+       "stringValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Field __int__ must be a long; founds STRING."
+   }
+  },
+  {
+   "name": "decimal128",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__decimal128__": {
+       "stringValue": "-1.2e3"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__decimal128__": {
+       "stringValue": "-1.2E+3"
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "decimal128 NaN",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__decimal128__": {
+       "stringValue": "NaN"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__decimal128__": {
+       "stringValue": "NaN"
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "decimal128 infinity",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__decimal128__": {
+       "stringValue": "-Infinity"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__decimal128__": {
+       "stringValue": "-Infinity"
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "decimal128 negative zero",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__decimal128__": {
+       "stringValue": "-0"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__decimal128__": {
+       "stringValue": "-0"
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "decimal128 with 34 digits",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__decimal128__": {
+       "stringValue": "0.1234567890123456789012345678901234"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__decimal128__": {
+       "stringValue": "0.1234567890123456789012345678901234"
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "decimal128 with 35 digits",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__decimal128__": {
+       "stringValue": "0.12345678901234567890123456789012345"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid decimal128 string"
+   }
+  },
+  {
+   "name": "decimal128 empty",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__decimal128__": {
+       "stringValue": ""
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid decimal128 string"
+   }
+  },
+  {
+   "name": "decimal128 with spaces",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__decimal128__": {
+       "stringValue": "1 23. 4"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid decimal128 string"
+   }
+  },
+  {
+   "name": "decimal128 of letters",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__decimal128__": {
+       "stringValue": "abc"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid decimal128 string"
+   }
+  },
+  {
+   "name": "decimal128 exponent too large",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__decimal128__": {
+       "stringValue": "1e6145"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid decimal128 string"
+   }
+  },
+  {
+   "name": "decimal128 that is a double",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__decimal128__": {
+       "doubleValue": 1.5
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Field __decimal128__ must be a string; founds DOUBLE."
+   }
+  },
+  {
+   "name": "bson timestamp",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__request_timestamp__": {
+       "mapValue": {
+        "fields": {
+         "seconds": {
+          "integerValue": "57"
+         },
+         "increment": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__request_timestamp__": {
+       "mapValue": {
+        "fields": {
+         "seconds": {
+          "integerValue": "57"
+         },
+         "increment": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "bson timestamp of zero",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__request_timestamp__": {
+       "mapValue": {
+        "fields": {
+         "seconds": {
+          "integerValue": "0"
+         },
+         "increment": {
+          "integerValue": "0"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__request_timestamp__": {
+       "mapValue": {
+        "fields": {
+         "seconds": {
+          "integerValue": "0"
+         },
+         "increment": {
+          "integerValue": "0"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "bson timestamp seconds too large",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__request_timestamp__": {
+       "mapValue": {
+        "fields": {
+         "seconds": {
+          "integerValue": "4294967296"
+         },
+         "increment": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The field 'seconds' value (4,294,967,296) does not represent an unsigned 32-bit integer."
+   }
+  },
+  {
+   "name": "bson timestamp increment too large",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__request_timestamp__": {
+       "mapValue": {
+        "fields": {
+         "seconds": {
+          "integerValue": "2"
+         },
+         "increment": {
+          "integerValue": "4294967296"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The field 'increment' value (4,294,967,296) does not represent an unsigned 32-bit integer."
+   }
+  },
+  {
+   "name": "bson timestamp negative seconds",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__request_timestamp__": {
+       "mapValue": {
+        "fields": {
+         "seconds": {
+          "integerValue": "-1"
+         },
+         "increment": {
+          "integerValue": "2"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The field 'seconds' value (-1) does not represent an unsigned 32-bit integer."
+   }
+  },
+  {
+   "name": "bson timestamp negative increment",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__request_timestamp__": {
+       "mapValue": {
+        "fields": {
+         "seconds": {
+          "integerValue": "1"
+         },
+         "increment": {
+          "integerValue": "-2"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "The field 'increment' value (-2) does not represent an unsigned 32-bit integer."
+   }
+  },
+  {
+   "name": "bson timestamp without increment",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__request_timestamp__": {
+       "mapValue": {
+        "fields": {
+         "seconds": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "__request_timestamp__ map is missing value for key \"increment\"."
+   }
+  },
+  {
+   "name": "bson timestamp with another key",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__request_timestamp__": {
+       "mapValue": {
+        "fields": {
+         "seconds": {
+          "integerValue": "1"
+         },
+         "increment": {
+          "integerValue": "1"
+         },
+         "x": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__request_timestamp__": {
+       "mapValue": {
+        "fields": {
+         "seconds": {
+          "integerValue": "1"
+         },
+         "increment": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "bson timestamp that is an integer",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__request_timestamp__": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Field __request_timestamp__ must be a map; founds LONG."
+   }
+  },
+  {
+   "name": "binary",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__binary__": {
+       "bytesValue": "gAUGBw=="
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__binary__": {
+       "bytesValue": "gAUGBw=="
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "binary of subtype 0",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__binary__": {
+       "bytesValue": "AAEC"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Invalid BytesWithSubtype: subtype 0 is not permitted. Use the standard bytes type instead."
+   }
+  },
+  {
+   "name": "binary of a subtype alone",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__binary__": {
+       "bytesValue": "Aw=="
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "__binary__": {
+       "bytesValue": "Aw=="
+      }
+     }
+    }
+   }
+  },
+  {
+   "name": "binary empty",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__binary__": {
+       "bytesValue": ""
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "BytesWithSubtype cannot be empty."
+   }
+  },
+  {
+   "name": "binary that is a string",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__binary__": {
+       "stringValue": "x"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "Field __binary__ must contain bytes; founds STRING."
+   }
+  },
+  {
+   "name": "an unknown reserved key",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__foo__": {
+       "integerValue": "1"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "field name '__foo__' is reserved."
+   }
+  },
+  {
+   "name": "two BSON keys",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "__int__": {
+       "integerValue": "1"
+      },
+      "__oid__": {
+       "stringValue": "507f191e810c19729de860ea"
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "INVALID_ARGUMENT",
+    "message": "field name '__int__' is reserved."
+   }
+  },
+  {
+   "name": "a BSON value in an array",
+   "value": {
+    "arrayValue": {
+     "values": [
+      {
+       "mapValue": {
+        "fields": {
+         "__int__": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "mapValue": {
+        "fields": {
+         "__max__": {
+          "nullValue": null
+         }
+        }
+       }
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "arrayValue": {
+     "values": [
+      {
+       "mapValue": {
+        "fields": {
+         "__int__": {
+          "integerValue": "1"
+         }
+        }
+       }
+      },
+      {
+       "mapValue": {
+        "fields": {
+         "__max__": {
+          "nullValue": null
+         }
+        }
+       }
+      }
+     ]
+    }
+   }
+  },
+  {
+   "name": "a BSON value in a map",
+   "value": {
+    "mapValue": {
+     "fields": {
+      "a": {
+       "mapValue": {
+        "fields": {
+         "__int__": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     }
+    }
+   },
+   "outcome": {
+    "status": "OK"
+   },
+   "read": {
+    "mapValue": {
+     "fields": {
+      "a": {
+       "mapValue": {
+        "fields": {
+         "__int__": {
+          "integerValue": "1"
+         }
+        }
+       }
+      }
+     }
+    }
+   }
+  }
+ ],
+ "orders": [
+  {
+   "direction": "ASCENDING",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "null",
+     "min",
+     "false",
+     "true",
+     "decnan",
+     "nan",
+     "decninf",
+     "ninf",
+     "decneg",
+     "i32neg",
+     "neg",
+     "decnz",
+     "deczero",
+     "i32zero",
+     "zero",
+     "decsmall",
+     "dechalf",
+     "half",
+     "decone",
+     "i32one",
+     "one",
+     "onef",
+     "i32two",
+     "two",
+     "big",
+     "decbig",
+     "decinf",
+     "inf",
+     "ts",
+     "bts1",
+     "bts2",
+     "bts3",
+     "str",
+     "strb",
+     "bytes",
+     "bin1",
+     "bin2",
+     "bin128",
+     "ref",
+     "oid1",
+     "oid2",
+     "geo",
+     "re1",
+     "re2",
+     "re3",
+     "arr",
+     "vec",
+     "map",
+     "max"
+    ]
+   }
+  },
+  {
+   "direction": "DESCENDING",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "max",
+     "map",
+     "vec",
+     "arr",
+     "re3",
+     "re2",
+     "re1",
+     "geo",
+     "oid2",
+     "oid1",
+     "ref",
+     "bin128",
+     "bin2",
+     "bin1",
+     "bytes",
+     "strb",
+     "str",
+     "bts3",
+     "bts2",
+     "bts1",
+     "ts",
+     "decinf",
+     "inf",
+     "decbig",
+     "big",
+     "i32two",
+     "two",
+     "decone",
+     "i32one",
+     "one",
+     "onef",
+     "dechalf",
+     "half",
+     "decsmall",
+     "decnz",
+     "deczero",
+     "i32zero",
+     "zero",
+     "i32neg",
+     "neg",
+     "decneg",
+     "decninf",
+     "ninf",
+     "decnan",
+     "nan",
+     "true",
+     "false",
+     "min",
+     "null"
+    ]
+   }
+  }
+ ],
+ "filters": [
+  {
+   "op": "EQUAL",
+   "operand": "min",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "min"
+    ]
+   }
+  },
+  {
+   "op": "EQUAL",
+   "operand": "max",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "max"
+    ]
+   }
+  },
+  {
+   "op": "EQUAL",
+   "operand": "int32 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "onef",
+     "one",
+     "i32one",
+     "decone"
+    ]
+   }
+  },
+  {
+   "op": "EQUAL",
+   "operand": "integer 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "onef",
+     "decone",
+     "one",
+     "i32one"
+    ]
+   }
+  },
+  {
+   "op": "EQUAL",
+   "operand": "double 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "one",
+     "decone",
+     "onef",
+     "i32one"
+    ]
+   }
+  },
+  {
+   "op": "EQUAL",
+   "operand": "decimal 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "i32one",
+     "decone",
+     "one",
+     "onef"
+    ]
+   }
+  },
+  {
+   "op": "EQUAL",
+   "operand": "decimal 1.0",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "one",
+     "onef",
+     "decone",
+     "i32one"
+    ]
+   }
+  },
+  {
+   "op": "EQUAL",
+   "operand": "decimal NaN",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "nan",
+     "decnan"
+    ]
+   }
+  },
+  {
+   "op": "EQUAL",
+   "operand": "double NaN",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "decnan",
+     "nan"
+    ]
+   }
+  },
+  {
+   "op": "EQUAL",
+   "operand": "decimal -0",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "deczero",
+     "zero",
+     "decnz",
+     "i32zero"
+    ]
+   }
+  },
+  {
+   "op": "EQUAL",
+   "operand": "object id",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "oid1"
+    ]
+   }
+  },
+  {
+   "op": "EQUAL",
+   "operand": "regex",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "re1"
+    ]
+   }
+  },
+  {
+   "op": "EQUAL",
+   "operand": "bson timestamp",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "bts2"
+    ]
+   }
+  },
+  {
+   "op": "EQUAL",
+   "operand": "binary",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "bin1"
+    ]
+   }
+  },
+  {
+   "op": "EQUAL",
+   "operand": "bytes",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "bytes"
+    ]
+   }
+  },
+  {
+   "op": "EQUAL",
+   "operand": "null",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "null"
+    ]
+   }
+  },
+  {
+   "op": "NOT_EQUAL",
+   "operand": "min",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "geo",
+     "big",
+     "str",
+     "oid2",
+     "null",
+     "i32one",
+     "zero",
+     "re1",
+     "neg",
+     "true",
+     "vec",
+     "nan",
+     "map",
+     "one",
+     "bts3",
+     "decsmall",
+     "deczero",
+     "re2",
+     "bts2",
+     "onef",
+     "i32zero",
+     "decninf",
+     "re3",
+     "decnz",
+     "decnan",
+     "bin2",
+     "half",
+     "decneg",
+     "oid1",
+     "decinf",
+     "dechalf",
+     "bin128",
+     "i32neg",
+     "bin1",
+     "decone",
+     "inf",
+     "ninf",
+     "ref",
+     "strb",
+     "i32two",
+     "bts1",
+     "false",
+     "max",
+     "bytes",
+     "decbig",
+     "ts",
+     "arr",
+     "two"
+    ]
+   }
+  },
+  {
+   "op": "NOT_EQUAL",
+   "operand": "max",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "decninf",
+     "dechalf",
+     "half",
+     "true",
+     "decbig",
+     "ref",
+     "neg",
+     "nan",
+     "false",
+     "oid2",
+     "decinf",
+     "i32neg",
+     "inf",
+     "re2",
+     "bin128",
+     "bytes",
+     "decneg",
+     "oid1",
+     "bts3",
+     "map",
+     "re1",
+     "null",
+     "zero",
+     "two",
+     "bts2",
+     "ninf",
+     "i32two",
+     "decnz",
+     "deczero",
+     "decnan",
+     "decone",
+     "arr",
+     "bin2",
+     "one",
+     "vec",
+     "re3",
+     "bin1",
+     "bts1",
+     "min",
+     "decsmall",
+     "strb",
+     "str",
+     "i32one",
+     "geo",
+     "big",
+     "ts",
+     "onef",
+     "i32zero"
+    ]
+   }
+  },
+  {
+   "op": "NOT_EQUAL",
+   "operand": "int32 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "i32zero",
+     "nan",
+     "bts2",
+     "decinf",
+     "re2",
+     "zero",
+     "bts3",
+     "false",
+     "min",
+     "map",
+     "decnz",
+     "re1",
+     "bts1",
+     "arr",
+     "i32two",
+     "oid1",
+     "two",
+     "decninf",
+     "big",
+     "bin128",
+     "oid2",
+     "bin1",
+     "neg",
+     "deczero",
+     "re3",
+     "decsmall",
+     "ts",
+     "decbig",
+     "i32neg",
+     "ref",
+     "inf",
+     "geo",
+     "bytes",
+     "true",
+     "bin2",
+     "null",
+     "strb",
+     "dechalf",
+     "half",
+     "ninf",
+     "decnan",
+     "vec",
+     "max",
+     "str",
+     "decneg"
+    ]
+   }
+  },
+  {
+   "op": "NOT_EQUAL",
+   "operand": "integer 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "half",
+     "true",
+     "decbig",
+     "decnan",
+     "decneg",
+     "neg",
+     "deczero",
+     "bytes",
+     "bts3",
+     "bin2",
+     "arr",
+     "ts",
+     "oid1",
+     "decsmall",
+     "strb",
+     "map",
+     "bts1",
+     "i32zero",
+     "big",
+     "ninf",
+     "decinf",
+     "oid2",
+     "re1",
+     "inf",
+     "ref",
+     "str",
+     "re3",
+     "decnz",
+     "zero",
+     "re2",
+     "two",
+     "null",
+     "vec",
+     "decninf",
+     "i32two",
+     "bts2",
+     "dechalf",
+     "bin128",
+     "nan",
+     "geo",
+     "max",
+     "false",
+     "bin1",
+     "i32neg",
+     "min"
+    ]
+   }
+  },
+  {
+   "op": "NOT_EQUAL",
+   "operand": "double 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "max",
+     "i32two",
+     "inf",
+     "bin1",
+     "bin2",
+     "ninf",
+     "null",
+     "arr",
+     "true",
+     "i32zero",
+     "neg",
+     "ref",
+     "map",
+     "nan",
+     "decsmall",
+     "re2",
+     "decneg",
+     "zero",
+     "deczero",
+     "bts3",
+     "decnz",
+     "decnan",
+     "oid1",
+     "false",
+     "bin128",
+     "min",
+     "bytes",
+     "bts2",
+     "ts",
+     "bts1",
+     "decbig",
+     "half",
+     "re3",
+     "oid2",
+     "strb",
+     "big",
+     "decinf",
+     "str",
+     "two",
+     "vec",
+     "re1",
+     "decninf",
+     "i32neg",
+     "geo",
+     "dechalf"
+    ]
+   }
+  },
+  {
+   "op": "NOT_EQUAL",
+   "operand": "decimal 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "bin2",
+     "bin1",
+     "decnz",
+     "nan",
+     "true",
+     "min",
+     "bts3",
+     "half",
+     "map",
+     "null",
+     "i32zero",
+     "ts",
+     "i32neg",
+     "big",
+     "max",
+     "bin128",
+     "geo",
+     "dechalf",
+     "decninf",
+     "zero",
+     "decnan",
+     "decbig",
+     "re2",
+     "ninf",
+     "i32two",
+     "bts1",
+     "inf",
+     "vec",
+     "oid1",
+     "str",
+     "arr",
+     "deczero",
+     "decneg",
+     "oid2",
+     "two",
+     "false",
+     "strb",
+     "decsmall",
+     "re3",
+     "decinf",
+     "bts2",
+     "re1",
+     "ref",
+     "bytes",
+     "neg"
+    ]
+   }
+  },
+  {
+   "op": "NOT_EQUAL",
+   "operand": "decimal 1.0",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "str",
+     "re3",
+     "bin1",
+     "bytes",
+     "i32two",
+     "decnz",
+     "i32neg",
+     "min",
+     "deczero",
+     "bts2",
+     "decnan",
+     "bin2",
+     "bin128",
+     "neg",
+     "decninf",
+     "decsmall",
+     "two",
+     "i32zero",
+     "true",
+     "geo",
+     "big",
+     "arr",
+     "bts1",
+     "decinf",
+     "strb",
+     "vec",
+     "ref",
+     "max",
+     "ninf",
+     "decneg",
+     "re2",
+     "inf",
+     "nan",
+     "re1",
+     "half",
+     "ts",
+     "false",
+     "oid1",
+     "map",
+     "dechalf",
+     "bts3",
+     "decbig",
+     "zero",
+     "null",
+     "oid2"
+    ]
+   }
+  },
+  {
+   "op": "NOT_EQUAL",
+   "operand": "decimal NaN",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "re1",
+     "bts2",
+     "bts3",
+     "ninf",
+     "bts1",
+     "decsmall",
+     "null",
+     "inf",
+     "ref",
+     "half",
+     "map",
+     "i32two",
+     "vec",
+     "decinf",
+     "dechalf",
+     "geo",
+     "big",
+     "min",
+     "deczero",
+     "oid2",
+     "decone",
+     "arr",
+     "zero",
+     "onef",
+     "decnz",
+     "decninf",
+     "two",
+     "i32neg",
+     "decneg",
+     "bin2",
+     "one",
+     "true",
+     "bin1",
+     "false",
+     "i32zero",
+     "str",
+     "neg",
+     "re2",
+     "bytes",
+     "ts",
+     "decbig",
+     "i32one",
+     "bin128",
+     "re3",
+     "oid1",
+     "max",
+     "strb"
+    ]
+   }
+  },
+  {
+   "op": "NOT_EQUAL",
+   "operand": "double NaN",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "deczero",
+     "false",
+     "null",
+     "map",
+     "two",
+     "dechalf",
+     "bin2",
+     "one",
+     "neg",
+     "ts",
+     "arr",
+     "oid2",
+     "re3",
+     "true",
+     "re1",
+     "onef",
+     "re2",
+     "ref",
+     "geo",
+     "ninf",
+     "decnz",
+     "oid1",
+     "bts1",
+     "min",
+     "bts3",
+     "decone",
+     "decbig",
+     "str",
+     "bts2",
+     "strb",
+     "decinf",
+     "i32neg",
+     "bin128",
+     "vec",
+     "decneg",
+     "bin1",
+     "i32one",
+     "i32two",
+     "max",
+     "i32zero",
+     "decninf",
+     "decsmall",
+     "half",
+     "bytes",
+     "big",
+     "inf",
+     "zero"
+    ]
+   }
+  },
+  {
+   "op": "NOT_EQUAL",
+   "operand": "decimal -0",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "true",
+     "decsmall",
+     "decninf",
+     "bin128",
+     "map",
+     "arr",
+     "max",
+     "half",
+     "nan",
+     "dechalf",
+     "false",
+     "ref",
+     "re2",
+     "decnan",
+     "strb",
+     "bin2",
+     "ts",
+     "ninf",
+     "bin1",
+     "big",
+     "decbig",
+     "oid1",
+     "bts3",
+     "bts2",
+     "onef",
+     "vec",
+     "re3",
+     "i32one",
+     "one",
+     "neg",
+     "bytes",
+     "decone",
+     "inf",
+     "decinf",
+     "i32two",
+     "two",
+     "decneg",
+     "oid2",
+     "i32neg",
+     "geo",
+     "bts1",
+     "null",
+     "re1",
+     "str",
+     "min"
+    ]
+   }
+  },
+  {
+   "op": "NOT_EQUAL",
+   "operand": "object id",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "oid2",
+     "false",
+     "neg",
+     "bytes",
+     "deczero",
+     "re2",
+     "ninf",
+     "decneg",
+     "arr",
+     "dechalf",
+     "i32two",
+     "i32zero",
+     "bin1",
+     "decnz",
+     "bts1",
+     "decone",
+     "geo",
+     "min",
+     "two",
+     "onef",
+     "map",
+     "i32one",
+     "half",
+     "str",
+     "bts3",
+     "decsmall",
+     "nan",
+     "bin128",
+     "bin2",
+     "true",
+     "ref",
+     "decninf",
+     "one",
+     "re3",
+     "re1",
+     "null",
+     "max",
+     "decinf",
+     "zero",
+     "big",
+     "inf",
+     "bts2",
+     "ts",
+     "vec",
+     "i32neg",
+     "decnan",
+     "decbig",
+     "strb"
+    ]
+   }
+  },
+  {
+   "op": "NOT_EQUAL",
+   "operand": "regex",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "one",
+     "max",
+     "bts1",
+     "false",
+     "arr",
+     "re2",
+     "decnan",
+     "map",
+     "decbig",
+     "ts",
+     "two",
+     "bin128",
+     "bts3",
+     "true",
+     "strb",
+     "decone",
+     "geo",
+     "re3",
+     "ninf",
+     "bin2",
+     "i32zero",
+     "zero",
+     "inf",
+     "null",
+     "decneg",
+     "str",
+     "i32one",
+     "oid2",
+     "dechalf",
+     "bts2",
+     "bytes",
+     "decsmall",
+     "onef",
+     "i32two",
+     "min",
+     "vec",
+     "neg",
+     "decninf",
+     "nan",
+     "i32neg",
+     "bin1",
+     "decnz",
+     "oid1",
+     "decinf",
+     "deczero",
+     "big",
+     "half",
+     "ref"
+    ]
+   }
+  },
+  {
+   "op": "NOT_EQUAL",
+   "operand": "bson timestamp",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "decone",
+     "decneg",
+     "arr",
+     "max",
+     "bts1",
+     "oid2",
+     "big",
+     "ninf",
+     "re1",
+     "decninf",
+     "decbig",
+     "oid1",
+     "zero",
+     "deczero",
+     "re3",
+     "false",
+     "i32two",
+     "i32one",
+     "re2",
+     "strb",
+     "one",
+     "decnz",
+     "vec",
+     "nan",
+     "ref",
+     "dechalf",
+     "true",
+     "decnan",
+     "bytes",
+     "decsmall",
+     "bin2",
+     "ts",
+     "map",
+     "bts3",
+     "onef",
+     "null",
+     "i32zero",
+     "min",
+     "two",
+     "inf",
+     "half",
+     "str",
+     "decinf",
+     "neg",
+     "bin1",
+     "bin128",
+     "i32neg",
+     "geo"
+    ]
+   }
+  },
+  {
+   "op": "NOT_EQUAL",
+   "operand": "binary",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "bts1",
+     "null",
+     "one",
+     "re2",
+     "geo",
+     "onef",
+     "bytes",
+     "str",
+     "map",
+     "bts3",
+     "i32neg",
+     "re3",
+     "decbig",
+     "decninf",
+     "vec",
+     "i32zero",
+     "oid2",
+     "strb",
+     "ref",
+     "i32one",
+     "bin2",
+     "oid1",
+     "decnz",
+     "ts",
+     "big",
+     "decsmall",
+     "min",
+     "arr",
+     "bts2",
+     "decone",
+     "half",
+     "re1",
+     "max",
+     "ninf",
+     "true",
+     "false",
+     "decnan",
+     "neg",
+     "nan",
+     "deczero",
+     "bin128",
+     "decneg",
+     "inf",
+     "dechalf",
+     "i32two",
+     "zero",
+     "decinf",
+     "two"
+    ]
+   }
+  },
+  {
+   "op": "NOT_EQUAL",
+   "operand": "bytes",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "inf",
+     "re3",
+     "bts1",
+     "bts3",
+     "deczero",
+     "geo",
+     "i32neg",
+     "big",
+     "false",
+     "vec",
+     "bin2",
+     "decnz",
+     "two",
+     "max",
+     "decnan",
+     "min",
+     "true",
+     "oid2",
+     "decninf",
+     "neg",
+     "i32one",
+     "decone",
+     "nan",
+     "strb",
+     "decinf",
+     "bin1",
+     "decneg",
+     "bin128",
+     "ref",
+     "oid1",
+     "i32two",
+     "zero",
+     "re2",
+     "re1",
+     "str",
+     "ts",
+     "decsmall",
+     "i32zero",
+     "map",
+     "dechalf",
+     "ninf",
+     "onef",
+     "null",
+     "decbig",
+     "half",
+     "one",
+     "bts2",
+     "arr"
+    ]
+   }
+  },
+  {
+   "op": "NOT_EQUAL",
+   "operand": "null",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "zero",
+     "arr",
+     "inf",
+     "decsmall",
+     "decinf",
+     "ninf",
+     "re2",
+     "true",
+     "re1",
+     "ts",
+     "str",
+     "oid2",
+     "big",
+     "bytes",
+     "one",
+     "bts3",
+     "bts1",
+     "decnz",
+     "max",
+     "half",
+     "min",
+     "oid1",
+     "decone",
+     "onef",
+     "vec",
+     "bin128",
+     "decnan",
+     "decneg",
+     "i32two",
+     "neg",
+     "bts2",
+     "two",
+     "bin1",
+     "strb",
+     "false",
+     "nan",
+     "dechalf",
+     "re3",
+     "ref",
+     "geo",
+     "map",
+     "decninf",
+     "i32zero",
+     "decbig",
+     "bin2",
+     "i32neg",
+     "i32one",
+     "deczero"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN",
+   "operand": "min",
+   "outcome": {
+    "status": "OK",
+    "documents": []
+   }
+  },
+  {
+   "op": "LESS_THAN",
+   "operand": "max",
+   "outcome": {
+    "status": "OK",
+    "documents": []
+   }
+  },
+  {
+   "op": "LESS_THAN",
+   "operand": "int32 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "decneg",
+     "dechalf",
+     "decsmall",
+     "i32zero",
+     "decnz",
+     "i32neg",
+     "decninf",
+     "half",
+     "ninf",
+     "zero",
+     "neg",
+     "deczero"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN",
+   "operand": "integer 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "decneg",
+     "i32neg",
+     "ninf",
+     "deczero",
+     "i32zero",
+     "half",
+     "zero",
+     "neg",
+     "dechalf",
+     "decninf",
+     "decsmall",
+     "decnz"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN",
+   "operand": "double 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "decneg",
+     "dechalf",
+     "neg",
+     "decsmall",
+     "zero",
+     "deczero",
+     "i32neg",
+     "i32zero",
+     "ninf",
+     "half",
+     "decninf",
+     "decnz"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN",
+   "operand": "decimal 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "i32zero",
+     "decneg",
+     "decsmall",
+     "decnz",
+     "i32neg",
+     "zero",
+     "decninf",
+     "ninf",
+     "half",
+     "deczero",
+     "dechalf",
+     "neg"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN",
+   "operand": "decimal 1.0",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "ninf",
+     "i32neg",
+     "neg",
+     "decsmall",
+     "dechalf",
+     "decnz",
+     "zero",
+     "deczero",
+     "decninf",
+     "i32zero",
+     "decneg",
+     "half"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN",
+   "operand": "decimal NaN",
+   "outcome": {
+    "status": "OK",
+    "documents": []
+   }
+  },
+  {
+   "op": "LESS_THAN",
+   "operand": "double NaN",
+   "outcome": {
+    "status": "OK",
+    "documents": []
+   }
+  },
+  {
+   "op": "LESS_THAN",
+   "operand": "decimal -0",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "decneg",
+     "ninf",
+     "decninf",
+     "neg",
+     "i32neg"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN",
+   "operand": "object id",
+   "outcome": {
+    "status": "OK",
+    "documents": []
+   }
+  },
+  {
+   "op": "LESS_THAN",
+   "operand": "regex",
+   "outcome": {
+    "status": "OK",
+    "documents": []
+   }
+  },
+  {
+   "op": "LESS_THAN",
+   "operand": "bson timestamp",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "bts1"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN",
+   "operand": "binary",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "bytes"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN",
+   "operand": "bytes",
+   "outcome": {
+    "status": "OK",
+    "documents": []
+   }
+  },
+  {
+   "op": "LESS_THAN",
+   "operand": "null",
+   "outcome": {
+    "status": "OK",
+    "documents": []
+   }
+  },
+  {
+   "op": "LESS_THAN_OR_EQUAL",
+   "operand": "min",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "min"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN_OR_EQUAL",
+   "operand": "max",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "max"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN_OR_EQUAL",
+   "operand": "int32 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "one",
+     "decone",
+     "neg",
+     "onef",
+     "decneg",
+     "i32zero",
+     "decninf",
+     "ninf",
+     "decsmall",
+     "i32neg",
+     "dechalf",
+     "decnz",
+     "i32one",
+     "zero",
+     "deczero",
+     "half"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN_OR_EQUAL",
+   "operand": "integer 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "zero",
+     "ninf",
+     "i32neg",
+     "dechalf",
+     "one",
+     "decone",
+     "onef",
+     "decnz",
+     "neg",
+     "i32one",
+     "decninf",
+     "decsmall",
+     "half",
+     "deczero",
+     "i32zero",
+     "decneg"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN_OR_EQUAL",
+   "operand": "double 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "i32zero",
+     "i32neg",
+     "decninf",
+     "deczero",
+     "decneg",
+     "decnz",
+     "onef",
+     "zero",
+     "dechalf",
+     "one",
+     "neg",
+     "decsmall",
+     "half",
+     "ninf",
+     "decone",
+     "i32one"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN_OR_EQUAL",
+   "operand": "decimal 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "half",
+     "decone",
+     "onef",
+     "one",
+     "decnz",
+     "decneg",
+     "i32neg",
+     "ninf",
+     "i32zero",
+     "neg",
+     "decsmall",
+     "dechalf",
+     "deczero",
+     "i32one",
+     "zero",
+     "decninf"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN_OR_EQUAL",
+   "operand": "decimal 1.0",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "i32one",
+     "ninf",
+     "neg",
+     "decneg",
+     "one",
+     "i32neg",
+     "zero",
+     "i32zero",
+     "decninf",
+     "decnz",
+     "dechalf",
+     "half",
+     "onef",
+     "decsmall",
+     "deczero",
+     "decone"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN_OR_EQUAL",
+   "operand": "decimal NaN",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "nan",
+     "decnan"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN_OR_EQUAL",
+   "operand": "double NaN",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "decnan",
+     "nan"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN_OR_EQUAL",
+   "operand": "decimal -0",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "i32neg",
+     "ninf",
+     "zero",
+     "deczero",
+     "decnz",
+     "decninf",
+     "decneg",
+     "i32zero",
+     "neg"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN_OR_EQUAL",
+   "operand": "object id",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "oid1"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN_OR_EQUAL",
+   "operand": "regex",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "re1"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN_OR_EQUAL",
+   "operand": "bson timestamp",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "bts2",
+     "bts1"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN_OR_EQUAL",
+   "operand": "binary",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "bin1",
+     "bytes"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN_OR_EQUAL",
+   "operand": "bytes",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "bytes"
+    ]
+   }
+  },
+  {
+   "op": "LESS_THAN_OR_EQUAL",
+   "operand": "null",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "null"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN",
+   "operand": "min",
+   "outcome": {
+    "status": "OK",
+    "documents": []
+   }
+  },
+  {
+   "op": "GREATER_THAN",
+   "operand": "max",
+   "outcome": {
+    "status": "OK",
+    "documents": []
+   }
+  },
+  {
+   "op": "GREATER_THAN",
+   "operand": "int32 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "i32two",
+     "big",
+     "two",
+     "decinf",
+     "inf",
+     "decbig"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN",
+   "operand": "integer 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "decinf",
+     "decbig",
+     "two",
+     "i32two",
+     "big",
+     "inf"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN",
+   "operand": "double 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "big",
+     "decbig",
+     "inf",
+     "i32two",
+     "decinf",
+     "two"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN",
+   "operand": "decimal 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "two",
+     "i32two",
+     "decbig",
+     "big",
+     "decinf",
+     "inf"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN",
+   "operand": "decimal 1.0",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "i32two",
+     "decinf",
+     "big",
+     "two",
+     "inf",
+     "decbig"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN",
+   "operand": "decimal NaN",
+   "outcome": {
+    "status": "OK",
+    "documents": []
+   }
+  },
+  {
+   "op": "GREATER_THAN",
+   "operand": "double NaN",
+   "outcome": {
+    "status": "OK",
+    "documents": []
+   }
+  },
+  {
+   "op": "GREATER_THAN",
+   "operand": "decimal -0",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "dechalf",
+     "decinf",
+     "big",
+     "one",
+     "two",
+     "decone",
+     "i32one",
+     "decsmall",
+     "i32two",
+     "half",
+     "inf",
+     "decbig",
+     "onef"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN",
+   "operand": "object id",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "oid2"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN",
+   "operand": "regex",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "re3",
+     "re2"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN",
+   "operand": "bson timestamp",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "bts3"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN",
+   "operand": "binary",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "bin2",
+     "bin128"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN",
+   "operand": "bytes",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "bin1",
+     "bin2",
+     "bin128"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN",
+   "operand": "null",
+   "outcome": {
+    "status": "OK",
+    "documents": []
+   }
+  },
+  {
+   "op": "GREATER_THAN_OR_EQUAL",
+   "operand": "min",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "min"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN_OR_EQUAL",
+   "operand": "max",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "max"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN_OR_EQUAL",
+   "operand": "int32 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "onef",
+     "i32two",
+     "decone",
+     "decbig",
+     "one",
+     "decinf",
+     "i32one",
+     "two",
+     "inf",
+     "big"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN_OR_EQUAL",
+   "operand": "integer 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "one",
+     "two",
+     "big",
+     "decinf",
+     "decone",
+     "decbig",
+     "i32one",
+     "i32two",
+     "inf",
+     "onef"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN_OR_EQUAL",
+   "operand": "double 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "one",
+     "decinf",
+     "decbig",
+     "inf",
+     "two",
+     "i32one",
+     "decone",
+     "i32two",
+     "big",
+     "onef"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN_OR_EQUAL",
+   "operand": "decimal 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "big",
+     "inf",
+     "decbig",
+     "i32one",
+     "two",
+     "decinf",
+     "onef",
+     "decone",
+     "one",
+     "i32two"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN_OR_EQUAL",
+   "operand": "decimal 1.0",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "one",
+     "onef",
+     "decbig",
+     "i32one",
+     "big",
+     "inf",
+     "two",
+     "i32two",
+     "decinf",
+     "decone"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN_OR_EQUAL",
+   "operand": "decimal NaN",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "decnan",
+     "nan"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN_OR_EQUAL",
+   "operand": "double NaN",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "decnan",
+     "nan"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN_OR_EQUAL",
+   "operand": "decimal -0",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "one",
+     "dechalf",
+     "decbig",
+     "i32two",
+     "i32one",
+     "decinf",
+     "two",
+     "decone",
+     "deczero",
+     "zero",
+     "decnz",
+     "onef",
+     "big",
+     "i32zero",
+     "half",
+     "decsmall",
+     "inf"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN_OR_EQUAL",
+   "operand": "object id",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "oid2",
+     "oid1"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN_OR_EQUAL",
+   "operand": "regex",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "re2",
+     "re3",
+     "re1"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN_OR_EQUAL",
+   "operand": "bson timestamp",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "bts2",
+     "bts3"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN_OR_EQUAL",
+   "operand": "binary",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "bin2",
+     "bin128",
+     "bin1"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN_OR_EQUAL",
+   "operand": "bytes",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "bytes",
+     "bin128",
+     "bin2",
+     "bin1"
+    ]
+   }
+  },
+  {
+   "op": "GREATER_THAN_OR_EQUAL",
+   "operand": "null",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "null"
+    ]
+   }
+  },
+  {
+   "op": "IN",
+   "operand": "int32 1, decimal 1",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "onef",
+     "i32one",
+     "decone",
+     "one"
+    ]
+   }
+  },
+  {
+   "op": "NOT_IN",
+   "operand": "int32 1, min",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "decneg",
+     "inf",
+     "neg",
+     "true",
+     "decninf",
+     "bts2",
+     "bin2",
+     "oid2",
+     "zero",
+     "two",
+     "max",
+     "ninf",
+     "bts1",
+     "re3",
+     "decinf",
+     "bin128",
+     "dechalf",
+     "str",
+     "ref",
+     "i32zero",
+     "bin1",
+     "bytes",
+     "arr",
+     "strb",
+     "big",
+     "deczero",
+     "i32neg",
+     "re1",
+     "ts",
+     "decbig",
+     "null",
+     "decnan",
+     "vec",
+     "oid1",
+     "nan",
+     "i32two",
+     "bts3",
+     "map",
+     "decnz",
+     "decsmall",
+     "re2",
+     "false",
+     "half",
+     "geo"
+    ]
+   }
+  },
+  {
+   "op": "IN",
+   "operand": "object id, regex, bson timestamp, binary",
+   "outcome": {
+    "status": "OK",
+    "documents": [
+     "bts2",
+     "bin1",
+     "re1",
+     "oid1"
+    ]
+   }
+  }
+ ],
+ "pipelines": [
+  {
+   "document": "null",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "null"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "min",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "min_key"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "max",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "max_key"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "false",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "boolean"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "true",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "boolean"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "nan",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "float64"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "ninf",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "float64"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": true
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "neg",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "int64"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": true
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "zero",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "int64"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": true
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "one",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "int64"
+      },
+      "e": {
+       "booleanValue": true
+      },
+      "lt": {
+       "booleanValue": true
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "onef",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "float64"
+      },
+      "e": {
+       "booleanValue": true
+      },
+      "lt": {
+       "booleanValue": true
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "half",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "float64"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": true
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "two",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "int64"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "inf",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "float64"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "big",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "int64"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "i32neg",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "int32"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": true
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "i32zero",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "int32"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": true
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "i32one",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "int32"
+      },
+      "e": {
+       "booleanValue": true
+      },
+      "lt": {
+       "booleanValue": true
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "i32two",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "int32"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "decnan",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "decimal128"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "decninf",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "decimal128"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": true
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "decneg",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "decimal128"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": true
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "deczero",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "decimal128"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": true
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "decnz",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "decimal128"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": true
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "decone",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "decimal128"
+      },
+      "e": {
+       "booleanValue": true
+      },
+      "lt": {
+       "booleanValue": true
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "dechalf",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "decimal128"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": true
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "decsmall",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "decimal128"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": true
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "decinf",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "decimal128"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "decbig",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "decimal128"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "ts",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "timestamp"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "bts1",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "bson_timestamp"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "bts2",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "bson_timestamp"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "bts3",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "bson_timestamp"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "str",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "string"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "strb",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "string"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "bytes",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "bytes"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "bin1",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "bytes"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "bin2",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "bytes"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "bin128",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "bytes"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "ref",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "reference"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "oid1",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "object_id"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "oid2",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "object_id"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "geo",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "geo_point"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "re1",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "regex"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "re2",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "regex"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "re3",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "regex"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "arr",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "array"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "vec",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "vector"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  },
+  {
+   "document": "map",
+   "outcome": {
+    "status": "OK",
+    "fields": [
+     {
+      "t": {
+       "stringValue": "map"
+      },
+      "e": {
+       "booleanValue": false
+      },
+      "lt": {
+       "booleanValue": false
+      },
+      "n": {
+       "booleanValue": false
+      }
+     }
+    ]
+   }
+  }
+ ]
+}

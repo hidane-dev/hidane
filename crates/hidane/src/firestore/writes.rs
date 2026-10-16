@@ -212,7 +212,7 @@ pub fn check(
     }
     let targets = writes
         .iter()
-        .map(|write| check_names(database, write))
+        .map(|write| check_names(database, write, enterprise))
         .collect::<Result<Vec<_>, _>>()?;
     check_sequences(writes)?;
     for (write, path) in writes.iter().zip(&targets) {
@@ -225,7 +225,11 @@ pub fn check(
 /// its document's name (which must be in `database`), a verify's precondition, then its fields'
 /// names, its mask's paths and its transforms, then the time of an `update_time` precondition,
 /// in that order.
-pub fn check_names(database: &str, write: &Write) -> Result<ResourcePath, Status> {
+pub fn check_names(
+    database: &str,
+    write: &Write,
+    enterprise: bool,
+) -> Result<ResourcePath, Status> {
     let kind = match &write.operation {
         None => return Err(Status::invalid_argument("empty write operation")),
         Some(Operation::Update(_)) => None,
@@ -268,7 +272,7 @@ pub fn check_names(database: &str, write: &Write) -> Result<ResourcePath, Status
             }
         }
         Some(Operation::Update(document)) => {
-            validate::names(&document.fields)?;
+            validate::names(&document.fields, enterprise)?;
             if let Some(mask) = &write.update_mask {
                 validate::mask_paths(&mask.field_paths)?;
             }
@@ -471,6 +475,9 @@ pub fn apply(
                 batch.commit_time(),
                 enterprise,
             )?;
+            if enterprise {
+                hidane_core::bson::normalize(&mut fields);
+            }
             validate::size(&path, &fields, enterprise)?;
             Ok(store(
                 batch,
@@ -492,6 +499,9 @@ pub fn apply(
                 batch.commit_time(),
                 enterprise,
             )?;
+            if enterprise {
+                hidane_core::bson::normalize(&mut fields);
+            }
             validate::size(&path, &fields, enterprise)?;
             Ok(store(
                 batch,

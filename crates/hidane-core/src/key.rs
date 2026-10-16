@@ -32,6 +32,9 @@
 //! Escaping: inside strings, bytes, keys and path segments 0x00 becomes 0x00 0xFF and the
 //! terminator is 0x00 0x01, so a prefix sorts before every extension of it.
 //!
+//! The BSON types of an enterprise database ([`crate::bson`]) are encoded as the maps they are
+//! written as, not in their own order: nothing stores or looks them up by key.
+//!
 //! Numbers: an integer and a double compare by exact value. The integer is rounded to the
 //! nearest double; rounding is monotonic, so different rounded values already order the
 //! numbers. When the rounded values are equal, the integer's exact distance from that double

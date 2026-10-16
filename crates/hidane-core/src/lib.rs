@@ -1,5 +1,7 @@
 //! The Firestore data model as hidane implements it.
 //!
+//! - [`bson`]: the BSON types of an enterprise database (min and max keys, object IDs, regular
+//!   expressions, 32-bit integers, 128-bit decimals, BSON timestamps, binary data).
 //! - [`order`]: how Firestore orders values (`orderBy`, cursors, range filters) and document
 //!   names (`__name__`).
 //! - [`key`]: an order-preserving byte encoding of the same order, for storage keys and indexes:
@@ -15,6 +17,7 @@
 //! Every rule here was checked against the official emulator v1.22.0; the observations live in
 //! `tests/fixtures/value_order.json` and are regenerated with `tools/oracle/value_order.py`.
 
+pub mod bson;
 pub mod export;
 pub mod field_path;
 pub mod hash_order;

@@ -1,8 +1,5 @@
 //! Types: `type` and `is_type`.
 
-use hidane_core::order::is_vector;
-use hidane_proto::google::firestore::v1::value::ValueType;
-
 use super::{Def, Signature, one_of};
 use crate::firestore::pipeline::value;
 
@@ -56,22 +53,11 @@ pub(super) const DEFS: &[Def] = &[
                 return super::null();
             };
             let wanted = call.args[1].literal_string().unwrap_or_default();
-            let is = match (&v.value_type, wanted) {
-                (None | Some(ValueType::NullValue(_)), "null")
-                | (Some(ValueType::ArrayValue(_)), "array")
-                | (Some(ValueType::BooleanValue(_)), "boolean")
-                | (Some(ValueType::BytesValue(_)), "bytes")
-                | (Some(ValueType::TimestampValue(_)), "timestamp")
-                | (Some(ValueType::GeoPointValue(_)), "geo_point")
-                | (Some(ValueType::IntegerValue(_) | ValueType::DoubleValue(_)), "number")
-                | (Some(ValueType::IntegerValue(_)), "int64")
-                | (Some(ValueType::DoubleValue(_)), "float64")
-                | (Some(ValueType::ReferenceValue(_)), "reference")
-                | (Some(ValueType::StringValue(_)), "string") => true,
-                (Some(ValueType::MapValue(map)), "map") => !is_vector(map),
-                (Some(ValueType::MapValue(map)), "vector") => is_vector(map),
-                _ => false,
-            };
+            // The type `type()` names, and `number` for any number.
+            let name = value::type_name(&v);
+            let is = name == wanted
+                || wanted == "number"
+                    && matches!(name, "int64" | "float64" | "int32" | "decimal128");
             Ok(Some(value::boolean(is)))
         },
     },

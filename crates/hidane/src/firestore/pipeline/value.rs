@@ -1,7 +1,7 @@
 //! Values as pipelines read and make them: the names of their types, as errors and `type()` give
 //! them, and constructors.
 
-use hidane_core::{field_path::Fields, order::is_vector};
+use hidane_core::{bson::Bson, field_path::Fields, order::is_vector};
 use hidane_proto::google::firestore::v1::{ArrayValue, MapValue, Value, value::ValueType};
 use prost_types::Timestamp;
 
@@ -70,7 +70,8 @@ pub(crate) fn kind(value: &Value) -> &'static str {
     }
 }
 
-/// A value's type as `type()` names it.
+/// A value's type as `type()` names it, the BSON types of an enterprise database's included
+/// (binary data is `bytes`).
 pub(crate) fn type_name(value: &Value) -> &'static str {
     match &value.value_type {
         None | Some(ValueType::NullValue(_)) => "null",
@@ -84,7 +85,17 @@ pub(crate) fn type_name(value: &Value) -> &'static str {
         Some(ValueType::GeoPointValue(_)) => "geo_point",
         Some(ValueType::ArrayValue(_)) => "array",
         Some(ValueType::MapValue(map)) if is_vector(map) => "vector",
-        Some(ValueType::MapValue(_)) => "map",
+        Some(ValueType::MapValue(map)) => match hidane_core::bson::bson(map) {
+            None => "map",
+            Some(Bson::MinKey) => "min_key",
+            Some(Bson::MaxKey) => "max_key",
+            Some(Bson::ObjectId(_)) => "object_id",
+            Some(Bson::Regex { .. }) => "regex",
+            Some(Bson::Int32(_)) => "int32",
+            Some(Bson::Decimal128(_)) => "decimal128",
+            Some(Bson::Timestamp { .. }) => "bson_timestamp",
+            Some(Bson::Binary(_)) => "bytes",
+        },
         Some(_) => "unknown",
     }
 }
