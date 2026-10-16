@@ -215,6 +215,16 @@ pub(super) fn reserved(text: &str) -> bool {
     text.len() >= 5 && text.starts_with("__") && text.ends_with("__")
 }
 
+/// A request's namespace: [`namespace_ok`] (a reserved one may be read).
+pub fn check_namespace(namespace: &str) -> Result<(), Status> {
+    if !namespace_ok(namespace) {
+        return Err(Status::invalid_argument(format!(
+            "Illegal string \"{namespace}\" in namespace id."
+        )));
+    }
+    Ok(())
+}
+
 /// A namespace's text: letters, digits, `.`, `-` and `_`, at most 100 of them.
 fn namespace_ok(namespace: &str) -> bool {
     namespace.len() <= 100

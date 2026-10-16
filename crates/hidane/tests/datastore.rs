@@ -344,7 +344,7 @@ async fn datastore_queries_answer_like_the_official_emulator() {
 #[tokio::test]
 async fn checks_come_in_the_official_emulators_order() {
     let fixture: Json =
-        serde_json::from_str(include_str!("fixtures/datastore_checks.json")).unwrap();
+        serde_json::from_str(&expand(include_str!("fixtures/datastore_checks.json"))).unwrap();
     let cases = with_every_case(&fixture);
     assert!(cases.len() > 5000);
     let differences = replay_cases(start().await, &cases, &[], None, PROJECT).await;

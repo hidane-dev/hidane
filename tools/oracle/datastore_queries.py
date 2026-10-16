@@ -10,8 +10,8 @@ Seeds one project with a dataset (`DATASET`: a value of every type in property `
 `T`, entities with several properties of kind `P`, an ancestry, a namespace), then sends, over
 REST in order, `runQuery` with structured queries (kinds, every filter operator against values
 of every type, composite filters, ancestors, keys, orders, projections, `distinctOn`, limits,
-offsets, cursors and the queries it refuses), the metadata kinds `__kind__`, `__namespace__`
-and `__property__`, and `runAggregationQuery`. A cursor is opaque: a step that reads one names
+offsets, cursors, the queries it refuses, and a query without a kind in a transaction), the
+metadata kinds `__kind__`, `__namespace__` and `__property__`, and `runAggregationQuery`. A cursor is opaque: a step that reads one names
 it (`defines`, with the JSON path it came from), and later steps send it as `<name>`, so a
 replay sends its own. The fixture has the format of `datastore_entities.json`; server times,
 versions, transaction IDs and cursors are masked. `crates/hidane/tests/datastore.rs` replays
@@ -297,6 +297,9 @@ case("an unknown field", "runQuery", {"query": {"kind": kind("T"), "x": 1}})
 query("in a read-only transaction's read time, too old", {"kind": kind("T")}, readOptions={"readTime": "2020-01-01T00:00:00Z"})
 query("eventual", {"kind": kind("T")}, readOptions={"readConsistency": "EVENTUAL"})
 query("in a new transaction", {"kind": kind("P"), "limit": 1}, readOptions={"newTransaction": {}})
+# Without a kind, a read-write transaction cannot lock what it reads: an internal error.
+query("no kind, in a new transaction", {}, readOptions={"newTransaction": {}})
+query("no kind, in a new read-only transaction", {"limit": 1}, readOptions={"newTransaction": {"readOnly": {}}})
 
 # --- aggregations -----------------------------------------------------------------------------
 def agg(name, nested, *aggregations):
@@ -325,6 +328,8 @@ agg("sum and avg of timestamps, as microseconds", {"kind": kind("T"), "filter": 
 agg("sum of projected timestamps", {"kind": kind("T"), "filter": TIMES, "projection": [{"property": {"name": "v"}}]},
     {"sum": {"property": {"name": "v"}}, "alias": "s"})
 case("an aggregation without a query", "runAggregationQuery", {"aggregationQuery": {"aggregations": [{"count": {}}]}})
+case("an aggregation without a kind, in a new transaction", "runAggregationQuery",
+     {"aggregationQuery": {"nestedQuery": {}, "aggregations": [{"count": {}}]}, "readOptions": {"newTransaction": {}}})
 
 
 VERSION = re.compile(r'"(version|commitVersion|snapshotVersion)": "\d+"')

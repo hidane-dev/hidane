@@ -6,9 +6,10 @@
 //! go through different checks, worded differently. An aggregation's query accepts what a
 //! query refuses (an ancestor in a disjunction, `NOT_IN` with `IN` or `OR`, more than one
 //! `NOT_EQUAL`, entity operands), and an array inside an operand there is an internal error.
-//! Some checks come before the query's index is looked up (`--require_indexes`) and the others
-//! after it: a check answers the first early refusal as its error, and the first late one, if
-//! any, as its value.
+//! A filter's operand is checked as a written value is ([`super::values`]) in a `RunQuery`; an
+//! aggregation's query reads its operands otherwise, in two steps. Some checks come before the
+//! query's index is looked up (`--require_indexes`) and the others after it: a check answers the
+//! first early refusal as its error, and the first late one, if any, as its value.
 
 use hidane_proto::google::datastore::v1::{
     AggregationQuery, Filter, Key, PropertyFilter, Query, Value,
@@ -19,12 +20,41 @@ use tonic::Status;
 
 use super::keys::{Database, Id, Located, entity_ref, reserved};
 use super::query::{MAX_IN, MAX_NOT_IN, cursor_parses, cursors_match};
+use super::values::{
+    check_aggregation_operand, check_aggregation_operand_late, check_filter_operand, is_vector,
+};
 
 /// The first refusal that comes once the query's index is found, or the first before it.
 pub type Checked = Result<Option<Status>, Status>;
 
 /// The most aggregations one query may have.
 pub const MAX_AGGREGATIONS: usize = 5;
+
+/// An `IN` or `NOT_IN` filter's element that is an array without values, or unindexed: an
+/// internal error on the official emulator, once everything else is checked.
+fn unreadable_elements(all: &[(&Filter, bool)]) -> Result<(), Status> {
+    for (filter, _) in properties(all) {
+        if matches!(operator(filter), Some(Operator::In | Operator::NotIn))
+            && let Some(ValueType::ArrayValue(array)) = value(filter)
+            && array.values.iter().any(|e| {
+                empty(e)
+                    || (e.exclude_from_indexes
+                        && !matches!(e.value_type, Some(ValueType::ArrayValue(_))))
+            })
+        {
+            return Err(Status::unknown(""));
+        }
+    }
+    Ok(())
+}
+
+/// Whether an array value has no values.
+fn empty(value: &hidane_proto::google::datastore::v1::Value) -> bool {
+    matches!(&value.value_type, Some(ValueType::ArrayValue(a)) if a.values.is_empty())
+}
+
+/// The longest property name a filter may have, in bytes.
+const MAX_NAME: usize = 1500;
 
 /// The most disjunctions a query's filter may make in disjunctive normal form.
 const MAX_DISJUNCTIONS: usize = 30;
@@ -398,8 +428,14 @@ fn grouped_first(query: &Query) -> Result<(), Status> {
     Ok(())
 }
 
-/// The checks of `RunQuery`'s query, in `namespace` of `database`.
-pub fn entity_query(query: &Query, namespace: &str, database: &Database) -> Checked {
+/// The checks of `RunQuery`'s query, in `namespace` of `database`; `read_time` the verdict on
+/// the request's read time, which comes after the cursors.
+pub fn entity_query(
+    query: &Query,
+    namespace: &str,
+    database: &Database,
+    read_time: Result<(), Status>,
+) -> Checked {
     let all = filters(query.filter.as_ref());
     for (filter, _) in &all {
         entity_shape(filter)?;
@@ -442,6 +478,7 @@ pub fn entity_query(query: &Query, namespace: &str, database: &Database) -> Chec
         operand_shape(filter)?;
     }
     cursors(query)?;
+    read_time?;
     disjunctions(query)?;
     duplicate_order(query)?;
     Ok(entity_late(query, namespace, database, &all).err())
@@ -523,31 +560,49 @@ fn entity_shape(filter: &Filter) -> Result<(), Status> {
             if name.is_empty() {
                 return Err(invalid("The property.name is the empty string."));
             }
+            if name.len() > MAX_NAME {
+                return Err(invalid(format!(
+                    "The property.name is longer than {MAX_NAME} bytes."
+                )));
+            }
             let Some(value) = value(property) else {
                 return Err(invalid(format!(
                     "The value \"{name}\" does not contain a value."
                 )));
             };
-            match (op, value) {
-                (Operator::In | Operator::NotIn, ValueType::ArrayValue(array)) => {
-                    if array
-                        .values
-                        .iter()
-                        .any(|v| matches!(v.value_type, Some(ValueType::ArrayValue(_))))
-                    {
+            let operand = property.value.as_ref().expect("a value");
+            if operand.exclude_from_indexes {
+                return Err(invalid("a filter value must be indexed"));
+            }
+            let listed = matches!(op, Operator::In | Operator::NotIn);
+            match (listed, value) {
+                // A vector is not a list.
+                _ if is_vector(operand) && !listed => {
+                    return Err(invalid("A vector value is not allowed"));
+                }
+                (true, ValueType::ArrayValue(array)) if !is_vector(operand) => {
+                    // An array without values is left to the end ([`unreadable_elements`]).
+                    if array.values.iter().any(|element| {
+                        matches!(element.value_type, Some(ValueType::ArrayValue(_)))
+                            && !empty(element)
+                    }) {
                         return Err(invalid(
                             "list_value cannot contain a Value containing another list_value.",
                         ));
                     }
                 }
-                (Operator::In | Operator::NotIn, _) => {}
-                (_, ValueType::ArrayValue(_)) => {
+                (false, ValueType::ArrayValue(_)) => {
                     return Err(invalid("A list value is not allowed"));
                 }
-                (_, ValueType::EntityValue(_)) => {
-                    return Err(invalid("An entity value is not allowed"));
-                }
                 _ => {}
+            }
+            check_filter_operand(name, operand)?;
+            // An entity value that stands for a user, a regular expression or a timestamp of a
+            // request is not one.
+            if matches!(value, ValueType::EntityValue(_))
+                && !matches!(operand.meaning, 20 | 35 | 37)
+            {
+                return Err(invalid("An entity value is not allowed"));
             }
             Ok(())
         }
@@ -559,8 +614,14 @@ fn operand_shape(filter: &PropertyFilter) -> Result<(), Status> {
     match operator(filter) {
         Some(op @ (Operator::In | Operator::NotIn)) => {
             let label = if op == Operator::In { "IN" } else { "NOT_IN" };
-            let Some(ValueType::ArrayValue(array)) = value(filter) else {
-                return Err(invalid(format!("{label} requires an ArrayValue.")));
+            // A vector is not an array here.
+            let array = match value(filter) {
+                Some(ValueType::ArrayValue(array))
+                    if !filter.value.as_ref().is_some_and(is_vector) =>
+                {
+                    array
+                }
+                _ => return Err(invalid(format!("{label} requires an ArrayValue."))),
             };
             if array.values.is_empty() {
                 return Err(invalid(format!(
@@ -664,18 +725,24 @@ fn entity_late(
         }
         if name(filter) == "__key__" {
             key_operands(filter, namespace)?;
-        } else if query.kind.is_empty() {
+        }
+        projected_equality(query, filter)?;
+        grouped_equality(query, filter)?;
+        // An `IN` filter's element that is an array without values: an internal error.
+        if filter.value.as_ref().is_some_and(empty) {
+            return Err(Status::unknown(""));
+        }
+        if name(filter) != "__key__" && query.kind.is_empty() {
             return Err(invalid(format!(
                 "kind is required for filter: {}",
                 name(filter)
             )));
         }
-        projected_equality(query, filter)?;
-        grouped_equality(query, filter)?;
     }
     grouped_first(query)?;
     cursors_match(query)?;
-    metadata(query, database, all)
+    metadata(query, database, all)?;
+    unreadable_elements(all)
 }
 
 /// The queries of the kinds and of the namespaces: no projection but of the key, the key
@@ -748,6 +815,7 @@ pub fn aggregation_query(
     aggregation: &AggregationQuery,
     query: &Query,
     namespace: &str,
+    read_time: Result<(), Status>,
 ) -> Checked {
     for a in &aggregation.aggregations {
         match &a.operator {
@@ -774,6 +842,7 @@ pub fn aggregation_query(
     }
     ancestors_alone(&all)?;
     cursors(query)?;
+    read_time?;
     disjunctions(query)?;
     duplicate_order(query)?;
     Ok(aggregation_late(aggregation, query, namespace, &all).err())
@@ -798,12 +867,16 @@ fn nested_shape<'a>(filter: &'a Filter, ancestors: &mut Vec<&'a Value>) -> Resul
             Ok(())
         }
         Some(FilterType::PropertyFilter(property)) => {
+            if property.property.is_none() {
+                return Err(invalid("Filter must specify property reference."));
+            }
             let Some(op) = operator(property) else {
                 return Err(invalid("Unsupported PropertyFilter operator."));
             };
             if value(property).is_none() {
                 return Err(invalid("Value missing type."));
             }
+            check_aggregation_operand(property.value.as_ref().expect("a value"))?;
             operand_shape(property)?;
             if op == Operator::HasAncestor
                 && let Some(ancestor) = &property.value
@@ -902,6 +975,14 @@ fn aggregation_late(
     if query.limit.is_some_and(|n| n < 0) {
         return Err(invalid("limit is negative"));
     }
+    // The ancestor's key is read here, before its namespace is compared.
+    for (filter, _) in properties(all) {
+        if operator(filter) == Some(Operator::HasAncestor)
+            && let Some(operand) = &filter.value
+        {
+            check_aggregation_operand_late(name(filter), operand)?;
+        }
+    }
     ancestor_namespace(all, namespace)?;
     if query.kind.iter().any(|k| k.name.is_empty()) {
         return Err(invalid("The query kind is the empty string."));
@@ -930,15 +1011,35 @@ fn aggregation_late(
         if operator(filter) == Some(Operator::HasAncestor) {
             continue;
         }
+        if name(filter).len() > MAX_NAME {
+            return Err(invalid(format!(
+                "property path is longer than {MAX_NAME} bytes."
+            )));
+        }
         if name(filter) == "__key__" {
             key_operands(filter, namespace)?;
         }
         projected_equality(query, filter)?;
         grouped_equality(query, filter)?;
-        // An array in an operand is an internal error on the official emulator.
-        if operands(filter)
-            .iter()
-            .any(|v| matches!(v, ValueType::ArrayValue(_)))
+        if let Some(operand) = &filter.value {
+            check_aggregation_operand_late(name(filter), operand)?;
+        }
+        // An array in an operand, or an element unindexed, is an internal error on the official
+        // emulator.
+        let unindexed = match (operator(filter), &filter.value) {
+            (Some(Operator::NotIn), Some(v)) => match &v.value_type {
+                Some(ValueType::ArrayValue(array)) => {
+                    array.values.iter().any(|e| e.exclude_from_indexes)
+                }
+                _ => false,
+            },
+            (_, Some(v)) => v.exclude_from_indexes,
+            _ => false,
+        };
+        if unindexed
+            || operands(filter)
+                .iter()
+                .any(|v| matches!(v, ValueType::ArrayValue(_)))
         {
             return Err(Status::unknown(""));
         }
