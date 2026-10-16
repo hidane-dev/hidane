@@ -393,9 +393,9 @@ fn other_scripts_and_unserved_flags_are_refused() {
             "`--store-on-disk` is not a flag",
         ),
         (
-            "gcloud beta emulators firestore start --database-mode=firestore-native --require-indexes",
-            2,
-            "Firestore Native mode does not support index enforcement",
+            "gcloud beta emulators firestore start --database-mode=bogus",
+            1,
+            "Unsupported database mode: bogus",
         ),
     ] {
         let output = Command::new(BIN)
@@ -407,4 +407,148 @@ fn other_scripts_and_unserved_flags_are_refused() {
         assert!(stderr.contains(says), "{script}: {stderr}");
         assert!(!stderr.contains("running"), "{script}: {stderr}");
     }
+}
+
+/// A free port on 127.0.0.1.
+fn free_port() -> u16 {
+    TcpListener::bind("127.0.0.1:0")
+        .unwrap()
+        .local_addr()
+        .unwrap()
+        .port()
+}
+
+/// Reads stdout until the banner's last line; the banner's lines.
+fn banner(stdout: &mut impl Read) -> String {
+    let mut seen = String::new();
+    let mut buf = [0; 256];
+    while !seen.contains("Dev App Server is now running.") {
+        let n = stdout.read(&mut buf).unwrap();
+        assert!(n > 0, "no banner: {seen}");
+        seen.push_str(&String::from_utf8_lossy(&buf[..n]));
+    }
+    seen
+}
+
+/// One HTTP/1.1 request; the status and the body.
+fn http(port: u16, method: &str, path: &str, body: Option<&str>) -> (u16, String) {
+    let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+    let body = body.unwrap_or_default();
+    stream
+        .write_all(
+            format!(
+                "{method} {path} HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\nAuthorization: Bearer owner\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{body}",
+                body.len()
+            )
+            .as_bytes(),
+        )
+        .unwrap();
+    let mut answer = String::new();
+    stream.read_to_string(&mut answer).unwrap();
+    let status = answer[9..12].parse().unwrap();
+    let body = answer
+        .split_once("\r\n\r\n")
+        .map(|(_, b)| b.to_owned())
+        .unwrap_or_default();
+    (status, body)
+}
+
+/// How the official emulator starts with each flag (`fixtures/startup_flags.json`, from
+/// `tools/oracle/startup_flags.py`): the banner's edition and mode, or the exit code and the
+/// message it stops with.
+#[test]
+fn starts_and_refusals_like_the_official_emulator() {
+    let fixture: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/startup_flags.json")).unwrap();
+    let mut differences = Vec::new();
+    for start in fixture["starts"].as_array().unwrap() {
+        let flags: Vec<&str> = start["flags"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|f| f.as_str().unwrap())
+            .collect();
+        let port = free_port().to_string();
+        let mut child = Command::new(BIN)
+            .args(["--host", "127.0.0.1", "--port", &port])
+            .args(&flags)
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap();
+        if let Some(code) = start["exit"].as_i64() {
+            let output = child.wait_with_output().unwrap();
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            let message = start["message"].as_str().unwrap();
+            if i64::from(output.status.code().unwrap_or(-1)) != code || !stderr.contains(message) {
+                differences.push(format!(
+                    "{flags:?}: official exit {code}, {message:?}; hidane {:?}, {stderr:?}",
+                    output.status.code()
+                ));
+            }
+            continue;
+        }
+        let printed = banner(child.stdout.as_mut().unwrap());
+        let lines: Vec<&str> = printed
+            .lines()
+            .filter(|l| l.starts_with("Database Edition: ") || l.starts_with("Database Mode: "))
+            .collect();
+        let expected: Vec<&str> = start["started"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|l| l.as_str().unwrap())
+            .collect();
+        if lines != expected {
+            differences.push(format!(
+                "{flags:?}: official {expected:?}, hidane {lines:?}"
+            ));
+        }
+        http(port.parse().unwrap(), "POST", "/shutdown", None);
+        child.wait().unwrap();
+    }
+    assert!(differences.is_empty(), "{}", differences.join("\n"));
+}
+
+/// `--require_indexes` in Firestore Native mode (`fixtures/startup_flags.json`): the emulator
+/// starts, every query is refused before it is read, and other requests are served.
+#[test]
+fn queries_are_refused_with_require_indexes_in_firestore_mode() {
+    let fixture: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/startup_flags.json")).unwrap();
+    let run = &fixture["index_enforcement_in_firestore_mode"];
+    let port = free_port();
+    let mut child = Command::new(BIN)
+        .args(["--host", "127.0.0.1", "--port", &port.to_string()])
+        .args(["--require_indexes"])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    banner(child.stdout.as_mut().unwrap());
+    let mut differences = Vec::new();
+    for request in run["requests"].as_array().unwrap() {
+        let body = (!request["body"].is_null()).then(|| request["body"].to_string());
+        let (status, answer) = http(
+            port,
+            request["method"].as_str().unwrap(),
+            request["path"].as_str().unwrap(),
+            body.as_deref(),
+        );
+        let message = serde_json::from_str::<serde_json::Value>(&answer)
+            .ok()
+            .and_then(|j| j["error"]["message"].as_str().map(str::to_owned));
+        let expected = request["message"].as_str().map(str::to_owned);
+        if i64::from(status) != request["status"].as_i64().unwrap()
+            || (status >= 400 && message != expected)
+        {
+            differences.push(format!(
+                "{}: official {} {expected:?}, hidane {status} {message:?}",
+                request["name"], request["status"]
+            ));
+        }
+    }
+    http(port, "POST", "/shutdown", None);
+    child.wait().unwrap();
+    assert!(differences.is_empty(), "{}", differences.join("\n"));
 }

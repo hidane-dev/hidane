@@ -107,7 +107,14 @@ pub struct FirestoreService {
     single_project: Option<Arc<SingleProject>>,
     /// The composite indexes queries needed, for `:indexUsage`.
     index_usage: Option<Arc<index_usage::IndexUsage>>,
+    /// `--require_indexes` in Firestore Native mode: every query is refused, as the official
+    /// emulator refuses it (`tests/fixtures/startup_flags.json`).
+    refuse_queries: bool,
 }
+
+/// What a query answers with `--require_indexes` in Firestore Native mode.
+pub(crate) const NO_INDEX_ENFORCEMENT: &str =
+    "Firestore Native mode does not support index enforcement";
 
 impl FirestoreService {
     pub fn new(store: Arc<dyn Store>) -> Self {
@@ -116,6 +123,11 @@ impl FirestoreService {
 
     pub(crate) fn with_enterprise_edition(mut self, enterprise: bool) -> Self {
         self.enterprise = enterprise;
+        self
+    }
+
+    pub(crate) fn with_refused_queries(mut self, refuse: bool) -> Self {
+        self.refuse_queries = refuse;
         self
     }
 
@@ -269,6 +281,7 @@ impl FirestoreService {
             triggers: None,
             single_project: None,
             index_usage: None,
+            refuse_queries: false,
         }
     }
 
@@ -1033,6 +1046,9 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<RunQueryRequest>,
     ) -> Result<Response<BoxStream<RunQueryResponse>>, Status> {
+        if self.refuse_queries {
+            return Err(Status::invalid_argument(NO_INDEX_ENFORCEMENT));
+        }
         let (metadata, _, req) = request.into_parts();
         let parent = names::parent(&req.parent)?;
         let caller = self.caller(&metadata, Some(&parent.database))?;

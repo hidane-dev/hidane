@@ -49,23 +49,21 @@ pub fn value_name<T: ValueEnum>(value: &T) -> String {
     override_usage = "hidane [options] <ignored>"
 )]
 pub struct Cli {
+    /// Read as written and checked by [`Cli::validate`]; [`Cli::database_edition`] is its value.
     #[arg(
         long = "database-edition",
-        value_enum,
-        ignore_case = true,
-        default_value = "STANDARD",
+        value_parser = Listed::<DatabaseEdition>::default(),
         help = "The 'edition' of the Firestore database. Supported values are `standard` and `enterprise`"
     )]
-    pub database_edition: DatabaseEdition,
+    pub database_edition: Option<String>,
 
+    /// Read as written and checked by [`Cli::validate`]; [`Cli::database_mode`] is its value.
     #[arg(
         long = "database-mode",
-        value_enum,
-        ignore_case = true,
-        default_value = "CLOUD_FIRESTORE",
+        value_parser = Listed::<DatabaseMode>::default(),
         help = "Cloud Firestore database mode supports `firestore-native` and `datastore-mode`"
     )]
-    pub database_mode: DatabaseMode,
+    pub database_mode: Option<String>,
 
     #[arg(
         long = "export-name",
@@ -201,6 +199,50 @@ pub struct Cli {
     pub ignored: Vec<String>,
 }
 
+/// A flag whose value is any text, as the official emulator reads `--database-mode` and
+/// `--database-edition` (it checks the value itself: [`Cli::validate`]), while `--help` lists the
+/// enum's names as its `Possible Values`, as the official emulator's does.
+#[derive(Clone)]
+struct Listed<E>(std::marker::PhantomData<E>);
+
+impl<E> Default for Listed<E> {
+    fn default() -> Self {
+        Self(std::marker::PhantomData)
+    }
+}
+
+impl<E: ValueEnum + Clone + Send + Sync + 'static> clap::builder::TypedValueParser for Listed<E> {
+    type Value = String;
+
+    fn parse_ref(
+        &self,
+        _cmd: &clap::Command,
+        _arg: Option<&clap::Arg>,
+        value: &std::ffi::OsStr,
+    ) -> Result<String, clap::Error> {
+        Ok(value.to_string_lossy().into_owned())
+    }
+
+    fn possible_values(
+        &self,
+    ) -> Option<Box<dyn Iterator<Item = clap::builder::PossibleValue> + '_>> {
+        Some(Box::new(
+            E::value_variants()
+                .iter()
+                .filter_map(ValueEnum::to_possible_value),
+        ))
+    }
+}
+
+/// The `Default:` `--help` shows for a flag read as written ([`Listed`]): the official emulator's.
+fn shown_default(long: &str) -> Option<&'static str> {
+    match long {
+        "database-edition" => Some("STANDARD"),
+        "database-mode" => Some("CLOUD_FIRESTORE"),
+        _ => None,
+    }
+}
+
 /// `--help` output in the official emulator's (JCommander) layout: options sorted by name, the
 /// description indented below each option, then `Default:` and `Possible Values:` lines.
 pub fn usage() -> String {
@@ -226,6 +268,8 @@ pub fn usage() -> String {
             && let Some(default) = arg.get_default_values().first()
         {
             let _ = writeln!(out, "{INDENT}Default: {}", default.to_string_lossy());
+        } else if let Some(default) = shown_default(long) {
+            let _ = writeln!(out, "{INDENT}Default: {default}");
         }
         let names: Vec<_> = arg
             .get_possible_values()
@@ -278,11 +322,44 @@ impl Cli {
             .or(self.import_data.as_deref())
     }
 
+    /// `--database-mode`, once [`Self::validate`] has accepted it: Firestore Native mode unless
+    /// `datastore-mode`.
+    pub fn database_mode(&self) -> DatabaseMode {
+        match self.database_mode.as_deref() {
+            Some("datastore-mode") => DatabaseMode::CloudFirestoreInDatastoreMode,
+            _ => DatabaseMode::CloudFirestore,
+        }
+    }
+
+    /// `--database-edition`, once [`Self::validate`] has accepted it.
+    pub fn database_edition(&self) -> DatabaseEdition {
+        match self.database_edition.as_deref() {
+            Some("enterprise") => DatabaseEdition::Enterprise,
+            _ => DatabaseEdition::Standard,
+        }
+    }
+
     /// Cross-flag checks. Returns warnings to print, or the error that must stop startup.
     ///
-    /// The first four checks and their messages are the official emulator's. The rest reject
-    /// or flag features hidane does not implement yet, so nobody silently loses data or rules.
+    /// The checks and their messages, and their order, are the official emulator's
+    /// (`tests/fixtures/startup_flags.json`): `--database-mode` takes `firestore-native` or
+    /// `datastore-mode` only, `--database-edition` `standard` or `enterprise` (its message says
+    /// "database mode" too). The warnings flag what hidane does otherwise.
     pub fn validate(&self) -> Result<Vec<String>, String> {
+        if let Some(mode) = &self.database_mode
+            && !matches!(mode.as_str(), "firestore-native" | "datastore-mode")
+        {
+            return Err(format!(
+                "Unsupported database mode: {mode}. Please specify either `firestore-native` or `datastore-mode`."
+            ));
+        }
+        if let Some(edition) = &self.database_edition
+            && !matches!(edition.as_str(), "standard" | "enterprise")
+        {
+            return Err(format!(
+                "Unsupported database mode: {edition}. Please specify either `standard` or `enterprise`."
+            ));
+        }
         if self.single_project_mode && self.project_id.is_none() {
             return Err("Expected project_id to be set for single_project_mode".into());
         }
@@ -293,14 +370,6 @@ impl Cli {
         }
         if self.export_name.is_some() && self.export_on_exit.is_none() {
             return Err("Export path not provided along with export name".into());
-        }
-        if self.database_mode == DatabaseMode::CloudDatastore {
-            return Err(format!(
-                "CLOUD_DATASTORE mode is not supported by hidane; use datastore-mode ({ISSUES}/81)"
-            ));
-        }
-        if self.require_indexes && self.database_mode == DatabaseMode::CloudFirestore {
-            return Err("Firestore Native mode does not support index enforcement".into());
         }
 
         let mut warnings = Vec::new();
@@ -322,14 +391,22 @@ impl Cli {
         }
         // As on the official emulator: the file is read only to enforce indexes, and without
         // one every Datastore request fails (`tests/fixtures/datastore_indexes.json`).
-        match (self.database_mode, self.require_indexes, &self.index_file) {
-            (DatabaseMode::CloudFirestore, _, Some(_)) => {
+        let firestore = self.database_mode() == DatabaseMode::CloudFirestore;
+        if firestore && self.require_indexes {
+            warnings.push(
+                "--require_indexes in Firestore Native mode: every query is refused, as on the \
+                 official emulator"
+                    .into(),
+            );
+        }
+        match (firestore, self.require_indexes, &self.index_file) {
+            (true, _, Some(_)) => {
                 warnings.push("--index_file is ignored in Firestore Native mode".into());
             }
-            (_, false, Some(_)) => {
+            (false, false, Some(_)) => {
                 warnings.push("--index_file is ignored without --require_indexes".into());
             }
-            (_, true, None) => warnings.push(
+            (false, true, None) => warnings.push(
                 "--require_indexes without --index_file: every Datastore request fails, as on \
                  the official emulator"
                     .into(),
@@ -374,7 +451,7 @@ mod tests {
         assert_eq!(cli.host, "127.0.0.1");
         assert_eq!(cli.port, 8080);
         assert_eq!(cli.websocket_port, Some(9150));
-        assert_eq!(cli.database_edition, DatabaseEdition::Standard);
+        assert_eq!(cli.database_edition(), DatabaseEdition::Standard);
         assert_eq!(cli.project_id.as_deref(), Some("demo-hidane"));
         assert!(cli.single_project_mode);
         assert_eq!(cli.functions_emulator.as_deref(), Some("127.0.0.1:5001"));
@@ -387,8 +464,8 @@ mod tests {
         let cli = parse(&[]).unwrap();
         assert_eq!(cli.host, "localhost");
         assert_eq!(cli.port, 8080);
-        assert_eq!(cli.database_edition, DatabaseEdition::Standard);
-        assert_eq!(cli.database_mode, DatabaseMode::CloudFirestore);
+        assert_eq!(cli.database_edition(), DatabaseEdition::Standard);
+        assert_eq!(cli.database_mode(), DatabaseMode::CloudFirestore);
         assert!(!cli.single_project_mode);
         assert!(cli.validate().unwrap().is_empty());
     }
@@ -415,16 +492,32 @@ mod tests {
         }
     }
 
+    /// The official emulator takes `firestore-native` and `datastore-mode`, `standard` and
+    /// `enterprise`, as written: not the names `--help` lists (`tests/fixtures/startup_flags.json`).
     #[test]
-    fn enum_values_accept_both_spellings() {
-        let cli = parse(&["--database-edition", "ENTERPRISE"]).unwrap();
-        assert_eq!(cli.database_edition, DatabaseEdition::Enterprise);
+    fn the_mode_and_the_edition_take_the_official_spellings() {
+        let cli = parse(&["--database-edition", "enterprise"]).unwrap();
+        assert_eq!(cli.database_edition(), DatabaseEdition::Enterprise);
         let cli = parse(&["--database-mode", "firestore-native"]).unwrap();
-        assert_eq!(cli.database_mode, DatabaseMode::CloudFirestore);
+        assert_eq!(cli.database_mode(), DatabaseMode::CloudFirestore);
         let cli = parse(&["--database-mode", "datastore-mode"]).unwrap();
         assert_eq!(
-            cli.database_mode,
+            cli.database_mode(),
             DatabaseMode::CloudFirestoreInDatastoreMode
+        );
+        let err = |args: &[&str]| parse(args).unwrap().validate().unwrap_err();
+        assert_eq!(
+            err(&["--database-mode", "CLOUD_DATASTORE"]),
+            "Unsupported database mode: CLOUD_DATASTORE. Please specify either `firestore-native` or `datastore-mode`."
+        );
+        assert_eq!(
+            err(&["--database-edition", "ENTERPRISE"]),
+            "Unsupported database mode: ENTERPRISE. Please specify either `standard` or `enterprise`."
+        );
+        // The mode first, then the edition, then the other checks.
+        assert!(err(&["--database-mode", "x", "--database-edition", "y"]).contains("mode: x."));
+        assert!(
+            err(&["--database-mode", "x", "--single_project_mode", "true"]).contains("mode: x.")
         );
     }
 
@@ -497,21 +590,14 @@ mod tests {
             err(&["--export-name", "x"]),
             "Export path not provided along with export name"
         );
-        assert_eq!(
-            err(&["--require_indexes", "true"]),
-            "Firestore Native mode does not support index enforcement"
-        );
-    }
-
-    #[test]
-    fn unimplemented_data_features_refuse_to_start() {
-        let err = |args: &[&str]| parse(args).unwrap().validate().unwrap_err();
-        assert!(err(&["--database-mode", "CLOUD_DATASTORE"]).contains("/81"));
+        // It starts with `--require_indexes` in Firestore Native mode, and refuses queries.
+        let warnings = parse(&["--require_indexes", "true"])
+            .unwrap()
+            .validate()
+            .unwrap();
         assert!(
-            parse(&["--database-mode", "datastore-mode"])
-                .unwrap()
-                .validate()
-                .is_ok()
+            warnings[0].contains("every query is refused"),
+            "{warnings:?}"
         );
     }
 

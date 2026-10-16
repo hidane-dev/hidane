@@ -98,8 +98,9 @@ async fn run(args: Vec<OsString>) -> ExitCode {
             }
         }
         Err(err) => {
+            // The official emulator's checks, which it exits from with code 1.
             eprintln!("ERROR: {err}");
-            return ExitCode::from(2);
+            return ExitCode::from(1);
         }
     }
     if std::env::var("EXPERIMENTAL_MODE").is_ok_and(|v| v.eq_ignore_ascii_case("true")) {
@@ -107,7 +108,7 @@ async fn run(args: Vec<OsString>) -> ExitCode {
     }
     // Read before the port opens, as the official emulator does: a bad export stops the start.
     // In Datastore mode the export holds entities in that mode's format (#81).
-    let datastore_mode = cli.database_mode == cli::DatabaseMode::CloudFirestoreInDatastoreMode;
+    let datastore_mode = cli.database_mode() == cli::DatabaseMode::CloudFirestoreInDatastoreMode;
     let (seed, datastore_seed) = match cli.seed() {
         None => (None, None),
         Some(path) if datastore_mode => match hidane::export::read_datastore(path) {
@@ -182,7 +183,8 @@ async fn run(args: Vec<OsString>) -> ExitCode {
     print_banner(&cli, port);
 
     let mut admin = hidane::Admin::default()
-        .with_enterprise_edition(cli.database_edition == cli::DatabaseEdition::Enterprise)
+        .with_enterprise_edition(cli.database_edition() == cli::DatabaseEdition::Enterprise)
+        .with_firestore_index_enforcement(cli.require_indexes && !datastore_mode)
         .with_datastore_mode(datastore_mode);
     if cli.require_indexes {
         admin = admin.with_datastore_indexes(cli.index_file.clone());
@@ -256,9 +258,9 @@ fn print_banner(cli: &Cli, port: u16) {
     println!("API endpoint: http://{host}:{port}");
     println!(
         "Database Edition: {}",
-        cli::value_name(&cli.database_edition)
+        cli::value_name(&cli.database_edition())
     );
-    println!("Database Mode: {}", cli::value_name(&cli.database_mode));
+    println!("Database Mode: {}", cli::value_name(&cli.database_mode()));
     println!();
     println!(
         "If you are using a library that supports the FIRESTORE_EMULATOR_HOST environment variable, run:"

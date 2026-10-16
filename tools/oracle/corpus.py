@@ -117,6 +117,7 @@ FIXTURE_CLIENTS = {
     "webchannel.py": ([REST, WEBCHANNEL], PY),
     "websocket_escapes.py": ([REST, WEBSOCKET], PY),
     "websocket_requests.py": ([GRPC, REST, WEBSOCKET], PY_GRPCURL),
+    "startup_flags.py": ([REST, PROCESS], PY),
     "write_stream.mjs": ([GRPC], "Node.js"),
 }
 

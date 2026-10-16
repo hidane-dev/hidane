@@ -761,6 +761,16 @@ RECORDINGS = {
         counted="each registration, in both runs",
         compares="in full: status, content type and body",
         count=lambda f: [a for run in f["runs"] for a in each(run["cases"], REST, FULL)]),
+    f"{H}/fixtures/startup_flags.json": dict(
+        area="admin",
+        tests=[f"{H}/launch.rs::starts_and_refusals_like_the_official_emulator",
+               f"{H}/launch.rs::queries_are_refused_with_require_indexes_in_firestore_mode"],
+        counted="each start of the emulator with its flags, and each request to the one started "
+                "with `--require_indexes` in Firestore Native mode",
+        compares="a start: the banner's edition and mode, or the exit code and the message it "
+                 "stops with; a request: the status and the error's message",
+        count=lambda f: [(CLI, FULL) for _ in f["starts"]]
+                        + [(REST, PART) for _ in f["index_enforcement_in_firestore_mode"]["requests"]]),
     f"{H}/fixtures/function_events.json": dict(
         area="admin",
         tests=[f"{H}/function_events.rs::events_reach_the_functions_emulator_as_on_the_official_emulator"],

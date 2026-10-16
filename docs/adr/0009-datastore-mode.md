@@ -81,4 +81,6 @@ cursor selects, not its bytes.
   `hidane doctor` and the docs say which parts of Datastore mode are served.
 - The `DATASTORE_EMULATOR_HOST` the client libraries read points at hidane's port.
 - `CLOUD_DATASTORE` (the other value `--database-mode` accepts) stays refused until it is
-  recorded and found to differ, or not.
+  recorded and found to differ, or not. Recorded since (`tools/oracle/startup_flags.py`): the
+  official emulator refuses it at startup, as it refuses every value but `firestore-native` and
+  `datastore-mode`, so hidane refuses it as it does.
