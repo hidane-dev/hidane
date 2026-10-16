@@ -135,6 +135,10 @@ CLIENTS = [
     dict(id="python", client="google-cloud-firestore (Python)", ecosystem="pypi",
          package="google-cloud-firestore", platform="Python", transport=[GRPC], core=SDK,
          scope="over gRPC", compatibility="google-cloud-firestore (Python)"),
+    dict(id="datastore-node", client="@google-cloud/datastore, in Datastore mode", ecosystem="npm",
+         package="@google-cloud/datastore", platform="Node.js", transport=[GRPC],
+         core=["documents", "queries", "aggregations", "transactions"],
+         scope="over gRPC, against `--database-mode datastore-mode`"),
     dict(id="datastore-python", client="google-cloud-datastore (Python), in Datastore mode",
          ecosystem="pypi", package="google-cloud-datastore", platform="Python",
          transport=[GRPC, REST], core=["documents", "queries", "aggregations", "transactions"],
@@ -230,6 +234,7 @@ for _section, _features in (("entities", ["documents"]),
         EVIDENCE[f"sdk-datastore-{_sdk}-{_section}"] = {f"datastore-{_sdk}": _features}
         EVIDENCE[f"sdk-datastore-{_sdk}-http-{_section}"] = {f"datastore-{_sdk}": _features}
     EVIDENCE[f"sdk-datastore-go-{_section}"] = {"datastore-go": _features}
+    EVIDENCE[f"sdk-datastore-node-{_section}"] = {"datastore-node": _features}
 
 # How docs/migrating.md names each package hidane doctor judges.
 PACKAGE_LABELS = {
@@ -238,6 +243,7 @@ PACKAGE_LABELS = {
                                         "`firebase-admin`)",
     ("npm", "@firebase/rules-unit-testing"): "`@firebase/rules-unit-testing`",
     ("npm", "firebase-tools"): "`firebase-tools`",
+    ("npm", "@google-cloud/datastore"): "`@google-cloud/datastore` (Node.js, Datastore mode)",
     ("npm", "firebase-functions"): "`firebase-functions` (Firestore triggers under the "
                                    "Functions emulator)",
     ("pypi", "google-cloud-firestore"): "`google-cloud-firestore` (Python)",

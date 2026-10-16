@@ -25,7 +25,7 @@
    "status": "verified",
    "evidence": [
     "36,845 recorded answers of the official emulator v1.22.0 in 66 fixtures, replayed against hidane by cargo test",
-    "59 comparisons of SDK transcripts with the official emulator v1.22.0's: 41 identical, 18 documented differences",
+    "62 comparisons of SDK transcripts with the official emulator v1.22.0's: 44 identical, 18 documented differences",
     "2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers"
    ]
   }
@@ -443,6 +443,48 @@
      "name": "sdk-python-transactions",
      "result": "documented",
      "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-python-transactions-hidane.json"
+    }
+   ]
+  },
+  {
+   "id": "datastore-node",
+   "client": "@google-cloud/datastore, in Datastore mode",
+   "ecosystem": "npm",
+   "package": "@google-cloud/datastore",
+   "platform": "Node.js",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "verified",
+   "version": "11.3.0",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "transactions"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-16",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "sdk-datastore-node-entities",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-node-entities-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-node-queries",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-node-queries-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-node-transactions",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-node-transactions-hidane.json"
     }
    ]
   },
@@ -896,9 +938,9 @@
    "differs": 213
   },
   "transcripts": {
-   "pairs": 57,
-   "comparisons": 59,
-   "identical": 41,
+   "pairs": 60,
+   "comparisons": 62,
+   "identical": 44,
    "documented": 18,
    "unexplained": 0,
    "where": "docs/parity.md"

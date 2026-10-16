@@ -350,6 +350,17 @@ over gRPC, the only transport it has:
 
 Its transcripts are in `results/sdk-datastore-go-*.json`.
 
+`sdk_datastore_node.mjs` runs the same sections through the Node.js client library of Datastore,
+`@google-cloud/datastore` (11.3.0 for the transcripts in `results/`), over gRPC: its REST
+fallback looks for credentials even against an emulator.
+
+```sh
+cd "$(mktemp -d)" && npm i @google-cloud/datastore && cp <repo>/tools/oracle/sdk_datastore_node.mjs .
+DATASTORE_EMULATOR_HOST=127.0.0.1:8086 node sdk_datastore_node.mjs entities > node-entities.json
+```
+
+Its transcripts are in `results/sdk-datastore-node-*.json`.
+
 `sdk_ios/` runs the same four sections through the client SDK of Apple platforms,
 `FirebaseFirestore` 13.0.1 from firebase-ios-sdk (pinned in `Package.swift` and
 `Package.resolved`), built for macOS with Swift 5.9 or newer: the same client as on iOS, over the

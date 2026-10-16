@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:b8aef3b4f3aca9c352b3c9f7fdde9f63a010a2f04531dbcff461cffe18267a29",
+ "digest": "sha256:151b0c6285c79d9460ef4202e5c0cd466110526701c5127c39981e6373109a52",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,11 +14,11 @@
   }
  ],
  "totals": {
-  "files": 123,
+  "files": 126,
   "fixtures": 66,
-  "transcripts": 57,
+  "transcripts": 60,
   "answers": 36845,
-  "bytes": 26297494,
+  "bytes": 26312779,
   "levels": {
    "full": 25507,
    "reasons": 4344,
@@ -81,20 +81,20 @@
    },
    "datastore": {
     "fixtures": 5,
-    "transcripts": 15,
+    "transcripts": 18,
     "answers": 1213
    }
   },
   "by_release": {
    "v1.22.0": {
     "fixtures": 66,
-    "transcripts": 57,
+    "transcripts": 60,
     "answers": 36845
    }
   },
   "by_release_source": {
    "header": 41,
-   "file name": 58,
+   "file name": 61,
    "git history": 24
   }
  },
@@ -4699,6 +4699,120 @@
    "compared_with": [
     {
      "path": "results/sdk-datastore-java-transactions-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-datastore-node-entities-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "datastore",
+   "recorder": "tools/oracle/sdk_datastore_node.mjs",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Datastore Node.js client (@google-cloud/datastore)",
+    "packages": [
+     {
+      "name": "@google-cloud/datastore",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-16",
+    "last_changed": "2026-10-16"
+   },
+   "bytes": 5368,
+   "sha256": "a468f92d4b00370da44bf6aa0e018075fbd1e96a959d395188ba09c049f7fde0",
+   "compared_with": [
+    {
+     "path": "results/sdk-datastore-node-entities-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-datastore-node-queries-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "datastore",
+   "recorder": "tools/oracle/sdk_datastore_node.mjs",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Datastore Node.js client (@google-cloud/datastore)",
+    "packages": [
+     {
+      "name": "@google-cloud/datastore",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-16",
+    "last_changed": "2026-10-16"
+   },
+   "bytes": 9149,
+   "sha256": "1f7d9868f36f3c0eaf2fbf8756d2836965b6a4131571b691c9c0e0de03b6fbca",
+   "compared_with": [
+    {
+     "path": "results/sdk-datastore-node-queries-hidane.json",
+     "what": "hidane",
+     "result": "identical"
+    }
+   ]
+  },
+  {
+   "path": "results/sdk-datastore-node-transactions-official-v1.22.0.json",
+   "kind": "transcript",
+   "area": "datastore",
+   "recorder": "tools/oracle/sdk_datastore_node.mjs",
+   "client": {
+    "over": [
+     "gRPC"
+    ],
+    "using": "Datastore Node.js client (@google-cloud/datastore)",
+    "packages": [
+     {
+      "name": "@google-cloud/datastore",
+      "version": null,
+      "source": "unpinned",
+      "where": null
+     }
+    ]
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": null,
+    "source": "file name"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-16",
+    "last_changed": "2026-10-16"
+   },
+   "bytes": 768,
+   "sha256": "b17389dc6f544d599ff593d521f34e5c78e5cd5c86f1131054e9734429e97be5",
+   "compared_with": [
+    {
+     "path": "results/sdk-datastore-node-transactions-hidane.json",
      "what": "hidane",
      "result": "identical"
     }

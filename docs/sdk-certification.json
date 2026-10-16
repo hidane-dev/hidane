@@ -72,8 +72,8 @@
   }
  ],
  "totals": {
-  "clients": 19,
-  "verified": 17,
+  "clients": 20,
+  "verified": 18,
   "partially-verified": 0,
   "not-verified": 2
  },
@@ -1526,6 +1526,136 @@
        "version": "2.34.1",
        "source": "pinned",
        "where": "tools/oracle/sdk_python/requirements.txt"
+      }
+     ],
+     "features": [
+      "transactions"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "datastore-node",
+   "client": "@google-cloud/datastore, in Datastore mode",
+   "ecosystem": "npm",
+   "package": "@google-cloud/datastore",
+   "platform": "Node.js",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "verified",
+   "version": "11.3.0",
+   "official_emulator": [
+    "v1.22.0"
+   ],
+   "core": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions"
+   ],
+   "exercised": [
+    "documents",
+    "queries",
+    "aggregations",
+    "transactions"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-16",
+   "tracking": null,
+   "evidence": [
+    {
+     "transcript": "sdk-datastore-node-entities",
+     "official": "results/sdk-datastore-node-entities-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-16",
+      "last_changed": "2026-10-16"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-datastore-node-entities-hidane.json",
+       "result": "identical",
+       "sha256": "a468f92d4b00370da44bf6aa0e018075fbd1e96a959d395188ba09c049f7fde0",
+       "recorded": {
+        "first_recorded": "2026-10-16",
+        "last_changed": "2026-10-16"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "@google-cloud/datastore",
+       "version": "11.3.0",
+       "source": "stated",
+       "where": "results/README.md"
+      }
+     ],
+     "features": [
+      "documents"
+     ]
+    },
+    {
+     "transcript": "sdk-datastore-node-queries",
+     "official": "results/sdk-datastore-node-queries-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-16",
+      "last_changed": "2026-10-16"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-datastore-node-queries-hidane.json",
+       "result": "identical",
+       "sha256": "1f7d9868f36f3c0eaf2fbf8756d2836965b6a4131571b691c9c0e0de03b6fbca",
+       "recorded": {
+        "first_recorded": "2026-10-16",
+        "last_changed": "2026-10-16"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "@google-cloud/datastore",
+       "version": "11.3.0",
+       "source": "stated",
+       "where": "results/README.md"
+      }
+     ],
+     "features": [
+      "queries",
+      "aggregations"
+     ]
+    },
+    {
+     "transcript": "sdk-datastore-node-transactions",
+     "official": "results/sdk-datastore-node-transactions-official-v1.22.0.json",
+     "official_emulator": "v1.22.0",
+     "official_recorded": {
+      "first_recorded": "2026-10-16",
+      "last_changed": "2026-10-16"
+     },
+     "compared": [
+      {
+       "path": "results/sdk-datastore-node-transactions-hidane.json",
+       "result": "identical",
+       "sha256": "b17389dc6f544d599ff593d521f34e5c78e5cd5c86f1131054e9734429e97be5",
+       "recorded": {
+        "first_recorded": "2026-10-16",
+        "last_changed": "2026-10-16"
+       }
+      }
+     ],
+     "result": "identical",
+     "packages": [
+      {
+       "name": "@google-cloud/datastore",
+       "version": "11.3.0",
+       "source": "stated",
+       "where": "results/README.md"
       }
      ],
      "features": [
@@ -3034,6 +3164,16 @@
    "source": "docs/sdk-certification.md",
    "clients": [
     "python"
+   ]
+  },
+  {
+   "ecosystem": "npm",
+   "name": "@google-cloud/datastore",
+   "version": "11.3.0",
+   "what": "documents and writes, queries, aggregation queries, transactions",
+   "source": "docs/sdk-certification.md",
+   "clients": [
+    "datastore-node"
    ]
   },
   {

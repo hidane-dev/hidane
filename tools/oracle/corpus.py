@@ -139,6 +139,7 @@ for _sdk in ("java", "python"):
             TRANSCRIPT_RECORDERS[_name] = f"tools/oracle/sdk_datastore_{_sdk}/"
 for _section in ("entities", "queries", "transactions"):
     TRANSCRIPT_RECORDERS[f"sdk-datastore-go-{_section}"] = "tools/oracle/sdk_datastore_go/"
+    TRANSCRIPT_RECORDERS[f"sdk-datastore-node-{_section}"] = "tools/oracle/sdk_datastore_node.mjs"
 
 # Versions a recorder pins: (recorder, package, file, a pattern whose group 1 is the version).
 PINS = [

@@ -30,8 +30,8 @@
     },
     {
      "kind": "transcripts",
-     "count": 59,
-     "description": "59 comparisons of SDK transcripts with the official emulator v1.22.0's: 41 identical, 18 documented differences",
+     "count": 62,
+     "description": "62 comparisons of SDK transcripts with the official emulator v1.22.0's: 44 identical, 18 documented differences",
      "where": "docs/parity.md",
      "runs": "recorded",
      "last_recorded": null
@@ -49,15 +49,15 @@
  ],
  "oracle_corpus": {
   "where": "docs/oracle-corpus.json",
-  "digest": "sha256:b8aef3b4f3aca9c352b3c9f7fdde9f63a010a2f04531dbcff461cffe18267a29",
+  "digest": "sha256:151b0c6285c79d9460ef4202e5c0cd466110526701c5127c39981e6373109a52",
   "releases": [
    "1.22.0"
   ],
-  "files": 123,
+  "files": 126,
   "fixtures": 66,
-  "transcripts": 57,
+  "transcripts": 60,
   "answers": 36845,
-  "bytes": 26297494
+  "bytes": 26312779
  },
  "replay": {
   "fixtures": 66,
@@ -179,9 +179,9 @@
   "where": "docs/parity.md"
  },
  "transcripts": {
-  "pairs": 57,
-  "comparisons": 59,
-  "identical": 41,
+  "pairs": 60,
+  "comparisons": 62,
+  "identical": 44,
   "documented": 18,
   "unexplained": 0,
   "where": "docs/parity.md"
@@ -189,8 +189,8 @@
  "sdk_certification": {
   "where": "docs/sdk-certification.json",
   "totals": {
-   "clients": 19,
-   "verified": 17,
+   "clients": 20,
+   "verified": 18,
    "partially-verified": 0,
    "not-verified": 2
   },
@@ -205,6 +205,7 @@
     "firebase-tools",
     "firebase-functions",
     "python",
+    "datastore-node",
     "datastore-python",
     "datastore-java",
     "datastore-go",
