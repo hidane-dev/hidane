@@ -215,8 +215,8 @@ impl Ord for Indexed {
 const INDEX_VALUE: i32 = 18;
 
 /// The most values of `IN` and `NOT_IN`.
-const MAX_IN: usize = 30;
-const MAX_NOT_IN: usize = 10;
+pub(super) const MAX_IN: usize = 30;
+pub(super) const MAX_NOT_IN: usize = 10;
 
 /// The index values of `entity` for property `path` (dotted into entity values), each once.
 pub fn index_values(properties: &Properties, path: &str) -> Vec<(Indexed, Value)> {
@@ -311,17 +311,20 @@ impl Op {
         )
     }
 
+    /// Whether `value` passes against `operands` (none when the operand was an entity value,
+    /// which no index value equals or compares with).
     fn test(self, value: &Indexed, operands: &[Indexed]) -> bool {
-        let first = &operands[0];
-        match self {
-            Self::Eq => value == first,
-            Self::Ne => value != first,
-            Self::Lt => value < first,
-            Self::Le => value <= first,
-            Self::Gt => value > first,
-            Self::Ge => value >= first,
-            Self::In => operands.contains(value),
-            Self::NotIn => !operands.contains(value),
+        match (self, operands.first()) {
+            (Self::In, _) => operands.contains(value),
+            (Self::NotIn, _) => !operands.contains(value),
+            (Self::Ne, None) => true,
+            (_, None) => false,
+            (Self::Eq, Some(first)) => value == first,
+            (Self::Ne, Some(first)) => value != first,
+            (Self::Lt, Some(first)) => value < first,
+            (Self::Le, Some(first)) => value <= first,
+            (Self::Gt, Some(first)) => value > first,
+            (Self::Ge, Some(first)) => value >= first,
         }
     }
 }
@@ -342,8 +345,6 @@ pub struct Plan {
     pub limit: Option<usize>,
     pub start: Option<Position>,
     pub end: Option<Position>,
-    /// The first refusal that comes once the query's index is found (`indexes::check`).
-    pub refused: Option<Status>,
 }
 
 /// Where a result is in a query's order: its row values and its key.
@@ -410,58 +411,34 @@ fn operand(value: &Value, project: &str) -> Option<Indexed> {
     }
 }
 
-/// Checks `filter`, in a query on `kind` (`None` without a kind) in `namespace`.
-/// Keeps the first of the refusals that come once the query's index is found
-/// (`indexes::check`): the query is planned on, as earlier refusals may still come.
-fn refuse(refused: &mut Option<Status>, status: Status) {
-    refused.get_or_insert(status);
+/// Whether `bytes` are a cursor this server gave.
+pub(super) fn cursor_parses(bytes: &[u8]) -> bool {
+    Position::decode(bytes).is_some()
 }
 
-fn check_filter(
-    filter: &Filter,
-    kind: Option<&str>,
-    namespace: &str,
-    project: &str,
-    in_or: bool,
-    refused: &mut Option<Status>,
-) -> Result<Cond, Status> {
+/// The condition of a filter `checks` has accepted.
+fn condition(filter: &Filter, project: &str) -> Cond {
     match &filter.filter_type {
-        None => Err(invalid("a filter must have exactly one of its fields set")),
         Some(FilterType::CompositeFilter(composite)) => {
-            if composite.filters.is_empty() {
-                return Err(invalid(
-                    "A composite filter must have at least one sub-filter.",
-                ));
-            }
-            let or = composite.op == composite_filter::Operator::Or as i32;
             let children = composite
                 .filters
                 .iter()
-                .map(|f| check_filter(f, kind, namespace, project, in_or || or, refused))
-                .collect::<Result<Vec<_>, _>>()?;
-            Ok(if or {
+                .map(|f| condition(f, project))
+                .collect();
+            if composite.op == composite_filter::Operator::Or as i32 {
                 Cond::Or(children)
             } else {
                 Cond::And(children)
-            })
+            }
         }
-        Some(FilterType::PropertyFilter(property)) => {
-            check_property(property, kind, namespace, project, in_or, refused)
-        }
+        Some(FilterType::PropertyFilter(property)) => property_condition(property, project),
+        None => Cond::And(Vec::new()),
     }
 }
 
-fn check_property(
-    filter: &PropertyFilter,
-    kind: Option<&str>,
-    namespace: &str,
-    project: &str,
-    in_or: bool,
-    refused: &mut Option<Status>,
-) -> Result<Cond, Status> {
+fn property_condition(filter: &PropertyFilter, project: &str) -> Cond {
     use property_filter::Operator as O;
     let op = match O::try_from(filter.op) {
-        Ok(O::Equal) => Op::Eq,
         Ok(O::NotEqual) => Op::Ne,
         Ok(O::LessThan) => Op::Lt,
         Ok(O::LessThanOrEqual) => Op::Le,
@@ -470,97 +447,35 @@ fn check_property(
         Ok(O::In) => Op::In,
         Ok(O::NotIn) => Op::NotIn,
         Ok(O::HasAncestor) => {
-            let name = filter
-                .property
-                .as_ref()
-                .map(|p| p.name.as_str())
-                .unwrap_or_default();
-            if name != "__key__" {
-                return Err(invalid("property must be __key__"));
-            }
-            let Some(ValueType::KeyValue(key)) =
-                filter.value.as_ref().and_then(|v| v.value_type.as_ref())
-            else {
-                return Err(invalid("HAS_ANCESTOR requires a key value"));
+            return match filter.value.as_ref().and_then(|v| v.value_type.as_ref()) {
+                Some(ValueType::KeyValue(key)) => Cond::Ancestor(key_parts(key, project).2),
+                _ => Cond::And(Vec::new()),
             };
-            let (_, ns, path) = key_parts(key, project);
-            if ns != namespace {
-                refuse(
-                    refused,
-                    invalid(format!(
-                        "The query namespace is '{namespace}' but ancestor namespace is '{ns}'."
-                    )),
-                );
-            }
-            if in_or {
-                return Err(invalid(
-                    "All disjunctions must have a common and unique ancestor constraint.",
-                ));
-            }
-            return Ok(Cond::Ancestor(path));
         }
-        _ => return Err(invalid("a property filter must specify an operator")),
+        _ => Op::Eq,
     };
     let name = filter
         .property
         .as_ref()
         .map(|p| p.name.clone())
         .unwrap_or_default();
-    if name.is_empty() {
-        return Err(invalid("The property.name is the empty string."));
-    }
-    let Some(value) = filter.value.as_ref().filter(|v| v.value_type.is_some()) else {
-        return Err(invalid(format!(
-            "The value \"{name}\" does not contain a value."
-        )));
+    let operands: Vec<&Value> = match filter.value.as_ref() {
+        Some(Value {
+            value_type: Some(ValueType::ArrayValue(array)),
+            ..
+        }) if matches!(op, Op::In | Op::NotIn) => array.values.iter().collect(),
+        Some(value) => vec![value],
+        None => Vec::new(),
     };
-    let operands: Vec<&Value> = if matches!(op, Op::In | Op::NotIn) {
-        let label = if op == Op::In { "IN" } else { "NOT_IN" };
-        let Some(ValueType::ArrayValue(array)) = &value.value_type else {
-            return Err(invalid(format!("{label} requires an ArrayValue.")));
-        };
-        if array.values.is_empty() {
-            return Err(invalid(format!(
-                "{label} requires an non-empty ArrayValue."
-            )));
-        }
-        if op == Op::In && array.values.len() > MAX_IN {
-            return Err(invalid(format!(
-                "IN supports up to {MAX_IN} values. There are {} values in the IN filter in your query.",
-                array.values.len()
-            )));
-        }
-        if op == Op::NotIn && array.values.len() > MAX_NOT_IN {
-            return Err(invalid(format!(
-                "NOT_IN supports up to {MAX_NOT_IN} values."
-            )));
-        }
-        array.values.iter().collect()
-    } else {
-        vec![value]
-    };
-    if name == "__key__" {
-        let mut keys = Vec::new();
-        for v in &operands {
-            match &v.value_type {
-                Some(ValueType::KeyValue(_)) => keys.push(operand(v, project).expect("a key")),
-                _ => refuse(refused, invalid("__key__ filter value must be a Key")),
-            }
-        }
-        return Ok(Cond::Key { op, keys });
-    }
-    if kind.is_none() {
-        return Err(invalid(format!("kind is required for filter: {name}")));
-    }
-    let values = operands
+    // An entity operand, which an aggregation's query accepts, equals no index value.
+    let values: Vec<Indexed> = operands
         .iter()
-        .map(|v| match &v.value_type {
-            Some(ValueType::ArrayValue(_)) => Err(invalid("A list value is not allowed")),
-            Some(ValueType::EntityValue(_)) => Err(invalid("An entity value is not allowed")),
-            _ => operand(v, project).ok_or_else(|| invalid("An entity value is not allowed")),
-        })
-        .collect::<Result<Vec<_>, _>>()?;
-    Ok(Cond::Prop { name, op, values })
+        .filter_map(|v| operand(v, project))
+        .collect();
+    if name == "__key__" {
+        return Cond::Key { op, keys: values };
+    }
+    Cond::Prop { name, op, values }
 }
 
 /// The properties a filter has an inequality on, in order, and those it has an equality on.
@@ -585,111 +500,50 @@ fn filter_properties(cond: &Cond, inequalities: &mut Vec<String>, equalities: &m
     }
 }
 
-/// Checks `query` on `database` in `namespace`.
+/// Plans `query` on `database` in `namespace`, once `checks` has accepted it.
 pub fn plan(query: &Query, database: &Database, namespace: &str) -> Result<Plan, Status> {
-    if query.kind.len() > 1 {
-        return Err(invalid("multiple kinds not supported"));
-    }
-    let kind = match query.kind.first() {
-        Some(k) if k.name.is_empty() => return Err(invalid("The kind is the empty string.")),
-        Some(k) => Some(k.name.clone()),
-        None => None,
-    };
-    let mut projection: Vec<String> = Vec::new();
-    for p in &query.projection {
-        let name = p
-            .property
-            .as_ref()
-            .map(|p| p.name.clone())
-            .unwrap_or_default();
-        if projection.contains(&name) {
-            return Err(invalid("Cannot project a property multiple times."));
-        }
-        projection.push(name);
-    }
-    let mut refused = None;
+    let kind = query.kind.first().map(|k| k.name.clone());
+    let projection: Vec<String> = query
+        .projection
+        .iter()
+        .map(|p| {
+            p.property
+                .as_ref()
+                .map(|p| p.name.clone())
+                .unwrap_or_default()
+        })
+        .collect();
     let cond = query
         .filter
         .as_ref()
-        .map(|f| {
-            check_filter(
-                f,
-                kind.as_deref(),
-                namespace,
-                &database.project,
-                false,
-                &mut refused,
-            )
-        })
-        .transpose()?;
+        .map(|f| condition(f, &database.project));
     let mut inequalities = Vec::new();
     let mut equalities = Vec::new();
     if let Some(cond) = &cond {
         filter_properties(cond, &mut inequalities, &mut equalities);
     }
     inequalities.sort();
-    let mut explicit: Vec<(Option<String>, bool)> = Vec::new();
-    for order in &query.order {
-        let name = order
-            .property
-            .as_ref()
-            .map(|p| p.name.clone())
-            .unwrap_or_default();
-        let descending = order.direction == Direction::Descending as i32;
-        let field = (name != "__key__").then_some(name.clone());
-        if explicit.iter().any(|(f, _)| f == &field) {
-            return Err(invalid(format!(
-                "order by clause cannot contain duplicate fields {name}"
-            )));
-        }
-        explicit.push((field, descending));
-    }
-    if kind.is_none() && explicit.iter().any(|(f, d)| f.is_some() || *d) {
-        return Err(invalid(
-            "kind is required for all orders except __key__ ascending",
-        ));
-    }
+    let explicit: Vec<(Option<String>, bool)> = query
+        .order
+        .iter()
+        .map(|order| {
+            let name = order
+                .property
+                .as_ref()
+                .map(|p| p.name.clone())
+                .unwrap_or_default();
+            (
+                (name != "__key__").then_some(name),
+                order.direction == Direction::Descending as i32,
+            )
+        })
+        .collect();
     let projected: Vec<String> = projection
         .iter()
         .filter(|p| *p != "__key__")
         .cloned()
         .collect();
-    if projected.iter().any(|p| equalities.contains(p)) {
-        refuse(
-            &mut refused,
-            invalid("Cannot use projection on a property with an equality filter."),
-        );
-    }
     let distinct_on: Vec<String> = query.distinct_on.iter().map(|p| p.name.clone()).collect();
-    if distinct_on.iter().any(|p| p == "__key__") {
-        refuse(
-            &mut refused,
-            invalid("Group by is not supported for the property: __key__"),
-        );
-    }
-    // The distinct properties come first, those not ordered right after the orders.
-    let mut grouped: Vec<&str> = explicit
-        .iter()
-        .map(|(f, _)| f.as_deref().unwrap_or("__key__"))
-        .collect();
-    for name in &distinct_on {
-        if !grouped.contains(&name.as_str()) {
-            grouped.push(name);
-        }
-    }
-    if !distinct_on.is_empty()
-        && let Some(other) = grouped
-            .iter()
-            .position(|n| !distinct_on.iter().any(|d| d == n))
-        && grouped[other..]
-            .iter()
-            .any(|n| distinct_on.iter().any(|d| d == n))
-    {
-        refuse(
-            &mut refused,
-            invalid("All group by properties must be ordered before any non group by properties."),
-        );
-    }
     // The row's order: the explicit orders, then the distinct, inequality and projected
     // properties (by name) not ordered yet, ascending, then the key.
     let mut by_name = projected.clone();
@@ -704,14 +558,6 @@ pub fn plan(query: &Query, database: &Database, namespace: &str) -> Result<Plan,
         orders.push((None, false));
     }
     let row_properties: Vec<String> = orders.iter().filter_map(|(f, _)| f.clone()).collect();
-    let limit = match query.limit {
-        Some(n) if n < 0 => return Err(invalid("Limit must be non-negative.")),
-        Some(n) => Some(usize::try_from(n).unwrap_or(0)),
-        None => None,
-    };
-    if query.offset < 0 {
-        return Err(invalid("Offset must be non-negative."));
-    }
     let cursor = |bytes: &[u8]| -> Result<Option<Position>, Status> {
         if bytes.is_empty() {
             return Ok(None);
@@ -741,10 +587,9 @@ pub fn plan(query: &Query, database: &Database, namespace: &str) -> Result<Plan,
         keys_only,
         distinct_on,
         offset: usize::try_from(query.offset).unwrap_or(0),
-        limit,
+        limit: query.limit.map(|n| usize::try_from(n).unwrap_or(0)),
         start,
         end,
-        refused,
     })
 }
 
@@ -1006,7 +851,9 @@ pub fn is_reserved(kind: &str) -> bool {
 }
 
 /// `__kind__` and `__namespace__`: the kinds of every namespace, the namespaces (the default
-/// one as ID 1), each a key alone, filtered on the key; `None` for another query.
+/// one as ID 1), each a key alone, filtered on the key, skipped and limited, in key order
+/// (orders by a property change nothing); `None` for another query. They carry no version or
+/// cursor, and the batch a snapshot version only when it is empty.
 pub fn metadata(
     plan: &Plan,
     entities: &std::collections::BTreeMap<Located, super::Stored>,
@@ -1039,41 +886,56 @@ pub fn metadata(
         _ => return None,
     }
     names.sort();
+    let row_entity = super::Stored {
+        properties: Properties::new(),
+        version: 0,
+        created: 0,
+        updated: 0,
+    };
+    // Their keys are in the default namespace, whatever the query's.
+    let matching: Vec<Located> = names
+        .into_iter()
+        .map(|id| Located {
+            namespace: String::new(),
+            path: vec![(kind.to_owned(), id)],
+        })
+        .filter(|located| {
+            let row = Row {
+                key: located,
+                entity: &row_entity,
+                values: Vec::new(),
+            };
+            plan.cond
+                .as_ref()
+                .is_none_or(|cond| matches(cond, &row, plan))
+        })
+        .collect();
+    let skipped = plan.offset.min(matching.len());
+    let after_offset = &matching[skipped..];
+    let taken = plan
+        .limit
+        .map_or(after_offset.len(), |l| l.min(after_offset.len()));
+    let more = plan.limit.is_some_and(|l| l == 0 || after_offset.len() > l);
     let mut batch = QueryResultBatch {
         entity_result_type: if plan.keys_only {
             ResultType::KeyOnly as i32
         } else {
             ResultType::Full as i32
         },
-        more_results: MoreResultsType::NoMoreResults as i32,
+        skipped_results: i32::try_from(skipped).unwrap_or(i32::MAX),
+        more_results: if more {
+            MoreResultsType::MoreResultsAfterLimit as i32
+        } else {
+            MoreResultsType::NoMoreResults as i32
+        },
+        snapshot_version: if taken == 0 { read_micros } else { 0 },
         read_time: Some(super::timestamp(read_micros)),
         ..QueryResultBatch::default()
     };
-    for id in names {
-        // Their keys are in the default namespace, whatever the query's.
-        let located = Located {
-            namespace: String::new(),
-            path: vec![(kind.to_owned(), id)],
-        };
-        let row_entity = super::Stored {
-            properties: Properties::new(),
-            version: 0,
-            created: 0,
-            updated: 0,
-        };
-        let row = Row {
-            key: &located,
-            entity: &row_entity,
-            values: Vec::new(),
-        };
-        if let Some(cond) = &plan.cond
-            && !matches(cond, &row, plan)
-        {
-            continue;
-        }
+    for located in &after_offset[..taken] {
         batch.entity_results.push(EntityResult {
             entity: Some(Entity {
-                key: Some(database.key(&located)),
+                key: Some(database.key(located)),
                 properties: Properties::new(),
             }),
             ..EntityResult::default()

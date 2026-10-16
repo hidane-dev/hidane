@@ -660,6 +660,14 @@ RECORDINGS = {
         compares="in full: status, every header but `date`, `content-length` and `connection`, "
                  "and the body",
         count=lambda f: each(f["cases"], REST, FULL)),
+    f"{H}/fixtures/datastore_checks.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::checks_come_in_the_official_emulators_order"],
+        counted="each query and aggregation query with one or two problems (every ordered pair), "
+                "to a server started with `--database-mode datastore-mode`; " + OVER_REST,
+        compares="in full: status, content type and body byte for byte, server times and versions "
+                 "masked",
+        count=lambda f: [(REST, FULL) for _ in f["cases"]]),
     f"{H}/fixtures/datastore_entities.json": dict(
         area="datastore",
         tests=[f"{H}/datastore.rs::datastore_mode_answers_like_the_official_emulator"],

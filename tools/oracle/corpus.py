@@ -64,6 +64,7 @@ FIXTURE_CLIENTS = {
     "commit_checks.py": ([GRPC, REST], PY_GRPCURL),
     "conformance.py": ([REST], PY),
     "cors.py": ([REST], PY),
+    "datastore_checks.py": ([REST], PY),
     "datastore_entities.py": ([REST], PY),
     "datastore_export.py": ([REST, PROCESS], PY),
     "datastore_firestore_api.py": ([GRPC, REST], PY_GRPCURL),
