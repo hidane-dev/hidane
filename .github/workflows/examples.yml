@@ -98,7 +98,7 @@ jobs:
           echo "$RUNNER_TEMP/hidane" >> "$GITHUB_PATH"
       - &published
         if: matrix.hidane == 'published'
-        uses: hidane-dev/setup-hidane@f0bdb68d1e28100cd5b445456455e1108f370987 # v1.0.0
+        uses: hidane-dev/setup-hidane@97f59bf4893a4ee993fc1ee5ff235258ece75eb0 # v1.1.0
         with:
           version: ${{ env.PUBLISHED_VERSION }}
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -269,6 +269,6 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: examples/admin-node/package-lock.json
-      - uses: hidane-dev/setup-hidane@f0bdb68d1e28100cd5b445456455e1108f370987 # v1.0.0
+      - uses: hidane-dev/setup-hidane@97f59bf4893a4ee993fc1ee5ff235258ece75eb0 # v1.1.0
       - run: npm ci --ignore-scripts
       - run: npm test
