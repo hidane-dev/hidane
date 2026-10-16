@@ -202,9 +202,10 @@ impl Ord for Indexed {
             (Self::Bytes(a), Self::Bytes(b)) => a.cmp(b),
             (Self::Double(a), Self::Double(b)) => a.total_cmp(b),
             (Self::Geo(a1, b1), Self::Geo(a2, b2)) => a1.total_cmp(a2).then(b1.total_cmp(b2)),
-            (Self::Key(pr1, ns1, p1), Self::Key(pr2, ns2, p2)) => {
-                pr1.cmp(pr2).then_with(|| ns1.cmp(ns2)).then_with(|| p1.cmp(p2))
-            }
+            (Self::Key(pr1, ns1, p1), Self::Key(pr2, ns2, p2)) => pr1
+                .cmp(pr2)
+                .then_with(|| ns1.cmp(ns2))
+                .then_with(|| p1.cmp(p2)),
             _ => self.rank().cmp(&other.rank()),
         }
     }
@@ -1046,8 +1047,16 @@ mod tests {
             Indexed::Double(f64::NAN),
             Indexed::Geo(1.0, 2.0),
             Indexed::Key("p".into(), String::new(), vec![("A".into(), Id::Id(5))]),
-            Indexed::Key("p".into(), String::new(), vec![("A".into(), Id::Name("x".into()))]),
-            Indexed::Key("p".into(), "ns1".into(), vec![("A".into(), Id::Name("x".into()))]),
+            Indexed::Key(
+                "p".into(),
+                String::new(),
+                vec![("A".into(), Id::Name("x".into()))],
+            ),
+            Indexed::Key(
+                "p".into(),
+                "ns1".into(),
+                vec![("A".into(), Id::Name("x".into()))],
+            ),
         ];
         for pair in ordered.windows(2) {
             assert!(pair[0] < pair[1], "{pair:?}");
