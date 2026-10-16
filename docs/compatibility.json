@@ -22,8 +22,8 @@
    "evidence": [
     {
      "kind": "replay",
-     "count": 35945,
-     "description": "35,945 recorded answers of the official emulator v1.22.0 in 62 fixtures, replayed against hidane by cargo test",
+     "count": 36113,
+     "description": "36,113 recorded answers of the official emulator v1.22.0 in 64 fixtures, replayed against hidane by cargo test",
      "where": "docs/parity.md",
      "runs": "every pull request and push to main",
      "last_recorded": null
@@ -49,21 +49,21 @@
  ],
  "oracle_corpus": {
   "where": "docs/oracle-corpus.json",
-  "digest": "sha256:260da559ed90d6aaea28f1e99c205d8a44d142374cf147afe106bfb928f76102",
+  "digest": "sha256:56dc36490cedf8135a11d8a36e55a8140b0615391245f3621b9f0e6f176f647e",
   "releases": [
    "1.22.0"
   ],
-  "files": 104,
-  "fixtures": 62,
+  "files": 106,
+  "fixtures": 64,
   "transcripts": 42,
-  "answers": 35945,
-  "bytes": 21898243
+  "answers": 36113,
+  "bytes": 21987136
  },
  "replay": {
-  "fixtures": 62,
-  "answers": 35945,
+  "fixtures": 64,
+  "answers": 36113,
   "levels": {
-   "full": 24630,
+   "full": 24798,
    "reasons": 4344,
    "part": 1503,
    "status": 5189,
@@ -145,9 +145,9 @@
     ]
    },
    "admin": {
-    "fixtures": 5,
-    "answers": 875,
-    "full": 823,
+    "fixtures": 7,
+    "answers": 1043,
+    "full": 991,
     "transports": [
      "gRPC",
      "REST",
@@ -463,6 +463,8 @@
     "replays": [
      "crates/hidane/tests/fixtures/bulk_delete.json",
      "crates/hidane/tests/fixtures/conformance.json",
+     "crates/hidane/tests/fixtures/database_edition.json",
+     "crates/hidane/tests/fixtures/database_edition_enterprise.json",
      "crates/hidane/tests/fixtures/json_escapes.json",
      "crates/hidane/tests/fixtures/project_ids.json",
      "crates/hidane/tests/fixtures/rest.json"
@@ -704,10 +706,10 @@
   "where": "docs/parity-exceptions.json",
   "page": "docs/parity-exceptions.md",
   "intentional": {
-   "count": 75,
+   "count": 76,
    "by_kind": {
     "bug-for-bug": 1,
-    "more-correct": 48,
+    "more-correct": 49,
     "equivalent": 19,
     "limitation": 7
    }

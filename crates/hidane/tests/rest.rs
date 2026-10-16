@@ -17,9 +17,14 @@ use tokio::{
 const PROJECT: &str = "rest-000000";
 
 async fn start() -> SocketAddr {
+    start_edition(false).await
+}
+
+/// A server whose databases are enterprise ones with `enterprise` (`--database-edition`).
+async fn start_edition(enterprise: bool) -> SocketAddr {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
-    let admin = hidane::Admin::default();
+    let admin = hidane::Admin::default().with_enterprise_edition(enterprise);
     tokio::spawn(hidane::serve(
         vec![listener],
         hidane::grpc_routes(&admin),
@@ -175,7 +180,10 @@ fn normalize(text: &str) -> String {
 
 /// Sends `cases` in order to a fresh hidane; the cases that differ.
 async fn replay(cases: &[Json]) -> Vec<String> {
-    let addr = start().await;
+    replay_on(start().await, cases).await
+}
+
+async fn replay_on(addr: SocketAddr, cases: &[Json]) -> Vec<String> {
     let mut differences = Vec::new();
     for case in cases {
         let name = case["name"].as_str().unwrap();
@@ -287,6 +295,50 @@ async fn bulk_delete_answers_like_the_official_emulator() {
         cases.len(),
         differences.join("\n")
     );
+}
+
+/// `:setDatabaseEdition`: how it answers, and that it sets the edition of the database it
+/// names alone, until `/reset`, over a server started standard and one started enterprise
+/// (`fixtures/database_edition.json`, `fixtures/database_edition_enterprise.json`, from
+/// `tools/oracle/database_edition.py`, #36).
+#[tokio::test]
+async fn set_database_edition_answers_like_the_official_emulator() {
+    for (enterprise, text) in [
+        (false, include_str!("fixtures/database_edition.json")),
+        (
+            true,
+            include_str!("fixtures/database_edition_enterprise.json"),
+        ),
+    ] {
+        let fixture: Json = serde_json::from_str(text).unwrap();
+        assert_eq!(fixture.get("edition").is_some(), enterprise);
+        let cases = fixture["cases"].as_array().unwrap();
+        assert!(cases.len() > 50);
+        let differences = replay_on(start_edition(enterprise).await, cases).await;
+        assert!(
+            differences.is_empty(),
+            "{} of {} requests differ (enterprise: {enterprise}):\n{}",
+            differences.len(),
+            cases.len(),
+            differences.join("\n")
+        );
+    }
+}
+
+/// A body naming another database than the path's, which the official emulator never answers,
+/// is refused (D093).
+#[tokio::test]
+async fn set_database_edition_refuses_another_database_in_the_body() {
+    let addr = start().await;
+    let headers = [
+        ("Authorization".to_owned(), "Bearer owner".to_owned()),
+        ("Content-Type".to_owned(), "application/json".to_owned()),
+    ];
+    let path = "/emulator/v1/projects/edition/databases/(default):setDatabaseEdition";
+    let body = r#"{"database": "projects/edition/databases/other", "edition": "ENTERPRISE"}"#;
+    let answer = send(addr, "POST", path, &headers, Some(body)).await;
+    assert_eq!(answer.status, 400, "{}", answer.body);
+    assert!(answer.body.contains("INVALID_ARGUMENT"), "{}", answer.body);
 }
 
 /// Doubles are read correctly rounded (`doubles read correctly rounded` in `fixtures/rest.json`)

@@ -86,7 +86,7 @@ pub struct Admin {
     transactions: Arc<Transactions>,
     changes: Arc<ChangeFeed>,
     shutdown: Arc<watch::Sender<bool>>,
-    enterprise: bool,
+    editions: Arc<firestore::edition::Editions>,
     channels: Arc<webchannel::Channels>,
     seeder: Option<Arc<Seeder>>,
     rules: Arc<rules::Rules>,
@@ -109,7 +109,7 @@ impl Admin {
             Arc::clone(&self.transactions),
             Arc::clone(&self.changes),
         )
-        .with_enterprise_edition(self.enterprise)
+        .with_editions(Arc::clone(&self.editions))
         .with_seeder(self.seeder.clone())
         .with_rules(Arc::clone(&self.rules))
         .with_triggers(Arc::clone(&self.triggers))
@@ -123,7 +123,7 @@ impl Admin {
             transactions: Arc::default(),
             changes: Arc::default(),
             shutdown: Arc::new(watch::Sender::new(false)),
-            enterprise: false,
+            editions: Arc::default(),
             channels: Arc::default(),
             seeder: None,
             rules: Arc::default(),
@@ -170,10 +170,11 @@ impl Admin {
         self.single_project.as_deref()
     }
 
-    /// `--database-edition enterprise`.
+    /// `--database-edition enterprise`: every database's edition until
+    /// `:setDatabaseEdition` sets one's.
     #[must_use]
     pub fn with_enterprise_edition(mut self, enterprise: bool) -> Self {
-        self.enterprise = enterprise;
+        self.editions = Arc::new(firestore::edition::Editions::new(enterprise));
         self
     }
 
@@ -328,12 +329,16 @@ const MAX_CHANNEL_BODY: usize = 16 * 1024 * 1024;
 /// Security Rules (`/emulator/v1/projects/{p}:securityRules`, `:ruleCoverage`), export and
 /// import (`/emulator/v1/projects/{p}:export`, `:import`), the Functions emulator's trigger
 /// registrations (`/emulator/v1/projects/{p}/triggers/{key}`, `…/eventarcTrigger`), the
-/// indexes queries needed (`/emulator/v1/projects/{p}:indexUsage`), REST (`/v1/…`,
+/// indexes queries needed (`/emulator/v1/projects/{p}:indexUsage`), the edition of a database
+/// (`/emulator/v1/projects/{p}/databases/{d}:setDatabaseEdition`), REST (`/v1/…`,
 /// `/v1beta1/…`), or 404.
 async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -> Response {
     let (parts, body) = request.into_parts();
     if is_index_usage(parts.uri.path()) {
         return index_usage(&admin, &parts.method, parts.uri.query());
+    }
+    if let Some(database) = firestore::edition::route(parts.uri.path()) {
+        return firestore::edition::handle(&admin.editions, database, &parts.method, body).await;
     }
     if let Some(route) = rules::route(parts.uri.path()) {
         return rules::handle(
@@ -420,6 +425,7 @@ async fn reset(State(admin): State<Admin>) -> Response {
     admin.firestore().reset().await;
     admin.rules.reset();
     admin.index_usage.clear();
+    admin.editions.reset();
     text("Resetting...\n")
 }
 

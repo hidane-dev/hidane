@@ -368,7 +368,7 @@ impl Listener<'_> {
                     &parent.database,
                     parent.path,
                     structured,
-                    self.service.enterprise,
+                    self.service.enterprise(&parent.database),
                 )?;
                 (parent.database, Watch::Query(Box::new(query)))
             }

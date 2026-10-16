@@ -165,7 +165,7 @@ struct Request {
 
 /// A scalar as protobuf-java reads it into a string: `null` empty, a number or a boolean as its
 /// text.
-fn text(value: Json) -> Result<String, Status> {
+pub(crate) fn text(value: Json) -> Result<String, Status> {
     match value {
         Json::Null => Ok(String::new()),
         Json::String(s) => Ok(s),

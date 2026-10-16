@@ -1,0 +1,1891 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/database_edition.py",
+ "edition": "enterprise",
+ "cases": [
+  {
+   "name": "at first: an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/c/0",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "at first: a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Unsupported stage: nope\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "enterprise",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/(default):setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "ENTERPRISE"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "after enterprise: an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/c/3",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "after enterprise: a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Unsupported stage: nope\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "another database: an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/other/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/other/documents/c/5",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "another database: a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/other/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Unsupported stage: nope\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "another project's: an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}-2/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}-2/databases/(default)/documents/c/7",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "another project's: a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}-2/databases/(default)/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Unsupported stage: nope\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "standard",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/(default):setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "STANDARD"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "after standard: an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/c/10",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Nested arrays are not allowed\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "after standard: a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"ExecutePipeline requires the Database Edition to be `enterprise`.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "enterprise, as a number",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/(default):setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": 2
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "after 2: an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/c/13",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "after 2: a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Unsupported stage: nope\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "standard, as a number",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/(default):setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": 1
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "after 1: an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/c/16",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Nested arrays are not allowed\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "after 1: a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"ExecutePipeline requires the Database Edition to be `enterprise`.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "enterprise, as a number's text",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/(default):setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "2"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "after \"2\": an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/c/19",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "after \"2\": a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Unsupported stage: nope\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a named database",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/named:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "ENTERPRISE"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "the named database: an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/named/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/named/documents/c/22",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "the named database: a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/named/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Unsupported stage: nope\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "the default database, next to it: an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/c/24",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "the default database, next to it: a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Unsupported stage: nope\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "standard, in an array",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/named:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": [
+     "STANDARD"
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "after [STANDARD]: an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/named/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/named/documents/c/27",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Nested arrays are not allowed\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "after [STANDARD]: a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/named/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"ExecutePipeline requires the Database Edition to be `enterprise`.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "lenient JSON",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/lenient:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{edition: 'ENTERPRISE'}",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "after lenient JSON: an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/lenient/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/lenient/documents/c/30",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "after lenient JSON: a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/lenient/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Unsupported stage: nope\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "the path's database in the body",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/body:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/body",
+    "edition": "ENTERPRISE"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "after the path's database in the body: an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/body/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/body/documents/c/33",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "after the path's database in the body: a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/body/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Unsupported stage: nope\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an empty database in the body",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/empty:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "",
+    "edition": "ENTERPRISE"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "after an empty database in the body: an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/empty/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/empty/documents/c/36",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "after an empty database in the body: a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/empty/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Unsupported stage: nope\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "without credentials",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/anyone:setDatabaseEdition",
+   "headers": {},
+   "compare": "exact",
+   "body": {
+    "edition": "ENTERPRISE"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "an invalid credential",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/anyone:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer garbage"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "STANDARD"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "after anyone: an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/anyone/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/anyone/documents/c/40",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Nested arrays are not allowed\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "after anyone: a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/anyone/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"ExecutePipeline requires the Database Edition to be `enterprise`.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a query string",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/query:setDatabaseEdition?x=1",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "ENTERPRISE"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "after a query string: an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/query/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/query/documents/c/43",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "after a query string: a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/query/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Unsupported stage: nope\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an invalid database ID",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/BAD!:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "ENTERPRISE"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "enterprise again",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/cleared:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "ENTERPRISE"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "clear the database",
+   "method": "DELETE",
+   "path": "/emulator/v1/projects/{project}/databases/cleared/documents",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "after clearing it: an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/cleared/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/cleared/documents/c/48",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "after clearing it: a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/cleared/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Unsupported stage: nope\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an empty body",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/refused:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "a null edition",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/refused:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": null
+   },
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "edition unspecified",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/refused:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "DATABASE_EDITION_UNSPECIFIED"
+   },
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "edition 0",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/refused:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": 0
+   },
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "edition 3",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/refused:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": 3
+   },
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "edition -1",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/refused:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": -1
+   },
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "the database alone",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/refused:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "database": "projects/{project}/databases/refused"
+   },
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "lowercase",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/refused:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "enterprise"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "another spelling",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/refused:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "Enterprise"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an unknown edition",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/refused:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "FOO"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "EDITION_UNSPECIFIED",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/refused:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "EDITION_UNSPECIFIED"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a boolean",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/refused:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": true
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an unknown field",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/refused:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "x": 1
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an unknown field next to the edition",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/refused:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "ENTERPRISE",
+    "x": 1
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "no body",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/refused:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "an empty text",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/refused:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "an array",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/refused:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "[]",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "not JSON",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/refused:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "raw": "{x",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "after the refusals: an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/refused/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/refused/documents/c/68",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "after the refusals: a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/refused/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Unsupported stage: nope\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "GET",
+   "method": "GET",
+   "path": "/emulator/v1/projects/{project}/databases/(default):setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "PUT",
+   "method": "PUT",
+   "path": "/emulator/v1/projects/{project}/databases/(default):setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "ENTERPRISE"
+   },
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "a trailing slash",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/(default):setDatabaseEdition/",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "ENTERPRISE"
+   },
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "no database",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "ENTERPRISE"
+   },
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "an empty database ID",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "ENTERPRISE"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"projects\\/{project}\\/databases\\/\\\" has invalid trailing \\\"\\/\\\".\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an empty project ID",
+   "method": "POST",
+   "path": "/emulator/v1/projects//databases/(default):setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "ENTERPRISE"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database name \\\"projects\\/\\/databases\\/(default)\\\" lacks a project id at index 9.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "a database ID with a slash",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/a/b:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "ENTERPRISE"
+   },
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "an invalid project ID",
+   "method": "POST",
+   "path": "/emulator/v1/projects/P5/databases/(default):setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "ENTERPRISE"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid project ID(P5) or database ID()\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an invalid project ID, a named database",
+   "method": "POST",
+   "path": "/emulator/v1/projects/P5/databases/named:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "ENTERPRISE"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Invalid project ID(P5) or database ID(named)\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an invalid project ID, a bad body",
+   "method": "POST",
+   "path": "/emulator/v1/projects/P5/databases/named:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "FOO"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "enterprise before a reset",
+   "method": "POST",
+   "path": "/emulator/v1/projects/{project}/databases/reset:setDatabaseEdition",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "edition": "ENTERPRISE"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n}\n"
+   }
+  },
+  {
+   "name": "reset",
+   "method": "POST",
+   "path": "/reset",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": null,
+    "body": "Resetting...\n"
+   }
+  },
+  {
+   "name": "after a reset: an array in an array",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/reset/documents:commit",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/reset/documents/c/82",
+       "fields": {
+        "v": {
+         "arrayValue": {
+          "values": [
+           {
+            "arrayValue": {}
+           }
+          ]
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"writeResults\": [{\n    \"updateTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "after a reset: a pipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/reset/documents:executePipeline",
+   "headers": {
+    "Authorization": "Bearer owner"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredPipeline": {
+     "pipeline": {
+      "stages": [
+       {
+        "name": "nope"
+       }
+      ]
+     }
+    }
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Unsupported stage: nope\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  }
+ ]
+}
