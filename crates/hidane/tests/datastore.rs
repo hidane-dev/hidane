@@ -26,6 +26,9 @@ const KNOWN: &[&str] = &[
 /// The queries hidane answers otherwise, on purpose (docs/parity-exceptions.md).
 const KNOWN_QUERIES: &[&str] = &[];
 
+/// The GQL queries hidane answers otherwise, on purpose (docs/parity-exceptions.md).
+const KNOWN_GQL: &[&str] = &[];
+
 async fn start() -> SocketAddr {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
@@ -355,5 +358,22 @@ async fn datastore_mode_serves_grpc_and_refuses_firestore() {
             .starts_with("Database mode not set to Firestore Mode."),
         "{}",
         refused.message()
+    );
+}
+
+/// GQL in Datastore mode (`fixtures/datastore_gql.json`, from `tools/oracle/datastore_gql.py`):
+/// what each query reads as (the answer holds the structured query), its results, and how the
+/// queries it cannot read are refused.
+#[tokio::test]
+async fn gql_answers_like_the_official_emulator() {
+    let fixture: Json = serde_json::from_str(include_str!("fixtures/datastore_gql.json")).unwrap();
+    let cases = fixture["cases"].as_array().unwrap().len();
+    assert!(cases > 100);
+    let differences = replay(&fixture, KNOWN_GQL).await;
+    assert!(
+        differences.is_empty(),
+        "{} of {cases} requests differ:\n{}",
+        differences.len(),
+        differences.join("\n")
     );
 }

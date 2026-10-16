@@ -9,8 +9,10 @@
 //! with the same messages, a key's lock kept under [`keys::lock_path`]. What is served so far:
 //! `Lookup`, `Commit`, `BeginTransaction`, `Rollback`, `AllocateIds` and `ReserveIds`
 //! (`tests/fixtures/datastore_entities.json`), and structured `RunQuery` and
-//! `RunAggregationQuery` ([`query`], `tests/fixtures/datastore_queries.json`); not GQL yet.
+//! `RunAggregationQuery` ([`query`], `tests/fixtures/datastore_queries.json`), and GQL
+//! ([`gql`], `tests/fixtures/datastore_gql.json`).
 
+mod gql;
 pub(crate) mod keys;
 mod query;
 pub(crate) mod rest;
@@ -556,13 +558,20 @@ impl Datastore for DatastoreService {
             database: req.database_id,
         };
         let namespace = Self::namespace(req.partition_id, &database)?;
+        let mut echo = None;
         let query = match req.query_type {
             Some(run_query_request::QueryType::Query(query)) => query,
-            Some(run_query_request::QueryType::GqlQuery(_)) => {
-                return Err(Status::unimplemented(
-                    "GQL is not served by hidane yet (#81)",
-                ));
-            }
+            Some(run_query_request::QueryType::GqlQuery(text)) => match gql::read(&text)? {
+                gql::Read::Entities(query) => {
+                    echo = Some(query.clone());
+                    query
+                }
+                gql::Read::Aggregation(_) => {
+                    return Err(Status::invalid_argument(
+                        "Expecting ENTITY_QUERY, but got AGGREGATION_QUERY. Use Datastore.RunAggregationQuery API instead for such queries.",
+                    ));
+                }
+            },
             None => {
                 return Err(Status::invalid_argument(
                     "one of fields Query.query and Query.gql_query must be set",
@@ -578,6 +587,7 @@ impl Datastore for DatastoreService {
             .unwrap_or_else(|| query::run(&plan, &stored.entities, &database, read));
         Ok(Response::new(RunQueryResponse {
             batch: Some(batch),
+            query: echo,
             transaction: reading.new_transaction,
             ..RunQueryResponse::default()
         }))
@@ -595,10 +605,15 @@ impl Datastore for DatastoreService {
         let namespace = Self::namespace(req.partition_id, &database)?;
         let aggregation = match req.query_type {
             Some(run_aggregation_query_request::QueryType::AggregationQuery(a)) => a,
-            Some(run_aggregation_query_request::QueryType::GqlQuery(_)) => {
-                return Err(Status::unimplemented(
-                    "GQL is not served by hidane yet (#81)",
-                ));
+            Some(run_aggregation_query_request::QueryType::GqlQuery(text)) => {
+                match gql::read(&text)? {
+                    gql::Read::Aggregation(aggregation) => aggregation,
+                    gql::Read::Entities(_) => {
+                        return Err(Status::invalid_argument(
+                            "Expecting AGGREGATION_QUERY, but got ENTITY_QUERY. Use Datastore.RunQuery API instead for such queries.",
+                        ));
+                    }
+                }
             }
             None => {
                 return Err(Status::invalid_argument(
