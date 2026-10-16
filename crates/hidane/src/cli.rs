@@ -299,13 +299,8 @@ impl Cli {
                 "CLOUD_DATASTORE mode is not supported by hidane; use datastore-mode ({ISSUES}/81)"
             ));
         }
-        if self.require_indexes {
-            if self.database_mode == DatabaseMode::CloudFirestore {
-                return Err("Firestore Native mode does not support index enforcement".into());
-            }
-            return Err(format!(
-                "hidane does not enforce indexes in Datastore mode yet ({ISSUES}/81)"
-            ));
+        if self.require_indexes && self.database_mode == DatabaseMode::CloudFirestore {
+            return Err("Firestore Native mode does not support index enforcement".into());
         }
 
         let mut warnings = Vec::new();
@@ -325,8 +320,21 @@ impl Cli {
                 "WebChannel is served on the main port; --webchannel_port is ignored ({ISSUES}/10)"
             ));
         }
-        if self.index_file.is_some() {
-            warnings.push("--index_file is ignored in Firestore Native mode".into());
+        // As on the official emulator: the file is read only to enforce indexes, and without
+        // one every Datastore request fails (`tests/fixtures/datastore_indexes.json`).
+        match (self.database_mode, self.require_indexes, &self.index_file) {
+            (DatabaseMode::CloudFirestore, _, Some(_)) => {
+                warnings.push("--index_file is ignored in Firestore Native mode".into());
+            }
+            (_, false, Some(_)) => {
+                warnings.push("--index_file is ignored without --require_indexes".into());
+            }
+            (_, true, None) => warnings.push(
+                "--require_indexes without --index_file: every Datastore request fails, as on \
+                 the official emulator"
+                    .into(),
+            ),
+            _ => {}
         }
         Ok(warnings)
     }
@@ -500,19 +508,29 @@ mod tests {
         let err = |args: &[&str]| parse(args).unwrap().validate().unwrap_err();
         assert!(err(&["--database-mode", "CLOUD_DATASTORE"]).contains("/81"));
         assert!(
-            err(&[
-                "--database-mode",
-                "datastore-mode",
-                "--require_indexes",
-                "true"
-            ])
-            .contains("/81")
-        );
-        assert!(
             parse(&["--database-mode", "datastore-mode"])
                 .unwrap()
                 .validate()
                 .is_ok()
+        );
+    }
+
+    #[test]
+    fn datastore_mode_enforces_indexes() {
+        let warnings = |args: &[&str]| parse(args).unwrap().validate().unwrap();
+        let mode = ["--database-mode", "datastore-mode"];
+        let with = |more: &[&'static str]| [&mode[..], more].concat();
+        assert!(warnings(&with(&["--require_indexes", "--index_file", "index.yaml"])).is_empty());
+        assert_eq!(
+            warnings(&with(&["--index_file", "index.yaml"])),
+            ["--index_file is ignored without --require_indexes"]
+        );
+        assert!(
+            warnings(&with(&["--require_indexes"]))[0].contains("every Datastore request fails")
+        );
+        assert_eq!(
+            warnings(&["--index_file", "index.yaml"]),
+            ["--index_file is ignored in Firestore Native mode"]
         );
     }
 

@@ -83,7 +83,8 @@ Known gaps are `incompatible`:
   ([#338](https://github.com/hidane-dev/hidane/issues/338)).
 - Datastore mode, through `gcloud emulators firestore start --database-mode=datastore-mode`
   ([#81](https://github.com/hidane-dev/hidane/issues/81)): `hidane --database-mode datastore-mode`
-  serves entities, transactions, queries, aggregations and GQL, not index enforcement yet. A
+  serves entities, transactions, queries, aggregations, GQL and `--require_indexes`; the
+  Datastore client libraries are not tested against it yet. A
   Datastore client library in the
   dependencies is `unknown`: it may talk to the separate Datastore emulator, which hidane does
   not replace.

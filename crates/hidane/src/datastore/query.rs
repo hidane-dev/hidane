@@ -342,6 +342,8 @@ pub struct Plan {
     pub limit: Option<usize>,
     pub start: Option<Position>,
     pub end: Option<Position>,
+    /// The first refusal that comes once the query's index is found (`indexes::check`).
+    pub refused: Option<Status>,
 }
 
 /// Where a result is in a query's order: its row values and its key.
@@ -409,12 +411,19 @@ fn operand(value: &Value, project: &str) -> Option<Indexed> {
 }
 
 /// Checks `filter`, in a query on `kind` (`None` without a kind) in `namespace`.
+/// Keeps the first of the refusals that come once the query's index is found
+/// (`indexes::check`): the query is planned on, as earlier refusals may still come.
+fn refuse(refused: &mut Option<Status>, status: Status) {
+    refused.get_or_insert(status);
+}
+
 fn check_filter(
     filter: &Filter,
     kind: Option<&str>,
     namespace: &str,
     project: &str,
     in_or: bool,
+    refused: &mut Option<Status>,
 ) -> Result<Cond, Status> {
     match &filter.filter_type {
         None => Err(invalid("a filter must have exactly one of its fields set")),
@@ -428,7 +437,7 @@ fn check_filter(
             let children = composite
                 .filters
                 .iter()
-                .map(|f| check_filter(f, kind, namespace, project, in_or || or))
+                .map(|f| check_filter(f, kind, namespace, project, in_or || or, refused))
                 .collect::<Result<Vec<_>, _>>()?;
             Ok(if or {
                 Cond::Or(children)
@@ -437,7 +446,7 @@ fn check_filter(
             })
         }
         Some(FilterType::PropertyFilter(property)) => {
-            check_property(property, kind, namespace, project, in_or)
+            check_property(property, kind, namespace, project, in_or, refused)
         }
     }
 }
@@ -448,6 +457,7 @@ fn check_property(
     namespace: &str,
     project: &str,
     in_or: bool,
+    refused: &mut Option<Status>,
 ) -> Result<Cond, Status> {
     use property_filter::Operator as O;
     let op = match O::try_from(filter.op) {
@@ -475,9 +485,12 @@ fn check_property(
             };
             let (_, ns, path) = key_parts(key, project);
             if ns != namespace {
-                return Err(invalid(format!(
-                    "The query namespace is '{namespace}' but ancestor namespace is '{ns}'."
-                )));
+                refuse(
+                    refused,
+                    invalid(format!(
+                        "The query namespace is '{namespace}' but ancestor namespace is '{ns}'."
+                    )),
+                );
             }
             if in_or {
                 return Err(invalid(
@@ -527,13 +540,13 @@ fn check_property(
         vec![value]
     };
     if name == "__key__" {
-        let keys = operands
-            .iter()
-            .map(|v| match &v.value_type {
-                Some(ValueType::KeyValue(_)) => Ok(operand(v, project).expect("a key")),
-                _ => Err(invalid("__key__ filter value must be a Key")),
-            })
-            .collect::<Result<Vec<_>, _>>()?;
+        let mut keys = Vec::new();
+        for v in &operands {
+            match &v.value_type {
+                Some(ValueType::KeyValue(_)) => keys.push(operand(v, project).expect("a key")),
+                _ => refuse(refused, invalid("__key__ filter value must be a Key")),
+            }
+        }
         return Ok(Cond::Key { op, keys });
     }
     if kind.is_none() {
@@ -594,10 +607,20 @@ pub fn plan(query: &Query, database: &Database, namespace: &str) -> Result<Plan,
         }
         projection.push(name);
     }
+    let mut refused = None;
     let cond = query
         .filter
         .as_ref()
-        .map(|f| check_filter(f, kind.as_deref(), namespace, &database.project, false))
+        .map(|f| {
+            check_filter(
+                f,
+                kind.as_deref(),
+                namespace,
+                &database.project,
+                false,
+                &mut refused,
+            )
+        })
         .transpose()?;
     let mut inequalities = Vec::new();
     let mut equalities = Vec::new();
@@ -631,17 +654,48 @@ pub fn plan(query: &Query, database: &Database, namespace: &str) -> Result<Plan,
         .filter(|p| *p != "__key__")
         .cloned()
         .collect();
-    if let Some(p) = projected.iter().find(|p| equalities.contains(p)) {
-        let _ = p;
-        return Err(invalid(
-            "Cannot use projection on a property with an equality filter.",
-        ));
+    if projected.iter().any(|p| equalities.contains(p)) {
+        refuse(
+            &mut refused,
+            invalid("Cannot use projection on a property with an equality filter."),
+        );
     }
     let distinct_on: Vec<String> = query.distinct_on.iter().map(|p| p.name.clone()).collect();
-    // The row's order: the explicit orders, then the inequality, distinct and projected
-    // properties not ordered yet, ascending, then the key.
+    if distinct_on.iter().any(|p| p == "__key__") {
+        refuse(
+            &mut refused,
+            invalid("Group by is not supported for the property: __key__"),
+        );
+    }
+    // The distinct properties come first, those not ordered right after the orders.
+    let mut grouped: Vec<&str> = explicit
+        .iter()
+        .map(|(f, _)| f.as_deref().unwrap_or("__key__"))
+        .collect();
+    for name in &distinct_on {
+        if !grouped.contains(&name.as_str()) {
+            grouped.push(name);
+        }
+    }
+    if !distinct_on.is_empty()
+        && let Some(other) = grouped
+            .iter()
+            .position(|n| !distinct_on.iter().any(|d| d == n))
+        && grouped[other..]
+            .iter()
+            .any(|n| distinct_on.iter().any(|d| d == n))
+    {
+        refuse(
+            &mut refused,
+            invalid("All group by properties must be ordered before any non group by properties."),
+        );
+    }
+    // The row's order: the explicit orders, then the distinct, inequality and projected
+    // properties (by name) not ordered yet, ascending, then the key.
+    let mut by_name = projected.clone();
+    by_name.sort_unstable();
     let mut orders = explicit.clone();
-    for name in inequalities.iter().chain(&distinct_on).chain(&projected) {
+    for name in distinct_on.iter().chain(&inequalities).chain(&by_name) {
         if !orders.iter().any(|(f, _)| f.as_deref() == Some(name)) {
             orders.push((Some(name.clone()), false));
         }
@@ -690,6 +744,7 @@ pub fn plan(query: &Query, database: &Database, namespace: &str) -> Result<Plan,
         limit,
         start,
         end,
+        refused,
     })
 }
 

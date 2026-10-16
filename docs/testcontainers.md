@@ -141,7 +141,7 @@ are tested. The module also waits for the port, which testcontainers-go checks f
 container with a shell where there is one: hidane's image has none, so it checks from the host only
 and logs `Shell not found in container`. `WithDatastoreMode()` passes
 `--database-mode=datastore-mode`, which hidane serves (entities, transactions, queries,
-aggregations and GQL; not index enforcement yet, [#81](https://github.com/hidane-dev/hidane/issues/81)); it is
+aggregations, GQL and `--require_indexes`, [#81](https://github.com/hidane-dev/hidane/issues/81)); it is
 not tested here. `gcloud.RunFirestore`, deprecated, passes
 the same command as `firestore.Run`, but is not tested here.
 
