@@ -12,6 +12,10 @@ use prost::Message;
 
 const PROTOS: &[&str] = &["google/firestore/v1/firestore.proto"];
 
+/// Datastore mode's API (#81), generated but not in the descriptor sets above: hidane does not
+/// serve it yet, and reflection lists what the descriptors hold.
+const DATASTORE: &[&str] = &["google/datastore/v1/datastore.proto"];
+
 /// The messages written by hand in `src/ordered.rs`, and the map entry each one holds.
 const ORDERED: &[(&str, &str, &str)] = &[
     ("Document", "crate::ordered::Document", "FieldsEntry"),
@@ -39,6 +43,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         ordered(fds.clone()).encode_to_vec(),
     )?;
 
+    // The code of both APIs, from one descriptor set.
+    let all = protox::Compiler::new([&root])?
+        .include_imports(true)
+        .include_source_info(true)
+        .open_files(PROTOS.iter().chain(DATASTORE))?
+        .file_descriptor_set();
+
     let mut builder = tonic_prost_build::configure();
     for (message, rust, _) in ORDERED {
         builder = builder.extern_path(format!(".google.firestore.v1.{message}"), *rust);
@@ -51,12 +62,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         // Firestore orders map keys by UTF-8 bytes, which is exactly `String`'s `Ord`, so a
         // BTreeMap keeps document fields and map values in canonical order for free.
         .btree_map(".google.firestore.v1")
+        .btree_map(".google.datastore.v1")
         // Pipeline expressions are never stored. Boxing them keeps `Value` at 32 bytes instead
         // of 72, which matters for every value hidane holds (#27).
         .boxed(".google.firestore.v1.Value.value_type.function_value")
         .boxed(".google.firestore.v1.Value.value_type.pipeline_value")
         .include_file("mod.rs")
-        .compile_fds(fds)?;
+        .compile_fds(all)?;
 
     // The hand-written messages, where the generated ones would have been.
     let v1 = out.join("google.firestore.v1.rs");
