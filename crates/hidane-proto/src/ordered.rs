@@ -442,3 +442,38 @@ impl Message for Entity {
         *self = Self::default();
     }
 }
+
+/// The result of a Datastore aggregation query. Same fields and tags as
+/// `google.datastore.v1.AggregationResult`: its properties come in the aggregations' order (#81).
+#[derive(Clone, Default, PartialEq, Debug)]
+pub struct DatastoreAggregationResult {
+    pub aggregate_properties: Properties,
+}
+
+impl Message for DatastoreAggregationResult {
+    fn encode_raw(&self, buf: &mut impl BufMut) {
+        encode_fields(2, &self.aggregate_properties, buf);
+    }
+
+    fn merge_field(
+        &mut self,
+        tag: u32,
+        wire_type: WireType,
+        buf: &mut impl Buf,
+        ctx: DecodeContext,
+    ) -> Result<(), DecodeError> {
+        match tag {
+            2 => merge_fields(wire_type, &mut self.aggregate_properties, buf, ctx)
+                .map_err(context("AggregationResult", "aggregate_properties")),
+            _ => encoding::skip_field(wire_type, tag, buf, ctx),
+        }
+    }
+
+    fn encoded_len(&self) -> usize {
+        fields_len(2, &self.aggregate_properties)
+    }
+
+    fn clear(&mut self) {
+        self.aggregate_properties.clear();
+    }
+}

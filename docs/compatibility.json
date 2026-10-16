@@ -22,8 +22,8 @@
    "evidence": [
     {
      "kind": "replay",
-     "count": 35632,
-     "description": "35,632 recorded answers of the official emulator v1.22.0 in 61 fixtures, replayed against hidane by cargo test",
+     "count": 36065,
+     "description": "36,065 recorded answers of the official emulator v1.22.0 in 63 fixtures, replayed against hidane by cargo test",
      "where": "docs/parity.md",
      "runs": "every pull request and push to main",
      "last_recorded": null
@@ -49,27 +49,27 @@
  ],
  "oracle_corpus": {
   "where": "docs/oracle-corpus.json",
-  "digest": "sha256:f9ff7e1ea9767196fa82b0d71f9f61d245794aaf0f156ea28c577ca22fd11fd3",
+  "digest": "sha256:808f7d0b9245cada5d0fadc3e2e973d1acf5c8bd7b4673661cccf0f8d2e5a924",
   "releases": [
    "1.22.0"
   ],
-  "files": 103,
-  "fixtures": 61,
+  "files": 105,
+  "fixtures": 63,
   "transcripts": 42,
-  "answers": 35632,
-  "bytes": 21215995
+  "answers": 36065,
+  "bytes": 24918853
  },
  "replay": {
-  "fixtures": 61,
-  "answers": 35632,
+  "fixtures": 63,
+  "answers": 36065,
   "levels": {
-   "full": 24305,
+   "full": 24735,
    "reasons": 4344,
    "part": 1481,
    "status": 5189,
    "codes": 96,
    "none": 7,
-   "differs": 210
+   "differs": 213
   },
   "by_area": {
    "documents": {
@@ -163,6 +163,14 @@
      "REST",
      "WebChannel",
      "in-process"
+    ]
+   },
+   "datastore": {
+    "fixtures": 2,
+    "answers": 433,
+    "full": 430,
+    "transports": [
+     "REST"
     ]
    }
   },
@@ -287,8 +295,8 @@
   ]
  },
  "integration_tests": {
-  "files": 54,
-  "replaying_files": 38,
+  "files": 55,
+  "replaying_files": 39,
   "runs": "every pull request and push to main",
   "suites": [
    {
@@ -333,6 +341,13 @@
     "path": "crates/hidane/tests/cors.rs",
     "replays": [
      "crates/hidane/tests/fixtures/cors.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/datastore.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/datastore_entities.json",
+     "crates/hidane/tests/fixtures/datastore_queries.json"
     ]
    },
    {

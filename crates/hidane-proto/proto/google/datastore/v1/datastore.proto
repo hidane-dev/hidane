@@ -469,6 +469,12 @@ message CommitResponse {
   // The i-th mutation result corresponds to the i-th mutation in the request.
   repeated MutationResult mutation_results = 3;
 
+  // hidane patch: the commit's version, its time in microseconds. Not in googleapis; the
+  // official emulator's REST answer to a transactional commit carries it, between the
+  // mutation results and the commit time, which JSON prints in field-number order. The
+  // field number is hidane's, one of those googleapis leaves unused between the two.
+  int64 commit_version = 6;
+
   // The number of index entries updated during the commit, or zero if none were
   // updated.
   int32 index_updates = 4;

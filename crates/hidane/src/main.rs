@@ -170,7 +170,8 @@ async fn run(args: Vec<OsString>) -> ExitCode {
     print_banner(&cli, port);
 
     let mut admin = hidane::Admin::default()
-        .with_enterprise_edition(cli.database_edition == cli::DatabaseEdition::Enterprise);
+        .with_enterprise_edition(cli.database_edition == cli::DatabaseEdition::Enterprise)
+        .with_datastore_mode(cli.database_mode == cli::DatabaseMode::CloudFirestoreInDatastoreMode);
     if let Some(documents) = seed {
         admin = admin.with_seed(documents);
     }

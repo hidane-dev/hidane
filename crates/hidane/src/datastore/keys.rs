@@ -1,0 +1,361 @@
+//! Datastore keys: how a request's keys are checked, with the official emulator's messages
+//! (`tests/fixtures/datastore_entities.json`), and how hidane holds them.
+//!
+//! A key is a path of elements, each a kind and a numeric ID or a name, in a partition: a
+//! project, a database and a namespace. The last element may be incomplete (no ID and no name)
+//! where an ID is to be allocated.
+
+use hidane_core::path::ResourcePath;
+use hidane_proto::google::datastore::v1::{
+    Key, PartitionId,
+    key::{PathElement, path_element::IdType},
+};
+use tonic::Status;
+
+/// The longest path.
+const MAX_PATH: usize = 100;
+/// The longest kind, name or namespace's text, in bytes.
+const MAX_BYTES: usize = 1500;
+
+/// A key path element's identifier. Numeric IDs come before names, as Datastore orders keys.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum Id {
+    Id(i64),
+    Name(String),
+}
+
+/// A complete key path, below its namespace.
+pub type Path = Vec<(String, Id)>;
+
+/// Where a key lives within a database.
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct Located {
+    pub namespace: String,
+    pub path: Path,
+}
+
+/// The database a request names: its project and database ID (`""` for the default one).
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct Database {
+    pub project: String,
+    pub database: String,
+}
+
+impl Database {
+    /// `projects/{p}/databases/{d}`, the default database as `(default)`, for the lock table.
+    pub fn name(&self) -> String {
+        let database = if self.database.is_empty() {
+            "(default)"
+        } else {
+            &self.database
+        };
+        format!("projects/{}/databases/{database}", self.project)
+    }
+
+    /// The partition of `namespace` in this database, as responses print it.
+    pub fn partition(&self, namespace: &str) -> PartitionId {
+        PartitionId {
+            project_id: self.project.clone(),
+            database_id: self.database.clone(),
+            namespace_id: namespace.to_owned(),
+        }
+    }
+
+    /// The key of `located` in this database.
+    pub fn key(&self, located: &Located) -> Key {
+        Key {
+            partition_id: Some(self.partition(&located.namespace)),
+            path: located
+                .path
+                .iter()
+                .map(|(kind, id)| PathElement {
+                    kind: kind.clone(),
+                    id_type: Some(match id {
+                        Id::Id(n) => IdType::Id(*n),
+                        Id::Name(name) => IdType::Name(name.clone()),
+                    }),
+                })
+                .collect(),
+        }
+    }
+}
+
+/// How strictly a key is read.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Rules {
+    /// A key that is written: reserved kinds and names are refused.
+    Write,
+    /// A key that is read, or a key value: reserved kinds and names are allowed.
+    Read,
+}
+
+/// What a key's last element must be.
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum Last {
+    Complete,
+    Incomplete,
+    Either,
+}
+
+/// A checked key: its namespace and path, the last element possibly incomplete.
+#[derive(Clone, Debug)]
+pub struct Checked {
+    pub namespace: String,
+    pub path: Vec<(String, Option<Id>)>,
+}
+
+impl Checked {
+    /// The complete key, or `None` when its last element is incomplete.
+    pub fn complete(&self) -> Option<Located> {
+        Some(Located {
+            namespace: self.namespace.clone(),
+            path: self
+                .path
+                .iter()
+                .map(|(kind, id)| Some((kind.clone(), id.clone()?)))
+                .collect::<Option<_>>()?,
+        })
+    }
+
+    /// The key with `id` as its last element's identifier.
+    pub fn with_id(&self, id: i64) -> Located {
+        let mut path: Path = self
+            .path
+            .iter()
+            .map(|(kind, id)| (kind.clone(), id.clone().unwrap_or(Id::Id(0))))
+            .collect();
+        if let Some(last) = path.last_mut() {
+            last.1 = Id::Id(id);
+        }
+        Located {
+            namespace: self.namespace.clone(),
+            path,
+        }
+    }
+}
+
+/// `[Parent: p, Child: ]`, as the messages about completeness print a path.
+fn shown(path: &[PathElement]) -> String {
+    let elements: Vec<String> = path
+        .iter()
+        .map(|element| {
+            let id = match &element.id_type {
+                Some(IdType::Id(n)) => n.to_string(),
+                Some(IdType::Name(name)) => name.clone(),
+                None => String::new(),
+            };
+            format!("{}: {id}", element.kind)
+        })
+        .collect();
+    format!("[{}]", elements.join(", "))
+}
+
+fn reserved(text: &str) -> bool {
+    text.len() >= 4 && text.starts_with("__") && text.ends_with("__")
+}
+
+/// A namespace's text: letters, digits, `.`, `-` and `_`, at most 100 of them.
+fn namespace_ok(namespace: &str) -> bool {
+    namespace.len() <= 100
+        && namespace
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'.' | b'-' | b'_'))
+}
+
+/// Checks `key`, of a request on `database`.
+pub fn check(key: &Key, database: &Database, rules: Rules, last: Last) -> Result<Checked, Status> {
+    let partition = key.partition_id.clone().unwrap_or_default();
+    if !partition.project_id.is_empty() && partition.project_id != database.project {
+        return Err(Status::invalid_argument(format!(
+            "mismatched databases within request: <unknown!>~{} vs. <unknown!>~{}",
+            database.project, partition.project_id
+        )));
+    }
+    let namespace = partition.namespace_id;
+    if !namespace.is_empty() {
+        if reserved(&namespace) {
+            return Err(Status::invalid_argument(format!(
+                "The namespace id \"{namespace}\" is reserved."
+            )));
+        }
+        if !namespace_ok(&namespace) {
+            return Err(Status::invalid_argument(format!(
+                "Illegal string \"{namespace}\" in namespace id."
+            )));
+        }
+    }
+    if key.path.is_empty() {
+        return Err(Status::invalid_argument("Key path is empty."));
+    }
+    if key.path.len() > MAX_PATH {
+        return Err(Status::invalid_argument(format!(
+            "Key path is too long. Cannot exceed {MAX_PATH} elements."
+        )));
+    }
+    let mut path = Vec::with_capacity(key.path.len());
+    for element in &key.path {
+        let kind = &element.kind;
+        if kind.is_empty() {
+            return Err(Status::invalid_argument("The kind is the empty string."));
+        }
+        if rules == Rules::Write && reserved(kind) {
+            return Err(Status::invalid_argument(format!(
+                "The kind \"{kind}\" is reserved."
+            )));
+        }
+        if kind.len() > MAX_BYTES {
+            return Err(Status::invalid_argument(format!(
+                "The kind is longer than {MAX_BYTES} bytes."
+            )));
+        }
+        let id = match &element.id_type {
+            None => None,
+            Some(IdType::Id(0)) => {
+                return Err(Status::invalid_argument(
+                    "Key path id is invalid. Must not be zero.",
+                ));
+            }
+            Some(IdType::Id(n)) => Some(Id::Id(*n)),
+            Some(IdType::Name(name)) => {
+                if name.is_empty() {
+                    return Err(Status::invalid_argument(
+                        "The key path element name is the empty string.",
+                    ));
+                }
+                if rules == Rules::Write && reserved(name) {
+                    return Err(Status::invalid_argument(format!(
+                        "The key path element name \"{name}\" is reserved."
+                    )));
+                }
+                if name.len() > MAX_BYTES {
+                    return Err(Status::invalid_argument(format!(
+                        "The key path element name is longer than {MAX_BYTES} bytes."
+                    )));
+                }
+                Some(Id::Name(name.clone()))
+            }
+        };
+        path.push((kind.clone(), id));
+    }
+    let incomplete_parent = path[..path.len() - 1].iter().any(|(_, id)| id.is_none());
+    let incomplete_last = path.last().is_some_and(|(_, id)| id.is_none());
+    if incomplete_parent || (last == Last::Complete && incomplete_last) {
+        return Err(Status::invalid_argument(format!(
+            "Key path element must not be incomplete: {}",
+            shown(&key.path)
+        )));
+    }
+    if last == Last::Incomplete && !incomplete_last {
+        return Err(Status::invalid_argument(format!(
+            "Key path element must not be complete: {}",
+            shown(&key.path)
+        )));
+    }
+    Ok(Checked { namespace, path })
+}
+
+/// A complete key as the official emulator prints one in protocol-buffer text, in "no entity to
+/// update": `app: "p"`, the namespace, then each element.
+pub fn proto_text(database: &Database, located: &Located) -> String {
+    let mut out = format!("app: \"{}\"\n", database.project);
+    if !located.namespace.is_empty() {
+        out.push_str(&format!("name_space: \"{}\"\n", located.namespace));
+    }
+    out.push_str("path <\n");
+    for (kind, id) in &located.path {
+        out.push_str(&format!("  Element {{\n    type: \"{kind}\"\n"));
+        match id {
+            Id::Id(n) => out.push_str(&format!("    id: {n}\n")),
+            Id::Name(name) => out.push_str(&format!("    name: \"{name}\"\n")),
+        }
+        out.push_str("  }\n");
+    }
+    out.push_str(">\n");
+    out
+}
+
+/// A complete key as the official emulator prints one in "entity already exists":
+/// `EntityRef[partitionRef=p, path=/Kind/name]`.
+pub fn entity_ref(database: &Database, located: &Located) -> String {
+    let mut path = String::new();
+    for (kind, id) in &located.path {
+        path.push('/');
+        path.push_str(kind);
+        path.push('/');
+        match id {
+            Id::Id(n) => path.push_str(&n.to_string()),
+            Id::Name(name) => path.push_str(name),
+        }
+    }
+    let mut partition = database.project.clone();
+    if !located.namespace.is_empty() {
+        partition.push('!');
+        partition.push_str(&located.namespace);
+    }
+    format!("EntityRef[partitionRef={partition}, path={path}]")
+}
+
+/// The document path the transaction locks of a key are kept under: the namespace, then the
+/// path, numeric IDs as `__id<n>__` (which no name can be, as names like it are reserved).
+pub fn lock_path(located: &Located) -> ResourcePath {
+    let mut segments = vec!["__namespace__".to_owned(), located.namespace.clone()];
+    for (kind, id) in &located.path {
+        segments.push(kind.clone());
+        segments.push(match id {
+            Id::Id(n) => format!("__id{n}__"),
+            Id::Name(name) => name.clone(),
+        });
+    }
+    ResourcePath::from_segments(segments)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn element(kind: &str, id: Option<IdType>) -> PathElement {
+        PathElement {
+            kind: kind.into(),
+            id_type: id,
+        }
+    }
+
+    #[test]
+    fn paths_are_shown_as_the_messages_show_them() {
+        let path = [
+            element("Parent", None),
+            element("Child", Some(IdType::Id(5))),
+            element("Leaf", Some(IdType::Name("a".into()))),
+        ];
+        assert_eq!(shown(&path), "[Parent: , Child: 5, Leaf: a]");
+    }
+
+    #[test]
+    fn ids_come_before_names() {
+        assert!(Id::Id(i64::MAX) < Id::Name(String::new()));
+        assert!(Id::Id(-1) < Id::Id(1));
+    }
+
+    #[test]
+    fn keys_print_as_protocol_buffer_text() {
+        let database = Database {
+            project: "p".into(),
+            database: String::new(),
+        };
+        let located = Located {
+            namespace: String::new(),
+            path: vec![
+                ("P".into(), Id::Id(3)),
+                ("Task".into(), Id::Name("x".into())),
+            ],
+        };
+        assert_eq!(
+            proto_text(&database, &located),
+            "app: \"p\"\npath <\n  Element {\n    type: \"P\"\n    id: 3\n  }\n  Element {\n    type: \"Task\"\n    name: \"x\"\n  }\n>\n"
+        );
+        assert_eq!(
+            entity_ref(&database, &located),
+            "EntityRef[partitionRef=p, path=/P/3/Task/x]"
+        );
+    }
+}

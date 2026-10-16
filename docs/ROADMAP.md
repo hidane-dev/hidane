@@ -180,7 +180,9 @@ Released in v0.5.0 (2026-10-13):
 
 ## 8. Backlog
 
-- Datastore mode (`--database-mode datastore-mode`), `--index_file` / `--require_indexes` (#81)
+- Datastore mode (`--database-mode datastore-mode`, #81, [ADR 0009](adr/0009-datastore-mode.md)): keys,
+  values, lookups, commits, transactions, IDs, queries and aggregations are served; GQL,
+  `--index_file` / `--require_indexes` and the gcloud launch come next
 - `google.firestore.admin.v1` (not in the official emulator either; stays UNIMPLEMENTED)
 - The remaining `/emulator/v1` endpoints and the gRPC `FirestoreEmulator` service (#36)
 - Runs against production Firestore and the production Rules API (needs a GCP project, #82)

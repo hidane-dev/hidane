@@ -294,13 +294,18 @@ impl Cli {
         if self.export_name.is_some() && self.export_on_exit.is_none() {
             return Err("Export path not provided along with export name".into());
         }
-        if self.database_mode != DatabaseMode::CloudFirestore {
+        if self.database_mode == DatabaseMode::CloudDatastore {
             return Err(format!(
-                "Datastore mode is not supported by hidane yet ({ISSUES}/81)"
+                "CLOUD_DATASTORE mode is not supported by hidane; use datastore-mode ({ISSUES}/81)"
             ));
         }
         if self.require_indexes {
-            return Err("Firestore Native mode does not support index enforcement".into());
+            if self.database_mode == DatabaseMode::CloudFirestore {
+                return Err("Firestore Native mode does not support index enforcement".into());
+            }
+            return Err(format!(
+                "hidane does not enforce indexes in Datastore mode yet ({ISSUES}/81)"
+            ));
         }
 
         let mut warnings = Vec::new();
@@ -493,7 +498,22 @@ mod tests {
     #[test]
     fn unimplemented_data_features_refuse_to_start() {
         let err = |args: &[&str]| parse(args).unwrap().validate().unwrap_err();
-        assert!(err(&["--database-mode", "datastore-mode"]).contains("/81"));
+        assert!(err(&["--database-mode", "CLOUD_DATASTORE"]).contains("/81"));
+        assert!(
+            err(&[
+                "--database-mode",
+                "datastore-mode",
+                "--require_indexes",
+                "true"
+            ])
+            .contains("/81")
+        );
+        assert!(
+            parse(&["--database-mode", "datastore-mode"])
+                .unwrap()
+                .validate()
+                .is_ok()
+        );
     }
 
     #[test]
