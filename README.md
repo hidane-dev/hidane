@@ -95,8 +95,9 @@ it hurt everyday local development and CI (details and raw logs: [`docs/why.md`]
 | Time until the port accepts | 981 ms | 1.56 ms |
 | Resident memory, idle | 148 MiB | 9.4 MiB |
 | Resident memory after 1,000 documents | 267 MiB | 12.3 MiB |
-| 100,000 documents written in commits of 500 | 17.5 s | 1.61 s |
+| 100,000 documents written in commits of 500, signed out | 17.5 s | 1.61 s |
 | The same, with a listener on the collection | 191 s | 2.51 s |
+| The same without a listener, with the owner credential the Admin SDKs send | 1.84 s | 1.73 s |
 | `firebase emulators:exec` around a CI-style workload (100 documents seeded, 200 tests) | 6.81 s | 1.69 s |
 
 </div>
@@ -109,11 +110,10 @@ comes with every sample in its JSON. The methodology is in [`bench/`](bench/READ
 can rerun it; other machines give other numbers.
 
 Every request in the benchmark comes from its own gRPC client, which sends no credential, as a
-signed-out app does, so Security Rules apply to each one. The Admin SDKs send an emulator the
-owner credential, which skips the Rules: the official emulator then writes many times as fast,
-hidane takes about the same time either way, and the SDK's own work adds to both. Through
-firebase-admin, 100,000 documents took 2.2 s on the official emulator and 1.1 s on hidane in a
-single local run, about twice as fast rather than ten times
+signed-out app does, so Security Rules apply to each one, except in the last row. The Admin SDKs
+send an emulator the owner credential, which skips the Rules: the official emulator then writes
+almost as fast as hidane, which takes about the same time either way. So hidane's writes are
+much faster for a signed-out app and with a listener attached, not when an Admin SDK seeds data
 ([`bench/`](bench/README.md#fairness-rules), #286).
 
 <img alt="A terminal recording: each emulator started on its own until its port accepts a connection. The official emulator's port opens after 1323 ms, hidane's after 2.1 ms." src="https://raw.githubusercontent.com/hidane-dev/hidane/main/docs/assets/demo-startup.gif" width="100%">

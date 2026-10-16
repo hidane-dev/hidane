@@ -61,7 +61,9 @@ Every sample is in the [result](https://github.com/hidane-dev/benchmark-results/
 The benchmark's client sends no credential, as a signed-out app does, so Security Rules apply to
 its requests, the last row's workload included. With the owner credential that the Admin SDKs
 send, which skips the Rules, the official emulator's writes are many times as fast and hidane's
-take about the same time ([`bench/`](../bench/README.md#fairness-rules), #286).
+take about the same time: in the same run, 100,000 documents in commits of 500 took 1.84 s on
+the official emulator and 1.73 s on hidane with it, 17.5 s and 1.61 s without
+([`bench/`](../bench/README.md#fairness-rules), #286).
 
 ## 3. Writes slow down while a listener is attached
 
