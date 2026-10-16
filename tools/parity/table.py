@@ -797,9 +797,8 @@ RECORDINGS = {
         tests=[f"{H}/listen_queries.rs::enterprise_listen_targets_answer_like_the_official_emulator"],
         counted="each target, on an enterprise database, recorded over WebChannel, replayed "
                 "over gRPC",
-        compares="as `listen_queries.json`; the targets the test lists in `KNOWN_ENTERPRISE` "
-                 "as intentionally different (D091)",
-        count=listen_queries("KNOWN_ENTERPRISE")),
+        compares="as `listen_queries.json`",
+        count=listen_queries()),
     f"{H}/fixtures/queries_enterprise.json": dict(
         area="queries",
         tests=[f"{H}/queries.rs::enterprise_queries_answer_like_the_official_emulator"],

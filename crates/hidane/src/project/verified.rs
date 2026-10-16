@@ -137,9 +137,15 @@ pub const RULES_COMPILER: &str =
 /// Composite indexes: neither emulator enforces them.
 pub const INDEXES: &str = "docs/parity-exceptions.md (Composite indexes)";
 
+/// The enterprise edition: queries, listeners, pipelines, writes and the BSON types, replayed
+/// against the official emulator's recordings.
+pub const ENTERPRISE: &str = "crates/hidane/tests/fixtures/queries_enterprise.json; \
+     crates/hidane/tests/fixtures/listen_queries_enterprise.json; \
+     crates/hidane/tests/fixtures/pipelines.json; \
+     crates/hidane/tests/fixtures/commit_checks_enterprise.json; \
+     crates/hidane/tests/fixtures/bson_types.json";
+
 /// Known gaps.
-pub const GAP_ENTERPRISE: &str = "https://github.com/hidane-dev/hidane/issues/338; \
-     docs/parity-exceptions.md (enterprise edition)";
 pub const GAP_DATASTORE: &str =
     "https://github.com/hidane-dev/hidane/issues/81; docs/parity-exceptions.md";
 pub const WINDOWS: &str = "docs/adr/0006-launch-under-firebase-tools.md (Consequences)";

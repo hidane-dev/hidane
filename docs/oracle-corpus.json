@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:b5969cf89884314bb83824eb8f428884ca4982b1e2a2f695ec1ab6878b94d19e",
+ "digest": "sha256:260da559ed90d6aaea28f1e99c205d8a44d142374cf147afe106bfb928f76102",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -17,16 +17,16 @@
   "files": 104,
   "fixtures": 62,
   "transcripts": 42,
-  "answers": 35839,
-  "bytes": 21291424,
+  "answers": 35945,
+  "bytes": 21898243,
   "levels": {
-   "full": 24512,
+   "full": 24630,
    "reasons": 4344,
-   "part": 1481,
+   "part": 1503,
    "status": 5189,
    "codes": 96,
    "none": 7,
-   "differs": 210
+   "differs": 176
   },
   "by_area": {
    "documents": {
@@ -37,7 +37,7 @@
    "queries": {
     "fixtures": 9,
     "transcripts": 9,
-    "answers": 6103
+    "answers": 6163
    },
    "transactions": {
     "fixtures": 1,
@@ -47,7 +47,7 @@
    "streams": {
     "fixtures": 3,
     "transcripts": 8,
-    "answers": 1307
+    "answers": 1353
    },
    "rest": {
     "fixtures": 4,
@@ -84,7 +84,7 @@
    "v1.22.0": {
     "fixtures": 62,
     "transcripts": 42,
-    "answers": 35839
+    "answers": 35945
    }
   },
   "by_release_source": {
@@ -581,11 +581,11 @@
     "first_recorded": "2026-10-16",
     "last_changed": "2026-10-16"
    },
-   "bytes": 102616,
-   "sha256": "786f89b46cc88bf2286c10f025dca482bc2a92df1105cf96aecccae76da7db56",
-   "answers": 383,
+   "bytes": 110918,
+   "sha256": "f102dcf06b6e909678bb07c98f71c8ecdc03406b9dfd4442f1a77479ac26f9a1",
+   "answers": 397,
    "levels": {
-    "full": 383
+    "full": 397
    },
    "replayed_over": [
     "REST"
@@ -688,13 +688,13 @@
    },
    "recorded": {
     "first_recorded": "2026-10-10",
-    "last_changed": "2026-10-15"
+    "last_changed": "2026-10-16"
    },
-   "bytes": 777831,
-   "sha256": "f8666304a46c0422c367a5033d9cd75abbe01355df4bc22fab867960ab453087",
-   "answers": 628,
+   "bytes": 929812,
+   "sha256": "3f50b59ff41e089e3f59a47caacb809367e73e86da7930420cdd4fd8b0cc0c04",
+   "answers": 651,
    "levels": {
-    "full": 628
+    "full": 651
    },
    "replayed_over": [
     "gRPC"
@@ -724,14 +724,14 @@
    },
    "recorded": {
     "first_recorded": "2026-10-15",
-    "last_changed": "2026-10-15"
+    "last_changed": "2026-10-16"
    },
-   "bytes": 799706,
-   "sha256": "c2cbc629fb336844fd02665faf45981f76847c985bdbe8f9c3147b1a41c95466",
-   "answers": 628,
+   "bytes": 951151,
+   "sha256": "2d83936e0c8e69d1b46646d57727323bbf9449552e3439b9ae181e07b196a9d5",
+   "answers": 651,
    "levels": {
-    "full": 147,
-    "part": 481
+    "full": 148,
+    "part": 503
    },
    "replayed_over": [
     "gRPC"
@@ -841,13 +841,13 @@
    },
    "recorded": {
     "first_recorded": "2026-10-15",
-    "last_changed": "2026-10-15"
+    "last_changed": "2026-10-16"
    },
-   "bytes": 716664,
-   "sha256": "894bdec2314c124da3518dfc3ae956f4f58dcf3162e7967527c797dd64e6c4c1",
-   "answers": 629,
+   "bytes": 864620,
+   "sha256": "9c4f2ee076da005fa53ecb892cece3687008f2c4f39700c2624249f4d9c8a925",
+   "answers": 652,
    "levels": {
-    "full": 628,
+    "full": 651,
     "status": 1
    },
    "replayed_over": [
@@ -879,15 +879,14 @@
    },
    "recorded": {
     "first_recorded": "2026-10-15",
-    "last_changed": "2026-10-15"
+    "last_changed": "2026-10-16"
    },
-   "bytes": 719545,
-   "sha256": "b74fcc073ca8f4388e63ced06559b47bc31e0bb424aac92947c979c688f4e2ee",
-   "answers": 629,
+   "bytes": 866680,
+   "sha256": "7e63825204a030fc6f010ff169f2044465a9bda1d7fae5d045a961c4480db65a",
+   "answers": 652,
    "levels": {
-    "full": 594,
-    "status": 1,
-    "differs": 34
+    "full": 651,
+    "status": 1
    },
    "replayed_over": [
     "gRPC"
@@ -896,7 +895,7 @@
     "crates/hidane/tests/listen_queries.rs::enterprise_listen_targets_answer_like_the_official_emulator"
    ],
    "counted": "each target, on an enterprise database, recorded over WebChannel, replayed over gRPC",
-   "compared": "as `listen_queries.json`; the targets the test lists in `KNOWN_ENTERPRISE` as intentionally different (D091)"
+   "compared": "as `listen_queries.json`"
   },
   {
    "path": "crates/hidane/tests/fixtures/write_stream.json",

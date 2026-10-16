@@ -751,6 +751,33 @@ case("select a path below a value that is not a map", q("p", select={"fields": [
 case("select a path two maps deep", q("p", select={"fields": [f("m.x.y"), f("b")]}, order=[asc("b")]))
 
 
+# --- what a listener on an enterprise database checks otherwise (#338) ------------------------
+# Its checks take null and NaN as values: an equality to either (`<=` and `>=` too) is `is null`
+# or `is NaN`, counted once; a range on either is an inequality; and `!=`, `not-in` and
+# `is not NaN` match null, so each is an or with `is null` unless it names null.
+case("in 16 and != a string", q("p", where_=AND(ff("a", "IN", arr(*ints(0, 16))), ff("b", "NOT_EQUAL", s("x")))))
+case("in 16 and is-not-NaN", q("p", where_=AND(ff("a", "IN", arr(*ints(0, 16))), uf("b", "IS_NOT_NAN"))))
+case("in 16 and is-not-null", q("p", where_=AND(ff("a", "IN", arr(*ints(0, 16))), uf("b", "IS_NOT_NULL"))))
+case("49 equalities and not-in [1, 2]", q("p", where_=AND(*eqs(49), ff("x", "NOT_IN", arr(i(1), i(2))))))
+for label, x in [(">= null", ff("x", "GREATER_THAN_OR_EQUAL", NULL)), ("<= NaN", ff("x", "LESS_THAN_OR_EQUAL", NAN)),
+                 ("< NaN", ff("x", "LESS_THAN", NAN)), ("in [null, NaN]", ff("x", "IN", arr(NULL, NAN)))]:
+    case(f"98 equalities and {label}", q("p", where_=AND(*eqs(98), x)))
+case("__name__ < NaN and a > 1", q("p", where_=AND(ff("__name__", "LESS_THAN", NAN), ff("a", "GREATER_THAN", i(1)))))
+case("__name__ is-not-null", q("p", where_=uf("__name__", "IS_NOT_NULL")))
+# A cursor value too large for a query, checked last; not the key's.
+for label, value in [("a string of 1499 bytes", X(1499)), ("bytes, 1500", BYTES(1500)),
+                     ("bytes, 1501", BYTES(1501)), ("a map of 1501 bytes", mp(k=X(1498))),
+                     ("a vector of 188", vec(*[1.0] * 188)), ("a vector of 187", vec(*[1.0] * 187)),
+                     ("an array of a string of 1500 bytes", arr(X(1500)))]:
+    case(f"a cursor of {label}", q("t", order=[asc("v")], start=cur(value, before=True)))
+case("an end cursor too large", q("t", order=[asc("v")], end=cur(X(1500), before=False)))
+case("a cursor too large on the second order", q("p", order=[asc("a"), asc("b")], start=cur(i(1), X(1500), before=True)))
+case("a cursor too large and a negative limit", q("t", order=[asc("v")], start=cur(X(1500), before=True), limit=-1))
+case("a cursor too large and an order on an array offset", q("p", order=[asc("tags[0]")], start=cur(X(1500), before=True)))
+case("a cursor too large and a filter value too large", q("p", where_=ff("b", "EQUAL", X(1500)), order=[asc("a")], start=cur(X(1500), before=True)))
+case("a cursor of a reference to an ID of 1500 bytes on the key", q("p", order=[asc("__name__")], start=cur(ref("p/" + "x" * 1500), before=True)))
+
+
 # --- running ---------------------------------------------------------------------------------
 
 def fill(value):

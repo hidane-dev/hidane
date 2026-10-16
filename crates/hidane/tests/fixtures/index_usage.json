@@ -3614,6 +3614,430 @@
    }
   },
   {
+   "kind": "query",
+   "name": "in 16 and != a string",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d282/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "16"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "in 16 and is-not-NaN",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d283/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "16"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "in 16 and is-not-null",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d284/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "16"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "49 equalities and not-in [1, 2]",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d285/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "e0",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e1",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e10",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e11",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e12",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e13",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e14",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e15",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e16",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e17",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e18",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e19",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e2",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e20",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e21",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e22",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e23",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e24",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e25",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e26",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e27",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e28",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e29",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e3",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e30",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e31",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e32",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e33",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e34",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e35",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e36",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e37",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e38",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e39",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e4",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e40",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e41",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e42",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e43",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e44",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e45",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e46",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e47",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e48",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e5",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e6",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e7",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e8",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "e9",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "x",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a cursor of a string of 1499 bytes",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a cursor of bytes, 1500",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a cursor of bytes, 1501",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a cursor of a map of 1501 bytes",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a cursor of a vector of 188",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a cursor of a vector of 187",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a cursor of an array of a string of 1500 bytes",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "an end cursor too large",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a cursor too large on the second order",
+   "usage": {
+    "status": 200,
+    "body": {
+     "reports": [
+      {
+       "index": {
+        "name": "projects/{project}/databases/d294/collectionGroups/p/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "b",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "kind": "query",
+   "name": "a cursor of a reference to an ID of 1500 bytes on the key",
+   "usage": {
+    "status": 200,
+    "body": {}
+   }
+  },
+  {
    "kind": "aggregation",
    "name": "count, sum and avg of mixed",
    "usage": {
@@ -3958,7 +4382,7 @@
      "reports": [
       {
        "index": {
-        "name": "projects/{project}/databases/d324/collectionGroups/sub/indexes/_",
+        "name": "projects/{project}/databases/d338/collectionGroups/sub/indexes/_",
         "queryScope": "COLLECTION_GROUP",
         "fields": [
          {
@@ -4018,7 +4442,7 @@
      "reports": [
       {
        "index": {
-        "name": "projects/{project}/databases/d329/collectionGroups/mixed/indexes/_",
+        "name": "projects/{project}/databases/d343/collectionGroups/mixed/indexes/_",
         "queryScope": "COLLECTION",
         "fields": [
          {
@@ -4066,7 +4490,7 @@
      "reports": [
       {
        "index": {
-        "name": "projects/{project}/databases/d332/collectionGroups/mixed/indexes/_",
+        "name": "projects/{project}/databases/d346/collectionGroups/mixed/indexes/_",
         "queryScope": "COLLECTION",
         "fields": [
          {
@@ -4202,7 +4626,7 @@
      "reports": [
       {
        "index": {
-        "name": "projects/{project}/databases/d346/collectionGroups/ordered/indexes/_",
+        "name": "projects/{project}/databases/d360/collectionGroups/ordered/indexes/_",
         "queryScope": "COLLECTION",
         "fields": [
          {
@@ -4234,7 +4658,7 @@
      "reports": [
       {
        "index": {
-        "name": "projects/{project}/databases/d347/collectionGroups/ordered/indexes/_",
+        "name": "projects/{project}/databases/d361/collectionGroups/ordered/indexes/_",
         "queryScope": "COLLECTION",
         "fields": [
          {
@@ -4266,7 +4690,7 @@
      "reports": [
       {
        "index": {
-        "name": "projects/{project}/databases/d348/collectionGroups/ordered/indexes/_",
+        "name": "projects/{project}/databases/d362/collectionGroups/ordered/indexes/_",
         "queryScope": "COLLECTION",
         "fields": [
          {
@@ -4298,7 +4722,7 @@
      "reports": [
       {
        "index": {
-        "name": "projects/{project}/databases/d349/collectionGroups/ordered/indexes/_",
+        "name": "projects/{project}/databases/d363/collectionGroups/ordered/indexes/_",
         "queryScope": "COLLECTION",
         "fields": [
          {
@@ -4330,7 +4754,7 @@
      "reports": [
       {
        "index": {
-        "name": "projects/{project}/databases/d350/collectionGroups/ordered/indexes/_",
+        "name": "projects/{project}/databases/d364/collectionGroups/ordered/indexes/_",
         "queryScope": "COLLECTION",
         "fields": [
          {
@@ -4394,7 +4818,7 @@
      "reports": [
       {
        "index": {
-        "name": "projects/{project}/databases/d355/collectionGroups/ints/indexes/_",
+        "name": "projects/{project}/databases/d369/collectionGroups/ints/indexes/_",
         "queryScope": "COLLECTION",
         "fields": [
          {
@@ -4454,7 +4878,7 @@
      "reports": [
       {
        "index": {
-        "name": "projects/{project}/databases/d356/collectionGroups/ints/indexes/_",
+        "name": "projects/{project}/databases/d370/collectionGroups/ints/indexes/_",
         "queryScope": "COLLECTION",
         "fields": [
          {
@@ -4734,28 +5158,7 @@
      "reports": [
       {
        "index": {
-        "name": "projects/{project}/databases/d363/collectionGroups/d/indexes/_",
-        "queryScope": "COLLECTION",
-        "fields": [
-         {
-          "fieldPath": "tags",
-          "arrayConfig": "CONTAINS"
-         },
-         {
-          "fieldPath": "a",
-          "order": "ASCENDING"
-         },
-         {
-          "fieldPath": "__name__",
-          "order": "ASCENDING"
-         }
-        ]
-       },
-       "numQueries": "1"
-      },
-      {
-       "index": {
-        "name": "projects/{project}/databases/d363/collectionGroups/c/indexes/_",
+        "name": "projects/{project}/databases/d377/collectionGroups/c/indexes/_",
         "queryScope": "COLLECTION",
         "fields": [
          {
@@ -4776,7 +5179,28 @@
       },
       {
        "index": {
-        "name": "projects/{project}/databases/d363/collectionGroups/c/indexes/_",
+        "name": "projects/{project}/databases/d377/collectionGroups/d/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+         },
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      },
+      {
+       "index": {
+        "name": "projects/{project}/databases/d377/collectionGroups/c/indexes/_",
         "queryScope": "COLLECTION",
         "fields": [
          {
@@ -4916,28 +5340,7 @@
      "reports": [
       {
        "index": {
-        "name": "projects/{project}/databases/d364/collectionGroups/d/indexes/_",
-        "queryScope": "COLLECTION",
-        "fields": [
-         {
-          "fieldPath": "tags",
-          "arrayConfig": "CONTAINS"
-         },
-         {
-          "fieldPath": "a",
-          "order": "ASCENDING"
-         },
-         {
-          "fieldPath": "__name__",
-          "order": "ASCENDING"
-         }
-        ]
-       },
-       "numQueries": "1"
-      },
-      {
-       "index": {
-        "name": "projects/{project}/databases/d364/collectionGroups/c/indexes/_",
+        "name": "projects/{project}/databases/d378/collectionGroups/c/indexes/_",
         "queryScope": "COLLECTION",
         "fields": [
          {
@@ -4958,7 +5361,28 @@
       },
       {
        "index": {
-        "name": "projects/{project}/databases/d364/collectionGroups/c/indexes/_",
+        "name": "projects/{project}/databases/d378/collectionGroups/d/indexes/_",
+        "queryScope": "COLLECTION",
+        "fields": [
+         {
+          "fieldPath": "tags",
+          "arrayConfig": "CONTAINS"
+         },
+         {
+          "fieldPath": "a",
+          "order": "ASCENDING"
+         },
+         {
+          "fieldPath": "__name__",
+          "order": "ASCENDING"
+         }
+        ]
+       },
+       "numQueries": "1"
+      },
+      {
+       "index": {
+        "name": "projects/{project}/databases/d378/collectionGroups/c/indexes/_",
         "queryScope": "COLLECTION",
         "fields": [
          {
@@ -5032,7 +5456,7 @@
      "reports": [
       {
        "index": {
-        "name": "projects/{project}/databases/d365/collectionGroups/c/indexes/_",
+        "name": "projects/{project}/databases/d379/collectionGroups/c/indexes/_",
         "queryScope": "COLLECTION_GROUP",
         "fields": [
          {
@@ -5162,7 +5586,7 @@
      "reports": [
       {
        "index": {
-        "name": "projects/{project}/databases/d367/collectionGroups/c/indexes/_",
+        "name": "projects/{project}/databases/d381/collectionGroups/c/indexes/_",
         "queryScope": "COLLECTION",
         "fields": [
          {
@@ -5240,7 +5664,7 @@
      "reports": [
       {
        "index": {
-        "name": "projects/{project}/databases/d368/collectionGroups/c/indexes/_",
+        "name": "projects/{project}/databases/d382/collectionGroups/c/indexes/_",
         "queryScope": "COLLECTION",
         "fields": [
          {
@@ -5324,7 +5748,7 @@
      "reports": [
       {
        "index": {
-        "name": "projects/{project}/databases/d369/collectionGroups/c/indexes/_",
+        "name": "projects/{project}/databases/d383/collectionGroups/c/indexes/_",
         "queryScope": "COLLECTION",
         "fields": [
          {
@@ -5398,7 +5822,7 @@
      "reports": [
       {
        "index": {
-        "name": "projects/{project}/databases/d370/collectionGroups/c/indexes/_",
+        "name": "projects/{project}/databases/d384/collectionGroups/c/indexes/_",
         "queryScope": "COLLECTION",
         "fields": [
          {
