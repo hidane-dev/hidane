@@ -239,6 +239,13 @@ fn scattered(counter: u64) -> i64 {
     id
 }
 
+/// The counter that [`scattered`] makes `id` of, for an ID it makes.
+fn unscattered(id: i64) -> Option<u64> {
+    let id = u64::try_from(id).ok()?;
+    let low = id.checked_sub(1 << 52).filter(|low| *low < 1 << 51)?;
+    Some(low.reverse_bits() >> (64 - 51))
+}
+
 /// An entity's cursor in a lookup's results: its key, opaque to clients.
 fn cursor(located: &Located) -> Vec<u8> {
     let mut out = b"hidane:".to_vec();
@@ -309,8 +316,12 @@ impl DatastoreService {
     }
 
     /// A request's database, its project read first: an app ID, then, in Firestore Native mode,
-    /// refused, then a project ID (`tests/fixtures/datastore_projects.json`).
+    /// refused, then a project ID (`tests/fixtures/datastore_projects.json`). In Datastore mode
+    /// the database ID is checked once the app ID is not empty.
     fn admit(&self, project: String, database: String) -> Result<Database, Status> {
+        if !project.is_empty() && !self.state.refused {
+            keys::check_database_id(&database)?;
+        }
         keys::check_app_id(&project)?;
         if self.state.refused {
             return Err(Status::invalid_argument(DATASTORE_REFUSED));
@@ -372,7 +383,10 @@ impl DatastoreService {
                 Mode::ReadWrite
             }
             Some(transaction_options::Mode::ReadOnly(read_only)) => match &read_only.read_time {
-                Some(time) => Mode::ReadOnly(self.check_read_time(time)?),
+                Some(time) => {
+                    read_time_shape(time)?;
+                    Mode::ReadOnly(self.check_read_time(time)?)
+                }
                 None => Mode::ReadOnly(ReadTime(self.data().read_micros())),
             },
         };
@@ -395,6 +409,19 @@ struct Reading {
     /// The time the read is as of, when not the latest: a read time's, a read-only
     /// transaction's.
     at: Option<i64>,
+    /// A read-write transaction to lock no kind: an internal error on the official emulator,
+    /// once the query's index is found and the aggregations are checked.
+    kindless: bool,
+}
+
+impl Reading {
+    /// The internal error of a read-write transaction that locks no kind.
+    fn lock(&self) -> Result<(), Status> {
+        if self.kindless {
+            return Err(Status::unknown(""));
+        }
+        Ok(())
+    }
 }
 
 impl DatastoreService {
@@ -424,30 +451,31 @@ impl DatastoreService {
         let mut reading = Reading {
             new_transaction: Vec::new(),
             at: None,
+            kindless: false,
         };
         // A read-write transaction locks the kind it queries; a query without a kind is an
-        // internal error there on the official emulator.
+        // internal error there on the official emulator ([`Reading::lock`]).
         let lock = |transaction: &[u8]| {
-            let mode = self
-                .state
+            self.state
                 .transactions
-                .read(&database.name(), transaction, &[], kind)?;
-            if kind.is_none() && mode == Mode::ReadWrite {
-                return Err(Status::unknown(""));
-            }
-            Ok(mode)
+                .read(&database.name(), transaction, &[], kind)
         };
-        match options.and_then(|o| o.consistency_type) {
-            None | Some(read_options::ConsistencyType::ReadConsistency(_)) => {}
-            Some(read_options::ConsistencyType::ReadTime(_)) => {}
+        let mode = match options.and_then(|o| o.consistency_type) {
+            None | Some(read_options::ConsistencyType::ReadConsistency(_)) => None,
+            Some(read_options::ConsistencyType::ReadTime(_)) => None,
             Some(read_options::ConsistencyType::Transaction(transaction)) => {
-                reading.at = snapshot(lock(&transaction)?);
+                Some(lock(&transaction)?)
             }
             Some(read_options::ConsistencyType::NewTransaction(options)) => {
                 let transaction = self.begin(database, Some(&options))?;
-                reading.at = snapshot(lock(&transaction)?);
+                let mode = lock(&transaction)?;
                 reading.new_transaction = transaction;
+                Some(mode)
             }
+        };
+        if let Some(mode) = mode {
+            reading.kindless = kind.is_none() && mode == Mode::ReadWrite;
+            reading.at = snapshot(mode);
         }
         Ok(reading)
     }
@@ -543,6 +571,7 @@ impl Datastore for DatastoreService {
         }
         read_options_shape(req.read_options.as_ref())?;
         past_epoch(req.read_options.as_ref())?;
+        new_read_time(req.read_options.as_ref())?;
         if let Some(mask) = &req.property_mask {
             values::check_paths(&mask.paths)?;
         }
@@ -802,7 +831,7 @@ impl Datastore for DatastoreService {
         let checked = req
             .keys
             .iter()
-            .map(|key| keys::check(key, &database, Rules::Write, Last::Incomplete))
+            .map(|key| keys::check_path_first(key, &database, Rules::Write, Last::Incomplete))
             .collect::<Result<Vec<_>, _>>()?;
         let mut data = self.data();
         let stored = data.database(&database);
@@ -855,6 +884,7 @@ impl Datastore for DatastoreService {
             &namespace,
             &database,
             past_epoch(req.read_options.as_ref()),
+            new_read_time(req.read_options.as_ref()),
         )?;
         let plan = query::plan(&query, &database, &namespace)?;
         let reading = self.read_query(req.read_options.clone(), &database, plan.kind.as_deref())?;
@@ -862,6 +892,7 @@ impl Datastore for DatastoreService {
             checks::kindless(&query)?;
             indexes::check(&query, &[], defined)?;
         }
+        reading.lock()?;
         if let Some(refused) = refused {
             return Err(refused);
         }
@@ -917,11 +948,12 @@ impl Datastore for DatastoreService {
         // An aggregation's read time is checked whole among its query's first checks.
         let read_time = past_epoch(req.read_options.as_ref())
             .and_then(|()| self.read_at(req.read_options.as_ref()));
-        let refused = checks::aggregation_query(
+        let (aggregations_refused, refused) = checks::aggregation_query(
             &aggregation,
             &nested,
             &namespace,
             read_time.clone().map(|_| ()),
+            new_read_time(req.read_options.as_ref()),
         )?;
         let mut plan = query::plan(&nested, &database, &namespace)?;
         let reading = self.read_query(req.read_options.clone(), &database, plan.kind.as_deref())?;
@@ -929,6 +961,11 @@ impl Datastore for DatastoreService {
             checks::kindless(&nested)?;
             indexes::check(&nested, &aggregated(&aggregation.aggregations), defined)?;
         }
+        // The aggregations' own refusals come before a read-write transaction's lock.
+        if let Some(refused) = aggregations_refused {
+            return Err(refused);
+        }
+        reading.lock()?;
         if let Some(refused) = refused {
             return Err(refused);
         }
@@ -1010,8 +1047,25 @@ impl Datastore for DatastoreService {
                 "List of Ids to reserve cannot be empty.",
             ));
         }
+        let mut reserved = Vec::with_capacity(req.keys.len());
         for key in &req.keys {
-            keys::check(key, &database, Rules::Write, Last::Complete)?;
+            let located = keys::check_path_first(key, &database, Rules::Write, Last::Complete)?
+                .complete()
+                .expect("checked complete");
+            reserved.push(located);
+        }
+        // An ID the database's counter gives, anywhere in a key's path, moves the counter past
+        // it, as on the official emulator; other IDs, and the IDs of keys written, do not.
+        let mut data = self.data();
+        let stored = data.database(&database);
+        for located in &reserved {
+            for (_, id) in &located.path {
+                if let keys::Id::Id(n) = id
+                    && let Some(counter) = unscattered(*n)
+                {
+                    stored.allocated = stored.allocated.max(counter);
+                }
+            }
         }
         Ok(Response::new(ReserveIdsResponse {}))
     }
@@ -1031,16 +1085,36 @@ fn read_options_shape(options: Option<&ReadOptions>) -> Result<(), Status> {
     }
 }
 
-/// A read time past the epoch, to the microsecond.
+/// A read time's own refusals: finer than a microsecond, then not past the epoch.
+fn read_time_shape(time: &Timestamp) -> Result<(), Status> {
+    if time.nanos % 1_000 != 0 {
+        return Err(Status::invalid_argument(
+            "timestamp cannot have more than microseconds precision",
+        ));
+    }
+    if time.seconds < 0 || (time.seconds == 0 && time.nanos < 1_000) {
+        return Err(Status::invalid_argument(
+            "Only timestamps past epoch are supported.",
+        ));
+    }
+    Ok(())
+}
+
+/// A read time's shape ([`read_time_shape`]).
 fn past_epoch(options: Option<&ReadOptions>) -> Result<(), Status> {
     match options.and_then(|o| o.consistency_type.as_ref()) {
-        Some(read_options::ConsistencyType::ReadTime(time))
-            if time.seconds < 0 || (time.seconds == 0 && time.nanos < 1_000) =>
-        {
-            Err(Status::invalid_argument(
-                "Only timestamps past epoch are supported.",
-            ))
-        }
+        Some(read_options::ConsistencyType::ReadTime(time)) => read_time_shape(time),
+        _ => Ok(()),
+    }
+}
+
+/// The shape of the read time of a read-only transaction that the read options begin, which
+/// the official emulator checks among a query's first checks.
+fn new_read_time(options: Option<&ReadOptions>) -> Result<(), Status> {
+    match options.and_then(|o| o.consistency_type.as_ref()) {
+        Some(read_options::ConsistencyType::NewTransaction(TransactionOptions {
+            mode: Some(transaction_options::Mode::ReadOnly(read_only)),
+        })) => read_only.read_time.as_ref().map_or(Ok(()), read_time_shape),
         _ => Ok(()),
     }
 }
@@ -1353,5 +1427,12 @@ mod tests {
         assert_eq!(scattered(3), 6_192_449_487_634_432);
         assert_eq!(scattered(4), 4_785_074_604_081_152);
         assert_eq!(scattered(12), 4_925_812_092_436_480);
+        for counter in [1, 2, 3, 12, 1 << 50, (1 << 51) - 1] {
+            assert_eq!(unscattered(scattered(counter)), Some(counter));
+        }
+        assert_eq!(unscattered(1 << 52), Some(0));
+        assert_eq!(unscattered(5), None);
+        assert_eq!(unscattered((1 << 53) + 5), None);
+        assert_eq!(unscattered((1 << 52) + (1 << 51)), None);
     }
 }

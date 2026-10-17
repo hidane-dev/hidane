@@ -10,8 +10,9 @@ Seeds one project with a dataset (`DATASET`: a value of every type in property `
 `T`, entities with several properties of kind `P`, an ancestry, a namespace), then sends, over
 REST in order, `runQuery` with structured queries (kinds, every filter operator against values
 of every type, composite filters, ancestors, keys, orders, projections, `distinctOn`, limits,
-offsets, cursors, cursors of other queries, the queries it refuses, and a query without a
-kind in a transaction), the metadata kinds `__kind__`, `__namespace__` and `__property__`, and `runAggregationQuery`. A cursor is opaque: a step that reads one names
+offsets, cursors, cursors of other queries, ancestors in disjunctions, the key projected and
+compared, the queries it refuses, and a query without a kind in a transaction), the metadata
+kinds `__kind__`, `__namespace__` and `__property__`, and `runAggregationQuery`. A cursor is opaque: a step that reads one names
 it (`defines`, with the JSON path it came from), and later steps send it as `<name>`, so a
 replay sends its own. The fixture has the format of `datastore_entities.json`; server times,
 versions, transaction IDs and cursors are masked. `crates/hidane/tests/datastore.rs` replays
@@ -396,6 +397,52 @@ agg("sum of projected timestamps", {"kind": kind("T"), "filter": TIMES, "project
 case("an aggregation without a query", "runAggregationQuery", {"aggregationQuery": {"aggregations": [{"count": {}}]}})
 case("an aggregation without a kind, in a new transaction", "runAggregationQuery",
      {"aggregationQuery": {"nestedQuery": {}, "aggregations": [{"count": {}}]}, "readOptions": {"newTransaction": {}}})
+# Without a kind in a read-write transaction, the aggregations' own refusals come before the
+# internal error, the query's after it.
+COUNT = {"count": {}}
+SUM = lambda p: {"sum": {"property": {"name": p}}}  # noqa: E731
+for name, nested, aggregations in [
+    ("no aggregations", {}, []),
+    ("six aggregations", {}, [{"count": {}, "alias": f"n{i}"} for i in range(6)]),
+    ("an alias __x__", {}, [{"count": {}, "alias": "__x__"}]),
+    ("two aliases alike", {}, [{"count": {}, "alias": "n"}, {"count": {}, "alias": "n"}]),
+    ("a sum of __key__", {}, [SUM("__key__")]),
+    ("a sum of a, projecting b", {"projection": [{"property": {"name": "b"}}]}, [SUM("a")]),
+    ("a sum of a, keys only", {"projection": [{"property": {"name": "__key__"}}]}, [SUM("a")]),
+    ("a sum of a", {}, [SUM("a")]),
+    ("a negative limit", {"limit": -1}, [COUNT]),
+    ("a negative offset", {"offset": -1}, [COUNT]),
+]:
+    case(f"an aggregation without a kind, in a new transaction: {name}", "runAggregationQuery",
+         {"aggregationQuery": {"nestedQuery": nested, "aggregations": aggregations}, "readOptions": {"newTransaction": {}}})
+
+# An ancestor anywhere in a filter is the whole query's: `RunQuery` refuses one that not every
+# disjunction holds to, an aggregation counts the descendants that match what is left, a
+# disjunct that was the ancestor alone dropped.
+ANCESTOR = pf("__key__", "HAS_ANCESTOR", KEY(("Q", "q1")))
+for name, f in [
+    ("the ancestor or n = 4", OR(ANCESTOR, pf("n", "EQUAL", I(4)))),
+    ("n = 4 or the ancestor", OR(pf("n", "EQUAL", I(4)), ANCESTOR)),
+    ("the ancestor and n = 2, or n = 4", OR(AND(ANCESTOR, pf("n", "EQUAL", I(2))), pf("n", "EQUAL", I(4)))),
+    ("the ancestor, or n = 2, or n = 4", OR(ANCESTOR, pf("n", "EQUAL", I(2)), pf("n", "EQUAL", I(4)))),
+    ("the ancestor alone in a conjunction, or n = 4", OR(AND(ANCESTOR), pf("n", "EQUAL", I(4)))),
+    ("n = 2, and the ancestor or n = 4", AND(pf("n", "EQUAL", I(2)), OR(ANCESTOR, pf("n", "EQUAL", I(4))))),
+    ("the ancestor alone in a disjunction, or n = 4", OR(OR(ANCESTOR), pf("n", "EQUAL", I(4)))),
+    ("the ancestor and n = 2, or the ancestor and n = 4", OR(AND(ANCESTOR, pf("n", "EQUAL", I(2))), AND(ANCESTOR, pf("n", "EQUAL", I(4))))),
+]:
+    query(f"an ancestor in a disjunction: {name}", {"kind": kind("C"), "filter": f})
+    agg(f"an ancestor in a disjunction: {name}", {"kind": kind("C"), "filter": f}, COUNT)
+
+# The key may be projected and compared by equality.
+for name, f, projection in [
+    ("key = q1, keys only", pf("__key__", "EQUAL", KEY(("Q", "q1"))), ["__key__"]),
+    ("key in [q1], keys only", pf("__key__", "IN", ARR(KEY(("Q", "q1")))), ["__key__"]),
+    ("key = q1, projecting the key and n", pf("__key__", "EQUAL", KEY(("Q", "q1"))), ["__key__", "n"]),
+]:
+    for kinds in (kind("Q"), []):
+        q = {"kind": kinds, "filter": f, "projection": [{"property": {"name": p}} for p in projection]}
+        query(f"{name}{'' if kinds else ', without a kind'}", q)
+        agg(f"{name}{'' if kinds else ', without a kind'}", q, COUNT)
 
 
 VERSION = re.compile(r'"(version|commitVersion|snapshotVersion)": "\d+"')

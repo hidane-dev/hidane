@@ -425,6 +425,43 @@ pub(super) fn cursor_parses(bytes: &[u8]) -> bool {
 }
 
 /// The condition of a filter `checks` has accepted.
+/// A filter as the official emulator runs it: its `HAS_ANCESTOR` filters taken out as the
+/// query's ancestor (the checks refuse two), over the rest of the filter without them, where a
+/// disjunct that was an ancestor alone is dropped. Where every disjunction holds to the same
+/// ancestor, as `RunQuery` requires, that is the filter itself.
+fn hoisted(filter: &Filter, project: &str) -> Cond {
+    fn without(filter: &Filter, project: &str, ancestor: &mut Option<Cond>) -> Option<Cond> {
+        match &filter.filter_type {
+            Some(FilterType::CompositeFilter(composite)) => {
+                let children = composite
+                    .filters
+                    .iter()
+                    .filter_map(|f| without(f, project, ancestor))
+                    .collect();
+                Some(if composite.op == composite_filter::Operator::Or as i32 {
+                    Cond::Or(children)
+                } else {
+                    Cond::And(children)
+                })
+            }
+            Some(FilterType::PropertyFilter(property))
+                if property.op == property_filter::Operator::HasAncestor as i32 =>
+            {
+                *ancestor = Some(property_condition(property, project));
+                None
+            }
+            _ => Some(condition(filter, project)),
+        }
+    }
+    let mut ancestor = None;
+    let rest = without(filter, project, &mut ancestor);
+    match (ancestor, rest) {
+        (Some(ancestor), Some(rest)) => Cond::And(vec![ancestor, rest]),
+        (Some(cond), None) | (None, Some(cond)) => cond,
+        (None, None) => Cond::And(Vec::new()),
+    }
+}
+
 fn condition(filter: &Filter, project: &str) -> Cond {
     match &filter.filter_type {
         Some(FilterType::CompositeFilter(composite)) => {
@@ -521,10 +558,7 @@ pub fn plan(query: &Query, database: &Database, namespace: &str) -> Result<Plan,
                 .unwrap_or_default()
         })
         .collect();
-    let cond = query
-        .filter
-        .as_ref()
-        .map(|f| condition(f, &database.project));
+    let cond = query.filter.as_ref().map(|f| hoisted(f, &database.project));
     let orders = orders(query, cond.as_ref(), &projection);
     let row_properties: Vec<String> = orders.iter().filter_map(|(f, _)| f.clone()).collect();
     let cursor = |bytes: &[u8]| -> Result<Option<Position>, Status> {

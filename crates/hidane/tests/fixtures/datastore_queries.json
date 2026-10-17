@@ -20927,6 +20927,2181 @@
     "contentType": "application/json",
     "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
    }
+  },
+  {
+   "name": "an aggregation without a kind, in a new transaction: no aggregations",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {},
+     "aggregations": []
+    },
+    "readOptions": {
+     "newTransaction": {}
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Aggregations can not be empty.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an aggregation without a kind, in a new transaction: six aggregations",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {},
+     "aggregations": [
+      {
+       "count": {},
+       "alias": "n0"
+      },
+      {
+       "count": {},
+       "alias": "n1"
+      },
+      {
+       "count": {},
+       "alias": "n2"
+      },
+      {
+       "count": {},
+       "alias": "n3"
+      },
+      {
+       "count": {},
+       "alias": "n4"
+      },
+      {
+       "count": {},
+       "alias": "n5"
+      }
+     ]
+    },
+    "readOptions": {
+     "newTransaction": {}
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"The maximum number of aggregations allowed in an aggregation query is 5. Received: 6\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an aggregation without a kind, in a new transaction: an alias __x__",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {},
+     "aggregations": [
+      {
+       "count": {},
+       "alias": "__x__"
+      }
+     ]
+    },
+    "readOptions": {
+     "newTransaction": {}
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"The property.name \\\"__x__\\\" is reserved.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an aggregation without a kind, in a new transaction: two aliases alike",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {},
+     "aggregations": [
+      {
+       "count": {},
+       "alias": "n"
+      },
+      {
+       "count": {},
+       "alias": "n"
+      }
+     ]
+    },
+    "readOptions": {
+     "newTransaction": {}
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Aggregation aliases contain duplicate alias: n.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an aggregation without a kind, in a new transaction: a sum of __key__",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {},
+     "aggregations": [
+      {
+       "sum": {
+        "property": {
+         "name": "__key__"
+        }
+       }
+      }
+     ]
+    },
+    "readOptions": {
+     "newTransaction": {}
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Aggregations are not supported for the property: __key__\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an aggregation without a kind, in a new transaction: a sum of a, projecting b",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "projection": [
+       {
+        "property": {
+         "name": "b"
+        }
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "sum": {
+        "property": {
+         "name": "a"
+        }
+       }
+      }
+     ]
+    },
+    "readOptions": {
+     "newTransaction": {}
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"The aggregation property a is not present in the base query's projection.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an aggregation without a kind, in a new transaction: a sum of a, keys only",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "projection": [
+       {
+        "property": {
+         "name": "__key__"
+        }
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "sum": {
+        "property": {
+         "name": "a"
+        }
+       }
+      }
+     ]
+    },
+    "readOptions": {
+     "newTransaction": {}
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Aggregation over non-key properties is not supported for base query that only returns keys.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an aggregation without a kind, in a new transaction: a sum of a",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {},
+     "aggregations": [
+      {
+       "sum": {
+        "property": {
+         "name": "a"
+        }
+       }
+      }
+     ]
+    },
+    "readOptions": {
+     "newTransaction": {}
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "an aggregation without a kind, in a new transaction: a negative limit",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "limit": -1
+     },
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    },
+    "readOptions": {
+     "newTransaction": {}
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "an aggregation without a kind, in a new transaction: a negative offset",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "offset": -1
+     },
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    },
+    "readOptions": {
+     "newTransaction": {}
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "an ancestor in a disjunction: the ancestor or n = 4",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "C"
+      }
+     ],
+     "filter": {
+      "compositeFilter": {
+       "op": "OR",
+       "filters": [
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "__key__"
+          },
+          "op": "HAS_ANCESTOR",
+          "value": {
+           "keyValue": {
+            "path": [
+             {
+              "kind": "Q",
+              "name": "q1"
+             }
+            ]
+           }
+          }
+         }
+        },
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "n"
+          },
+          "op": "EQUAL",
+          "value": {
+           "integerValue": "4"
+          }
+         }
+        }
+       ]
+      }
+     }
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"All disjunctions must have a common and unique ancestor constraint.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an ancestor in a disjunction: the ancestor or n = 4",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "C"
+       }
+      ],
+      "filter": {
+       "compositeFilter": {
+        "op": "OR",
+        "filters": [
+         {
+          "propertyFilter": {
+           "property": {
+            "name": "__key__"
+           },
+           "op": "HAS_ANCESTOR",
+           "value": {
+            "keyValue": {
+             "path": [
+              {
+               "kind": "Q",
+               "name": "q1"
+              }
+             ]
+            }
+           }
+          }
+         },
+         {
+          "propertyFilter": {
+           "property": {
+            "name": "n"
+           },
+           "op": "EQUAL",
+           "value": {
+            "integerValue": "4"
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"property_1\": {\n          \"integerValue\": \"0\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "an ancestor in a disjunction: n = 4 or the ancestor",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "C"
+      }
+     ],
+     "filter": {
+      "compositeFilter": {
+       "op": "OR",
+       "filters": [
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "n"
+          },
+          "op": "EQUAL",
+          "value": {
+           "integerValue": "4"
+          }
+         }
+        },
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "__key__"
+          },
+          "op": "HAS_ANCESTOR",
+          "value": {
+           "keyValue": {
+            "path": [
+             {
+              "kind": "Q",
+              "name": "q1"
+             }
+            ]
+           }
+          }
+         }
+        }
+       ]
+      }
+     }
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"All disjunctions must have a common and unique ancestor constraint.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an ancestor in a disjunction: n = 4 or the ancestor",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "C"
+       }
+      ],
+      "filter": {
+       "compositeFilter": {
+        "op": "OR",
+        "filters": [
+         {
+          "propertyFilter": {
+           "property": {
+            "name": "n"
+           },
+           "op": "EQUAL",
+           "value": {
+            "integerValue": "4"
+           }
+          }
+         },
+         {
+          "propertyFilter": {
+           "property": {
+            "name": "__key__"
+           },
+           "op": "HAS_ANCESTOR",
+           "value": {
+            "keyValue": {
+             "path": [
+              {
+               "kind": "Q",
+               "name": "q1"
+              }
+             ]
+            }
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"property_1\": {\n          \"integerValue\": \"0\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "an ancestor in a disjunction: the ancestor and n = 2, or n = 4",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "C"
+      }
+     ],
+     "filter": {
+      "compositeFilter": {
+       "op": "OR",
+       "filters": [
+        {
+         "compositeFilter": {
+          "op": "AND",
+          "filters": [
+           {
+            "propertyFilter": {
+             "property": {
+              "name": "__key__"
+             },
+             "op": "HAS_ANCESTOR",
+             "value": {
+              "keyValue": {
+               "path": [
+                {
+                 "kind": "Q",
+                 "name": "q1"
+                }
+               ]
+              }
+             }
+            }
+           },
+           {
+            "propertyFilter": {
+             "property": {
+              "name": "n"
+             },
+             "op": "EQUAL",
+             "value": {
+              "integerValue": "2"
+             }
+            }
+           }
+          ]
+         }
+        },
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "n"
+          },
+          "op": "EQUAL",
+          "value": {
+           "integerValue": "4"
+          }
+         }
+        }
+       ]
+      }
+     }
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"All disjunctions must have a common and unique ancestor constraint.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an ancestor in a disjunction: the ancestor and n = 2, or n = 4",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "C"
+       }
+      ],
+      "filter": {
+       "compositeFilter": {
+        "op": "OR",
+        "filters": [
+         {
+          "compositeFilter": {
+           "op": "AND",
+           "filters": [
+            {
+             "propertyFilter": {
+              "property": {
+               "name": "__key__"
+              },
+              "op": "HAS_ANCESTOR",
+              "value": {
+               "keyValue": {
+                "path": [
+                 {
+                  "kind": "Q",
+                  "name": "q1"
+                 }
+                ]
+               }
+              }
+             }
+            },
+            {
+             "propertyFilter": {
+              "property": {
+               "name": "n"
+              },
+              "op": "EQUAL",
+              "value": {
+               "integerValue": "2"
+              }
+             }
+            }
+           ]
+          }
+         },
+         {
+          "propertyFilter": {
+           "property": {
+            "name": "n"
+           },
+           "op": "EQUAL",
+           "value": {
+            "integerValue": "4"
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"property_1\": {\n          \"integerValue\": \"1\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "an ancestor in a disjunction: the ancestor, or n = 2, or n = 4",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "C"
+      }
+     ],
+     "filter": {
+      "compositeFilter": {
+       "op": "OR",
+       "filters": [
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "__key__"
+          },
+          "op": "HAS_ANCESTOR",
+          "value": {
+           "keyValue": {
+            "path": [
+             {
+              "kind": "Q",
+              "name": "q1"
+             }
+            ]
+           }
+          }
+         }
+        },
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "n"
+          },
+          "op": "EQUAL",
+          "value": {
+           "integerValue": "2"
+          }
+         }
+        },
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "n"
+          },
+          "op": "EQUAL",
+          "value": {
+           "integerValue": "4"
+          }
+         }
+        }
+       ]
+      }
+     }
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"All disjunctions must have a common and unique ancestor constraint.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an ancestor in a disjunction: the ancestor, or n = 2, or n = 4",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "C"
+       }
+      ],
+      "filter": {
+       "compositeFilter": {
+        "op": "OR",
+        "filters": [
+         {
+          "propertyFilter": {
+           "property": {
+            "name": "__key__"
+           },
+           "op": "HAS_ANCESTOR",
+           "value": {
+            "keyValue": {
+             "path": [
+              {
+               "kind": "Q",
+               "name": "q1"
+              }
+             ]
+            }
+           }
+          }
+         },
+         {
+          "propertyFilter": {
+           "property": {
+            "name": "n"
+           },
+           "op": "EQUAL",
+           "value": {
+            "integerValue": "2"
+           }
+          }
+         },
+         {
+          "propertyFilter": {
+           "property": {
+            "name": "n"
+           },
+           "op": "EQUAL",
+           "value": {
+            "integerValue": "4"
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"property_1\": {\n          \"integerValue\": \"1\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "an ancestor in a disjunction: the ancestor alone in a conjunction, or n = 4",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "C"
+      }
+     ],
+     "filter": {
+      "compositeFilter": {
+       "op": "OR",
+       "filters": [
+        {
+         "compositeFilter": {
+          "op": "AND",
+          "filters": [
+           {
+            "propertyFilter": {
+             "property": {
+              "name": "__key__"
+             },
+             "op": "HAS_ANCESTOR",
+             "value": {
+              "keyValue": {
+               "path": [
+                {
+                 "kind": "Q",
+                 "name": "q1"
+                }
+               ]
+              }
+             }
+            }
+           }
+          ]
+         }
+        },
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "n"
+          },
+          "op": "EQUAL",
+          "value": {
+           "integerValue": "4"
+          }
+         }
+        }
+       ]
+      }
+     }
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"All disjunctions must have a common and unique ancestor constraint.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an ancestor in a disjunction: the ancestor alone in a conjunction, or n = 4",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "C"
+       }
+      ],
+      "filter": {
+       "compositeFilter": {
+        "op": "OR",
+        "filters": [
+         {
+          "compositeFilter": {
+           "op": "AND",
+           "filters": [
+            {
+             "propertyFilter": {
+              "property": {
+               "name": "__key__"
+              },
+              "op": "HAS_ANCESTOR",
+              "value": {
+               "keyValue": {
+                "path": [
+                 {
+                  "kind": "Q",
+                  "name": "q1"
+                 }
+                ]
+               }
+              }
+             }
+            }
+           ]
+          }
+         },
+         {
+          "propertyFilter": {
+           "property": {
+            "name": "n"
+           },
+           "op": "EQUAL",
+           "value": {
+            "integerValue": "4"
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"property_1\": {\n          \"integerValue\": \"1\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "an ancestor in a disjunction: n = 2, and the ancestor or n = 4",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "C"
+      }
+     ],
+     "filter": {
+      "compositeFilter": {
+       "op": "AND",
+       "filters": [
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "n"
+          },
+          "op": "EQUAL",
+          "value": {
+           "integerValue": "2"
+          }
+         }
+        },
+        {
+         "compositeFilter": {
+          "op": "OR",
+          "filters": [
+           {
+            "propertyFilter": {
+             "property": {
+              "name": "__key__"
+             },
+             "op": "HAS_ANCESTOR",
+             "value": {
+              "keyValue": {
+               "path": [
+                {
+                 "kind": "Q",
+                 "name": "q1"
+                }
+               ]
+              }
+             }
+            }
+           },
+           {
+            "propertyFilter": {
+             "property": {
+              "name": "n"
+             },
+             "op": "EQUAL",
+             "value": {
+              "integerValue": "4"
+             }
+            }
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"All disjunctions must have a common and unique ancestor constraint.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an ancestor in a disjunction: n = 2, and the ancestor or n = 4",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "C"
+       }
+      ],
+      "filter": {
+       "compositeFilter": {
+        "op": "AND",
+        "filters": [
+         {
+          "propertyFilter": {
+           "property": {
+            "name": "n"
+           },
+           "op": "EQUAL",
+           "value": {
+            "integerValue": "2"
+           }
+          }
+         },
+         {
+          "compositeFilter": {
+           "op": "OR",
+           "filters": [
+            {
+             "propertyFilter": {
+              "property": {
+               "name": "__key__"
+              },
+              "op": "HAS_ANCESTOR",
+              "value": {
+               "keyValue": {
+                "path": [
+                 {
+                  "kind": "Q",
+                  "name": "q1"
+                 }
+                ]
+               }
+              }
+             }
+            },
+            {
+             "propertyFilter": {
+              "property": {
+               "name": "n"
+              },
+              "op": "EQUAL",
+              "value": {
+               "integerValue": "4"
+              }
+             }
+            }
+           ]
+          }
+         }
+        ]
+       }
+      }
+     },
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"property_1\": {\n          \"integerValue\": \"0\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "an ancestor in a disjunction: the ancestor alone in a disjunction, or n = 4",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "C"
+      }
+     ],
+     "filter": {
+      "compositeFilter": {
+       "op": "OR",
+       "filters": [
+        {
+         "compositeFilter": {
+          "op": "OR",
+          "filters": [
+           {
+            "propertyFilter": {
+             "property": {
+              "name": "__key__"
+             },
+             "op": "HAS_ANCESTOR",
+             "value": {
+              "keyValue": {
+               "path": [
+                {
+                 "kind": "Q",
+                 "name": "q1"
+                }
+               ]
+              }
+             }
+            }
+           }
+          ]
+         }
+        },
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "n"
+          },
+          "op": "EQUAL",
+          "value": {
+           "integerValue": "4"
+          }
+         }
+        }
+       ]
+      }
+     }
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"All disjunctions must have a common and unique ancestor constraint.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an ancestor in a disjunction: the ancestor alone in a disjunction, or n = 4",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "C"
+       }
+      ],
+      "filter": {
+       "compositeFilter": {
+        "op": "OR",
+        "filters": [
+         {
+          "compositeFilter": {
+           "op": "OR",
+           "filters": [
+            {
+             "propertyFilter": {
+              "property": {
+               "name": "__key__"
+              },
+              "op": "HAS_ANCESTOR",
+              "value": {
+               "keyValue": {
+                "path": [
+                 {
+                  "kind": "Q",
+                  "name": "q1"
+                 }
+                ]
+               }
+              }
+             }
+            }
+           ]
+          }
+         },
+         {
+          "propertyFilter": {
+           "property": {
+            "name": "n"
+           },
+           "op": "EQUAL",
+           "value": {
+            "integerValue": "4"
+           }
+          }
+         }
+        ]
+       }
+      }
+     },
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "an ancestor in a disjunction: the ancestor and n = 2, or the ancestor and n = 4",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "C"
+      }
+     ],
+     "filter": {
+      "compositeFilter": {
+       "op": "OR",
+       "filters": [
+        {
+         "compositeFilter": {
+          "op": "AND",
+          "filters": [
+           {
+            "propertyFilter": {
+             "property": {
+              "name": "__key__"
+             },
+             "op": "HAS_ANCESTOR",
+             "value": {
+              "keyValue": {
+               "path": [
+                {
+                 "kind": "Q",
+                 "name": "q1"
+                }
+               ]
+              }
+             }
+            }
+           },
+           {
+            "propertyFilter": {
+             "property": {
+              "name": "n"
+             },
+             "op": "EQUAL",
+             "value": {
+              "integerValue": "2"
+             }
+            }
+           }
+          ]
+         }
+        },
+        {
+         "compositeFilter": {
+          "op": "AND",
+          "filters": [
+           {
+            "propertyFilter": {
+             "property": {
+              "name": "__key__"
+             },
+             "op": "HAS_ANCESTOR",
+             "value": {
+              "keyValue": {
+               "path": [
+                {
+                 "kind": "Q",
+                 "name": "q1"
+                }
+               ]
+              }
+             }
+            }
+           },
+           {
+            "propertyFilter": {
+             "property": {
+              "name": "n"
+             },
+             "op": "EQUAL",
+             "value": {
+              "integerValue": "4"
+             }
+            }
+           }
+          ]
+         }
+        }
+       ]
+      }
+     }
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"Q\",\n            \"name\": \"q1\"\n          }, {\n            \"kind\": \"C\",\n            \"name\": \"c1\"\n          }]\n        },\n        \"properties\": {\n          \"n\": {\n            \"integerValue\": \"2\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "an ancestor in a disjunction: the ancestor and n = 2, or the ancestor and n = 4",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "C"
+       }
+      ],
+      "filter": {
+       "compositeFilter": {
+        "op": "OR",
+        "filters": [
+         {
+          "compositeFilter": {
+           "op": "AND",
+           "filters": [
+            {
+             "propertyFilter": {
+              "property": {
+               "name": "__key__"
+              },
+              "op": "HAS_ANCESTOR",
+              "value": {
+               "keyValue": {
+                "path": [
+                 {
+                  "kind": "Q",
+                  "name": "q1"
+                 }
+                ]
+               }
+              }
+             }
+            },
+            {
+             "propertyFilter": {
+              "property": {
+               "name": "n"
+              },
+              "op": "EQUAL",
+              "value": {
+               "integerValue": "2"
+              }
+             }
+            }
+           ]
+          }
+         },
+         {
+          "compositeFilter": {
+           "op": "AND",
+           "filters": [
+            {
+             "propertyFilter": {
+              "property": {
+               "name": "__key__"
+              },
+              "op": "HAS_ANCESTOR",
+              "value": {
+               "keyValue": {
+                "path": [
+                 {
+                  "kind": "Q",
+                  "name": "q1"
+                 }
+                ]
+               }
+              }
+             }
+            },
+            {
+             "propertyFilter": {
+              "property": {
+               "name": "n"
+              },
+              "op": "EQUAL",
+              "value": {
+               "integerValue": "4"
+              }
+             }
+            }
+           ]
+          }
+         }
+        ]
+       }
+      }
+     },
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"property_1\": {\n          \"integerValue\": \"1\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "key = q1, keys only",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "Q"
+      }
+     ],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "__key__"
+       },
+       "op": "EQUAL",
+       "value": {
+        "keyValue": {
+         "path": [
+          {
+           "kind": "Q",
+           "name": "q1"
+          }
+         ]
+        }
+       }
+      }
+     },
+     "projection": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"KEY_ONLY\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"Q\",\n            \"name\": \"q1\"\n          }]\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "key = q1, keys only",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "Q"
+       }
+      ],
+      "filter": {
+       "propertyFilter": {
+        "property": {
+         "name": "__key__"
+        },
+        "op": "EQUAL",
+        "value": {
+         "keyValue": {
+          "path": [
+           {
+            "kind": "Q",
+            "name": "q1"
+           }
+          ]
+         }
+        }
+       }
+      },
+      "projection": [
+       {
+        "property": {
+         "name": "__key__"
+        }
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"property_1\": {\n          \"integerValue\": \"1\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "key = q1, keys only, without a kind",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "__key__"
+       },
+       "op": "EQUAL",
+       "value": {
+        "keyValue": {
+         "path": [
+          {
+           "kind": "Q",
+           "name": "q1"
+          }
+         ]
+        }
+       }
+      }
+     },
+     "projection": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"KEY_ONLY\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"Q\",\n            \"name\": \"q1\"\n          }]\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "key = q1, keys only, without a kind",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [],
+      "filter": {
+       "propertyFilter": {
+        "property": {
+         "name": "__key__"
+        },
+        "op": "EQUAL",
+        "value": {
+         "keyValue": {
+          "path": [
+           {
+            "kind": "Q",
+            "name": "q1"
+           }
+          ]
+         }
+        }
+       }
+      },
+      "projection": [
+       {
+        "property": {
+         "name": "__key__"
+        }
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"property_1\": {\n          \"integerValue\": \"1\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "key in [q1], keys only",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "Q"
+      }
+     ],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "__key__"
+       },
+       "op": "IN",
+       "value": {
+        "arrayValue": {
+         "values": [
+          {
+           "keyValue": {
+            "path": [
+             {
+              "kind": "Q",
+              "name": "q1"
+             }
+            ]
+           }
+          }
+         ]
+        }
+       }
+      }
+     },
+     "projection": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"KEY_ONLY\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"Q\",\n            \"name\": \"q1\"\n          }]\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "key in [q1], keys only",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "Q"
+       }
+      ],
+      "filter": {
+       "propertyFilter": {
+        "property": {
+         "name": "__key__"
+        },
+        "op": "IN",
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "keyValue": {
+             "path": [
+              {
+               "kind": "Q",
+               "name": "q1"
+              }
+             ]
+            }
+           }
+          ]
+         }
+        }
+       }
+      },
+      "projection": [
+       {
+        "property": {
+         "name": "__key__"
+        }
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"property_1\": {\n          \"integerValue\": \"1\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "key in [q1], keys only, without a kind",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "__key__"
+       },
+       "op": "IN",
+       "value": {
+        "arrayValue": {
+         "values": [
+          {
+           "keyValue": {
+            "path": [
+             {
+              "kind": "Q",
+              "name": "q1"
+             }
+            ]
+           }
+          }
+         ]
+        }
+       }
+      }
+     },
+     "projection": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"KEY_ONLY\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"Q\",\n            \"name\": \"q1\"\n          }]\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "key in [q1], keys only, without a kind",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [],
+      "filter": {
+       "propertyFilter": {
+        "property": {
+         "name": "__key__"
+        },
+        "op": "IN",
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "keyValue": {
+             "path": [
+              {
+               "kind": "Q",
+               "name": "q1"
+              }
+             ]
+            }
+           }
+          ]
+         }
+        }
+       }
+      },
+      "projection": [
+       {
+        "property": {
+         "name": "__key__"
+        }
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"property_1\": {\n          \"integerValue\": \"1\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "key = q1, projecting the key and n",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "Q"
+      }
+     ],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "__key__"
+       },
+       "op": "EQUAL",
+       "value": {
+        "keyValue": {
+         "path": [
+          {
+           "kind": "Q",
+           "name": "q1"
+          }
+         ]
+        }
+       }
+      }
+     },
+     "projection": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "n"
+       }
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"PROJECTION\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"Q\",\n            \"name\": \"q1\"\n          }]\n        },\n        \"properties\": {\n          \"n\": {\n            \"integerValue\": \"1\",\n            \"meaning\": 18\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "key = q1, projecting the key and n",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "Q"
+       }
+      ],
+      "filter": {
+       "propertyFilter": {
+        "property": {
+         "name": "__key__"
+        },
+        "op": "EQUAL",
+        "value": {
+         "keyValue": {
+          "path": [
+           {
+            "kind": "Q",
+            "name": "q1"
+           }
+          ]
+         }
+        }
+       }
+      },
+      "projection": [
+       {
+        "property": {
+         "name": "__key__"
+        }
+       },
+       {
+        "property": {
+         "name": "n"
+        }
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"property_1\": {\n          \"integerValue\": \"1\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "key = q1, projecting the key and n, without a kind",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "__key__"
+       },
+       "op": "EQUAL",
+       "value": {
+        "keyValue": {
+         "path": [
+          {
+           "kind": "Q",
+           "name": "q1"
+          }
+         ]
+        }
+       }
+      }
+     },
+     "projection": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "n"
+       }
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"kind is required for all orders except __key__ ascending\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "key = q1, projecting the key and n, without a kind",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [],
+      "filter": {
+       "propertyFilter": {
+        "property": {
+         "name": "__key__"
+        },
+        "op": "EQUAL",
+        "value": {
+         "keyValue": {
+          "path": [
+           {
+            "kind": "Q",
+            "name": "q1"
+           }
+          ]
+         }
+        }
+       }
+      },
+      "projection": [
+       {
+        "property": {
+         "name": "__key__"
+        }
+       },
+       {
+        "property": {
+         "name": "n"
+        }
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"kind is required for all orders except __key__ ascending\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
   }
  ]
 }

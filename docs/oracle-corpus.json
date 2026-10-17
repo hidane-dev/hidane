@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:48d6b790912e22f7f213d928ff5bbd13ee71afef48f0347937821f5aef546941",
+ "digest": "sha256:fff43bd2f07c38e9cf58a217f309e4bdb907741f98b2d18393c2ec65bd02ac71",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -17,10 +17,10 @@
   "files": 135,
   "fixtures": 75,
   "transcripts": 60,
-  "answers": 52167,
-  "bytes": 36542074,
+  "answers": 52992,
+  "bytes": 37036651,
   "levels": {
-   "full": 40799,
+   "full": 41624,
    "reasons": 4344,
    "part": 1495,
    "status": 5197,
@@ -82,14 +82,14 @@
    "datastore": {
     "fixtures": 13,
     "transcripts": 18,
-    "answers": 16498
+    "answers": 17323
    }
   },
   "by_release": {
    "v1.22.0": {
     "fixtures": 75,
     "transcripts": 60,
-    "answers": 52167
+    "answers": 52992
    }
   },
   "by_release_source": {
@@ -2532,11 +2532,11 @@
     "first_recorded": "2026-10-17",
     "last_changed": "2026-10-17"
    },
-   "bytes": 5092633,
-   "sha256": "2fd6d7ba4bf9580a35dd051264f408b69e74f75181a3329ac638b3e9277f14d1",
-   "answers": 8570,
+   "bytes": 5503865,
+   "sha256": "12c984304f409e67b947435438896956f1357757a5ef425a1d4f848017f4bcc1",
+   "answers": 9270,
    "levels": {
-    "full": 8570
+    "full": 9270
    },
    "replayed_over": [
     "REST"
@@ -2939,11 +2939,11 @@
     "first_recorded": "2026-10-16",
     "last_changed": "2026-10-17"
    },
-   "bytes": 2435543,
-   "sha256": "78fa9da6592d73c051732003fceb4f0d61c678227f9a62ba6e2f2f6665958575",
-   "answers": 419,
+   "bytes": 2485560,
+   "sha256": "1dd18741ceefb33d9cb362ac90fd59dab1d78be3baf002e0cda638076f074001",
+   "answers": 457,
    "levels": {
-    "full": 419
+    "full": 457
    },
    "replayed_over": [
     "REST"
@@ -2975,11 +2975,11 @@
     "first_recorded": "2026-10-17",
     "last_changed": "2026-10-17"
    },
-   "bytes": 1329456,
-   "sha256": "e6c98a5d1fa9539c503a306fbf41cc55916d4c8ff3088464990bb1a0f71e1dda",
-   "answers": 338,
+   "bytes": 1362784,
+   "sha256": "5587990549069a7dd7eceb8289b49b8ebe64faae8e8226a714f43889c65cd74d",
+   "answers": 425,
    "levels": {
-    "full": 338
+    "full": 425
    },
    "replayed_over": [
     "REST"
@@ -2987,7 +2987,7 @@
    "tests": [
     "crates/hidane/tests/datastore.rs::sequences_answer_like_the_official_emulator"
    ],
-   "counted": "each request of each sequence (the kinds and namespaces listed after reads and writes, property masks, read-only transactions and read times, versions, a write whose client gives up), in a project of its own, to a server started with `--database-mode datastore-mode`; recorded over REST",
+   "counted": "each request of each sequence (the kinds and namespaces listed after reads and writes, property masks, read-only transactions and read times, versions, IDs, database IDs, a write whose client gives up), in a project of its own, to a server started with `--database-mode datastore-mode`; recorded over REST",
    "compared": "in full: status, content type and body byte for byte, server times and versions labelled in the order they first appear (which ones are the same), transaction IDs and cursors masked; a request the client gives up on, unanswered on both"
   },
   {

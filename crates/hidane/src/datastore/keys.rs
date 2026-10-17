@@ -105,6 +105,17 @@ pub fn check_app_id(project: &str) -> Result<(), Status> {
     }
 }
 
+/// A request's database ID: as a namespace is, up to 100 letters, digits, `.`, `-` and `_`
+/// (`(default)` is not one in Datastore mode, where the default database's ID is empty).
+pub fn check_database_id(database: &str) -> Result<(), Status> {
+    if namespace_ok(database) {
+        return Ok(());
+    }
+    Err(Status::invalid_argument(format!(
+        "\"{database}\" is an invalid database id."
+    )))
+}
+
 /// A partitioned app ID (`dev~p`) is no project, in Datastore mode.
 pub fn check_project_id(project: &str) -> Result<(), Status> {
     if project.contains('~') {
@@ -238,6 +249,19 @@ fn namespace_ok(namespace: &str) -> bool {
 pub fn check(key: &Key, database: &Database, rules: Rules, last: Last) -> Result<Checked, Status> {
     check_partition(key, database)?;
     check_unpartitioned(key, rules, last)
+}
+
+/// Checks `key` as `allocateIds` and `reserveIds` do: its namespace and path first, then its
+/// project and database.
+pub fn check_path_first(
+    key: &Key,
+    database: &Database,
+    rules: Rules,
+    last: Last,
+) -> Result<Checked, Status> {
+    let checked = check_unpartitioned(key, rules, last)?;
+    check_partition(key, database)?;
+    Ok(checked)
 }
 
 /// `project#database`, `project` for the default database, as `mismatched databases` says.
