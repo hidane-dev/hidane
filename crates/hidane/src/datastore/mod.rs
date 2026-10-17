@@ -6,7 +6,9 @@
 //! Entities live here, apart from the Firestore engine's documents: keys and values are
 //! Datastore's ([`keys`], [`values`]). Transactions are the Firestore engine's
 //! ([`Transactions`]): the official emulator locks, waits and expires them alike in both modes,
-//! with the same messages, a key's lock kept under [`keys::lock_path`]. What is served so far:
+//! with the same messages, but for a write outside a transaction, which waits 60 s for a lock
+//! here ([`crate::firestore::transactions::OUTSIDE_LOCK_TIMEOUT`]); a key's lock is kept under
+//! [`keys::lock_path`]. What is served so far:
 //! `Lookup`, `Commit`, `BeginTransaction`, `Rollback`, `AllocateIds` and `ReserveIds`
 //! (`tests/fixtures/datastore_entities.json`; commits and lookups refused in the official
 //! emulator's order, `tests/fixtures/datastore_commit_checks.json`), and structured `RunQuery` and
@@ -67,7 +69,6 @@ pub struct DatastoreService {
     state: Arc<State>,
 }
 
-#[derive(Default)]
 struct State {
     data: Mutex<Data>,
     transactions: Transactions,
@@ -75,6 +76,20 @@ struct State {
     enforcement: Option<indexes::Enforcement>,
     /// Firestore Native mode: every request is refused once its project is read.
     refused: bool,
+}
+
+impl Default for State {
+    fn default() -> Self {
+        Self {
+            data: Mutex::default(),
+            // A write outside a transaction waits longer for a lock than in Firestore Native
+            // mode (`tests/fixtures/datastore_locks.json`).
+            transactions: Transactions::default()
+                .with_outside_lock_timeout(crate::firestore::transactions::OUTSIDE_LOCK_TIMEOUT),
+            enforcement: None,
+            refused: false,
+        }
+    }
 }
 
 #[derive(Default)]

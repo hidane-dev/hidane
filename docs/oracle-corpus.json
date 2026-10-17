@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:927d1e2fdd16879f26ca8c4e3358e11dff05b8a5c6ba871cee3a15ccd0fb572c",
+ "digest": "sha256:c128b51d13d11837998be811b5ae5d891abc23248f50935a1851c0a4104f56c6",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,13 +14,13 @@
   }
  ],
  "totals": {
-  "files": 132,
-  "fixtures": 72,
+  "files": 133,
+  "fixtures": 73,
   "transcripts": 60,
-  "answers": 45586,
-  "bytes": 31528125,
+  "answers": 45612,
+  "bytes": 31543435,
   "levels": {
-   "full": 34218,
+   "full": 34244,
    "reasons": 4344,
    "part": 1495,
    "status": 5197,
@@ -80,20 +80,20 @@
     "answers": 278
    },
    "datastore": {
-    "fixtures": 10,
+    "fixtures": 11,
     "transcripts": 18,
-    "answers": 9917
+    "answers": 9943
    }
   },
   "by_release": {
    "v1.22.0": {
-    "fixtures": 72,
+    "fixtures": 73,
     "transcripts": 60,
-    "answers": 45586
+    "answers": 45612
    }
   },
   "by_release_source": {
-   "header": 47,
+   "header": 48,
    "file name": 61,
    "git history": 24
   }
@@ -2768,6 +2768,42 @@
    ],
    "counted": "each request of each run, to a server started with `--database-mode datastore-mode` and the run's flags (`--require_indexes`, `--index_file`) and index file; recorded over REST",
    "compared": "in full: status, content type and body byte for byte, server times, versions, transaction IDs and cursors masked"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/datastore_locks.json",
+   "kind": "fixture",
+   "area": "datastore",
+   "recorder": "tools/oracle/datastore_locks.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-17",
+    "last_changed": "2026-10-17"
+   },
+   "bytes": 15310,
+   "sha256": "159aaeef5f26cdb235d2ac8ea73aff92421ba1c8dd7edf9d5e7e757dcafead0c",
+   "answers": 26,
+   "levels": {
+    "full": 26
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/datastore.rs::lock_waits_like_the_official_emulator"
+   ],
+   "counted": "each request of each scenario (a read in a transaction kept in use, then a write that waits for its lock or not), to a server started with `--database-mode datastore-mode`; recorded over REST",
+   "compared": "in full: status, content type and body byte for byte, server times, versions and transaction IDs masked; how long the write took, to within 5 s"
   },
   {
    "path": "crates/hidane/tests/fixtures/datastore_projects.json",
