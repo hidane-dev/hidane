@@ -10,15 +10,16 @@ Seeds one project with a dataset (`DATASET`: a value of every type in property `
 `T`, entities with several properties of kind `P`, an ancestry, a namespace), then sends, over
 REST in order, `runQuery` with structured queries (kinds, every filter operator against values
 of every type, composite filters, ancestors, keys, orders, projections, `distinctOn`, limits,
-offsets, cursors, cursors of other queries, ancestors in disjunctions, the key projected and
-compared, a limit of 0 over filters that bound a property to nothing, the entity values of
+offsets, cursors, cursors of other queries (a distinct query's, which has no key; one whose
+values end before a property; in aggregations), ancestors in disjunctions, the key projected
+and compared, a limit of 0 over filters that bound a property to nothing, the entity values of
 arrays (not indexed), the queries it refuses, and a query without a kind in a transaction), the
-metadata kinds `__kind__`, `__namespace__` and `__property__` (in transactions too), key operands
-of an invalid project or in a reserved namespace, a property filtered by equality and ordered
-(a row per value), and `runAggregationQuery` (the rows a sum reads from arrays, in each order
-and under equalities). A cursor is opaque: a step that reads one names
-it (`defines`, with the JSON path it came from), and later steps send it as `<name>`, so a
-replay sends its own. The fixture has the format of `datastore_entities.json`; server times,
+metadata kinds `__kind__`, `__namespace__` and `__property__` (in transactions too), key
+operands of an invalid project or in a reserved namespace, a property filtered by equality and
+ordered (a row per value), and `runAggregationQuery` (the rows a sum reads from arrays, in each
+order and under equalities). A cursor is opaque: a step that reads one names it (`defines`,
+with the JSON path it came from), and later steps send it as `<name>`, so a replay sends its
+own. The fixture has the format of `datastore_entities.json`; server times,
 versions, transaction IDs and cursors are masked. `crates/hidane/tests/datastore.rs` replays
 it. Stdlib only.
 """
@@ -115,6 +116,14 @@ DATASET += [
     (key(("H", "h2"), ns="xg"), {"a": I(2), "z": I(1)}),
     (key(("E", "e1"), ns="xg"), {"b": ARR(I(1), I(2)), "c": I(1), "d": ARR(I(5), I(6))}),
     (key(("E", "e2"), ns="xg"), {"b": ARR(I(2), I(3)), "c": I(2), "d": I(7)}),
+]
+# More cursors of other queries, in a namespace of their own.
+DATASET += [
+    (key(("D", "d1"), ns="xd"), {"t": ARR(NULL)}),
+    (key(("D", "d2"), ns="xd"), {"a": I(1), "b": I(1), "c": I(5), "t": ARR(I(4))}),
+    (key(("D", "d3"), ns="xd"), {"a": I(2), "b": I(2), "c": I(6)}),
+    (key(("D", "d4"), ns="xd"), {"a": I(3), "b": NULL}),
+    (key(("DP", "p1"), ns="xd"), {"b": I(5)}),
 ]
 
 CASES = []
@@ -345,6 +354,42 @@ for name, q, ns in [
     ("key descending as the end cursor, b", {"kind": L, "order": [asc("b")], "endCursor": "<x key descending>"}, "xc"),
 ]:
     xc(f"a cursor of another query: {name}", q, ns=ns)
+
+# A distinct query's cursor has no key: no namespace or kind of its own. A cursor's key that
+# meets a value is compared with it, or is an internal error at a row it reaches (just before its
+# row and that value ordered as the first order, or just past it and ordered the other way);
+# just before its row with a null value, whatever the rows. A key that meets the key of an order
+# that goes on past it is not compared. An aggregation orders by its sums' properties too.
+XD = "xd"
+D = kind("D")
+SOURCES_D = {"t descending": {"kind": D, "order": [desc("t")], "limit": 1}, "t": {"kind": D, "order": [asc("t")], "limit": 1},
+             "b descending": {"kind": D, "order": [desc("b")], "limit": 1}, "distinct on b": {"kind": D, "distinctOn": [{"name": "b"}], "limit": 1},
+             "no kind": {"limit": 2}, "key": {"kind": D, "limit": 1}}
+TARGETS_D = {"b, a": [asc("b"), asc("a")], "b descending, a": [desc("b"), asc("a")], "b, a descending": [asc("b"), desc("a")],
+             "b descending, a descending": [desc("b"), desc("a")], "key, b": [asc("__key__"), asc("b")],
+             "key descending, b": [desc("__key__"), asc("b")]}
+for source, q in SOURCES_D.items():
+    xc(f"cursor source D: {source}", q, defines={f"xd {source}": "batch.endCursor"}, ns=XD)
+for source in SOURCES_D:
+    for target, order in TARGETS_D.items():
+        for which in ("startCursor", "endCursor"):
+            xc(f"{which} of D '{source}' in '{target}'", {"kind": D, "order": order, which: f"<xd {source}>"}, ns=XD)
+for which in ("startCursor", "endCursor"):
+    xc(f"{which} of D 'distinct on b' in another kind", {"kind": kind("DP"), "order": [asc("b")], which: "<xd distinct on b>"}, ns=XD)
+    xc(f"{which} of D 'distinct on b' in another kind, by its key", {"kind": kind("DP"), which: "<xd distinct on b>"}, ns=XD)
+    xc(f"{which} of D 'distinct on b' in another namespace", {"kind": D, "order": [asc("b")], which: "<xd distinct on b>"}, ns="xc")
+xc("cursor source D: c compared, a projected", {"kind": D, "filter": pf("c", "GREATER_THAN", I(0)),
+                                               "projection": [{"property": {"name": "a"}}], "limit": 1},
+   defines={"xd c then a": "batch.endCursor"}, ns=XD)
+for name, order, aggregations in [
+    ("a count, ordered by a", [asc("a")], [{"count": {}, "alias": "n"}]),
+    ("an average of b, ordered by a", [asc("a")], [{"avg": {"property": {"name": "b"}}, "alias": "m"}, {"count": {}, "alias": "n"}]),
+    ("sums of b and c", [], [{"sum": {"property": {"name": "b"}}, "alias": "s"}, {"sum": {"property": {"name": "c"}}, "alias": "t"}]),
+]:
+    for which in ("startCursor", "endCursor"):
+        case(f"{which} of D 'c then a' in {name}", "runAggregationQuery",
+             {"aggregationQuery": {"nestedQuery": {"kind": D, "order": order, which: "<xd c then a>"},
+                                   "aggregations": aggregations}, "partitionId": {"namespaceId": XD}})
 
 # --- metadata ----------------------------------------------------------------------------------
 query("__kind__", {"kind": kind("__kind__")})

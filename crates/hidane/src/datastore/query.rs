@@ -374,13 +374,14 @@ impl Plan {
     }
 }
 
-/// Where a result is in a query's order: its row values and its key, just past it in the
-/// direction of the query's first order (`before`: that order was descending), and whether the
-/// query ordered by the key before a property (a cursor the official emulator cannot read).
+/// Where a result is in a query's order: its row values and its key (none for a query distinct
+/// on properties, as on the official emulator), just past it in the direction of the query's
+/// first order (`before`: that order was descending), and whether the query ordered by the key
+/// before a property (a cursor the official emulator cannot read).
 #[derive(Debug, Clone)]
 pub struct Position {
     pub values: Vec<Indexed>,
-    pub key: Located,
+    pub key: Option<Located>,
     pub before: bool,
     pub key_in_values: bool,
 }
@@ -389,8 +390,8 @@ impl Position {
     fn encode(&self) -> Vec<u8> {
         let json = json!({
             "v": self.values.iter().map(Indexed::to_json).collect::<Vec<_>>(),
-            "n": self.key.namespace,
-            "k": path_json(&self.key.path),
+            "n": self.key.as_ref().map(|k| k.namespace.clone()),
+            "k": self.key.as_ref().map(|k| path_json(&k.path)),
             "b": self.before,
             "kv": self.key_in_values,
         });
@@ -408,9 +409,13 @@ impl Position {
                 .iter()
                 .map(Indexed::from_json)
                 .collect::<Option<_>>()?,
-            key: Located {
-                namespace: json["n"].as_str()?.to_owned(),
-                path: path_from_json(&json["k"])?,
+            key: if json["k"].is_null() {
+                None
+            } else {
+                Some(Located {
+                    namespace: json["n"].as_str()?.to_owned(),
+                    path: path_from_json(&json["k"])?,
+                })
             },
             before: json["b"].as_bool().unwrap_or(false),
             key_in_values: json["kv"].as_bool().unwrap_or(false),
@@ -683,8 +688,9 @@ pub fn plan(query: &Query, database: &Database, namespace: &str) -> Result<Plan,
 
 /// A query's cursors, as the official emulator checks them once the query passed its other
 /// checks: each of the query's namespace and kind, not of a query that ordered by the key before
-/// a property, and with no more values than the query orders by.
-pub(super) fn cursors_match(query: &Query, namespace: &str) -> Result<(), Status> {
+/// a property, and with no more values than the query orders by (an aggregation's sums and
+/// averages ordering by their properties too, `read`).
+pub(super) fn cursors_match(query: &Query, namespace: &str, read: &[&str]) -> Result<(), Status> {
     let projection: Vec<String> = query
         .projection
         .iter()
@@ -696,23 +702,30 @@ pub(super) fn cursors_match(query: &Query, namespace: &str) -> Result<(), Status
         })
         .collect();
     let cond = query.filter.as_ref().map(|f| condition(f, ""));
-    let ordered = orders(query, cond.as_ref(), &projection)
-        .0
-        .iter()
-        .filter(|(f, _)| f.is_some())
-        .count();
+    let (orders, _, _) = orders(query, cond.as_ref(), &projection);
+    let mut ordered: Vec<&str> = orders.iter().filter_map(|(f, _)| f.as_deref()).collect();
+    for property in read {
+        if !ordered.contains(property) {
+            ordered.push(property);
+        }
+    }
+    let ordered = ordered.len();
     let kind = query.kind.first().map(|k| k.name.as_str());
     for bytes in [&query.start_cursor, &query.end_cursor] {
         let Some(position) = Position::decode(bytes) else {
             continue;
         };
-        if position.key.namespace != namespace {
+        // A cursor without a key (a distinct query's) names no namespace or kind.
+        if let Some(key) = &position.key
+            && key.namespace != namespace
+        {
             return Err(invalid(format!(
                 "The query namespace is '{namespace}' but cursor.postfix_position namespace is '{}'.",
-                position.key.namespace
+                key.namespace
             )));
         }
-        if let (Some(kind), Some((cursor_kind, _))) = (kind, position.key.path.last())
+        if let (Some(kind), Some((cursor_kind, _))) =
+            (kind, position.key.as_ref().and_then(|k| k.path.last()))
             && kind != cursor_kind
         {
             return Err(invalid(format!(
@@ -861,7 +874,7 @@ fn position(row: &Row<'_>, plan: &Plan) -> Position {
     let key_at = plan.orders.iter().position(|(field, _)| field.is_none());
     Position {
         values: row.values.iter().map(|(v, _)| v.clone()).collect(),
-        key: row.key.clone(),
+        key: plan.distinct_on.is_empty().then(|| row.key.clone()),
         before: plan
             .orders
             .first()
@@ -878,11 +891,46 @@ fn key_value(plan: &Plan, key: &Located) -> Indexed {
     )
 }
 
+/// Whether every property `plan` orders by runs the same way.
+fn one_way(plan: &Plan) -> bool {
+    let mut directions = plan
+        .orders
+        .iter()
+        .filter(|(f, _)| f.is_some())
+        .map(|(_, d)| *d);
+    let first = directions.next();
+    directions.all(|d| Some(d) == first)
+}
+
+/// Whether a cursor's values end before a property `plan` orders by.
+fn ends_before_value(plan: &Plan, position: &Position) -> bool {
+    matches!(plan.orders.get(position.values.len()), Some((Some(_), _)))
+}
+
+/// A cursor just before its row, with a null value, whose values end before a property, all
+/// ordered one way, is an internal error on the official emulator, whatever the rows.
+fn cursor_errors(plan: &Plan) -> Result<(), Status> {
+    for position in [&plan.start, &plan.end].into_iter().flatten() {
+        if position.before
+            && position.values.contains(&Indexed::Null)
+            && ends_before_value(plan, position)
+            && one_way(plan)
+        {
+            return Err(Status::unknown(""));
+        }
+    }
+    Ok(())
+}
+
 /// Where `row` is from `position` in `plan`'s order, as the official emulator compares them: the
 /// position's values then its key against the row's, one by one whatever they stand for (a
 /// cursor from another query's), in `plan`'s directions; a row the position's values and key
 /// match is past it in the direction of its query's first order, as `plan`'s first order sees
-/// it. A position just before a row whose key meets a row's value is an internal error there.
+/// it. A position without a key, or one whose key meets the key of an order that goes on past
+/// it, is matched by its values alone. A position whose values end before a property is an
+/// internal error at a row that matches them, when just before its row and the properties run
+/// one way, or just past it and they do not ([`cursor_errors`] tells of one that errs whatever
+/// the rows); otherwise its key, if any, compares with that property's value.
 fn compare_position(row: &Row<'_>, position: &Position, plan: &Plan) -> Result<Ordering, Status> {
     let mut i = 0;
     for (at, (field, descending)) in plan.orders.iter().enumerate() {
@@ -894,14 +942,16 @@ fn compare_position(row: &Row<'_>, position: &Position, plan: &Plan) -> Result<O
             None => key_value(plan, row.key),
         };
         let at_key = at == position.values.len();
-        let theirs = match position.values.get(at) {
-            Some(value) => value.clone(),
-            None if at_key => key_value(plan, &position.key),
-            None => break,
-        };
-        if at_key && field.is_some() && position.before {
+        if at_key && field.is_some() && position.before == one_way(plan) {
             return Err(Status::unknown(""));
         }
+        let theirs = match (position.values.get(at), &position.key) {
+            (Some(value), _) => value.clone(),
+            (None, Some(key)) if at_key && (field.is_some() || at + 1 == plan.orders.len()) => {
+                key_value(plan, key)
+            }
+            _ => break,
+        };
         let ordering = own.cmp(&theirs);
         let ordering = if *descending {
             ordering.reverse()
@@ -961,6 +1011,7 @@ fn select<'a>(
     plan: &Plan,
     entities: &'a std::collections::BTreeMap<Located, super::Stored>,
 ) -> Result<Vec<Row<'a>>, Status> {
+    cursor_errors(plan)?;
     let mut results: Vec<Row<'a>> = Vec::new();
     for (key, entity) in entities {
         if key.namespace != plan.namespace {
@@ -1324,13 +1375,13 @@ mod tests {
     fn cursors_round_trip() {
         let position = Position {
             values: vec![Indexed::Bytes(b"x".to_vec()), Indexed::Double(1.5)],
-            key: Located {
+            key: Some(Located {
                 namespace: "ns".into(),
                 path: vec![
                     ("P".into(), Id::Name("p1".into())),
                     ("C".into(), Id::Id(-3)),
                 ],
-            },
+            }),
             before: true,
             key_in_values: true,
         };

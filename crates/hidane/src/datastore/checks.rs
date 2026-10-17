@@ -801,7 +801,7 @@ fn entity_late(
         }
     }
     grouped_first(query)?;
-    cursors_match(query, namespace)?;
+    cursors_match(query, namespace, &[])?;
     metadata(query, database, all)?;
     unreadable_elements(all)
 }
@@ -1133,5 +1133,9 @@ fn aggregation_late(
         return Err(invalid(EMPTY_SEGMENT));
     }
     grouped_first(query)?;
-    cursors_match(query, namespace)
+    let read: Vec<&str> = list
+        .iter()
+        .filter_map(|a| aggregated(a.operator.as_ref()))
+        .collect();
+    cursors_match(query, namespace, &read)
 }
