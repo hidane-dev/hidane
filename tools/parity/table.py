@@ -670,6 +670,16 @@ RECORDINGS = {
                  "as intentionally different (D025)",
         count=lambda f: [(REST, DIFFERS if case["name"] in rust_strings(f"{H}/datastore.rs", "KNOWN")
                           else FULL) for case in f["cases"]]),
+    f"{H}/fixtures/datastore_gql.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::gql_answers_like_the_official_emulator"],
+        counted="each GQL query and aggregation query, to a server started with "
+                "`--database-mode datastore-mode` over the dataset of `datastore_queries.json`; "
+                + OVER_REST,
+        compares="in full: status, content type and body byte for byte (the structured query "
+                 "the text reads as, the results, the parser's messages), server times, "
+                 "versions, transaction IDs and cursors masked",
+        count=lambda f: [(REST, FULL) for _ in f["cases"]]),
     f"{H}/fixtures/datastore_queries.json": dict(
         area="datastore",
         tests=[f"{H}/datastore.rs::datastore_queries_answer_like_the_official_emulator"],

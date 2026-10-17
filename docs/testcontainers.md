@@ -140,8 +140,8 @@ own example, a gRPC connection without TLS passed with `option.WithGRPCConn`, co
 are tested. The module also waits for the port, which testcontainers-go checks from inside the
 container with a shell where there is one: hidane's image has none, so it checks from the host only
 and logs `Shell not found in container`. `WithDatastoreMode()` passes
-`--database-mode=datastore-mode`, which hidane serves in part (entities, transactions, queries
-and aggregations; not GQL yet, [#81](https://github.com/hidane-dev/hidane/issues/81)); it is
+`--database-mode=datastore-mode`, which hidane serves (entities, transactions, queries,
+aggregations and GQL; not index enforcement yet, [#81](https://github.com/hidane-dev/hidane/issues/81)); it is
 not tested here. `gcloud.RunFirestore`, deprecated, passes
 the same command as `firestore.Run`, but is not tested here.
 
