@@ -86,6 +86,15 @@ pub struct OwnerWrites {
     pub documents: usize,
 }
 
+/// More documents than the largest dataset size, written once per run, for the memory they
+/// take (#50).
+#[derive(Debug, Clone, PartialEq)]
+pub struct LargeDataset {
+    pub runs: Runs,
+    pub documents: usize,
+    pub batch: usize,
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Ci {
     pub runs: Runs,
@@ -119,6 +128,9 @@ pub struct Params {
     pub owner_writes: OwnerWrites,
     pub listen_limit_writes: ListenLimitWrites,
     pub command: Runs,
+    /// `firebase emulators:start --only firestore` until the port accepts (with `--firebase`).
+    pub firebase_startup: Runs,
+    pub large_dataset: LargeDataset,
     pub stability: Stability,
 }
 
@@ -202,6 +214,12 @@ impl Default for Params {
                 limit: 50,
             },
             command: runs(1, 5),
+            firebase_startup: runs(1, 5),
+            large_dataset: LargeDataset {
+                runs: runs(0, 3),
+                documents: 500_000,
+                batch: 500,
+            },
             stability: Stability {
                 max_load_1m: Some(2.0),
                 min_available_memory_mib: Some(4_096.0),
@@ -260,6 +278,9 @@ impl Params {
         };
         params.listen_limit_writes.runs = runs(0, 1);
         params.listen_limit_writes.documents = 10_000;
+        params.firebase_startup = runs(0, 1);
+        params.large_dataset.runs = runs(0, 1);
+        params.large_dataset.documents = 10_000;
         params
     }
 
@@ -327,6 +348,8 @@ impl Params {
                 "owner_writes",
                 "listen_limit_writes",
                 "command",
+                "firebase_startup",
+                "large_dataset",
             ],
         )?;
         if let Some(v) = map.get("startup") {
@@ -478,6 +501,24 @@ impl Params {
             known(m, "scenarios.command", &["warmup", "runs"])?;
             read_runs(m, "scenarios.command", &mut self.command)?;
         }
+        if let Some(v) = map.get("firebase_startup") {
+            let what = "scenarios.firebase_startup";
+            let m = object(v, what)?;
+            known(m, what, &["warmup", "runs"])?;
+            read_runs(m, what, &mut self.firebase_startup)?;
+        }
+        if let Some(v) = map.get("large_dataset") {
+            let what = "scenarios.large_dataset";
+            let m = object(v, what)?;
+            known(m, what, &["warmup", "runs", "documents", "batch"])?;
+            let l = &mut self.large_dataset;
+            read_runs(m, what, &mut l.runs)?;
+            read_usize(m, what, "documents", &mut l.documents)?;
+            read_usize(m, what, "batch", &mut l.batch)?;
+            if l.documents == 0 || l.batch == 0 {
+                return Err(format!("{what}: documents and batch must be at least 1"));
+            }
+        }
         Ok(())
     }
 
@@ -579,6 +620,13 @@ impl Params {
                 "limit": self.listen_limit_writes.limit,
             }),
             "command" => r(self.command),
+            "firebase_startup" => r(self.firebase_startup),
+            "large_dataset" => json!({
+                "warmup": self.large_dataset.runs.warmup,
+                "runs": self.large_dataset.runs.runs,
+                "documents": self.large_dataset.documents,
+                "batch": self.large_dataset.batch,
+            }),
             _ => Value::Null,
         }
     }
@@ -751,6 +799,8 @@ mod tests {
             "owner_writes",
             "listen_limit_writes",
             "command",
+            "firebase_startup",
+            "large_dataset",
         ] {
             assert_eq!(scenarios[name], params.scenario_json(name), "{name}");
         }
