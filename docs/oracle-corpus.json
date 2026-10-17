@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:7700d448559416aca12aeb4589347935ee872df5eac4bf5a5fdaec8bb8eedae9",
+ "digest": "sha256:927d1e2fdd16879f26ca8c4e3358e11dff05b8a5c6ba871cee3a15ccd0fb572c",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,13 +14,13 @@
   }
  ],
  "totals": {
-  "files": 131,
-  "fixtures": 71,
+  "files": 132,
+  "fixtures": 72,
   "transcripts": 60,
-  "answers": 41575,
-  "bytes": 29126280,
+  "answers": 45586,
+  "bytes": 31528125,
   "levels": {
-   "full": 30207,
+   "full": 34218,
    "reasons": 4344,
    "part": 1495,
    "status": 5197,
@@ -80,20 +80,20 @@
     "answers": 278
    },
    "datastore": {
-    "fixtures": 9,
+    "fixtures": 10,
     "transcripts": 18,
-    "answers": 5906
+    "answers": 9917
    }
   },
   "by_release": {
    "v1.22.0": {
-    "fixtures": 71,
+    "fixtures": 72,
     "transcripts": 60,
-    "answers": 41575
+    "answers": 45586
    }
   },
   "by_release_source": {
-   "header": 46,
+   "header": 47,
    "file name": 61,
    "git history": 24
   }
@@ -2545,6 +2545,42 @@
     "crates/hidane/tests/datastore.rs::checks_come_in_the_official_emulators_order"
    ],
    "counted": "each query and aggregation query with one or two problems (every ordered pair), to a server started with `--database-mode datastore-mode`; recorded over REST",
+   "compared": "in full: status, content type and body byte for byte, server times and versions masked"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/datastore_commit_checks.json",
+   "kind": "fixture",
+   "area": "datastore",
+   "recorder": "tools/oracle/datastore_commit_checks.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-17",
+    "last_changed": "2026-10-17"
+   },
+   "bytes": 2401845,
+   "sha256": "517ab4a83773de2e646c5d795c2e18653d5332b8cb5d8c88418883dd20f1aeb7",
+   "answers": 4011,
+   "levels": {
+    "full": 4011
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/datastore.rs::commit_checks_come_in_the_official_emulators_order"
+   ],
+   "counted": "each commit and lookup with one or two problems (every ordered pair), each in a project of its own, to a server started with `--database-mode datastore-mode`; recorded over REST",
    "compared": "in full: status, content type and body byte for byte, server times and versions masked"
   },
   {

@@ -668,6 +668,15 @@ RECORDINGS = {
         compares="in full: status, content type and body byte for byte, server times and versions "
                  "masked",
         count=lambda f: [(REST, FULL) for _ in f["cases"]]),
+    f"{H}/fixtures/datastore_commit_checks.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::commit_checks_come_in_the_official_emulators_order"],
+        counted="each commit and lookup with one or two problems (every ordered pair), each in "
+                "a project of its own, to a server started with `--database-mode datastore-mode`; "
+                + OVER_REST,
+        compares="in full: status, content type and body byte for byte, server times and versions "
+                 "masked",
+        count=lambda f: [(REST, FULL) for _ in f["cases"]]),
     f"{H}/fixtures/datastore_entities.json": dict(
         area="datastore",
         tests=[f"{H}/datastore.rs::datastore_mode_answers_like_the_official_emulator"],
