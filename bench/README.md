@@ -135,7 +135,9 @@ Notes:
   have them: `--host 127.0.0.1 --port <port>`. The official emulator runs as
   `java -Duser.language=en -Duser.country=US -jar cloud-firestore-emulator-v1.22.0.jar …` with
   the JVM's default settings (an English locale is needed for some of its messages; nothing is
-  tuned). The `java` on `PATH` is resolved once to `<java.home>/bin/java`, so a version
+  tuned). Its default heap limit, a quarter of the machine's memory unless the JVM decides
+  otherwise, is recorded as `environment.java_max_heap_bytes` (from `java -XX:+PrintFlagsFinal
+  -version`). The `java` on `PATH` is resolved once to `<java.home>/bin/java`, so a version
   manager's shim (mise, asdf, SDKMAN!) does not add its own start-up to the emulator's.
   Output goes to `/dev/null` for both (`--keep-logs DIR` keeps it).
   Both are stopped with `POST /shutdown`.
@@ -183,6 +185,8 @@ first hundred requests see, not a JVM after minutes of load.
 | `command` | Your command, with `FIRESTORE_EMULATOR_HOST` set (see above) | `total`, `command`, `ready` (ms) |
 | `owner_writes` | Writes with the owner credential (`Authorization: Bearer owner`, as the Admin SDKs send it): start, wait for the port, commit 500 writes to the same documents 120 times (the first 20 discarded), then write 100,000 documents in commits of 500 | `batch_write`, `seed_100000` (ms) |
 | `listen_limit_writes` | Writes with a limited listener attached ([below](#a-limited-listener)): as `listen_writes`, with the Listen stream on the collection's first 50 documents by name, as an SDK's `query(collection, limit(50))`, until the listener's snapshot holds the last document written | As `listen_writes` |
+| `firebase_startup` | Startup as projects start the emulator: `firebase emulators:start --only firestore` in a scratch project, as `ci_firebase` runs firebase-tools (hidane through `hidane exec`), until the Firestore emulator's port accepts a TCP connection; then firebase-tools is interrupted, as Ctrl-C does. firebase-tools' own start is part of the time. Needs `--firebase` | `time_to_port` (ms) |
+| `large_dataset` | Start, wait for the port, write 500,000 documents in commits of 500, read RSS, shut down: memory past the largest dataset size, with the official emulator under the JVM's default heap limit | `seed_500000` (ms), `rss_after_seed_500000` (bytes) |
 
 Runs per target: 3 warm-up and 10 measured for `startup`, `memory`, `ci` and the dataset sizes up to
 1,000 documents. Larger sizes are scaled down, because one run of the official emulator takes
@@ -193,7 +197,9 @@ earlier scenarios have already brought the binary and the jar into the OS's cach
 own warm-up inside a run is part of what the first batches measure; `--warmup` and `--runs`
 are capped at 1 and 3 for it. `listen_limit_writes` runs and is capped as `listen_writes` is.
 `owner_writes` runs 1 warm-up and 3 measured runs, as the largest dataset size does, and is
-capped the same way. `canonical.json` states every value.
+capped the same way. `firebase_startup` runs 1 warm-up and 5 measured runs, as `ci_firebase`
+does. `large_dataset` runs no warm-up and 3 measured runs, capped at 1 and 3: one run of the
+official emulator writes for a minute or more. `canonical.json` states every value.
 
 #### Writes with a listener attached
 
@@ -394,8 +400,8 @@ changes when an existing scenario changes what it does or measures, or one of it
 values changes: numbers of different versions are not compared. A new scenario keeps the
 version when it runs after the existing ones (scenarios run in a fixed order), because it cannot
 change the conditions they are measured under; its history starts with the first result that has
-it. `listen_writes`, `owner_writes` and `listen_limit_writes` were added this way to definitions
-v1. The run-level readings (`duration_s`,
+it. `listen_writes`, `owner_writes`, `listen_limit_writes`, `firebase_startup` and
+`large_dataset` were added this way to definitions v1. The run-level readings (`duration_s`,
 the stability readings after the run, CPU steal over the run) cover every scenario that ran.
 
 ## Targets in CI
