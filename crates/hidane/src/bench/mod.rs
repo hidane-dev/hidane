@@ -65,12 +65,16 @@ enum Scenario {
     OwnerWrites,
     #[value(name = "listen_limit_writes")]
     ListenLimitWrites,
+    #[value(name = "firebase_startup")]
+    FirebaseStartup,
+    #[value(name = "large_dataset")]
+    LargeDataset,
 }
 
 impl Scenario {
     /// The order they run in. A new scenario goes after the existing ones, so that it cannot
     /// change the conditions the earlier ones are measured under.
-    const ALL: [Self; 10] = [
+    const ALL: [Self; 12] = [
         Self::Startup,
         Self::Memory,
         Self::Operations,
@@ -81,6 +85,8 @@ impl Scenario {
         Self::Command,
         Self::OwnerWrites,
         Self::ListenLimitWrites,
+        Self::FirebaseStartup,
+        Self::LargeDataset,
     ];
 
     fn id(self) -> &'static str {
@@ -95,6 +101,8 @@ impl Scenario {
             Self::Command => "command",
             Self::OwnerWrites => "owner_writes",
             Self::ListenLimitWrites => "listen_limit_writes",
+            Self::FirebaseStartup => "firebase_startup",
+            Self::LargeDataset => "large_dataset",
         }
     }
 }
@@ -150,7 +158,8 @@ struct Args {
     /// The Java to run the official emulator with (default: java on PATH; 21 or newer).
     #[arg(long, value_name = "PATH")]
     java: Option<PathBuf>,
-    /// firebase-tools' `firebase`, for the ci_firebase scenario (skipped without it).
+    /// firebase-tools' `firebase`, for the ci_firebase and firebase_startup scenarios (skipped
+    /// without it).
     #[arg(long, value_name = "PATH")]
     firebase: Option<PathBuf>,
     /// The git commit this binary (the engine) was built from, to record (in full; required for a
@@ -161,7 +170,8 @@ struct Args {
     #[arg(long, value_enum, value_delimiter = ',')]
     scenarios: Option<Vec<Scenario>>,
     /// Warm-up runs per target (startup, memory, ci, command, dataset sizes, listen_writes,
-    /// owner_writes and listen_limit_writes; larger sizes and the last three are capped).
+    /// owner_writes, listen_limit_writes, firebase_startup and large_dataset; larger sizes,
+    /// the writes and large_dataset are capped).
     #[arg(long)]
     warmup: Option<usize>,
     /// Measured runs per target (as --warmup).
@@ -378,6 +388,7 @@ fn params(args: &Args) -> Result<(Params, Option<String>, Vec<&'static str>), St
         set(&mut params.ci.runs);
         set(&mut params.ci_firebase.runs);
         set(&mut params.command);
+        set(&mut params.firebase_startup);
         // Capped like the largest dataset sizes, as the official emulator writes 100,000
         // documents in each run.
         let mut owner = params.owner_writes.runs;
@@ -398,6 +409,14 @@ fn params(args: &Args) -> Result<(Params, Option<String>, Vec<&'static str>), St
         params.listen_limit_writes.runs = config::Runs {
             warmup: limited.warmup.min(1),
             runs: limited.runs.min(3),
+        };
+        // Capped like the largest dataset sizes: a run of the official emulator takes a minute
+        // or more.
+        let mut large = params.large_dataset.runs;
+        set(&mut large);
+        params.large_dataset.runs = config::Runs {
+            warmup: large.warmup.min(1),
+            runs: large.runs.min(3),
         };
         for size in &mut params.datasets.sizes {
             let mut base = config::Runs {
@@ -467,7 +486,8 @@ fn scenario_list(args: &Args) -> Result<(Vec<Scenario>, Vec<Value>), String> {
         if !list.contains(&s) && !(s == Scenario::Command && !args.command.is_empty()) {
             continue;
         }
-        if s == Scenario::CiFirebase && args.firebase.is_none() {
+        if matches!(s, Scenario::CiFirebase | Scenario::FirebaseStartup) && args.firebase.is_none()
+        {
             skipped.push(json!({
                 "scenario": s.id(),
                 "reason": "no firebase-tools binary was given (--firebase)",
@@ -905,7 +925,15 @@ fn run(args: &Args) -> Result<ExitCode, String> {
         operator_machine.as_ref(),
         !args.no_imds,
     );
-    let environment = system::environment(java.as_deref(), args.firebase.as_deref());
+    let official_java = targets
+        .iter()
+        .find(|t| t.kind == Kind::Official)
+        .map(|t| t.program.clone());
+    let environment = system::environment(
+        java.as_deref(),
+        official_java.as_deref(),
+        args.firebase.as_deref(),
+    );
 
     // Two workers keep the client's connections driven between requests, so a connection the
     // client is done with closes as it would in a test process, instead of holding up the
@@ -943,6 +971,12 @@ fn run(args: &Args) -> Result<ExitCode, String> {
             Scenario::Command => bench.command(&args.command, &label),
             Scenario::OwnerWrites => bench.owner_writes(),
             Scenario::ListenLimitWrites => bench.listen_limit_writes(),
+            Scenario::FirebaseStartup => {
+                if let Some(firebase) = &args.firebase {
+                    bench.firebase_startup(&absolute(firebase)?);
+                }
+            }
+            Scenario::LargeDataset => bench.large_dataset(),
         }
         if let (Some(a), Some(b)) = (start, system::cpu_times())
             && let Some((_, steal)) = a.shares(&b)
@@ -1127,6 +1161,14 @@ mod tests {
             p.listen_limit_writes.runs,
             config::Runs { warmup: 1, runs: 3 }
         );
+        assert_eq!(p.large_dataset.runs, config::Runs { warmup: 1, runs: 3 });
+        assert_eq!(
+            p.firebase_startup,
+            config::Runs {
+                warmup: 3,
+                runs: 10
+            }
+        );
 
         let args = parse(&["--", "node", "test.mjs"]);
         assert_eq!(scenario_list(&args).unwrap().0, [Scenario::Command]);
@@ -1137,13 +1179,14 @@ mod tests {
             [Scenario::Startup, Scenario::Ci]
         );
         assert!(scenario_list(&parse(&["--scenarios", "command"])).is_err());
-        // Without --firebase, ci_firebase is skipped and says why.
+        // Without --firebase, ci_firebase and firebase_startup are skipped and say why.
         let (list, skipped) = scenario_list(&parse(&[])).unwrap();
-        assert_eq!(list.len(), 8);
-        assert_eq!(list.last(), Some(&Scenario::ListenLimitWrites));
-        assert_eq!(skipped[0]["scenario"], "ci_firebase");
-        let (list, skipped) = scenario_list(&parse(&["--firebase", "/x/firebase"])).unwrap();
         assert_eq!(list.len(), 9);
+        assert_eq!(list.last(), Some(&Scenario::LargeDataset));
+        assert_eq!(skipped[0]["scenario"], "ci_firebase");
+        assert_eq!(skipped[1]["scenario"], "firebase_startup");
+        let (list, skipped) = scenario_list(&parse(&["--firebase", "/x/firebase"])).unwrap();
+        assert_eq!(list.len(), 11);
         assert!(skipped.is_empty());
         assert_eq!(params(&parse(&[])).unwrap().0, Params::default());
     }
