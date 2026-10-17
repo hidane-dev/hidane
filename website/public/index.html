@@ -67,7 +67,7 @@
 <div class="install">
 <div class="install-box">
 <code class="cmd"><span class="prompt" aria-hidden="true">$ </span>curl -fsSL https://hidane.dev/install.sh | sh</code>
-<span class="badge">v0.5.1 · macOS · Linux</span>
+<span class="badge">v0.6.0 · macOS · Linux</span>
 <button type="button" class="copy-btn" title="Copy the command" data-copied="Copied">
 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V6a2 2 0 0 1 2-2h9"></path></svg>
 <span>Copy</span>
@@ -84,7 +84,7 @@
 </a>
 </div>
 
-<p class="status"><span class="dot" aria-hidden="true"></span><span>v0.5.1 · hidane doctor, migrate, benchmark savings and report; Testcontainers</span></p>
+<p class="status"><span class="dot" aria-hidden="true"></span><span>v0.6.0 · enterprise edition queries and listeners; iOS and Android verified</span></p>
 <p class="featured" aria-label="Featured on">
 <a href="https://www.producthunt.com/products/hidane?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-hidane" target="_blank" rel="noopener noreferrer"><img class="on-dark" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1277504&amp;theme=dark&amp;t=1791976762318" alt="hidane - A Firestore emulator without Java, in one Rust binary | Product Hunt" width="250" height="54"><img class="on-light" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1277504&amp;theme=light&amp;t=1791976762318" alt="hidane - A Firestore emulator without Java, in one Rust binary | Product Hunt" width="250" height="54"></a>
 <a href="https://orynth.dev/projects/hidane" target="_blank" rel="noopener"><img class="on-dark" src="https://www.orynth.dev/api/badge/hidane?theme=dark&amp;style=default" alt="Featured on Orynth" width="176" height="54"><img class="on-light" src="https://www.orynth.dev/api/badge/hidane?theme=light&amp;style=default" alt="Featured on Orynth" width="176" height="54"></a>
@@ -109,19 +109,19 @@
 <a class="src" href="https://github.com/firebase/firebase-tools/releases/tag/v15.0.0">Source: firebase-tools v15.0.0 release notes</a>
 </article>
 <article class="card">
-<div class="card-num">852 ms · 148 MiB</div>
-<h3>852 ms to start, 148 MiB idle</h3>
-<p>In our canonical benchmark environment, the official emulator takes a median 852 ms to open its port and sits at 148 MiB idle. hidane v0.5.1 on the same machine: 1.53 ms and 9.3 MiB.</p>
-<a class="src" href="https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-13-release-150328.md">Source: benchmark result, every sample included</a>
+<div class="card-num">981 ms · 148 MiB</div>
+<h3>981 ms to start, 148 MiB idle</h3>
+<p>In our canonical benchmark environment, the official emulator takes a median 981 ms to open its port and sits at 148 MiB idle. hidane v0.6.0 on the same machine: 1.56 ms and 9.4 MiB.</p>
+<a class="src" href="https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-15-release.md">Source: benchmark result, every sample included</a>
 </article>
 <article class="card">
 <div class="card-num">11× slower</div>
 <h3>Writes slow down as data grows</h3>
-<p>With a listener attached, the official emulator's batch writes slow down in proportion to the number of documents: 11 times slower at 100k. hidane is designed so that a commit costs only what it changes: the same 100k documents take 4.9 s, flat per batch.</p>
-<a class="src" href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md#3-writes-slow-down-while-a-listener-is-attached">Source: measurements and raw logs</a>
+<p>With a listener attached, the official emulator's batch writes slow down in proportion to the number of documents: 100k documents take 191 s, 11 times as long as without it. hidane is designed so that a commit costs only what it changes: the same 100k documents take 2.5 s, nearly flat per batch.</p>
+<a class="src" href="https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-15-release.md">Source: benchmark result, every sample included</a>
 </article>
 </div>
-<p class="fine">Startup and memory: medians for both emulators on one AWS c7i.xlarge (Ubuntu 24.04, Java 21, firebase-tools 15.33.0), 2026-10-13; methodology in <a href="https://github.com/hidane-dev/hidane/blob/main/bench/README.md">bench/</a>. Writes with a listener: Phase 0 measurements, not side by side, as the benchmark does not cover that case yet. Context: <a href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md">why hidane</a>.</p>
+<p class="fine">Medians for both emulators on one AWS c7i.xlarge (Ubuntu 24.04, Java 21, firebase-tools 15.33.0), 2026-10-15; methodology in <a href="https://github.com/hidane-dev/hidane/blob/main/bench/README.md">bench/</a>. Context: <a href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md">why hidane</a>.</p>
 </div>
 </section>
 
@@ -129,7 +129,7 @@
 <div class="wrap sec-in sec-in--tight">
 <h2 class="h2" id="works">Works with</h2>
 <div class="legend">
-<span>Status in v0.5.1:</span>
+<span>Status in v0.6.0:</span>
 <span class="legend-chips">
 <span class="chip">planned</span>
 <span class="chip chip--progress">not verified</span>
@@ -145,8 +145,8 @@
 <div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Go</span><span class="chip chip--supported">verified</span></div>
 <div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Python</span><span class="chip chip--supported">verified</span></div>
 <div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Java</span><span class="chip chip--supported">verified</span></div>
-<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">iOS</span><span class="chip chip--progress">not verified</span></div>
-<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Android</span><span class="chip chip--progress">not verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">iOS</span><span class="chip chip--supported">verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Android</span><span class="chip chip--supported">verified</span></div>
 <div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Flutter (mobile / desktop)</span><span class="chip chip--progress">not verified</span></div>
 <div class="row" role="listitem"><span class="row-ver">WebChannel</span><span class="row-label">Flutter Web</span><span class="chip chip--supported">verified</span></div>
 <div class="row" role="listitem"><span class="row-ver">files</span><span class="row-label">firebase-tools export / import</span><span class="chip chip--supported">verified</span></div>
