@@ -151,14 +151,15 @@ impl DatastoreService {
                 continue;
             };
             let created = stored.entities.get(&located).map_or(micros, |p| p.created);
-            stored.entities.insert(
+            stored.put(
                 located,
-                Stored {
+                Some(Stored {
                     properties,
                     version: micros,
                     created,
                     updated: micros,
-                },
+                }),
+                micros,
             );
         }
     }

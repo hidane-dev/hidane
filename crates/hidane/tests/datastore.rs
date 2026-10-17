@@ -475,6 +475,332 @@ async fn commit_checks_come_in_the_official_emulators_order() {
     );
 }
 
+/// What answers tell of the requests before them (`fixtures/datastore_sequences.json`, from
+/// `tools/oracle/datastore_sequences.py`): the kinds and namespaces listed, property masks,
+/// reads in read-only transactions and at read times, versions and times, a write whose client
+/// gives up. Each sequence runs in a project of its own; its times and versions are labelled in
+/// the order they first appear, as the recorder labels them.
+#[tokio::test]
+async fn sequences_answer_like_the_official_emulator() {
+    let fixture: Json =
+        serde_json::from_str(include_str!("fixtures/datastore_sequences.json")).unwrap();
+    let cases = fixture["cases"].as_array().unwrap();
+    assert!(cases.len() > 70);
+    let addr = start().await;
+    let mut differences = Vec::new();
+    for (n, case) in cases.iter().enumerate() {
+        let project = format!("sequences-{n}");
+        let mut answers: Vec<Json> = Vec::new();
+        let mut transactions: Vec<(String, String)> = Vec::new();
+        let mut labels: Vec<i64> = Vec::new();
+        for (i, step) in case["steps"].as_array().unwrap().iter().enumerate() {
+            if let Some(after) = step.get("after").and_then(Json::as_f64) {
+                tokio::time::sleep(std::time::Duration::from_secs_f64(after)).await;
+            }
+            let path = step["path"]
+                .as_str()
+                .unwrap()
+                .replace("{project}", &project);
+            let body = sequence_filled(&step["body"].to_string(), &answers, &transactions);
+            let sent = send(addr, "POST", &path, Some(&body), Some("application/json"));
+            let answer = match step.get("gives_up_after").and_then(Json::as_f64) {
+                Some(seconds) => {
+                    tokio::time::timeout(std::time::Duration::from_secs_f64(seconds), sent)
+                        .await
+                        .ok()
+                }
+                None => Some(sent.await),
+            };
+            let parsed = answer
+                .as_ref()
+                .and_then(|a| serde_json::from_str(&a.body).ok())
+                .unwrap_or(Json::Null);
+            if path.ends_with(":beginTransaction")
+                && let Some(transaction) = parsed["transaction"].as_str()
+            {
+                let name = step["as"].as_str().unwrap_or("tx");
+                transactions.retain(|(n, _)| n != name && n != "last");
+                transactions.push((name.to_owned(), transaction.to_owned()));
+                transactions.push(("last".to_owned(), transaction.to_owned()));
+            }
+            answers.push(parsed);
+            let expected = &step["outcome"];
+            let name = case["name"].as_str().unwrap();
+            match &answer {
+                None if expected["status"].is_null() => {}
+                None => differences.push(format!(
+                    "{name} (step {i}): official {expected}, hidane gave no answer"
+                )),
+                Some(answer) => {
+                    let actual = sequence_labelled(&answer.body, &project, &mut labels);
+                    if Some(i64::from(answer.status)) != expected["status"].as_i64()
+                        || answer.content_type.as_deref() != expected["contentType"].as_str()
+                        || Some(actual.as_str()) != expected["body"].as_str()
+                    {
+                        differences.push(format!(
+                            "{name} (step {i}):\n    official {} {}\n    hidane   {} {actual}",
+                            expected["status"], expected["body"], answer.status,
+                        ));
+                    }
+                }
+            }
+        }
+    }
+    assert!(
+        differences.is_empty(),
+        "{} differ:\n{}",
+        differences.len(),
+        differences.join("\n")
+    );
+}
+
+/// A read time an hour back at most, as in Firestore Native mode (D065); the official emulator
+/// serves seven days.
+#[tokio::test]
+async fn read_times_go_back_an_hour() {
+    let addr = start().await;
+    let path = |verb: &str| format!("/v1/projects/read-times:{verb}");
+    let written = send(
+        addr,
+        "POST",
+        &path("commit"),
+        Some(r#"{"mode":"NON_TRANSACTIONAL","mutations":[{"upsert":{"key":{"path":[{"kind":"K","name":"a"}]}}}]}"#),
+        Some("application/json"),
+    )
+    .await;
+    assert_eq!(written.status, 200, "{}", written.body);
+    let now = i64::try_from(
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_micros(),
+    )
+    .unwrap();
+    let too_old = r#"{"error":{"code":400,"message":"The requested 'read_time' is too old.","status":"FAILED_PRECONDITION"}}"#;
+    for (minutes, served) in [(59, true), (61, false)] {
+        let at = rfc3339(now - minutes * 60_000_000);
+        let bodies = [
+            (
+                "lookup",
+                format!(
+                    r#"{{"keys":[{{"path":[{{"kind":"K","name":"a"}}]}}],"readOptions":{{"readTime":"{at}"}}}}"#
+                ),
+            ),
+            (
+                "runQuery",
+                format!(
+                    r#"{{"query":{{"kind":[{{"name":"K"}}]}},"readOptions":{{"readTime":"{at}"}}}}"#
+                ),
+            ),
+            (
+                "beginTransaction",
+                format!(r#"{{"transactionOptions":{{"readOnly":{{"readTime":"{at}"}}}}}}"#),
+            ),
+        ];
+        for (verb, body) in bodies {
+            let answer = send(
+                addr,
+                "POST",
+                &path(verb),
+                Some(&body),
+                Some("application/json"),
+            )
+            .await;
+            if served {
+                assert_eq!(
+                    answer.status, 200,
+                    "{verb} {minutes} min back: {}",
+                    answer.body
+                );
+                // Before the data was written, it is not there.
+                assert!(!answer.body.contains("\"found\""), "{}", answer.body);
+                assert!(
+                    !answer.body.contains("\"entityResults\""),
+                    "{}",
+                    answer.body
+                );
+            } else {
+                assert_eq!(answer.body, too_old, "{verb} {minutes} min back");
+            }
+        }
+    }
+}
+
+/// A Datastore request whose body names another project than its path, which the official
+/// emulator never answers, is answered for the path's project (D046).
+#[tokio::test]
+async fn a_body_naming_another_project_is_answered() {
+    let addr = start().await;
+    let written = send(
+        addr,
+        "POST",
+        "/v1/projects/path-project:commit",
+        Some(r#"{"projectId":"other","mode":"NON_TRANSACTIONAL","mutations":[{"upsert":{"key":{"path":[{"kind":"K","name":"a"}]}}}]}"#),
+        Some("application/json"),
+    )
+    .await;
+    assert_eq!(written.status, 200, "{}", written.body);
+    let found = send(
+        addr,
+        "POST",
+        "/v1/projects/path-project:lookup",
+        Some(r#"{"keys":[{"path":[{"kind":"K","name":"a"}]}]}"#),
+        Some("application/json"),
+    )
+    .await;
+    assert!(found.body.contains("\"found\""), "{}", found.body);
+    let begun = send(
+        addr,
+        "POST",
+        "/v1/projects/path-project:beginTransaction",
+        Some(r#"{"projectId":"other"}"#),
+        Some("application/json"),
+    )
+    .await;
+    assert_eq!(begun.status, 200, "{}", begun.body);
+}
+
+/// A sequence's request with its placeholders filled: `{tx}` (the last transaction begun),
+/// `{tx:<name>}` (the one a step began `as` that name), `{time:<step>:<path>}` and
+/// `{time:<step>:<path>:<microseconds>}` (the time or version at that path of that step's
+/// answer, moved by that many).
+fn sequence_filled(text: &str, answers: &[Json], transactions: &[(String, String)]) -> String {
+    let mut out = String::new();
+    let mut rest = text;
+    while let Some(open) = rest.find('{') {
+        out.push_str(&rest[..open]);
+        rest = &rest[open..];
+        let inner = rest[1..].split('}').next().unwrap_or_default();
+        let filled = if inner == "tx" || inner.starts_with("tx:") {
+            let name = inner.strip_prefix("tx:").unwrap_or("last");
+            Some(
+                transactions
+                    .iter()
+                    .rev()
+                    .find(|(n, _)| n == name)
+                    .map(|(_, t)| t.clone())
+                    .unwrap_or_default(),
+            )
+        } else {
+            inner.strip_prefix("time:").map(|spec| {
+                let parts: Vec<&str> = spec.split(':').collect();
+                let answer = &answers[parts[0].parse::<usize>().unwrap()];
+                let value = at(answer, parts[1]).and_then(Json::as_str).unwrap();
+                let moved = parts.get(2).map_or(0, |d| d.parse::<i64>().unwrap());
+                rfc3339(micros(value) + moved)
+            })
+        };
+        match filled {
+            Some(filled) => {
+                out.push_str(&filled);
+                rest = &rest[inner.len() + 2..];
+            }
+            None => {
+                out.push('{');
+                rest = &rest[1..];
+            }
+        }
+    }
+    out.push_str(rest);
+    out
+}
+
+/// The recorder's labels: the project as `{project}`, each time or version as `<tN>`, `N` its
+/// place among the distinct ones the sequence has shown (a version in seconds `<seconds>`),
+/// transaction IDs and cursors masked.
+fn sequence_labelled(text: &str, project: &str, labels: &mut Vec<i64>) -> String {
+    const KEYS: [&str; 7] = [
+        "createTime",
+        "updateTime",
+        "readTime",
+        "commitTime",
+        "version",
+        "commitVersion",
+        "snapshotVersion",
+    ];
+    let text = text.replace(project, "{project}");
+    let mut out = String::new();
+    let mut rest = text.as_str();
+    loop {
+        let next = KEYS
+            .iter()
+            .filter_map(|key| {
+                let marker = format!("\"{key}\": \"");
+                rest.find(&marker).map(|at| (at, *key, marker.len()))
+            })
+            .min();
+        let Some((at, key, marker)) = next else { break };
+        out.push_str(&rest[..at + marker]);
+        rest = &rest[at + marker..];
+        let end = rest.find('"').unwrap();
+        let value = &rest[..end];
+        let versioned = key.ends_with("ersion");
+        if versioned && value.parse::<i64>().unwrap() < 1_000_000_000_000 {
+            out.push_str("<seconds>");
+        } else {
+            let time = micros(value);
+            if !labels.contains(&time) {
+                labels.push(time);
+            }
+            let n = labels.iter().position(|t| *t == time).unwrap() + 1;
+            out.push_str(&format!("<t{n}>"));
+        }
+        rest = &rest[end..];
+    }
+    out.push_str(rest);
+    let mut text = mask_values(&out, "transaction", "<id>");
+    for key in ["cursor", "endCursor", "skippedCursor", "startCursor"] {
+        text = mask_values(&text, key, "<cursor>");
+    }
+    text
+}
+
+/// A version's or an RFC 3339 UTC time's microseconds since the epoch.
+fn micros(text: &str) -> i64 {
+    if let Ok(version) = text.parse() {
+        return version;
+    }
+    let number = |range: std::ops::Range<usize>| text[range].parse::<i64>().unwrap();
+    let (year, month, day) = (number(0..4), number(5..7), number(8..10));
+    let seconds = number(11..13) * 3600 + number(14..16) * 60 + number(17..19);
+    let fraction = text[19..].trim_start_matches('.').trim_end_matches('Z');
+    let micros = format!("{fraction:0<6}")[..6].parse::<i64>().unwrap();
+    // Days from 1970-01-01 (Howard Hinnant's days_from_civil).
+    let y = if month <= 2 { year - 1 } else { year };
+    let era = y.div_euclid(400);
+    let yoe = y - era * 400;
+    let doy = (153 * ((month + 9) % 12) + 2) / 5 + day - 1;
+    let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+    let days = era * 146_097 + doe - 719_468;
+    (days * 86_400 + seconds) * 1_000_000 + micros
+}
+
+/// `micros` as an RFC 3339 UTC time with microseconds.
+fn rfc3339(micros: i64) -> String {
+    let (days, rest) = (
+        micros.div_euclid(86_400_000_000),
+        micros.rem_euclid(86_400_000_000),
+    );
+    // Howard Hinnant's civil_from_days.
+    let z = days + 719_468;
+    let era = z.div_euclid(146_097);
+    let doe = z - era * 146_097;
+    let yoe = (doe - doe / 1460 + doe / 36_524 - doe / 146_096) / 365;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let day = doy - (153 * mp + 2) / 5 + 1;
+    let month = if mp < 10 { mp + 3 } else { mp - 9 };
+    let year = yoe + era * 400 + i64::from(month <= 2);
+    let seconds = rest / 1_000_000;
+    format!(
+        "{year:04}-{month:02}-{day:02}T{:02}:{:02}:{:02}.{:06}Z",
+        seconds / 3600,
+        seconds / 60 % 60,
+        seconds % 60,
+        rest % 1_000_000
+    )
+}
+
 /// How long a write waits for another transaction's lock (`fixtures/datastore_locks.json`, from
 /// `tools/oracle/datastore_locks.py`): 2 s in a transaction, 60 s outside one, the reader kept
 /// in use meanwhile. The scenarios run at once; a write's wait matches when it is within 5 s of

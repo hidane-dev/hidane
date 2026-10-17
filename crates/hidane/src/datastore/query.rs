@@ -347,11 +347,15 @@ pub struct Plan {
     pub end: Option<Position>,
 }
 
-/// Where a result is in a query's order: its row values and its key.
+/// Where a result is in a query's order: its row values and its key, just past it in the
+/// direction of the query's first order (`before`: that order was descending), and whether the
+/// query ordered by the key before a property (a cursor the official emulator cannot read).
 #[derive(Debug, Clone)]
 pub struct Position {
     pub values: Vec<Indexed>,
     pub key: Located,
+    pub before: bool,
+    pub key_in_values: bool,
 }
 
 impl Position {
@@ -360,6 +364,8 @@ impl Position {
             "v": self.values.iter().map(Indexed::to_json).collect::<Vec<_>>(),
             "n": self.key.namespace,
             "k": path_json(&self.key.path),
+            "b": self.before,
+            "kv": self.key_in_values,
         });
         let mut out = b"hidane-cursor:".to_vec();
         out.extend_from_slice(json.to_string().as_bytes());
@@ -379,6 +385,8 @@ impl Position {
                 namespace: json["n"].as_str()?.to_owned(),
                 path: path_from_json(&json["k"])?,
             },
+            before: json["b"].as_bool().unwrap_or(false),
+            key_in_values: json["kv"].as_bool().unwrap_or(false),
         })
     }
 }
@@ -553,8 +561,9 @@ pub fn plan(query: &Query, database: &Database, namespace: &str) -> Result<Plan,
 }
 
 /// A query's cursors, as the official emulator checks them once the query passed its other
-/// checks: each of the query's kind, and with no more values than the query orders by.
-pub(super) fn cursors_match(query: &Query) -> Result<(), Status> {
+/// checks: each of the query's namespace and kind, not of a query that ordered by the key before
+/// a property, and with no more values than the query orders by.
+pub(super) fn cursors_match(query: &Query, namespace: &str) -> Result<(), Status> {
     let projection: Vec<String> = query
         .projection
         .iter()
@@ -575,12 +584,21 @@ pub(super) fn cursors_match(query: &Query) -> Result<(), Status> {
         let Some(position) = Position::decode(bytes) else {
             continue;
         };
+        if position.key.namespace != namespace {
+            return Err(invalid(format!(
+                "The query namespace is '{namespace}' but cursor.postfix_position namespace is '{}'.",
+                position.key.namespace
+            )));
+        }
         if let (Some(kind), Some((cursor_kind, _))) = (kind, position.key.path.last())
             && kind != cursor_kind
         {
             return Err(invalid(format!(
                 "The query kind is {kind} but cursor.postfix_position.key kind is {cursor_kind}."
             )));
+        }
+        if position.key_in_values {
+            return Err(invalid("index data should not include primary key"));
         }
         if position.values.len() > ordered {
             return Err(invalid("cursor does not match query"));
@@ -711,37 +729,73 @@ fn compare_rows(a: &Row<'_>, b: &Row<'_>, plan: &Plan) -> Ordering {
     Ordering::Equal
 }
 
-fn position(row: &Row<'_>) -> Position {
+fn position(row: &Row<'_>, plan: &Plan) -> Position {
+    let key_at = plan.orders.iter().position(|(field, _)| field.is_none());
     Position {
         values: row.values.iter().map(|(v, _)| v.clone()).collect(),
         key: row.key.clone(),
+        before: plan
+            .orders
+            .first()
+            .is_some_and(|(_, descending)| *descending),
+        key_in_values: key_at.is_some_and(|at| at + 1 < plan.orders.len()),
     }
 }
 
-fn compare_position(row: &Row<'_>, position: &Position, plan: &Plan) -> Ordering {
+fn key_value(plan: &Plan, key: &Located) -> Indexed {
+    Indexed::Key(
+        plan.project.clone(),
+        key.namespace.clone(),
+        key.path.clone(),
+    )
+}
+
+/// Where `row` is from `position` in `plan`'s order, as the official emulator compares them: the
+/// position's values then its key against the row's, one by one whatever they stand for (a
+/// cursor from another query's), in `plan`'s directions; a row the position's values and key
+/// match is past it in the direction of its query's first order, as `plan`'s first order sees
+/// it. A position just before a row whose key meets a row's value is an internal error there.
+fn compare_position(row: &Row<'_>, position: &Position, plan: &Plan) -> Result<Ordering, Status> {
     let mut i = 0;
-    for (field, descending) in &plan.orders {
-        let ordering = match field {
+    for (at, (field, descending)) in plan.orders.iter().enumerate() {
+        let own = match field {
             Some(_) => {
-                let o = match position.values.get(i) {
-                    Some(v) => row.values[i].0.cmp(v),
-                    None => Ordering::Equal,
-                };
                 i += 1;
-                o
+                row.values[i - 1].0.clone()
             }
-            None => row.key.cmp(&position.key),
+            None => key_value(plan, row.key),
         };
+        let at_key = at == position.values.len();
+        let theirs = match position.values.get(at) {
+            Some(value) => value.clone(),
+            None if at_key => key_value(plan, &position.key),
+            None => break,
+        };
+        if at_key && field.is_some() && position.before {
+            return Err(Status::unknown(""));
+        }
+        let ordering = own.cmp(&theirs);
         let ordering = if *descending {
             ordering.reverse()
         } else {
             ordering
         };
         if ordering != Ordering::Equal {
-            return ordering;
+            return Ok(ordering);
+        }
+        if at_key {
+            break;
         }
     }
-    Ordering::Equal
+    let first_descending = plan
+        .orders
+        .first()
+        .is_some_and(|(_, descending)| *descending);
+    Ok(if position.before == first_descending {
+        Ordering::Less
+    } else {
+        Ordering::Greater
+    })
 }
 
 /// Every combination of `entity`'s values of the row properties.
@@ -774,11 +828,11 @@ fn rows<'a>(key: &'a Located, entity: &'a super::Stored, plan: &Plan) -> Vec<Row
 }
 
 /// The rows `plan` selects from `entities`, in order, past its cursors, before its offset and
-/// limit.
+/// limit. Each row of the kind is compared with the cursors, the ones the filter leaves out too.
 fn select<'a>(
     plan: &Plan,
     entities: &'a std::collections::BTreeMap<Located, super::Stored>,
-) -> Vec<Row<'a>> {
+) -> Result<Vec<Row<'a>>, Status> {
     let mut results: Vec<Row<'a>> = Vec::new();
     for (key, entity) in entities {
         if key.namespace != plan.namespace {
@@ -791,6 +845,9 @@ fn select<'a>(
             _ => {}
         }
         for row in rows(key, entity, plan) {
+            for cursor in [&plan.start, &plan.end].into_iter().flatten() {
+                compare_position(&row, cursor, plan)?;
+            }
             if plan.cond.as_ref().is_none_or(|c| matches(c, &row, plan)) {
                 results.push(row);
             }
@@ -814,13 +871,16 @@ fn select<'a>(
             }
         });
     }
+    let past = |row: &Row<'_>, cursor: &Position| {
+        compare_position(row, cursor, plan).is_ok_and(|o| o == Ordering::Greater)
+    };
     if let Some(start) = &plan.start {
-        results.retain(|row| compare_position(row, start, plan) == Ordering::Greater);
+        results.retain(|row| past(row, start));
     }
     if let Some(end) = &plan.end {
-        results.retain(|row| compare_position(row, end, plan) != Ordering::Greater);
+        results.retain(|row| !past(row, end));
     }
-    results
+    Ok(results)
 }
 
 /// A row an aggregation reads: its values of the row properties.
@@ -832,17 +892,17 @@ pub struct AggregateRow {
 pub fn aggregate_rows(
     plan: &Plan,
     entities: &std::collections::BTreeMap<Located, super::Stored>,
-) -> Vec<AggregateRow> {
-    let results = select(plan, entities);
+) -> Result<Vec<AggregateRow>, Status> {
+    let results = select(plan, entities)?;
     let skipped = plan.offset.min(results.len());
     let after = &results[skipped..];
     let taken = plan.limit.map_or(after.len(), |l| l.min(after.len()));
-    after[..taken]
+    Ok(after[..taken]
         .iter()
         .map(|row| AggregateRow {
             values: row.values.iter().map(|(_, v)| v.clone()).collect(),
         })
-        .collect()
+        .collect())
 }
 
 /// Runs `plan` over `entities` (every entity of the database, by key), as of `read_micros`.
@@ -851,8 +911,8 @@ pub fn run(
     entities: &std::collections::BTreeMap<Located, super::Stored>,
     database: &Database,
     read_micros: i64,
-) -> QueryResultBatch {
-    let results = select(plan, entities);
+) -> Result<QueryResultBatch, Status> {
+    let results = select(plan, entities)?;
     let skipped = plan.offset.min(results.len());
     let after_offset = &results[skipped..];
     let taken = plan
@@ -875,7 +935,6 @@ pub fn run(
         } else {
             MoreResultsType::NoMoreResults as i32
         },
-        snapshot_version: read_micros,
         read_time: Some(super::timestamp(read_micros)),
         ..QueryResultBatch::default()
     };
@@ -898,45 +957,70 @@ pub fn run(
                 key: Some(database.key(row.key)),
                 properties,
             }),
-            cursor: position(row).encode(),
+            cursor: position(row, plan).encode(),
             version: row.entity.version,
             create_time: Some(super::timestamp(row.entity.created)),
             update_time: Some(super::timestamp(row.entity.updated)),
         });
     }
     if let Some(last) = after_offset[..taken].last() {
-        batch.end_cursor = position(last).encode();
+        batch.end_cursor = position(last, plan).encode();
     }
+    batch.snapshot_version = snapshot_version(&batch, read_micros);
+    Ok(batch)
+}
+
+/// A batch's snapshot version, as the official emulator gives it: its first result's version,
+/// or, with none, its read time in seconds.
+fn snapshot_version(batch: &QueryResultBatch, read_micros: i64) -> i64 {
     batch
+        .entity_results
+        .first()
+        .map_or(read_micros.div_euclid(1_000_000), |first| first.version)
 }
 
 /// `__kind__` and `__namespace__`: the kinds of every namespace, the namespaces (the default
 /// one as ID 1), each a key alone, filtered on the key, skipped and limited, in key order
-/// (orders by a property change nothing); `None` for another query. They carry no version or
-/// cursor, and the batch a snapshot version only when it is empty.
+/// (orders by a property change nothing); `None` for another query. Besides the entities' own,
+/// they list the kinds and namespaces of the keys read or written (`touched`). They carry no
+/// version or cursor, and the batch a snapshot version only when it is empty.
 pub fn metadata(
     plan: &Plan,
     entities: &std::collections::BTreeMap<Located, super::Stored>,
+    touched: &std::collections::BTreeSet<(String, String)>,
     database: &Database,
     read_micros: i64,
 ) -> Option<QueryResultBatch> {
     let kind = plan.kind.as_deref()?;
+    let known = entities
+        .keys()
+        .map(|key| {
+            (
+                key.namespace.as_str(),
+                key.path.last().expect("complete").0.as_str(),
+            )
+        })
+        .chain(
+            touched
+                .iter()
+                .map(|(ns, kind)| (ns.as_str(), kind.as_str())),
+        );
     let mut names: Vec<Id> = Vec::new();
     match kind {
         "__kind__" => {
-            for key in entities.keys() {
-                let id = Id::Name(key.path.last().expect("complete").0.clone());
+            for (_, kind) in known {
+                let id = Id::Name(kind.to_owned());
                 if !names.contains(&id) {
                     names.push(id);
                 }
             }
         }
         "__namespace__" => {
-            for key in entities.keys() {
-                let id = if key.namespace.is_empty() {
+            for (namespace, _) in known {
+                let id = if namespace.is_empty() {
                     Id::Id(1)
                 } else {
-                    Id::Name(key.namespace.clone())
+                    Id::Name(namespace.to_owned())
                 };
                 if !names.contains(&id) {
                     names.push(id);
@@ -988,7 +1072,6 @@ pub fn metadata(
         } else {
             MoreResultsType::NoMoreResults as i32
         },
-        snapshot_version: if taken == 0 { read_micros } else { 0 },
         read_time: Some(super::timestamp(read_micros)),
         ..QueryResultBatch::default()
     };
@@ -1001,6 +1084,7 @@ pub fn metadata(
             ..EntityResult::default()
         });
     }
+    batch.snapshot_version = snapshot_version(&batch, read_micros);
     Some(batch)
 }
 
@@ -1052,10 +1136,13 @@ mod tests {
                     ("C".into(), Id::Id(-3)),
                 ],
             },
+            before: true,
+            key_in_values: true,
         };
         let decoded = Position::decode(&position.encode()).unwrap();
         assert_eq!(decoded.values, position.values);
         assert_eq!(decoded.key, position.key);
+        assert!(decoded.before && decoded.key_in_values);
         assert!(Position::decode(&[0, 0, 0]).is_none());
     }
 }

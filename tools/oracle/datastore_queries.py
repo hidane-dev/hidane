@@ -10,8 +10,8 @@ Seeds one project with a dataset (`DATASET`: a value of every type in property `
 `T`, entities with several properties of kind `P`, an ancestry, a namespace), then sends, over
 REST in order, `runQuery` with structured queries (kinds, every filter operator against values
 of every type, composite filters, ancestors, keys, orders, projections, `distinctOn`, limits,
-offsets, cursors, the queries it refuses, and a query without a kind in a transaction), the
-metadata kinds `__kind__`, `__namespace__` and `__property__`, and `runAggregationQuery`. A cursor is opaque: a step that reads one names
+offsets, cursors, cursors of other queries, the queries it refuses, and a query without a
+kind in a transaction), the metadata kinds `__kind__`, `__namespace__` and `__property__`, and `runAggregationQuery`. A cursor is opaque: a step that reads one names
 it (`defines`, with the JSON path it came from), and later steps send it as `<name>`, so a
 replay sends its own. The fixture has the format of `datastore_entities.json`; server times,
 versions, transaction IDs and cursors are masked. `crates/hidane/tests/datastore.rs` replays
@@ -93,6 +93,10 @@ DATASET += [
     (key(("Other", "o"), ns="ns2"), {"v": I(2)}),
 ]
 DATASET += [(key(("Many", f"m{i:03d}")), {"i": I(i)}) for i in range(350)]
+# For cursors of other queries: a namespace of its own, so that queries without a kind see
+# only these.
+DATASET += [(key(("L", f"l{i}"), ns="xc"), {"a": I(i), "b": I(10 - i)}) for i in (1, 2, 3)]
+DATASET.append((key(("L", "n1"), ns="xcns"), {}))
 
 CASES = []
 
@@ -260,6 +264,68 @@ query("350 entities", {"kind": kind("Many")}, defines={"c5": "batch.endCursor"})
 query("350 entities, from the end of the first batch", {"kind": kind("Many"), "startCursor": "<c5>"})
 query("350 entities, limit 310", {"kind": kind("Many"), "limit": 310})
 query("350 entities, offset 340", {"kind": kind("Many"), "offset": 340})
+
+
+# --- cursors of other queries ---------------------------------------------------------------
+# A cursor is a position in the values its query ordered by, then the key: another query reads
+# it in its own order and directions, keys last.
+def xc(name, q, defines=None, ns="xc"):
+    query(name, q, defines, partitionId={"namespaceId": ns})
+
+
+L = kind("L")
+SOURCES = {"key": {"kind": L, "order": [asc("__key__")]}, "key descending": {"kind": L, "order": [desc("__key__")]},
+           "a": {"kind": L, "order": [asc("a")]}, "a descending": {"kind": L, "order": [desc("a")]},
+           "no kind": {}, "a, key descending": {"kind": L, "order": [asc("a"), desc("__key__")]},
+           "a descending, key": {"kind": L, "order": [desc("a"), asc("__key__")]},
+           "key, b": {"kind": L, "order": [asc("__key__"), asc("b")]}}
+TARGETS = {"key": {"kind": L}, "key descending": {"kind": L, "order": [desc("__key__")]},
+           "a": {"kind": L, "order": [asc("a")]}, "a descending": {"kind": L, "order": [desc("a")]},
+           "no kind": {}, "no kind, key descending": {"order": [desc("__key__")]},
+           "a then b": {"kind": L, "order": [asc("a"), asc("b")]}, "b then a": {"kind": L, "order": [asc("b"), asc("a")]},
+           "b": {"kind": L, "order": [asc("b")]}}
+for source, q in SOURCES.items():
+    xc(f"cursor source: {source}", dict(q, limit=2), defines={f"x {source}": "batch.endCursor"})
+xc("cursor source: in another namespace", {"kind": L, "limit": 1}, defines={"x other namespace": "batch.endCursor"},
+   ns="xcns")
+for source in SOURCES:
+    for target, q in TARGETS.items():
+        for which in ("startCursor", "endCursor"):
+            xc(f"{which} of '{source}' in '{target}'", dict(q, **{which: f"<x {source}>"}))
+for name, q, ns in [
+    ("in another namespace", {"kind": L, "startCursor": "<x key>"}, "xcns"),
+    ("of another namespace", {"kind": L, "startCursor": "<x other namespace>"}, "xc"),
+    ("of another namespace, another kind", {"kind": kind("M"), "startCursor": "<x other namespace>"}, "xc"),
+    ("another kind", {"kind": kind("M"), "startCursor": "<x key>"}, "xc"),
+    ("limit 0", {"kind": L, "limit": 0, "startCursor": "<x key>"}, "xc"),
+    ("offset 5", {"kind": L, "offset": 5, "startCursor": "<x key>"}, "xc"),
+    ("a filter that keeps nothing", {"kind": L, "filter": pf("a", "GREATER_THAN", I(5)), "startCursor": "<x key>"}, "xc"),
+    ("key and b, a negative limit", {"kind": L, "limit": -1, "startCursor": "<x key, b>"}, "xc"),
+    ("key and b, another kind", {"kind": kind("M"), "startCursor": "<x key, b>"}, "xc"),
+    ("key and b, another namespace", {"kind": L, "startCursor": "<x key, b>"}, "xcns"),
+    ("key and b, a projection with an equality", {"kind": L, "projection": [{"property": {"name": "a"}}],
+                                                  "filter": pf("a", "EQUAL", I(1)), "startCursor": "<x key, b>"}, "xc"),
+    ("key and b, 36 disjunctions", {"kind": L, "filter": AND(pf("d", "IN", ARR(*[I(i) for i in range(6)])),
+                                                              pf("e", "IN", ARR(*[I(i) for i in range(6)]))),
+                                    "startCursor": "<x key, b>"}, "xc"),
+    ("key and b, an order twice", {"kind": L, "order": [asc("a"), asc("a")], "startCursor": "<x key, b>"}, "xc"),
+    ("key and b, an order without a kind", {"order": [asc("a")], "startCursor": "<x key, b>"}, "xc"),
+    ("key and b, distinct on", {"kind": L, "projection": [{"property": {"name": "a"}}, {"property": {"name": "b"}}],
+                                "distinctOn": [{"name": "b"}], "order": [asc("a")], "startCursor": "<x key, b>"}, "xc"),
+    ("key and b, as an end cursor", {"kind": L, "endCursor": "<x key, b>"}, "xc"),
+    ("in another namespace, a projection with an equality", {"kind": L, "projection": [{"property": {"name": "a"}}],
+                                                             "filter": pf("a", "EQUAL", I(1)), "startCursor": "<x key>"}, "xcns"),
+    ("in another namespace, distinct on", {"kind": L, "projection": [{"property": {"name": "a"}}, {"property": {"name": "b"}}],
+                                           "distinctOn": [{"name": "b"}], "order": [asc("a")], "startCursor": "<x key>"}, "xcns"),
+    ("in another namespace, __kind__ descending", {"kind": kind("__kind__"), "order": [desc("__key__")],
+                                                    "startCursor": "<x key>"}, "xcns"),
+    ("key descending, b, no entities", {"kind": kind("Empty"), "order": [asc("b")], "startCursor": "<x key descending>"}, "xc"),
+    ("key descending, b, a filter that keeps nothing", {"kind": L, "order": [asc("b")], "filter": pf("b", "GREATER_THAN", I(100)),
+                                                         "startCursor": "<x key descending>"}, "xc"),
+    ("key descending, b, limit 1", {"kind": L, "order": [asc("b")], "limit": 1, "startCursor": "<x key descending>"}, "xc"),
+    ("key descending as the end cursor, b", {"kind": L, "order": [asc("b")], "endCursor": "<x key descending>"}, "xc"),
+]:
+    xc(f"a cursor of another query: {name}", q, ns=ns)
 
 # --- metadata ----------------------------------------------------------------------------------
 query("__kind__", {"kind": kind("__kind__")})

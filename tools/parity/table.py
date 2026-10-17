@@ -776,6 +776,17 @@ RECORDINGS = {
         compares="in full: status, content type and body byte for byte, server times, versions, "
                  "transaction IDs and cursors masked (each cursor sent back as the server gave it)",
         count=lambda f: [(REST, FULL) for _ in f["cases"]]),
+    f"{H}/fixtures/datastore_sequences.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::sequences_answer_like_the_official_emulator"],
+        counted="each request of each sequence (the kinds and namespaces listed after reads and "
+                "writes, property masks, read-only transactions and read times, versions, a write "
+                "whose client gives up), in a project of its own, to a server started with "
+                "`--database-mode datastore-mode`; " + OVER_REST,
+        compares="in full: status, content type and body byte for byte, server times and versions "
+                 "labelled in the order they first appear (which ones are the same), transaction IDs "
+                 "and cursors masked; a request the client gives up on, unanswered on both",
+        count=lambda f: [(REST, FULL) for case in f["cases"] for _ in case["steps"]]),
     f"{H}/fixtures/document_writes.json": dict(
         area="documents",
         tests=[f"{H}/documents.rs::reads_and_their_errors", f"{H}/documents.rs::preconditions",

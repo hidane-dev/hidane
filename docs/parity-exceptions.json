@@ -457,9 +457,9 @@
    "area": "transactions",
    "topic": null,
    "kind": "equivalent",
-   "official": "A write that starts waiting for a lock shortly before the holding transaction expires still times out after 2 s: the expiry is only noticed at the next request. In Datastore mode a write outside a transaction waits 60 s, longer than an unused holder lives, and either times out or goes through, by chance (`tools/oracle/datastore_locks.py` keeps its holders in use)",
+   "official": "A write that starts waiting for a lock shortly before the holding transaction expires still times out after 2 s: the expiry is only noticed at the next request. In Datastore mode a write outside a transaction waits 60 s, longer than an unused holder lives, and either times out or goes through, by chance (`tools/oracle/datastore_locks.py` keeps its holders in use). One whose holder read again while it waited goes through some 50 ms after the holder ends, so a read just after can miss it",
    "firestore": null,
-   "hidane": "The write proceeds when the holding transaction expires",
+   "hidane": "The write proceeds when the holding transaction expires or ends",
    "reason": "Timing detail with the same outcome a moment later",
    "references": [
     "tools/oracle/datastore_locks.py"
@@ -766,13 +766,14 @@
    "area": "rest",
    "topic": null,
    "kind": "more-correct",
-   "official": "A `:listCollectionIds` body that names a `parent` as the path does leaves the request unanswered",
+   "official": "A `:listCollectionIds` body that names a `parent` as the path does leaves the request unanswered, as does, in Datastore mode, a body that names another `projectId` than the path (any method)",
    "firestore": null,
    "hidane": "The path wins",
    "reason": "Bug",
    "references": [],
    "pinned_by": [
-    "crates/hidane/tests/rest.rs::requests_that_hang_the_official_emulator_are_answered"
+    "crates/hidane/tests/rest.rs::requests_that_hang_the_official_emulator_are_answered",
+    "crates/hidane/tests/datastore.rs::a_body_naming_another_project_is_answered"
    ]
   },
   {
@@ -1057,18 +1058,20 @@
    "area": "documents",
    "topic": null,
    "kind": "limitation",
-   "official": "A `read_time` up to seven days old (604,800 s before now) is served, in microseconds rather than whole minutes, on an emulator started seconds before and for data written just before or never, over every read; one older than the data reads the data's absence. An older one answers `FAILED_PRECONDITION` \"The requested 'read_time' is too old.\" (`tests/fixtures/read_time_and_databases.json`, #86). The history behind those reads is not always kept: once, an hour after a document was written and left unread, reads before its creation failed with `UNKNOWN` and no message (`500` over REST), while its first version, replaced minutes after the write, was still served",
+   "official": "A `read_time` up to seven days old (604,800 s before now) is served, in microseconds rather than whole minutes, on an emulator started seconds before and for data written just before or never, over every read; one older than the data reads the data's absence. An older one answers `FAILED_PRECONDITION` \"The requested 'read_time' is too old.\" (`tests/fixtures/read_time_and_databases.json`, #86). The same in Datastore mode, for lookups, queries, aggregations and read-only transactions (`tests/fixtures/datastore_sequences.json`). The history behind those reads is not always kept: once, an hour after a document was written and left unread, reads before its creation failed with `UNKNOWN` and no message (`500` over REST), while its first version, replaced minutes after the write, was still served",
    "firestore": "Up to one hour old; with point-in-time recovery enabled, also whole minutes up to seven days old (the `read_time` fields of `google.firestore.v1`)",
-   "hidane": "Up to one hour old, like production Firestore without point-in-time recovery; older answers `FAILED_PRECONDITION` \"The requested 'read_time' is too old.\" with the official message",
+   "hidane": "Up to one hour old, like production Firestore without point-in-time recovery, in both modes; older answers `FAILED_PRECONDITION` \"The requested 'read_time' is too old.\" with the official message",
    "reason": "Bounded memory for old versions (ADR 0002). The maintainer kept one hour, production's default, rather than seven days of every version or the official emulator's history that may be dropped without a message (#86)",
    "references": [
     "hidane-dev/hidane#86",
     "docs/adr/0002-storage-engine.md",
     "crates/hidane/tests/fixtures/read_time_and_databases.json",
+    "crates/hidane/tests/fixtures/datastore_sequences.json",
     "crates/hidane/tests/read_time_and_databases.rs"
    ],
    "pinned_by": [
-    "crates/hidane/tests/read_time_and_databases.rs::read_times_up_to_the_window"
+    "crates/hidane/tests/read_time_and_databases.rs::read_times_up_to_the_window",
+    "crates/hidane/tests/datastore.rs::read_times_go_back_an_hour"
    ]
   },
   {
