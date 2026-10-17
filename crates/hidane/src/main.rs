@@ -106,12 +106,24 @@ async fn run(args: Vec<OsString>) -> ExitCode {
         eprintln!("Emulator has been started in experimental mode!");
     }
     // Read before the port opens, as the official emulator does: a bad export stops the start.
-    let seed = match cli.seed().map(hidane::export::read).transpose() {
-        Ok(seed) => seed,
-        Err(message) => {
-            eprintln!("ERROR: {message}");
-            return ExitCode::FAILURE;
-        }
+    // In Datastore mode the export holds entities in that mode's format (#81).
+    let datastore_mode = cli.database_mode == cli::DatabaseMode::CloudFirestoreInDatastoreMode;
+    let (seed, datastore_seed) = match cli.seed() {
+        None => (None, None),
+        Some(path) if datastore_mode => match hidane::export::read_datastore(path) {
+            Ok(entities) => (None, Some(entities)),
+            Err(message) => {
+                eprintln!("ERROR: {message}");
+                return ExitCode::FAILURE;
+            }
+        },
+        Some(path) => match hidane::export::read(path) {
+            Ok(documents) => (Some(documents), None),
+            Err(message) => {
+                eprintln!("ERROR: {message}");
+                return ExitCode::FAILURE;
+            }
+        },
     };
     // `--rules`: the official emulator says nothing about the file; hidane prints what the
     // compiler found. A file that does not compile is not loaded and does not stop the start.
@@ -171,9 +183,12 @@ async fn run(args: Vec<OsString>) -> ExitCode {
 
     let mut admin = hidane::Admin::default()
         .with_enterprise_edition(cli.database_edition == cli::DatabaseEdition::Enterprise)
-        .with_datastore_mode(cli.database_mode == cli::DatabaseMode::CloudFirestoreInDatastoreMode);
+        .with_datastore_mode(datastore_mode);
     if cli.require_indexes {
         admin = admin.with_datastore_indexes(cli.index_file.clone());
+    }
+    if let Some(entities) = datastore_seed {
+        admin = admin.with_datastore_seed(entities);
     }
     if let Some(documents) = seed {
         admin = admin.with_seed(documents);

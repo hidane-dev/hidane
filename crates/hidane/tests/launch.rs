@@ -307,6 +307,75 @@ fn a_gcloud_command_line_in_datastore_mode_serves_datastore() {
     assert_eq!(child.wait().unwrap().code(), Some(0));
 }
 
+/// `--import-data` in Datastore mode reads the export as that mode writes it, the official
+/// emulator's export of `fixtures/datastore_export.json` (#81).
+#[test]
+fn datastore_mode_imports_its_own_exports_at_startup() {
+    use base64::Engine;
+    let fixture: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/datastore_export.json")).unwrap();
+    let dir = std::env::temp_dir().join(format!("hidane-launch-import-{}", std::process::id()));
+    for (relative, data) in fixture["files"].as_object().unwrap() {
+        let path = dir.join(relative);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(data.as_str().unwrap())
+            .unwrap();
+        std::fs::write(&path, bytes).unwrap();
+    }
+    let port = TcpListener::bind("127.0.0.1:0")
+        .unwrap()
+        .local_addr()
+        .unwrap()
+        .port();
+    let metadata = dir.join("named/named.overall_export_metadata");
+    let mut child = Command::new(BIN)
+        .args([
+            "--database-mode",
+            "datastore-mode",
+            "--port",
+            &port.to_string(),
+        ])
+        .arg("--import-data")
+        .arg(&metadata)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let mut stdout = child.stdout.take().unwrap();
+    let mut seen = String::new();
+    let mut buf = [0; 256];
+    while !seen.contains("Dev App Server is now running.") {
+        let n = stdout.read(&mut buf).unwrap();
+        assert!(n > 0, "no banner: {seen}");
+        seen.push_str(&String::from_utf8_lossy(&buf[..n]));
+    }
+    let request = |head: &str, body: &str| {
+        let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+        stream
+            .write_all(
+                format!(
+                    "{head} HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{body}",
+                    body.len()
+                )
+                .as_bytes(),
+            )
+            .unwrap();
+        let mut answer = String::new();
+        stream.read_to_string(&mut answer).unwrap();
+        answer
+    };
+    let lookup = request(
+        "POST /v1/projects/demo-export:lookup",
+        r#"{"keys":[{"path":[{"kind":"U","name":"u"}]}]}"#,
+    );
+    assert!(lookup.contains("\"found\""), "{lookup}");
+    assert!(lookup.contains("\"stringValue\": \"u\""), "{lookup}");
+    request("POST /shutdown", "");
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+    std::fs::remove_dir_all(&dir).unwrap();
+}
+
 /// hidane's image has no shell: a script that is not a gcloud command line it serves stops
 /// with the reason, and a flag hidane rejects stops it as it would stop hidane.
 #[test]

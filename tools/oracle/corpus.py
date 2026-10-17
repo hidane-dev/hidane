@@ -65,6 +65,7 @@ FIXTURE_CLIENTS = {
     "conformance.py": ([REST], PY),
     "cors.py": ([REST], PY),
     "datastore_entities.py": ([REST], PY),
+    "datastore_export.py": ([REST, PROCESS], PY),
     "datastore_gql.py": ([REST], PY),
     "datastore_indexes.py": ([REST, PROCESS], PY),
     "datastore_protobuf.py": ([REST], PY),

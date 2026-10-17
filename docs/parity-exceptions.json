@@ -1527,6 +1527,24 @@
    "pinned_by": [
     "crates/hidane/tests/pipelines.rs::pipelines_run_like_the_official_emulator"
    ]
+  },
+  {
+   "id": "D093",
+   "table": "intentional",
+   "area": "export",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "In Datastore mode, an export's `output-0` holds the entities in an order of its own, which is not their keys' (`tools/oracle/datastore_export.py`)",
+   "firestore": null,
+   "hidane": "Writes them in key order: the same records, so the same file size and metadata",
+   "reason": "An import reads every record whatever their order, and nothing else reads them; the order the official emulator writes does not follow the keys",
+   "references": [
+    "hidane-dev/hidane#81",
+    "tools/oracle/datastore_export.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/datastore.rs::export_and_import_like_the_official_emulator"
+   ]
   }
  ],
  "retired": [
