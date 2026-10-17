@@ -907,12 +907,18 @@ fn ends_before_value(plan: &Plan, position: &Position) -> bool {
     matches!(plan.orders.get(position.values.len()), Some((Some(_), _)))
 }
 
-/// A cursor just before its row, with a null value, whose values end before a property, all
-/// ordered one way, is an internal error on the official emulator, whatever the rows.
+/// A cursor just before its row, with a null value, whose values meet properties and end before
+/// another, all ordered one way, is an internal error on the official emulator, whatever the rows.
 fn cursor_errors(plan: &Plan) -> Result<(), Status> {
     for position in [&plan.start, &plan.end].into_iter().flatten() {
+        let values_meet_properties = plan
+            .orders
+            .iter()
+            .take(position.values.len())
+            .all(|(field, _)| field.is_some());
         if position.before
             && position.values.contains(&Indexed::Null)
+            && values_meet_properties
             && ends_before_value(plan, position)
             && one_way(plan)
         {

@@ -415,8 +415,12 @@ fn check_value(name: &str, flattened: &str, value: &Value, used: Use) -> Result<
                     "Exclude from indexes cannot be set on a list value",
                 ));
             }
+            // A written array's arrays are checked as values too (their nesting is refused
+            // later); a filter's are left to its own checks.
             for element in &array.values {
-                if !matches!(element.value_type, Some(ValueType::ArrayValue(_))) {
+                if used == Use::Write
+                    || !matches!(element.value_type, Some(ValueType::ArrayValue(_)))
+                {
                     check_value(name, flattened, element, used)?;
                 }
             }

@@ -160,8 +160,22 @@ impl Lexer {
 
     /// A lexical error: `found` (`None` for the end) after `prefix` of the current token, as
     /// JavaCC writes it. JavaCC leaves the prefix out when it read at most one character, the
-    /// end not counted (`'` at the end), and the official emulator drops the empty prefix.
+    /// end not counted (`'` at the end), and the official emulator drops the empty prefix. A
+    /// character met last in the text is the end met after it, as JavaCC reads one more.
     fn error(&self, found: Option<char>, prefix: &str) -> Status {
+        if let Some(c) = found
+            && self.pos + 1 == self.chars.len()
+            && self.chars[self.pos] == c
+        {
+            let mut past = Lexer {
+                chars: self.chars.clone(),
+                pos: self.pos,
+                line: self.line,
+                column: self.column,
+            };
+            past.bump();
+            return past.error(None, &format!("{prefix}{c}"));
+        }
         let at = match found {
             Some(c) => format!("'{}' ({}), ", add_escapes(&c.to_string()), c as u32),
             None => "<EOF> ".into(),

@@ -205,7 +205,7 @@
      }
     }
    ],
-   "waited": 64
+   "waited": 62
   },
   {
    "name": "a write outside a transaction to another key",
@@ -488,7 +488,7 @@
      }
     }
    ],
-   "waited": 62
+   "waited": 60
   },
   {
    "name": "a write outside a transaction to a kind aggregated",
@@ -585,7 +585,329 @@
      }
     }
    ],
-   "waited": 61
+   "waited": 60
+  },
+  {
+   "name": "a write in another transaction to a kind an aggregation without aggregations read",
+   "steps": [
+    {
+     "path": "/v1/projects/{project}:commit",
+     "body": {
+      "mode": "NON_TRANSACTIONAL",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "K",
+            "name": "a"
+           }
+          ]
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:beginTransaction",
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:runAggregationQuery",
+     "body": {
+      "aggregationQuery": {
+       "nestedQuery": {
+        "kind": [
+         {
+          "name": "K"
+         }
+        ]
+       },
+       "aggregations": []
+      },
+      "readOptions": {
+       "transaction": "{reader}"
+      }
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Aggregations can not be empty.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:beginTransaction",
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:commit",
+     "body": {
+      "mode": "TRANSACTIONAL",
+      "transaction": "{writer}",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "K",
+            "name": "e"
+           }
+          ]
+         },
+         "properties": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitVersion\": \"<version>\",\n  \"commitTime\": \"<time>\"\n}\n"
+     }
+    }
+   ],
+   "waited": 0
+  },
+  {
+   "name": "a write in another transaction to a kind an aggregation summing __key__ read",
+   "steps": [
+    {
+     "path": "/v1/projects/{project}:commit",
+     "body": {
+      "mode": "NON_TRANSACTIONAL",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "K",
+            "name": "a"
+           }
+          ]
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:beginTransaction",
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:runAggregationQuery",
+     "body": {
+      "aggregationQuery": {
+       "nestedQuery": {
+        "kind": [
+         {
+          "name": "K"
+         }
+        ]
+       },
+       "aggregations": [
+        {
+         "sum": {
+          "property": {
+           "name": "__key__"
+          }
+         }
+        }
+       ]
+      },
+      "readOptions": {
+       "transaction": "{reader}"
+      }
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Aggregations are not supported for the property: __key__\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:beginTransaction",
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:commit",
+     "body": {
+      "mode": "TRANSACTIONAL",
+      "transaction": "{writer}",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "K",
+            "name": "f"
+           }
+          ]
+         },
+         "properties": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitVersion\": \"<version>\",\n  \"commitTime\": \"<time>\"\n}\n"
+     }
+    }
+   ],
+   "waited": 0
+  },
+  {
+   "name": "a write in another transaction to a kind an aggregation with a negative limit read",
+   "steps": [
+    {
+     "path": "/v1/projects/{project}:commit",
+     "body": {
+      "mode": "NON_TRANSACTIONAL",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "K",
+            "name": "a"
+           }
+          ]
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:beginTransaction",
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:runAggregationQuery",
+     "body": {
+      "aggregationQuery": {
+       "nestedQuery": {
+        "kind": [
+         {
+          "name": "K"
+         }
+        ],
+        "limit": -1
+       },
+       "aggregations": [
+        {
+         "count": {}
+        }
+       ]
+      },
+      "readOptions": {
+       "transaction": "{reader}"
+      }
+     },
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"limit is negative\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:beginTransaction",
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:commit",
+     "body": {
+      "mode": "TRANSACTIONAL",
+      "transaction": "{writer}",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "K",
+            "name": "g"
+           }
+          ]
+         },
+         "properties": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 409,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":409,\"message\":\"Transaction lock timeout.\",\"status\":\"ABORTED\"}}"
+     }
+    }
+   ],
+   "waited": 2
   }
  ]
 }

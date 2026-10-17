@@ -727,6 +727,57 @@ async fn a_transaction_id_not_given_is_invalid() {
     }
 }
 
+/// A cursor of a query without a kind, given to a query ordered by its key and then by
+/// properties, is read by its values, where the official emulator fails in some directions
+/// (D096).
+#[tokio::test]
+async fn a_keys_only_cursor_is_read_after_the_key() {
+    let addr = start().await;
+    let path = |verb: &str| format!("/v1/projects/keys-only-cursor:{verb}");
+    let written = send(
+        addr,
+        "POST",
+        &path("commit"),
+        Some(r#"{"mode":"NON_TRANSACTIONAL","mutations":[{"upsert":{"key":{"path":[{"kind":"K","name":"k1"}]},"properties":{"a":{"integerValue":"0"},"e":{"integerValue":"1"}}}},{"upsert":{"key":{"path":[{"kind":"K","name":"k2"}]},"properties":{"a":{"integerValue":"0"},"e":{"integerValue":"2"}}}}]}"#),
+        Some("application/json"),
+    )
+    .await;
+    assert_eq!(written.status, 200, "{}", written.body);
+    let kindless = send(
+        addr,
+        "POST",
+        &path("runQuery"),
+        Some(r#"{"query":{}}"#),
+        Some("application/json"),
+    )
+    .await;
+    let answered: Json = serde_json::from_str(&kindless.body).unwrap();
+    let cursor = answered["batch"]["endCursor"].as_str().unwrap().to_owned();
+    for (order, which) in [
+        (
+            r#"[{"property":{"name":"__key__"}},{"property":{"name":"e"},"direction":"DESCENDING"}],"filter":{"propertyFilter":{"property":{"name":"a"},"op":"LESS_THAN","value":{"integerValue":"1"}}}"#,
+            "startCursor",
+        ),
+        (
+            r#"[{"property":{"name":"__key__"}},{"property":{"name":"e"},"direction":"DESCENDING"},{"property":{"name":"a"}}]"#,
+            "endCursor",
+        ),
+    ] {
+        let body = format!(
+            r#"{{"query":{{"kind":[{{"name":"K"}}],"order":{order},"{which}":"{cursor}"}}}}"#
+        );
+        let answer = send(
+            addr,
+            "POST",
+            &path("runQuery"),
+            Some(&body),
+            Some("application/json"),
+        )
+        .await;
+        assert_eq!(answer.status, 200, "{order} {which}: {}", answer.body);
+    }
+}
+
 /// A Datastore request whose body names another project than its path, which the official
 /// emulator never answers, is answered for the path's project (D046).
 #[tokio::test]

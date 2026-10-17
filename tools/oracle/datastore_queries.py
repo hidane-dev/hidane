@@ -378,6 +378,9 @@ for which in ("startCursor", "endCursor"):
     xc(f"{which} of D 'distinct on b' in another kind", {"kind": kind("DP"), "order": [asc("b")], which: "<xd distinct on b>"}, ns=XD)
     xc(f"{which} of D 'distinct on b' in another kind, by its key", {"kind": kind("DP"), which: "<xd distinct on b>"}, ns=XD)
     xc(f"{which} of D 'distinct on b' in another namespace", {"kind": D, "order": [asc("b")], which: "<xd distinct on b>"}, ns="xc")
+for which in ("startCursor", "endCursor"):
+    xc(f"{which} of D 't descending' in 'key', b compared", {"kind": D, "order": [asc("__key__")],
+       "filter": pf("b", "LESS_THAN", B(True)), which: "<xd t descending>"}, ns=XD)
 xc("cursor source D: c compared, a projected", {"kind": D, "filter": pf("c", "GREATER_THAN", I(0)),
                                                "projection": [{"property": {"name": "a"}}], "limit": 1},
    defines={"xd c then a": "batch.endCursor"}, ns=XD)
