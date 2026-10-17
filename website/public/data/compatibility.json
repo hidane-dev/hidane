@@ -24,8 +24,8 @@
    "official_emulator": "1.22.0",
    "status": "verified",
    "evidence": [
-    "35,839 recorded answers of the official emulator v1.22.0 in 62 fixtures, replayed against hidane by cargo test",
-    "44 comparisons of SDK transcripts with the official emulator v1.22.0's: 26 identical, 18 documented differences",
+    "53,858 recorded answers of the official emulator v1.22.0 in 76 fixtures, replayed against hidane by cargo test",
+    "62 comparisons of SDK transcripts with the official emulator v1.22.0's: 44 identical, 18 documented differences",
     "2 transcripts run under firebase-tools 15.33.0: export-import, functions-triggers"
    ]
   }
@@ -447,6 +447,206 @@
    ]
   },
   {
+   "id": "datastore-node",
+   "client": "@google-cloud/datastore, in Datastore mode",
+   "ecosystem": "npm",
+   "package": "@google-cloud/datastore",
+   "platform": "Node.js",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "verified",
+   "version": "11.3.0",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "transactions"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-16",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "sdk-datastore-node-entities",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-node-entities-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-node-queries",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-node-queries-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-node-transactions",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-node-transactions-hidane.json"
+    }
+   ]
+  },
+  {
+   "id": "datastore-python",
+   "client": "google-cloud-datastore (Python), in Datastore mode",
+   "ecosystem": "pypi",
+   "package": "google-cloud-datastore",
+   "platform": "Python",
+   "transport": [
+    "gRPC",
+    "REST"
+   ],
+   "status": "verified",
+   "version": "2.27.0",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "transactions"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-16",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "sdk-datastore-python-entities",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-python-entities-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-python-http-entities",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-python-http-entities-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-python-http-queries",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-python-http-queries-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-python-http-transactions",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-python-http-transactions-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-python-queries",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-python-queries-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-python-transactions",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-python-transactions-hidane.json"
+    }
+   ]
+  },
+  {
+   "id": "datastore-java",
+   "client": "java-datastore, in Datastore mode",
+   "ecosystem": "maven",
+   "package": "com.google.cloud:google-cloud-datastore",
+   "platform": "JVM",
+   "transport": [
+    "gRPC",
+    "REST"
+   ],
+   "status": "verified",
+   "version": "3.7.0",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "transactions"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-16",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "sdk-datastore-java-entities",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-java-entities-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-java-http-entities",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-java-http-entities-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-java-http-queries",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-java-http-queries-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-java-http-transactions",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-java-http-transactions-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-java-queries",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-java-queries-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-java-transactions",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-java-transactions-hidane.json"
+    }
+   ]
+  },
+  {
+   "id": "datastore-go",
+   "client": "google-cloud-go datastore, in Datastore mode",
+   "ecosystem": "go",
+   "package": "cloud.google.com/go/datastore",
+   "platform": "Go",
+   "transport": [
+    "gRPC"
+   ],
+   "status": "verified",
+   "version": "1.27.0",
+   "official_emulator": [
+    "1.22.0"
+   ],
+   "exercised": [
+    "documents and writes",
+    "queries",
+    "aggregation queries",
+    "transactions"
+   ],
+   "not_exercised": [],
+   "gaps": [],
+   "last_recorded": "2026-10-16",
+   "tracking": null,
+   "evidence": [
+    {
+     "name": "sdk-datastore-go-entities",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-go-entities-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-go-queries",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-go-queries-hidane.json"
+    },
+    {
+     "name": "sdk-datastore-go-transactions",
+     "result": "identical",
+     "url": "https://github.com/hidane-dev/hidane/blob/main/results/sdk-datastore-go-transactions-hidane.json"
+    }
+   ]
+  },
+  {
    "id": "go",
    "client": "google-cloud-go firestore",
    "ecosystem": "go",
@@ -726,21 +926,21 @@
   }
  ],
  "parity": {
-  "fixtures": 62,
-  "answers": 35839,
+  "fixtures": 76,
+  "answers": 53858,
   "levels": {
-   "full": 24512,
+   "full": 42490,
    "reasons": 4344,
-   "part": 1481,
-   "status": 5189,
+   "part": 1495,
+   "status": 5197,
    "codes": 96,
    "none": 7,
-   "differs": 210
+   "differs": 229
   },
   "transcripts": {
-   "pairs": 42,
-   "comparisons": 44,
-   "identical": 26,
+   "pairs": 60,
+   "comparisons": 62,
+   "identical": 44,
    "documented": 18,
    "unexplained": 0,
    "where": "docs/parity.md"
@@ -764,12 +964,12 @@
  },
  "differences": {
   "intentional": {
-   "count": 76,
+   "count": 78,
    "by_kind": {
     "bug-for-bug": 1,
     "more-correct": 48,
-    "equivalent": 19,
-    "limitation": 8
+    "equivalent": 20,
+    "limitation": 9
    }
   },
   "production": {

@@ -12,6 +12,7 @@
 //! `docs/export-format.md` describes every field; `tests/fixtures/export_import.json` in the
 //! `hidane` crate holds exports written by the official emulator.
 
+pub mod datastore;
 pub mod entity;
 pub mod log;
 mod wire;

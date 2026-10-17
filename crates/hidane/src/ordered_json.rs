@@ -10,10 +10,12 @@
 use prost_reflect::{FieldDescriptor, Kind, MessageDescriptor};
 use serde_json::{Map, Value as Json};
 
-const ORDERED: [&str; 3] = [
+const ORDERED: [&str; 5] = [
     "google.firestore.v1.Document.fields",
     "google.firestore.v1.MapValue.fields",
     "google.firestore.v1.AggregationResult.aggregate_fields",
+    "google.datastore.v1.Entity.properties",
+    "google.datastore.v1.AggregationResult.aggregate_properties",
 ];
 
 pub(crate) fn is_ordered(field: &FieldDescriptor) -> bool {

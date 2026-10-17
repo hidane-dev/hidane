@@ -208,6 +208,8 @@ jobs:
       - name: The image from source, through the gcloud module and as a generic container
         env:
           HIDANE_IMAGE: ${{ env.SOURCE_IMAGE }}
+          # It serves Datastore mode (#81); the published v0.6.0 image does not.
+          HIDANE_DATASTORE: "1"
         run: go test -count=1 -v ./...
       - name: The published v0.6.0 image, through the gcloud module and as a generic container
         env:

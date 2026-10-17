@@ -640,7 +640,7 @@ fn dependency_findings(facts: &Facts, ci: &ci::Ci, out: &mut Vec<Finding>) -> Ve
                 Finding::unknown(
                     "dependency.datastore",
                     g,
-                    format!("{} {shown}: hidane does not serve Datastore mode yet (#81); if these clients use the Firestore emulator in Datastore mode, they will not work — manual verification required", dep.name),
+                    format!("{} {shown}: hidane serves Datastore mode (entities, transactions, queries, aggregations, GQL, index enforcement, export and import; the Node.js, Python, Java and Go clients verified, docs/sdk-certification.md) (#81); if these clients use the Firestore emulator in Datastore mode — manual verification required", dep.name),
                 )
                 .with_source(verified::GAP_DATASTORE),
             ),
@@ -911,15 +911,15 @@ fn workflow_findings(facts: &Facts, ci: &ci::Ci, out: &mut Vec<Finding>) {
             Group::Scripts
         };
         let finding = match note.kind {
-            "gcloud-datastore" => Finding::incompatible(
+            "gcloud-datastore" => Finding::unknown(
                 "gcloud.datastore-mode",
                 group,
                 format!(
-                    "{}:{}: Datastore mode is not served by hidane yet (#81)",
+                    "{}:{}: hidane serves Datastore mode (entities, transactions, queries, aggregations, GQL, index enforcement, export and import; the Node.js, Python, Java and Go clients verified, docs/sdk-certification.md) (#81) — manual verification required",
                     note.file, note.line
                 ),
-                verified::GAP_DATASTORE,
-            ),
+            )
+            .with_source(verified::GAP_DATASTORE),
             "gcloud-firestore" => Finding::unknown(
                 "gcloud.firestore",
                 group,

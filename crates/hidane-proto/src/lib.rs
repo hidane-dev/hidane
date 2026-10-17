@@ -1,6 +1,6 @@
-//! Generated protobuf messages and gRPC services for `google.firestore.v1` and the googleapis
-//! packages it depends on (`google.api`, `google.rpc`, `google.type`). Well-known types
-//! (`google.protobuf.*`) come from `prost-types`.
+//! Generated protobuf messages and gRPC services for `google.firestore.v1`, `google.datastore.v1`
+//! (Datastore mode, #81) and the googleapis packages they depend on (`google.api`, `google.rpc`,
+//! `google.type`). Well-known types (`google.protobuf.*`) come from `prost-types`.
 //!
 //! The protos are vendored in this crate's `proto/` directory; see `proto/README.md` there.
 
@@ -22,3 +22,43 @@ pub const FILE_DESCRIPTOR_SET: &[u8] =
 /// described as repeated entries (`key`, `value`), so a `DynamicMessage` keeps their order.
 pub const ORDERED_FILE_DESCRIPTOR_SET: &[u8] =
     include_bytes!(concat!(env!("OUT_DIR"), "/hidane_descriptor_ordered.bin"));
+
+#[cfg(test)]
+mod tests {
+    use prost::Message as _;
+
+    use crate::google::datastore::v1::{Entity, Key, key::PathElement, key::path_element::IdType};
+
+    /// The Datastore messages are generated, and keep their wire format (#81).
+    #[test]
+    fn datastore_messages_round_trip() {
+        let entity = Entity {
+            key: Some(Key {
+                partition_id: None,
+                path: vec![PathElement {
+                    kind: "Task".into(),
+                    id_type: Some(IdType::Name("a".into())),
+                }],
+            }),
+            properties: Default::default(),
+        };
+        let bytes = entity.encode_to_vec();
+        assert_eq!(Entity::decode(bytes.as_slice()).unwrap(), entity);
+    }
+
+    /// Reflection lists what the descriptor set holds: both APIs, as the official emulator does.
+    #[test]
+    fn the_descriptor_set_holds_both_apis() {
+        let set = prost_types::FileDescriptorSet::decode(crate::FILE_DESCRIPTOR_SET).unwrap();
+        assert!(
+            set.file
+                .iter()
+                .any(|f| f.package() == "google.datastore.v1")
+        );
+        assert!(
+            set.file
+                .iter()
+                .any(|f| f.package() == "google.firestore.v1")
+        );
+    }
+}

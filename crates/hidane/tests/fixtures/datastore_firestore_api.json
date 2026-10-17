@@ -1,0 +1,883 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/datastore_firestore_api.py",
+ "mode": "datastore-mode",
+ "cases": [
+  {
+   "name": "GET a document",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/d",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "GET a collection's documents",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "GET a document with a mask",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/d?mask.fieldPaths=a",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "GET the documents root",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "GET a document of another database",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/db2/documents/c/d",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "GET a document over v1beta1",
+   "method": "GET",
+   "path": "/v1beta1/projects/{project}/databases/(default)/documents/c/d",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "GET the database",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "PATCH a document",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/d",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {}
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PATCH a document, an unknown field",
+   "method": "PATCH",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/d",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "x": 1
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "PUT a document",
+   "method": "PUT",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/d",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {}
+   },
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "DELETE a document",
+   "method": "DELETE",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/d",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "createDocument",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {}
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "createDocument with an ID",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c?documentId=x",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {}
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "createDocument under a document's name",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/d",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "fields": {}
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Document parent name \\\"projects\\/{project}\\/databases\\/(default)\\/documents\\/c\\\" lacks \\\"\\/\\\" at index 59.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "createDocument, an unknown field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "x": 1
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit, an unknown field",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "x": 1
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit, a write with a bad name",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "bad"
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit, a write",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "writes": [
+     {
+      "update": {
+       "name": "projects/{project}/databases/(default)/documents/c/d",
+       "fields": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "batchGet",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchGet",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "documents": [
+     "projects/{project}/databases/(default)/documents/c/d"
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "beginTransaction",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:beginTransaction",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "rollback",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:rollback",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "transaction": "AAAA"
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "runQuery",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {}
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "runQuery under a document",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/d:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "structuredQuery": {}
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "runAggregationQuery",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "listCollectionIds",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:listCollectionIds",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "partitionQuery",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:partitionQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 501,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":501,\"message\":\"Method google.firestore.v1.Firestore\\/PartitionQuery is unimplemented\",\"status\":\"UNIMPLEMENTED\"}}"
+   }
+  },
+  {
+   "name": "batchWrite",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:batchWrite",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "executePipeline",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:executePipeline",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "write over REST",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:write",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "listen over REST",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:listen",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "GET runQuery",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "commit in protobuf",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "compare": "exact",
+   "raw": "",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "createDocument in protobuf",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "compare": "exact",
+   "raw": "",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "commit as text/html",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Content-Type": "text/html"
+   },
+   "compare": "exact",
+   "raw": "{}",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "commit as text/plain",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {
+    "Content-Type": "text/plain"
+   },
+   "compare": "exact",
+   "raw": "{}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "commit without a content type",
+   "method": "POST",
+   "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+   "headers": {},
+   "compare": "exact",
+   "raw": "{}",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "GET a document as protobuf",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/d",
+   "headers": {
+    "Content-Type": "application/x-protobuf"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "GET a document as text/html",
+   "method": "GET",
+   "path": "/v1/projects/{project}/databases/(default)/documents/c/d",
+   "headers": {
+    "Content-Type": "text/html"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "GET the Security Rules",
+   "method": "GET",
+   "path": "/emulator/v1/projects/{project}:securityRules",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "PUT Security Rules",
+   "method": "PUT",
+   "path": "/emulator/v1/projects/{project}:securityRules",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "rules": {
+     "files": [
+      {
+       "content": "rules_version = '2';\nservice cloud.firestore {}"
+      }
+     ]
+    }
+   },
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "GET the rule coverage",
+   "method": "GET",
+   "path": "/emulator/v1/projects/{project}:ruleCoverage",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "GET the rule coverage page",
+   "method": "GET",
+   "path": "/emulator/v1/projects/{project}:ruleCoverage.html",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 404,
+    "contentType": null,
+    "body": "Not Found\n"
+   }
+  },
+  {
+   "name": "clear the default database",
+   "method": "DELETE",
+   "path": "/emulator/v1/projects/{project}/databases/(default)/documents",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "clear another database",
+   "method": "DELETE",
+   "path": "/emulator/v1/projects/{project}/databases/db2/documents",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "index usage",
+   "method": "GET",
+   "path": "/emulator/v1/projects/{project}:indexUsage",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "index usage of the default database",
+   "method": "GET",
+   "path": "/emulator/v1/projects/{project}:indexUsage?database=projects/{project}/databases/(default)",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "register a trigger",
+   "method": "PUT",
+   "path": "/emulator/v1/projects/{project}/triggers/t",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {},
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "reset",
+   "method": "POST",
+   "path": "/reset",
+   "headers": {},
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": null,
+    "body": "Resetting...\n"
+   }
+  },
+  {
+   "name": "the root",
+   "method": "GET",
+   "path": "/",
+   "headers": {},
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": null,
+    "body": "Ok\n"
+   }
+  }
+ ],
+ "grpc": [
+  {
+   "name": "GetDocument, a bad name",
+   "rpc": "GetDocument",
+   "request": {
+    "name": "bad"
+   },
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "Document name \"bad\" lacks \"projects\" at index 0."
+   }
+  },
+  {
+   "name": "GetDocument",
+   "rpc": "GetDocument",
+   "request": {
+    "name": "projects/{project}/databases/(default)/documents/c/d"
+   },
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+   }
+  },
+  {
+   "name": "Commit, a bad database",
+   "rpc": "Commit",
+   "request": {
+    "database": "bad"
+   },
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "Database name \"bad\" lacks \"projects\" at index 0."
+   }
+  },
+  {
+   "name": "Commit",
+   "rpc": "Commit",
+   "request": {
+    "database": "projects/{project}/databases/(default)"
+   },
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+   }
+  },
+  {
+   "name": "ListCollectionIds, a bad parent",
+   "rpc": "ListCollectionIds",
+   "request": {
+    "parent": "x"
+   },
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "Document parent name \"x\" lacks \"projects\" at index 0."
+   }
+  },
+  {
+   "name": "ListCollectionIds",
+   "rpc": "ListCollectionIds",
+   "request": {
+    "parent": "projects/{project}/databases/(default)/documents"
+   },
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag."
+   }
+  },
+  {
+   "name": "RunQuery, a bad parent",
+   "rpc": "RunQuery",
+   "request": {
+    "parent": "x"
+   },
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "Document parent name \"x\" lacks \"projects\" at index 0."
+   }
+  },
+  {
+   "name": "PartitionQuery",
+   "rpc": "PartitionQuery",
+   "request": {
+    "parent": "projects/{project}/databases/(default)/documents"
+   },
+   "outcome": {
+    "code": "UNIMPLEMENTED",
+    "message": "Method google.firestore.v1.Firestore/PartitionQuery is unimplemented"
+   }
+  },
+  {
+   "name": "BeginTransaction, a bad database",
+   "rpc": "BeginTransaction",
+   "request": {
+    "database": "x"
+   },
+   "outcome": {
+    "code": "INVALID_ARGUMENT",
+    "message": "Database name \"x\" lacks \"projects\" at index 0."
+   }
+  }
+ ]
+}

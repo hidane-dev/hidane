@@ -60,6 +60,10 @@ The verified versions:
 | `firebase-tools` | 15.33.0 — export and import, launch under firebase emulators:exec | [sdk-certification.md](sdk-certification.md), `results/export-import-*.json`, `results/functions-triggers-*.json` |
 | `firebase-functions` (Firestore triggers under the Functions emulator) | 6.6.0 — Firestore triggers, v1 and v2 | [sdk-certification.md](sdk-certification.md), `results/functions-triggers-*.json` |
 | `google-cloud-firestore` (Python) | 2.34.1 — documents and writes, queries, aggregation queries, vector search, transactions, listeners | [sdk-certification.md](sdk-certification.md), `results/sdk-python-*.json` |
+| `@google-cloud/datastore` (Node.js, Datastore mode) | 11.3.0 — documents and writes, queries, aggregation queries, transactions | [sdk-certification.md](sdk-certification.md), `results/sdk-datastore-node-entities-*.json`, `results/sdk-datastore-node-queries-*.json`, `results/sdk-datastore-node-transactions-*.json` |
+| `google-cloud-datastore` (Python, Datastore mode) | 2.27.0 — documents and writes, queries, aggregation queries, transactions | [sdk-certification.md](sdk-certification.md), `results/sdk-datastore-python-entities-*.json`, `results/sdk-datastore-python-http-entities-*.json`, `results/sdk-datastore-python-http-queries-*.json`, `results/sdk-datastore-python-http-transactions-*.json`, `results/sdk-datastore-python-queries-*.json`, `results/sdk-datastore-python-transactions-*.json` |
+| `com.google.cloud:google-cloud-datastore` (Java, Datastore mode) | 3.7.0 — documents and writes, queries, aggregation queries, transactions | [sdk-certification.md](sdk-certification.md), `results/sdk-datastore-java-entities-*.json`, `results/sdk-datastore-java-http-entities-*.json`, `results/sdk-datastore-java-http-queries-*.json`, `results/sdk-datastore-java-http-transactions-*.json`, `results/sdk-datastore-java-queries-*.json`, `results/sdk-datastore-java-transactions-*.json` |
+| `cloud.google.com/go/datastore` (Datastore mode) | 1.27.0 — documents and writes, queries, aggregation queries, transactions | [sdk-certification.md](sdk-certification.md), `results/sdk-datastore-go-entities-*.json`, `results/sdk-datastore-go-queries-*.json`, `results/sdk-datastore-go-transactions-*.json` |
 | `cloud.google.com/go/firestore` | 1.26.0 — documents and writes, queries, aggregation queries, vector search, transactions, listeners | [sdk-certification.md](sdk-certification.md), `results/sdk-go-*.json` |
 | `com.google.cloud:google-cloud-firestore` (Java) | 3.49.0 — documents and writes, queries, aggregation queries, vector search, transactions, listeners | [sdk-certification.md](sdk-certification.md), `results/sdk-java-*.json` |
 | `cloud_firestore` (Flutter) | 6.10.0 — Flutter Web in Chromium: documents and writes, queries, aggregation queries, transactions, listeners | [sdk-certification.md](sdk-certification.md), `results/flutter-web-*.json` |
@@ -82,9 +86,11 @@ Known gaps are `incompatible`:
   listeners and pipelines follow its semantics, but a listener refuses some queries otherwise
   ([#338](https://github.com/hidane-dev/hidane/issues/338)).
 - Datastore mode, through `gcloud emulators firestore start --database-mode=datastore-mode`
-  ([#81](https://github.com/hidane-dev/hidane/issues/81)). A Datastore client library in the
-  dependencies is `unknown`: it may talk to the separate Datastore emulator, which hidane does
-  not replace.
+  ([#81](https://github.com/hidane-dev/hidane/issues/81)): `hidane --database-mode datastore-mode`
+  serves entities, transactions, queries, aggregations, GQL, `--require_indexes`, export and
+  import, over gRPC and REST (JSON or protobuf); the Node.js, Python, Java and Go client
+  libraries of Datastore are verified against it. A Datastore client library in the dependencies
+  is `unknown`: it may talk to the separate Datastore emulator, which hidane does not replace.
 - A rules file that does not compile: hidane would start without it. hidane's compiler makes the
   official emulator's checks (`crates/hidane/tests/fixtures/rules_compile.json`), so the official
   emulator most likely rejects the file too; if it does not, please report it.

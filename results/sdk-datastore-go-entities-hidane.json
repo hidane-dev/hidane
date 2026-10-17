@@ -1,0 +1,228 @@
+[
+ {
+  "name": "put every type",
+  "ok": "ok"
+ },
+ {
+  "name": "get it back",
+  "ok": {
+   "key": {
+    "path": [
+     "Task",
+     "t1"
+    ]
+   },
+   "properties": {
+    "at": "2020-01-02T03:04:05.678Z",
+    "big": 4611686018427387904,
+    "count": 3,
+    "done": false,
+    "empty": [],
+    "inf": "Infinity",
+    "long": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "nan": "NaN",
+    "nested": {
+     "properties": {
+      "x": 1,
+      "y": "z"
+     }
+    },
+    "ninf": "-Infinity",
+    "nothing": null,
+    "owner": {
+     "key": {
+      "path": [
+       "User",
+       "u1"
+      ]
+     }
+    },
+    "place": {
+     "geopoint": [
+      35.0,
+      139.0
+     ]
+    },
+    "ratio": 0.5,
+    "raw": {
+     "bytes": "AAE="
+    },
+    "tags": [
+     "x",
+     "y"
+    ],
+    "text": "a",
+    "zero": -0.0
+   }
+  }
+ },
+ {
+  "name": "get a missing entity",
+  "ok": null
+ },
+ {
+  "name": "get several, one missing",
+  "ok": [
+   true,
+   false
+  ]
+ },
+ {
+  "name": "overwrite it",
+  "ok": {
+   "key": {
+    "path": [
+     "Task",
+     "t1"
+    ]
+   },
+   "properties": {
+    "text": "b"
+   }
+  }
+ },
+ {
+  "name": "put an incomplete key",
+  "ok": {
+   "id": 5629499534213120,
+   "read": {
+    "key": {
+     "path": [
+      "Task",
+      5629499534213120
+     ]
+    },
+    "properties": {
+     "text": "generated"
+    }
+   }
+  }
+ },
+ {
+  "name": "allocate three IDs",
+  "ok": [
+   5066549580791808,
+   6192449487634432,
+   4785074604081152
+  ]
+ },
+ {
+  "name": "allocate an ID under a parent",
+  "ok": [
+   {
+    "path": [
+     "List",
+     "l1",
+     "Task",
+     5910974510923776
+    ]
+   }
+  ]
+ },
+ {
+  "name": "reserve an ID",
+  "ok": "ok"
+ },
+ {
+  "name": "put a child",
+  "ok": {
+   "key": {
+    "path": [
+     "List",
+     "l1",
+     "Task",
+     "c1"
+    ]
+   },
+   "properties": {
+    "text": "child"
+   }
+  }
+ },
+ {
+  "name": "get a child's parent, never written",
+  "ok": null
+ },
+ {
+  "name": "put in a namespace",
+  "ok": {
+   "key": {
+    "namespace": "ns1",
+    "path": [
+     "Task",
+     "t1"
+    ]
+   },
+   "properties": {
+    "text": "ns"
+   }
+  }
+ },
+ {
+  "name": "put several",
+  "ok": "ok"
+ },
+ {
+  "name": "delete several",
+  "ok": {
+   "key": {
+    "path": [
+     "Many",
+     3
+    ]
+   },
+   "properties": {
+    "i": 3
+   }
+  }
+ },
+ {
+  "name": "delete a missing entity",
+  "ok": "ok"
+ },
+ {
+  "name": "delete it",
+  "ok": null
+ },
+ {
+  "error": {
+   "code": "ALREADY_EXISTS",
+   "message": "entity already exists: EntityRef[partitionRef={project}, path=/Task/dup]"
+  },
+  "name": "insert an existing entity"
+ },
+ {
+  "error": {
+   "code": "NOT_FOUND",
+   "message": "no entity to update: app: \"{project}\"\npath <\n  Element {\n    type: \"Task\"\n    name: \"nobody\"\n  }\n>\n"
+  },
+  "name": "update a missing entity"
+ },
+ {
+  "error": {
+   "client": "datastore: string property too long to index for a Property with Name \"text\""
+  },
+  "name": "an indexed string of 1501 bytes"
+ },
+ {
+  "error": {
+   "code": "INVALID_ARGUMENT",
+   "message": "The property.name \"__x__\" is reserved."
+  },
+  "name": "a property named __x__"
+ },
+ {
+  "error": {
+   "code": "INVALID_ARGUMENT",
+   "message": "Nested arrays are not allowed"
+  },
+  "name": "an array in an array"
+ },
+ {
+  "error": {
+   "code": "INVALID_ARGUMENT",
+   "message": "The kind \"__x__\" is reserved."
+  },
+  "name": "a kind __x__"
+ }
+]
