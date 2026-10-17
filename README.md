@@ -89,30 +89,31 @@ it hurt everyday local development and CI (details and raw logs: [`docs/why.md`]
 
 <div align="center">
 
-| | Official emulator v1.22.0 | hidane v0.5.1 |
+| | Official emulator v1.22.0 | hidane v0.6.0 |
 |---|---|---|
 | Runtime | Java 21 or newer ([required since firebase-tools 15.0.0](https://github.com/firebase/firebase-tools/releases/tag/v15.0.0)) | none, single binary |
-| Time until the port accepts | 852 ms | 1.53 ms |
-| Resident memory, idle | 148 MiB | 9.3 MiB |
-| Resident memory after 1,000 documents | 276 MiB | 11.9 MiB |
-| 100,000 documents written in commits of 500 | 15.6 s | 1.54 s |
-| `firebase emulators:exec` around a CI-style workload (100 documents seeded, 200 tests) | 6.47 s | 1.56 s |
+| Time until the port accepts | 981 ms | 1.56 ms |
+| Resident memory, idle | 148 MiB | 9.4 MiB |
+| Resident memory after 1,000 documents | 267 MiB | 12.3 MiB |
+| 100,000 documents written in commits of 500, signed out | 17.5 s | 1.61 s |
+| The same, with a listener on the collection | 191 s | 2.51 s |
+| The same without a listener, with the owner credential the Admin SDKs send | 1.84 s | 1.73 s |
+| `firebase emulators:exec` around a CI-style workload (100 documents seeded, 200 tests) | 6.81 s | 1.69 s |
 
 </div>
 
 In our canonical benchmark environment, these are the medians for both emulators on the same
 machine: an AWS c7i.xlarge (Intel Xeon Platinum 8488C, 4 vCPUs, 8 GiB), Ubuntu 24.04, Java
-21.0.12.1, firebase-tools 15.33.0, and hidane v0.5.1's published binary (commit `ce708a3`), measured
-on 2026-10-13. The [result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-13-release-150328.md)
+21.0.12.1, firebase-tools 15.33.0, and hidane v0.6.0's published binary (commit `c0615a0`), measured
+on 2026-10-15. The [result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-15-release.md)
 comes with every sample in its JSON. The methodology is in [`bench/`](bench/README.md), and anyone
 can rerun it; other machines give other numbers.
 
 Every request in the benchmark comes from its own gRPC client, which sends no credential, as a
-signed-out app does, so Security Rules apply to each one. The Admin SDKs send an emulator the
-owner credential, which skips the Rules: the official emulator then writes many times as fast,
-hidane takes about the same time either way, and the SDK's own work adds to both. Through
-firebase-admin, 100,000 documents took 2.2 s on the official emulator and 1.1 s on hidane in a
-single local run, about twice as fast rather than ten times
+signed-out app does, so Security Rules apply to each one, except in the last row. The Admin SDKs
+send an emulator the owner credential, which skips the Rules: the official emulator then writes
+almost as fast as hidane, which takes about the same time either way. So hidane's writes are
+much faster for a signed-out app and with a listener attached, not when an Admin SDK seeds data
 ([`bench/`](bench/README.md#fairness-rules), #286).
 
 <img alt="A terminal recording: each emulator started on its own until its port accepts a connection. The official emulator's port opens after 1323 ms, hidane's after 2.1 ms." src="https://raw.githubusercontent.com/hidane-dev/hidane/main/docs/assets/demo-startup.gif" width="100%">
@@ -131,11 +132,11 @@ hidane benchmark --compare-official --official-download -- npm test \
   | hidane benchmark savings - --runs-per-month 600
 ```
 
-Writing while a listener is attached is in the benchmark (`listen_writes`) but not yet in a
-published result (#50). Measured before, not side by side, the official emulator's batch writes
-slow down as documents accumulate
-([firebase-tools#3477](https://github.com/firebase/firebase-tools/issues/3477)), while hidane's
-stay flat per batch ([`docs/why.md`](docs/why.md#3-writes-slow-down-while-a-listener-is-attached)).
+With a listener attached, the official emulator's batch writes slow down as documents accumulate
+([firebase-tools#3477](https://github.com/firebase/firebase-tools/issues/3477)): in the same
+result, each commit took 195 ms longer per 10,000 documents already stored, so 100,000 documents
+took 11 times as long as without the listener. hidane's commits grew by 0.15 ms per 10,000
+([`docs/why.md`](docs/why.md#3-writes-slow-down-while-a-listener-is-attached)).
 
 ## What works today
 
