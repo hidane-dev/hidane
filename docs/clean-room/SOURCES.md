@@ -38,6 +38,13 @@ came from; it is not a legal opinion on what they permit.
   `grpcurl`).
 - They are third-party code, kept with their license and notices; the CLA does not cover them
   ([`docs/cla/README.md`](../cla/README.md#what-the-cla-does-not-cover)).
+- **Datastore mode** (#81, added by #356): the `google.datastore.v1` definitions
+  (`datastore.proto`, `entity.proto`, `query.proto`, `aggregation_result.proto`,
+  `query_profile.proto`) from googleapis at the same commit, Apache-2.0, vendored next to the
+  others. hidane takes the `Datastore` service, its messages and field numbers, the
+  `google.api.http` bindings of its REST API (`POST /v1/projects/{project_id}:lookup` and the
+  others), and the semantics their comments document. Compiled by
+  `crates/hidane-proto/build.rs` into `hidane_proto::google::datastore::v1`; not served yet.
 - **Also**: `google.events.cloud.firestore.v1.DocumentEventData` from
   [googleapis/google-cloudevents](https://github.com/googleapis/google-cloudevents) (Apache-2.0),
   the data of the CloudEvents a Firestore trigger receives, declared by hand in
@@ -48,11 +55,14 @@ came from; it is not a legal opinion on what they permit.
 - **What**: [firebase.google.com/docs](https://firebase.google.com/docs) (Cloud Firestore,
   Security Rules, the Emulator Suite) and the Cloud Firestore documentation on
   [cloud.google.com](https://cloud.google.com/firestore/docs) (the API reference, the emulator,
-  limits), under the terms each page states.
+  limits), under the terms each page states. For Datastore mode (#81, added by #356), the
+  documentation of Firestore in Datastore mode and Cloud Datastore on
+  [cloud.google.com](https://cloud.google.com/datastore/docs): the API reference, entities and
+  keys, queries and GQL, transactions, indexes and `index.yaml`, limits, and the emulator.
 - **What hidane takes**: documented behaviour and limits; the Security Rules language (its
   statements, types, functions, `request` and `resource`, the call limits of `get()` and
-  `exists()`); and, where the official emulator differs from production Firestore, what
-  production does.
+  `exists()`); in Datastore mode, the GQL grammar and the `index.yaml` format; and, where the
+  official emulator differs from production Firestore, what production does.
 - **Used by**: [ADR 0005](../adr/0005-rules-engine.md) (the Rules language and what its
   documentation leaves open); the production column of
   [`docs/parity-exceptions.md`](../parity-exceptions.md); `crates/hidane/tests/fixtures/rules_compile.json`,
@@ -73,6 +83,7 @@ each is run against both emulators and the results compared.
 | [firebase-js-sdk](https://github.com/firebase/firebase-js-sdk) | Apache-2.0 | Which transport it uses in the browser, in Node and in Lite; the WebChannel requests it makes; the mock tokens rules-unit-testing builds (`createMockUserToken`); its copy of `write.proto` with `verify` | [`docs/compatibility.md`](../compatibility.md), [`docs/webchannel.md`](../webchannel.md), `crates/hidane/src/webchannel.rs`, `crates/hidane/src/firestore/auth.rs`, `crates/hidane-proto/proto/README.md` |
 | Server SDKs: [nodejs-firestore](https://github.com/googleapis/nodejs-firestore), [google-cloud-go](https://github.com/googleapis/google-cloud-go), [python-firestore](https://github.com/googleapis/python-firestore), [java-firestore](https://github.com/googleapis/java-firestore) | Apache-2.0 | Which transport and RPCs each uses against an emulator, and how each finds it | [`docs/compatibility.md`](../compatibility.md) |
 | Mobile SDKs: [firebase-ios-sdk](https://github.com/firebase/firebase-ios-sdk), [firebase-android-sdk](https://github.com/firebase/firebase-android-sdk) | Apache-2.0 | Which transport they use (gRPC, the Listen and Write streams) | [`docs/compatibility.md`](../compatibility.md) |
+| Datastore client libraries (#81, added by #356): [python-datastore](https://github.com/googleapis/python-datastore), [google-cloud-go](https://github.com/googleapis/google-cloud-go) `datastore`, [java-datastore](https://github.com/googleapis/java-datastore), [nodejs-datastore](https://github.com/googleapis/nodejs-datastore) | Apache-2.0 | Which transport and RPCs each uses against an emulator (`DATASTORE_EMULATOR_HOST`), and what it sends | Planned (#81) |
 
 Their behaviour against both emulators:
 

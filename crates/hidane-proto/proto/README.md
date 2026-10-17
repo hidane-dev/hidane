@@ -5,7 +5,8 @@ The `.proto` files under `google/` are copied from
 `bb5b791bc013ef90cea669954f172f6da2590c57`, with the one local change listed below. They are licensed under the Apache License 2.0;
 see [`LICENSE-googleapis`](LICENSE-googleapis).
 
-Only `google/firestore/v1/*.proto` and their transitive imports are vendored. The
+Only `google/firestore/v1/*.proto`, `google/datastore/v1/*.proto` (Datastore mode, #81) and
+their transitive imports are vendored. The
 `google/protobuf/*` well-known types are supplied by the pure-Rust compiler
 ([protox](https://crates.io/crates/protox)), so no `protoc` is needed to build hidane.
 
