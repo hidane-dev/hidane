@@ -438,14 +438,17 @@
    "area": "transactions",
    "topic": null,
    "kind": "more-correct",
-   "official": "A commit or read with a well-formed transaction ID that was never issued (or was forgotten by a reset) fails with `UNKNOWN` and no message; a rollback answers `INVALID_ARGUMENT` \"Transaction is invalid or expired.\"",
+   "official": "A commit or read with a well-formed transaction ID that was never issued (or was forgotten by a reset) fails with `UNKNOWN` and no message; a rollback answers `INVALID_ARGUMENT` \"Transaction is invalid or expired.\" The same in Datastore mode (`tools/oracle/datastore_entities.py`), for `lookup`, `commit` and a read-write `beginTransaction` retrying one.",
    "firestore": null,
    "hidane": "`INVALID_ARGUMENT` \"Transaction is invalid or expired.\" everywhere; an ID that has ended answers `ABORTED` \"The referenced transaction has expired or is no longer valid.\", as on the official emulator",
    "reason": "Bug (an internal error)",
-   "references": [],
+   "references": [
+    "tools/oracle/datastore_entities.py"
+   ],
    "pinned_by": [
     "crates/hidane/tests/transactions.rs::unknown_and_stale_transactions",
-    "crates/hidane/src/firestore/transactions/tests.rs::ids_count_per_database_in_the_official_encoding"
+    "crates/hidane/src/firestore/transactions/tests.rs::ids_count_per_database_in_the_official_encoding",
+    "crates/hidane/tests/datastore.rs::datastore_mode_answers_like_the_official_emulator"
    ]
   },
   {

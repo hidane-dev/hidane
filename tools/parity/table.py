@@ -50,6 +50,7 @@ AREAS = [
     ("export", "Export & import", "エクスポートとインポート"),
     ("admin", "Auth & admin endpoints", "認証と管理エンドポイント"),
     ("values", "Values & limits", "値と上限"),
+    ("datastore", "Datastore mode", "Datastore モード"),
 ]
 AREA_ORDER = [key for key, _, _ in AREAS]
 AREA_NAME = {"en": {k: en for k, en, _ in AREAS}, "ja": {k: ja for k, _, ja in AREAS}}
@@ -659,6 +660,24 @@ RECORDINGS = {
         compares="in full: status, every header but `date`, `content-length` and `connection`, "
                  "and the body",
         count=lambda f: each(f["cases"], REST, FULL)),
+    f"{H}/fixtures/datastore_entities.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::datastore_mode_answers_like_the_official_emulator"],
+        counted="each request, to a server started with `--database-mode datastore-mode`; "
+                + OVER_REST,
+        compares="in full: status, content type and body byte for byte, server times, versions, "
+                 "transaction IDs and cursors masked; the requests the test lists in `KNOWN` "
+                 "as intentionally different (D025)",
+        count=lambda f: [(REST, DIFFERS if case["name"] in rust_strings(f"{H}/datastore.rs", "KNOWN")
+                          else FULL) for case in f["cases"]]),
+    f"{H}/fixtures/datastore_queries.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::datastore_queries_answer_like_the_official_emulator"],
+        counted="each query and aggregation query, to a server started with "
+                "`--database-mode datastore-mode` over the recording's dataset; " + OVER_REST,
+        compares="in full: status, content type and body byte for byte, server times, versions, "
+                 "transaction IDs and cursors masked (each cursor sent back as the server gave it)",
+        count=lambda f: [(REST, FULL) for _ in f["cases"]]),
     f"{H}/fixtures/document_writes.json": dict(
         area="documents",
         tests=[f"{H}/documents.rs::reads_and_their_errors", f"{H}/documents.rs::preconditions",

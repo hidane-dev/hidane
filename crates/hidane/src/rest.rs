@@ -630,7 +630,7 @@ async fn collect<T: Message + 'static>(
     Ok(elements)
 }
 
-fn json_response(body: &str) -> Response {
+pub(crate) fn json_response(body: &str) -> Response {
     (
         [(header::CONTENT_TYPE, "application/json")],
         format!("{body}\n"),

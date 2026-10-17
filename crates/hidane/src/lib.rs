@@ -15,6 +15,7 @@
 //! `/google.firestore.v1.Firestore/Listen/channel` sit under the gRPC service prefix.
 
 pub mod cli;
+mod datastore;
 pub mod diagnostic;
 pub mod export;
 mod firestore;
@@ -86,6 +87,8 @@ pub struct Admin {
     transactions: Arc<Transactions>,
     changes: Arc<ChangeFeed>,
     shutdown: Arc<watch::Sender<bool>>,
+    /// `--database-mode datastore-mode`: the Datastore API in place of Firestore's (#81).
+    datastore: Option<datastore::DatastoreService>,
     enterprise: bool,
     channels: Arc<webchannel::Channels>,
     seeder: Option<Arc<Seeder>>,
@@ -123,6 +126,7 @@ impl Admin {
             transactions: Arc::default(),
             changes: Arc::default(),
             shutdown: Arc::new(watch::Sender::new(false)),
+            datastore: None,
             enterprise: false,
             channels: Arc::default(),
             seeder: None,
@@ -168,6 +172,14 @@ impl Admin {
     /// `--single_project_mode`, if given.
     pub fn single_project(&self) -> Option<&single_project::SingleProject> {
         self.single_project.as_deref()
+    }
+
+    /// `--database-mode datastore-mode`: the Datastore API is served, and the Firestore API
+    /// refused, as the official emulator does in that mode (#81).
+    #[must_use]
+    pub fn with_datastore_mode(mut self, datastore: bool) -> Self {
+        self.datastore = datastore.then(datastore::DatastoreService::default);
+        self
     }
 
     /// `--database-edition enterprise`.
@@ -332,6 +344,15 @@ const MAX_CHANNEL_BODY: usize = 16 * 1024 * 1024;
 /// `/v1beta1/…`), or 404.
 async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -> Response {
     let (parts, body) = request.into_parts();
+    if let Some(service) = &admin.datastore {
+        if let Some((project, verb)) = datastore::rest::route(parts.uri.path()) {
+            return datastore::rest::handle(service, &parts.method, &project, &verb, body).await;
+        }
+        let path = parts.uri.path();
+        if path.starts_with("/v1/") || path.starts_with("/v1beta1/") {
+            return rest::error(&datastore::firestore_refused());
+        }
+    }
     if is_index_usage(parts.uri.path()) {
         return index_usage(&admin, &parts.method, parts.uri.query());
     }
@@ -418,6 +439,9 @@ async fn reset(State(admin): State<Admin>) -> Response {
     // official emulator; attached listeners see the documents go, which the official emulator
     // does not tell them. The rulesets loaded since the start go too, with their coverage.
     admin.firestore().reset().await;
+    if let Some(datastore) = &admin.datastore {
+        datastore.reset();
+    }
     admin.rules.reset();
     admin.index_usage.clear();
     text("Resetting...\n")
@@ -499,12 +523,31 @@ pub fn grpc_routes(admin: &Admin) -> Router {
     let reflection_v1alpha = reflection()
         .build_v1alpha()
         .expect("embedded descriptor set is valid");
-    let firestore =
-        FirestoreServer::new(admin.firestore()).max_decoding_message_size(MAX_GRPC_MESSAGE);
+    // In Datastore mode every Firestore RPC is refused, as on the official emulator (#81).
+    let refused = admin.datastore.is_some();
+    let firestore = tonic::service::interceptor::InterceptedService::new(
+        FirestoreServer::new(admin.firestore()).max_decoding_message_size(MAX_GRPC_MESSAGE),
+        move |request| {
+            if refused {
+                Err(datastore::firestore_refused())
+            } else {
+                Ok(request)
+            }
+        },
+    );
     let v1beta1 = firestore.clone();
-    tonic::service::Routes::new(firestore)
+    let mut routes = tonic::service::Routes::new(firestore)
         .add_service(reflection_v1)
-        .add_service(reflection_v1alpha)
+        .add_service(reflection_v1alpha);
+    if let Some(service) = &admin.datastore {
+        routes = routes.add_service(
+            hidane_proto::google::datastore::v1::datastore_server::DatastoreServer::new(
+                service.clone(),
+            )
+            .max_decoding_message_size(MAX_GRPC_MESSAGE),
+        );
+    }
+    routes
         .into_axum_router()
         // `google.firestore.v1beta1.Firestore` is the same service under its earlier name, as
         // on the official emulator; its messages are wire-compatible with v1's.

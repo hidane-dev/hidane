@@ -43,6 +43,12 @@ const ORDERED: &[(&str, &str, &str, &str)] = &[
         "crate::ordered::Entity",
         "PropertiesEntry",
     ),
+    (
+        "google.datastore.v1",
+        "AggregationResult",
+        "crate::ordered::DatastoreAggregationResult",
+        "AggregatePropertiesEntry",
+    ),
 ];
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -96,7 +102,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     fs::write(v1, generated)?;
     let datastore = out.join("google.datastore.v1.rs");
     let mut generated = fs::read_to_string(&datastore)?;
-    generated.push_str("\npub use crate::ordered::Entity;\n");
+    generated.push_str(
+        "\npub use crate::ordered::{DatastoreAggregationResult as AggregationResult, Entity};\n",
+    );
     fs::write(datastore, generated)?;
     Ok(())
 }

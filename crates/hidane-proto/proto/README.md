@@ -18,5 +18,12 @@ their transitive imports are vendored. The
   publish it. Without the field, prost would drop it and the write would arrive with no
   operation.
 
+- `google/datastore/v1/datastore.proto`: `int64 commit_version = 6;` in `CommitResponse`,
+  marked "hidane patch" (#81). The official emulator's REST answer to a transactional commit in
+  Datastore mode has a `commitVersion` (the commit time in microseconds) between
+  `mutationResults` (3) and `commitTime` (8) that googleapis does not publish. The field number
+  is hidane's, an unused one between those two, so that JSON prints the fields in the same
+  order; gRPC clients see an unknown field.
+
 To update: check out googleapis at the new commit, copy the same files, reapply the local
 changes above, update the commit hash, and run `cargo test --workspace`.
