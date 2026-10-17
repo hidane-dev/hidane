@@ -635,6 +635,75 @@ impl Bench {
         );
     }
 
+    /// Startup as projects start the emulator: `firebase emulators:start --only firestore` in a
+    /// scratch project (as `ci_firebase` runs firebase-tools), until the Firestore emulator's
+    /// port accepts a TCP connection; firebase-tools' own start is part of the time (#50).
+    pub fn firebase_startup(&mut self, firebase: &Path) {
+        let metrics = [metric(
+            "firebase_startup",
+            "time_to_port",
+            "ms",
+            "`firebase emulators:start --only firestore` started until the Firestore emulator's port accepts a TCP connection",
+        )];
+        let runs = self.ctx.params.firebase_startup;
+        self.each_run(
+            "firebase_startup",
+            "firebase_startup",
+            runs,
+            &metrics,
+            |ctx, target, name| {
+                let dir = std::env::temp_dir()
+                    .join(format!("hidane-bench-{}-{name}", std::process::id()));
+                let result = firebase_start(ctx, target, firebase, &dir, name);
+                let _ = std::fs::remove_dir_all(&dir);
+                Ok(vec![(0, ms(result?))])
+            },
+        );
+    }
+
+    /// More documents than the largest dataset size (#50): start, write them in commits, read
+    /// RSS, shut down. The official emulator runs with the JVM's default heap limit
+    /// (`environment.java_max_heap_bytes`).
+    pub fn large_dataset(&mut self) {
+        let p = self.ctx.params.large_dataset.clone();
+        let n = p.documents;
+        let metrics = [
+            metric(
+                "large_dataset",
+                &format!("seed_{n}"),
+                "ms",
+                &format!("Writing {n} documents in commits of {} over gRPC", p.batch),
+            ),
+            metric(
+                "large_dataset",
+                &format!("rss_after_seed_{n}"),
+                "bytes",
+                &format!("RSS right after writing {n} documents"),
+            ),
+        ];
+        self.each_run(
+            "large_dataset",
+            "large_dataset",
+            p.runs,
+            &metrics,
+            |ctx, target, name| {
+                let mut running = target.spawn(ctx.logs.as_deref(), name)?;
+                running.wait_port()?;
+                let (addr, pid) = (running.addr(), running.pid());
+                let values = ctx.rt.block_on(async {
+                    let mut c = Client::connect(addr).await?;
+                    let start = Instant::now();
+                    c.seed("users", n, p.batch, 100).await?;
+                    let seeded = ms(start.elapsed());
+                    let rss = system::sample(pid).ok_or("could not read the process's memory")?;
+                    Ok::<_, String>(vec![(0, seeded), (1, rss.rss_bytes as f64)])
+                })?;
+                running.shutdown()?;
+                Ok(values)
+            },
+        );
+    }
+
     /// Writes with a listener attached (firebase-tools#3477, docs/why.md §3): a Listen stream
     /// on the whole collection, on its own connection and read as it arrives, while the documents
     /// are written in commits over another connection, one commit at a time. The run ends when
@@ -967,6 +1036,147 @@ fn firebase_run(
     name: &str,
     p: &Ci,
 ) -> Result<(Duration, f64), String> {
+    let (mut command, _) = firebase_command(ctx, target, firebase, dir, name)?;
+    let report = dir.join("workload-ms");
+    let script = format!(
+        "{} benchmark workload --tests {} --seed {} --report {}",
+        shell_quote(engine),
+        p.tests,
+        p.seed_documents,
+        shell_quote(&report)
+    );
+    command.args([
+        "emulators:exec",
+        "--only",
+        "firestore",
+        "--project",
+        client::PROJECT,
+        &script,
+    ]);
+    let start = Instant::now();
+    let status = command
+        .status()
+        .map_err(|e| format!("could not run firebase-tools ({e})"))?;
+    let total = start.elapsed();
+    if !status.success() {
+        return Err(format!(
+            "firebase emulators:exec failed ({status}) (rerun with --keep-logs DIR to keep its output)"
+        ));
+    }
+    let workload = std::fs::read_to_string(&report)
+        .ok()
+        .and_then(|t| t.trim().parse::<f64>().ok())
+        .ok_or("the workload did not report its time")?;
+    Ok((total, workload))
+}
+
+/// `firebase emulators:start --only firestore` in the scratch project `dir`, until the Firestore
+/// emulator's port accepts a TCP connection (polled as firebase-tools polls it); then
+/// firebase-tools is interrupted, as Ctrl-C does, its process group with it, and waited for
+/// (killed after 30 s).
+fn firebase_start(
+    ctx: &Ctx,
+    target: &Target,
+    firebase: &Path,
+    dir: &Path,
+    name: &str,
+) -> Result<Duration, String> {
+    let (mut command, port) = firebase_command(ctx, target, firebase, dir, name)?;
+    command.args([
+        "emulators:start",
+        "--only",
+        "firestore",
+        "--project",
+        client::PROJECT,
+    ]);
+    #[cfg(unix)]
+    {
+        use std::os::unix::process::CommandExt as _;
+        command.process_group(0);
+    }
+    let start = Instant::now();
+    let mut child = command
+        .spawn()
+        .map_err(|e| format!("could not run firebase-tools ({e})"))?;
+    let addr = std::net::SocketAddr::from(([127, 0, 0, 1], port));
+    let ready = loop {
+        if std::net::TcpStream::connect_timeout(&addr, Duration::from_millis(100)).is_ok() {
+            break Ok(start.elapsed());
+        }
+        match child.try_wait() {
+            Ok(Some(status)) => {
+                break Err(format!(
+                    "firebase emulators:start exited ({status}) (rerun with --keep-logs DIR to keep its output)"
+                ));
+            }
+            Ok(None) => {}
+            Err(e) => break Err(format!("could not check firebase-tools ({e})")),
+        }
+        if start.elapsed() > FIREBASE_START_TIMEOUT {
+            break Err(format!(
+                "the port did not accept within {} s",
+                FIREBASE_START_TIMEOUT.as_secs()
+            ));
+        }
+        std::thread::sleep(Duration::from_millis(1));
+    };
+    stop_group(&mut child);
+    ready
+}
+
+/// How long `firebase emulators:start` may take to open the port, and then to stop.
+const FIREBASE_START_TIMEOUT: Duration = Duration::from_secs(120);
+const FIREBASE_STOP_TIMEOUT: Duration = Duration::from_secs(30);
+
+/// Interrupts a process started in a process group of its own, and every process of the group,
+/// as Ctrl-C in a terminal does; waits for it, killing the group after a while.
+fn stop_group(child: &mut std::process::Child) {
+    #[cfg(unix)]
+    let group = {
+        let id = format!("-{}", child.id());
+        move |signal: &str| {
+            let _ = Command::new("kill")
+                .args([signal, "--", &id])
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .status();
+        }
+    };
+    #[cfg(unix)]
+    group("-INT");
+    #[cfg(not(unix))]
+    let _ = child.kill();
+    let asked = Instant::now();
+    loop {
+        match child.try_wait() {
+            Ok(Some(_)) | Err(_) => break,
+            Ok(None) if asked.elapsed() > FIREBASE_STOP_TIMEOUT => {
+                #[cfg(unix)]
+                group("-KILL");
+                let _ = child.kill();
+                let _ = child.wait();
+                break;
+            }
+            Ok(None) => std::thread::sleep(Duration::from_millis(20)),
+        }
+    }
+    // What the group started may outlive firebase-tools for a moment.
+    #[cfg(unix)]
+    group("-KILL");
+}
+
+/// firebase-tools (through `hidane exec` for hidane) in the scratch project `dir`: its own
+/// ports, a fresh configuration directory (no login, no usage reporting), no update check, the
+/// official emulator from the verified jar (`FIRESTORE_EMULATOR_BINARY_PATH`), and the same Java
+/// for both. Returns the command, to which the caller adds firebase-tools' arguments, and the
+/// Firestore emulator's port.
+fn firebase_command(
+    ctx: &Ctx,
+    target: &Target,
+    firebase: &Path,
+    dir: &Path,
+    name: &str,
+) -> Result<(Command, u16), String> {
     let io = |e: std::io::Error| format!("could not prepare the firebase project ({e})");
     std::fs::create_dir_all(dir.join("config")).map_err(io)?;
     let ports = [
@@ -986,14 +1196,6 @@ fn firebase_run(
         },
     });
     std::fs::write(dir.join("firebase.json"), config.to_string()).map_err(io)?;
-    let report = dir.join("workload-ms");
-    let script = format!(
-        "{} benchmark workload --tests {} --seed {} --report {}",
-        shell_quote(engine),
-        p.tests,
-        p.seed_documents,
-        shell_quote(&report)
-    );
     let mut command = match target.kind {
         Kind::Official => {
             let mut command = Command::new(firebase);
@@ -1024,14 +1226,6 @@ fn firebase_run(
         }
     }
     command
-        .args([
-            "emulators:exec",
-            "--only",
-            "firestore",
-            "--project",
-            client::PROJECT,
-            &script,
-        ])
         .current_dir(dir)
         .env("NO_UPDATE_NOTIFIER", "1")
         .env("XDG_CONFIG_HOME", dir.join("config"))
@@ -1045,21 +1239,7 @@ fn firebase_run(
             command.stdout(Stdio::null()).stderr(Stdio::null());
         }
     }
-    let start = Instant::now();
-    let status = command
-        .status()
-        .map_err(|e| format!("could not run firebase-tools ({e})"))?;
-    let total = start.elapsed();
-    if !status.success() {
-        return Err(format!(
-            "firebase emulators:exec failed ({status}) (rerun with --keep-logs DIR to keep its output)"
-        ));
-    }
-    let workload = std::fs::read_to_string(&report)
-        .ok()
-        .and_then(|t| t.trim().parse::<f64>().ok())
-        .ok_or("the workload did not report its time")?;
-    Ok((total, workload))
+    Ok((command, ports[0]))
 }
 
 #[cfg(test)]

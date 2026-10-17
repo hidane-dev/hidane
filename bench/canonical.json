@@ -27,7 +27,9 @@
     "listen_writes": { "warmup": 0, "runs": 3, "documents": 100000, "batch": 500 },
     "owner_writes": { "warmup": 1, "runs": 3, "commit_warmup": 20, "commits": 100, "batch": 500, "documents": 100000 },
     "listen_limit_writes": { "warmup": 0, "runs": 3, "documents": 100000, "batch": 500, "limit": 50 },
-    "command": { "warmup": 1, "runs": 5 }
+    "command": { "warmup": 1, "runs": 5 },
+    "firebase_startup": { "warmup": 1, "runs": 5 },
+    "large_dataset": { "warmup": 0, "runs": 3, "documents": 500000, "batch": 500 }
   },
   "stability": {
     "max_load_1m": 2.0,
@@ -56,7 +58,9 @@
       "listen_writes": { "warmup": 0, "runs": 1, "documents": 10000 },
       "owner_writes": { "warmup": 0, "runs": 1, "commit_warmup": 5, "commits": 20, "documents": 10000 },
       "listen_limit_writes": { "warmup": 0, "runs": 1, "documents": 10000 },
-      "command": { "warmup": 0, "runs": 1 }
+      "command": { "warmup": 0, "runs": 1 },
+      "firebase_startup": { "warmup": 0, "runs": 1 },
+      "large_dataset": { "warmup": 0, "runs": 1, "documents": 10000 }
     }
   }
 }
