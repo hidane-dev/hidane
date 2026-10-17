@@ -121,6 +121,7 @@ impl Admin {
         .with_single_project(self.single_project.clone())
         .with_index_usage(Arc::clone(&self.index_usage))
         .with_refused_queries(self.refuse_queries)
+        .with_datastore_mode(self.datastore.is_some())
     }
 
     pub fn new(store: Arc<dyn Store>) -> Self {
@@ -397,8 +398,14 @@ async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -
             )
             .await;
         }
-        if is_firestore_rest(parts.uri.path()) {
-            return rest::error(&datastore::firestore_refused());
+        // The emulator's own endpoints fail in this mode, as on the official emulator; the
+        // Firestore API is routed and refused by the Firestore service.
+        if is_index_usage(parts.uri.path())
+            || triggers::route(parts.uri.path()).is_some()
+            || rules::route(parts.uri.path())
+                .is_some_and(|(_, _, verb)| verb != rules::Verb::RuleCoverageHtml)
+        {
+            return rest::error(&tonic::Status::unknown(""));
         }
     }
     if is_index_usage(parts.uri.path()) {
@@ -448,24 +455,6 @@ async fn fallback(State(admin): State<Admin>, request: axum::extract::Request) -
     )
     .await
     .unwrap_or_else(not_found_response)
-}
-
-/// A path of the Firestore REST API (`/v1/projects/{p}/databases/{d}/documents…`), which
-/// Datastore mode refuses; another `/v1/` path is not found there, as on the official emulator
-/// (`tests/fixtures/datastore_protobuf.json`).
-fn is_firestore_rest(path: &str) -> bool {
-    let Some(rest) = path
-        .strip_prefix("/v1/")
-        .or_else(|| path.strip_prefix("/v1beta1/"))
-    else {
-        return false;
-    };
-    let parts: Vec<&str> = rest.splitn(6, '/').collect();
-    matches!(
-        parts.as_slice(),
-        ["projects", _, "databases", _, documents, ..]
-            if documents.split(':').next() == Some("documents")
-    )
 }
 
 /// `/emulator/v1/projects/{p}:indexUsage`; not under a database.
@@ -529,6 +518,10 @@ async fn clear_database(
     Path((project, database)): Path<(String, String)>,
     headers: HeaderMap,
 ) -> Response {
+    if admin.datastore.is_some() {
+        // In Datastore mode, as on the official emulator.
+        return rest::error(&tonic::Status::unknown(""));
+    }
     // The name is read first, as a parent's (`tools/oracle/project_ids.py`).
     let database = format!("projects/{}/databases/{}", project.trim(), database.trim());
     let firestore = admin.firestore();
@@ -551,6 +544,10 @@ async fn delete_tree(
     Path((project, database, path)): Path<(String, String, String)>,
     headers: HeaderMap,
 ) -> Response {
+    if admin.datastore.is_some() {
+        // In Datastore mode, as clearing a whole database there.
+        return rest::error(&tonic::Status::unknown(""));
+    }
     let database = format!("projects/{}/databases/{}", project.trim(), database.trim());
     let path = path.split('/').map(str::trim).collect::<Vec<_>>().join("/");
     match admin
@@ -598,17 +595,10 @@ pub fn grpc_routes(admin: &Admin) -> Router {
         .build_v1alpha()
         .expect("embedded descriptor set is valid");
     // In Datastore mode every Firestore RPC is refused, as on the official emulator (#81).
-    let refused = admin.datastore.is_some();
-    let firestore = tonic::service::interceptor::InterceptedService::new(
-        FirestoreServer::new(admin.firestore()).max_decoding_message_size(MAX_GRPC_MESSAGE),
-        move |request| {
-            if refused {
-                Err(datastore::firestore_refused())
-            } else {
-                Ok(request)
-            }
-        },
-    );
+    // In Datastore mode, each Firestore RPC is refused once it has read its names
+    // (`FirestoreService::caller`), as the official emulator refuses them.
+    let firestore =
+        FirestoreServer::new(admin.firestore()).max_decoding_message_size(MAX_GRPC_MESSAGE);
     let v1beta1 = firestore.clone();
     let mut routes = tonic::service::Routes::new(firestore)
         .add_service(reflection_v1)

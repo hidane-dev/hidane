@@ -29,6 +29,28 @@ const KNOWN_QUERIES: &[&str] = &[];
 /// The GQL queries hidane answers otherwise, on purpose (docs/parity-exceptions.md).
 const KNOWN_GQL: &[&str] = &[];
 
+/// The requests of `datastore_protobuf.json` and `datastore_firestore_api.json` hidane answers
+/// otherwise, on purpose: a POST whose `Content-Type` is not JSON, which the official emulator
+/// answers with a bare 404, is read as JSON (D086).
+const KNOWN_CONTENT_TYPES: &[&str] = &[
+    "reserveIds, Content-Type 'application/x-protobuf; charset=utf-8'",
+    "reserveIds, Content-Type 'APPLICATION/X-PROTOBUF'",
+    "reserveIds, Content-Type 'application/JSON'",
+    "reserveIds, Content-Type 'application/octet-stream'",
+    "reserveIds, Content-Type 'application/protobuf'",
+    "reserveIds, Content-Type 'application/x-protobuffer'",
+    "reserveIds, Content-Type 'text/x-protobuf'",
+    "reserveIds, Content-Type 'application/xml'",
+    "reserveIds, Content-Type 'text/html'",
+    "reserveIds, Content-Type 'application/x-www-form-urlencoded'",
+    "reserveIds, Content-Type 'multipart/form-data'",
+    "reserveIds, Content-Type '*/*'",
+    "reserveIds, Content-Type 'x'",
+    "commit in protobuf",
+    "createDocument in protobuf",
+    "commit as text/html",
+];
+
 /// The requests of `datastore_indexes.json` hidane answers otherwise, on purpose
 /// (docs/parity-exceptions.md), as `run: request`.
 const KNOWN_INDEXES: &[&str] = &[];
@@ -55,17 +77,19 @@ struct Answer {
     body: String,
 }
 
+/// One request; `content_type` is sent as given, `application/json` where the recordings say
+/// only that a body is JSON.
 async fn send(
     addr: SocketAddr,
     method: &str,
     path: &str,
     body: Option<&str>,
-    json: bool,
+    content_type: Option<&str>,
 ) -> Answer {
     let mut request =
         format!("{method} {path} HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n");
-    if json {
-        request.push_str("Content-Type: application/json\r\n");
+    if let Some(content_type) = content_type {
+        request.push_str(&format!("Content-Type: {content_type}\r\n"));
     }
     let body = body.unwrap_or_default();
     request.push_str(&format!("Content-Length: {}\r\n\r\n{body}", body.len()));
@@ -182,7 +206,7 @@ async fn seed(addr: SocketAddr, fixture: &Json) {
                 "POST",
                 &format!("/v1/projects/{PROJECT}:commit"),
                 Some(&body.to_string()),
-                true,
+                Some("application/json"),
             )
             .await;
             assert_eq!(answer.status, 200, "{}", answer.body);
@@ -228,13 +252,15 @@ async fn replay_cases(
                 *text = text.replace(&format!("\"<{label}>\""), &format!("\"{value}\""));
             }
         }
-        let json = case["headers"].get("Content-Type").is_some() && body.is_some();
+        let content_type = case["headers"]["Content-Type"]
+            .as_str()
+            .filter(|_| body.is_some() || case.get("raw").is_none());
         let answer = send(
             addr,
             case["method"].as_str().unwrap(),
             &path,
             body.as_deref(),
-            json,
+            content_type,
         )
         .await;
         if let Ok(answered) = serde_json::from_str::<Json>(&answer.body) {
@@ -626,6 +652,9 @@ async fn protobuf_answers_like_the_official_emulator() {
     let mut differences = Vec::new();
     for case in cases {
         let name = case["name"].as_str().unwrap();
+        if KNOWN_CONTENT_TYPES.contains(&name) {
+            continue;
+        }
         let headers: Vec<(&str, &str)> = case["headers"]
             .as_object()
             .unwrap()
@@ -657,6 +686,16 @@ async fn protobuf_answers_like_the_official_emulator() {
             ));
         }
     }
+    // D086: a body of another type is read as JSON.
+    let (status, _, _) = send_bytes(
+        addr,
+        "POST",
+        "/v1/projects/demo-protobuf:reserveIds",
+        &[("Content-Type", "text/html")],
+        br#"{"keys":[{"path":[{"kind":"T","id":"5"}]}]}"#,
+    )
+    .await;
+    assert_eq!(status, 200);
     assert!(
         differences.is_empty(),
         "{} of {} requests differ:\n{}",
@@ -772,6 +811,114 @@ async fn export_and_import_like_the_official_emulator() {
     assert!(
         differences.is_empty(),
         "{} of {cases} requests differ:\n{}",
+        differences.len(),
+        differences.join("\n")
+    );
+}
+
+/// The Firestore API in Datastore mode (`fixtures/datastore_firestore_api.json`, from
+/// `tools/oracle/datastore_firestore_api.py`): routed, read and its names checked, then refused;
+/// the emulator's own endpoints failing; over gRPC, a bad name reported before the refusal.
+#[tokio::test]
+async fn the_firestore_api_is_refused_as_on_the_official_emulator() {
+    use hidane_proto::google::firestore::v1::{
+        BeginTransactionRequest, CommitRequest, GetDocumentRequest, ListCollectionIdsRequest,
+        PartitionQueryRequest, RunQueryRequest, firestore_client::FirestoreClient,
+    };
+    let fixture: Json =
+        serde_json::from_str(include_str!("fixtures/datastore_firestore_api.json")).unwrap();
+    let addr = start().await;
+    let cases = fixture["cases"].as_array().unwrap();
+    let mut differences =
+        replay_cases(addr, cases, KNOWN_CONTENT_TYPES, None, "demo-firestore-api").await;
+    let channel = tonic::transport::Channel::from_shared(format!("http://{addr}"))
+        .unwrap()
+        .connect()
+        .await
+        .unwrap();
+    let mut client = FirestoreClient::new(channel);
+    let grpc = fixture["grpc"].as_array().unwrap();
+    for call in grpc {
+        let text = |key: &str| {
+            call["request"][key]
+                .as_str()
+                .unwrap_or_default()
+                .replace("{project}", "demo-firestore-api")
+        };
+        let status = match call["rpc"].as_str().unwrap() {
+            "GetDocument" => client
+                .get_document(GetDocumentRequest {
+                    name: text("name"),
+                    ..Default::default()
+                })
+                .await
+                .err(),
+            "Commit" => client
+                .commit(CommitRequest {
+                    database: text("database"),
+                    ..Default::default()
+                })
+                .await
+                .err(),
+            "ListCollectionIds" => client
+                .list_collection_ids(ListCollectionIdsRequest {
+                    parent: text("parent"),
+                    ..Default::default()
+                })
+                .await
+                .err(),
+            "RunQuery" => match client
+                .run_query(RunQueryRequest {
+                    parent: text("parent"),
+                    ..Default::default()
+                })
+                .await
+            {
+                Err(status) => Some(status),
+                Ok(response) => response.into_inner().message().await.err(),
+            },
+            "PartitionQuery" => client
+                .partition_query(PartitionQueryRequest {
+                    parent: text("parent"),
+                    ..Default::default()
+                })
+                .await
+                .err(),
+            "BeginTransaction" => client
+                .begin_transaction(BeginTransactionRequest {
+                    database: text("database"),
+                    ..Default::default()
+                })
+                .await
+                .err(),
+            other => panic!("no call for {other}"),
+        };
+        let (code, message) = match &status {
+            Some(status) => (
+                format!("{:?}", status.code()),
+                status.message().replace("demo-firestore-api", "{project}"),
+            ),
+            None => ("Ok".to_owned(), String::new()),
+        };
+        let expected = &call["outcome"];
+        let expected_code = expected["code"]
+            .as_str()
+            .unwrap()
+            .replace('_', "")
+            .to_lowercase();
+        if code.to_lowercase() != expected_code
+            || message != expected["message"].as_str().unwrap_or_default()
+        {
+            differences.push(format!(
+                "{}: official {expected}, hidane {code} {message:?}",
+                call["name"]
+            ));
+        }
+    }
+    assert!(cases.len() + grpc.len() > 50);
+    assert!(
+        differences.is_empty(),
+        "{} differ:\n{}",
         differences.len(),
         differences.join("\n")
     );

@@ -1166,16 +1166,19 @@
    "area": "rest",
    "topic": null,
    "kind": "more-correct",
-   "official": "A `POST` whose `Content-Type` is `application/x-www-form-urlencoded` or `multipart/form-data` gets a bare `404 Not Found` (plain text, no content type) on every REST path (`:commit`, `:runQuery`, a create, …), whatever its body; `PATCH`, `GET` and `DELETE` with those types are served",
+   "official": "A `POST` whose `Content-Type` is not JSON (none, `application/json…` or `text/plain…`), such as `application/x-www-form-urlencoded`, `multipart/form-data`, `text/html` or `application/octet-stream`, gets a bare `404 Not Found` (plain text, no content type) on every REST path (`:commit`, `:runQuery`, a create, …), whatever its body; so does `application/x-protobuf` on the Firestore API, and in Datastore mode on the Datastore API any type but exactly `application/x-protobuf`, which is read as protobuf (`tools/oracle/datastore_protobuf.py`, `tools/oracle/datastore_firestore_api.py`); `PATCH`, `GET` and `DELETE` with those types are served",
    "firestore": null,
-   "hidane": "Serves it, reading the body as JSON as for any other content type",
-   "reason": "A `404` for a path that exists misleads; no SDK sends a form to these paths (#262)",
+   "hidane": "Serves it, reading the body as JSON as for any other content type (on the Datastore API, `application/x-protobuf` as protobuf)",
+   "reason": "A `404` for a path that exists misleads; no SDK sends these types to these paths (#262)",
    "references": [
     "hidane-dev/hidane#262",
-    "crates/hidane/tests/rest.rs"
+    "crates/hidane/tests/rest.rs",
+    "tools/oracle/datastore_protobuf.py",
+    "tools/oracle/datastore_firestore_api.py"
    ],
    "pinned_by": [
-    "crates/hidane/tests/rest.rs::a_form_encoded_post_is_served"
+    "crates/hidane/tests/rest.rs::a_form_encoded_post_is_served",
+    "crates/hidane/tests/datastore.rs::protobuf_answers_like_the_official_emulator"
    ]
   },
   {
