@@ -176,6 +176,7 @@ Released in v0.5.0 (2026-10-13):
 | P1 | Pipelines (`ExecutePipeline`): every stage and function the SDKs send, in transactions too | Done (#347) |
 | P1 | Writes: values as an enterprise database checks them (arrays in arrays, no size limits, 20 levels) | Done (#338) |
 | P2 | The BSON types (Int32, Decimal128, ObjectId, regular expressions, MinKey and MaxKey, BSON timestamps and binary data): checked, stored, ordered and compared in queries and pipelines | Done (#338) |
+| P2 | `:setDatabaseEdition`: one database's edition, until `/reset` | Done (#36) |
 
 ## 8. Backlog
 
@@ -184,7 +185,7 @@ Released in v0.5.0 (2026-10-13):
   `--require_indexes` with `--index_file`, export and import are served, REST in protobuf too; the Node.js, Python,
   Java and Go client libraries are verified against both emulators
 - `google.firestore.admin.v1` (not in the official emulator either; stays UNIMPLEMENTED)
-- The remaining `/emulator/v1` endpoints and the gRPC `FirestoreEmulator` service (#36)
+- The gRPC `FirestoreEmulator` service (#36); its HTTP endpoints are served
 - Runs against production Firestore and the production Rules API (needs a GCP project, #82)
 
 The distribution channels and the license decision listed here before shipped in v0.1.0.

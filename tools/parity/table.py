@@ -615,6 +615,18 @@ RECORDINGS = {
                  "doubles); the names in order for an order and as a set for a filter; the "
                  "fields a pipeline gives",
         count=lambda f: each(f["writes"] + f["orders"] + f["filters"] + f["pipelines"], REST, FULL)),
+    f"{H}/fixtures/database_edition.json": dict(
+        area="admin",
+        tests=[f"{H}/rest.rs::set_database_edition_answers_like_the_official_emulator"],
+        counted="each request (the requests after a change that tell the edition too)",
+        compares="in full: status, content type and body byte for byte, server times masked",
+        count=lambda f: rest(f["cases"])),
+    f"{H}/fixtures/database_edition_enterprise.json": dict(
+        area="admin",
+        tests=[f"{H}/rest.rs::set_database_edition_answers_like_the_official_emulator"],
+        counted="each request, against a server started with `--database-edition enterprise`",
+        compares="as `database_edition.json`",
+        count=lambda f: rest(f["cases"])),
     f"{H}/fixtures/index_usage.json": dict(
         area="queries",
         tests=[f"{H}/index_usage.rs::index_usage_answers_like_the_official_emulator"],

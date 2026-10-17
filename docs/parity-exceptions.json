@@ -1552,6 +1552,25 @@
    "pinned_by": [
     "crates/hidane/tests/datastore.rs::an_aggregation_compares_entity_values_with_nothing"
    ]
+  },
+  {
+   "id": "D095",
+   "table": "intentional",
+   "area": "admin",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "`POST /emulator/v1/projects/{p}/databases/{d}:setDatabaseEdition` with a body whose `database` is not empty and not the path's database (another database, another project, or not a database name) is never answered: the connection stays open with no response",
+   "firestore": null,
+   "hidane": "Answers `400` `INVALID_ARGUMENT` \"The body names database \\\"…\\\", the path \\\"…\\\".\" and sets no edition",
+   "reason": "A request should get an answer; which database a body naming two would mean is not documented (#36)",
+   "references": [
+    "hidane-dev/hidane#36",
+    "tools/oracle/database_edition.py",
+    "crates/hidane/tests/rest.rs"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::set_database_edition_refuses_another_database_in_the_body"
+   ]
   }
  ],
  "retired": [

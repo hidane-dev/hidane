@@ -15,6 +15,7 @@ mod aggregation;
 pub(crate) mod auth;
 pub(crate) mod changes;
 mod clear;
+pub(crate) mod edition;
 mod export;
 mod guard;
 pub(crate) mod index_usage;
@@ -95,8 +96,8 @@ pub struct FirestoreService {
     store: Arc<dyn Store>,
     transactions: Arc<Transactions>,
     changes: Arc<ChangeFeed>,
-    /// `--database-edition enterprise`: pipelines are allowed (but not implemented yet).
-    enterprise: bool,
+    /// Each database's edition (`--database-edition`, `:setDatabaseEdition`).
+    editions: Arc<edition::Editions>,
     /// `--seed_from_export`, forgotten on `POST /reset`.
     seeder: Option<Arc<seed::Seeder>>,
     /// The Security Rules of each database (`:securityRules`, `--rules`).
@@ -125,8 +126,8 @@ impl FirestoreService {
         Self::with_state(store, Arc::default(), Arc::default())
     }
 
-    pub(crate) fn with_enterprise_edition(mut self, enterprise: bool) -> Self {
-        self.enterprise = enterprise;
+    pub(crate) fn with_editions(mut self, editions: Arc<edition::Editions>) -> Self {
+        self.editions = editions;
         self
     }
 
@@ -138,6 +139,11 @@ impl FirestoreService {
     pub(crate) fn with_refused_queries(mut self, refuse: bool) -> Self {
         self.refuse_queries = refuse;
         self
+    }
+
+    /// Whether `database` is an enterprise database ([`edition::Editions`]).
+    pub(crate) fn enterprise(&self, database: &str) -> bool {
+        self.editions.enterprise(database)
     }
 
     pub(crate) fn with_seeder(mut self, seeder: Option<Arc<seed::Seeder>>) -> Self {
@@ -288,7 +294,7 @@ impl FirestoreService {
             store,
             transactions,
             changes,
-            enterprise: false,
+            editions: Arc::default(),
             seeder: None,
             rules: None,
             triggers: None,
@@ -363,7 +369,7 @@ impl FirestoreService {
                         .entry(view.path.clone())
                         .or_insert_with(|| view.before.clone());
                 }
-                match writes::apply(batch, write, first, self.enterprise) {
+                match writes::apply(batch, write, first, self.enterprise(database)) {
                     Ok(result) => {
                         results.push(result);
                         if let Some(view) = view {
@@ -377,7 +383,8 @@ impl FirestoreService {
                         let applied = view.method == hidane_rules::eval::Method::Get || {
                             let mut unconditional = write.clone();
                             unconditional.current_document = None;
-                            writes::apply(batch, &unconditional, first, self.enterprise).is_ok()
+                            writes::apply(batch, &unconditional, first, self.enterprise(database))
+                                .is_ok()
                         };
                         if applied {
                             record(view);
@@ -442,7 +449,7 @@ impl FirestoreService {
             self.transactions
                 .check_commit(database, transaction, !writes.is_empty())?;
         }
-        let targets = writes::check(database, writes, verifies, self.enterprise)?;
+        let targets = writes::check(database, writes, verifies, self.enterprise(database))?;
         self.transactions
             .commit(database, transaction, &targets, || {
                 if writes.is_empty() {
@@ -646,7 +653,7 @@ impl Firestore for FirestoreService {
                 order_by: orders,
                 ..StructuredQuery::default()
             },
-            self.enterprise,
+            self.enterprise(&parent.database),
         )?;
         let ordered = (!ordered.orders_by_name()).then_some(ordered);
         if req.show_missing && !caller.is_admin() {
@@ -848,7 +855,12 @@ impl Firestore for FirestoreService {
         let guard = self
             .guard(&caller, &parent.database)
             .map(|guard| guard.auto_id(req.document_id.is_empty()));
-        let mask = read_mask(&parent.database, &write, req.mask.as_ref(), self.enterprise)?;
+        let mask = read_mask(
+            &parent.database,
+            &write,
+            req.mask.as_ref(),
+            self.enterprise(&parent.database),
+        )?;
         let (commit_time, _) = self
             .write(
                 &parent.database,
@@ -883,7 +895,12 @@ impl Firestore for FirestoreService {
             ..Write::default()
         };
         let guard = self.guard(&caller, &name.database);
-        let mask = read_mask(&name.database, &write, req.mask.as_ref(), self.enterprise)?;
+        let mask = read_mask(
+            &name.database,
+            &write,
+            req.mask.as_ref(),
+            self.enterprise(&name.database),
+        )?;
         let (commit_time, _) = self
             .write(
                 &name.database,
@@ -1074,7 +1091,7 @@ impl Firestore for FirestoreService {
         // reads in: a malformed or ended one is reported before anything else about the query
         // (`tools/oracle/transactions.py`, `tools/oracle/queries.py`, #262).
         if let Some(run_query_request::QueryType::StructuredQuery(structured)) = &req.query_type
-            && !self.enterprise
+            && !self.enterprise(&database)
         {
             query::check_operators(structured)?;
         }
@@ -1092,7 +1109,8 @@ impl Firestore for FirestoreService {
         // Security Rules, then the read time, come before the rest of the query is checked
         // (`tools/oracle/rules_list.py`, `tools/oracle/queries.py`, #262). A transaction locks
         // after it: one the checks refuse locks nothing (D085).
-        let read = Query::read(&database, parent.path, structured, self.enterprise, |_| {
+        let enterprise = self.enterprise(&database);
+        let read = Query::read(&database, parent.path, structured, enterprise, |_| {
             Ok(Vec::new())
         })?;
         self.check_list(&caller, &database, &read)?;
@@ -1101,7 +1119,7 @@ impl Firestore for FirestoreService {
         {
             self.read_time(&database, Some(ts))?;
         }
-        let query = if self.enterprise {
+        let query = if enterprise {
             read.check_enterprise()?
         } else {
             read.check()?
@@ -1206,7 +1224,8 @@ impl Firestore for FirestoreService {
             }
             None => &default,
         };
-        if !self.enterprise {
+        let enterprise = self.enterprise(&database);
+        if !enterprise {
             query::check_operators(structured)?;
         }
         if let Some(run_aggregation_query_request::ConsistencySelector::Transaction(t)) =
@@ -1223,7 +1242,6 @@ impl Firestore for FirestoreService {
         };
         let listed = Aggregations::read(&q.aggregations)?;
         let mut checked = None;
-        let enterprise = self.enterprise;
         let read = Query::read(
             &database,
             parent.path,
@@ -1360,7 +1378,7 @@ impl Firestore for FirestoreService {
         }
         // A standard-edition database refuses pipelines before reading the header, as on the
         // official emulator.
-        if !self.enterprise {
+        if !self.enterprise(&database) {
             return Err(Status::invalid_argument(
                 "ExecutePipeline requires the Database Edition to be `enterprise`.",
             ));
@@ -1415,10 +1433,10 @@ impl Firestore for FirestoreService {
         let targets = req
             .writes
             .iter()
-            .map(|write| writes::check_names(&database, write, self.enterprise))
+            .map(|write| writes::check_names(&database, write, self.enterprise(&database)))
             .collect::<Result<Vec<_>, _>>()?;
         for (write, path) in req.writes.iter().zip(&targets) {
-            writes::check_values(path, write, self.enterprise)?;
+            writes::check_values(path, write, self.enterprise(&database))?;
         }
         if !caller.is_admin() {
             return Err(Status::permission_denied(BATCH_WRITE_ADMIN));
