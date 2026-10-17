@@ -108,7 +108,18 @@ pub struct FirestoreService {
     single_project: Option<Arc<SingleProject>>,
     /// The composite indexes queries needed, for `:indexUsage`.
     index_usage: Option<Arc<index_usage::IndexUsage>>,
+    /// `--require_indexes` in Firestore Native mode: every query is refused, as the official
+    /// emulator refuses it (`tests/fixtures/startup_flags.json`).
+    refuse_queries: bool,
+    /// `--database-mode datastore-mode`: every request is refused once its names are read, as the
+    /// official emulator refuses the Firestore API there
+    /// (`tests/fixtures/datastore_firestore_api.json`).
+    datastore_mode: bool,
 }
+
+/// What a query answers with `--require_indexes` in Firestore Native mode.
+pub(crate) const NO_INDEX_ENFORCEMENT: &str =
+    "Firestore Native mode does not support index enforcement";
 
 impl FirestoreService {
     pub fn new(store: Arc<dyn Store>) -> Self {
@@ -117,6 +128,16 @@ impl FirestoreService {
 
     pub(crate) fn with_editions(mut self, editions: Arc<edition::Editions>) -> Self {
         self.editions = editions;
+        self
+    }
+
+    pub(crate) fn with_datastore_mode(mut self, datastore_mode: bool) -> Self {
+        self.datastore_mode = datastore_mode;
+        self
+    }
+
+    pub(crate) fn with_refused_queries(mut self, refuse: bool) -> Self {
+        self.refuse_queries = refuse;
         self
     }
 
@@ -164,6 +185,10 @@ impl FirestoreService {
         metadata: &MetadataMap,
         database: Option<&str>,
     ) -> Result<auth::Caller, Status> {
+        // Every request reads its names, then asks who calls: in Datastore mode, it stops here.
+        if self.datastore_mode {
+            return Err(crate::datastore::firestore_refused());
+        }
         match (
             &self.single_project,
             single_project::requested(metadata, database),
@@ -275,6 +300,8 @@ impl FirestoreService {
             triggers: None,
             single_project: None,
             index_usage: None,
+            refuse_queries: false,
+            datastore_mode: false,
         }
     }
 
@@ -1051,6 +1078,9 @@ impl Firestore for FirestoreService {
         &self,
         request: Request<RunQueryRequest>,
     ) -> Result<Response<BoxStream<RunQueryResponse>>, Status> {
+        if self.refuse_queries {
+            return Err(Status::invalid_argument(NO_INDEX_ENFORCEMENT));
+        }
         let (metadata, _, req) = request.into_parts();
         let parent = names::parent(&req.parent)?;
         let caller = self.caller(&metadata, Some(&parent.database))?;
@@ -1342,6 +1372,10 @@ impl Firestore for FirestoreService {
     ) -> Result<Response<BoxStream<ExecutePipelineResponse>>, Status> {
         let (metadata, _, req) = request.into_parts();
         let database = names::database(&req.database)?;
+        // Datastore mode refuses the Firestore API first.
+        if self.datastore_mode {
+            return Err(crate::datastore::firestore_refused());
+        }
         // A standard-edition database refuses pipelines before reading the header, as on the
         // official emulator.
         if !self.enterprise(&database) {

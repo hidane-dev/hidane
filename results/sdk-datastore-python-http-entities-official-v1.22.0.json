@@ -1,0 +1,280 @@
+[
+ {
+  "name": "put every type",
+  "ok": "ok"
+ },
+ {
+  "name": "get it back",
+  "ok": {
+   "properties": {
+    "at": "2020-01-02T03:04:05.678000+00:00",
+    "big": 4611686018427387904,
+    "count": 3,
+    "done": false,
+    "empty": [],
+    "inf": "Infinity",
+    "long": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "nan": "NaN",
+    "nested": {
+     "properties": {
+      "x": 1,
+      "y": "z"
+     }
+    },
+    "ninf": "-Infinity",
+    "nothing": null,
+    "owner": {
+     "key": {
+      "path": [
+       "User",
+       "u1"
+      ]
+     }
+    },
+    "place": {
+     "geopoint": [
+      35.0,
+      139.0
+     ]
+    },
+    "ratio": 0.5,
+    "raw": {
+     "bytes": "AAE="
+    },
+    "tags": [
+     "x",
+     "y"
+    ],
+    "text": "a",
+    "zero": -0.0
+   },
+   "key": {
+    "path": [
+     "Task",
+     "t1"
+    ]
+   },
+   "excluded": [
+    "long"
+   ]
+  }
+ },
+ {
+  "name": "get a missing entity",
+  "ok": null
+ },
+ {
+  "name": "get several, one missing, one twice",
+  "ok": {
+   "found": [
+    {
+     "path": [
+      "Task",
+      "t1"
+     ]
+    }
+   ],
+   "missing": [
+    {
+     "path": [
+      "Task",
+      "nobody"
+     ]
+    }
+   ]
+  }
+ },
+ {
+  "name": "overwrite it",
+  "ok": {
+   "properties": {
+    "text": "b"
+   },
+   "key": {
+    "path": [
+     "Task",
+     "t1"
+    ]
+   }
+  }
+ },
+ {
+  "name": "put an incomplete key",
+  "ok": {
+   "id": 5629499534213120,
+   "read": {
+    "properties": {
+     "text": "generated"
+    },
+    "key": {
+     "path": [
+      "Task",
+      5629499534213120
+     ]
+    }
+   }
+  }
+ },
+ {
+  "name": "allocate three IDs",
+  "ok": [
+   5066549580791808,
+   6192449487634432,
+   4785074604081152
+  ]
+ },
+ {
+  "name": "allocate an ID under a parent",
+  "ok": [
+   {
+    "path": [
+     "List",
+     "l1",
+     "Task",
+     5910974510923776
+    ]
+   }
+  ]
+ },
+ {
+  "name": "reserve an ID",
+  "ok": "ok"
+ },
+ {
+  "name": "reserve IDs in sequence",
+  "ok": "ok"
+ },
+ {
+  "name": "put a child",
+  "ok": {
+   "properties": {
+    "text": "child"
+   },
+   "key": {
+    "path": [
+     "List",
+     "l1",
+     "Task",
+     "c1"
+    ]
+   }
+  }
+ },
+ {
+  "name": "get a child's parent, never written",
+  "ok": null
+ },
+ {
+  "name": "put in a namespace",
+  "ok": {
+   "properties": {
+    "text": "ns"
+   },
+   "key": {
+    "path": [
+     "Task",
+     "t1"
+    ],
+    "namespace": "ns1"
+   }
+  }
+ },
+ {
+  "name": "the default namespace keeps its own",
+  "ok": "b"
+ },
+ {
+  "name": "put several",
+  "ok": [
+   {
+    "path": [
+     "Many",
+     1
+    ]
+   },
+   {
+    "path": [
+     "Many",
+     2
+    ]
+   },
+   {
+    "path": [
+     "Many",
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "name": "delete several",
+  "ok": [
+   {
+    "path": [
+     "Many",
+     3
+    ]
+   }
+  ]
+ },
+ {
+  "name": "delete a missing entity",
+  "ok": "ok"
+ },
+ {
+  "name": "delete it",
+  "ok": null
+ },
+ {
+  "name": "an indexed string of 1501 bytes",
+  "error": {
+   "client": "BadRequest: 400 The value of property \"text\" is longer than 1500 bytes. 3: The value of property \"text\" is longer than 1500 bytes."
+  }
+ },
+ {
+  "name": "an indexed string of 1500 bytes",
+  "ok": "ok"
+ },
+ {
+  "name": "a property named __x__",
+  "error": {
+   "client": "BadRequest: 400 The property.name \"__x__\" is reserved. 3: The property.name \"__x__\" is reserved."
+  }
+ },
+ {
+  "name": "an array in an array",
+  "error": {
+   "client": "BadRequest: 400 Nested arrays are not allowed 3: Nested arrays are not allowed"
+  }
+ },
+ {
+  "name": "an entity over 1 MiB",
+  "error": {
+   "client": "BadRequest: 400 The value of property \"a\" is longer than 1048487 bytes. 3: The value of property \"a\" is longer than 1048487 bytes."
+  }
+ },
+ {
+  "name": "a key name __x__",
+  "error": {
+   "client": "BadRequest: 400 The key path element name \"__x__\" is reserved. 3: The key path element name \"__x__\" is reserved."
+  }
+ },
+ {
+  "name": "a kind __x__",
+  "error": {
+   "client": "BadRequest: 400 The kind \"__x__\" is reserved. 3: The kind \"__x__\" is reserved."
+  }
+ },
+ {
+  "name": "an ID 0 key",
+  "error": {
+   "client": "BadRequest: 400 Key path id is invalid. Must not be zero. 3: Key path id is invalid. Must not be zero."
+  }
+ },
+ {
+  "name": "a key of another project",
+  "error": {
+   "client": "ValueError: Keys do not match project"
+  }
+ }
+]

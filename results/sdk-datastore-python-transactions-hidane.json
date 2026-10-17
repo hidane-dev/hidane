@@ -1,0 +1,81 @@
+[
+ {
+  "name": "read and write in a transaction",
+  "ok": 70
+ },
+ {
+  "name": "roll back",
+  "ok": 70
+ },
+ {
+  "name": "an exception rolls back",
+  "error": {
+   "client": "RuntimeError: stop"
+  }
+ },
+ {
+  "name": "after it",
+  "ok": 70
+ },
+ {
+  "name": "read only",
+  "ok": 70
+ },
+ {
+  "name": "a write in a read-only transaction",
+  "error": {
+   "client": "RuntimeError: Transaction is read only"
+  }
+ },
+ {
+  "name": "an ancestor query in a transaction",
+  "ok": [
+   1,
+   2,
+   3
+  ]
+ },
+ {
+  "name": "a count in a transaction",
+  "ok": [
+   [
+    3
+   ]
+  ]
+ },
+ {
+  "name": "a missing entity in a transaction",
+  "ok": null
+ },
+ {
+  "name": "read in a rolled-back transaction",
+  "ok": {
+   "properties": {
+    "balance": 70
+   },
+   "key": {
+    "path": [
+     "Account",
+     "a1"
+    ]
+   }
+  }
+ },
+ {
+  "name": "commit twice",
+  "error": {
+   "client": "ValueError: Batch must be in progress to commit()"
+  }
+ },
+ {
+  "name": "after it, the balance",
+  "ok": 50
+ },
+ {
+  "name": "an incomplete key in a transaction",
+  "ok": {
+   "complete": true,
+   "read": 1
+  }
+ }
+]

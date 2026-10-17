@@ -14,8 +14,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import issues  # noqa: E402
 
 
-def entry(signature, kind="status", occurrences=1, outcome="unexplained", **extra):
-    return {"signature": signature, "kind": kind, "area": "batches", "verb": ":commit", "detail": "x",
+def entry(signature, kind="status", occurrences=1, outcome="unexplained", area="batches", verb=":commit", **extra):
+    return {"signature": signature, "kind": kind, "area": area, "verb": verb, "detail": "x",
             "outcome": outcome, "occurrences": occurrences, "found": {"seed": 7, "case": 3, "step": 0},
             "official": {"status": 400, "code": "INVALID_ARGUMENT", "message": "Bad `x` <b>\n```"},
             "hidane": {"status": 200}, **extra}
@@ -65,6 +65,20 @@ class Issues(unittest.TestCase):
         self.assertEqual(text.count("```"), 4)  # the two code blocks the body opens and closes
         self.assertIn("python3 -I tools/fuzz/fuzz.py show --seed 7 --case 3", text)
         self.assertEqual(issues.title(f), "Differential fuzzing: status difference in :commit (status-commit-0123456789ab)")
+        self.assertIn("run's `fuzz` artifact", text)
+
+    def test_the_areas_are_the_generators(self):
+        import gen
+        self.assertEqual(issues.AREAS, {area for areas in gen.MODES.values() for area in areas})
+        self.assertEqual(issues.DATASTORE_AREAS, set(gen.MODES["datastore-mode"]))
+
+    def test_a_datastore_difference_names_its_mode_and_artifact(self):
+        f = issues.valid(entry("status-datastore-commit-0123456789ab", area="datastore-entities",
+                               verb="datastore:commit"))
+        text = issues.body(f, {"id": "42", "url": "https://github.com/o/r/actions/runs/42"}, "41")
+        self.assertIn("run's `fuzz-datastore` artifact", text)
+        self.assertIn("python3 -I tools/fuzz/fuzz.py show --seed 7 --case 3 --mode datastore-mode", text)
+        self.assertIn("--database-mode datastore-mode", text)
 
     def test_plan_updates_open_issues_leaves_closed_ones_and_caps_new_ones(self):
         findings = [issues.valid(entry(f"message-commit-00000000000{n}", kind="message", occurrences=n)) for n in range(4)]

@@ -438,14 +438,17 @@
    "area": "transactions",
    "topic": null,
    "kind": "more-correct",
-   "official": "A commit or read with a well-formed transaction ID that was never issued (or was forgotten by a reset) fails with `UNKNOWN` and no message; a rollback answers `INVALID_ARGUMENT` \"Transaction is invalid or expired.\"",
+   "official": "A commit or read with a well-formed transaction ID that was never issued (or was forgotten by a reset) fails with `UNKNOWN` and no message; a rollback answers `INVALID_ARGUMENT` \"Transaction is invalid or expired.\" The same in Datastore mode (`tools/oracle/datastore_entities.py`), for `lookup`, `commit` and a read-write `beginTransaction` retrying one.",
    "firestore": null,
    "hidane": "`INVALID_ARGUMENT` \"Transaction is invalid or expired.\" everywhere; an ID that has ended answers `ABORTED` \"The referenced transaction has expired or is no longer valid.\", as on the official emulator",
    "reason": "Bug (an internal error)",
-   "references": [],
+   "references": [
+    "tools/oracle/datastore_entities.py"
+   ],
    "pinned_by": [
     "crates/hidane/tests/transactions.rs::unknown_and_stale_transactions",
-    "crates/hidane/src/firestore/transactions/tests.rs::ids_count_per_database_in_the_official_encoding"
+    "crates/hidane/src/firestore/transactions/tests.rs::ids_count_per_database_in_the_official_encoding",
+    "crates/hidane/tests/datastore.rs::datastore_mode_answers_like_the_official_emulator"
    ]
   },
   {
@@ -454,11 +457,13 @@
    "area": "transactions",
    "topic": null,
    "kind": "equivalent",
-   "official": "A write that starts waiting for a lock shortly before the holding transaction expires still times out after 2 s: the expiry is only noticed at the next request",
+   "official": "A write that starts waiting for a lock shortly before the holding transaction expires still times out after 2 s: the expiry is only noticed at the next request. In Datastore mode a write outside a transaction waits 60 s, longer than an unused holder lives, and either times out or goes through, by chance (`tools/oracle/datastore_locks.py` keeps its holders in use). One whose holder read again while it waited goes through some 50 ms after the holder ends, so a read just after can miss it",
    "firestore": null,
-   "hidane": "The write proceeds when the holding transaction expires",
+   "hidane": "The write proceeds when the holding transaction expires or ends",
    "reason": "Timing detail with the same outcome a moment later",
-   "references": [],
+   "references": [
+    "tools/oracle/datastore_locks.py"
+   ],
    "pinned_by": [
     "crates/hidane/src/firestore/transactions/tests.rs::a_waiting_write_proceeds_when_the_blocking_transaction_expires"
    ]
@@ -593,16 +598,18 @@
    "area": "admin",
    "topic": null,
    "kind": "limitation",
-   "official": "Server reflection lists `google.firestore.v1beta1.Firestore` (and cannot describe it), `google.firestore.emulator.v1.FirestoreEmulator` and `google.datastore.v1.Datastore`",
+   "official": "Server reflection lists `google.firestore.v1beta1.Firestore` (and cannot describe it), `google.firestore.emulator.v1.FirestoreEmulator` and `google.datastore.v1.Datastore`, in both modes (`tools/oracle/datastore_projects.py`)",
    "firestore": null,
-   "hidane": "Lists `google.firestore.v1.Firestore` and reflection; v1beta1 answers without being listed; the emulator admin API (#36) and Datastore mode (#81) are not served yet",
+   "hidane": "Lists `google.firestore.v1.Firestore`, `google.datastore.v1.Datastore` and reflection; v1beta1 answers without being listed; the emulator admin API's gRPC service (#36) is not served",
    "reason": "Reflection is for tools; v1beta1 has no descriptors here",
    "references": [
     "hidane-dev/hidane#36",
-    "hidane-dev/hidane#81"
+    "hidane-dev/hidane#81",
+    "tools/oracle/datastore_projects.py"
    ],
-   "pinned_by": [],
-   "unpinned": "No test lists services over reflection; `grpc_settings.rs` only checks that v1beta1 answers like v1, which both emulators share."
+   "pinned_by": [
+    "crates/hidane/tests/datastore.rs::projects_are_read_as_on_the_official_emulator"
+   ]
   },
   {
    "id": "D036",
@@ -759,13 +766,14 @@
    "area": "rest",
    "topic": null,
    "kind": "more-correct",
-   "official": "A `:listCollectionIds` body that names a `parent` as the path does leaves the request unanswered",
+   "official": "A `:listCollectionIds` body that names a `parent` as the path does leaves the request unanswered, as does, in Datastore mode, a body that names another `projectId` than the path (any method)",
    "firestore": null,
    "hidane": "The path wins",
    "reason": "Bug",
    "references": [],
    "pinned_by": [
-    "crates/hidane/tests/rest.rs::requests_that_hang_the_official_emulator_are_answered"
+    "crates/hidane/tests/rest.rs::requests_that_hang_the_official_emulator_are_answered",
+    "crates/hidane/tests/datastore.rs::a_body_naming_another_project_is_answered"
    ]
   },
   {
@@ -1050,18 +1058,20 @@
    "area": "documents",
    "topic": null,
    "kind": "limitation",
-   "official": "A `read_time` up to seven days old (604,800 s before now) is served, in microseconds rather than whole minutes, on an emulator started seconds before and for data written just before or never, over every read; one older than the data reads the data's absence. An older one answers `FAILED_PRECONDITION` \"The requested 'read_time' is too old.\" (`tests/fixtures/read_time_and_databases.json`, #86). The history behind those reads is not always kept: once, an hour after a document was written and left unread, reads before its creation failed with `UNKNOWN` and no message (`500` over REST), while its first version, replaced minutes after the write, was still served",
+   "official": "A `read_time` up to seven days old (604,800 s before now) is served, in microseconds rather than whole minutes, on an emulator started seconds before and for data written just before or never, over every read; one older than the data reads the data's absence. An older one answers `FAILED_PRECONDITION` \"The requested 'read_time' is too old.\" (`tests/fixtures/read_time_and_databases.json`, #86). The same in Datastore mode, for lookups, queries, aggregations and read-only transactions (`tests/fixtures/datastore_sequences.json`). The history behind those reads is not always kept: once, an hour after a document was written and left unread, reads before its creation failed with `UNKNOWN` and no message (`500` over REST), while its first version, replaced minutes after the write, was still served",
    "firestore": "Up to one hour old; with point-in-time recovery enabled, also whole minutes up to seven days old (the `read_time` fields of `google.firestore.v1`)",
-   "hidane": "Up to one hour old, like production Firestore without point-in-time recovery; older answers `FAILED_PRECONDITION` \"The requested 'read_time' is too old.\" with the official message",
+   "hidane": "Up to one hour old, like production Firestore without point-in-time recovery, in both modes; older answers `FAILED_PRECONDITION` \"The requested 'read_time' is too old.\" with the official message",
    "reason": "Bounded memory for old versions (ADR 0002). The maintainer kept one hour, production's default, rather than seven days of every version or the official emulator's history that may be dropped without a message (#86)",
    "references": [
     "hidane-dev/hidane#86",
     "docs/adr/0002-storage-engine.md",
     "crates/hidane/tests/fixtures/read_time_and_databases.json",
+    "crates/hidane/tests/fixtures/datastore_sequences.json",
     "crates/hidane/tests/read_time_and_databases.rs"
    ],
    "pinned_by": [
-    "crates/hidane/tests/read_time_and_databases.rs::read_times_up_to_the_window"
+    "crates/hidane/tests/read_time_and_databases.rs::read_times_up_to_the_window",
+    "crates/hidane/tests/datastore.rs::read_times_go_back_an_hour"
    ]
   },
   {
@@ -1163,16 +1173,19 @@
    "area": "rest",
    "topic": null,
    "kind": "more-correct",
-   "official": "A `POST` whose `Content-Type` is `application/x-www-form-urlencoded` or `multipart/form-data` gets a bare `404 Not Found` (plain text, no content type) on every REST path (`:commit`, `:runQuery`, a create, …), whatever its body; `PATCH`, `GET` and `DELETE` with those types are served",
+   "official": "A `POST` whose `Content-Type` is not JSON (none, `application/json…` or `text/plain…`), such as `application/x-www-form-urlencoded`, `multipart/form-data`, `text/html` or `application/octet-stream`, gets a bare `404 Not Found` (plain text, no content type) on every REST path (`:commit`, `:runQuery`, a create, …), whatever its body; so does `application/x-protobuf` on the Firestore API, and in Datastore mode on the Datastore API any type but exactly `application/x-protobuf`, which is read as protobuf (`tools/oracle/datastore_protobuf.py`, `tools/oracle/datastore_firestore_api.py`); `PATCH`, `GET` and `DELETE` with those types are served",
    "firestore": null,
-   "hidane": "Serves it, reading the body as JSON as for any other content type",
-   "reason": "A `404` for a path that exists misleads; no SDK sends a form to these paths (#262)",
+   "hidane": "Serves it, reading the body as JSON as for any other content type (on the Datastore API, `application/x-protobuf` as protobuf)",
+   "reason": "A `404` for a path that exists misleads; no SDK sends these types to these paths (#262)",
    "references": [
     "hidane-dev/hidane#262",
-    "crates/hidane/tests/rest.rs"
+    "crates/hidane/tests/rest.rs",
+    "tools/oracle/datastore_protobuf.py",
+    "tools/oracle/datastore_firestore_api.py"
    ],
    "pinned_by": [
-    "crates/hidane/tests/rest.rs::a_form_encoded_post_is_served"
+    "crates/hidane/tests/rest.rs::a_form_encoded_post_is_served",
+    "crates/hidane/tests/datastore.rs::protobuf_answers_like_the_official_emulator"
    ]
   },
   {
@@ -1507,6 +1520,41 @@
   },
   {
    "id": "D093",
+   "table": "intentional",
+   "area": "export",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "In Datastore mode, an export's `output-0` holds the entities in an order of its own, which is not their keys' (`tools/oracle/datastore_export.py`)",
+   "firestore": null,
+   "hidane": "Writes them in key order: the same records, so the same file size and metadata",
+   "reason": "An import reads every record whatever their order, and nothing else reads them; the order the official emulator writes does not follow the keys",
+   "references": [
+    "hidane-dev/hidane#81",
+    "tools/oracle/datastore_export.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/datastore.rs::export_and_import_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D094",
+   "table": "intentional",
+   "area": "queries",
+   "topic": null,
+   "kind": "limitation",
+   "official": "In Datastore mode, an aggregation's filter that compares a property with an entity value (which `RunQuery` refuses) compares it as the bytes of the entity's internal encoding, among strings and blobs: `a < {}` matches nulls, integers, timestamps, booleans and the strings and blobs below those bytes",
+   "firestore": null,
+   "hidane": "An entity value is equal to nothing and orders with nothing: `!=` matches every value, every other operator none",
+   "reason": "The bytes are the official emulator's internal encoding of an entity, which no client can rely on; `RunQuery` refuses such a filter",
+   "references": [
+    "hidane-dev/hidane#81"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/datastore.rs::an_aggregation_compares_entity_values_with_nothing"
+   ]
+  },
+  {
+   "id": "D095",
    "table": "intentional",
    "area": "admin",
    "topic": null,

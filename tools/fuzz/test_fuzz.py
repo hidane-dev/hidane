@@ -72,6 +72,24 @@ class Generation(unittest.TestCase):
                     self.assertNotIn("parent", step.get("body", {}))
                 self.assertFalse(path.startswith("//"))
 
+    def test_datastore_areas_take_turns_and_send_datastore_requests(self):
+        areas = gen.MODES["datastore-mode"]
+        self.assertFalse(set(areas) & set(gen.AREAS))
+        seen = set()
+        for index in range(len(areas) * 40):
+            case = gen.case(7, index, areas)
+            self.assertEqual(case, gen.case(7, index, areas))
+            seen.add(case["area"])
+            json.dumps(case)
+            for step in case["steps"]:
+                self.assertEqual(step["method"], "POST")
+                self.assertRegex(step["path"], r"^/v1/projects/\{project\}:(lookup|runQuery|runAggregationQuery|"
+                                               r"beginTransaction|commit|rollback|allocateIds|reserveIds)$")
+                self.assertFalse("body" in step and "raw" in step)
+                # No timestamp a value or a read time holds is in the years masked as the servers'.
+                self.assertIsNone(re.search(r'"20(2[1-9]|[3-9][0-9])-', json.dumps(step.get("body"))))
+        self.assertEqual(seen, set(areas))
+
     def test_generated_times_avoid_the_years_masked_as_the_servers(self):
         g = gen.Gen(__import__("random").Random(1))
         for _ in range(2000):
@@ -111,6 +129,17 @@ class Normalisation(unittest.TestCase):
         diff.capture('{"documents": [], "nextPageToken": "N"}', values)
         diff.capture("not json", values)
         self.assertEqual(values, {"tx": "T1", "updateTime": "U", "commitTime": "C", "token": "N"})
+
+    def test_captures_and_masks_datastore_cursors_and_versions(self):
+        values = {"project": "fabc-123456"}
+        diff.capture('{"batch": {"entityResults": [], "endCursor": "CgQSAgg="}, "transaction": "T2"}', values)
+        diff.capture('{"mutationResults": [{"version": "1791600063752288"}], "commitTime": "C"}', values)
+        self.assertEqual(values, {"project": "fabc-123456", "cursor": "CgQSAgg=", "tx": "T2", "version": "1791600063752288",
+                                  "commitTime": "C"})
+        out = diff.normalize('{"found": [{"version": "1791600063752288", "cursor": "CgQSAgg="}], '
+                             '"batch": {"skippedCursor": "x", "snapshotVersion": "17"}, "a": "CgQSAgg="}', values)
+        self.assertEqual(out, '{"found": [{"version": "<version>", "cursor": "<cursor>"}], '
+                              '"batch": {"skippedCursor": "<cursor>", "snapshotVersion": "<version>"}, "a": "<cursor>"}')
 
     def test_project_ids_are_fresh_and_as_long_as_the_recordings(self):
         ids = {diff.project() for _ in range(50)}
@@ -220,6 +249,10 @@ class Classification(unittest.TestCase):
         self.assertEqual(diff.verb({"method": "POST", "path": base + "/c?documentId=x"}), "POST collection")
         self.assertEqual(diff.verb({"method": "PUT", "path": "/emulator/v1/projects/{project}:securityRules"}),
                          "PUT emulator:securityRules")
+        # The Datastore API's verbs are not Firestore's.
+        self.assertEqual(diff.verb({"method": "POST", "path": "/v1/projects/{project}:commit"}), "datastore:commit")
+        self.assertEqual(diff.generalize(("found", 0, "entity", "properties", "a", "integerValue")),
+                         "found.[].entity.properties.*.integerValue")
 
     def test_templates(self):
         self.assertEqual(diff.template('Document "projects/p/databases/(default)/documents/c" has 3 [a, b]'),
@@ -351,6 +384,25 @@ class RequestRules(unittest.TestCase):
         self.assertFalse(diff.in_transaction({**query, "body": {}}))
         self.assertFalse(diff.in_transaction({**query, "raw": "null", "body": None}))
 
+        aggregation = lambda f: {"method": "POST", "path": "/v1/projects/{project}:runAggregationQuery", "body": {  # noqa: E731
+            "aggregationQuery": {"nestedQuery": {"kind": [{"name": "K"}], "filter": f}, "aggregations": [{"count": {}}]}}}
+        on = lambda op, v: {"propertyFilter": {"property": {"name": "a"}, "op": op, "value": v}}  # noqa: E731
+        self.assertTrue(diff.entity_operand(aggregation(on("LESS_THAN", {"entityValue": {}}))))
+        self.assertTrue(diff.entity_operand(aggregation({"compositeFilter": {"op": "AND", "filters": [
+            on("EQUAL", {"integerValue": "1"}), on("IN", {"arrayValue": {"values": [{"entityValue": {}}]}})]}})))
+        self.assertFalse(diff.entity_operand(aggregation(on("NOT_EQUAL", {"entityValue": {}}))))
+        self.assertFalse(diff.entity_operand(aggregation(on("LESS_THAN", {"integerValue": "1"}))))
+        self.assertFalse(diff.entity_operand({"method": "POST", "path": "/v1/projects/{project}:runQuery",
+                                              "body": {"query": {"filter": on("LESS_THAN", {"entityValue": {}})}}}))
+
+        begin = {"method": "POST", "path": "/v1/projects/{project}:beginTransaction", "raw": '{"projectId": "other"}'}
+        self.assertTrue(diff.other_body_project(begin))
+        self.assertTrue(diff.other_body_project({**begin, "raw": '{"projectId": "{project}x"}'}))
+        self.assertFalse(diff.other_body_project({**begin, "raw": '{"projectId": "{project}"}'}))
+        self.assertFalse(diff.other_body_project({**begin, "raw": '{"projectId": ""}'}))
+        self.assertFalse(diff.other_body_project({**begin, "raw": '{"databaseId": "other"}'}))
+        self.assertFalse(diff.other_body_project({**begin, "path": BASE + ":beginTransaction"}))
+
         group = {"from": [{"collectionId": "q", "allDescendants": True}]}
         self.assertTrue(diff.collection_group({**query, "body": {"structuredQuery": group}}))
         self.assertTrue(diff.collection_group({**query, "body": {"structuredAggregationQuery": {"structuredQuery": group}}}))
@@ -409,6 +461,24 @@ class RequestRules(unittest.TestCase):
         self.assertEqual(rules.match("transactions", found, case, official)["id"], "failed-query-lock")
         untransacted = {**query, "body": {"structuredQuery": {"from": [{"collectionId": "q"}], "limit": -1}}}
         self.assertIsNone(rules.match("transactions", found, {"steps": [begin, untransacted, write]}, official))
+
+    def test_a_write_its_client_gave_up_on(self):
+        """D026: a Datastore write whose client gave up waiting for a lock goes through a moment
+        after the holder ends on the official emulator, so a read right after can miss it."""
+        rules = diff.Exceptions.load()
+        key = {"path": [{"kind": "K", "name": "a"}]}
+        step = lambda verb, body: {"method": "POST", "path": "/v1/projects/{project}:" + verb, "body": body}
+        commit = step("commit", {"mode": "NON_TRANSACTIONAL", "mutations": [{"upsert": {"key": key}}]})
+        case = {"steps": [commit, step("rollback", {"transaction": "{tx}"}), step("lookup", {"keys": [key]})]}
+        gone = {"status": None, "error": "TimeoutError"}
+        missing = answer(200, '{"missing": [{"entity": {"key": {}}}]}')
+        there = answer(200, '{"found": [{"entity": {"key": {}}}]}')
+        official = [gone, answer(200, "{}"), missing]
+        found = diff.compare(case, official, [gone, answer(200, "{}"), there])
+        self.assertEqual(rules.match("datastore-transactions", found, case, official)["id"], "write-applied-after-release")
+        answered = [answer(200, "{}"), answer(200, "{}"), missing]
+        found = diff.compare(case, answered, [answer(200, "{}"), answer(200, "{}"), there])
+        self.assertIsNone(rules.match("datastore-transactions", found, case, answered))
 
     def test_an_aggregation_over_a_collection_group_under_a_document(self):
         """D088: the official emulator wants an index for a sum over a collection group under a
@@ -529,7 +599,7 @@ class Minimising(unittest.TestCase):
         # wording: minimising to it would report a difference the run does not report.
         rule = {"id": "x", "exception": "D008", "why": "w", "kinds": ["message"],
                 "hidane": {"message": "accepted"}}
-        args = argparse.Namespace(areas="", minutes=0, official="o", hidane="h", timeout=1)
+        args = argparse.Namespace(mode="firestore-native", areas="", minutes=0, official="o", hidane="h", timeout=1)
         session = fuzz.Session(args, diff.Exceptions([rule]), Path("."))
 
         def both(case):
@@ -550,7 +620,7 @@ class Minimising(unittest.TestCase):
         rule = {"id": "lone", "exception": "D083", "why": "w", "hidane": {"message": "^Payload"},
                 "request": {"predicates": ["lone-surrogate"]}}
         with tempfile.TemporaryDirectory() as out:
-            args = argparse.Namespace(areas="", minutes=0, official="o", hidane="h", timeout=1, minimize_seconds=5,
+            args = argparse.Namespace(mode="firestore-native", areas="", minutes=0, official="o", hidane="h", timeout=1, minimize_seconds=5,
                                       minimize_budget=5, official_version=("1.22.0", "0" * 64))
             session = fuzz.Session(args, diff.Exceptions([rule]), Path(out))
             session.both = lambda case: ([answer(200, "{}")], [error(400, PAYLOAD)])
@@ -567,15 +637,19 @@ class Minimising(unittest.TestCase):
 
 
 class FakeEmulator(BaseHTTPRequestHandler):
-    """Answers like a tiny emulator; the `hidane` one refuses less than the `official` one."""
+    """Answers like a tiny emulator; the `hidane` one refuses less than the `official` one. In
+    Firestore Native mode unless `datastore`, which refuses the Datastore API."""
     lenient = False
+    datastore = False
 
     def do_GET(self):
         self.reply(200, "Ok" if self.path == "/" else '{\n  "name": "x"\n}\n')
 
     def do_POST(self):
         body = self.rfile.read(int(self.headers.get("Content-Length") or 0)).decode()
-        if "NaN" in body and not self.lenient:
+        if re.match(r"/v1/projects/[^/]*:", self.path) and not self.datastore:
+            self.reply(400, ERROR % (400, "Database mode not set to Datastore Mode.", "FAILED_PRECONDITION"))
+        elif "NaN" in body and not self.lenient:
             self.reply(400, ERROR % (400, "NaN is not allowed here", "INVALID_ARGUMENT"))
         else:
             self.reply(200, '{\n  "commitTime": "2026-01-01T00:00:00.000001Z"\n}\n')
@@ -595,6 +669,14 @@ class FakeEmulator(BaseHTTPRequestHandler):
 
 
 class Lenient(FakeEmulator):
+    lenient = True
+
+
+class DatastoreFake(FakeEmulator):
+    datastore = True
+
+
+class DatastoreLenient(DatastoreFake):
     lenient = True
 
 
@@ -723,6 +805,40 @@ class EndToEnd(unittest.TestCase):
             with contextlib.redirect_stderr(io.StringIO()), tempfile.TemporaryDirectory() as out:
                 self.assertEqual(fuzz.main(["run", "--official", "127.0.0.1:9", "--hidane", hidane, "--seed", "1",
                                             "--cases", "1", "--out", out]), 1)
+
+    def test_a_run_in_datastore_mode(self):
+        with serving(DatastoreFake) as official, serving(DatastoreLenient) as hidane, \
+                tempfile.TemporaryDirectory() as out:
+            with contextlib.redirect_stdout(io.StringIO()):
+                code = fuzz.main(["run", "--official", official, "--hidane", hidane, "--seed", "2", "--cases", "40",
+                                  "--mode", "datastore-mode", "--minimize-budget", "30", "--out", out])
+            self.assertEqual(code, 0)
+            summary = json.loads(Path(out, "summary.json").read_text())
+            self.assertEqual((summary["mode"], set(summary["by_area"])), ("datastore-mode", set(gen.MODES["datastore-mode"])))
+            # Doubles as NaN are refused by one fake only: a difference of Datastore requests.
+            self.assertTrue(any(d["verb"].startswith("datastore:") for d in summary["differences"]))
+            run = json.loads(Path(out, "run.json").read_text())
+            self.assertTrue(run["name"].startswith("REST in Datastore mode, seed 2"))
+            self.assertTrue(run["target"].startswith("REST requests to both emulators in Datastore mode: datastore-"))
+            self.assertEqual(run["mode"], "datastore-mode")
+            self.assertIn("Differential fuzzing in Datastore mode, seed 2", Path(out, "summary.md").read_text())
+
+    def test_a_run_needs_both_emulators_in_its_mode_and_areas_of_that_mode(self):
+        with serving(FakeEmulator) as official, serving(DatastoreLenient) as hidane, \
+                tempfile.TemporaryDirectory() as out:
+            for mode, message in (("datastore-mode", "the official emulator runs in firestore-native"),
+                                  ("firestore-native", "the hidane emulator runs in datastore-mode")):
+                stderr = io.StringIO()
+                with contextlib.redirect_stderr(stderr):
+                    code = fuzz.main(["run", "--official", official, "--hidane", hidane, "--seed", "1", "--cases", "1",
+                                      "--mode", mode, "--out", out])
+                self.assertEqual(code, 1)
+                self.assertIn(message, stderr.getvalue())
+        for mode, area in (("firestore-native", "datastore-gql"), ("datastore-mode", "queries")):
+            stderr = io.StringIO()
+            with contextlib.redirect_stderr(stderr):
+                self.assertEqual(fuzz.main(["show", "--seed", "1", "--case", "0", "--mode", mode, "--areas", area]), 1)
+            self.assertIn(f"unknown area {area!r} in {mode}", stderr.getvalue())
 
     def test_record_adds_a_run_to_the_results(self):
         with tempfile.TemporaryDirectory() as tmp:

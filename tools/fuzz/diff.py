@@ -33,7 +33,12 @@ sys.path.insert(0, str(ROOT / "tools" / "oracle"))
 from harness import mask, send  # noqa: E402
 
 KINDS = ("crash", "status", "message", "order", "data")
-VARIABLES = ("tx", "token", "commitTime", "updateTime")
+VARIABLES = ("tx", "token", "commitTime", "updateTime", "cursor", "version")
+# Datastore mode: entity versions (commit times in microseconds) and cursors, which are opaque
+# bytes each emulator makes its own way (docs/adr/0009-datastore-mode.md), as the recordings mask
+# them (tools/oracle/datastore_entities.py).
+DATASTORE_VERSION = re.compile(r'"(version|commitVersion|snapshotVersion)": "[0-9]+"')
+DATASTORE_CURSOR = re.compile(r'"(cursor|endCursor|skippedCursor|startCursor)": "[^"]*"')
 
 
 def project():
@@ -70,6 +75,13 @@ def capture(text, values):
         values["tx"] = first["transaction"]
     if isinstance(first.get("nextPageToken"), str):
         values["token"] = first["nextPageToken"]
+    batch = first.get("batch")
+    if isinstance(batch, dict) and isinstance(batch.get("endCursor"), str):
+        values["cursor"] = batch["endCursor"]
+    mutations = first.get("mutationResults")
+    if isinstance(mutations, list) and mutations and isinstance(mutations[0], dict) \
+            and isinstance(mutations[0].get("version"), str):
+        values["version"] = mutations[0]["version"]
     if isinstance(first.get("commitTime"), str):
         values["commitTime"] = first["commitTime"]
     results = first.get("writeResults")
@@ -112,9 +124,12 @@ def run(host, case, timeout=10.0, sender=send):
 
 def normalize(text, values):
     """The oracle's normalisation, then the values the case's run chose: the transaction IDs,
-    page tokens and times it captured, times of the years the fuzzer never writes (2021 to
-    2099: the server's), and versions of those years in microseconds (precondition messages)."""
+    page tokens, cursors, versions and times it captured, times of the years the fuzzer never
+    writes (2021 to 2099: the server's), versions of those years in microseconds (precondition
+    messages), and Datastore's entity versions and cursors."""
     text = mask(text, values["project"])
+    text = DATASTORE_VERSION.sub(r'"\1": "<version>"', text)
+    text = DATASTORE_CURSOR.sub(r'"\1": "<cursor>"', text)
     for key in VARIABLES:
         value = values.get(key)
         if value and len(value) > 3 and not value.startswith("1970-"):
@@ -164,7 +179,7 @@ def generalize(path):
     for i, part in enumerate(path):
         if isinstance(part, int):
             out.append("[]")
-        elif i > 0 and path[i - 1] == "fields":
+        elif i > 0 and path[i - 1] in ("fields", "properties"):
             out.append("*")
         else:
             out.append(part)
@@ -243,6 +258,9 @@ def template(message):
 
 def verb(step):
     path = step["path"].split("?")[0]
+    if re.match(r"/v1/projects/[^/]*:", path):
+        # The Datastore API: `datastore:commit` is not Firestore's `:commit`.
+        return "datastore" + path[path.index(":"):]
     if path.startswith("/emulator/"):
         return step["method"] + " emulator" + (":" + path.rsplit(":", 1)[1] if ":" in path.rsplit("/", 1)[-1] else "")
     tail = path.rsplit("/", 1)[-1]
@@ -478,6 +496,39 @@ def in_transaction(step):
     return (isinstance(new, dict) and "readWrite" in new) or isinstance(body.get("transaction"), str)
 
 
+def entity_operand(step):
+    """An aggregation whose filter orders a property against an entity value (`<`, `<=`, `>`,
+    `>=`, `=`, `IN`)."""
+    body = body_of(step)
+    if not isinstance(body, dict) or not isinstance(body.get("aggregationQuery"), dict):
+        return False
+
+    def walk(f):
+        if not isinstance(f, dict):
+            return False
+        composite = f.get("compositeFilter")
+        if isinstance(composite, dict):
+            return any(walk(c) for c in composite.get("filters") or [])
+        prop = f.get("propertyFilter")
+        if not isinstance(prop, dict) or prop.get("op") == "NOT_EQUAL":
+            return False
+        value = prop.get("value")
+        values = value.get("arrayValue", {}).get("values") or [] if isinstance(value, dict) and "arrayValue" in value else [value]
+        return any(isinstance(v, dict) and "entityValue" in v for v in values)
+
+    nested = body["aggregationQuery"].get("nestedQuery")
+    return isinstance(nested, dict) and walk(nested.get("filter"))
+
+
+def other_body_project(step):
+    """A Datastore API request (`/v1/projects/{project}:verb`) whose body names a `projectId`
+    other than the path's."""
+    body = body_of(step)
+    return (re.fullmatch(r"/v1/projects/\{project\}:[A-Za-z]+", step["path"]) is not None
+            and isinstance(body, dict) and isinstance(body.get("projectId"), str)
+            and body["projectId"] not in ("", "{project}"))
+
+
 def collection_group(step):
     """The body's query reads a collection group or every descendant (`allDescendants`), in a
     `structuredQuery` or a `structuredAggregationQuery`."""
@@ -501,6 +552,8 @@ PREDICATES = {
     "collection-group": collection_group,
     "in-transaction": in_transaction,
     "several-targets": several_targets,
+    "other-body-project": other_body_project,
+    "entity-operand": entity_operand,
 }
 
 

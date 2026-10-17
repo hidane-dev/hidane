@@ -243,6 +243,139 @@ fn a_gcloud_command_line_after_sh_c_runs_the_emulator() {
     );
 }
 
+/// `gcloud emulators firestore start --database-mode=datastore-mode`, as Testcontainers' Go module
+/// passes it with `WithDatastoreMode()` (#81): the banner names the mode, the Datastore API is
+/// served and the Firestore API refused.
+#[test]
+fn a_gcloud_command_line_in_datastore_mode_serves_datastore() {
+    let port = TcpListener::bind("127.0.0.1:0")
+        .unwrap()
+        .local_addr()
+        .unwrap()
+        .port();
+    let script = format!(
+        "gcloud beta emulators firestore start --host-port 127.0.0.1:{port} --database-mode=datastore-mode --project=demo-hidane"
+    );
+    let mut child = Command::new(BIN)
+        .args(["/bin/sh", "-c", &script])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let mut stdout = child.stdout.take().unwrap();
+    let mut seen = String::new();
+    let mut buf = [0; 256];
+    while !seen.contains("Dev App Server is now running.") {
+        let n = stdout.read(&mut buf).unwrap();
+        assert!(n > 0, "no banner: {seen}");
+        seen.push_str(&String::from_utf8_lossy(&buf[..n]));
+    }
+    assert!(
+        seen.contains("Database Mode: CLOUD_FIRESTORE_IN_DATASTORE_MODE"),
+        "{seen}"
+    );
+    let request = |head: &str, body: &str| {
+        let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+        stream
+            .write_all(
+                format!(
+                    "{head} HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{body}",
+                    body.len()
+                )
+                .as_bytes(),
+            )
+            .unwrap();
+        let mut answer = String::new();
+        stream.read_to_string(&mut answer).unwrap();
+        answer
+    };
+    let lookup = request(
+        "POST /v1/projects/demo-hidane:lookup",
+        r#"{"keys":[{"path":[{"kind":"Task","name":"t1"}]}]}"#,
+    );
+    assert!(lookup.starts_with("HTTP/1.1 200"), "{lookup}");
+    assert!(lookup.contains("\"missing\""), "{lookup}");
+    let firestore = request(
+        "GET /v1/projects/demo-hidane/databases/(default)/documents/c/d",
+        "",
+    );
+    assert!(
+        firestore.contains("Database mode not set to Firestore Mode"),
+        "{firestore}"
+    );
+    request("POST /shutdown", "");
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
+
+/// `--import-data` in Datastore mode reads the export as that mode writes it, the official
+/// emulator's export of `fixtures/datastore_export.json` (#81).
+#[test]
+fn datastore_mode_imports_its_own_exports_at_startup() {
+    use base64::Engine;
+    let fixture: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/datastore_export.json")).unwrap();
+    let dir = std::env::temp_dir().join(format!("hidane-launch-import-{}", std::process::id()));
+    for (relative, data) in fixture["files"].as_object().unwrap() {
+        let path = dir.join(relative);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        let bytes = base64::engine::general_purpose::STANDARD
+            .decode(data.as_str().unwrap())
+            .unwrap();
+        std::fs::write(&path, bytes).unwrap();
+    }
+    let port = TcpListener::bind("127.0.0.1:0")
+        .unwrap()
+        .local_addr()
+        .unwrap()
+        .port();
+    let metadata = dir.join("named/named.overall_export_metadata");
+    let mut child = Command::new(BIN)
+        .args([
+            "--database-mode",
+            "datastore-mode",
+            "--port",
+            &port.to_string(),
+        ])
+        .arg("--import-data")
+        .arg(&metadata)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let mut stdout = child.stdout.take().unwrap();
+    let mut seen = String::new();
+    let mut buf = [0; 256];
+    while !seen.contains("Dev App Server is now running.") {
+        let n = stdout.read(&mut buf).unwrap();
+        assert!(n > 0, "no banner: {seen}");
+        seen.push_str(&String::from_utf8_lossy(&buf[..n]));
+    }
+    let request = |head: &str, body: &str| {
+        let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+        stream
+            .write_all(
+                format!(
+                    "{head} HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{body}",
+                    body.len()
+                )
+                .as_bytes(),
+            )
+            .unwrap();
+        let mut answer = String::new();
+        stream.read_to_string(&mut answer).unwrap();
+        answer
+    };
+    let lookup = request(
+        "POST /v1/projects/demo-export:lookup",
+        r#"{"keys":[{"path":[{"kind":"U","name":"u"}]}]}"#,
+    );
+    assert!(lookup.contains("\"found\""), "{lookup}");
+    assert!(lookup.contains("\"stringValue\": \"u\""), "{lookup}");
+    request("POST /shutdown", "");
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+    std::fs::remove_dir_all(&dir).unwrap();
+}
+
 /// hidane's image has no shell: a script that is not a gcloud command line it serves stops
 /// with the reason, and a flag hidane rejects stops it as it would stop hidane.
 #[test]
@@ -260,9 +393,9 @@ fn other_scripts_and_unserved_flags_are_refused() {
             "`--store-on-disk` is not a flag",
         ),
         (
-            "gcloud beta emulators firestore start --database-mode=datastore-mode",
-            2,
-            "Datastore mode is not supported by hidane yet",
+            "gcloud beta emulators firestore start --database-mode=bogus",
+            1,
+            "Unsupported database mode: bogus",
         ),
     ] {
         let output = Command::new(BIN)
@@ -274,4 +407,148 @@ fn other_scripts_and_unserved_flags_are_refused() {
         assert!(stderr.contains(says), "{script}: {stderr}");
         assert!(!stderr.contains("running"), "{script}: {stderr}");
     }
+}
+
+/// A free port on 127.0.0.1.
+fn free_port() -> u16 {
+    TcpListener::bind("127.0.0.1:0")
+        .unwrap()
+        .local_addr()
+        .unwrap()
+        .port()
+}
+
+/// Reads stdout until the banner's last line; the banner's lines.
+fn banner(stdout: &mut impl Read) -> String {
+    let mut seen = String::new();
+    let mut buf = [0; 256];
+    while !seen.contains("Dev App Server is now running.") {
+        let n = stdout.read(&mut buf).unwrap();
+        assert!(n > 0, "no banner: {seen}");
+        seen.push_str(&String::from_utf8_lossy(&buf[..n]));
+    }
+    seen
+}
+
+/// One HTTP/1.1 request; the status and the body.
+fn http(port: u16, method: &str, path: &str, body: Option<&str>) -> (u16, String) {
+    let mut stream = TcpStream::connect(("127.0.0.1", port)).unwrap();
+    let body = body.unwrap_or_default();
+    stream
+        .write_all(
+            format!(
+                "{method} {path} HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\nAuthorization: Bearer owner\r\nContent-Type: application/json\r\nContent-Length: {}\r\n\r\n{body}",
+                body.len()
+            )
+            .as_bytes(),
+        )
+        .unwrap();
+    let mut answer = String::new();
+    stream.read_to_string(&mut answer).unwrap();
+    let status = answer[9..12].parse().unwrap();
+    let body = answer
+        .split_once("\r\n\r\n")
+        .map(|(_, b)| b.to_owned())
+        .unwrap_or_default();
+    (status, body)
+}
+
+/// How the official emulator starts with each flag (`fixtures/startup_flags.json`, from
+/// `tools/oracle/startup_flags.py`): the banner's edition and mode, or the exit code and the
+/// message it stops with.
+#[test]
+fn starts_and_refusals_like_the_official_emulator() {
+    let fixture: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/startup_flags.json")).unwrap();
+    let mut differences = Vec::new();
+    for start in fixture["starts"].as_array().unwrap() {
+        let flags: Vec<&str> = start["flags"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|f| f.as_str().unwrap())
+            .collect();
+        let port = free_port().to_string();
+        let mut child = Command::new(BIN)
+            .args(["--host", "127.0.0.1", "--port", &port])
+            .args(&flags)
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .unwrap();
+        if let Some(code) = start["exit"].as_i64() {
+            let output = child.wait_with_output().unwrap();
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            let message = start["message"].as_str().unwrap();
+            if i64::from(output.status.code().unwrap_or(-1)) != code || !stderr.contains(message) {
+                differences.push(format!(
+                    "{flags:?}: official exit {code}, {message:?}; hidane {:?}, {stderr:?}",
+                    output.status.code()
+                ));
+            }
+            continue;
+        }
+        let printed = banner(child.stdout.as_mut().unwrap());
+        let lines: Vec<&str> = printed
+            .lines()
+            .filter(|l| l.starts_with("Database Edition: ") || l.starts_with("Database Mode: "))
+            .collect();
+        let expected: Vec<&str> = start["started"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|l| l.as_str().unwrap())
+            .collect();
+        if lines != expected {
+            differences.push(format!(
+                "{flags:?}: official {expected:?}, hidane {lines:?}"
+            ));
+        }
+        http(port.parse().unwrap(), "POST", "/shutdown", None);
+        child.wait().unwrap();
+    }
+    assert!(differences.is_empty(), "{}", differences.join("\n"));
+}
+
+/// `--require_indexes` in Firestore Native mode (`fixtures/startup_flags.json`): the emulator
+/// starts, every query is refused before it is read, and other requests are served.
+#[test]
+fn queries_are_refused_with_require_indexes_in_firestore_mode() {
+    let fixture: serde_json::Value =
+        serde_json::from_str(include_str!("fixtures/startup_flags.json")).unwrap();
+    let run = &fixture["index_enforcement_in_firestore_mode"];
+    let port = free_port();
+    let mut child = Command::new(BIN)
+        .args(["--host", "127.0.0.1", "--port", &port.to_string()])
+        .args(["--require_indexes"])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    banner(child.stdout.as_mut().unwrap());
+    let mut differences = Vec::new();
+    for request in run["requests"].as_array().unwrap() {
+        let body = (!request["body"].is_null()).then(|| request["body"].to_string());
+        let (status, answer) = http(
+            port,
+            request["method"].as_str().unwrap(),
+            request["path"].as_str().unwrap(),
+            body.as_deref(),
+        );
+        let message = serde_json::from_str::<serde_json::Value>(&answer)
+            .ok()
+            .and_then(|j| j["error"]["message"].as_str().map(str::to_owned));
+        let expected = request["message"].as_str().map(str::to_owned);
+        if i64::from(status) != request["status"].as_i64().unwrap()
+            || (status >= 400 && message != expected)
+        {
+            differences.push(format!(
+                "{}: official {} {expected:?}, hidane {status} {message:?}",
+                request["name"], request["status"]
+            ));
+        }
+    }
+    http(port, "POST", "/shutdown", None);
+    child.wait().unwrap();
+    assert!(differences.is_empty(), "{}", differences.join("\n"));
 }

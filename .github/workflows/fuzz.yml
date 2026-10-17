@@ -4,8 +4,10 @@ name: Differential fuzzing
 # .github/actions/official-emulator) and to hidane built from this commit, and reports what
 # differs (tools/fuzz/README.md):
 #
-# - fuzz: a time-boxed session. Its summary goes to the job summary, the minimised differences
-#   and both emulators' output to the `fuzz` artifact. It fails only when it could not run.
+# - fuzz: a time-boxed session per mode, Firestore Native and Datastore (both emulators started
+#   with `--database-mode datastore-mode`). Its summary goes to the job summary, the minimised
+#   differences and both emulators' output to the `fuzz` (`fuzz-datastore`) artifact. It fails
+#   only when it could not run.
 # - issues: one issue per unexplained difference, labelled `fuzz` and found again by the
 #   signature in its marker, so later runs update it (and leave it closed once closed). Only on
 #   main: by hand with `issues` on, or on the schedule once the repository variable
@@ -53,9 +55,19 @@ concurrency:
 
 jobs:
   fuzz:
-    name: fuzz
+    name: fuzz (${{ matrix.mode }})
     runs-on: ubuntu-24.04
     timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - mode: firestore-native
+            flags: ""
+            artifact: fuzz
+          - mode: datastore-mode
+            flags: --database-mode datastore-mode
+            artifact: fuzz-datastore
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -98,8 +110,11 @@ jobs:
       - name: Build hidane
         run: cargo build --release --locked -p hidane
       - name: Start hidane
+        env:
+          FLAGS: ${{ matrix.flags }}
         run: |
-          target/release/hidane --host 127.0.0.1 --port 8180 < /dev/null > "$RUNNER_TEMP/hidane.log" 2>&1 &
+          # shellcheck disable=SC2086 # FLAGS holds several words
+          target/release/hidane --host 127.0.0.1 --port 8180 $FLAGS < /dev/null > "$RUNNER_TEMP/hidane.log" 2>&1 &
           echo "HIDANE_PID=$!" >> "$GITHUB_ENV"
           for _ in $(seq 60); do
             if curl --fail --silent --max-time 2 --output /dev/null http://127.0.0.1:8180/; then
@@ -115,6 +130,7 @@ jobs:
         uses: ./.github/actions/official-emulator
         with:
           port: "8080"
+          args: ${{ matrix.flags }}
           # Every case is a project of its own, and the emulator keeps them all: a full
           # session ran out of the default heap (a quarter of the runner's 16 GB) in its last
           # minute, and answered 500 from then on (#328).
@@ -126,6 +142,7 @@ jobs:
           CASES: ${{ steps.session.outputs.cases }}
           MINUTES: ${{ steps.session.outputs.minutes }}
           COMMIT: ${{ github.sha }}
+          MODE: ${{ matrix.mode }}
         run: |
           # The build fuzzed, recorded in the run's files: hidane's version and the commit.
           version=$(target/release/hidane --version)
@@ -139,7 +156,7 @@ jobs:
             exit 1
           fi
           status=0
-          python3 -I tools/fuzz/fuzz.py run --official "$OFFICIAL" --hidane 127.0.0.1:8180 \
+          python3 -I tools/fuzz/fuzz.py run --official "$OFFICIAL" --hidane 127.0.0.1:8180 --mode "$MODE" \
             --seed "$SEED" --cases "$CASES" --minutes "$MINUTES" --hidane-build "$version:$COMMIT" \
             --out "$RUNNER_TEMP/fuzz" > /dev/null || status=$?
           if [[ -f "$RUNNER_TEMP/fuzz/summary.md" ]]; then
@@ -161,7 +178,7 @@ jobs:
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: ${{ !cancelled() }}
         with:
-          name: fuzz
+          name: ${{ matrix.artifact }}
           path: |
             ${{ runner.temp }}/fuzz/
             ${{ runner.temp }}/hidane.log
@@ -187,12 +204,17 @@ jobs:
           sparse-checkout: tools/fuzz
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: fuzz
+          pattern: fuzz*
           path: ${{ runner.temp }}/artifact
       - name: Open or update issues
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 -I tools/fuzz/issues.py "$RUNNER_TEMP/artifact/fuzz" --summary "$GITHUB_STEP_SUMMARY"
+        run: |
+          for artifact in fuzz fuzz-datastore; do
+            if [[ -f "$RUNNER_TEMP/artifact/$artifact/fuzz/summary.json" ]]; then
+              python3 -I tools/fuzz/issues.py "$RUNNER_TEMP/artifact/$artifact/fuzz" --summary "$GITHUB_STEP_SUMMARY"
+            fi
+          done
 
   dry-run:
     name: issues (dry run)
@@ -213,9 +235,15 @@ jobs:
           sparse-checkout: tools/fuzz
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: fuzz
+          pattern: fuzz*
           path: ${{ runner.temp }}/artifact
       - name: Say what issues would be opened or updated
         env:
           GH_TOKEN: ${{ github.token }}
-        run: python3 -I tools/fuzz/issues.py "$RUNNER_TEMP/artifact/fuzz" --dry-run --summary "$GITHUB_STEP_SUMMARY"
+        run: |
+          for artifact in fuzz fuzz-datastore; do
+            if [[ -f "$RUNNER_TEMP/artifact/$artifact/fuzz/summary.json" ]]; then
+              python3 -I tools/fuzz/issues.py "$RUNNER_TEMP/artifact/$artifact/fuzz" --dry-run \
+                --summary "$GITHUB_STEP_SUMMARY"
+            fi
+          done

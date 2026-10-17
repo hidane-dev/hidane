@@ -1,0 +1,56 @@
+[
+ {
+  "name": "read and write in a transaction",
+  "ok": 70
+ },
+ {
+  "name": "roll back",
+  "ok": 70
+ },
+ {
+  "name": "run in a transaction",
+  "ok": 70
+ },
+ {
+  "name": "read only",
+  "ok": 71
+ },
+ {
+  "name": "a write in a read-only transaction",
+  "error": {
+   "code": "INVALID_ARGUMENT",
+   "message": "Cannot modify entities in a read-only transaction."
+  }
+ },
+ {
+  "name": "an ancestor query in a transaction",
+  "ok": [
+   1,
+   2,
+   3
+  ]
+ },
+ {
+  "name": "a count in a transaction",
+  "ok": 3
+ },
+ {
+  "name": "a missing entity in a transaction",
+  "ok": null
+ },
+ {
+  "name": "commit twice",
+  "error": {
+   "code": "FAILED_PRECONDITION",
+   "message": "transaction is no longer active"
+  }
+ },
+ {
+  "name": "after it, the balance",
+  "ok": 50
+ },
+ {
+  "name": "an incomplete key in a transaction",
+  "ok": 1
+ }
+]

@@ -95,7 +95,7 @@ pub(crate) async fn handle(
             .map_err(|_| invalid_payload())?;
         let request = Request::parse(&body)?;
         names::database(&database)?;
-        // The official emulator never answers a body naming another database (D093).
+        // The official emulator never answers a body naming another database (D095).
         if !request.database.is_empty() && request.database != database {
             return Err(Status::invalid_argument(format!(
                 "The body names database \"{}\", the path \"{database}\".",

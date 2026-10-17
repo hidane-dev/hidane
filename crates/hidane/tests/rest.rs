@@ -326,7 +326,7 @@ async fn set_database_edition_answers_like_the_official_emulator() {
 }
 
 /// A body naming another database than the path's, which the official emulator never answers,
-/// is refused (D093).
+/// is refused (D095).
 #[tokio::test]
 async fn set_database_edition_refuses_another_database_in_the_body() {
     let addr = start().await;
@@ -615,8 +615,8 @@ async fn a_failed_query_leaves_no_lock() {
     }
 }
 
-/// D086: a form-encoded POST, which the official emulator answers with a bare 404, is served:
-/// its body is read as JSON.
+/// D086: a POST whose content type is not JSON (a form, HTML, bytes, protobuf), which the
+/// official emulator answers with a bare 404, is served: its body is read as JSON.
 #[tokio::test]
 async fn a_form_encoded_post_is_served() {
     let addr = start().await;
@@ -624,6 +624,9 @@ async fn a_form_encoded_post_is_served() {
     for content_type in [
         "application/x-www-form-urlencoded",
         "multipart/form-data; boundary=x",
+        "text/html",
+        "application/octet-stream",
+        "application/x-protobuf",
     ] {
         let mut headers = owner();
         headers.push(("Content-Type".to_owned(), content_type.to_owned()));
