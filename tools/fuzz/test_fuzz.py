@@ -384,6 +384,17 @@ class RequestRules(unittest.TestCase):
         self.assertFalse(diff.in_transaction({**query, "body": {}}))
         self.assertFalse(diff.in_transaction({**query, "raw": "null", "body": None}))
 
+        aggregation = lambda f: {"method": "POST", "path": "/v1/projects/{project}:runAggregationQuery", "body": {  # noqa: E731
+            "aggregationQuery": {"nestedQuery": {"kind": [{"name": "K"}], "filter": f}, "aggregations": [{"count": {}}]}}}
+        on = lambda op, v: {"propertyFilter": {"property": {"name": "a"}, "op": op, "value": v}}  # noqa: E731
+        self.assertTrue(diff.entity_operand(aggregation(on("LESS_THAN", {"entityValue": {}}))))
+        self.assertTrue(diff.entity_operand(aggregation({"compositeFilter": {"op": "AND", "filters": [
+            on("EQUAL", {"integerValue": "1"}), on("IN", {"arrayValue": {"values": [{"entityValue": {}}]}})]}})))
+        self.assertFalse(diff.entity_operand(aggregation(on("NOT_EQUAL", {"entityValue": {}}))))
+        self.assertFalse(diff.entity_operand(aggregation(on("LESS_THAN", {"integerValue": "1"}))))
+        self.assertFalse(diff.entity_operand({"method": "POST", "path": "/v1/projects/{project}:runQuery",
+                                              "body": {"query": {"filter": on("LESS_THAN", {"entityValue": {}})}}}))
+
         begin = {"method": "POST", "path": "/v1/projects/{project}:beginTransaction", "raw": '{"projectId": "other"}'}
         self.assertTrue(diff.other_body_project(begin))
         self.assertTrue(diff.other_body_project({**begin, "raw": '{"projectId": "{project}x"}'}))

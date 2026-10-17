@@ -1555,6 +1555,23 @@
    "pinned_by": [
     "crates/hidane/tests/datastore.rs::export_and_import_like_the_official_emulator"
    ]
+  },
+  {
+   "id": "D094",
+   "table": "intentional",
+   "area": "queries",
+   "topic": null,
+   "kind": "limitation",
+   "official": "In Datastore mode, an aggregation's filter that compares a property with an entity value (which `RunQuery` refuses) compares it as the bytes of the entity's internal encoding, among strings and blobs: `a < {}` matches nulls, integers, timestamps, booleans and the strings and blobs below those bytes",
+   "firestore": null,
+   "hidane": "An entity value is equal to nothing and orders with nothing: `!=` matches every value, every other operator none",
+   "reason": "The bytes are the official emulator's internal encoding of an entity, which no client can rely on; `RunQuery` refuses such a filter",
+   "references": [
+    "hidane-dev/hidane#81"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/datastore.rs::an_aggregation_compares_entity_values_with_nothing"
+   ]
   }
  ],
  "retired": [

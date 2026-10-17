@@ -496,6 +496,30 @@ def in_transaction(step):
     return (isinstance(new, dict) and "readWrite" in new) or isinstance(body.get("transaction"), str)
 
 
+def entity_operand(step):
+    """An aggregation whose filter orders a property against an entity value (`<`, `<=`, `>`,
+    `>=`, `=`, `IN`)."""
+    body = body_of(step)
+    if not isinstance(body, dict) or not isinstance(body.get("aggregationQuery"), dict):
+        return False
+
+    def walk(f):
+        if not isinstance(f, dict):
+            return False
+        composite = f.get("compositeFilter")
+        if isinstance(composite, dict):
+            return any(walk(c) for c in composite.get("filters") or [])
+        prop = f.get("propertyFilter")
+        if not isinstance(prop, dict) or prop.get("op") == "NOT_EQUAL":
+            return False
+        value = prop.get("value")
+        values = value.get("arrayValue", {}).get("values") or [] if isinstance(value, dict) and "arrayValue" in value else [value]
+        return any(isinstance(v, dict) and "entityValue" in v for v in values)
+
+    nested = body["aggregationQuery"].get("nestedQuery")
+    return isinstance(nested, dict) and walk(nested.get("filter"))
+
+
 def other_body_project(step):
     """A Datastore API request (`/v1/projects/{project}:verb`) whose body names a `projectId`
     other than the path's."""
@@ -529,6 +553,7 @@ PREDICATES = {
     "in-transaction": in_transaction,
     "several-targets": several_targets,
     "other-body-project": other_body_project,
+    "entity-operand": entity_operand,
 }
 
 

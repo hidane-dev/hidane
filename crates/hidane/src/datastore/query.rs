@@ -218,7 +218,8 @@ const INDEX_VALUE: i32 = 18;
 pub(super) const MAX_IN: usize = 30;
 pub(super) const MAX_NOT_IN: usize = 10;
 
-/// The index values of `entity` for property `path` (dotted into entity values), each once.
+/// The index values of `entity` for property `path` (dotted into entity values, not into the
+/// entity values of an array, which the official emulator does not index), each once.
 pub fn index_values(properties: &Properties, path: &str) -> Vec<(Indexed, Value)> {
     let mut out: Vec<(Indexed, Value)> = Vec::new();
     collect(properties, path, &mut out);
@@ -238,16 +239,8 @@ fn collect(properties: &Properties, path: &str, out: &mut Vec<(Indexed, Value)>)
         else {
             continue;
         };
-        match &value.value_type {
-            Some(ValueType::EntityValue(entity)) => collect(&entity.properties, rest, out),
-            Some(ValueType::ArrayValue(array)) => {
-                for element in &array.values {
-                    if let Some(ValueType::EntityValue(entity)) = &element.value_type {
-                        collect(&entity.properties, rest, out);
-                    }
-                }
-            }
-            _ => {}
+        if let Some(ValueType::EntityValue(entity)) = &value.value_type {
+            collect(&entity.properties, rest, out);
         }
     }
 }
@@ -345,6 +338,9 @@ pub struct Plan {
     pub limit: Option<usize>,
     pub start: Option<Position>,
     pub end: Option<Position>,
+    /// Whether the filter can match nothing, as the official emulator sees it ([`no_range`]):
+    /// then a limit of 0 has no more results either.
+    pub nothing: bool,
 }
 
 /// Where a result is in a query's order: its row values and its key, just past it in the
@@ -425,6 +421,62 @@ pub(super) fn cursor_parses(bytes: &[u8]) -> bool {
 }
 
 /// The condition of a filter `checks` has accepted.
+/// Whether every disjunction of `cond`, in disjunctive normal form, bounds a property (or the
+/// key) to an empty range by its inequalities: a lower bound past the upper one, the same value
+/// with either excluded, or below null, the least value. Equalities are not counted.
+fn no_range(cond: &Cond) -> bool {
+    fn conjunctions(cond: &Cond) -> Vec<Vec<&Cond>> {
+        match cond {
+            Cond::Or(children) => children.iter().flat_map(conjunctions).collect(),
+            Cond::And(children) => children.iter().fold(vec![Vec::new()], |product, child| {
+                let terms = conjunctions(child);
+                product
+                    .iter()
+                    .flat_map(|left| {
+                        terms.iter().map(move |right| {
+                            left.iter().chain(right).copied().collect::<Vec<&Cond>>()
+                        })
+                    })
+                    .collect()
+            }),
+            leaf => vec![vec![leaf]],
+        }
+    }
+    fn empty(conjunction: &[&Cond]) -> bool {
+        let mut bounds: Vec<(Option<&str>, Op, &Indexed)> = Vec::new();
+        for leaf in conjunction {
+            match leaf {
+                Cond::Prop { name, op, values }
+                    if matches!(op, Op::Lt | Op::Le | Op::Gt | Op::Ge) =>
+                {
+                    bounds.extend(values.first().map(|v| (Some(name.as_str()), *op, v)));
+                }
+                Cond::Key { op, keys } if matches!(op, Op::Lt | Op::Le | Op::Gt | Op::Ge) => {
+                    bounds.extend(keys.first().map(|v| (None, *op, v)));
+                }
+                _ => {}
+            }
+        }
+        bounds.iter().any(|(name, op, value)| {
+            if *op == Op::Lt && **value == Indexed::Null {
+                return true;
+            }
+            matches!(op, Op::Gt | Op::Ge)
+                && bounds.iter().any(|(other, upper, bound)| {
+                    other == name
+                        && matches!(upper, Op::Lt | Op::Le)
+                        && match (*value).cmp(bound) {
+                            Ordering::Greater => true,
+                            Ordering::Equal => *op == Op::Gt || *upper == Op::Lt,
+                            Ordering::Less => false,
+                        }
+                })
+        })
+    }
+    let all = conjunctions(cond);
+    !all.is_empty() && all.iter().all(|c| empty(c))
+}
+
 /// A filter as the official emulator runs it: its `HAS_ANCESTOR` filters taken out as the
 /// query's ancestor (the checks refuse two), over the rest of the filter without them, where a
 /// disjunct that was an ancestor alone is dropped. Where every disjunction holds to the same
@@ -559,6 +611,7 @@ pub fn plan(query: &Query, database: &Database, namespace: &str) -> Result<Plan,
         })
         .collect();
     let cond = query.filter.as_ref().map(|f| hoisted(f, &database.project));
+    let nothing = cond.as_ref().is_some_and(no_range);
     let orders = orders(query, cond.as_ref(), &projection);
     let row_properties: Vec<String> = orders.iter().filter_map(|(f, _)| f.clone()).collect();
     let cursor = |bytes: &[u8]| -> Result<Option<Position>, Status> {
@@ -591,6 +644,7 @@ pub fn plan(query: &Query, database: &Database, namespace: &str) -> Result<Plan,
         limit: query.limit.map(|n| usize::try_from(n).unwrap_or(0)),
         start,
         end,
+        nothing,
     })
 }
 
@@ -964,7 +1018,7 @@ pub fn run(
             ResultType::Full as i32
         },
         skipped_results: i32::try_from(skipped).unwrap_or(i32::MAX),
-        more_results: if more || plan.limit == Some(0) {
+        more_results: if more || (plan.limit == Some(0) && !plan.nothing) {
             MoreResultsType::MoreResultsAfterLimit as i32
         } else {
             MoreResultsType::NoMoreResults as i32

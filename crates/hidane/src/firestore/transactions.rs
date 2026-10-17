@@ -208,6 +208,16 @@ impl Transactions {
         }
     }
 
+    /// Whether `transaction` is open, and how it reads, without reading anything in it: what
+    /// Datastore's queries check of their read options before the rest of the query.
+    pub fn check(&self, database: &str, transaction: &[u8]) -> Result<Mode, Status> {
+        let id = decode(transaction)?;
+        let now = Instant::now();
+        let shared = self.database(database);
+        let mut db = self.lock(&shared, now);
+        Ok(db.get(id, now)?.mode)
+    }
+
     /// Registers a read of `documents`, or of every collection with ID `collection_id`, by
     /// `transaction`, and returns how it reads. A read-write transaction locks what it reads
     /// before reading it, so the read is consistent with the transaction's commit.

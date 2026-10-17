@@ -29,12 +29,16 @@ checked as a write checks it but for a projection's meaning and the types a writ
 entity but a user, a regular expression or a timestamp of a request, but in `IN` and `NOT_IN`,
 which want an array first); later the operands of `IN`, `NOT_IN` and `HAS_ANCESTOR`; last, once the query's index is
 found, the filter in disjunctive normal form (without its ancestor, an `IN` an equality per
-value), conjunction by conjunction: keys of `__key__` filters, a property filter without a kind,
-an equality on a projected property, then on one the query is distinct on. Between them come,
+value), after the keys of `__key__` and `HAS_ANCESTOR` filters are each in the request's
+project and database, conjunction by conjunction, filter by filter: keys of `__key__` filters,
+an equality on a projected property, then on one the query is distinct on, an `IN` or
+`NOT_IN` element that is an empty array (an internal error), a property filter without a kind.
+Between them come,
 in order: one ancestor, the same for every disjunction (each filter of a conjunction holds to
 it, each of a disjunction alike, or none); the kind's name; empty names; limit, offset; one
-`NOT_EQUAL` or `NOT_IN`, and no `NOT_IN` with `IN` or `OR`; the read time of a read-only
-transaction the read options begin (to the microsecond, then past the epoch); one kind; a
+`NOT_EQUAL` or `NOT_IN`, and no `NOT_IN` with `IN` or `OR`; the read options' transaction
+(well formed and open) or the read time of a read-only transaction they begin (to the
+microsecond, then past the epoch); one kind; a
 disjunction of ancestors alone (an internal error); cursors; a read time (to the microsecond,
 then past the epoch); at most 30 disjunctions; orders; then, after the index, the
 ancestor's namespace, orders without a kind (the explicit ones, then the distinct, inequality
@@ -44,8 +48,8 @@ walk above, distinct properties ordered first, the cursors' kind, and the querie
 namespaces (refused only a first order descending). (With `--require_indexes`,
 `datastore_indexes.json`, looking up the index of a query without a kind refuses its orders and
 property filters already.) An aggregation's query goes through other checks, worded otherwise
-(`Missing filter operator.`, `limit is negative`): the read time of a read-only transaction the
-read options begin first, its aggregations' operators next, an operand
+(`Missing filter operator.`, `limit is negative`): the read options' transaction or the read
+time of a read-only transaction they begin first, its aggregations' operators next, an operand
 read in two steps (first indexed, each value there, a meaning its type takes, a key's path
 there; once the index is found, its property's name and value lengths, a vector, a key's parts,
 the ancestor's key before its namespace), the whole read time with the cursors, a second
@@ -225,6 +229,13 @@ OPERANDS = {
     "a new read-only transaction finer than a microsecond": {
         "readOptions": {"newTransaction": {"readOnly": {"readTime": "2020-01-01T00:00:00.000000001Z"}}}},
     "IN on an entity value": {"filter": pf("a", "IN", {"entityValue": {}})},
+    "an IN element that is an empty array": {"filter": pf("a", "IN", array(array()))},
+    "a NOT_IN element that is an empty array": {"filter": pf("a", "NOT_IN", array(array()))},
+    "a malformed transaction": {"readOptions": {"transaction": "AAAA"}},
+    "an ancestor of another project": {"filter": pf("__key__", "HAS_ANCESTOR", {"keyValue": {
+        "path": [{"kind": "K", "name": "a"}], "partitionId": {"projectId": "other"}}})},
+    "a key operand of another database": {"filter": pf("__key__", "EQUAL", {"keyValue": {
+        "path": [{"kind": "K", "name": "a"}], "partitionId": {"databaseId": "db2"}}})},
     "NOT_IN on an entity value": {"filter": pf("a", "NOT_IN", {"entityValue": {}})},
 }
 # Filters on values of their own, each alone: each meaning on each type, and the values the

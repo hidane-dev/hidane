@@ -11,8 +11,9 @@ Seeds one project with a dataset (`DATASET`: a value of every type in property `
 REST in order, `runQuery` with structured queries (kinds, every filter operator against values
 of every type, composite filters, ancestors, keys, orders, projections, `distinctOn`, limits,
 offsets, cursors, cursors of other queries, ancestors in disjunctions, the key projected and
-compared, the queries it refuses, and a query without a kind in a transaction), the metadata
-kinds `__kind__`, `__namespace__` and `__property__`, and `runAggregationQuery`. A cursor is opaque: a step that reads one names
+compared, a limit of 0 over filters that bound a property to nothing, the entity values of
+arrays (not indexed), the queries it refuses, and a query without a kind in a transaction), the
+metadata kinds `__kind__`, `__namespace__` and `__property__`, and `runAggregationQuery`. A cursor is opaque: a step that reads one names
 it (`defines`, with the JSON path it came from), and later steps send it as `<name>`, so a
 replay sends its own. The fixture has the format of `datastore_entities.json`; server times,
 versions, transaction IDs and cursors are masked. `crates/hidane/tests/datastore.rs` replays
@@ -98,6 +99,11 @@ DATASET += [(key(("Many", f"m{i:03d}")), {"i": I(i)}) for i in range(350)]
 # only these.
 DATASET += [(key(("L", f"l{i}"), ns="xc"), {"a": I(i), "b": I(10 - i)}) for i in (1, 2, 3)]
 DATASET.append((key(("L", "n1"), ns="xcns"), {}))
+# Arrays of entity values, in a namespace of their own: their properties are not indexed.
+DATASET += [
+    (key(("Arr", "r1"), ns="xa"), {"arr": ARR(ENT(x=I(5)), ENT(x=I(6))), "e": ENT(t=ARR(I(3), I(4))), "n": I(1)}),
+    (key(("Arr", "r2"), ns="xa"), {"arr": ARR(ENT(x=I(7))), "e": ENT(t=ARR(I(8))), "n": I(2)}),
+]
 
 CASES = []
 
@@ -432,6 +438,34 @@ for name, f in [
 ]:
     query(f"an ancestor in a disjunction: {name}", {"kind": kind("C"), "filter": f})
     agg(f"an ancestor in a disjunction: {name}", {"kind": kind("C"), "filter": f}, COUNT)
+
+# A limit of 0 has more results unless the filter's inequalities bound a property to nothing.
+for name, f in [
+    ("a < null", pf("a", "LESS_THAN", NULL)),
+    ("a <= null", pf("a", "LESS_THAN_OR_EQUAL", NULL)),
+    ("a > 3 and a < 3", AND(pf("a", "GREATER_THAN", I(3)), pf("a", "LESS_THAN", I(3)))),
+    ("a >= 3 and a <= 3", AND(pf("a", "GREATER_THAN_OR_EQUAL", I(3)), pf("a", "LESS_THAN_OR_EQUAL", I(3)))),
+    ("a > 'x' and a < 5", AND(pf("a", "GREATER_THAN", S("x")), pf("a", "LESS_THAN", I(5)))),
+    ("a = 1 and a > 5", AND(pf("a", "EQUAL", I(1)), pf("a", "GREATER_THAN", I(5)))),
+    ("a < false", pf("a", "LESS_THAN", B(False))),
+    ("a < null or b = 'x'", OR(pf("a", "LESS_THAN", NULL), pf("b", "EQUAL", S("x")))),
+    ("a < null, or a > 3 and a < 3", OR(pf("a", "LESS_THAN", NULL), AND(pf("a", "GREATER_THAN", I(3)), pf("a", "LESS_THAN", I(3))))),
+]:
+    query(f"limit 0, {name}", {"kind": kind("P"), "filter": f, "limit": 0})
+query("limit 0, offset 1, a < null", {"kind": kind("P"), "filter": pf("a", "LESS_THAN", NULL), "limit": 0, "offset": 1})
+
+# The properties of an array's entity values are not indexed: no filter, order or sum reads
+# them; an entity value's array is.
+XA = {"partitionId": {"namespaceId": "xa"}}
+query("an array's entity values, filtered", {"kind": kind("Arr"), "filter": pf("arr.x", "EQUAL", I(5))}, **XA)
+query("an array's entity values, ordered", {"kind": kind("Arr"), "order": [asc("arr.x")]}, **XA)
+query("an entity value's array, filtered", {"kind": kind("Arr"), "filter": pf("e.t", "EQUAL", I(3))}, **XA)
+case("a sum over an array's entity values", "runAggregationQuery",
+     {"aggregationQuery": {"nestedQuery": {"kind": kind("Arr")}, "aggregations": [
+         {"sum": {"property": {"name": "arr.x"}}, "alias": "s"}, {"count": {}, "alias": "n"}]}, **XA})
+case("a sum over an entity value's array", "runAggregationQuery",
+     {"aggregationQuery": {"nestedQuery": {"kind": kind("Arr")}, "aggregations": [
+         {"sum": {"property": {"name": "e.t"}}, "alias": "s"}, {"avg": {"property": {"name": "e.t"}}, "alias": "m"}]}, **XA})
 
 # The key may be projected and compared by equality.
 for name, f, projection in [

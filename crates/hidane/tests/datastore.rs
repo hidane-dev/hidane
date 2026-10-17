@@ -626,6 +626,49 @@ async fn read_times_go_back_an_hour() {
     }
 }
 
+/// An aggregation's filter that compares a property with an entity value, which the official
+/// emulator compares as the bytes of its internal encoding: in hidane an entity value equals
+/// nothing and orders with nothing (D094).
+#[tokio::test]
+async fn an_aggregation_compares_entity_values_with_nothing() {
+    let addr = start().await;
+    let path = |verb: &str| format!("/v1/projects/entity-operands:{verb}");
+    let written = send(
+        addr,
+        "POST",
+        &path("commit"),
+        Some(r#"{"mode":"NON_TRANSACTIONAL","mutations":[{"upsert":{"key":{"path":[{"kind":"K","name":"a"}]},"properties":{"a":{"integerValue":"1"}}}},{"upsert":{"key":{"path":[{"kind":"K","name":"b"}]},"properties":{"a":{"stringValue":"s"}}}}]}"#),
+        Some("application/json"),
+    )
+    .await;
+    assert_eq!(written.status, 200, "{}", written.body);
+    for (op, matched) in [
+        ("LESS_THAN", 0),
+        ("LESS_THAN_OR_EQUAL", 0),
+        ("GREATER_THAN", 0),
+        ("GREATER_THAN_OR_EQUAL", 0),
+        ("EQUAL", 0),
+        ("NOT_EQUAL", 2),
+    ] {
+        let body = format!(
+            r#"{{"aggregationQuery":{{"nestedQuery":{{"kind":[{{"name":"K"}}],"filter":{{"propertyFilter":{{"property":{{"name":"a"}},"op":"{op}","value":{{"entityValue":{{}}}}}}}}}},"aggregations":[{{"count":{{}},"alias":"n"}}]}}}}"#
+        );
+        let answer = send(
+            addr,
+            "POST",
+            &path("runAggregationQuery"),
+            Some(&body),
+            Some("application/json"),
+        )
+        .await;
+        assert_eq!(answer.status, 200, "{op}: {}", answer.body);
+        let answered: Json = serde_json::from_str(&answer.body).unwrap();
+        let count =
+            &answered["batch"]["aggregationResults"][0]["aggregateProperties"]["n"]["integerValue"];
+        assert_eq!(count.as_str(), Some(matched.to_string().as_str()), "{op}");
+    }
+}
+
 /// A Datastore request whose body names another project than its path, which the official
 /// emulator never answers, is answered for the path's project (D046).
 #[tokio::test]
