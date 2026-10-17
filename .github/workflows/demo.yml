@@ -50,7 +50,7 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: docs/assets/demo/package-lock.json
-      - uses: hidane-dev/setup-hidane@f0bdb68d1e28100cd5b445456455e1108f370987 # v1.0.0
+      - uses: hidane-dev/setup-hidane@97f59bf4893a4ee993fc1ee5ff235258ece75eb0 # v1.1.0
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - name: VHS, ttyd, ffmpeg and the font
         working-directory: ${{ runner.temp }}
