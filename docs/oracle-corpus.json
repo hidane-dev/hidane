@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:fd39cb769f1448e533392325f73fdbfe0aa25825eacdb1ea6d43e11a6d3efdb6",
+ "digest": "sha256:589032becd1b873df461f1cfeb562e74eb73cdc92204bdc81ed77de6865317b7",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,15 +14,15 @@
   }
  ],
  "totals": {
-  "files": 127,
-  "fixtures": 67,
+  "files": 128,
+  "fixtures": 68,
   "transcripts": 60,
-  "answers": 36882,
-  "bytes": 26382354,
+  "answers": 36919,
+  "bytes": 26391624,
   "levels": {
-   "full": 25544,
+   "full": 25567,
    "reasons": 4344,
-   "part": 1481,
+   "part": 1495,
    "status": 5197,
    "codes": 96,
    "none": 7,
@@ -70,9 +70,9 @@
     "answers": 70
    },
    "admin": {
-    "fixtures": 5,
+    "fixtures": 6,
     "transcripts": 4,
-    "answers": 875
+    "answers": 912
    },
    "values": {
     "fixtures": 5,
@@ -87,13 +87,13 @@
   },
   "by_release": {
    "v1.22.0": {
-    "fixtures": 67,
+    "fixtures": 68,
     "transcripts": 60,
-    "answers": 36882
+    "answers": 36919
    }
   },
   "by_release_source": {
-   "header": 42,
+   "header": 43,
    "file name": 61,
    "git history": 24
   }
@@ -2275,6 +2275,46 @@
    ],
    "counted": "each step of both runs (`--single_project_mode`, then with `--single_project_mode_error`)",
    "compared": "in full: the answer (REST status and body with server times masked, the gRPC code and message, the WebChannel handshake's first frame or that none came) and every line printed on standard output"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/startup_flags.json",
+   "kind": "fixture",
+   "area": "admin",
+   "recorder": "tools/oracle/startup_flags.py",
+   "client": {
+    "over": [
+     "REST",
+     "process"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-16",
+    "last_changed": "2026-10-16"
+   },
+   "bytes": 9270,
+   "sha256": "3b6753534284216fc01065973068e54374037777ae4db32b433948621b45a3be",
+   "answers": 37,
+   "levels": {
+    "full": 23,
+    "part": 14
+   },
+   "replayed_over": [
+    "REST",
+    "CLI"
+   ],
+   "tests": [
+    "crates/hidane/tests/launch.rs::starts_and_refusals_like_the_official_emulator",
+    "crates/hidane/tests/launch.rs::queries_are_refused_with_require_indexes_in_firestore_mode"
+   ],
+   "counted": "each start of the emulator with its flags, and each request to the one started with `--require_indexes` in Firestore Native mode",
+   "compared": "a start: the banner's edition and mode, or the exit code and the message it stops with; a request: the status and the error's message"
   },
   {
    "path": "crates/hidane-core/tests/fixtures/value_order.json",

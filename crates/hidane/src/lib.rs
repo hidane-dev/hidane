@@ -90,6 +90,8 @@ pub struct Admin {
     /// `--database-mode datastore-mode`: the Datastore API in place of Firestore's (#81).
     datastore: Option<datastore::DatastoreService>,
     enterprise: bool,
+    /// `--require_indexes` in Firestore Native mode: queries are refused.
+    refuse_queries: bool,
     channels: Arc<webchannel::Channels>,
     seeder: Option<Arc<Seeder>>,
     rules: Arc<rules::Rules>,
@@ -118,6 +120,7 @@ impl Admin {
         .with_triggers(Arc::clone(&self.triggers))
         .with_single_project(self.single_project.clone())
         .with_index_usage(Arc::clone(&self.index_usage))
+        .with_refused_queries(self.refuse_queries)
     }
 
     pub fn new(store: Arc<dyn Store>) -> Self {
@@ -128,6 +131,7 @@ impl Admin {
             shutdown: Arc::new(watch::Sender::new(false)),
             datastore: None,
             enterprise: false,
+            refuse_queries: false,
             channels: Arc::default(),
             seeder: None,
             rules: Arc::default(),
@@ -207,6 +211,15 @@ impl Admin {
         if self.datastore.is_some() {
             self.datastore = Some(datastore::DatastoreService::with_indexes(file));
         }
+        self
+    }
+
+    /// `--require_indexes` in Firestore Native mode: the emulator starts, and every query is
+    /// refused ("Firestore Native mode does not support index enforcement"), as the official
+    /// emulator does; other requests are served.
+    #[must_use]
+    pub fn with_firestore_index_enforcement(mut self, refuse_queries: bool) -> Self {
+        self.refuse_queries = refuse_queries;
         self
     }
 

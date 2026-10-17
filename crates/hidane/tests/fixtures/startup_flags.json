@@ -1,0 +1,419 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/startup_flags.py",
+ "starts": [
+  {
+   "flags": [],
+   "started": [
+    "Database Edition: STANDARD",
+    "Database Mode: CLOUD_FIRESTORE"
+   ]
+  },
+  {
+   "flags": [
+    "--database-mode",
+    "firestore-native"
+   ],
+   "started": [
+    "Database Edition: STANDARD",
+    "Database Mode: CLOUD_FIRESTORE"
+   ]
+  },
+  {
+   "flags": [
+    "--database-mode",
+    "datastore-mode"
+   ],
+   "started": [
+    "Database Edition: STANDARD",
+    "Database Mode: CLOUD_FIRESTORE_IN_DATASTORE_MODE"
+   ]
+  },
+  {
+   "flags": [
+    "--database-mode",
+    "CLOUD_FIRESTORE"
+   ],
+   "exit": 1,
+   "message": "Unsupported database mode: CLOUD_FIRESTORE. Please specify either `firestore-native` or `datastore-mode`."
+  },
+  {
+   "flags": [
+    "--database-mode",
+    "CLOUD_FIRESTORE_IN_DATASTORE_MODE"
+   ],
+   "exit": 1,
+   "message": "Unsupported database mode: CLOUD_FIRESTORE_IN_DATASTORE_MODE. Please specify either `firestore-native` or `datastore-mode`."
+  },
+  {
+   "flags": [
+    "--database-mode",
+    "CLOUD_DATASTORE"
+   ],
+   "exit": 1,
+   "message": "Unsupported database mode: CLOUD_DATASTORE. Please specify either `firestore-native` or `datastore-mode`."
+  },
+  {
+   "flags": [
+    "--database-mode",
+    "Datastore-Mode"
+   ],
+   "exit": 1,
+   "message": "Unsupported database mode: Datastore-Mode. Please specify either `firestore-native` or `datastore-mode`."
+  },
+  {
+   "flags": [
+    "--database-mode",
+    "cloud-datastore"
+   ],
+   "exit": 1,
+   "message": "Unsupported database mode: cloud-datastore. Please specify either `firestore-native` or `datastore-mode`."
+  },
+  {
+   "flags": [
+    "--database-mode",
+    "bogus"
+   ],
+   "exit": 1,
+   "message": "Unsupported database mode: bogus. Please specify either `firestore-native` or `datastore-mode`."
+  },
+  {
+   "flags": [
+    "--database-edition",
+    "standard"
+   ],
+   "started": [
+    "Database Edition: STANDARD",
+    "Database Mode: CLOUD_FIRESTORE"
+   ]
+  },
+  {
+   "flags": [
+    "--database-edition",
+    "enterprise"
+   ],
+   "started": [
+    "Database Edition: ENTERPRISE",
+    "Database Mode: CLOUD_FIRESTORE"
+   ]
+  },
+  {
+   "flags": [
+    "--database-edition",
+    "STANDARD"
+   ],
+   "exit": 1,
+   "message": "Unsupported database mode: STANDARD. Please specify either `standard` or `enterprise`."
+  },
+  {
+   "flags": [
+    "--database-edition",
+    "ENTERPRISE"
+   ],
+   "exit": 1,
+   "message": "Unsupported database mode: ENTERPRISE. Please specify either `standard` or `enterprise`."
+  },
+  {
+   "flags": [
+    "--database-edition",
+    "bogus"
+   ],
+   "exit": 1,
+   "message": "Unsupported database mode: bogus. Please specify either `standard` or `enterprise`."
+  },
+  {
+   "flags": [
+    "--database-mode",
+    "datastore-mode",
+    "--database-edition",
+    "enterprise"
+   ],
+   "started": [
+    "Database Edition: ENTERPRISE",
+    "Database Mode: CLOUD_FIRESTORE_IN_DATASTORE_MODE"
+   ]
+  },
+  {
+   "flags": [
+    "--database-mode",
+    "bogus",
+    "--database-edition",
+    "bogus"
+   ],
+   "exit": 1,
+   "message": "Unsupported database mode: bogus. Please specify either `firestore-native` or `datastore-mode`."
+  },
+  {
+   "flags": [
+    "--database-mode",
+    "bogus",
+    "--single_project_mode",
+    "true"
+   ],
+   "exit": 1,
+   "message": "Unsupported database mode: bogus. Please specify either `firestore-native` or `datastore-mode`."
+  },
+  {
+   "flags": [
+    "--require_indexes"
+   ],
+   "started": [
+    "Database Edition: STANDARD",
+    "Database Mode: CLOUD_FIRESTORE"
+   ]
+  },
+  {
+   "flags": [
+    "--require_indexes",
+    "--database-mode",
+    "firestore-native"
+   ],
+   "started": [
+    "Database Edition: STANDARD",
+    "Database Mode: CLOUD_FIRESTORE"
+   ]
+  },
+  {
+   "flags": [
+    "--single_project_mode",
+    "true"
+   ],
+   "exit": 1,
+   "message": "Expected project_id to be set for single_project_mode"
+  },
+  {
+   "flags": [
+    "--single_project_mode_error",
+    "true"
+   ],
+   "exit": 1,
+   "message": "Expected single_project_mode to be set for single_project_mode_error"
+  },
+  {
+   "flags": [
+    "--export-name",
+    "x"
+   ],
+   "exit": 1,
+   "message": "Export path not provided along with export name"
+  },
+  {
+   "flags": [
+    "--single_project_mode",
+    "true",
+    "--export-name",
+    "x"
+   ],
+   "exit": 1,
+   "message": "Expected project_id to be set for single_project_mode"
+  }
+ ],
+ "index_enforcement_in_firestore_mode": {
+  "flags": [
+   "--require_indexes"
+  ],
+  "started": [
+   "Database Edition: STANDARD",
+   "Database Mode: CLOUD_FIRESTORE"
+  ],
+  "requests": [
+   {
+    "name": "commit",
+    "method": "POST",
+    "path": "/v1/projects/demo-flags/databases/(default)/documents:commit",
+    "body": {
+     "writes": [
+      {
+       "update": {
+        "name": "projects/demo-flags/databases/(default)/documents/c/d",
+        "fields": {}
+       }
+      }
+     ]
+    },
+    "status": 200,
+    "message": null
+   },
+   {
+    "name": "get the document",
+    "method": "GET",
+    "path": "/v1/projects/demo-flags/databases/(default)/documents/c/d",
+    "body": null,
+    "status": 200,
+    "message": null
+   },
+   {
+    "name": "runQuery",
+    "method": "POST",
+    "path": "/v1/projects/demo-flags/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ]
+     }
+    },
+    "status": 400,
+    "message": "Firestore Native mode does not support index enforcement"
+   },
+   {
+    "name": "runQuery without from",
+    "method": "POST",
+    "path": "/v1/projects/demo-flags/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {}
+    },
+    "status": 400,
+    "message": "Firestore Native mode does not support index enforcement"
+   },
+   {
+    "name": "runQuery with a bad field path",
+    "method": "POST",
+    "path": "/v1/projects/demo-flags/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ],
+      "orderBy": [
+       {
+        "field": {
+         "fieldPath": "a..b"
+        }
+       }
+      ]
+     }
+    },
+    "status": 400,
+    "message": "Firestore Native mode does not support index enforcement"
+   },
+   {
+    "name": "runQuery of a collection group",
+    "method": "POST",
+    "path": "/v1/projects/demo-flags/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c",
+        "allDescendants": true
+       }
+      ]
+     }
+    },
+    "status": 400,
+    "message": "Firestore Native mode does not support index enforcement"
+   },
+   {
+    "name": "runQuery in a new transaction",
+    "method": "POST",
+    "path": "/v1/projects/demo-flags/databases/(default)/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ]
+     },
+     "newTransaction": {}
+    },
+    "status": 400,
+    "message": "Firestore Native mode does not support index enforcement"
+   },
+   {
+    "name": "runQuery under a document",
+    "method": "POST",
+    "path": "/v1/projects/demo-flags/databases/(default)/documents/c/d:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ]
+     }
+    },
+    "status": 400,
+    "message": "Firestore Native mode does not support index enforcement"
+   },
+   {
+    "name": "runQuery with no body",
+    "method": "POST",
+    "path": "/v1/projects/demo-flags/databases/(default)/documents:runQuery",
+    "body": null,
+    "status": 400,
+    "message": "Firestore Native mode does not support index enforcement"
+   },
+   {
+    "name": "runQuery with an unknown field",
+    "method": "POST",
+    "path": "/v1/projects/demo-flags/databases/(default)/documents:runQuery",
+    "body": {
+     "x": 1
+    },
+    "status": 400,
+    "message": "Payload isn't valid for request."
+   },
+   {
+    "name": "runQuery in another database",
+    "method": "POST",
+    "path": "/v1/projects/demo-flags/databases/db2/documents:runQuery",
+    "body": {
+     "structuredQuery": {
+      "from": [
+       {
+        "collectionId": "c"
+       }
+      ]
+     }
+    },
+    "status": 400,
+    "message": "Firestore Native mode does not support index enforcement"
+   },
+   {
+    "name": "runAggregationQuery",
+    "method": "POST",
+    "path": "/v1/projects/demo-flags/databases/(default)/documents:runAggregationQuery",
+    "body": {
+     "structuredAggregationQuery": {
+      "structuredQuery": {
+       "from": [
+        {
+         "collectionId": "c"
+        }
+       ]
+      },
+      "aggregations": [
+       {
+        "count": {}
+       }
+      ]
+     }
+    },
+    "status": 200,
+    "message": null
+   },
+   {
+    "name": "listCollectionIds",
+    "method": "POST",
+    "path": "/v1/projects/demo-flags/databases/(default)/documents:listCollectionIds",
+    "body": {},
+    "status": 200,
+    "message": null
+   },
+   {
+    "name": "beginTransaction",
+    "method": "POST",
+    "path": "/v1/projects/demo-flags/databases/(default)/documents:beginTransaction",
+    "body": {},
+    "status": 200,
+    "message": null
+   }
+  ]
+ }
+}
