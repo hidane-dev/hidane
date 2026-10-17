@@ -271,7 +271,7 @@
     "--index_file",
     "{dir}/index.yaml"
    ],
-   "index_file": "indexes:\n# Kind P with no property: what a query on the kind alone needs.\n- kind: P\n- kind: C\n  ancestor: yes\n- kind: Q\n  properties:\n  - name: __key__\n- kind: __kind__\n- kind: P\n  properties:\n  - name: a\n  - name: b\n- kind: P\n  properties:\n  - name: b\n  - name: a\n    direction: asc\n  - name: c\n    direction: desc\n- kind: P\n  properties:\n  - name: c\n  - name: a\n- kind: P\n  properties:\n  - name: a\n  - name: a\n- kind: P\n  properties:\n  - name: B\n  - name: a\n- kind: P\n  properties:\n  - name: __key__\n  - name: d\n- kind: P\n  properties:\n  - name: a\n  - name: c\n    direction: desc\n- kind: P\n  properties:\n  - name: d\n  - name: __key__\n    direction: desc\n- kind: P\n  properties:\n  - name: m.x\n  - name: a\n- kind: P\n  ancestor: yes\n  properties:\n  - name: a\n  - name: b\n- kind: P\n  properties:\n  - name: b\n  - name: d\n  - name: a\n",
+   "index_file": "indexes:\n# Kind P with no property: what a query on the kind alone needs.\n- kind: P\n- kind: C\n  ancestor: yes\n- kind: Q\n  properties:\n  - name: __key__\n- kind: __kind__\n- kind: P\n  properties:\n  - name: a\n  - name: b\n- kind: P\n  properties:\n  - name: b\n  - name: a\n    direction: asc\n  - name: c\n    direction: desc\n- kind: P\n  properties:\n  - name: c\n  - name: a\n- kind: P\n  properties:\n  - name: a\n  - name: a\n- kind: P\n  properties:\n  - name: B\n  - name: a\n- kind: P\n  properties:\n  - name: __key__\n  - name: d\n- kind: P\n  properties:\n  - name: a\n  - name: c\n    direction: desc\n- kind: P\n  properties:\n  - name: d\n  - name: __key__\n    direction: desc\n- kind: P\n  properties:\n  - name: m.x\n  - name: a\n- kind: P\n  ancestor: yes\n  properties:\n  - name: a\n  - name: b\n- kind: P\n  properties:\n  - name: b\n  - name: d\n  - name: a\n# Kind R: what a query does not order by follows its last order's direction.\n- kind: R\n  properties:\n  - name: t\n    direction: desc\n  - name: a\n    direction: desc\n- kind: R\n  properties:\n  - name: u\n    direction: desc\n  - name: a\n",
    "seeded": true,
    "cases": [
     {
@@ -3597,6 +3597,338 @@
          "property": {
           "name": "a"
          }
+        }
+       ]
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"The query requires a composite index that is not defined in your indexes file.\",\"status\":\"FAILED_PRECONDITION\"}}"
+     }
+    },
+    {
+     "name": "R: project a, order by t descending",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "R"
+        }
+       ],
+       "projection": [
+        {
+         "property": {
+          "name": "a"
+         }
+        }
+       ],
+       "order": [
+        {
+         "property": {
+          "name": "t"
+         },
+         "direction": "DESCENDING"
+        }
+       ]
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"entityResultType\": \"PROJECTION\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "name": "R: project a, order by u descending",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "R"
+        }
+       ],
+       "projection": [
+        {
+         "property": {
+          "name": "a"
+         }
+        }
+       ],
+       "order": [
+        {
+         "property": {
+          "name": "u"
+         },
+         "direction": "DESCENDING"
+        }
+       ]
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"The query requires a composite index that is not defined in your indexes file.\",\"status\":\"FAILED_PRECONDITION\"}}"
+     }
+    },
+    {
+     "name": "R: a > 0 order by t descending",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "R"
+        }
+       ],
+       "filter": {
+        "propertyFilter": {
+         "property": {
+          "name": "a"
+         },
+         "op": "GREATER_THAN",
+         "value": {
+          "integerValue": "0"
+         }
+        }
+       },
+       "order": [
+        {
+         "property": {
+          "name": "t"
+         },
+         "direction": "DESCENDING"
+        }
+       ]
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "name": "R: a > 0 order by u descending",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "R"
+        }
+       ],
+       "filter": {
+        "propertyFilter": {
+         "property": {
+          "name": "a"
+         },
+         "op": "GREATER_THAN",
+         "value": {
+          "integerValue": "0"
+         }
+        }
+       },
+       "order": [
+        {
+         "property": {
+          "name": "u"
+         },
+         "direction": "DESCENDING"
+        }
+       ]
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"The query requires a composite index that is not defined in your indexes file.\",\"status\":\"FAILED_PRECONDITION\"}}"
+     }
+    },
+    {
+     "name": "R: distinct on t, a, order by t descending",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "R"
+        }
+       ],
+       "distinctOn": [
+        {
+         "name": "t"
+        },
+        {
+         "name": "a"
+        }
+       ],
+       "order": [
+        {
+         "property": {
+          "name": "t"
+         },
+         "direction": "DESCENDING"
+        }
+       ]
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "name": "R: sum of a, order by t descending",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runAggregationQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "aggregationQuery": {
+       "nestedQuery": {
+        "kind": [
+         {
+          "name": "R"
+         }
+        ],
+        "order": [
+         {
+          "property": {
+           "name": "t"
+          },
+          "direction": "DESCENDING"
+         }
+        ]
+       },
+       "aggregations": [
+        {
+         "sum": {
+          "property": {
+           "name": "a"
+          }
+         }
+        }
+       ]
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"property_1\": {\n          \"integerValue\": \"0\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "name": "R: sum of a, order by u descending",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runAggregationQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "aggregationQuery": {
+       "nestedQuery": {
+        "kind": [
+         {
+          "name": "R"
+         }
+        ],
+        "order": [
+         {
+          "property": {
+           "name": "u"
+          },
+          "direction": "DESCENDING"
+         }
+        ]
+       },
+       "aggregations": [
+        {
+         "sum": {
+          "property": {
+           "name": "a"
+          }
+         }
+        }
+       ]
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"The query requires a composite index that is not defined in your indexes file.\",\"status\":\"FAILED_PRECONDITION\"}}"
+     }
+    },
+    {
+     "name": "R: __key__ above, order by t descending",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "R"
+        }
+       ],
+       "filter": {
+        "propertyFilter": {
+         "property": {
+          "name": "__key__"
+         },
+         "op": "GREATER_THAN",
+         "value": {
+          "keyValue": {
+           "path": [
+            {
+             "kind": "R",
+             "name": "r"
+            }
+           ]
+          }
+         }
+        }
+       },
+       "order": [
+        {
+         "property": {
+          "name": "t"
+         },
+         "direction": "DESCENDING"
         }
        ]
       }

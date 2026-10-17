@@ -707,17 +707,15 @@ impl Datastore for DatastoreService {
         let mut echo = None;
         let query = match req.query_type {
             Some(run_query_request::QueryType::Query(query)) => query,
-            Some(run_query_request::QueryType::GqlQuery(text)) => match gql::read(&text)? {
-                gql::Read::Entities(query) => {
-                    echo = Some(query.clone());
-                    query
+            Some(run_query_request::QueryType::GqlQuery(text)) => {
+                match gql::read(&text, &namespace, gql::Expect::Entities)? {
+                    gql::Read::Entities(query) => {
+                        echo = Some(query.clone());
+                        query
+                    }
+                    gql::Read::Aggregation(_) => unreachable!("an entity query was expected"),
                 }
-                gql::Read::Aggregation(_) => {
-                    return Err(Status::invalid_argument(
-                        "Expecting ENTITY_QUERY, but got AGGREGATION_QUERY. Use Datastore.RunAggregationQuery API instead for such queries.",
-                    ));
-                }
-            },
+            }
             None => {
                 return Err(Status::invalid_argument(
                     "one of fields Query.query and Query.gql_query must be set",
@@ -759,13 +757,9 @@ impl Datastore for DatastoreService {
         let aggregation = match req.query_type {
             Some(run_aggregation_query_request::QueryType::AggregationQuery(a)) => a,
             Some(run_aggregation_query_request::QueryType::GqlQuery(text)) => {
-                match gql::read(&text)? {
+                match gql::read(&text, &namespace, gql::Expect::Aggregation)? {
                     gql::Read::Aggregation(aggregation) => aggregation,
-                    gql::Read::Entities(_) => {
-                        return Err(Status::invalid_argument(
-                            "Expecting AGGREGATION_QUERY, but got ENTITY_QUERY. Use Datastore.RunQuery API instead for such queries.",
-                        ));
-                    }
+                    gql::Read::Entities(_) => unreachable!("an aggregation was expected"),
                 }
             }
             None => {
@@ -982,7 +976,8 @@ fn double(d: f64) -> Value {
 }
 
 /// The sum of `property`'s numbers over `rows` (an integer while every one is, a double once
-/// one is not or the integers overflow), and how many numbers there were.
+/// one is not or the integers overflow), and how many numbers there were. A timestamp counts as
+/// its microseconds since the epoch, as the official emulator indexes it.
 fn sum(rows: &[query::AggregateRow], plan: &query::Plan, property: &str) -> (Value, usize) {
     let Some(i) = plan.row_properties.iter().position(|p| p == property) else {
         return (integer(0), 0);
@@ -991,13 +986,22 @@ fn sum(rows: &[query::AggregateRow], plan: &query::Plan, property: &str) -> (Val
     let mut double_sum = 0.0f64;
     let mut count = 0;
     for row in rows {
-        match &row.values[i].value_type {
-            Some(ValueType::IntegerValue(n)) => {
-                integer_sum = integer_sum.and_then(|s| s.checked_add(*n));
-                double_sum += *n as f64;
+        let integral = match &row.values[i].value_type {
+            Some(ValueType::IntegerValue(n)) => Some(*n),
+            Some(ValueType::TimestampValue(t)) => Some(
+                t.seconds
+                    .saturating_mul(1_000_000)
+                    .saturating_add(i64::from(t.nanos / 1_000)),
+            ),
+            _ => None,
+        };
+        match (&row.values[i].value_type, integral) {
+            (_, Some(n)) => {
+                integer_sum = integer_sum.and_then(|s| s.checked_add(n));
+                double_sum += n as f64;
                 count += 1;
             }
-            Some(ValueType::DoubleValue(d)) => {
+            (Some(ValueType::DoubleValue(d)), _) => {
                 integer_sum = None;
                 double_sum += d;
                 count += 1;

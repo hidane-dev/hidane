@@ -7,8 +7,8 @@
 //! disjunct with the same filters as an earlier one left out): the properties of its equalities
 //! (`=` and `IN`, the key's too) in the filter's order, then its row's: its orders, its
 //! `distinctOn` properties, its inequalities (by name, the key last), then the properties it
-//! projects or aggregates (by name, without the key), each once and ascending unless ordered
-//! otherwise, a last ascending key left out. An index the file defines loses a last ascending key
+//! projects or aggregates (by name, without the key), each once and in its order's direction,
+//! or else the last order's (ascending without one), a last ascending key left out. An index the file defines loses a last ascending key
 //! too. One property other than the key, without an ancestor, needs no index; anything else needs
 //! that very index, directions included, the kind and the ancestor alike. A query without a kind
 //! needs one the file cannot define.
@@ -223,10 +223,12 @@ fn needed(query: &Query, disjunct: &[&PropertyFilter], aggregated: &[String]) ->
         .filter(|name| *name != KEY)
         .collect();
     read.sort_unstable();
+    // What the query does not order by follows its last order's direction.
+    let last = row.last().is_some_and(|(_, descending)| *descending);
     let distinct = query.distinct_on.iter().map(|p| p.name.as_str());
     for name in distinct.chain(inequalities).chain(read) {
         if !row.iter().any(|(n, _)| n == name) {
-            row.push((name.to_owned(), false));
+            row.push((name.to_owned(), last));
         }
     }
     trimmed(&mut row);

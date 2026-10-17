@@ -345,8 +345,22 @@ async fn datastore_queries_answer_like_the_official_emulator() {
 async fn checks_come_in_the_official_emulators_order() {
     let fixture: Json =
         serde_json::from_str(include_str!("fixtures/datastore_checks.json")).unwrap();
+    let cases = with_every_case(&fixture);
+    assert!(cases.len() > 5000);
+    let differences = replay_cases(start().await, &cases, &[], None, PROJECT).await;
+    assert!(
+        differences.is_empty(),
+        "{} of {} requests differ:\n{}",
+        differences.len(),
+        cases.len(),
+        differences.join("\n")
+    );
+}
+
+/// A fixture's cases, each with what `every_case` gives them all.
+fn with_every_case(fixture: &Json) -> Vec<Json> {
     let every = fixture["every_case"].as_object().unwrap();
-    let cases: Vec<Json> = fixture["cases"]
+    fixture["cases"]
         .as_array()
         .unwrap()
         .iter()
@@ -358,16 +372,7 @@ async fn checks_come_in_the_official_emulators_order() {
             }
             case
         })
-        .collect();
-    assert!(cases.len() > 4000);
-    let differences = replay_cases(start().await, &cases, &[], None, PROJECT).await;
-    assert!(
-        differences.is_empty(),
-        "{} of {} requests differ:\n{}",
-        differences.len(),
-        cases.len(),
-        differences.join("\n")
-    );
+        .collect()
 }
 
 /// `{repeat:<c>:<n>}` stands for `<c>` repeated `<n>` times (`tools/oracle/datastore_commit_checks.py`).
@@ -667,6 +672,24 @@ async fn gql_answers_like_the_official_emulator() {
         differences.is_empty(),
         "{} of {cases} requests differ:\n{}",
         differences.len(),
+        differences.join("\n")
+    );
+}
+
+/// How GQL is refused at each point of its grammar, and what its parser checks as it reads, in
+/// its order (`fixtures/datastore_gql_errors.json`, from `tools/oracle/datastore_gql_errors.py`).
+#[tokio::test]
+async fn gql_is_refused_like_the_official_emulator() {
+    let fixture: Json =
+        serde_json::from_str(include_str!("fixtures/datastore_gql_errors.json")).unwrap();
+    let cases = with_every_case(&fixture);
+    assert!(cases.len() > 1300);
+    let differences = replay_cases(start().await, &cases, &[], None, PROJECT).await;
+    assert!(
+        differences.is_empty(),
+        "{} of {} requests differ:\n{}",
+        differences.len(),
+        cases.len(),
         differences.join("\n")
     );
 }

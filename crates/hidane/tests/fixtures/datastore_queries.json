@@ -13611,6 +13611,304 @@
    }
   },
   {
+   "name": "project a, order by b descending",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "P"
+      }
+     ],
+     "projection": [
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"PROJECTION\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\",\n            \"meaning\": 18\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p5\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\",\n            \"meaning\": 18\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\",\n            \"meaning\": 18\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p8\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"doubleValue\": 4.5,\n            \"meaning\": 18\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\",\n            \"meaning\": 18\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\",\n            \"meaning\": 18\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p6\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"-1\",\n            \"meaning\": 18\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "project a, b, order by b descending",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "P"
+      }
+     ],
+     "projection": [
+      {
+       "property": {
+        "name": "a"
+       }
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"PROJECTION\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\",\n            \"meaning\": 18\n          },\n          \"b\": {\n            \"meaning\": 18,\n            \"stringValue\": \"z\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p5\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\",\n            \"meaning\": 18\n          },\n          \"b\": {\n            \"meaning\": 18,\n            \"stringValue\": \"y\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\",\n            \"meaning\": 18\n          },\n          \"b\": {\n            \"meaning\": 18,\n            \"stringValue\": \"y\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p8\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"doubleValue\": 4.5,\n            \"meaning\": 18\n          },\n          \"b\": {\n            \"meaning\": 18,\n            \"stringValue\": \"x\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\",\n            \"meaning\": 18\n          },\n          \"b\": {\n            \"meaning\": 18,\n            \"stringValue\": \"x\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\",\n            \"meaning\": 18\n          },\n          \"b\": {\n            \"meaning\": 18,\n            \"stringValue\": \"x\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p6\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"-1\",\n            \"meaning\": 18\n          },\n          \"b\": {\n            \"meaning\": 18,\n            \"stringValue\": \"x\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "a > 0 order by b descending",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "P"
+      }
+     ],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "a"
+       },
+       "op": "GREATER_THAN",
+       "value": {
+        "integerValue": "0"
+       }
+      }
+     },
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"stringValue\": \"z\"\n          },\n          \"tags\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"stringValue\": \"blue\"\n              }, {\n                \"stringValue\": \"green\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p5\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"stringValue\": \"y\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"stringValue\": \"y\"\n          },\n          \"tags\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"stringValue\": \"red\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p8\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"doubleValue\": 4.5\n          },\n          \"b\": {\n            \"stringValue\": \"x\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"stringValue\": \"x\"\n          },\n          \"tags\": {\n            \"arrayValue\": {\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"stringValue\": \"x\"\n          },\n          \"tags\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"stringValue\": \"red\"\n              }, {\n                \"stringValue\": \"blue\"\n              }]\n            }\n          },\n          \"m\": {\n            \"entityValue\": {\n              \"properties\": {\n                \"x\": {\n                  \"integerValue\": \"1\"\n                }\n              }\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "distinct on b, a, order by b descending",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "P"
+      }
+     ],
+     "distinctOn": [
+      {
+       "name": "b"
+      },
+      {
+       "name": "a"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"stringValue\": \"z\"\n          },\n          \"tags\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"stringValue\": \"blue\"\n              }, {\n                \"stringValue\": \"green\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p5\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"stringValue\": \"y\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"stringValue\": \"y\"\n          },\n          \"tags\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"stringValue\": \"red\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p8\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"doubleValue\": 4.5\n          },\n          \"b\": {\n            \"stringValue\": \"x\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"stringValue\": \"x\"\n          },\n          \"tags\": {\n            \"arrayValue\": {\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"stringValue\": \"x\"\n          },\n          \"tags\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"stringValue\": \"red\"\n              }, {\n                \"stringValue\": \"blue\"\n              }]\n            }\n          },\n          \"m\": {\n            \"entityValue\": {\n              \"properties\": {\n                \"x\": {\n                  \"integerValue\": \"1\"\n                }\n              }\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p6\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"-1\"\n          },\n          \"b\": {\n            \"stringValue\": \"x\"\n          },\n          \"tags\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"stringValue\": \"green\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "the key above p1, order by b descending",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "P"
+      }
+     ],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "__key__"
+       },
+       "op": "GREATER_THAN",
+       "value": {
+        "keyValue": {
+         "path": [
+          {
+           "kind": "P",
+           "name": "p1"
+          }
+         ]
+        }
+       }
+      }
+     },
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"stringValue\": \"z\"\n          },\n          \"tags\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"stringValue\": \"blue\"\n              }, {\n                \"stringValue\": \"green\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p5\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"stringValue\": \"y\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"stringValue\": \"y\"\n          },\n          \"tags\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"stringValue\": \"red\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p8\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"doubleValue\": 4.5\n          },\n          \"b\": {\n            \"stringValue\": \"x\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p6\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"-1\"\n          },\n          \"b\": {\n            \"stringValue\": \"x\"\n          },\n          \"tags\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"stringValue\": \"green\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"stringValue\": \"x\"\n          },\n          \"tags\": {\n            \"arrayValue\": {\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p7\"\n          }]\n        },\n        \"properties\": {\n          \"b\": {\n            \"stringValue\": \"w\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "the key above p1, project a, order by b descending",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "P"
+      }
+     ],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "__key__"
+       },
+       "op": "GREATER_THAN",
+       "value": {
+        "keyValue": {
+         "path": [
+          {
+           "kind": "P",
+           "name": "p1"
+          }
+         ]
+        }
+       }
+      }
+     },
+     "projection": [
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"PROJECTION\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\",\n            \"meaning\": 18\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p5\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\",\n            \"meaning\": 18\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\",\n            \"meaning\": 18\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p8\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"doubleValue\": 4.5,\n            \"meaning\": 18\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p6\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"-1\",\n            \"meaning\": 18\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\",\n            \"meaning\": 18\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "order by b descending",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "P"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"stringValue\": \"z\"\n          },\n          \"tags\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"stringValue\": \"blue\"\n              }, {\n                \"stringValue\": \"green\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"stringValue\": \"y\"\n          },\n          \"tags\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"stringValue\": \"red\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p5\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"stringValue\": \"y\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p1\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"stringValue\": \"x\"\n          },\n          \"tags\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"stringValue\": \"red\"\n              }, {\n                \"stringValue\": \"blue\"\n              }]\n            }\n          },\n          \"m\": {\n            \"entityValue\": {\n              \"properties\": {\n                \"x\": {\n                  \"integerValue\": \"1\"\n                }\n              }\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"stringValue\": \"x\"\n          },\n          \"tags\": {\n            \"arrayValue\": {\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p6\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"-1\"\n          },\n          \"b\": {\n            \"stringValue\": \"x\"\n          },\n          \"tags\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"stringValue\": \"green\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p8\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"doubleValue\": 4.5\n          },\n          \"b\": {\n            \"stringValue\": \"x\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"P\",\n            \"name\": \"p7\"\n          }]\n        },\n        \"properties\": {\n          \"b\": {\n            \"stringValue\": \"w\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
    "name": "a reserved namespace",
    "method": "POST",
    "path": "/v1/projects/{project}:runQuery",
@@ -14379,6 +14677,179 @@
     "status": 200,
     "contentType": "application/json",
     "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"n\": {\n          \"integerValue\": \"7\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "sum and avg of timestamps, as microseconds",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "T"
+       }
+      ],
+      "filter": {
+       "propertyFilter": {
+        "property": {
+         "name": "__key__"
+        },
+        "op": "IN",
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "keyValue": {
+             "path": [
+              {
+               "kind": "T",
+               "name": "ts"
+              }
+             ]
+            }
+           },
+           {
+            "keyValue": {
+             "path": [
+              {
+               "kind": "T",
+               "name": "ts2"
+              }
+             ]
+            }
+           },
+           {
+            "keyValue": {
+             "path": [
+              {
+               "kind": "T",
+               "name": "int2"
+              }
+             ]
+            }
+           }
+          ]
+         }
+        }
+       }
+      }
+     },
+     "aggregations": [
+      {
+       "sum": {
+        "property": {
+         "name": "v"
+        }
+       },
+       "alias": "s"
+      },
+      {
+       "avg": {
+        "property": {
+         "name": "v"
+        }
+       },
+       "alias": "m"
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"s\": {\n          \"integerValue\": \"3200385600500002\"\n        },\n        \"m\": {\n          \"doubleValue\": 1.0667952001666674E15\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "sum of projected timestamps",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "T"
+       }
+      ],
+      "filter": {
+       "propertyFilter": {
+        "property": {
+         "name": "__key__"
+        },
+        "op": "IN",
+        "value": {
+         "arrayValue": {
+          "values": [
+           {
+            "keyValue": {
+             "path": [
+              {
+               "kind": "T",
+               "name": "ts"
+              }
+             ]
+            }
+           },
+           {
+            "keyValue": {
+             "path": [
+              {
+               "kind": "T",
+               "name": "ts2"
+              }
+             ]
+            }
+           },
+           {
+            "keyValue": {
+             "path": [
+              {
+               "kind": "T",
+               "name": "int2"
+              }
+             ]
+            }
+           }
+          ]
+         }
+        }
+       }
+      },
+      "projection": [
+       {
+        "property": {
+         "name": "v"
+        }
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "sum": {
+        "property": {
+         "name": "v"
+        }
+       },
+       "alias": "s"
+      }
+     ]
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"s\": {\n          \"integerValue\": \"3200385600500002\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
    }
   },
   {

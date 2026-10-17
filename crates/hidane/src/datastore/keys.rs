@@ -210,8 +210,9 @@ fn shown(path: &[PathElement]) -> String {
     format!("[{}]", elements.join(", "))
 }
 
-fn reserved(text: &str) -> bool {
-    text.len() >= 4 && text.starts_with("__") && text.ends_with("__")
+/// A name Datastore reserves: `__`, at least one character, `__` (`____` is not one).
+pub(super) fn reserved(text: &str) -> bool {
+    text.len() >= 5 && text.starts_with("__") && text.ends_with("__")
 }
 
 /// A namespace's text: letters, digits, `.`, `-` and `_`, at most 100 of them.
