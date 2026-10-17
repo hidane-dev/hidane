@@ -1,0 +1,591 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/datastore_locks.py",
+ "mode": "datastore-mode",
+ "every_case": {
+  "method": "POST",
+  "headers": {
+   "Content-Type": "application/json"
+  },
+  "compare": "exact"
+ },
+ "keep_alive_seconds": 10,
+ "cases": [
+  {
+   "name": "a write in another transaction to a key read",
+   "steps": [
+    {
+     "path": "/v1/projects/{project}:commit",
+     "body": {
+      "mode": "NON_TRANSACTIONAL",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "K",
+            "name": "a"
+           }
+          ]
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:beginTransaction",
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:lookup",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "K",
+          "name": "a"
+         }
+        ]
+       }
+      ],
+      "readOptions": {
+       "transaction": "{reader}"
+      }
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"found\": [{\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}\"\n        },\n        \"path\": [{\n          \"kind\": \"K\",\n          \"name\": \"a\"\n        }]\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"readTime\": \"<time>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:beginTransaction",
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:commit",
+     "body": {
+      "mode": "TRANSACTIONAL",
+      "transaction": "{writer}",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "K",
+            "name": "a"
+           }
+          ]
+         },
+         "properties": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 409,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":409,\"message\":\"Transaction lock timeout.\",\"status\":\"ABORTED\"}}"
+     }
+    }
+   ],
+   "waited": 2
+  },
+  {
+   "name": "a write outside a transaction to a key read",
+   "steps": [
+    {
+     "path": "/v1/projects/{project}:commit",
+     "body": {
+      "mode": "NON_TRANSACTIONAL",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "K",
+            "name": "a"
+           }
+          ]
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:beginTransaction",
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:lookup",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "K",
+          "name": "a"
+         }
+        ]
+       }
+      ],
+      "readOptions": {
+       "transaction": "{reader}"
+      }
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"found\": [{\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}\"\n        },\n        \"path\": [{\n          \"kind\": \"K\",\n          \"name\": \"a\"\n        }]\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"readTime\": \"<time>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:commit",
+     "body": {
+      "mode": "NON_TRANSACTIONAL",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "K",
+            "name": "a"
+           }
+          ]
+         },
+         "properties": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 409,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":409,\"message\":\"Transaction lock timeout.\",\"status\":\"ABORTED\"}}"
+     }
+    }
+   ],
+   "waited": 64
+  },
+  {
+   "name": "a write outside a transaction to another key",
+   "steps": [
+    {
+     "path": "/v1/projects/{project}:commit",
+     "body": {
+      "mode": "NON_TRANSACTIONAL",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "K",
+            "name": "a"
+           }
+          ]
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:beginTransaction",
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:lookup",
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "K",
+          "name": "a"
+         }
+        ]
+       }
+      ],
+      "readOptions": {
+       "transaction": "{reader}"
+      }
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"found\": [{\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}\"\n        },\n        \"path\": [{\n          \"kind\": \"K\",\n          \"name\": \"a\"\n        }]\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"readTime\": \"<time>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:commit",
+     "body": {
+      "mode": "NON_TRANSACTIONAL",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "K",
+            "name": "b"
+           }
+          ]
+         },
+         "properties": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+     }
+    }
+   ],
+   "waited": 0
+  },
+  {
+   "name": "a write in another transaction to a kind queried",
+   "steps": [
+    {
+     "path": "/v1/projects/{project}:commit",
+     "body": {
+      "mode": "NON_TRANSACTIONAL",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "K",
+            "name": "a"
+           }
+          ]
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:beginTransaction",
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:runQuery",
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "K"
+        }
+       ]
+      },
+      "readOptions": {
+       "transaction": "{reader}"
+      }
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"K\",\n            \"name\": \"a\"\n          }]\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:beginTransaction",
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:commit",
+     "body": {
+      "mode": "TRANSACTIONAL",
+      "transaction": "{writer}",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "K",
+            "name": "c"
+           }
+          ]
+         },
+         "properties": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 409,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":409,\"message\":\"Transaction lock timeout.\",\"status\":\"ABORTED\"}}"
+     }
+    }
+   ],
+   "waited": 2
+  },
+  {
+   "name": "a write outside a transaction to a kind queried",
+   "steps": [
+    {
+     "path": "/v1/projects/{project}:commit",
+     "body": {
+      "mode": "NON_TRANSACTIONAL",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "K",
+            "name": "a"
+           }
+          ]
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:beginTransaction",
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:runQuery",
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "K"
+        }
+       ]
+      },
+      "readOptions": {
+       "transaction": "{reader}"
+      }
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"K\",\n            \"name\": \"a\"\n          }]\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:commit",
+     "body": {
+      "mode": "NON_TRANSACTIONAL",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "K",
+            "name": "c"
+           }
+          ]
+         },
+         "properties": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 409,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":409,\"message\":\"Transaction lock timeout.\",\"status\":\"ABORTED\"}}"
+     }
+    }
+   ],
+   "waited": 62
+  },
+  {
+   "name": "a write outside a transaction to a kind aggregated",
+   "steps": [
+    {
+     "path": "/v1/projects/{project}:commit",
+     "body": {
+      "mode": "NON_TRANSACTIONAL",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "K",
+            "name": "a"
+           }
+          ]
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:beginTransaction",
+     "body": {},
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:runAggregationQuery",
+     "body": {
+      "aggregationQuery": {
+       "nestedQuery": {
+        "kind": [
+         {
+          "name": "K"
+         }
+        ]
+       },
+       "aggregations": [
+        {
+         "count": {}
+        }
+       ]
+      },
+      "readOptions": {
+       "transaction": "{reader}"
+      }
+     },
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"property_1\": {\n          \"integerValue\": \"1\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "path": "/v1/projects/{project}:commit",
+     "body": {
+      "mode": "NON_TRANSACTIONAL",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "K",
+            "name": "d"
+           }
+          ]
+         },
+         "properties": {
+          "n": {
+           "integerValue": "1"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "outcome": {
+      "status": 409,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":409,\"message\":\"Transaction lock timeout.\",\"status\":\"ABORTED\"}}"
+     }
+    }
+   ],
+   "waited": 61
+  }
+ ]
+}

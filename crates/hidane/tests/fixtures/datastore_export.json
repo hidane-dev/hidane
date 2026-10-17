@@ -1,0 +1,1160 @@
+{
+ "oracle": "cloud-firestore-emulator v1.22.0 (sha256 9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",
+ "generated_by": "tools/oracle/datastore_export.py",
+ "mode": "datastore-mode",
+ "files": {
+  "named/all_namespaces/all_kinds/all_namespaces_all_kinds.export_metadata": "ChkKBW5hbWVkEICA6Y+M4eYCGICA6Y+M4eYCEgwKABIIb3V0cHV0LTA=",
+  "named/all_namespaces/all_kinds/output-0": "OWaJwTAAAWoXagtkZW1vLWV4cG9ydHIICxIBVSIBdQxyChoBdiAAKgMaAXWCAQgLEgFVIgF1DNuvhvc2AgFqG2oLZGVtby1leHBvcnRyDAsSAVQiBWV2ZXJ5DHISGgFpIAAqCwj7//////////8BchAaAWQgACoJIQAAAAAAAARAchAaAXogACoJIQAAAAAAAAAAcgkaAWIgACoCEAFyCxoBcyAAKgQaAsOpcgcaAW4gACoAchIIBxoBdCAAKgkItZ7Fkffj5gJyEAgQGgRibG9iIAAqBBoCAAFyHQgJGgFnIAAqFCsxAAAAAAAA+D85AAAAAAAABMAsci0aAWsgAComY2oLZGVtby1leHBvcnRzegFBigEBeHRzegFCgAEHdKIBA25zMmRyCRoBYSABKgIIAXIKGgFhIAEqAxoBenIKCBgaAmVhIAAqAHJGCBMaAWUgACo9GjtqF2oLZGVtby1leHBvcnRyCAsSAUUiAWsMcgkaAXggACoCCAF6ChoBeSAAKgMaAW6CAQgLEgFFIgFrDHIgCBMaAmVrIAAqFhoUagRqAHIAcgkaAXggACoCCAKCAQByCxoDZXhhIAEqAggCchAIEBoFYnl0ZXMgACoDGgEBcg0IARoCbTEgACoDGgFzchIaA25hbiAAKgkhAAAAAAAA+H9yEhoDaW5mIAAqCSEAAAAAAADw/3oSGgJleCAAKgoaCGV4Y2x1ZGVkegsaA2V4YSABKgIIAXoPCA4aAmJ4IAAqBRoDAAECeg8IDxoEdGV4dCAAKgMaAXR6FQgOEgRaTElCGgR6bGliIAAqAxoBAYIBDAsSAVQiBWV2ZXJ5DJeIU9w1AAFqHWoLZGVtby1leHBvcnRyCAsSAVQiAXgMogEDbnMxcgkaAXYgACoCCAGCAQgLEgFUIgF4DFk58hpFAAFqHWoLZGVtby1leHBvcnRyDgsSAVQYgYCAgICAgAgMchMaA2JpZyAAKgoI//////////9/ggEOCxIBVBiBgICAgICACAy2keEWKgABah5qC2RlbW8tZXhwb3J0cg8LEgFUGAkMCxIBQyIBYwyCAQcLEgFUGAkM",
+  "named/named.overall_export_metadata": "uG1ETgEAATMFuSFgUAABCk4KBAgCGAMSQWFsbF9uYW1lc3BhY2VzL2FsbF9raW5kcy9hbGxfbmFtZXNwYWNlc19hbGxfa2luZHMuZXhwb3J0X21ldGFkYXRhGAUgrQY="
+ },
+ "runs": [
+  {
+   "name": "export",
+   "flags": [],
+   "cases": [
+    {
+     "name": "seed",
+     "method": "POST",
+     "path": "/v1/projects/{project}:commit",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "mode": "NON_TRANSACTIONAL",
+      "mutations": [
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "T",
+            "name": "every"
+           }
+          ]
+         },
+         "properties": {
+          "i": {
+           "integerValue": "-5"
+          },
+          "d": {
+           "doubleValue": 2.5
+          },
+          "z": {
+           "doubleValue": -0.0
+          },
+          "b": {
+           "booleanValue": true
+          },
+          "s": {
+           "stringValue": "é"
+          },
+          "n": {
+           "nullValue": null
+          },
+          "t": {
+           "timestampValue": "2020-01-02T03:04:05.678901Z"
+          },
+          "blob": {
+           "blobValue": "AAE="
+          },
+          "g": {
+           "geoPointValue": {
+            "latitude": 1.5,
+            "longitude": -2.5
+           }
+          },
+          "k": {
+           "keyValue": {
+            "path": [
+             {
+              "kind": "A",
+              "name": "x"
+             },
+             {
+              "kind": "B",
+              "id": "7"
+             }
+            ],
+            "partitionId": {
+             "namespaceId": "ns2"
+            }
+           }
+          },
+          "a": {
+           "arrayValue": {
+            "values": [
+             {
+              "integerValue": "1"
+             },
+             {
+              "stringValue": "z"
+             }
+            ]
+           }
+          },
+          "ea": {
+           "arrayValue": {}
+          },
+          "e": {
+           "entityValue": {
+            "key": {
+             "path": [
+              {
+               "kind": "E",
+               "name": "k"
+              }
+             ]
+            },
+            "properties": {
+             "x": {
+              "integerValue": "1"
+             },
+             "y": {
+              "stringValue": "n",
+              "excludeFromIndexes": true
+             }
+            }
+           }
+          },
+          "ek": {
+           "entityValue": {
+            "properties": {
+             "x": {
+              "integerValue": "2"
+             }
+            }
+           }
+          },
+          "ex": {
+           "stringValue": "excluded",
+           "excludeFromIndexes": true
+          },
+          "exa": {
+           "arrayValue": {
+            "values": [
+             {
+              "integerValue": "1",
+              "excludeFromIndexes": true
+             },
+             {
+              "integerValue": "2"
+             }
+            ]
+           }
+          },
+          "bx": {
+           "blobValue": "AAEC",
+           "excludeFromIndexes": true
+          },
+          "text": {
+           "stringValue": "t",
+           "meaning": 15,
+           "excludeFromIndexes": true
+          },
+          "bytes": {
+           "blobValue": "AQ==",
+           "meaning": 16
+          },
+          "zlib": {
+           "blobValue": "AQ==",
+           "meaning": 22,
+           "excludeFromIndexes": true
+          },
+          "m1": {
+           "stringValue": "s",
+           "meaning": 1
+          },
+          "nan": {
+           "doubleValue": "NaN"
+          },
+          "inf": {
+           "doubleValue": "-Infinity"
+          }
+         }
+        }
+       },
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "T",
+            "id": "9"
+           },
+           {
+            "kind": "C",
+            "name": "c"
+           }
+          ]
+         },
+         "properties": {}
+        }
+       },
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "T",
+            "id": "4503599627370497"
+           }
+          ]
+         },
+         "properties": {
+          "big": {
+           "integerValue": "9223372036854775807"
+          }
+         }
+        }
+       },
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "T",
+            "name": "x"
+           }
+          ],
+          "partitionId": {
+           "namespaceId": "ns1"
+          }
+         },
+         "properties": {
+          "v": {
+           "integerValue": "1"
+          }
+         }
+        }
+       },
+       {
+        "upsert": {
+         "key": {
+          "path": [
+           {
+            "kind": "U",
+            "name": "u"
+           }
+          ]
+         },
+         "properties": {
+          "v": {
+           "stringValue": "u"
+          }
+         }
+        }
+       }
+      ]
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+     }
+    },
+    {
+     "name": "export, named",
+     "method": "POST",
+     "path": "/emulator/v1/projects/{project}:export",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "database": "projects/{project}/databases/",
+      "export_directory": "{dir}/out",
+      "export_name": "named"
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n}\n"
+     }
+    },
+    {
+     "name": "export, unnamed",
+     "method": "POST",
+     "path": "/emulator/v1/projects/{project}:export",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "database": "projects/{project}/databases/",
+      "export_directory": "{dir}/out"
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n}\n"
+     }
+    },
+    {
+     "name": "export (default)",
+     "method": "POST",
+     "path": "/emulator/v1/projects/{project}:export",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "database": "projects/{project}/databases/(default)",
+      "export_directory": "{dir}/out"
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"\\\"(default)\\\" is an invalid database id.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "export another database",
+     "method": "POST",
+     "path": "/emulator/v1/projects/{project}:export",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "database": "projects/{project}/databases/db2",
+      "export_directory": "{dir}/out",
+      "export_name": "db2"
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n}\n"
+     }
+    },
+    {
+     "name": "export, a project only",
+     "method": "POST",
+     "path": "/emulator/v1/projects/{project}:export",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "database": "projects/{project}",
+      "export_directory": "{dir}/out"
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Invalid database path: projects\\/{project}\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "export, no database",
+     "method": "POST",
+     "path": "/emulator/v1/projects/{project}:export",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "export_directory": "{dir}/out"
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Invalid database path: \",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "export, no directory",
+     "method": "POST",
+     "path": "/emulator/v1/projects/{project}:export",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "database": "projects/{project}/databases/"
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"export_directory must be a directory\",\"status\":\"FAILED_PRECONDITION\"}}"
+     }
+    },
+    {
+     "name": "export, a directory that does not exist",
+     "method": "POST",
+     "path": "/emulator/v1/projects/{project}:export",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "database": "projects/{project}/databases/",
+      "export_directory": "{dir}/nowhere"
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"export_directory must be a directory\",\"status\":\"FAILED_PRECONDITION\"}}"
+     }
+    },
+    {
+     "name": "export, a file as the directory",
+     "method": "POST",
+     "path": "/emulator/v1/projects/{project}:export",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "database": "projects/{project}/databases/",
+      "export_directory": "{dir}/out/named/named.overall_export_metadata"
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"export_directory must be a directory\",\"status\":\"FAILED_PRECONDITION\"}}"
+     }
+    },
+    {
+     "name": "export, an unknown field",
+     "method": "POST",
+     "path": "/emulator/v1/projects/{project}:export",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "database": "projects/{project}/databases/",
+      "export_directory": "{dir}/out",
+      "x": 1
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Payload isn't valid for request.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "export from another project's path",
+     "method": "POST",
+     "path": "/emulator/v1/projects/elsewhere:export",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "database": "projects/{project}/databases/",
+      "export_directory": "{dir}/out",
+      "export_name": "other"
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n}\n"
+     }
+    }
+   ],
+   "exports": {
+    "datastore_export_<seconds>": {
+     "<name>.overall_export_metadata": {
+      "bytes": "uG1ETgEAATMFuSFgUAABCk4KBAgCGAMSQWFsbF9uYW1lc3BhY2VzL2FsbF9raW5kcy9hbGxfbmFtZXNwYWNlc19hbGxfa2luZHMuZXhwb3J0X21ldGFkYXRhGAUgrQY="
+     },
+     "all_namespaces/all_kinds/all_namespaces_all_kinds.export_metadata": {
+      "size": 63
+     },
+     "all_namespaces/all_kinds/output-0": {
+      "records": [
+       "ah1qC2RlbW8tZXhwb3J0cg4LEgFUGIGAgICAgIAIDHITGgNiaWcgACoKCP//////////f4IBDgsSAVQYgYCAgICAgAgM",
+       "ah1qC2RlbW8tZXhwb3J0cggLEgFUIgF4DKIBA25zMXIJGgF2IAAqAggBggEICxIBVCIBeAw=",
+       "ah5qC2RlbW8tZXhwb3J0cg8LEgFUGAkMCxIBQyIBYwyCAQcLEgFUGAkM",
+       "ahdqC2RlbW8tZXhwb3J0cggLEgFVIgF1DHIKGgF2IAAqAxoBdYIBCAsSAVUiAXUM",
+       "ahtqC2RlbW8tZXhwb3J0cgwLEgFUIgVldmVyeQxyEhoBaSAAKgsI+///////////AXIQGgFkIAAqCSEAAAAAAAAEQHIQGgF6IAAqCSEAAAAAAAAAAHIJGgFiIAAqAhABcgsaAXMgACoEGgLDqXIHGgFuIAAqAHISCAcaAXQgACoJCLWexZH34+YCchAIEBoEYmxvYiAAKgQaAgABch0ICRoBZyAAKhQrMQAAAAAAAPg/OQAAAAAAAATALHItGgFrIAAqJmNqC2RlbW8tZXhwb3J0c3oBQYoBAXh0c3oBQoABB3SiAQNuczJkcgkaAWEgASoCCAFyChoBYSABKgMaAXpyCggYGgJlYSAAKgByRggTGgFlIAAqPRo7ahdqC2RlbW8tZXhwb3J0cggLEgFFIgFrDHIJGgF4IAAqAggBegoaAXkgACoDGgFuggEICxIBRSIBawxyIAgTGgJlayAAKhYaFGoEagByAHIJGgF4IAAqAggCggEAcgsaA2V4YSABKgIIAnIQCBAaBWJ5dGVzIAAqAxoBAXINCAEaAm0xIAAqAxoBc3ISGgNuYW4gACoJIQAAAAAAAPh/chIaA2luZiAAKgkhAAAAAAAA8P96EhoCZXggACoKGghleGNsdWRlZHoLGgNleGEgASoCCAF6DwgOGgJieCAAKgUaAwABAnoPCA8aBHRleHQgACoDGgF0ehUIDhIEWkxJQhoEemxpYiAAKgMaAQGCAQwLEgFUIgVldmVyeQw="
+      ]
+     }
+    },
+    "db2": {
+     "<name>.overall_export_metadata": {
+      "bytes": "uG1ETgEAATMFKyhDAAAB"
+     }
+    },
+    "named": {
+     "<name>.overall_export_metadata": {
+      "bytes": "uG1ETgEAATMFuSFgUAABCk4KBAgCGAMSQWFsbF9uYW1lc3BhY2VzL2FsbF9raW5kcy9hbGxfbmFtZXNwYWNlc19hbGxfa2luZHMuZXhwb3J0X21ldGFkYXRhGAUgrQY="
+     },
+     "all_namespaces/all_kinds/all_namespaces_all_kinds.export_metadata": {
+      "size": 41
+     },
+     "all_namespaces/all_kinds/output-0": {
+      "records": [
+       "ah1qC2RlbW8tZXhwb3J0cg4LEgFUGIGAgICAgIAIDHITGgNiaWcgACoKCP//////////f4IBDgsSAVQYgYCAgICAgAgM",
+       "ah1qC2RlbW8tZXhwb3J0cggLEgFUIgF4DKIBA25zMXIJGgF2IAAqAggBggEICxIBVCIBeAw=",
+       "ah5qC2RlbW8tZXhwb3J0cg8LEgFUGAkMCxIBQyIBYwyCAQcLEgFUGAkM",
+       "ahdqC2RlbW8tZXhwb3J0cggLEgFVIgF1DHIKGgF2IAAqAxoBdYIBCAsSAVUiAXUM",
+       "ahtqC2RlbW8tZXhwb3J0cgwLEgFUIgVldmVyeQxyEhoBaSAAKgsI+///////////AXIQGgFkIAAqCSEAAAAAAAAEQHIQGgF6IAAqCSEAAAAAAAAAAHIJGgFiIAAqAhABcgsaAXMgACoEGgLDqXIHGgFuIAAqAHISCAcaAXQgACoJCLWexZH34+YCchAIEBoEYmxvYiAAKgQaAgABch0ICRoBZyAAKhQrMQAAAAAAAPg/OQAAAAAAAATALHItGgFrIAAqJmNqC2RlbW8tZXhwb3J0c3oBQYoBAXh0c3oBQoABB3SiAQNuczJkcgkaAWEgASoCCAFyChoBYSABKgMaAXpyCggYGgJlYSAAKgByRggTGgFlIAAqPRo7ahdqC2RlbW8tZXhwb3J0cggLEgFFIgFrDHIJGgF4IAAqAggBegoaAXkgACoDGgFuggEICxIBRSIBawxyIAgTGgJlayAAKhYaFGoEagByAHIJGgF4IAAqAggCggEAcgsaA2V4YSABKgIIAnIQCBAaBWJ5dGVzIAAqAxoBAXINCAEaAm0xIAAqAxoBc3ISGgNuYW4gACoJIQAAAAAAAPh/chIaA2luZiAAKgkhAAAAAAAA8P96EhoCZXggACoKGghleGNsdWRlZHoLGgNleGEgASoCCAF6DwgOGgJieCAAKgUaAwABAnoPCA8aBHRleHQgACoDGgF0ehUIDhIEWkxJQhoEemxpYiAAKgMaAQGCAQwLEgFUIgVldmVyeQw="
+      ]
+     }
+    },
+    "other": {
+     "<name>.overall_export_metadata": {
+      "bytes": "uG1ETgEAATMFuSFgUAABCk4KBAgCGAMSQWFsbF9uYW1lc3BhY2VzL2FsbF9raW5kcy9hbGxfbmFtZXNwYWNlc19hbGxfa2luZHMuZXhwb3J0X21ldGFkYXRhGAUgrQY="
+     },
+     "all_namespaces/all_kinds/all_namespaces_all_kinds.export_metadata": {
+      "size": 41
+     },
+     "all_namespaces/all_kinds/output-0": {
+      "records": [
+       "ah1qC2RlbW8tZXhwb3J0cg4LEgFUGIGAgICAgIAIDHITGgNiaWcgACoKCP//////////f4IBDgsSAVQYgYCAgICAgAgM",
+       "ah1qC2RlbW8tZXhwb3J0cggLEgFUIgF4DKIBA25zMXIJGgF2IAAqAggBggEICxIBVCIBeAw=",
+       "ah5qC2RlbW8tZXhwb3J0cg8LEgFUGAkMCxIBQyIBYwyCAQcLEgFUGAkM",
+       "ahdqC2RlbW8tZXhwb3J0cggLEgFVIgF1DHIKGgF2IAAqAxoBdYIBCAsSAVUiAXUM",
+       "ahtqC2RlbW8tZXhwb3J0cgwLEgFUIgVldmVyeQxyEhoBaSAAKgsI+///////////AXIQGgFkIAAqCSEAAAAAAAAEQHIQGgF6IAAqCSEAAAAAAAAAAHIJGgFiIAAqAhABcgsaAXMgACoEGgLDqXIHGgFuIAAqAHISCAcaAXQgACoJCLWexZH34+YCchAIEBoEYmxvYiAAKgQaAgABch0ICRoBZyAAKhQrMQAAAAAAAPg/OQAAAAAAAATALHItGgFrIAAqJmNqC2RlbW8tZXhwb3J0c3oBQYoBAXh0c3oBQoABB3SiAQNuczJkcgkaAWEgASoCCAFyChoBYSABKgMaAXpyCggYGgJlYSAAKgByRggTGgFlIAAqPRo7ahdqC2RlbW8tZXhwb3J0cggLEgFFIgFrDHIJGgF4IAAqAggBegoaAXkgACoDGgFuggEICxIBRSIBawxyIAgTGgJlayAAKhYaFGoEagByAHIJGgF4IAAqAggCggEAcgsaA2V4YSABKgIIAnIQCBAaBWJ5dGVzIAAqAxoBAXINCAEaAm0xIAAqAxoBc3ISGgNuYW4gACoJIQAAAAAAAPh/chIaA2luZiAAKgkhAAAAAAAA8P96EhoCZXggACoKGghleGNsdWRlZHoLGgNleGEgASoCCAF6DwgOGgJieCAAKgUaAwABAnoPCA8aBHRleHQgACoDGgF0ehUIDhIEWkxJQhoEemxpYiAAKgMaAQGCAQwLEgFUIgVldmVyeQw="
+      ]
+     }
+    }
+   }
+  },
+  {
+   "name": "import at startup",
+   "flags": [
+    "--import-data",
+    "{dir}/files/named/named.overall_export_metadata"
+   ],
+   "cases": [
+    {
+     "name": "lookup every entity",
+     "method": "POST",
+     "path": "/v1/projects/{project}:lookup",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T",
+          "name": "every"
+         }
+        ]
+       },
+       {
+        "path": [
+         {
+          "kind": "T",
+          "id": "9"
+         },
+         {
+          "kind": "C",
+          "name": "c"
+         }
+        ]
+       },
+       {
+        "path": [
+         {
+          "kind": "T",
+          "id": "4503599627370497"
+         }
+        ]
+       },
+       {
+        "path": [
+         {
+          "kind": "T",
+          "name": "x"
+         }
+        ],
+        "partitionId": {
+         "namespaceId": "ns1"
+        }
+       },
+       {
+        "path": [
+         {
+          "kind": "U",
+          "name": "u"
+         }
+        ]
+       }
+      ]
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"found\": [{\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}\"\n        },\n        \"path\": [{\n          \"kind\": \"T\",\n          \"name\": \"every\"\n        }]\n      },\n      \"properties\": {\n        \"i\": {\n          \"integerValue\": \"-5\"\n        },\n        \"d\": {\n          \"doubleValue\": 2.5\n        },\n        \"z\": {\n          \"doubleValue\": 0.0\n        },\n        \"b\": {\n          \"booleanValue\": true\n        },\n        \"s\": {\n          \"stringValue\": \"é\"\n        },\n        \"n\": {\n          \"nullValue\": null\n        },\n        \"t\": {\n          \"timestampValue\": \"2020-01-02T03:04:05.678901Z\"\n        },\n        \"blob\": {\n          \"blobValue\": \"AAE=\"\n        },\n        \"g\": {\n          \"geoPointValue\": {\n            \"latitude\": 1.5,\n            \"longitude\": -2.5\n          }\n        },\n        \"k\": {\n          \"keyValue\": {\n            \"partitionId\": {\n              \"projectId\": \"{project}\",\n              \"namespaceId\": \"ns2\"\n            },\n            \"path\": [{\n              \"kind\": \"A\",\n              \"name\": \"x\"\n            }, {\n              \"kind\": \"B\",\n              \"id\": \"7\"\n            }]\n          }\n        },\n        \"a\": {\n          \"arrayValue\": {\n            \"values\": [{\n              \"integerValue\": \"1\"\n            }, {\n              \"stringValue\": \"z\"\n            }]\n          }\n        },\n        \"ea\": {\n          \"arrayValue\": {\n          }\n        },\n        \"e\": {\n          \"entityValue\": {\n            \"key\": {\n              \"partitionId\": {\n                \"projectId\": \"{project}\"\n              },\n              \"path\": [{\n                \"kind\": \"E\",\n                \"name\": \"k\"\n              }]\n            },\n            \"properties\": {\n              \"x\": {\n                \"integerValue\": \"1\"\n              },\n              \"y\": {\n                \"stringValue\": \"n\",\n                \"excludeFromIndexes\": true\n              }\n            }\n          }\n        },\n        \"ek\": {\n          \"entityValue\": {\n            \"properties\": {\n              \"x\": {\n                \"integerValue\": \"2\"\n              }\n            }\n          }\n        },\n        \"exa\": {\n          \"arrayValue\": {\n            \"values\": [{\n              \"integerValue\": \"2\"\n            }, {\n              \"integerValue\": \"1\",\n              \"excludeFromIndexes\": true\n            }]\n          }\n        },\n        \"bytes\": {\n          \"blobValue\": \"AQ==\"\n        },\n        \"m1\": {\n          \"meaning\": 1,\n          \"stringValue\": \"s\"\n        },\n        \"nan\": {\n          \"doubleValue\": \"NaN\"\n        },\n        \"inf\": {\n          \"doubleValue\": \"-Infinity\"\n        },\n        \"ex\": {\n          \"stringValue\": \"excluded\",\n          \"excludeFromIndexes\": true\n        },\n        \"bx\": {\n          \"blobValue\": \"AAEC\",\n          \"excludeFromIndexes\": true\n        },\n        \"text\": {\n          \"meaning\": 15,\n          \"stringValue\": \"t\",\n          \"excludeFromIndexes\": true\n        },\n        \"zlib\": {\n          \"meaning\": 22,\n          \"blobValue\": \"AQ==\",\n          \"excludeFromIndexes\": true\n        }\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}\"\n        },\n        \"path\": [{\n          \"kind\": \"T\",\n          \"id\": \"9\"\n        }, {\n          \"kind\": \"C\",\n          \"name\": \"c\"\n        }]\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}\"\n        },\n        \"path\": [{\n          \"kind\": \"T\",\n          \"id\": \"4503599627370497\"\n        }]\n      },\n      \"properties\": {\n        \"big\": {\n          \"integerValue\": \"9223372036854775807\"\n        }\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}\",\n          \"namespaceId\": \"ns1\"\n        },\n        \"path\": [{\n          \"kind\": \"T\",\n          \"name\": \"x\"\n        }]\n      },\n      \"properties\": {\n        \"v\": {\n          \"integerValue\": \"1\"\n        }\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}\"\n        },\n        \"path\": [{\n          \"kind\": \"U\",\n          \"name\": \"u\"\n        }]\n      },\n      \"properties\": {\n        \"v\": {\n          \"stringValue\": \"u\"\n        }\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"readTime\": \"<time>\"\n}\n"
+     }
+    },
+    {
+     "name": "kind T",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "T"
+        }
+       ]
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"T\",\n            \"id\": \"4503599627370497\"\n          }]\n        },\n        \"properties\": {\n          \"big\": {\n            \"integerValue\": \"9223372036854775807\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"T\",\n            \"name\": \"every\"\n          }]\n        },\n        \"properties\": {\n          \"i\": {\n            \"integerValue\": \"-5\"\n          },\n          \"d\": {\n            \"doubleValue\": 2.5\n          },\n          \"z\": {\n            \"doubleValue\": 0.0\n          },\n          \"b\": {\n            \"booleanValue\": true\n          },\n          \"s\": {\n            \"stringValue\": \"é\"\n          },\n          \"n\": {\n            \"nullValue\": null\n          },\n          \"t\": {\n            \"timestampValue\": \"2020-01-02T03:04:05.678901Z\"\n          },\n          \"blob\": {\n            \"blobValue\": \"AAE=\"\n          },\n          \"g\": {\n            \"geoPointValue\": {\n              \"latitude\": 1.5,\n              \"longitude\": -2.5\n            }\n          },\n          \"k\": {\n            \"keyValue\": {\n              \"partitionId\": {\n                \"projectId\": \"{project}\",\n                \"namespaceId\": \"ns2\"\n              },\n              \"path\": [{\n                \"kind\": \"A\",\n                \"name\": \"x\"\n              }, {\n                \"kind\": \"B\",\n                \"id\": \"7\"\n              }]\n            }\n          },\n          \"a\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"1\"\n              }, {\n                \"stringValue\": \"z\"\n              }]\n            }\n          },\n          \"ea\": {\n            \"arrayValue\": {\n            }\n          },\n          \"e\": {\n            \"entityValue\": {\n              \"key\": {\n                \"partitionId\": {\n                  \"projectId\": \"{project}\"\n                },\n                \"path\": [{\n                  \"kind\": \"E\",\n                  \"name\": \"k\"\n                }]\n              },\n              \"properties\": {\n                \"x\": {\n                  \"integerValue\": \"1\"\n                },\n                \"y\": {\n                  \"stringValue\": \"n\",\n                  \"excludeFromIndexes\": true\n                }\n              }\n            }\n          },\n          \"ek\": {\n            \"entityValue\": {\n              \"properties\": {\n                \"x\": {\n                  \"integerValue\": \"2\"\n                }\n              }\n            }\n          },\n          \"exa\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"2\"\n              }, {\n                \"integerValue\": \"1\",\n                \"excludeFromIndexes\": true\n              }]\n            }\n          },\n          \"bytes\": {\n            \"blobValue\": \"AQ==\"\n          },\n          \"m1\": {\n            \"meaning\": 1,\n            \"stringValue\": \"s\"\n          },\n          \"nan\": {\n            \"doubleValue\": \"NaN\"\n          },\n          \"inf\": {\n            \"doubleValue\": \"-Infinity\"\n          },\n          \"ex\": {\n            \"stringValue\": \"excluded\",\n            \"excludeFromIndexes\": true\n          },\n          \"bx\": {\n            \"blobValue\": \"AAEC\",\n            \"excludeFromIndexes\": true\n          },\n          \"text\": {\n            \"meaning\": 15,\n            \"stringValue\": \"t\",\n            \"excludeFromIndexes\": true\n          },\n          \"zlib\": {\n            \"meaning\": 22,\n            \"blobValue\": \"AQ==\",\n            \"excludeFromIndexes\": true\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "name": "kind T in ns1",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "T"
+        }
+       ]
+      },
+      "partitionId": {
+       "namespaceId": "ns1"
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"ns1\"\n          },\n          \"path\": [{\n            \"kind\": \"T\",\n            \"name\": \"x\"\n          }]\n        },\n        \"properties\": {\n          \"v\": {\n            \"integerValue\": \"1\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "name": "kinds",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "__kind__"
+        }
+       ]
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"C\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"T\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"U\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "name": "namespaces",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "__namespace__"
+        }
+       ]
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"id\": \"1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns1\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "name": "an excluded value cannot be found",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "T"
+        }
+       ],
+       "filter": {
+        "propertyFilter": {
+         "property": {
+          "name": "ex"
+         },
+         "op": "EQUAL",
+         "value": {
+          "stringValue": "excluded"
+         }
+        }
+       }
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "name": "an indexed value can",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "T"
+        }
+       ],
+       "filter": {
+        "propertyFilter": {
+         "property": {
+          "name": "s"
+         },
+         "op": "EQUAL",
+         "value": {
+          "stringValue": "é"
+         }
+        }
+       }
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"T\",\n            \"name\": \"every\"\n          }]\n        },\n        \"properties\": {\n          \"i\": {\n            \"integerValue\": \"-5\"\n          },\n          \"d\": {\n            \"doubleValue\": 2.5\n          },\n          \"z\": {\n            \"doubleValue\": 0.0\n          },\n          \"b\": {\n            \"booleanValue\": true\n          },\n          \"s\": {\n            \"stringValue\": \"é\"\n          },\n          \"n\": {\n            \"nullValue\": null\n          },\n          \"t\": {\n            \"timestampValue\": \"2020-01-02T03:04:05.678901Z\"\n          },\n          \"blob\": {\n            \"blobValue\": \"AAE=\"\n          },\n          \"g\": {\n            \"geoPointValue\": {\n              \"latitude\": 1.5,\n              \"longitude\": -2.5\n            }\n          },\n          \"k\": {\n            \"keyValue\": {\n              \"partitionId\": {\n                \"projectId\": \"{project}\",\n                \"namespaceId\": \"ns2\"\n              },\n              \"path\": [{\n                \"kind\": \"A\",\n                \"name\": \"x\"\n              }, {\n                \"kind\": \"B\",\n                \"id\": \"7\"\n              }]\n            }\n          },\n          \"a\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"1\"\n              }, {\n                \"stringValue\": \"z\"\n              }]\n            }\n          },\n          \"ea\": {\n            \"arrayValue\": {\n            }\n          },\n          \"e\": {\n            \"entityValue\": {\n              \"key\": {\n                \"partitionId\": {\n                  \"projectId\": \"{project}\"\n                },\n                \"path\": [{\n                  \"kind\": \"E\",\n                  \"name\": \"k\"\n                }]\n              },\n              \"properties\": {\n                \"x\": {\n                  \"integerValue\": \"1\"\n                },\n                \"y\": {\n                  \"stringValue\": \"n\",\n                  \"excludeFromIndexes\": true\n                }\n              }\n            }\n          },\n          \"ek\": {\n            \"entityValue\": {\n              \"properties\": {\n                \"x\": {\n                  \"integerValue\": \"2\"\n                }\n              }\n            }\n          },\n          \"exa\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"2\"\n              }, {\n                \"integerValue\": \"1\",\n                \"excludeFromIndexes\": true\n              }]\n            }\n          },\n          \"bytes\": {\n            \"blobValue\": \"AQ==\"\n          },\n          \"m1\": {\n            \"meaning\": 1,\n            \"stringValue\": \"s\"\n          },\n          \"nan\": {\n            \"doubleValue\": \"NaN\"\n          },\n          \"inf\": {\n            \"doubleValue\": \"-Infinity\"\n          },\n          \"ex\": {\n            \"stringValue\": \"excluded\",\n            \"excludeFromIndexes\": true\n          },\n          \"bx\": {\n            \"blobValue\": \"AAEC\",\n            \"excludeFromIndexes\": true\n          },\n          \"text\": {\n            \"meaning\": 15,\n            \"stringValue\": \"t\",\n            \"excludeFromIndexes\": true\n          },\n          \"zlib\": {\n            \"meaning\": 22,\n            \"blobValue\": \"AQ==\",\n            \"excludeFromIndexes\": true\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    }
+   ]
+  },
+  {
+   "name": "import",
+   "flags": [],
+   "cases": [
+    {
+     "name": "import (default)",
+     "method": "POST",
+     "path": "/emulator/v1/projects/{project}:import",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "database": "projects/{project}/databases/(default)",
+      "export_directory": "{dir}/files/named/named.overall_export_metadata"
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"\\\"(default)\\\" is an invalid database id.\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "import, a directory",
+     "method": "POST",
+     "path": "/emulator/v1/projects/{project}:import",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "database": "projects/{project}/databases/",
+      "export_directory": "{dir}/files/named"
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Failed to parse overall export metadata file\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "import, a file that does not exist",
+     "method": "POST",
+     "path": "/emulator/v1/projects/{project}:import",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "database": "projects/{project}/databases/",
+      "export_directory": "{dir}/files/none.overall_export_metadata"
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Failed to parse overall export metadata file\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "import, no directory",
+     "method": "POST",
+     "path": "/emulator/v1/projects/{project}:import",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "database": "projects/{project}/databases/"
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 400,
+      "contentType": "application/json",
+      "body": "{\"error\":{\"code\":400,\"message\":\"Failed to parse overall export metadata file\",\"status\":\"INVALID_ARGUMENT\"}}"
+     }
+    },
+    {
+     "name": "import",
+     "method": "POST",
+     "path": "/emulator/v1/projects/{project}:import",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "database": "projects/{project}/databases/",
+      "export_directory": "{dir}/files/named/named.overall_export_metadata"
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n}\n"
+     }
+    },
+    {
+     "name": "lookup every entity",
+     "method": "POST",
+     "path": "/v1/projects/{project}:lookup",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T",
+          "name": "every"
+         }
+        ]
+       },
+       {
+        "path": [
+         {
+          "kind": "T",
+          "id": "9"
+         },
+         {
+          "kind": "C",
+          "name": "c"
+         }
+        ]
+       },
+       {
+        "path": [
+         {
+          "kind": "T",
+          "id": "4503599627370497"
+         }
+        ]
+       },
+       {
+        "path": [
+         {
+          "kind": "T",
+          "name": "x"
+         }
+        ],
+        "partitionId": {
+         "namespaceId": "ns1"
+        }
+       },
+       {
+        "path": [
+         {
+          "kind": "U",
+          "name": "u"
+         }
+        ]
+       }
+      ]
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"found\": [{\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}\"\n        },\n        \"path\": [{\n          \"kind\": \"T\",\n          \"name\": \"every\"\n        }]\n      },\n      \"properties\": {\n        \"i\": {\n          \"integerValue\": \"-5\"\n        },\n        \"d\": {\n          \"doubleValue\": 2.5\n        },\n        \"z\": {\n          \"doubleValue\": 0.0\n        },\n        \"b\": {\n          \"booleanValue\": true\n        },\n        \"s\": {\n          \"stringValue\": \"é\"\n        },\n        \"n\": {\n          \"nullValue\": null\n        },\n        \"t\": {\n          \"timestampValue\": \"2020-01-02T03:04:05.678901Z\"\n        },\n        \"blob\": {\n          \"blobValue\": \"AAE=\"\n        },\n        \"g\": {\n          \"geoPointValue\": {\n            \"latitude\": 1.5,\n            \"longitude\": -2.5\n          }\n        },\n        \"k\": {\n          \"keyValue\": {\n            \"partitionId\": {\n              \"projectId\": \"{project}\",\n              \"namespaceId\": \"ns2\"\n            },\n            \"path\": [{\n              \"kind\": \"A\",\n              \"name\": \"x\"\n            }, {\n              \"kind\": \"B\",\n              \"id\": \"7\"\n            }]\n          }\n        },\n        \"a\": {\n          \"arrayValue\": {\n            \"values\": [{\n              \"integerValue\": \"1\"\n            }, {\n              \"stringValue\": \"z\"\n            }]\n          }\n        },\n        \"ea\": {\n          \"arrayValue\": {\n          }\n        },\n        \"e\": {\n          \"entityValue\": {\n            \"key\": {\n              \"partitionId\": {\n                \"projectId\": \"{project}\"\n              },\n              \"path\": [{\n                \"kind\": \"E\",\n                \"name\": \"k\"\n              }]\n            },\n            \"properties\": {\n              \"x\": {\n                \"integerValue\": \"1\"\n              },\n              \"y\": {\n                \"stringValue\": \"n\",\n                \"excludeFromIndexes\": true\n              }\n            }\n          }\n        },\n        \"ek\": {\n          \"entityValue\": {\n            \"properties\": {\n              \"x\": {\n                \"integerValue\": \"2\"\n              }\n            }\n          }\n        },\n        \"exa\": {\n          \"arrayValue\": {\n            \"values\": [{\n              \"integerValue\": \"2\"\n            }, {\n              \"integerValue\": \"1\",\n              \"excludeFromIndexes\": true\n            }]\n          }\n        },\n        \"bytes\": {\n          \"blobValue\": \"AQ==\"\n        },\n        \"m1\": {\n          \"meaning\": 1,\n          \"stringValue\": \"s\"\n        },\n        \"nan\": {\n          \"doubleValue\": \"NaN\"\n        },\n        \"inf\": {\n          \"doubleValue\": \"-Infinity\"\n        },\n        \"ex\": {\n          \"stringValue\": \"excluded\",\n          \"excludeFromIndexes\": true\n        },\n        \"bx\": {\n          \"blobValue\": \"AAEC\",\n          \"excludeFromIndexes\": true\n        },\n        \"text\": {\n          \"meaning\": 15,\n          \"stringValue\": \"t\",\n          \"excludeFromIndexes\": true\n        },\n        \"zlib\": {\n          \"meaning\": 22,\n          \"blobValue\": \"AQ==\",\n          \"excludeFromIndexes\": true\n        }\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}\"\n        },\n        \"path\": [{\n          \"kind\": \"T\",\n          \"id\": \"9\"\n        }, {\n          \"kind\": \"C\",\n          \"name\": \"c\"\n        }]\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}\"\n        },\n        \"path\": [{\n          \"kind\": \"T\",\n          \"id\": \"4503599627370497\"\n        }]\n      },\n      \"properties\": {\n        \"big\": {\n          \"integerValue\": \"9223372036854775807\"\n        }\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}\",\n          \"namespaceId\": \"ns1\"\n        },\n        \"path\": [{\n          \"kind\": \"T\",\n          \"name\": \"x\"\n        }]\n      },\n      \"properties\": {\n        \"v\": {\n          \"integerValue\": \"1\"\n        }\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}\"\n        },\n        \"path\": [{\n          \"kind\": \"U\",\n          \"name\": \"u\"\n        }]\n      },\n      \"properties\": {\n        \"v\": {\n          \"stringValue\": \"u\"\n        }\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"readTime\": \"<time>\"\n}\n"
+     }
+    },
+    {
+     "name": "kind T",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "T"
+        }
+       ]
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"T\",\n            \"id\": \"4503599627370497\"\n          }]\n        },\n        \"properties\": {\n          \"big\": {\n            \"integerValue\": \"9223372036854775807\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"T\",\n            \"name\": \"every\"\n          }]\n        },\n        \"properties\": {\n          \"i\": {\n            \"integerValue\": \"-5\"\n          },\n          \"d\": {\n            \"doubleValue\": 2.5\n          },\n          \"z\": {\n            \"doubleValue\": 0.0\n          },\n          \"b\": {\n            \"booleanValue\": true\n          },\n          \"s\": {\n            \"stringValue\": \"é\"\n          },\n          \"n\": {\n            \"nullValue\": null\n          },\n          \"t\": {\n            \"timestampValue\": \"2020-01-02T03:04:05.678901Z\"\n          },\n          \"blob\": {\n            \"blobValue\": \"AAE=\"\n          },\n          \"g\": {\n            \"geoPointValue\": {\n              \"latitude\": 1.5,\n              \"longitude\": -2.5\n            }\n          },\n          \"k\": {\n            \"keyValue\": {\n              \"partitionId\": {\n                \"projectId\": \"{project}\",\n                \"namespaceId\": \"ns2\"\n              },\n              \"path\": [{\n                \"kind\": \"A\",\n                \"name\": \"x\"\n              }, {\n                \"kind\": \"B\",\n                \"id\": \"7\"\n              }]\n            }\n          },\n          \"a\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"1\"\n              }, {\n                \"stringValue\": \"z\"\n              }]\n            }\n          },\n          \"ea\": {\n            \"arrayValue\": {\n            }\n          },\n          \"e\": {\n            \"entityValue\": {\n              \"key\": {\n                \"partitionId\": {\n                  \"projectId\": \"{project}\"\n                },\n                \"path\": [{\n                  \"kind\": \"E\",\n                  \"name\": \"k\"\n                }]\n              },\n              \"properties\": {\n                \"x\": {\n                  \"integerValue\": \"1\"\n                },\n                \"y\": {\n                  \"stringValue\": \"n\",\n                  \"excludeFromIndexes\": true\n                }\n              }\n            }\n          },\n          \"ek\": {\n            \"entityValue\": {\n              \"properties\": {\n                \"x\": {\n                  \"integerValue\": \"2\"\n                }\n              }\n            }\n          },\n          \"exa\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"2\"\n              }, {\n                \"integerValue\": \"1\",\n                \"excludeFromIndexes\": true\n              }]\n            }\n          },\n          \"bytes\": {\n            \"blobValue\": \"AQ==\"\n          },\n          \"m1\": {\n            \"meaning\": 1,\n            \"stringValue\": \"s\"\n          },\n          \"nan\": {\n            \"doubleValue\": \"NaN\"\n          },\n          \"inf\": {\n            \"doubleValue\": \"-Infinity\"\n          },\n          \"ex\": {\n            \"stringValue\": \"excluded\",\n            \"excludeFromIndexes\": true\n          },\n          \"bx\": {\n            \"blobValue\": \"AAEC\",\n            \"excludeFromIndexes\": true\n          },\n          \"text\": {\n            \"meaning\": 15,\n            \"stringValue\": \"t\",\n            \"excludeFromIndexes\": true\n          },\n          \"zlib\": {\n            \"meaning\": 22,\n            \"blobValue\": \"AQ==\",\n            \"excludeFromIndexes\": true\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "name": "kind T in ns1",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "T"
+        }
+       ]
+      },
+      "partitionId": {
+       "namespaceId": "ns1"
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"ns1\"\n          },\n          \"path\": [{\n            \"kind\": \"T\",\n            \"name\": \"x\"\n          }]\n        },\n        \"properties\": {\n          \"v\": {\n            \"integerValue\": \"1\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "name": "kinds",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "__kind__"
+        }
+       ]
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"C\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"T\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"U\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "name": "namespaces",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "__namespace__"
+        }
+       ]
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"id\": \"1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns1\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "name": "an excluded value cannot be found",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "T"
+        }
+       ],
+       "filter": {
+        "propertyFilter": {
+         "property": {
+          "name": "ex"
+         },
+         "op": "EQUAL",
+         "value": {
+          "stringValue": "excluded"
+         }
+        }
+       }
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "name": "an indexed value can",
+     "method": "POST",
+     "path": "/v1/projects/{project}:runQuery",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "query": {
+       "kind": [
+        {
+         "name": "T"
+        }
+       ],
+       "filter": {
+        "propertyFilter": {
+         "property": {
+          "name": "s"
+         },
+         "op": "EQUAL",
+         "value": {
+          "stringValue": "é"
+         }
+        }
+       }
+      }
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"T\",\n            \"name\": \"every\"\n          }]\n        },\n        \"properties\": {\n          \"i\": {\n            \"integerValue\": \"-5\"\n          },\n          \"d\": {\n            \"doubleValue\": 2.5\n          },\n          \"z\": {\n            \"doubleValue\": 0.0\n          },\n          \"b\": {\n            \"booleanValue\": true\n          },\n          \"s\": {\n            \"stringValue\": \"é\"\n          },\n          \"n\": {\n            \"nullValue\": null\n          },\n          \"t\": {\n            \"timestampValue\": \"2020-01-02T03:04:05.678901Z\"\n          },\n          \"blob\": {\n            \"blobValue\": \"AAE=\"\n          },\n          \"g\": {\n            \"geoPointValue\": {\n              \"latitude\": 1.5,\n              \"longitude\": -2.5\n            }\n          },\n          \"k\": {\n            \"keyValue\": {\n              \"partitionId\": {\n                \"projectId\": \"{project}\",\n                \"namespaceId\": \"ns2\"\n              },\n              \"path\": [{\n                \"kind\": \"A\",\n                \"name\": \"x\"\n              }, {\n                \"kind\": \"B\",\n                \"id\": \"7\"\n              }]\n            }\n          },\n          \"a\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"1\"\n              }, {\n                \"stringValue\": \"z\"\n              }]\n            }\n          },\n          \"ea\": {\n            \"arrayValue\": {\n            }\n          },\n          \"e\": {\n            \"entityValue\": {\n              \"key\": {\n                \"partitionId\": {\n                  \"projectId\": \"{project}\"\n                },\n                \"path\": [{\n                  \"kind\": \"E\",\n                  \"name\": \"k\"\n                }]\n              },\n              \"properties\": {\n                \"x\": {\n                  \"integerValue\": \"1\"\n                },\n                \"y\": {\n                  \"stringValue\": \"n\",\n                  \"excludeFromIndexes\": true\n                }\n              }\n            }\n          },\n          \"ek\": {\n            \"entityValue\": {\n              \"properties\": {\n                \"x\": {\n                  \"integerValue\": \"2\"\n                }\n              }\n            }\n          },\n          \"exa\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"2\"\n              }, {\n                \"integerValue\": \"1\",\n                \"excludeFromIndexes\": true\n              }]\n            }\n          },\n          \"bytes\": {\n            \"blobValue\": \"AQ==\"\n          },\n          \"m1\": {\n            \"meaning\": 1,\n            \"stringValue\": \"s\"\n          },\n          \"nan\": {\n            \"doubleValue\": \"NaN\"\n          },\n          \"inf\": {\n            \"doubleValue\": \"-Infinity\"\n          },\n          \"ex\": {\n            \"stringValue\": \"excluded\",\n            \"excludeFromIndexes\": true\n          },\n          \"bx\": {\n            \"blobValue\": \"AAEC\",\n            \"excludeFromIndexes\": true\n          },\n          \"text\": {\n            \"meaning\": 15,\n            \"stringValue\": \"t\",\n            \"excludeFromIndexes\": true\n          },\n          \"zlib\": {\n            \"meaning\": 22,\n            \"blobValue\": \"AQ==\",\n            \"excludeFromIndexes\": true\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+     }
+    },
+    {
+     "name": "import again",
+     "method": "POST",
+     "path": "/emulator/v1/projects/{project}:import",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "database": "projects/{project}/databases/",
+      "export_directory": "{dir}/files/named/named.overall_export_metadata"
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n}\n"
+     }
+    },
+    {
+     "name": "lookup every entity after a second import",
+     "method": "POST",
+     "path": "/v1/projects/{project}:lookup",
+     "headers": {
+      "Content-Type": "application/json"
+     },
+     "body": {
+      "keys": [
+       {
+        "path": [
+         {
+          "kind": "T",
+          "name": "every"
+         }
+        ]
+       },
+       {
+        "path": [
+         {
+          "kind": "T",
+          "id": "9"
+         },
+         {
+          "kind": "C",
+          "name": "c"
+         }
+        ]
+       },
+       {
+        "path": [
+         {
+          "kind": "T",
+          "id": "4503599627370497"
+         }
+        ]
+       },
+       {
+        "path": [
+         {
+          "kind": "T",
+          "name": "x"
+         }
+        ],
+        "partitionId": {
+         "namespaceId": "ns1"
+        }
+       },
+       {
+        "path": [
+         {
+          "kind": "U",
+          "name": "u"
+         }
+        ]
+       }
+      ]
+     },
+     "compare": "exact",
+     "outcome": {
+      "status": 200,
+      "contentType": "application/json",
+      "body": "{\n  \"found\": [{\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}\"\n        },\n        \"path\": [{\n          \"kind\": \"T\",\n          \"name\": \"every\"\n        }]\n      },\n      \"properties\": {\n        \"i\": {\n          \"integerValue\": \"-5\"\n        },\n        \"d\": {\n          \"doubleValue\": 2.5\n        },\n        \"z\": {\n          \"doubleValue\": 0.0\n        },\n        \"b\": {\n          \"booleanValue\": true\n        },\n        \"s\": {\n          \"stringValue\": \"é\"\n        },\n        \"n\": {\n          \"nullValue\": null\n        },\n        \"t\": {\n          \"timestampValue\": \"2020-01-02T03:04:05.678901Z\"\n        },\n        \"blob\": {\n          \"blobValue\": \"AAE=\"\n        },\n        \"g\": {\n          \"geoPointValue\": {\n            \"latitude\": 1.5,\n            \"longitude\": -2.5\n          }\n        },\n        \"k\": {\n          \"keyValue\": {\n            \"partitionId\": {\n              \"projectId\": \"{project}\",\n              \"namespaceId\": \"ns2\"\n            },\n            \"path\": [{\n              \"kind\": \"A\",\n              \"name\": \"x\"\n            }, {\n              \"kind\": \"B\",\n              \"id\": \"7\"\n            }]\n          }\n        },\n        \"a\": {\n          \"arrayValue\": {\n            \"values\": [{\n              \"integerValue\": \"1\"\n            }, {\n              \"stringValue\": \"z\"\n            }]\n          }\n        },\n        \"ea\": {\n          \"arrayValue\": {\n          }\n        },\n        \"e\": {\n          \"entityValue\": {\n            \"key\": {\n              \"partitionId\": {\n                \"projectId\": \"{project}\"\n              },\n              \"path\": [{\n                \"kind\": \"E\",\n                \"name\": \"k\"\n              }]\n            },\n            \"properties\": {\n              \"x\": {\n                \"integerValue\": \"1\"\n              },\n              \"y\": {\n                \"stringValue\": \"n\",\n                \"excludeFromIndexes\": true\n              }\n            }\n          }\n        },\n        \"ek\": {\n          \"entityValue\": {\n            \"properties\": {\n              \"x\": {\n                \"integerValue\": \"2\"\n              }\n            }\n          }\n        },\n        \"exa\": {\n          \"arrayValue\": {\n            \"values\": [{\n              \"integerValue\": \"2\"\n            }, {\n              \"integerValue\": \"1\",\n              \"excludeFromIndexes\": true\n            }]\n          }\n        },\n        \"bytes\": {\n          \"blobValue\": \"AQ==\"\n        },\n        \"m1\": {\n          \"meaning\": 1,\n          \"stringValue\": \"s\"\n        },\n        \"nan\": {\n          \"doubleValue\": \"NaN\"\n        },\n        \"inf\": {\n          \"doubleValue\": \"-Infinity\"\n        },\n        \"ex\": {\n          \"stringValue\": \"excluded\",\n          \"excludeFromIndexes\": true\n        },\n        \"bx\": {\n          \"blobValue\": \"AAEC\",\n          \"excludeFromIndexes\": true\n        },\n        \"text\": {\n          \"meaning\": 15,\n          \"stringValue\": \"t\",\n          \"excludeFromIndexes\": true\n        },\n        \"zlib\": {\n          \"meaning\": 22,\n          \"blobValue\": \"AQ==\",\n          \"excludeFromIndexes\": true\n        }\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}\"\n        },\n        \"path\": [{\n          \"kind\": \"T\",\n          \"id\": \"9\"\n        }, {\n          \"kind\": \"C\",\n          \"name\": \"c\"\n        }]\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}\"\n        },\n        \"path\": [{\n          \"kind\": \"T\",\n          \"id\": \"4503599627370497\"\n        }]\n      },\n      \"properties\": {\n        \"big\": {\n          \"integerValue\": \"9223372036854775807\"\n        }\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}\",\n          \"namespaceId\": \"ns1\"\n        },\n        \"path\": [{\n          \"kind\": \"T\",\n          \"name\": \"x\"\n        }]\n      },\n      \"properties\": {\n        \"v\": {\n          \"integerValue\": \"1\"\n        }\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}\"\n        },\n        \"path\": [{\n          \"kind\": \"U\",\n          \"name\": \"u\"\n        }]\n      },\n      \"properties\": {\n        \"v\": {\n          \"stringValue\": \"u\"\n        }\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"readTime\": \"<time>\"\n}\n"
+     }
+    }
+   ]
+  }
+ ]
+}

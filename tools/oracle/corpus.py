@@ -65,6 +65,19 @@ FIXTURE_CLIENTS = {
     "commit_checks.py": ([GRPC, REST], PY_GRPCURL),
     "conformance.py": ([REST], PY),
     "cors.py": ([REST], PY),
+    "datastore_checks.py": ([REST], PY),
+    "datastore_commit_checks.py": ([REST], PY),
+    "datastore_entities.py": ([REST], PY),
+    "datastore_export.py": ([REST, PROCESS], PY),
+    "datastore_firestore_api.py": ([GRPC, REST], PY_GRPCURL),
+    "datastore_gql.py": ([REST], PY),
+    "datastore_gql_errors.py": ([REST], PY),
+    "datastore_indexes.py": ([REST, PROCESS], PY),
+    "datastore_locks.py": ([REST], PY),
+    "datastore_projects.py": ([GRPC, REST, PROCESS], PY_GRPCURL),
+    "datastore_protobuf.py": ([REST], PY),
+    "datastore_queries.py": ([REST], PY),
+    "datastore_sequences.py": ([REST], PY),
     "document_writes.py": ([REST], PY),
     "export_import.py": ([REST, PROCESS], PY),
     "field_order.py": ([REST], PY),
@@ -112,6 +125,7 @@ FIXTURE_CLIENTS = {
     "webchannel.py": ([REST, WEBCHANNEL], PY),
     "websocket_escapes.py": ([REST, WEBSOCKET], PY),
     "websocket_requests.py": ([GRPC, REST, WEBSOCKET], PY_GRPCURL),
+    "startup_flags.py": ([REST, PROCESS], PY),
     "write_stream.mjs": ([GRPC], "Node.js"),
 }
 
@@ -129,16 +143,30 @@ TRANSCRIPT_RECORDERS = {
 for _sdk in ("android", "go", "ios", "java", "python"):
     for _section in ("documents", "listen", "queries", "transactions"):
         TRANSCRIPT_RECORDERS[f"sdk-{_sdk}-{_section}"] = f"tools/oracle/sdk_{_sdk}/"
+for _sdk in ("java", "python"):
+    for _section in ("entities", "queries", "transactions"):
+        for _name in (f"sdk-datastore-{_sdk}-{_section}", f"sdk-datastore-{_sdk}-http-{_section}"):
+            TRANSCRIPT_RECORDERS[_name] = f"tools/oracle/sdk_datastore_{_sdk}/"
+for _section in ("entities", "queries", "transactions"):
+    TRANSCRIPT_RECORDERS[f"sdk-datastore-go-{_section}"] = "tools/oracle/sdk_datastore_go/"
+    TRANSCRIPT_RECORDERS[f"sdk-datastore-node-{_section}"] = "tools/oracle/sdk_datastore_node.mjs"
 
 # Versions a recorder pins: (recorder, package, file, a pattern whose group 1 is the version).
 PINS = [
     ("tools/oracle/sdk_go/", "cloud.google.com/go/firestore", "tools/oracle/sdk_go/go.mod",
      r"^\s*cloud\.google\.com/go/firestore v([\w.\-]+)$"),
+    ("tools/oracle/sdk_datastore_go/", "cloud.google.com/go/datastore",
+     "tools/oracle/sdk_datastore_go/go.mod", r"^\s*cloud\.google\.com/go/datastore v([\w.\-]+)$"),
     ("tools/oracle/sdk_python/", "google-cloud-firestore",
      "tools/oracle/sdk_python/requirements.txt", r"^google-cloud-firestore==([\w.\-]+)$"),
+    ("tools/oracle/sdk_datastore_python/", "google-cloud-datastore",
+     "tools/oracle/sdk_datastore_python/requirements.txt", r"^google-cloud-datastore==([\w.\-]+)$"),
     ("tools/oracle/sdk_java/", "com.google.cloud:google-cloud-firestore",
      "tools/oracle/sdk_java/pom.xml",
      r"<artifactId>google-cloud-firestore</artifactId>\s*<version>([\w.\-]+)</version>"),
+    ("tools/oracle/sdk_datastore_java/", "com.google.cloud:google-cloud-datastore",
+     "tools/oracle/sdk_datastore_java/pom.xml",
+     r"<artifactId>google-cloud-datastore</artifactId>\s*<version>([\w.\-]+)</version>"),
     ("tools/js-sdk-browser/", "firebase-js-sdk", ".github/workflows/js-sdk-browser.yml",
      r"^\s*FIREBASE_JS_SDK_COMMIT: ([0-9a-f]{40})$"),
     ("tools/nodejs-system-tests/", "google-cloud-node", ".github/workflows/nodejs-system-tests.yml",

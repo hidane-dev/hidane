@@ -161,6 +161,26 @@
                   "type": "string"
                 }
               }
+            },
+            "firebase_startup": {
+              "type": "object",
+              "required": ["warmup", "runs"],
+              "additionalProperties": false,
+              "properties": {
+                "warmup": { "$ref": "#/$defs/count" },
+                "runs": { "$ref": "#/$defs/positive" }
+              }
+            },
+            "large_dataset": {
+              "type": "object",
+              "required": ["warmup", "runs", "documents", "batch"],
+              "additionalProperties": false,
+              "properties": {
+                "warmup": { "$ref": "#/$defs/count" },
+                "runs": { "$ref": "#/$defs/positive" },
+                "documents": { "$ref": "#/$defs/positive" },
+                "batch": { "$ref": "#/$defs/positive" }
+              }
             }
           }
         },
@@ -263,6 +283,11 @@
       "additionalProperties": false,
       "properties": {
         "java": { "$ref": "#/$defs/stringOrNull" },
+        "java_max_heap_bytes": {
+          "description": "The default heap limit (MaxHeapSize) of the Java that runs the official emulator, which runs it without -Xmx; null without the official emulator, absent in results before it was recorded.",
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
         "node": { "$ref": "#/$defs/stringOrNull" },
         "firebase_tools": { "$ref": "#/$defs/stringOrNull" },
         "docker": { "$ref": "#/$defs/stringOrNull" },
@@ -444,7 +469,7 @@
     }
   ],
   "$defs": {
-    "scenario": { "enum": ["startup", "memory", "operations", "datasets", "ci", "ci_firebase", "listen_writes", "command", "owner_writes", "listen_limit_writes"] },
+    "scenario": { "enum": ["startup", "memory", "operations", "datasets", "ci", "ci_firebase", "listen_writes", "command", "owner_writes", "listen_limit_writes", "firebase_startup", "large_dataset"] },
     "count": { "type": "integer", "minimum": 0 },
     "positive": { "type": "integer", "minimum": 1 },
     "countOrNull": { "type": ["integer", "null"], "minimum": 0 },

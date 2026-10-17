@@ -50,6 +50,7 @@ AREAS = [
     ("export", "Export & import", "エクスポートとインポート"),
     ("admin", "Auth & admin endpoints", "認証と管理エンドポイント"),
     ("values", "Values & limits", "値と上限"),
+    ("datastore", "Datastore mode", "Datastore モード"),
 ]
 AREA_ORDER = [key for key, _, _ in AREAS]
 AREA_NAME = {"en": {k: en for k, en, _ in AREAS}, "ja": {k: ja for k, _, ja in AREAS}}
@@ -668,6 +669,134 @@ RECORDINGS = {
         compares="in full: status, every header but `date`, `content-length` and `connection`, "
                  "and the body",
         count=lambda f: each(f["cases"], REST, FULL)),
+    f"{H}/fixtures/datastore_checks.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::checks_come_in_the_official_emulators_order"],
+        counted="each query and aggregation query with one or two problems (every ordered pair), "
+                "to a server started with `--database-mode datastore-mode`; " + OVER_REST,
+        compares="in full: status, content type and body byte for byte, server times and versions "
+                 "masked",
+        count=lambda f: [(REST, FULL) for _ in f["cases"]]),
+    f"{H}/fixtures/datastore_commit_checks.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::commit_checks_come_in_the_official_emulators_order"],
+        counted="each commit and lookup with one or two problems (every ordered pair), each in "
+                "a project of its own, to a server started with `--database-mode datastore-mode`; "
+                + OVER_REST,
+        compares="in full: status, content type and body byte for byte, server times and versions "
+                 "masked",
+        count=lambda f: [(REST, FULL) for _ in f["cases"]]),
+    f"{H}/fixtures/datastore_entities.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::datastore_mode_answers_like_the_official_emulator"],
+        counted="each request, to a server started with `--database-mode datastore-mode`; "
+                + OVER_REST,
+        compares="in full: status, content type and body byte for byte, server times, versions, "
+                 "transaction IDs and cursors masked; the requests the test lists in `KNOWN` "
+                 "as intentionally different (D025)",
+        count=lambda f: [(REST, DIFFERS if case["name"] in rust_strings(f"{H}/datastore.rs", "KNOWN")
+                          else FULL) for case in f["cases"]]),
+    f"{H}/fixtures/datastore_export.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::export_and_import_like_the_official_emulator"],
+        counted="each request of each run, to a server started with `--database-mode "
+                "datastore-mode` (and `--import-data`, where the run says so), and each export "
+                "written; " + OVER_REST,
+        compares="in full: status, content type and body byte for byte, server times, versions "
+                 "and cursors masked; an export's overall metadata byte for byte, its output's "
+                 "records as a set (D093), its other files by size",
+        count=lambda f: [(REST, FULL) for run in f["runs"]
+                         for _ in [*run["cases"], *run.get("exports", {})]]),
+    f"{H}/fixtures/datastore_firestore_api.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::the_firestore_api_is_refused_as_on_the_official_emulator"],
+        counted="each request to the Firestore API and to the emulator's own endpoints, to a "
+                "server started with `--database-mode datastore-mode`, over REST and gRPC",
+        compares="in full: REST status, content type and body byte for byte; gRPC code and "
+                 "message; the requests the test lists in `KNOWN_CONTENT_TYPES` as "
+                 "intentionally different (D086)",
+        count=lambda f: [(REST, DIFFERS if case["name"] in rust_strings(f"{H}/datastore.rs",
+                                                                        "KNOWN_CONTENT_TYPES")
+                          else FULL) for case in f["cases"]]
+                        + [(GRPC, FULL) for _ in f["grpc"]]),
+    f"{H}/fixtures/datastore_gql.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::gql_answers_like_the_official_emulator"],
+        counted="each GQL query and aggregation query, to a server started with "
+                "`--database-mode datastore-mode` over the dataset of `datastore_queries.json`; "
+                + OVER_REST,
+        compares="in full: status, content type and body byte for byte (the structured query "
+                 "the text reads as, the results, the parser's messages), server times, "
+                 "versions, transaction IDs and cursors masked",
+        count=lambda f: [(REST, FULL) for _ in f["cases"]]),
+    f"{H}/fixtures/datastore_gql_errors.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::gql_is_refused_like_the_official_emulator"],
+        counted="each GQL text (a query cut after each of its tokens, and texts with bindings of "
+                "their own), to a server started with `--database-mode datastore-mode`; " + OVER_REST,
+        compares="in full: status, content type and body byte for byte, server times, versions and "
+                 "cursors masked",
+        count=lambda f: [(REST, FULL) for _ in f["cases"]]),
+    f"{H}/fixtures/datastore_indexes.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::indexes_answer_like_the_official_emulator"],
+        counted="each request of each run, to a server started with `--database-mode "
+                "datastore-mode` and the run's flags (`--require_indexes`, `--index_file`) and "
+                "index file; " + OVER_REST,
+        compares="in full: status, content type and body byte for byte, server times, versions, "
+                 "transaction IDs and cursors masked",
+        count=lambda f: [(REST, FULL) for run in f["runs"] for case in run["cases"]
+                         if "outcome" in case]),
+    f"{H}/fixtures/datastore_locks.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::lock_waits_like_the_official_emulator"],
+        counted="each request of each scenario (a read in a transaction kept in use, then a write "
+                "that waits for its lock or not), to a server started with `--database-mode "
+                "datastore-mode`; " + OVER_REST,
+        compares="in full: status, content type and body byte for byte, server times, versions and "
+                 "transaction IDs masked; how long the write took, to within 5 s",
+        count=lambda f: [(REST, FULL) for case in f["cases"] for _ in case["steps"]]),
+    f"{H}/fixtures/datastore_projects.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::projects_are_read_as_on_the_official_emulator"],
+        counted="each Datastore request, over gRPC and REST, to a server in Firestore Native "
+                "mode and to one in Datastore mode",
+        compares="in full: gRPC code and message (an answer's content not); REST status, content "
+                 "type and body byte for byte, times, versions and transaction IDs masked",
+        count=lambda f: [(GRPC, FULL) for run in f["runs"] for _ in run["grpc"]]
+                        + [(REST, FULL) for run in f["runs"] for _ in run["cases"]]),
+    f"{H}/fixtures/datastore_protobuf.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::protobuf_answers_like_the_official_emulator"],
+        counted="each request, to a server started with `--database-mode datastore-mode`, its "
+                "body in protobuf or JSON as its `Content-Type` says; " + OVER_REST,
+        compares="in full: status, content type and body byte for byte, where the answer holds no "
+                 "time or version; status and content type where it does; the requests the test "
+                 "lists in `KNOWN_CONTENT_TYPES` as intentionally different (D086)",
+        count=lambda f: [(REST, DIFFERS if case["name"] in rust_strings(f"{H}/datastore.rs",
+                                                                         "KNOWN_CONTENT_TYPES")
+                          else FULL if case["compare"] == "exact" else STATUS)
+                         for case in f["cases"]]),
+    f"{H}/fixtures/datastore_queries.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::datastore_queries_answer_like_the_official_emulator"],
+        counted="each query and aggregation query, to a server started with "
+                "`--database-mode datastore-mode` over the recording's dataset; " + OVER_REST,
+        compares="in full: status, content type and body byte for byte, server times, versions, "
+                 "transaction IDs and cursors masked (each cursor sent back as the server gave it)",
+        count=lambda f: [(REST, FULL) for _ in f["cases"]]),
+    f"{H}/fixtures/datastore_sequences.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::sequences_answer_like_the_official_emulator"],
+        counted="each request of each sequence (the kinds and namespaces listed after reads and "
+                "writes, property masks, read-only transactions and read times, versions, IDs, "
+                "database IDs, a write whose client gives up), in a project of its own, to a "
+                "server started with "
+                "`--database-mode datastore-mode`; " + OVER_REST,
+        compares="in full: status, content type and body byte for byte, server times and versions "
+                 "labelled in the order they first appear (which ones are the same), transaction IDs "
+                 "and cursors masked; a request the client gives up on, unanswered on both",
+        count=lambda f: [(REST, FULL) for case in f["cases"] for _ in case["steps"]]),
     f"{H}/fixtures/document_writes.json": dict(
         area="documents",
         tests=[f"{H}/documents.rs::reads_and_their_errors", f"{H}/documents.rs::preconditions",
@@ -711,6 +840,16 @@ RECORDINGS = {
         counted="each registration, in both runs",
         compares="in full: status, content type and body",
         count=lambda f: [a for run in f["runs"] for a in each(run["cases"], REST, FULL)]),
+    f"{H}/fixtures/startup_flags.json": dict(
+        area="admin",
+        tests=[f"{H}/launch.rs::starts_and_refusals_like_the_official_emulator",
+               f"{H}/launch.rs::queries_are_refused_with_require_indexes_in_firestore_mode"],
+        counted="each start of the emulator with its flags, and each request to the one started "
+                "with `--require_indexes` in Firestore Native mode",
+        compares="a start: the banner's edition and mode, or the exit code and the message it "
+                 "stops with; a request: the status and the error's message",
+        count=lambda f: [(CLI, FULL) for _ in f["starts"]]
+                        + [(REST, PART) for _ in f["index_enforcement_in_firestore_mode"]["requests"]]),
     f"{H}/fixtures/function_events.json": dict(
         area="admin",
         tests=[f"{H}/function_events.rs::events_reach_the_functions_emulator_as_on_the_official_emulator"],
@@ -1035,6 +1174,23 @@ for _sdk, _client in (("go", "Go SDK"), ("java", "Java SDK"), ("python", "Python
     for _section, _area in (("documents", "documents"), ("listen", "streams"),
                             ("queries", "queries"), ("transactions", "transactions")):
         TRANSCRIPTS[f"sdk-{_sdk}-{_section}"] = dict(area=_area, client=_client, transport="gRPC")
+
+# One transcript per section of tools/oracle/sdk_datastore_python/ and sdk_datastore_java/, over
+# gRPC and over HTTP, and of sdk_datastore_go/ and sdk_datastore_node.mjs, over gRPC.
+for _sdk, _client in (("python", "Datastore Python client (google-cloud-datastore)"),
+                      ("java", "Datastore Java client (google-cloud-datastore)")):
+    for _section in ("entities", "queries", "transactions"):
+        TRANSCRIPTS[f"sdk-datastore-{_sdk}-{_section}"] = dict(
+            area="datastore", client=_client, transport="gRPC")
+        TRANSCRIPTS[f"sdk-datastore-{_sdk}-http-{_section}"] = dict(
+            area="datastore", client=f"{_client} over HTTP", transport="REST")
+for _section in ("entities", "queries", "transactions"):
+    TRANSCRIPTS[f"sdk-datastore-go-{_section}"] = dict(
+        area="datastore", client="Datastore Go client (cloud.google.com/go/datastore)",
+        transport="gRPC")
+    TRANSCRIPTS[f"sdk-datastore-node-{_section}"] = dict(
+        area="datastore", client="Datastore Node.js client (@google-cloud/datastore)",
+        transport="gRPC")
 
 # JSON files in results/ that are neither a transcript nor a replayed recording.
 IGNORED = {

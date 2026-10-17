@@ -14,6 +14,10 @@ out=$(mktemp -d)
 python3 -I tools/fuzz/fuzz.py run --official 127.0.0.1:8086 --hidane 127.0.0.1:8186 --seed 1 --cases 500 --out "$out"
 ```
 
+`--mode datastore-mode` fuzzes Datastore mode instead (#81): start both emulators with
+`--database-mode datastore-mode`, and the run sends the Datastore API's requests (its areas are
+below). A run checks that both emulators are in its mode before it starts.
+
 `--hidane-build VERSION:COMMIT` says which hidane the run fuzzes (the version `hidane --version`
 prints and the full commit it was built from, such as `--hidane-build "0.4.0:$(git rev-parse
 HEAD)"`); the summary and the run's entry record it next to the official emulator's version and
@@ -40,6 +44,20 @@ be run again alone. Areas take turns (`--areas` picks some):
 | `rules` | Loads generated Security Rules (`allow` statements with random conditions over `request`, `resource`, lookups and the path) through `PUT …:securityRules`, then reads and writes as no one, users with unsigned tokens, a user with a custom claim, and the owner |
 | `malformed` | Bad values (unknown types, wrong JSON types, out-of-range numbers and coordinates, bad base64, nested arrays, reserved and empty keys, bad vectors, too deep, too long), bad paths and names, bodies that do not parse, bad masks, queries and aggregations, oversized documents and commits, bad transforms |
 
+In Datastore mode (`--mode datastore-mode`, [`gen_datastore.py`](gen_datastore.py)), cases send
+`POST /v1/projects/{project}:<verb>`:
+
+| Area | What a case does |
+|---|---|
+| `datastore-entities` | Commits inserts, upserts, updates and deletes of entities of random values (every type, nested entities, arrays, values excluded from indexes, long strings) under keys with ancestors, namespaces, names, IDs and incomplete paths, with property masks, base versions and update times; then looks them up (with masks and read options), commits again, allocates and reserves IDs, lists kinds and namespaces |
+| `datastore-queries` | Writes a few entities of a kind (some under an ancestor, some in a namespace), then runs queries (property filters with every operator, `__key__`, `HAS_ANCESTOR`, nested `AND` and `OR`, orders, projections, `distinctOn`, limits, offsets, the last page's cursor, kindless queries, `__kind__` and `__namespace__`) and aggregations (`count` with `upTo`, `sum`, `avg`) |
+| `datastore-transactions` | Begins a transaction (read-write, read-only, at a read time, or with `newTransaction` on a lookup), looks up, queries and aggregates in it, commits or rolls it back, uses it again, writes outside it, or names one that does not exist |
+| `datastore-gql` | Runs GQL queries over a few entities: selections, `DISTINCT ON`, conditions with every operator, literals where allowed, named and positional bindings (some missing or unused, a cursor), orders, limits, offsets, aggregations (`AGGREGATE … OVER (…)`), and typos |
+| `datastore-malformed` | Bad keys, values, mutations, bodies, read options, queries, GQL and aggregations; entities and commits over the size limits |
+
+Two more placeholders carry values over in Datastore mode: `{cursor}`, the last batch's
+`endCursor`, and `{version}`, the version of the last commit's first mutation result.
+
 The generators leave out the requests the official emulator never answers
 ([docs/parity-exceptions.md](../../docs/parity-exceptions.md)): `GET` with `?transaction=`, query
 parameters that do not parse, a `parent` in a `:listCollectionIds` body, `GET //`.
@@ -50,7 +68,9 @@ parameters that do not parse, a `parent` in a `:listCollectionIds` body, `GET //
 normalisation (project ID, server times, transaction IDs, page tokens, generated IDs), the values
 the run captured (transaction IDs, page tokens and times named by later steps), timestamps of the
 years 2021 to 2099 (the generators never write one, so these are the servers'), and versions of
-those years in microseconds (precondition messages). It classifies the difference:
+those years in microseconds (precondition messages); in Datastore mode, entity versions and
+cursors, which are opaque bytes each emulator makes its own way, as the recordings mask them. It
+classifies the difference:
 
 | Kind | |
 |---|---|
@@ -61,7 +81,7 @@ those years in microseconds (precondition messages). It classifies the differenc
 | `data` | anything else: values, how JSON is written, the content type |
 
 Its signature (`message-commit-0123456789ab`) is the kind, the request (`:commit`,
-`GET document`), both statuses and where or how the answers differ, without the inputs' values:
+`GET document`, `datastore:commit` for the Datastore API), both statuses and where or how the answers differ, without the inputs' values:
 messages are compared as templates (`Document "…" has N […]`), a denial as the kinds of reasons
 it lists, a status difference with the templates of the errors either side gave (refusing an
 untyped value and refusing nested transforms are two differences, even of `:commit` with the same
@@ -169,11 +189,14 @@ only, daily, by hand (`seed`, `cases`, `minutes`, and `issues` to file issues fr
 of main), and for changes to the fuzzer, `tools/oracle/harness.py` or the workflow (seed 1, a
 few minutes):
 
-- **fuzz** runs the tests above, builds hidane from the commit, starts it and the pinned jar
-  (`.github/actions/official-emulator`), and fuzzes for the time given (25 minutes on the
+- **fuzz** runs once per mode, Firestore Native and Datastore (both emulators started with
+  `--database-mode datastore-mode`, `--mode datastore-mode`): it runs the tests above, builds
+  hidane from the commit, starts it and the pinned jar (`.github/actions/official-emulator`),
+  and fuzzes for the time given (25 minutes on the
   schedule, with a seed from the date), naming the build with `--hidane-build` (the version
   `target/release/hidane --version` prints and `GITHUB_SHA`). `summary.md` goes to the job summary; the run's
-  `--out` and both emulators' output go to the `fuzz` artifact.
+  `--out` and both emulators' output go to the `fuzz` artifact (`fuzz-datastore` for Datastore
+  mode).
 - **issues**, on main only, and the only job with `issues: write`: by hand with `issues` on, or
   on the schedule once the repository variable `FUZZ_FILE_ISSUES` is `true` (see below).
   [`issues.py`](issues.py) opens one issue per unexplained difference, labelled
@@ -198,6 +221,9 @@ A manual run with `issues` on files them either way.
 REST only: gRPC answers with the same codes and messages (the recordings check that), but the
 Listen and Write streams, WebChannel and the WebSocket feed are not fuzzed. Requests run one at
 a time, so lock waits are covered (a write outside a transaction to what it read) but not races.
+In Datastore mode the official emulator holds such a write for about a minute, longer than a
+step's `--timeout`, so `datastore-transactions` writes outside its transaction rarely, and the
+other areas begin no transaction they would write after.
 Server-chosen times are masked by year, and the order of masked or transformed fields (a Java
 `HashMap`'s) is left to `tools/oracle/field_order.py`; such differences tend to show as not
 reproduced. Every request is a connection of its own: several runs at once can use up the

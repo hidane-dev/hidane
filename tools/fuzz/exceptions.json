@@ -95,6 +95,30 @@
    "earlier": {"method": "^POST$", "path": ":run(Aggregation)?Query$", "predicates": ["in-transaction"], "status": 400}
   },
   {
+   "id": "write-applied-after-release",
+   "exception": "D026",
+   "why": "A Datastore write that waits for a lock, its client gone, goes through some 50 ms after the holder ends on the official emulator when the holder read again meanwhile, so a read right after can miss it; hidane applies it at once. Matched on a read after a commit that went unanswered.",
+   "kinds": ["data"],
+   "verbs": "^datastore:(lookup|runQuery|runAggregationQuery)$",
+   "earlier": {"method": "^POST$", "path": ":commit$", "status": [null]}
+  },
+  {
+   "id": "entity-operand-in-an-aggregation",
+   "exception": "D094",
+   "why": "An aggregation's filter that orders a property against an entity value compares it, on the official emulator, as the bytes of the entity's internal encoding; hidane's entity values order with nothing. Matched on the request.",
+   "kinds": ["data"],
+   "verbs": "^datastore:runAggregationQuery$",
+   "request": {"predicates": ["entity-operand"]}
+  },
+  {
+   "id": "datastore-body-of-another-project",
+   "exception": "D046",
+   "why": "The official emulator never answers a Datastore API request whose body names another `projectId` than its path; hidane answers it for the path's project. Matched on the request.",
+   "kinds": ["crash"],
+   "official": {"status": null},
+   "request": {"method": "^POST$", "predicates": ["other-body-project"]}
+  },
+  {
    "id": "form-encoded-post",
    "exception": "D086",
    "why": "The official emulator answers a bare 404 to every form-encoded POST; hidane reads the body as JSON. Matched on the request's method and content type.",

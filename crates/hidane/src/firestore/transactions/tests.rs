@@ -89,6 +89,39 @@ async fn a_write_gives_up_after_the_lock_timeout_and_ends_its_transaction() {
 }
 
 #[tokio::test(start_paused = true)]
+async fn in_datastore_mode_a_write_outside_a_transaction_waits_longer() {
+    let t = Arc::new(Transactions::default().with_outside_lock_timeout(OUTSIDE_LOCK_TIMEOUT));
+    let reader = t.begin(DB, Mode::ReadWrite);
+    t.read(DB, &reader, &[path("c/d")], None).unwrap();
+    // The reader stays in use, so its lock outlasts every wait.
+    let keep = tokio::spawn({
+        let t = Arc::clone(&t);
+        let reader = reader.clone();
+        async move {
+            loop {
+                tokio::time::sleep(Duration::from_secs(10)).await;
+                t.read(DB, &reader, &[], None).unwrap();
+            }
+        }
+    });
+    let start = Instant::now();
+    assert_eq!(
+        status(write(&t, None, "c/d").await),
+        (Code::Aborted, LOCK_TIMEOUT_MESSAGE.to_owned())
+    );
+    assert_eq!(start.elapsed(), OUTSIDE_LOCK_TIMEOUT);
+    // A write in a transaction waits as long as in Firestore Native mode.
+    let writer = t.begin(DB, Mode::ReadWrite);
+    let start = Instant::now();
+    assert_eq!(
+        status(write(&t, Some(&writer), "c/d").await).0,
+        Code::Aborted
+    );
+    assert_eq!(start.elapsed(), LOCK_TIMEOUT);
+    keep.abort();
+}
+
+#[tokio::test(start_paused = true)]
 async fn a_rollback_wakes_a_waiting_write() {
     let t = Arc::new(Transactions::default());
     let id = t.begin(DB, Mode::ReadWrite);

@@ -1,0 +1,875 @@
+[
+ {
+  "name": "kind P",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p1"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p2"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p3"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p4"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p5"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p6"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p7"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p8"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "a = 2",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p2"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p3"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "a < 2",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p6"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p1"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "a >= 2",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p2"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p3"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p4"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p5"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p8"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "a != 2",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p6"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p1"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p4"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p5"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p8"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "a IN [1, 3]",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p1"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p4"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p5"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "a NOT_IN [2, 3]",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p6"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p1"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p8"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "a = null",
+  "ok": []
+ },
+ {
+  "name": "a = 4.5",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p8"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "tags = red",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p1"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p2"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "a = 2 and b = x",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p3"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "a = 1 or b = y",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p1"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p2"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p5"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "a > 1 and b > w",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p3"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p2"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p5"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p4"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p8"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "order by a",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p6"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p1"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p2"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p3"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p4"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p5"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p8"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "order by -a, b",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p8"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p5"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p4"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p3"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p2"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p1"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p6"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "__key__ > p4",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p5"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p6"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p7"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p8"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "keys only",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p1"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p2"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p3"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p4"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p5"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p6"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p7"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p8"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "project a, b",
+  "ok": [
+   {
+    "properties": {
+     "a": -1,
+     "b": "x"
+    },
+    "key": {
+     "path": [
+      "P",
+      "p6"
+     ]
+    }
+   },
+   {
+    "properties": {
+     "a": 1,
+     "b": "x"
+    },
+    "key": {
+     "path": [
+      "P",
+      "p1"
+     ]
+    }
+   },
+   {
+    "properties": {
+     "a": 2,
+     "b": "x"
+    },
+    "key": {
+     "path": [
+      "P",
+      "p3"
+     ]
+    }
+   },
+   {
+    "properties": {
+     "a": 2,
+     "b": "y"
+    },
+    "key": {
+     "path": [
+      "P",
+      "p2"
+     ]
+    }
+   },
+   {
+    "properties": {
+     "a": 3,
+     "b": "y"
+    },
+    "key": {
+     "path": [
+      "P",
+      "p5"
+     ]
+    }
+   },
+   {
+    "properties": {
+     "a": 3,
+     "b": "z"
+    },
+    "key": {
+     "path": [
+      "P",
+      "p4"
+     ]
+    }
+   },
+   {
+    "properties": {
+     "a": 4.5,
+     "b": "x"
+    },
+    "key": {
+     "path": [
+      "P",
+      "p8"
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "name": "distinct on b",
+  "ok": [
+   {
+    "properties": {
+     "b": "w"
+    },
+    "key": {
+     "path": [
+      "P",
+      "p7"
+     ]
+    }
+   },
+   {
+    "properties": {
+     "b": "x"
+    },
+    "key": {
+     "path": [
+      "P",
+      "p1"
+     ]
+    }
+   },
+   {
+    "properties": {
+     "b": "y"
+    },
+    "key": {
+     "path": [
+      "P",
+      "p2"
+     ]
+    }
+   },
+   {
+    "properties": {
+     "b": "z"
+    },
+    "key": {
+     "path": [
+      "P",
+      "p4"
+     ]
+    }
+   }
+  ]
+ },
+ {
+  "name": "limit 2, offset 3",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p4"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p5"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "pages of 3 by cursor",
+  "ok": [
+   [
+    {
+     "path": [
+      "P",
+      "p7"
+     ]
+    },
+    {
+     "path": [
+      "P",
+      "p1"
+     ]
+    },
+    {
+     "path": [
+      "P",
+      "p3"
+     ]
+    }
+   ],
+   [
+    {
+     "path": [
+      "P",
+      "p6"
+     ]
+    },
+    {
+     "path": [
+      "P",
+      "p8"
+     ]
+    },
+    {
+     "path": [
+      "P",
+      "p2"
+     ]
+    }
+   ],
+   [
+    {
+     "path": [
+      "P",
+      "p5"
+     ]
+    },
+    {
+     "path": [
+      "P",
+      "p4"
+     ]
+    }
+   ]
+  ]
+ },
+ {
+  "name": "children of F root",
+  "ok": [
+   {
+    "path": [
+     "F",
+     "root",
+     "C",
+     "c1"
+    ]
+   },
+   {
+    "path": [
+     "F",
+     "root",
+     "C",
+     "c2"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "kind P in ns1",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "n1"
+    ],
+    "namespace": "ns1"
+   }
+  ]
+ },
+ {
+  "name": "kinds",
+  "ok": [
+   {
+    "path": [
+     "__kind__",
+     "C"
+    ]
+   },
+   {
+    "path": [
+     "__kind__",
+     "F"
+    ]
+   },
+   {
+    "path": [
+     "__kind__",
+     "P"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "GQL a >= 2 order by b",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p3"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p8"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p2"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p5"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p4"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "GQL with a binding",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p1"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p3"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p6"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p8"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "GQL keys only",
+  "ok": [
+   {
+    "path": [
+     "P",
+     "p4"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p5"
+    ]
+   },
+   {
+    "path": [
+     "P",
+     "p8"
+    ]
+   }
+  ]
+ },
+ {
+  "name": "GQL refused",
+  "error": {
+   "code": "INVALID_ARGUMENT",
+   "message": "Encountered \"<EOF>\" at line 1, column 21.\nWas expecting:\n    \"(\" ...\n    "
+  }
+ },
+ {
+  "name": "count P",
+  "ok": 8
+ },
+ {
+  "name": "sum and avg of a",
+  "ok": {
+   "s": 14.5,
+   "m": 2.0714285714285716
+  }
+ },
+ {
+  "name": "count b = x by GQL",
+  "ok": 4
+ },
+ {
+  "name": "IN with 31 values",
+  "error": {
+   "code": "INVALID_ARGUMENT",
+   "message": "IN supports up to 30 values. There are 31 values in the IN filter in your query."
+  }
+ },
+ {
+  "name": "project a, filter a = 1",
+  "error": {
+   "code": "INVALID_ARGUMENT",
+   "message": "Cannot use projection on a property with an equality filter."
+  }
+ }
+]

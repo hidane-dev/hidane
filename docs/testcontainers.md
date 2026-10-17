@@ -140,8 +140,9 @@ own example, a gRPC connection without TLS passed with `option.WithGRPCConn`, co
 are tested. The module also waits for the port, which testcontainers-go checks from inside the
 container with a shell where there is one: hidane's image has none, so it checks from the host only
 and logs `Shell not found in container`. `WithDatastoreMode()` passes
-`--database-mode=datastore-mode`, which hidane does not support yet
-([#81](https://github.com/hidane-dev/hidane/issues/81)). `gcloud.RunFirestore`, deprecated, passes
+`--database-mode=datastore-mode`, which hidane serves (entities, transactions, queries,
+aggregations, GQL, `--require_indexes`, export and import, [#81](https://github.com/hidane-dev/hidane/issues/81)); the
+Go tests use it with the client library of Datastore, against the image built from source. `gcloud.RunFirestore`, deprecated, passes
 the same command as `firestore.Run`, but is not tested here.
 
 As a generic container, which works with images older than 0.5.0 too:
@@ -209,7 +210,7 @@ banner ends with `Dev App Server is now running.`, as the official emulator's do
 | `gcloud emulators firestore start` | hidane |
 |---|---|
 | `--host-port=[ADDRESS][:PORT]` | `--host ADDRESS --port PORT`; an IPv6 address goes in square brackets |
-| `--database-mode=MODE` | `--database-mode MODE` (`datastore-mode` is not supported yet, [#81](https://github.com/hidane-dev/hidane/issues/81)) |
+| `--database-mode=MODE` | `--database-mode MODE` (`datastore-mode` is served, [#81](https://github.com/hidane-dev/hidane/issues/81)) |
 | `--edition=EDITION` | `--database-edition EDITION` |
 | `--rules=FILE` | `--rules FILE` |
 | `--import-data=PATH`, `--export-on-exit=DIR` | the same flags |

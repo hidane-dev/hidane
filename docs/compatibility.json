@@ -22,16 +22,16 @@
    "evidence": [
     {
      "kind": "replay",
-     "count": 35945,
-     "description": "35,945 recorded answers of the official emulator v1.22.0 in 62 fixtures, replayed against hidane by cargo test",
+     "count": 53964,
+     "description": "53,964 recorded answers of the official emulator v1.22.0 in 76 fixtures, replayed against hidane by cargo test",
      "where": "docs/parity.md",
      "runs": "every pull request and push to main",
      "last_recorded": null
     },
     {
      "kind": "transcripts",
-     "count": 44,
-     "description": "44 comparisons of SDK transcripts with the official emulator v1.22.0's: 26 identical, 18 documented differences",
+     "count": 62,
+     "description": "62 comparisons of SDK transcripts with the official emulator v1.22.0's: 44 identical, 18 documented differences",
      "where": "docs/parity.md",
      "runs": "recorded",
      "last_recorded": null
@@ -49,27 +49,27 @@
  ],
  "oracle_corpus": {
   "where": "docs/oracle-corpus.json",
-  "digest": "sha256:260da559ed90d6aaea28f1e99c205d8a44d142374cf147afe106bfb928f76102",
+  "digest": "sha256:fea9672c2c091c94b7e0fa5e0ffd1f09e019f676c986ecd3a187937007864f98",
   "releases": [
    "1.22.0"
   ],
-  "files": 104,
-  "fixtures": 62,
-  "transcripts": 42,
-  "answers": 35945,
-  "bytes": 21898243
+  "files": 136,
+  "fixtures": 76,
+  "transcripts": 60,
+  "answers": 53964,
+  "bytes": 38134983
  },
  "replay": {
-  "fixtures": 62,
-  "answers": 35945,
+  "fixtures": 76,
+  "answers": 53964,
   "levels": {
-   "full": 24630,
+   "full": 42608,
    "reasons": 4344,
-   "part": 1503,
-   "status": 5189,
+   "part": 1517,
+   "status": 5197,
    "codes": 96,
    "none": 7,
-   "differs": 176
+   "differs": 195
   },
   "by_area": {
    "documents": {
@@ -145,13 +145,14 @@
     ]
    },
    "admin": {
-    "fixtures": 5,
-    "answers": 875,
-    "full": 823,
+    "fixtures": 6,
+    "answers": 912,
+    "full": 846,
     "transports": [
      "gRPC",
      "REST",
-     "WebChannel"
+     "WebChannel",
+     "CLI"
     ]
    },
    "values": {
@@ -164,6 +165,15 @@
      "WebChannel",
      "in-process"
     ]
+   },
+   "datastore": {
+    "fixtures": 13,
+    "answers": 17982,
+    "full": 17955,
+    "transports": [
+     "gRPC",
+     "REST"
+    ]
    }
   },
   "replayed_by": "cargo test",
@@ -171,9 +181,9 @@
   "where": "docs/parity.md"
  },
  "transcripts": {
-  "pairs": 42,
-  "comparisons": 44,
-  "identical": 26,
+  "pairs": 60,
+  "comparisons": 62,
+  "identical": 44,
   "documented": 18,
   "unexplained": 0,
   "where": "docs/parity.md"
@@ -181,8 +191,8 @@
  "sdk_certification": {
   "where": "docs/sdk-certification.json",
   "totals": {
-   "clients": 16,
-   "verified": 14,
+   "clients": 20,
+   "verified": 18,
    "partially-verified": 0,
    "not-verified": 2
   },
@@ -197,6 +207,10 @@
     "firebase-tools",
     "firebase-functions",
     "python",
+    "datastore-node",
+    "datastore-python",
+    "datastore-java",
+    "datastore-go",
     "go",
     "java",
     "flutter-web",
@@ -287,8 +301,8 @@
   ]
  },
  "integration_tests": {
-  "files": 55,
-  "replaying_files": 39,
+  "files": 56,
+  "replaying_files": 41,
   "runs": "every pull request and push to main",
   "suites": [
    {
@@ -339,6 +353,24 @@
     "path": "crates/hidane/tests/cors.rs",
     "replays": [
      "crates/hidane/tests/fixtures/cors.json"
+    ]
+   },
+   {
+    "path": "crates/hidane/tests/datastore.rs",
+    "replays": [
+     "crates/hidane/tests/fixtures/datastore_checks.json",
+     "crates/hidane/tests/fixtures/datastore_commit_checks.json",
+     "crates/hidane/tests/fixtures/datastore_entities.json",
+     "crates/hidane/tests/fixtures/datastore_export.json",
+     "crates/hidane/tests/fixtures/datastore_firestore_api.json",
+     "crates/hidane/tests/fixtures/datastore_gql.json",
+     "crates/hidane/tests/fixtures/datastore_gql_errors.json",
+     "crates/hidane/tests/fixtures/datastore_indexes.json",
+     "crates/hidane/tests/fixtures/datastore_locks.json",
+     "crates/hidane/tests/fixtures/datastore_projects.json",
+     "crates/hidane/tests/fixtures/datastore_protobuf.json",
+     "crates/hidane/tests/fixtures/datastore_queries.json",
+     "crates/hidane/tests/fixtures/datastore_sequences.json"
     ]
    },
    {
@@ -396,7 +428,9 @@
    },
    {
     "path": "crates/hidane/tests/launch.rs",
-    "replays": []
+    "replays": [
+     "crates/hidane/tests/fixtures/startup_flags.json"
+    ]
    },
    {
     "path": "crates/hidane/tests/limits.rs",
@@ -704,12 +738,12 @@
   "where": "docs/parity-exceptions.json",
   "page": "docs/parity-exceptions.md",
   "intentional": {
-   "count": 75,
+   "count": 77,
    "by_kind": {
     "bug-for-bug": 1,
     "more-correct": 48,
-    "equivalent": 19,
-    "limitation": 7
+    "equivalent": 20,
+    "limitation": 8
    }
   },
   "production": {

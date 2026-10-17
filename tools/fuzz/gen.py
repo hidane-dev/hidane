@@ -18,11 +18,15 @@ import random
 import string
 from urllib.parse import quote
 
+import gen_datastore
+
 DB = "projects/{project}/databases/(default)"
 NAME = DB + "/documents"
 BASE = "/v1/" + NAME
 OWNER = {"Authorization": "Bearer owner"}
 AREAS = ("documents", "queries", "transactions", "batches", "transforms", "rules", "malformed")
+# The areas of each mode the emulators can be started in (`--database-mode`): a run fuzzes one.
+MODES = {"firestore-native": AREAS, "datastore-mode": gen_datastore.AREAS}
 
 
 def jwt(claims):
@@ -739,7 +743,7 @@ def malformed(g):
 
 
 GENERATORS = {"documents": documents, "queries": queries, "transactions": transactions, "batches": batches,
-              "transforms": transforms, "rules": rules, "malformed": malformed}
+              "transforms": transforms, "rules": rules, "malformed": malformed, **gen_datastore.GENERATORS}
 
 
 def case(seed, index, areas=AREAS):
