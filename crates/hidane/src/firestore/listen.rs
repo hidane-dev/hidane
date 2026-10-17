@@ -362,17 +362,14 @@ impl Listener<'_> {
                     Some(query_target::QueryType::StructuredQuery(q)) => q,
                     None => &default,
                 };
-                let mut query = Query::parse(
+                // An enterprise database checks a listener's query as a standard one, but
+                // with null and NaN as values (#338).
+                let query = Query::parse_listen(
                     &parent.database,
                     parent.path,
                     structured,
                     self.service.enterprise,
                 )?;
-                // An enterprise database checks a listener's query as a standard one, but
-                // matches null and NaN as values (#338).
-                if self.service.enterprise {
-                    query = query.with_listen_values();
-                }
                 (parent.database, Watch::Query(Box::new(query)))
             }
             Some(target::TargetType::Documents(documents)) => {

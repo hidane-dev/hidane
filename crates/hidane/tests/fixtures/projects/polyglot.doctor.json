@@ -2,12 +2,12 @@
   "schema": "hidane.doctor/1",
   "hidane": "<version>",
   "summary": {
-    "compatible": 5,
+    "compatible": 6,
     "likely_compatible": 2,
     "ok": 2,
     "info": 3,
     "unknown": 5,
-    "incompatible": 1
+    "incompatible": 0
   },
   "findings": [
     {
@@ -32,10 +32,10 @@
     {
       "code": "firestore.enterprise-edition",
       "group": "firebase",
-      "status": "incompatible",
-      "severity": "error",
-      "title": "Enterprise edition: hidane refuses some listeners' queries otherwise (#338)",
-      "source": "https://github.com/hidane-dev/hidane/issues/338; docs/parity-exceptions.md (enterprise edition)",
+      "status": "compatible",
+      "severity": "info",
+      "title": "Enterprise edition: hidane answers queries, listeners, pipelines and writes as an enterprise database does",
+      "source": "crates/hidane/tests/fixtures/queries_enterprise.json; crates/hidane/tests/fixtures/listen_queries_enterprise.json; crates/hidane/tests/fixtures/pipelines.json; crates/hidane/tests/fixtures/commit_checks_enterprise.json; crates/hidane/tests/fixtures/bson_types.json",
       "file": "firebase.json"
     },
     {

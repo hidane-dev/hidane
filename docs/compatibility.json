@@ -22,8 +22,8 @@
    "evidence": [
     {
      "kind": "replay",
-     "count": 53858,
-     "description": "53,858 recorded answers of the official emulator v1.22.0 in 76 fixtures, replayed against hidane by cargo test",
+     "count": 53964,
+     "description": "53,964 recorded answers of the official emulator v1.22.0 in 76 fixtures, replayed against hidane by cargo test",
      "where": "docs/parity.md",
      "runs": "every pull request and push to main",
      "last_recorded": null
@@ -49,27 +49,27 @@
  ],
  "oracle_corpus": {
   "where": "docs/oracle-corpus.json",
-  "digest": "sha256:33e163cfcecc337c1397a6d4480db0af196d8510fe3671a05c32e39b37b726ed",
+  "digest": "sha256:fea9672c2c091c94b7e0fa5e0ffd1f09e019f676c986ecd3a187937007864f98",
   "releases": [
    "1.22.0"
   ],
   "files": 136,
   "fixtures": 76,
   "transcripts": 60,
-  "answers": 53858,
-  "bytes": 37528164
+  "answers": 53964,
+  "bytes": 38134983
  },
  "replay": {
   "fixtures": 76,
-  "answers": 53858,
+  "answers": 53964,
   "levels": {
-   "full": 42490,
+   "full": 42608,
    "reasons": 4344,
-   "part": 1495,
+   "part": 1517,
    "status": 5197,
    "codes": 96,
    "none": 7,
-   "differs": 229
+   "differs": 195
   },
   "by_area": {
    "documents": {
@@ -83,8 +83,8 @@
    },
    "queries": {
     "fixtures": 9,
-    "answers": 6103,
-    "full": 5395,
+    "answers": 6163,
+    "full": 5433,
     "transports": [
      "gRPC",
      "REST"
@@ -101,8 +101,8 @@
    },
    "streams": {
     "fixtures": 3,
-    "answers": 1307,
-    "full": 1270,
+    "answers": 1353,
+    "full": 1350,
     "transports": [
      "gRPC"
     ]
@@ -738,12 +738,12 @@
   "where": "docs/parity-exceptions.json",
   "page": "docs/parity-exceptions.md",
   "intentional": {
-   "count": 78,
+   "count": 77,
    "by_kind": {
     "bug-for-bug": 1,
     "more-correct": 48,
     "equivalent": 20,
-    "limitation": 9
+    "limitation": 8
    }
   },
   "production": {

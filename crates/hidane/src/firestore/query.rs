@@ -17,7 +17,9 @@
 //! On an enterprise database (`--database-edition enterprise`, #338), the official emulator runs
 //! a query as a pipeline, with the semantics of the pipeline functions
 //! (`tests/fixtures/queries_enterprise.json`): see [`Unchecked::check_enterprise`] and
-//! [`matches_enterprise`].
+//! [`matches_enterprise`]. A listener there checks its query as on a standard database, but
+//! with null and NaN as values like others (`tests/fixtures/listen_queries_enterprise.json`):
+//! see [`Unchecked::check_listen_values`] and [`matches_listen_values`].
 
 use std::{cmp::Ordering, sync::Arc};
 
@@ -30,7 +32,7 @@ use hidane_core::{
     store::{ReadTime, Store, StoredDocument, identical},
 };
 use hidane_proto::google::firestore::v1::{
-    Cursor, StructuredQuery, Value,
+    ArrayValue, Cursor, StructuredQuery, Value,
     structured_query::{
         self, Direction, FieldReference, FindNearest, composite_filter, field_filter,
         filter::FilterType, find_nearest::DistanceMeasure, unary_filter,
@@ -424,7 +426,9 @@ impl Unchecked<'_> {
     /// What Security Rules check first: the filter normalizes to at most 30 disjunctions,
     /// before anything else of the query is checked (`tools/oracle/rules_list.py`, #262).
     pub fn check_disjunctions(&self) -> Result<(), Status> {
-        self.filter.as_ref().map_or(Ok(()), check_disjunctions)
+        self.filter
+            .as_ref()
+            .map_or(Ok(()), |filter| check_disjunctions(filter, false))
     }
 
     /// Checks the rest of the query, after Security Rules and the read time, in the official
@@ -435,6 +439,18 @@ impl Unchecked<'_> {
     /// filters and orders ([`check_terms`]), whether the orders need a collection (a `sum` or
     /// an `avg` orders by its field), whether the filter does, and the filters on `__name__`.
     pub fn check(self) -> Result<Query, Status> {
+        self.checked(false)
+    }
+
+    /// [`Unchecked::check`] as a listener on an enterprise database checks its query (#338,
+    /// `tests/fixtures/listen_queries_enterprise.json`): null and NaN are values like others
+    /// ([`values_view`]), and, last, no cursor value may be too large for a query. The query
+    /// then matches null and NaN as values ([`matches_listen_values`]).
+    pub fn check_listen_values(self) -> Result<Query, Status> {
+        self.checked(true)
+    }
+
+    fn checked(self, values: bool) -> Result<Query, Status> {
         let Self {
             database,
             parent,
@@ -449,15 +465,19 @@ impl Unchecked<'_> {
             aggregated,
         } = self;
         let kindless = matches!(source, Source::Children | Source::Descendants);
+        // The filter as the checks read it; the query keeps the one given to match.
+        let view = filter
+            .as_ref()
+            .map(|f| if values { values_view(f) } else { f.clone() });
         // A collection group below a document runs, as in production (D088).
-        if let Some(filter) = &filter {
-            check_filter(filter)?;
+        if let Some(filter) = &view {
+            check_filter(filter, values)?;
         }
-        check_index(&explicit, filter.as_ref(), &aggregated)?;
-        if let Some(filter) = &filter {
-            check_disjunctions(filter)?;
+        check_index(&explicit, view.as_ref(), &aggregated, values)?;
+        if let Some(filter) = &view {
+            check_disjunctions(filter, values)?;
         }
-        let orders = complete_orders(&explicit, filter.as_ref())?;
+        let orders = complete_orders(&explicit, view.as_ref(), values)?;
         // The offset, then the limit (#262).
         if query.offset < 0 {
             return Err(Status::invalid_argument("offset is negative"));
@@ -472,11 +492,12 @@ impl Unchecked<'_> {
             nearest.check(query)?;
         }
         check_terms(
-            filter.as_ref(),
+            view.as_ref(),
             &orders,
             &explicit,
             &aggregated,
             !parent.is_empty(),
+            values,
         )?;
         if kindless
             && (!aggregated.is_empty()
@@ -488,10 +509,13 @@ impl Unchecked<'_> {
                 "kind is required for all orders except __key__ ascending",
             ));
         }
-        if let Some(filter) = &filter {
+        if let Some(filter) = &view {
             check_filter_late(filter, kindless, database)?;
         }
         explicit.iter().try_for_each(|order| order.field.check())?;
+        if values {
+            check_cursor_sizes(&orders, [&start, &end])?;
+        }
 
         Ok(Query {
             parent,
@@ -507,7 +531,7 @@ impl Unchecked<'_> {
             required: Vec::new(),
             nearest,
             enterprise: false,
-            listen_values: false,
+            listen_values: values,
         })
     }
 
@@ -580,6 +604,24 @@ impl Query {
         bson: bool,
     ) -> Result<Self, Status> {
         Self::read_values(database, parent, query, false, bson, |_| Ok(Vec::new()))?.check()
+    }
+
+    /// A listener's query: on an enterprise database, its values may be BSON values, and it is
+    /// checked and matched with null and NaN as values ([`Unchecked::check_listen_values`]).
+    pub fn parse_listen(
+        database: &str,
+        parent: ResourcePath,
+        query: &StructuredQuery,
+        enterprise: bool,
+    ) -> Result<Self, Status> {
+        let unchecked = Self::read_values(database, parent, query, false, enterprise, |_| {
+            Ok(Vec::new())
+        })?;
+        if enterprise {
+            unchecked.check_listen_values()
+        } else {
+            unchecked.check()
+        }
     }
 
     /// Reads `query` under `parent` in the official emulator's order (`tools/oracle/
@@ -836,14 +878,6 @@ impl Query {
             .iter()
             .map(|order| field_value(&order.field).cloned())
             .collect())
-    }
-
-    /// The query as a listener on an enterprise database matches documents
-    /// ([`matches_listen_values`]).
-    #[must_use]
-    pub fn with_listen_values(mut self) -> Self {
-        self.listen_values = true;
-        self
     }
 
     /// The composite indexes the query would need in production, as the official emulator
@@ -1289,13 +1323,13 @@ fn key_values(op: Op, value: &Value) -> &[Value] {
 /// nothing: a null or NaN bound, `!=` null, a `not-in` of nulls) needs an inequality on
 /// `__name__` too when another field has one (`tools/oracle/queries.py`), checked with the
 /// filter, before the orders (#262). Another field's inequality that matches nothing
-/// ([`matches_nothing`]) does not count.
-fn check_key_equality(filter: &Filter) -> Result<(), Status> {
-    fn key(filter: &Filter, equality: &mut bool, inequality: &mut bool) {
+/// ([`matches_nothing`]) does not count. With `values`, null and NaN are values like others.
+fn check_key_equality(filter: &Filter, values: bool) -> Result<(), Status> {
+    fn key(filter: &Filter, values: bool, equality: &mut bool, inequality: &mut bool) {
         match filter {
             Filter::And(filters) | Filter::Or(filters) => {
                 for filter in filters {
-                    key(filter, equality, inequality);
+                    key(filter, values, equality, inequality);
                 }
             }
             Filter::Compare {
@@ -1312,7 +1346,9 @@ fn check_key_equality(filter: &Filter) -> Result<(), Status> {
                         | Op::NotEqual
                         | Op::NotIn
                 );
-                if matches!(op, Op::Equal | Op::In) || (range && matches_nothing(*op, value)) {
+                if matches!(op, Op::Equal | Op::In)
+                    || (range && !values && matches_nothing(*op, value))
+                {
                     *equality = true;
                 } else if range {
                     *inequality = true;
@@ -1329,9 +1365,9 @@ fn check_key_equality(filter: &Filter) -> Result<(), Status> {
         }
     }
     let (mut key_equality, mut key_inequality) = (false, false);
-    key(filter, &mut key_equality, &mut key_inequality);
+    key(filter, values, &mut key_equality, &mut key_inequality);
     let mut others = Vec::new();
-    inequality_fields(filter, &mut others);
+    inequality_fields(filter, values, &mut others);
     if key_equality && !others.is_empty() && !key_inequality {
         return Err(Status::invalid_argument(
             "Equality on key is not allowed if there are other inequality fields and key does \
@@ -1430,13 +1466,13 @@ pub fn check_operators(query: &StructuredQuery) -> Result<(), Status> {
 /// key's equalities; the disjunctions come after [`check_index`] ([`check_disjunctions`]). Its
 /// operators were checked first ([`check_operators`]), the rest comes last
 /// ([`check_filter_late`]).
-fn check_filter(filter: &Filter) -> Result<(), Status> {
+fn check_filter(filter: &Filter, values: bool) -> Result<(), Status> {
     if array_filters(&normalize(filter)) > 1 {
         return Err(Status::failed_precondition(
             "Only a single array-contains clause is allowed in a query",
         ));
     }
-    check_key_equality(filter)
+    check_key_equality(filter, values)
 }
 
 /// The fields `sum` and `avg` read order the query after its own orders ([`Query::require`]):
@@ -1449,6 +1485,7 @@ fn check_index(
     explicit: &[Order],
     filter: Option<&Filter>,
     fields: &[FieldPath],
+    values: bool,
 ) -> Result<(), Status> {
     if fields.is_empty() {
         return Ok(());
@@ -1473,7 +1510,7 @@ fn check_index(
     // inequality's.
     let mut ordered: Vec<Field> = explicit.iter().map(|o| o.field.clone()).collect();
     if let Some(filter) = filter {
-        inequality_fields(filter, &mut ordered);
+        inequality_fields(filter, values, &mut ordered);
     }
     let mut missing: Vec<&FieldPath> = fields
         .iter()
@@ -1497,10 +1534,10 @@ fn check_index(
 }
 
 /// The disjunctions of the filter, normalized: at most 30.
-fn check_disjunctions(filter: &Filter) -> Result<(), Status> {
+fn check_disjunctions(filter: &Filter, values: bool) -> Result<(), Status> {
     let normalized = normalize(filter);
     // Past twice the maximum, the official emulator stops counting.
-    let Some(disjunctions) = disjunctions(&normalized).map(|dnf| dnf.len()) else {
+    let Some(disjunctions) = disjunctions(&normalized, values).map(|dnf| dnf.len()) else {
         return Err(Status::invalid_argument(format!(
             "Too many disjunctions after normalization, the maximum is {MAX_DISJUNCTIONS}"
         )));
@@ -1526,13 +1563,17 @@ fn check_terms(
     explicit: &[Order],
     aggregated: &[FieldPath],
     ancestor: bool,
+    values: bool,
 ) -> Result<(), Status> {
     let normalized = filter.map(normalize);
-    let filters: usize = normalized.as_ref().and_then(disjunctions).map_or(0, |dnf| {
-        dnf.iter()
-            .map(|conjunction| conjunction.iter().map(Atom::weight).sum::<usize>())
-            .sum()
-    });
+    let filters: usize = normalized
+        .as_ref()
+        .and_then(|filter| disjunctions(filter, values))
+        .map_or(0, |dnf| {
+            dnf.iter()
+                .map(|conjunction| conjunction.iter().map(Atom::weight).sum::<usize>())
+                .sum()
+        });
     let mut sorts = orders.len();
     if !explicit.iter().any(|o| o.field == Field::Name) {
         let mut added: Vec<&FieldPath> = aggregated
@@ -1780,6 +1821,8 @@ struct Atom<'a> {
     field: &'a Field,
     kind: Leaf,
     value: Option<&'a Value>,
+    /// Null and NaN are values like others ([`values_view`]): every atom is [`Class::Plain`].
+    values: bool,
 }
 
 /// What the official emulator counts and compares an atom as (`tools/oracle/queries.py`,
@@ -1797,6 +1840,9 @@ enum Class {
 
 impl Atom<'_> {
     fn class(&self) -> Class {
+        if self.values {
+            return Class::Plain;
+        }
         if self.kind == Leaf::Compare(Op::ArrayContains)
             && self.value.is_some_and(|v| {
                 matches!(&v.value_type, Some(ValueType::ArrayValue(array)) if array.values.is_empty())
@@ -1835,7 +1881,7 @@ impl Atom<'_> {
     }
 
     /// How many filters it counts as toward the most a query may have ([`check_terms`]):
-    /// a `not-in` one per value, each null twice.
+    /// a `not-in` one per value, each null twice (once with [`Atom::values`]).
     fn weight(&self) -> usize {
         match (self.kind, self.value) {
             (Leaf::Compare(Op::NotIn), Some(value)) => {
@@ -1845,7 +1891,9 @@ impl Atom<'_> {
                         seen.push(v);
                     }
                 }
-                seen.iter().map(|v| if is_null(v) { 2 } else { 1 }).sum()
+                seen.iter()
+                    .map(|v| if is_null(v) && !self.values { 2 } else { 1 })
+                    .sum()
             }
             _ if self.class() == Class::Nullish => 2,
             _ => 1,
@@ -1862,8 +1910,9 @@ fn same_conjunction(a: &Conjunction<'_>, b: &Conjunction<'_>) -> bool {
 
 /// The conjunctions a normalized filter becomes in disjunctive normal form, each once (as sets
 /// of atoms), or `None` once an `and` would combine more than twice the maximum of them, where
-/// the official emulator stops counting (`tools/oracle/queries.py`, #262).
-fn disjunctions(filter: &Filter) -> Option<Vec<Conjunction<'_>>> {
+/// the official emulator stops counting (`tools/oracle/queries.py`, #262). With `values`, null
+/// and NaN are values like others ([`Atom::values`]).
+fn disjunctions(filter: &Filter, values: bool) -> Option<Vec<Conjunction<'_>>> {
     fn add<'a>(out: &mut Vec<Conjunction<'a>>, conjunction: Conjunction<'a>) {
         if !out.iter().any(|seen| same_conjunction(seen, &conjunction)) {
             out.push(conjunction);
@@ -1873,16 +1922,16 @@ fn disjunctions(filter: &Filter) -> Option<Vec<Conjunction<'_>>> {
     match filter {
         Filter::Or(children) => {
             for child in children {
-                for conjunction in disjunctions(child)? {
+                for conjunction in disjunctions(child, values)? {
                     add(&mut out, conjunction);
                 }
             }
         }
         Filter::And(children) => {
             let (first, rest) = children.split_first()?;
-            out = disjunctions(first)?;
+            out = disjunctions(first, values)?;
             for child in rest {
-                let terms = disjunctions(child)?;
+                let terms = disjunctions(child, values)?;
                 if out.len() * terms.len() > 2 * MAX_DISJUNCTIONS {
                     return None;
                 }
@@ -1918,6 +1967,7 @@ fn disjunctions(filter: &Filter) -> Option<Vec<Conjunction<'_>>> {
                         field,
                         kind,
                         value: Some(value),
+                        values,
                     }],
                 );
             }
@@ -1926,11 +1976,13 @@ fn disjunctions(filter: &Filter) -> Option<Vec<Conjunction<'_>>> {
             field,
             kind: Leaf::Compare(*op),
             value: Some(value),
+            values,
         }]),
         Filter::Unary { field, op } => out.push(vec![Atom {
             field,
             kind: Leaf::Unary(*op),
             value: None,
+            values,
         }]),
     }
     Some(out)
@@ -2002,6 +2054,7 @@ fn index_conjunctions(filter: &Filter) -> Vec<Conjunction<'_>> {
                         field,
                         kind,
                         value: Some(value),
+                        values: false,
                     }],
                 );
             }
@@ -2012,6 +2065,7 @@ fn index_conjunctions(filter: &Filter) -> Vec<Conjunction<'_>> {
                 field,
                 kind: Leaf::Compare(*op),
                 value: Some(value),
+                values: false,
             }],
         ),
         Filter::Unary { field, op } => add(
@@ -2020,6 +2074,7 @@ fn index_conjunctions(filter: &Filter) -> Vec<Conjunction<'_>> {
                 field,
                 kind: Leaf::Unary(*op),
                 value: None,
+                values: false,
             }],
         ),
     }
@@ -2028,12 +2083,13 @@ fn index_conjunctions(filter: &Filter) -> Vec<Conjunction<'_>> {
 
 /// Fields that need an implicit ordering: those of range, `!=`, `not-in`, `is not null` and
 /// `is not NaN` filters, anywhere in the filter (paths with array offsets too, until they are
-/// refused), but not of one that matches nothing ([`matches_nothing`]).
-fn inequality_fields(filter: &Filter, out: &mut Vec<Field>) {
+/// refused), but not of one that matches nothing ([`matches_nothing`]) unless null and NaN
+/// are `values` like others.
+fn inequality_fields(filter: &Filter, values: bool, out: &mut Vec<Field>) {
     match filter {
         Filter::And(filters) | Filter::Or(filters) => {
             for filter in filters {
-                inequality_fields(filter, out);
+                inequality_fields(filter, values, out);
             }
         }
         Filter::Compare {
@@ -2046,13 +2102,96 @@ fn inequality_fields(filter: &Filter, out: &mut Vec<Field>) {
                 | Op::NotEqual
                 | Op::NotIn),
             value,
-        } if !matches_nothing(*op, value) => out.push(field.clone()),
+        } if values || !matches_nothing(*op, value) => out.push(field.clone()),
         Filter::Unary {
             field: field @ (Field::Path(_) | Field::Indexed(_)),
             op: UnaryOp::NotNan | UnaryOp::NotNull,
         } => out.push(field.clone()),
         Filter::Compare { .. } | Filter::Unary { .. } => {}
     }
+}
+
+/// The filter as a listener on an enterprise database checks it (#338,
+/// `tests/fixtures/listen_queries_enterprise.json`), where null and NaN are values like
+/// others: an equality to NaN or null, `<=` or `>=` included, is `is NaN` or `is null` (an
+/// `in` one per such value); and `!=`, `not-in` and `is not NaN`, which then hold null too,
+/// are each an `or` with `is null`, unless their values hold null.
+fn values_view(filter: &Filter) -> Filter {
+    let null = |field: &Field| Filter::Unary {
+        field: field.clone(),
+        op: UnaryOp::Null,
+    };
+    let nullish = |value: &Value| {
+        if is_nan(value) {
+            Some(UnaryOp::Nan)
+        } else if is_null(value) {
+            Some(UnaryOp::Null)
+        } else {
+            None
+        }
+    };
+    match filter {
+        Filter::And(filters) => Filter::And(filters.iter().map(values_view).collect()),
+        Filter::Or(filters) => Filter::Or(filters.iter().map(values_view).collect()),
+        Filter::Compare { field, op, value } => match op {
+            Op::Equal | Op::LessOrEqual | Op::GreaterOrEqual => match nullish(value) {
+                Some(op) => Filter::Unary {
+                    field: field.clone(),
+                    op,
+                },
+                None => filter.clone(),
+            },
+            Op::In => {
+                let (nullish_values, others): (Vec<&Value>, Vec<&Value>) =
+                    array(value).iter().partition(|v| nullish(v).is_some());
+                if nullish_values.is_empty() {
+                    return filter.clone();
+                }
+                let mut filters = Vec::new();
+                if !others.is_empty() {
+                    filters.push(Filter::Compare {
+                        field: field.clone(),
+                        op: Op::In,
+                        value: Value {
+                            value_type: Some(ValueType::ArrayValue(ArrayValue {
+                                values: others.into_iter().cloned().collect(),
+                            })),
+                        },
+                    });
+                }
+                filters.extend(nullish_values.into_iter().filter_map(|v| {
+                    nullish(v).map(|op| Filter::Unary {
+                        field: field.clone(),
+                        op,
+                    })
+                }));
+                Filter::Or(filters)
+            }
+            Op::NotEqual if !is_null(value) => Filter::Or(vec![filter.clone(), null(field)]),
+            Op::NotIn if !array(value).iter().any(is_null) => {
+                Filter::Or(vec![filter.clone(), null(field)])
+            }
+            _ => filter.clone(),
+        },
+        Filter::Unary {
+            field,
+            op: UnaryOp::NotNan,
+        } => Filter::Or(vec![filter.clone(), null(field)]),
+        Filter::Unary { .. } => filter.clone(),
+    }
+}
+
+/// A listener's cursor on an enterprise database, last: no value but the key's too large for
+/// a query ([`validate::too_large_for_a_query`]), the start's then the end's (#338).
+fn check_cursor_sizes(orders: &[Order], bounds: [&Option<Bound>; 2]) -> Result<(), Status> {
+    for bound in bounds.into_iter().flatten() {
+        for (value, order) in bound.values.iter().zip(orders) {
+            if order.field != Field::Name && validate::too_large_for_a_query(value) {
+                return Err(Status::invalid_argument("the cursor value is too large"));
+            }
+        }
+    }
+    Ok(())
 }
 
 /// A range bound that is null or NaN, a `!=` null, or a `not-in` of nulls alone: the official
@@ -2075,7 +2214,11 @@ fn more_fields_after_the_key() -> Status {
 
 /// The explicit ordering, then the inequality fields it lacks (in field path order), then
 /// `__name__`; added orderings take the direction of the last explicit one.
-fn complete_orders(explicit: &[Order], filter: Option<&Filter>) -> Result<Vec<Order>, Status> {
+fn complete_orders(
+    explicit: &[Order],
+    filter: Option<&Filter>,
+    values: bool,
+) -> Result<Vec<Order>, Status> {
     // A descending key scan comes first, then the key before other fields, then duplicates
     // (`__name__` twice is the key before another field, but descending only, a descending
     // key scan); whether the orders need a collection is the caller's, after the limit
@@ -2102,7 +2245,7 @@ fn complete_orders(explicit: &[Order], filter: Option<&Filter>) -> Result<Vec<Or
     let mut orders = explicit.to_vec();
     let mut implicit = Vec::new();
     if let Some(filter) = filter {
-        inequality_fields(filter, &mut implicit);
+        inequality_fields(filter, values, &mut implicit);
     }
     // In field path order; paths with array offsets after the others.
     implicit.sort_by(|a, b| match (a, b) {

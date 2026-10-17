@@ -1501,26 +1501,6 @@
    ]
   },
   {
-   "id": "D091",
-   "table": "intentional",
-   "area": "queries",
-   "topic": null,
-   "kind": "limitation",
-   "official": "With `--database-edition enterprise` (which firebase-tools passes for `firestore.edition: \"enterprise\"`), a listener's query is checked as on a standard database, but with null and NaN as values like others (`tools/oracle/listen_queries.py`): which filters match nothing changes, and with it which queries a listener refuses, how disjunctions and terms are counted, and which filters on `__name__` are refused (34 of the 629 targets of `crates/hidane/tests/fixtures/listen_queries_enterprise.json`)",
-   "firestore": null,
-   "hidane": "Answers queries and aggregation queries as an enterprise database does, and matches a listener's documents as one does (null and NaN equal themselves, `!=` and `not-in` take them), but refuses a listener's queries as a standard database does",
-   "reason": "Not implemented yet (#338): the 34 targets are recorded, and listed in `crates/hidane/tests/listen_queries.rs`",
-   "references": [
-    "hidane-dev/hidane#338",
-    "tools/oracle/listen_queries.py",
-    "crates/hidane/tests/fixtures/listen_queries_enterprise.json",
-    "crates/hidane/tests/listen_queries.rs"
-   ],
-   "pinned_by": [
-    "crates/hidane/tests/listen_queries.rs::enterprise_listen_targets_answer_like_the_official_emulator"
-   ]
-  },
-  {
    "id": "D092",
    "table": "intentional",
    "area": "queries",
@@ -1578,6 +1558,10 @@
   {
    "id": "D067",
    "reason": "hidane does what the official emulator does since #14: with `--single_project_mode`, a request for another project than `--project_id` prints the official warning on standard output, twice; with `--single_project_mode_error`, it is an `INVALID_ARGUMENT` with that message, and a WebChannel handshake is never answered (`tools/oracle/single_project_mode.py`)"
+  },
+  {
+   "id": "D091",
+   "reason": "hidane does what the official emulator does since #338: a listener on an enterprise database checks its query with null and NaN as values (an equality to either, `<=` and `>=` included, is `is null` or `is NaN`; a range on either is an inequality; `!=`, `not-in` and `is not NaN` are each an or with `is null` unless they name null), then refuses a cursor value too large for a query (`tools/oracle/listen_queries.py`)"
   }
  ]
 }

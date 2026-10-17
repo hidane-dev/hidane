@@ -114,46 +114,6 @@ async fn listen(client: &mut Client, case: &Json) -> Json {
 /// Targets that end the stream (D006).
 const ENDS_THE_STREAM: &[&str] = &["two collections"];
 
-/// The targets a listener on an enterprise database refuses otherwise than hidane, or not at
-/// all (D091): its checks treat null and NaN as values too, which changes which filters match
-/// nothing, how disjunctions and terms are counted, and which filters on `__name__` are refused.
-const KNOWN_ENTERPRISE: &[&str] = &[
-    "v < NaN, by name descending",
-    "v != null, by name descending",
-    "v not-in [null], by name descending",
-    "v > NaN and v == 1, by name descending",
-    "__name__ not-in [p2, p5]",
-    "__name__ != p2",
-    "a > 1, __name__ not-in [p1] and __name__ == p3",
-    "a > 1 and __name__ != p3",
-    "too large for a query: a cursor",
-    "a > null, __name__ descending, without a collection",
-    "__name__ == p3 and b < NaN",
-    "__name__ == p3 and b != null",
-    "__name__ == p3 and b not-in [null]",
-    "an or of is-NaN on __name__ and m.x != null",
-    "__name__ < null and a > 1",
-    "__name__ != null and a > 1",
-    "__name__ not-in [null] and a > 1",
-    "in with NaN and null, and in 3",
-    "an or of == NaN and == null and an equality, and in 11",
-    "an or of > NaN and > null and an equality, and in 11",
-    "an or of < NaN and >= null and an equality, and in 11",
-    "an or of == null and > null and an equality, and in 11",
-    "an or of != null and == null and an equality, and in 11",
-    "an or of != NaN and > null and an equality, and in 11",
-    "an or of array-contains NaN and null and an equality, and in 11",
-    "an or of array-contains null and an empty array and an equality, and in 11",
-    "an or of == NaN and is-NaN and an equality, and in 11",
-    "an or of in [NaN] and in [null] and an equality, and in 11",
-    "in 30, two equalities and == null",
-    "in 30, two equalities and > NaN",
-    "in 30, two equalities and != null",
-    "in 30, two equalities and != NaN",
-    "97 equalities and not-in [1, null]",
-    "in 4 with null, in 3 and is-not-null, and an or of is-NaN and array-contains on __name__",
-];
-
 async fn replay(text: &str, enterprise: bool) {
     let fixture: Json = serde_json::from_str(
         &text
@@ -223,9 +183,6 @@ async fn replay(text: &str, enterprise: bool) {
             if expected.get("error").is_none() || actual.get("error").is_none() {
                 differences.push(format!("{name}: official {expected}, hidane {actual}"));
             }
-            continue;
-        }
-        if enterprise && KNOWN_ENTERPRISE.contains(&name) {
             continue;
         }
         if actual != expected {

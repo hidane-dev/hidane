@@ -194,11 +194,11 @@ fn firebase_findings(configs: &[firebase::Config], facts: &Facts, out: &mut Vec<
                 out.push(finding);
                 match fs.edition.as_deref().map(str::to_ascii_lowercase).as_deref() {
                     Some("enterprise") => out.push(
-                        Finding::incompatible(
+                        Finding::compatible(
                             "firestore.enterprise-edition",
                             g,
-                            "Enterprise edition: hidane refuses some listeners' queries otherwise (#338)",
-                            verified::GAP_ENTERPRISE,
+                            "Enterprise edition: hidane answers queries, listeners, pipelines and writes as an enterprise database does",
+                            verified::ENTERPRISE,
                         )
                         .at(file, None),
                     ),
@@ -1060,7 +1060,7 @@ mod tests {
             }
         }
         let codes: Vec<_> = report.findings.iter().map(|f| (f.code, f.status)).collect();
-        assert!(codes.contains(&("firestore.enterprise-edition", Status::Incompatible)));
+        assert!(codes.contains(&("firestore.enterprise-edition", Status::Compatible)));
         assert!(
             codes.contains(&("rules.compile", Status::Compatible)),
             "{:#?}",
@@ -1080,7 +1080,7 @@ mod tests {
                 .any(|f| f.status == Status::Compatible
                     && f.title.starts_with("Firebase JS SDK (firebase) 13.0.0"))
         );
-        assert!(report.has_incompatibility());
+        assert!(!report.has_incompatibility());
     }
 
     /// `compatible` takes the verified major and minor versions, of a version known exactly;

@@ -172,7 +172,7 @@ Released in v0.5.0 (2026-10-13):
 | Priority | Item | Status |
 |---|---|---|
 | P1 | Queries and aggregation queries with the pipeline semantics | Done in v0.6.0 (#341, #342) |
-| P1 | Listeners' queries | Done in v0.6.0 (#343), but 34 recorded targets are refused otherwise (#338) |
+| P1 | Listeners' queries, checked with null and NaN as values | Done (#343, #338) |
 | P1 | Pipelines (`ExecutePipeline`): every stage and function the SDKs send, in transactions too | Done (#347) |
 | P1 | Writes: values as an enterprise database checks them (arrays in arrays, no size limits, 20 levels) | Done (#338) |
 | P2 | The BSON types (Int32, Decimal128, ObjectId, regular expressions, MinKey and MaxKey, BSON timestamps and binary data): checked, stored, ordered and compared in queries and pipelines | Done (#338) |

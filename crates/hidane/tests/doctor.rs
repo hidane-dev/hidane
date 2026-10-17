@@ -16,7 +16,7 @@ const PROJECTS: [(&str, i32); 7] = [
     ("node-setup-java", 0),
     ("node-storage-auth", 0),
     ("npm-scripts", 0),
-    ("polyglot", 1),
+    ("polyglot", 0),
     ("rules-broken", 1),
     ("unusual-workflow", 0),
 ];
