@@ -384,6 +384,14 @@ class RequestRules(unittest.TestCase):
         self.assertFalse(diff.in_transaction({**query, "body": {}}))
         self.assertFalse(diff.in_transaction({**query, "raw": "null", "body": None}))
 
+        begin = {"method": "POST", "path": "/v1/projects/{project}:beginTransaction", "raw": '{"projectId": "other"}'}
+        self.assertTrue(diff.other_body_project(begin))
+        self.assertTrue(diff.other_body_project({**begin, "raw": '{"projectId": "{project}x"}'}))
+        self.assertFalse(diff.other_body_project({**begin, "raw": '{"projectId": "{project}"}'}))
+        self.assertFalse(diff.other_body_project({**begin, "raw": '{"projectId": ""}'}))
+        self.assertFalse(diff.other_body_project({**begin, "raw": '{"databaseId": "other"}'}))
+        self.assertFalse(diff.other_body_project({**begin, "path": BASE + ":beginTransaction"}))
+
         group = {"from": [{"collectionId": "q", "allDescendants": True}]}
         self.assertTrue(diff.collection_group({**query, "body": {"structuredQuery": group}}))
         self.assertTrue(diff.collection_group({**query, "body": {"structuredAggregationQuery": {"structuredQuery": group}}}))
@@ -442,6 +450,24 @@ class RequestRules(unittest.TestCase):
         self.assertEqual(rules.match("transactions", found, case, official)["id"], "failed-query-lock")
         untransacted = {**query, "body": {"structuredQuery": {"from": [{"collectionId": "q"}], "limit": -1}}}
         self.assertIsNone(rules.match("transactions", found, {"steps": [begin, untransacted, write]}, official))
+
+    def test_a_write_its_client_gave_up_on(self):
+        """D026: a Datastore write whose client gave up waiting for a lock goes through a moment
+        after the holder ends on the official emulator, so a read right after can miss it."""
+        rules = diff.Exceptions.load()
+        key = {"path": [{"kind": "K", "name": "a"}]}
+        step = lambda verb, body: {"method": "POST", "path": "/v1/projects/{project}:" + verb, "body": body}
+        commit = step("commit", {"mode": "NON_TRANSACTIONAL", "mutations": [{"upsert": {"key": key}}]})
+        case = {"steps": [commit, step("rollback", {"transaction": "{tx}"}), step("lookup", {"keys": [key]})]}
+        gone = {"status": None, "error": "TimeoutError"}
+        missing = answer(200, '{"missing": [{"entity": {"key": {}}}]}')
+        there = answer(200, '{"found": [{"entity": {"key": {}}}]}')
+        official = [gone, answer(200, "{}"), missing]
+        found = diff.compare(case, official, [gone, answer(200, "{}"), there])
+        self.assertEqual(rules.match("datastore-transactions", found, case, official)["id"], "write-applied-after-release")
+        answered = [answer(200, "{}"), answer(200, "{}"), missing]
+        found = diff.compare(case, answered, [answer(200, "{}"), answer(200, "{}"), there])
+        self.assertIsNone(rules.match("datastore-transactions", found, case, answered))
 
     def test_an_aggregation_over_a_collection_group_under_a_document(self):
         """D088: the official emulator wants an index for a sum over a collection group under a

@@ -1002,42 +1002,204 @@ pub fn fill_partition(key: &mut hidane_proto::google::datastore::v1::Key, databa
     }
 }
 
-/// The properties a property mask keeps: each path names a property, or with dots a property
-/// of an entity value.
-pub fn masked(entity: &Entity, mask: &PropertyMask) -> Properties {
-    let mut out = Properties::new();
-    for (name, value) in &entity.properties {
-        let below: Vec<&str> = mask
-            .paths
-            .iter()
-            .filter_map(|path| {
-                if path == name {
-                    Some("")
-                } else {
-                    path.strip_prefix(name.as_str())?.strip_prefix('.')
+/// A property path's names: separated by dots, each as written or between backquotes (with
+/// backslash escapes), as [`check_paths`] accepts them.
+fn path_names(path: &str) -> Vec<String> {
+    let mut names = Vec::new();
+    let mut chars = path.chars().peekable();
+    while chars.peek().is_some() {
+        let mut name = String::new();
+        if chars.peek() == Some(&'`') {
+            chars.next();
+            while let Some(c) = chars.next() {
+                match c {
+                    '`' => break,
+                    '\\' => name.extend(chars.next()),
+                    c => name.push(c),
                 }
-            })
+            }
+        } else {
+            while let Some(c) = chars.next_if(|c| *c != '.') {
+                name.push(c);
+            }
+        }
+        chars.next_if_eq(&'.');
+        names.push(name);
+    }
+    names
+}
+
+/// The properties of an entity value, `None` for another value.
+fn entity_properties(value: &Value) -> Option<&Properties> {
+    match &value.value_type {
+        Some(ValueType::EntityValue(entity)) => Some(&entity.properties),
+        _ => None,
+    }
+}
+
+/// The properties a property mask keeps, in their order: each path names a property, or with
+/// dots a property of an entity value (not of an array's); an entity value that keeps none is
+/// left out.
+pub fn masked(entity: &Entity, mask: &PropertyMask) -> Properties {
+    let paths: Vec<Vec<String>> = mask.paths.iter().map(|p| path_names(p)).collect();
+    let paths: Vec<&[String]> = paths.iter().map(Vec::as_slice).collect();
+    masked_properties(&entity.properties, &paths)
+}
+
+fn masked_properties(properties: &Properties, paths: &[&[String]]) -> Properties {
+    let mut out = Properties::new();
+    for (name, value) in properties {
+        let below: Vec<&[String]> = paths
+            .iter()
+            .filter_map(|path| path.split_first())
+            .filter(|(first, _)| *first == name)
+            .map(|(_, rest)| rest)
             .collect();
         if below.is_empty() {
             continue;
         }
-        if below.contains(&"") {
+        if below.iter().any(|rest| rest.is_empty()) {
             out.insert(name.clone(), value.clone());
             continue;
         }
         if let Some(ValueType::EntityValue(inner)) = &value.value_type {
-            let inner_mask = PropertyMask {
-                paths: below.iter().map(|p| (*p).to_owned()).collect(),
-            };
+            let kept_properties = masked_properties(&inner.properties, &below);
+            if kept_properties.is_empty() {
+                continue;
+            }
             let mut kept = value.clone();
             kept.value_type = Some(ValueType::EntityValue(Entity {
                 key: inner.key.clone(),
-                properties: masked(inner, &inner_mask),
+                properties: kept_properties,
             }));
             out.insert(name.clone(), kept);
         }
     }
     out
+}
+
+/// What a write with a property mask stores: the stored properties, each path set to the value
+/// written there (entity values made for the parents it needs) or removed if none was written.
+/// A property that changes moves to the end, the paths applied in the order a Java `HashMap`
+/// of their names iterates (`MaskTree`), as on the official emulator; one that does not change
+/// stays where it is.
+pub fn masked_write(
+    previous: Option<&Properties>,
+    written: &Properties,
+    paths: &[String],
+) -> Properties {
+    let names: Vec<Vec<String>> = paths.iter().map(|p| path_names(p)).collect();
+    let mut out = previous.cloned().unwrap_or_default();
+    write_masked(&mut out, Some(written), &MaskTree::new(&names));
+    out
+}
+
+fn write_masked(stored: &mut Properties, written: Option<&Properties>, tree: &MaskTree) {
+    for (name, below) in &tree.0 {
+        let current = stored.get(name);
+        let value = match below {
+            None => written.and_then(|w| w.get(name)).cloned(),
+            Some(below) => {
+                let mut parent = match current {
+                    Some(v) if entity_properties(v).is_some() => v.clone(),
+                    _ => Value {
+                        value_type: Some(ValueType::EntityValue(Entity::default())),
+                        ..Value::default()
+                    },
+                };
+                if let Some(ValueType::EntityValue(entity)) = &mut parent.value_type {
+                    let inside = written
+                        .and_then(|w| w.get(name))
+                        .and_then(entity_properties);
+                    write_masked(&mut entity.properties, inside, below);
+                }
+                // A parent that is not an entity value is made one only to hold what is written.
+                match current {
+                    Some(v) if entity_properties(v).is_some() => Some(parent),
+                    _ if entity_properties(&parent).is_some_and(|p| !p.is_empty()) => Some(parent),
+                    _ => current.cloned(),
+                }
+            }
+        };
+        if value.as_ref() != current {
+            stored.remove(name);
+            if let Some(value) = value {
+                stored.insert(name.clone(), value);
+            }
+        }
+    }
+}
+
+/// A property mask's paths as a tree: the names they start with, each with the rest of its
+/// paths (`None`: a path ends there, the whole value), in the order the official emulator's
+/// Java `HashMap` of them iterates, the names of the paths that end there put in it first.
+struct MaskTree(Vec<(String, Option<MaskTree>)>);
+
+impl MaskTree {
+    fn new(paths: &[Vec<String>]) -> Self {
+        let mut names: Vec<String> = Vec::new();
+        for ending in [true, false] {
+            for path in paths {
+                if let Some(first) = path.first()
+                    && (path.len() == 1) == ending
+                    && !names.contains(first)
+                {
+                    names.push(first.clone());
+                }
+            }
+        }
+        let names = java_hash_map_order(names);
+        MaskTree(
+            names
+                .into_iter()
+                .map(|name| {
+                    let rests: Vec<Vec<String>> = paths
+                        .iter()
+                        .filter(|p| p.first() == Some(&name))
+                        .map(|p| p[1..].to_vec())
+                        .collect();
+                    let below = if rests.iter().any(Vec::is_empty) {
+                        None
+                    } else {
+                        Some(MaskTree::new(&rests))
+                    };
+                    (name, below)
+                })
+                .collect(),
+        )
+    }
+}
+
+/// `names` (distinct), in the order a `java.util.HashMap` they were put in, in turn, iterates
+/// them: by bucket of their spread `String.hashCode()`, the table doubling past three quarters
+/// full, then in the order they came.
+fn java_hash_map_order(names: Vec<String>) -> Vec<String> {
+    let hash = |name: &str| {
+        let h = name.encode_utf16().fold(0u32, |h, unit| {
+            h.wrapping_mul(31).wrapping_add(u32::from(unit))
+        });
+        (h ^ (h >> 16)) as usize
+    };
+    let hashes: Vec<usize> = names.iter().map(|n| hash(n)).collect();
+    let mut capacity = 16;
+    let mut table: Vec<Vec<usize>> = vec![Vec::new(); capacity];
+    for (i, h) in hashes.iter().enumerate() {
+        table[h & (capacity - 1)].push(i);
+        if i + 1 > capacity * 3 / 4 {
+            capacity *= 2;
+            let mut grown = vec![Vec::new(); capacity];
+            for i in table.into_iter().flatten() {
+                grown[hashes[i] & (capacity - 1)].push(i);
+            }
+            table = grown;
+        }
+    }
+    let mut names: Vec<Option<String>> = names.into_iter().map(Some).collect();
+    table
+        .into_iter()
+        .flatten()
+        .map(|i| names[i].take().expect("each name once"))
+        .collect()
 }
 
 #[cfg(test)]

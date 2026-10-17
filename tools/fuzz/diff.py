@@ -496,6 +496,15 @@ def in_transaction(step):
     return (isinstance(new, dict) and "readWrite" in new) or isinstance(body.get("transaction"), str)
 
 
+def other_body_project(step):
+    """A Datastore API request (`/v1/projects/{project}:verb`) whose body names a `projectId`
+    other than the path's."""
+    body = body_of(step)
+    return (re.fullmatch(r"/v1/projects/\{project\}:[A-Za-z]+", step["path"]) is not None
+            and isinstance(body, dict) and isinstance(body.get("projectId"), str)
+            and body["projectId"] not in ("", "{project}"))
+
+
 def collection_group(step):
     """The body's query reads a collection group or every descendant (`allDescendants`), in a
     `structuredQuery` or a `structuredAggregationQuery`."""
@@ -519,6 +528,7 @@ PREDICATES = {
     "collection-group": collection_group,
     "in-transaction": in_transaction,
     "several-targets": several_targets,
+    "other-body-project": other_body_project,
 }
 
 

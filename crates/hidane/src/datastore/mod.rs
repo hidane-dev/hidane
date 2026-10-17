@@ -27,7 +27,8 @@ pub(crate) mod rest;
 mod values;
 
 use std::{
-    collections::{BTreeMap, HashMap, HashSet},
+    borrow::Cow,
+    collections::{BTreeMap, BTreeSet, HashMap, HashSet, VecDeque},
     sync::{Arc, Mutex, PoisonError},
     time::{SystemTime, UNIX_EPOCH},
 };
@@ -106,23 +107,103 @@ struct DatabaseData {
     deleted: BTreeMap<Located, i64>,
     /// The last ID allocated: one counter per database, whatever the kind or the namespace.
     allocated: u64,
-    /// When the database was first used, in microseconds: reads before it are too old.
-    created: i64,
+    /// The namespaces and kinds of every key read or written, there or not: the official
+    /// emulator keeps a record of each, and lists its kind and namespace from then on.
+    touched: BTreeSet<(String, String)>,
+    /// What each write of the last [`RETENTION_MICROS`] replaced, in time order: a read at an
+    /// earlier time sees it.
+    replaced: VecDeque<(i64, Located, Held)>,
+}
+
+/// How far back reads go: an hour, as in Firestore Native mode (D065).
+const RETENTION_MICROS: i64 = 3_600_000_000;
+
+/// What a key held: an entity, or none since the version it was deleted at (0 if never there).
+enum Held {
+    Entity(Stored),
+    Missing(i64),
 }
 
 impl DatabaseData {
-    /// Writes `entity` under `located`, or deletes what is there at version `micros`.
-    fn put(&mut self, located: Located, entity: Option<Stored>, micros: i64) {
-        match entity {
-            Some(entity) => {
-                self.deleted.remove(&located);
-                self.entities.insert(located, entity);
-            }
-            None => {
-                if self.entities.remove(&located).is_some() {
-                    self.deleted.insert(located, micros);
+    /// Keeps `namespace` and `kind` among those the queries of kinds and namespaces list.
+    fn touch(&mut self, namespace: &str, kind: &str) {
+        self.touched.insert((namespace.to_owned(), kind.to_owned()));
+    }
+
+    /// The writes after `micros`, oldest first.
+    fn after(&self, micros: i64) -> impl Iterator<Item = &(i64, Located, Held)> {
+        let from = self
+            .replaced
+            .partition_point(|(time, _, _)| *time <= micros);
+        self.replaced.range(from..)
+    }
+
+    /// The entity `located` holds at `micros` (`None`: now), or the version it was deleted at.
+    fn held(&self, located: &Located, micros: Option<i64>) -> Result<&Stored, i64> {
+        if let Some(micros) = micros
+            && let Some((_, _, held)) = self.after(micros).find(|(_, l, _)| l == located)
+        {
+            return match held {
+                Held::Entity(entity) => Ok(entity),
+                Held::Missing(version) => Err(*version),
+            };
+        }
+        self.entities
+            .get(located)
+            .ok_or_else(|| self.deleted.get(located).copied().unwrap_or_default())
+    }
+
+    /// The entities at `micros` (`None`: now).
+    fn entities_at(&self, micros: Option<i64>) -> Cow<'_, BTreeMap<Located, Stored>> {
+        let Some(micros) = micros else {
+            return Cow::Borrowed(&self.entities);
+        };
+        let mut later = self.after(micros).peekable();
+        if later.peek().is_none() {
+            return Cow::Borrowed(&self.entities);
+        }
+        let mut entities = self.entities.clone();
+        let mut seen = BTreeSet::new();
+        for (_, located, held) in later {
+            if seen.insert(located) {
+                match held {
+                    Held::Entity(entity) => {
+                        entities.insert(located.clone(), entity.clone());
+                    }
+                    Held::Missing(_) => {
+                        entities.remove(located);
+                    }
                 }
             }
+        }
+        Cow::Owned(entities)
+    }
+
+    /// Writes `entity` under `located`, or deletes what is there at version `micros`.
+    fn put(&mut self, located: Located, entity: Option<Stored>, micros: i64) {
+        let held = match entity {
+            Some(entity) => {
+                let deleted = self.deleted.remove(&located).unwrap_or_default();
+                self.entities
+                    .insert(located.clone(), entity)
+                    .map_or(Held::Missing(deleted), Held::Entity)
+            }
+            None => match self.entities.remove(&located) {
+                Some(held) => {
+                    self.deleted.insert(located.clone(), micros);
+                    Held::Entity(held)
+                }
+                None => return,
+            },
+        };
+        self.replaced.push_back((micros, located, held));
+        // What no read can reach any more: a read is at most an hour back.
+        while self
+            .replaced
+            .front()
+            .is_some_and(|(time, _, _)| *time <= micros - RETENTION_MICROS)
+        {
+            self.replaced.pop_front();
         }
     }
 }
@@ -174,26 +255,26 @@ fn cursor(located: &Located) -> Vec<u8> {
     out
 }
 
+/// A commit's time, after `last`, the one before it, which it becomes.
+fn next_micros(last: &mut i64) -> i64 {
+    *last = now_micros().max(*last + 1);
+    *last
+}
+
 impl Data {
     fn database(&mut self, database: &Database) -> &mut DatabaseData {
-        let created = now_micros();
-        self.databases
-            .entry(database.name())
-            .or_insert_with(|| DatabaseData {
-                created,
-                ..DatabaseData::default()
-            })
+        self.databases.entry(database.name()).or_default()
     }
 
     /// A commit's time, after every earlier one.
     fn next_micros(&mut self) -> i64 {
-        self.last_micros = now_micros().max(self.last_micros + 1);
-        self.last_micros
+        next_micros(&mut self.last_micros)
     }
 
-    /// The time of a read: now, and never before the last commit.
-    fn read_micros(&self) -> i64 {
-        now_micros().max(self.last_micros)
+    /// The time of a read: now, after every earlier time given, so that a commit after it is
+    /// after it too.
+    fn read_micros(&mut self) -> i64 {
+        next_micros(&mut self.last_micros)
     }
 }
 
@@ -257,17 +338,16 @@ impl DatastoreService {
             .transpose()
     }
 
-    /// A read time a request names: not before the database was first used.
-    fn check_read_time(&self, database: &Database, time: &Timestamp) -> Result<ReadTime, Status> {
+    /// A read time a request names: not in the future, nor more than an hour back (D065).
+    fn check_read_time(&self, time: &Timestamp) -> Result<ReadTime, Status> {
         let at = ReadTime::from_timestamp(time);
-        let mut data = self.data();
-        let now = data.read_micros();
+        let now = now_micros().max(self.data().last_micros);
         if at.0 > now {
             return Err(Status::invalid_argument(
                 "The requested 'read_time' cannot be in the future.",
             ));
         }
-        if at.0 < data.database(database).created {
+        if at.0 < now - RETENTION_MICROS {
             return Err(Status::failed_precondition(
                 "The requested 'read_time' is too old.",
             ));
@@ -292,7 +372,7 @@ impl DatastoreService {
                 Mode::ReadWrite
             }
             Some(transaction_options::Mode::ReadOnly(read_only)) => match &read_only.read_time {
-                Some(time) => Mode::ReadOnly(self.check_read_time(database, time)?),
+                Some(time) => Mode::ReadOnly(self.check_read_time(time)?),
                 None => Mode::ReadOnly(ReadTime(self.data().read_micros())),
             },
         };
@@ -300,9 +380,21 @@ impl DatastoreService {
     }
 }
 
-/// What a query's read options say: the transaction to report a new one in.
+/// The time a transaction reads at: a read-only one reads the entities as they were when it
+/// began (or at the time it names); a read-write one reads the latest.
+fn snapshot(mode: Mode) -> Option<i64> {
+    match mode {
+        Mode::ReadOnly(time) => Some(time.0),
+        Mode::ReadWrite => None,
+    }
+}
+
+/// What a query's read options say: the transaction to report a new one in, the time to read at.
 struct Reading {
     new_transaction: Vec<u8>,
+    /// The time the read is as of, when not the latest: a read time's, a read-only
+    /// transaction's.
+    at: Option<i64>,
 }
 
 impl DatastoreService {
@@ -331,6 +423,7 @@ impl DatastoreService {
     ) -> Result<Reading, Status> {
         let mut reading = Reading {
             new_transaction: Vec::new(),
+            at: None,
         };
         // A read-write transaction locks the kind it queries; a query without a kind is an
         // internal error there on the official emulator.
@@ -348,25 +441,25 @@ impl DatastoreService {
             None | Some(read_options::ConsistencyType::ReadConsistency(_)) => {}
             Some(read_options::ConsistencyType::ReadTime(_)) => {}
             Some(read_options::ConsistencyType::Transaction(transaction)) => {
-                lock(&transaction)?;
+                reading.at = snapshot(lock(&transaction)?);
             }
             Some(read_options::ConsistencyType::NewTransaction(options)) => {
                 let transaction = self.begin(database, Some(&options))?;
-                lock(&transaction)?;
+                reading.at = snapshot(lock(&transaction)?);
                 reading.new_transaction = transaction;
             }
         }
         Ok(reading)
     }
 
-    /// A query's read time: checked once everything else is.
-    fn read_at(&self, options: Option<&ReadOptions>, database: &Database) -> Result<(), Status> {
+    /// A query's read time: checked once everything else is; the time it names, if any.
+    fn read_at(&self, options: Option<&ReadOptions>) -> Result<Option<i64>, Status> {
         if let Some(read_options::ConsistencyType::ReadTime(time)) =
             options.and_then(|o| o.consistency_type.as_ref())
         {
-            self.check_read_time(database, time)?;
+            return Ok(Some(self.check_read_time(time)?.0));
         }
-        Ok(())
+        Ok(None)
     }
 }
 
@@ -454,6 +547,7 @@ impl Datastore for DatastoreService {
             values::check_paths(&mask.paths)?;
         }
         let mut response = LookupResponse::default();
+        let mut at = None;
         match req.read_options.and_then(|o| o.consistency_type) {
             None => {}
             Some(read_options::ConsistencyType::ReadConsistency(consistency)) => {
@@ -464,20 +558,26 @@ impl Datastore for DatastoreService {
                 }
             }
             Some(read_options::ConsistencyType::ReadTime(time)) => {
-                self.check_read_time(&database, &time)?;
+                at = Some(self.check_read_time(&time)?.0);
             }
             Some(read_options::ConsistencyType::Transaction(transaction)) => {
                 let paths: Vec<_> = wanted.iter().map(keys::lock_path).collect();
-                self.state
-                    .transactions
-                    .read(&database.name(), &transaction, &paths, None)?;
+                at = snapshot(self.state.transactions.read(
+                    &database.name(),
+                    &transaction,
+                    &paths,
+                    None,
+                )?);
             }
             Some(read_options::ConsistencyType::NewTransaction(options)) => {
                 let transaction = self.begin(&database, Some(&options))?;
                 let paths: Vec<_> = wanted.iter().map(keys::lock_path).collect();
-                self.state
-                    .transactions
-                    .read(&database.name(), &transaction, &paths, None)?;
+                at = snapshot(self.state.transactions.read(
+                    &database.name(),
+                    &transaction,
+                    &paths,
+                    None,
+                )?);
                 response.transaction = transaction;
             }
         }
@@ -485,9 +585,15 @@ impl Datastore for DatastoreService {
         let read = data.read_micros();
         let stored = data.database(&database);
         for located in &wanted {
+            stored.touch(
+                &located.namespace,
+                &located.path.last().expect("complete").0,
+            );
+        }
+        for located in &wanted {
             let key = Some(database.key(located));
-            match stored.entities.get(located) {
-                Some(entity) => {
+            match stored.held(located, at) {
+                Ok(entity) => {
                     let mut found = Entity {
                         key,
                         properties: entity.properties.clone(),
@@ -503,17 +609,17 @@ impl Datastore for DatastoreService {
                         update_time: Some(timestamp(entity.updated)),
                     });
                 }
-                None => response.missing.push(EntityResult {
+                Err(version) => response.missing.push(EntityResult {
                     entity: Some(Entity {
                         key,
                         properties: Properties::new(),
                     }),
-                    version: stored.deleted.get(located).copied().unwrap_or_default(),
+                    version,
                     ..EntityResult::default()
                 }),
             }
         }
-        response.read_time = Some(timestamp(read));
+        response.read_time = Some(timestamp(at.unwrap_or(read)));
         Ok(Response::new(response))
     }
 
@@ -637,21 +743,27 @@ impl Datastore for DatastoreService {
             self.state.transactions.check_commit(&name, t, any)?;
         }
         let targets: Vec<_> = complete.iter().map(keys::lock_path).collect();
-        let owner = match &how {
-            Commit::Transactional(t) => Some(t.as_slice()),
+        let owner = match how {
+            Commit::Transactional(t) => Some(t),
             Commit::NonTransactional => None,
         };
         let transactional = owner.is_some();
         let count = checked.len();
         let state = Arc::clone(&self.state);
-        let response = self
-            .state
-            .transactions
-            .commit(&name, owner, &targets, move || {
-                let mut data = state.data.lock().unwrap_or_else(PoisonError::into_inner);
-                apply(&mut data, &database, checked, transactional)
-            })
-            .await?;
+        // A commit waiting for a lock goes on once its client gives up, and writes when the lock
+        // is released, as the official emulator's does.
+        let response = tokio::spawn(async move {
+            let data = Arc::clone(&state);
+            state
+                .transactions
+                .commit(&name, owner.as_deref(), &targets, move || {
+                    let mut data = data.data.lock().unwrap_or_else(PoisonError::into_inner);
+                    apply(&mut data, &database, checked, transactional)
+                })
+                .await
+        })
+        .await
+        .map_err(|error| Status::internal(error.to_string()))??;
         let (results, micros) = response;
         let mut response = CommitResponse::default();
         if count > 0 || transactional {
@@ -753,12 +865,15 @@ impl Datastore for DatastoreService {
         if let Some(refused) = refused {
             return Err(refused);
         }
-        self.read_at(req.read_options.as_ref(), &database)?;
+        let at = self.read_at(req.read_options.as_ref())?.or(reading.at);
         let mut data = self.data();
-        let read = data.read_micros();
+        let read = at.unwrap_or_else(|| data.read_micros());
         let stored = data.database(&database);
-        let batch = query::metadata(&plan, &stored.entities, &database, read)
-            .unwrap_or_else(|| query::run(&plan, &stored.entities, &database, read));
+        let entities = stored.entities_at(at);
+        let batch = match query::metadata(&plan, &entities, &stored.touched, &database, read) {
+            Some(batch) => batch,
+            None => query::run(&plan, &entities, &database, read)?,
+        };
         Ok(Response::new(RunQueryResponse {
             batch: Some(batch),
             query: echo,
@@ -801,8 +916,13 @@ impl Datastore for DatastoreService {
         read_options_shape(req.read_options.as_ref())?;
         // An aggregation's read time is checked whole among its query's first checks.
         let read_time = past_epoch(req.read_options.as_ref())
-            .and_then(|()| self.read_at(req.read_options.as_ref(), &database));
-        let refused = checks::aggregation_query(&aggregation, &nested, &namespace, read_time)?;
+            .and_then(|()| self.read_at(req.read_options.as_ref()));
+        let refused = checks::aggregation_query(
+            &aggregation,
+            &nested,
+            &namespace,
+            read_time.clone().map(|_| ()),
+        )?;
         let mut plan = query::plan(&nested, &database, &namespace)?;
         let reading = self.read_query(req.read_options.clone(), &database, plan.kind.as_deref())?;
         if let Some(defined) = &defined {
@@ -824,10 +944,12 @@ impl Datastore for DatastoreService {
             }
         }
         plan.orders.extend(key);
+        // The read time was checked among the query's checks, which refused it if it was bad.
+        let at = read_time.ok().flatten().or(reading.at);
         let mut data = self.data();
-        let read = data.read_micros();
+        let read = at.unwrap_or_else(|| data.read_micros());
         let stored = data.database(&database);
-        let rows = query::aggregate_rows(&plan, &stored.entities);
+        let rows = query::aggregate_rows(&plan, &stored.entities_at(at))?;
         let mut properties = Properties::new();
         for ((alias, property), operator) in aggregations.iter().zip(&aggregation.aggregations) {
             let value = match &operator.operator {
@@ -1052,21 +1174,53 @@ fn sum(rows: &[query::AggregateRow], plan: &query::Plan, property: &str) -> (Val
 }
 
 /// Applies a commit's mutations, all or none, and returns their results and the commit's time.
+/// A non-transactional commit applies each mutation at a time of its own, as the official
+/// emulator does: its time is the last one's.
 fn apply(
     data: &mut Data,
     database: &Database,
     checked: Vec<Checked>,
     transactional: bool,
 ) -> Result<(Vec<MutationResult>, i64), Status> {
-    let micros = data.next_micros();
-    let stored = data.database(database);
+    let Data {
+        databases,
+        last_micros,
+    } = data;
+    // When a mutation reads its key (a deletion of a key not there tells of then), and when it
+    // writes it.
+    let times = |last: &mut i64| (next_micros(last), next_micros(last));
+    let (mut read, mut micros) = if transactional {
+        times(last_micros)
+    } else {
+        (0, 0)
+    };
+    let stored = databases.entry(database.name()).or_default();
     // Each mutation's late checks, then the checks against the entity as the mutations before
     // it left it, then the mutation itself (`tests/fixtures/datastore_commit_checks.json`). A
     // transaction writes everything or nothing; a non-transactional commit keeps the mutations
     // before one that fails, as the official emulator does.
     let mut working: BTreeMap<Located, Option<Stored>> = BTreeMap::new();
-    let mut written: Vec<(Located, bool, bool)> = Vec::with_capacity(checked.len());
+    let mut written: Vec<(Located, bool, bool, i64)> = Vec::with_capacity(checked.len());
+    // Each key a mutation names is kept on record before it applies, even if it fails: every
+    // key of a transaction first, a non-transactional commit's one by one.
+    let touch = |stored: &mut DatabaseData, mutation: &Checked| match mutation {
+        Checked::Write { key, .. } => {
+            stored.touch(&key.namespace, &key.path.last().expect("a path").0);
+        }
+        Checked::Delete(located, _) => {
+            stored.touch(&located.namespace, &located.path.last().expect("a path").0);
+        }
+    };
+    if transactional {
+        for mutation in &checked {
+            touch(stored, mutation);
+        }
+    }
     for mutation in checked {
+        if !transactional {
+            touch(stored, &mutation);
+            (read, micros) = times(last_micros);
+        }
         let (late, located, op) = match &mutation {
             Checked::Write { op, key, late, .. } => (late, key.complete(), Some(*op)),
             Checked::Delete(located, late) => (late, Some(located.clone()), None),
@@ -1121,26 +1275,13 @@ fn apply(
                         (key.with_id(scattered(stored.allocated)), true)
                     }
                 };
-                let properties = match (mask, &current) {
-                    (Some(paths), Some(previous)) => {
-                        let mut merged = previous.properties.clone();
-                        for path in &paths {
-                            match properties.get(path) {
-                                Some(value) => {
-                                    merged.insert(path.clone(), value.clone());
-                                }
-                                None => {
-                                    merged.remove(path);
-                                }
-                            }
-                        }
-                        merged
-                    }
-                    (Some(paths), None) => properties
-                        .into_iter()
-                        .filter(|(name, _)| paths.contains(name))
-                        .collect(),
-                    (None, _) => properties,
+                let properties = match &mask {
+                    Some(paths) => values::masked_write(
+                        current.as_ref().map(|c| &c.properties),
+                        &properties,
+                        paths,
+                    ),
+                    None => properties,
                 };
                 // A write that changes nothing keeps the entity's version and times.
                 let entity = match &current {
@@ -1156,12 +1297,18 @@ fn apply(
             }
         };
         let deleted = entity.is_none();
+        // A deletion's version: the commit's; for a key not there, the version it was deleted
+        // at, or the time it was read missing if it never was there.
+        let version = match &current {
+            None if deleted => stored.deleted.get(&located).copied().unwrap_or(read),
+            _ => micros,
+        };
         if transactional {
             working.insert(located.clone(), entity);
         } else {
             stored.put(located.clone(), entity, micros);
         }
-        written.push((located, allocated, deleted));
+        written.push((located, allocated, deleted, version));
     }
     for (located, entity) in working {
         stored.put(located, entity, micros);
@@ -1169,7 +1316,7 @@ fn apply(
     // Each result tells of its entity as the commit left it.
     let results = written
         .into_iter()
-        .map(|(located, allocated, deleted)| {
+        .map(|(located, allocated, deleted, version)| {
             let key = allocated.then(|| database.key(&located));
             match stored
                 .entities
@@ -1185,7 +1332,7 @@ fn apply(
                 },
                 None => MutationResult {
                     key,
-                    version: micros,
+                    version,
                     ..MutationResult::default()
                 },
             }

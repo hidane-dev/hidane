@@ -76,6 +76,7 @@ FIXTURE_CLIENTS = {
     "datastore_projects.py": ([GRPC, REST, PROCESS], PY_GRPCURL),
     "datastore_protobuf.py": ([REST], PY),
     "datastore_queries.py": ([REST], PY),
+    "datastore_sequences.py": ([REST], PY),
     "document_writes.py": ([REST], PY),
     "export_import.py": ([REST, PROCESS], PY),
     "field_order.py": ([REST], PY),

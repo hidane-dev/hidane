@@ -740,7 +740,7 @@ fn entity_late(
         }
     }
     grouped_first(query)?;
-    cursors_match(query)?;
+    cursors_match(query, namespace)?;
     metadata(query, database, all)?;
     unreadable_elements(all)
 }
@@ -1054,5 +1054,5 @@ fn aggregation_late(
         return Err(invalid(EMPTY_SEGMENT));
     }
     grouped_first(query)?;
-    cursors_match(query)
+    cursors_match(query, namespace)
 }

@@ -25,11 +25,16 @@ observation; the sources are listed in [`clean-room/SOURCES.md`](../clean-room/S
   `!=` and `not-in` match null. Projections return index values (`meaning: 18`).
 - Keys are paths of kind and name or numeric ID, in a namespace. Numeric IDs are allocated
   scattered: 2⁵² plus a counter's 51 low bits reversed, one counter shared by every kind.
-  `__kind__` and `__namespace__` queries list the kinds and namespaces.
-- An entity's version is its last commit time in microseconds. Cursors are opaque bytes.
+  `__kind__` and `__namespace__` queries list the kinds and namespaces of the entities and of
+  every key read or written, there or not.
+- An entity's version is its last commit time in microseconds; outside a transaction each
+  mutation is committed at a time of its own. Cursors are opaque bytes: a position in the
+  values a query ordered by and the key, which another query reads in its own order.
 - Transactions lock as Firestore's do in the official emulator: a conflicting commit waits, then
   fails with `ABORTED` "Transaction lock timeout." (after 2 s in a transaction, 60 s outside
-  one, `tools/oracle/datastore_locks.py`). Read-only transactions refuse writes.
+  one, `tools/oracle/datastore_locks.py`). Read-only transactions refuse writes and read the
+  entities as they were when they began; a read time goes back an hour, as in Firestore Native
+  mode (D065), where the official emulator goes back seven days.
 - Errors carry their own texts, some of them a key printed as protocol-buffer text
   ("no entity to update: app: …").
 
