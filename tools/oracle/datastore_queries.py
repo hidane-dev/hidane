@@ -13,7 +13,10 @@ of every type, composite filters, ancestors, keys, orders, projections, `distinc
 offsets, cursors, cursors of other queries, ancestors in disjunctions, the key projected and
 compared, a limit of 0 over filters that bound a property to nothing, the entity values of
 arrays (not indexed), the queries it refuses, and a query without a kind in a transaction), the
-metadata kinds `__kind__`, `__namespace__` and `__property__`, and `runAggregationQuery`. A cursor is opaque: a step that reads one names
+metadata kinds `__kind__`, `__namespace__` and `__property__` (in transactions too), key operands
+of an invalid project or in a reserved namespace, a property filtered by equality and ordered
+(a row per value), and `runAggregationQuery` (the rows a sum reads from arrays, in each order
+and under equalities). A cursor is opaque: a step that reads one names
 it (`defines`, with the JSON path it came from), and later steps send it as `<name>`, so a
 replay sends its own. The fixture has the format of `datastore_entities.json`; server times,
 versions, transaction IDs and cursors are masked. `crates/hidane/tests/datastore.rs` replays
@@ -103,6 +106,15 @@ DATASET.append((key(("L", "n1"), ns="xcns"), {}))
 DATASET += [
     (key(("Arr", "r1"), ns="xa"), {"arr": ARR(ENT(x=I(5)), ENT(x=I(6))), "e": ENT(t=ARR(I(3), I(4))), "n": I(1)}),
     (key(("Arr", "r2"), ns="xa"), {"arr": ARR(ENT(x=I(7))), "e": ENT(t=ARR(I(8))), "n": I(2)}),
+]
+# The rows a sum reads, in a namespace of their own: an array's values, ordered among the others.
+DATASET += [
+    (key(("G", "g1"), ns="xg"), {"a": ARR(I(5), I(1)), "p": I(5), "e": ENT(x={"blobValue": "AQ=="})}),
+    (key(("G", "g2"), ns="xg"), {"a": ARR(I(3)), "p": I(5), "e": ENT(x=D(1.0))}),
+    (key(("H", "h1"), ns="xg"), {"a": I(1), "z": I(9)}),
+    (key(("H", "h2"), ns="xg"), {"a": I(2), "z": I(1)}),
+    (key(("E", "e1"), ns="xg"), {"b": ARR(I(1), I(2)), "c": I(1), "d": ARR(I(5), I(6))}),
+    (key(("E", "e2"), ns="xg"), {"b": ARR(I(2), I(3)), "c": I(2), "d": I(7)}),
 ]
 
 CASES = []
@@ -466,6 +478,78 @@ case("a sum over an array's entity values", "runAggregationQuery",
 case("a sum over an entity value's array", "runAggregationQuery",
      {"aggregationQuery": {"nestedQuery": {"kind": kind("Arr")}, "aggregations": [
          {"sum": {"property": {"name": "e.t"}}, "alias": "s"}, {"avg": {"property": {"name": "e.t"}}, "alias": "m"}]}, **XA})
+
+# A sum or an average reads a row for each value of an array, ordered after the query's orders,
+# before the key unless the query orders on it or compares it, in the direction of its last order.
+XG = {"partitionId": {"namespaceId": "xg"}}
+for name, q in [
+    ("no order", {}),
+    ("the key ascending", {"order": [asc("__key__")]}),
+    ("the key descending", {"order": [desc("__key__")]}),
+    ("p ascending", {"order": [asc("p")]}),
+    ("p descending", {"order": [desc("p")]}),
+    ("p ascending, the key descending", {"order": [asc("p"), desc("__key__")]}),
+    ("p descending, the key ascending", {"order": [desc("p"), asc("__key__")]}),
+    ("the key descending, p ascending", {"order": [desc("__key__"), asc("p")]}),
+    ("the key compared", {"filter": pf("__key__", "GREATER_THAN", {"keyValue": key(("G", "0"), ns="xg")})}),
+    ("the key compared, descending", {"filter": pf("__key__", "GREATER_THAN", {"keyValue": key(("G", "0"), ns="xg")}), "order": [desc("__key__")]}),
+    ("a compared, descending", {"filter": pf("a", "GREATER_THAN", I(0)), "order": [desc("a")]}),
+]:
+    for limit in (1, 2):
+        case(f"the rows of a sum, {name}, limit {limit}", "runAggregationQuery",
+             {"aggregationQuery": {"nestedQuery": {"kind": kind("G"), **q, "limit": limit}, "aggregations": [
+                 {"sum": {"property": {"name": "a"}}, "alias": "s"}, {"count": {}, "alias": "n"}]}, **XG})
+# A property filtered by equality and ordered has a row for each of its values; a sum reads it
+# as the value of the first disjunct the entity meets (an `IN` a disjunct per value, in order).
+for name, f, order in [
+    ("b = 1, ordered by b", pf("b", "EQUAL", I(1)), [asc("b")]),
+    ("b in [1, 2], ordered by b", pf("b", "IN", ARR(I(1), I(2))), [asc("b")]),
+    ("b in [1, 2], ordered by b descending", pf("b", "IN", ARR(I(1), I(2))), [desc("b")]),
+]:
+    query(name, {"kind": kind("E"), "filter": f, "order": order}, **XG)
+for name, f, summed in [
+    ("b in [1, 2]", pf("b", "IN", ARR(I(1), I(2))), ["b"]),
+    ("b in [2, 1]", pf("b", "IN", ARR(I(2), I(1))), ["b"]),
+    ("c = 2 or b = 1", OR(pf("c", "EQUAL", I(2)), pf("b", "EQUAL", I(1))), ["b"]),
+    ("b = 1 and d = 5", AND(pf("b", "EQUAL", I(1)), pf("d", "EQUAL", I(5))), ["b", "d"]),
+    ("b in [3, 1]", pf("b", "IN", ARR(I(3), I(1))), ["b", "d"]),
+]:
+    case(f"sums where {name}", "runAggregationQuery",
+         {"aggregationQuery": {"nestedQuery": {"kind": kind("E"), "filter": f}, "aggregations": [
+             {"sum": {"property": {"name": p}}, "alias": p} for p in summed] + [{"count": {}, "alias": "n"}]}, **XG})
+
+# Two properties summed order the rows by name, whatever the order of the aggregations.
+for first, second in [("z", "a"), ("a", "z")]:
+    case(f"the rows of sums of {first} then {second}, limit 1", "runAggregationQuery",
+         {"aggregationQuery": {"nestedQuery": {"kind": kind("H"), "limit": 1}, "aggregations": [
+             {"sum": {"property": {"name": first}}, "alias": first}, {"sum": {"property": {"name": second}}, "alias": second}]}, **XG})
+for name, order in [("ascending", asc("__key__")), ("descending", desc("__key__"))]:
+    case(f"the average of an entity value's property, the key {name}, limit 1", "runAggregationQuery",
+         {"aggregationQuery": {"nestedQuery": {"kind": kind("G"), "order": [order], "limit": 1}, "aggregations": [
+             {"avg": {"property": {"name": "e.x"}}, "alias": "m"}]}, **XG})
+
+# A disjunction of an ancestor alone is an internal error, once the ancestor's operand is checked.
+for name, f in [("a string", pf("__key__", "HAS_ANCESTOR", S("b"))), ("null", pf("__key__", "HAS_ANCESTOR", NULL)),
+                ("a key, on b", pf("b", "HAS_ANCESTOR", KEY(("Q", "q1")))), ("a key", pf("__key__", "HAS_ANCESTOR", KEY(("Q", "q1"))))]:
+    query(f"a disjunction of an ancestor alone, of {name}", {"filter": AND(OR(f))})
+
+# In a read-write transaction, `__namespace__` and `__kind__` find nothing; in a read-only one,
+# what they find outside.
+for meta in ("__namespace__", "__kind__"):
+    query(f"{meta} in a new transaction", {"kind": kind(meta)}, readOptions={"newTransaction": {}})
+    query(f"{meta} past 1, in a new transaction", {"kind": kind(meta), "offset": 1}, readOptions={"newTransaction": {}})
+    query(f"{meta} in a new read-only transaction", {"kind": kind(meta)}, readOptions={"newTransaction": {"readOnly": {}}})
+
+# A key operand's project must be valid (an aggregation's error is internal); its namespace may
+# be reserved.
+BAD_PROJECT = {"keyValue": {"partitionId": {"projectId": "Bad"}, "path": [{"kind": "A", "name": "x"}]}}
+RESERVED_NS = {"keyValue": key(("A", "x"), ns="__x__")}
+query("a key of an invalid project", {"kind": kind("P"), "filter": pf("a", "GREATER_THAN", BAD_PROJECT)})
+agg("a key of an invalid project", {"kind": kind("P"), "filter": pf("a", "GREATER_THAN", BAD_PROJECT)}, {"count": {}, "alias": "n"})
+query("a key of an invalid project, then a key of id 0", {"kind": kind("P"), "filter": AND(pf("a", "GREATER_THAN", BAD_PROJECT), pf("b", "LESS_THAN", KEY(("A", 0))))})
+query("a key in a reserved namespace", {"kind": kind("P"), "filter": pf("a", "EQUAL", RESERVED_NS)})
+agg("a key in a reserved namespace", {"kind": kind("P"), "filter": pf("a", "EQUAL", RESERVED_NS)}, {"count": {}, "alias": "n"})
+query("the key in a reserved namespace", {"kind": kind("P"), "filter": pf("__key__", "EQUAL", RESERVED_NS)})
 
 # The key may be projected and compared by equality.
 for name, f, projection in [

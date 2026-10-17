@@ -17,7 +17,8 @@ integer), so that what is left to tell is the syntax. `SENT` adds texts sent wit
 need of their own (bindings, literals not allowed, the request's namespace) or nothing: the
 differential fuzzer's findings and what was asked to explain them (when the parser lexes the
 next token, `KEY()`'s partition, `DATETIME`, `CONTAINS`, binding names) and the checks of the
-queries they read (ancestors, disjunctions, the queries of kinds). Each case is a request and its
+queries they read (ancestors, disjunctions, the queries of kinds, the projects of keys and what
+comes before them). Each case is a request and its
 answer, in the format of `datastore_entities.json` (without what `every_case` gives them all), on
 one line; the database is empty. `crates/hidane/tests/datastore.rs` replays it. Stdlib only.
 """
@@ -538,6 +539,39 @@ SENT = [
     (Q, "SELECT * FROM K", {'namedBindings': {'__a-__': {'value': {}}}}),
     (Q, "SELECT * FROM K", {'namedBindings': {'@a': {'value': {}}}}),
     (A, "SELECT COUNT(*) FROM K", {'namedBindings': {'': {'value': {}}}}),
+    # A key's project: an app ID, or an entity query refuses it (once it told of an unused
+    # positional binding, before it tells of its other keys in turn and of HAS PARENT) and an
+    # aggregation fails (unless HAS PARENT came first). An aggregation never tells of an unused
+    # positional binding.
+    (Q, "SELECT * FROM K WHERE A > KEY(PROJECT('Bad'), K, 'a')"),
+    (A, "AGGREGATE COUNT(*) OVER (SELECT * FROM K WHERE A > KEY(PROJECT('Bad'), K, 'a'))"),
+    (Q, "SELECT A FROM K WHERE B HAS ANCESTOR KEY(PROJECT('{PROJECT}'), K, 'D2')"),
+    (A, "AGGREGATE COUNT_UP_TO(2) OVER (SELECT DISTINCT ON (A) A, B FROM __NAMESPACE__ WHERE A > KEY(PROJECT('{PROJECT}'), K, 'D2'))"),
+    (Q, "SELECT * FROM K WHERE A > KEY(PROJECT('example.com:p'), K, 'a')"),
+    (Q, "SELECT * FROM K WHERE A > KEY(PROJECT('a.b'), K, 'a')"),
+    (Q, "SELECT * FROM K WHERE A > KEY(PROJECT('x:y:z'), K, 'a')"),
+    (Q, "SELECT * FROM K WHERE A > KEY(PROJECT('UPPER:p'), K, 'a')"),
+    (Q, "SELECT * FROM K WHERE A > KEY(PROJECT('s~p'), K, 'a')"),
+    (Q, "SELECT * FROM K WHERE A > KEY(PROJECT('-a'), K, 'a')"),
+    (Q, "SELECT * FROM K WHERE A > KEY(PROJECT('" + "a" * 101 + "'), K, 'a')"),
+    (Q, "SELECT * FROM K WHERE A IN ARRAY(KEY(PROJECT('Bad'), K, 'a'))"),
+    (Q, "SELECT * FROM K WHERE A > @k", {'namedBindings': {'k': {'value': {'keyValue': {'partitionId': {'projectId': 'Bad'}, 'path': [{'kind': 'K', 'name': 'a'}]}}}}}),
+    (A, "AGGREGATE COUNT(*) OVER (SELECT * FROM K WHERE A > @1)", {'positionalBindings': [{'value': {'keyValue': {'partitionId': {'projectId': 'Bad'}, 'path': [{'kind': 'K', 'name': 'a'}]}}}]}),
+    (Q, "SELECT * FROM K WHERE A > KEY(PROJECT('Bad'), K, 'a')", {'positionalBindings': [{'value': {'integerValue': '1'}}]}),
+    (A, "AGGREGATE COUNT(*) OVER (SELECT * FROM K WHERE A > KEY(PROJECT('Bad'), K, 'a'))", {'positionalBindings': [{'value': {'integerValue': '1'}}]}),
+    (Q, "SELECT * FROM K WHERE B HAS PARENT KEY(K, 'b') AND A > KEY(PROJECT('Bad'), K, 'a')"),
+    (A, "AGGREGATE COUNT(*) OVER (SELECT * FROM K WHERE B HAS PARENT KEY(K, 'b') AND A > KEY(PROJECT('Bad'), K, 'a'))"),
+    (A, "AGGREGATE COUNT(*) OVER (SELECT * FROM K WHERE A > KEY(PROJECT('Bad'), K, 'a') AND B HAS PARENT KEY(K, 'b'))"),
+    (Q, "SELECT * FROM K WHERE B HAS PARENT KEY(K, 'b') AND A > KEY(K, 0)"),
+    (Q, "SELECT * FROM K WHERE B HAS PARENT KEY(K, 'b') AND A > KEY(NAMESPACE('é'), K, 'a')"),
+    (Q, "SELECT * FROM K WHERE B HAS PARENT KEY(K, 'b')", {'positionalBindings': [{'value': {'integerValue': '1'}}]}),
+    (Q, "SELECT * FROM K WHERE B > KEY(NAMESPACE('é'), K, 'a') AND A > KEY(PROJECT('Bad'), K, 'a')"),
+    (A, "AGGREGATE COUNT(*) OVER (SELECT * FROM K WHERE B > KEY(NAMESPACE('é'), K, 'a') AND A > KEY(PROJECT('Bad'), K, 'a'))"),
+    (Q, "SELECT * FROM K WHERE A > KEY(PROJECT('Bad'), K, 0)"),
+    (Q, "SELECT * FROM K WHERE A > KEY(PROJECT('Bad'), K, 'a') AND B != 1 AND C != 2"),
+    (A, "AGGREGATE COUNT(*) OVER (SELECT * FROM K)", {'positionalBindings': [{'value': {'integerValue': '1'}}]}),
+    (A, "AGGREGATE COUNT(*) OVER (SELECT * FROM K WHERE A > KEY(K, 0))", {'positionalBindings': [{'value': {'integerValue': '1'}}]}),
+    (A, "AGGREGATE COUNT(*) OVER (SELECT * FROM __kind__)", {'positionalBindings': [{'value': {'integerValue': '1'}}]}),
 ]
 
 TOKEN = re.compile(r"""\s*(`(?:[^`\\]|\\.|``)*`|'(?:[^'\\]|\\.|'')*'|"(?:[^"\\]|\\.|"")*"|@\w+|[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?|\w+|!=|<=|>=|.)""")

@@ -118,6 +118,7 @@ rpc("allocate a named key", "allocateIds", {"keys": [key(("Task", "a"))]})
 rpc("allocate a reserved kind", "allocateIds", {"keys": [key(("__x__", None))]})
 rpc("allocate an empty kind", "allocateIds", {"keys": [key(("", None))]})
 rpc("allocate under an incomplete parent", "allocateIds", {"keys": [key(("Parent", None), ("Child", None))]})
+rpc("allocate a complete key under an incomplete parent", "allocateIds", {"keys": [key(("Parent", None), ("Child", "a"))]})
 rpc("allocate in a key of another project", "allocateIds", {"keys": [key(("Task", None), project="elsewhere")]})
 rpc("allocate an empty path", "allocateIds", {"keys": [{"path": []}]})
 rpc("reserve an id", "reserveIds", {"keys": [key(("Task", 5))]})
@@ -239,6 +240,12 @@ for label, value in [
     ("an incomplete key value", {"keyValue": key(("A", None))}),
     ("a key value of another project", {"keyValue": key(("A", "x"), project="elsewhere")}),
     ("a key value with a reserved kind", {"keyValue": key(("__x__", "x"))}),
+    ("a key value in a reserved namespace", {"keyValue": key(("A", "x"), ns="__x__")}),
+    ("a key value of an invalid project", {"keyValue": key(("A", "x"), project="Bad")}),
+    ("a key value of a project with a domain", {"keyValue": key(("A", "x"), project="example.com:p")}),
+    ("a key value of a partitioned project", {"keyValue": key(("A", "x"), project="s~p")}),
+    ("an entity value keyed in an invalid project", {"entityValue": {"key": key(("A", "x"), project="Bad"), "properties": {}}}),
+    ("an invalid project before an empty kind", {"keyValue": key(("", "x"), project="Bad")}),
     ("a meaning of 99", {"integerValue": "1", "meaning": 99}),
     ("an integer as text", {"integerValue": "x"}),
     ("an entity value with a reserved property", {"entityValue": {"properties": {"__x__": I(1)}}}),
@@ -256,6 +263,30 @@ lookup("read a property name with a dot", key(("Bad", "a property name with a do
 commit("501 mutations", *[upsert(key(("Many", f"m{i}"))) for i in range(501)])
 commit("500 mutations", *[upsert(key(("Many", f"m{i}"))) for i in range(500)])
 commit("an entity of over 1 MiB", upsert(key(("Big", "b")), v={"stringValue": "x" * (1024 * 1024 + 10), "excludeFromIndexes": True}))
+
+# --- an allocated ID already in use ----------------------------------------------------------
+# Each in a project of its own, whose first ID is 2^52 + 2^50: a commit that allocates an ID an
+# entity has fails, after the mutations before it, and the counter stays past that ID.
+FIRST, SECOND = 5629499534213120, 5066549580791808
+
+
+def in_project(name, suffix, verb, body):
+    rpc(name, verb, body, project=f"{P}-{suffix}")
+
+
+in_project("an allocated id written before in the commit", "ids1", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [insert(key(("Task", FIRST))), upsert(key(("Task", None))), insert(key(("Task", "after")))]})
+in_project("an allocated id: the mutations before it", "ids1", "lookup", {"keys": [key(("Task", FIRST)), key(("Task", "after"))]})
+in_project("an allocated id: the next allocation", "ids1", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [upsert(key(("Task", None)))]})
+in_project("an allocated id stored before: store it", "ids2", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [upsert(key(("Task", FIRST)))]})
+in_project("an allocated id stored before", "ids2", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [insert(key(("Task", None)))]})
+in_project("an allocated id of another kind", "ids3", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [insert(key(("Other", FIRST))), upsert(key(("Task", None)))]})
+in_project("an allocated id below a parent in a namespace", "ids4", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [insert(key(("Parent", 7), ("Task", FIRST), ns="n1")), upsert(key(("Parent", 7), ("Task", None), ns="n1"))]})
+in_project("an allocated id deleted before: store it", "ids5", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [upsert(key(("Task", FIRST)))]})
+in_project("an allocated id deleted before: delete it", "ids5", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [{"delete": key(("Task", FIRST))}]})
+in_project("an allocated id deleted before", "ids5", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [upsert(key(("Task", None)))]})
+in_project("allocateIds gives an id in use: store it", "ids6", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [upsert(key(("Task", FIRST)))]})
+in_project("allocateIds gives an id in use", "ids6", "allocateIds", {"keys": [key(("Task", None))]})
+in_project("the second allocated id in use", "ids7", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [insert(key(("Task", SECOND))), upsert(key(("Task", None))), upsert(key(("Task", None)))]})
 
 # --- lookup -----------------------------------------------------------------------------------
 lookup("found and missing", key(("Task", "twice")), key(("Task", "never")), key(("Task", "nope"), ns="ns1"))
@@ -289,13 +320,13 @@ def run_sequences(conn_call):
     out = []
     tx = {}
 
-    def step(name, verb, body, defines=None):
+    def step(name, verb, body, defines=None, suffix=""):
         labelled = json.dumps(body)
         text = labelled
         for label, value in tx.items():
             text = text.replace(f"<{label}>", value)
-        status, ctype, answer = conn_call("POST", f"/v1/projects/{PROJECT}:{verb}", text)
-        recorded = {"name": name, "method": "POST", "path": f"/v1/projects/{P}:{verb}",
+        status, ctype, answer = conn_call("POST", f"/v1/projects/{PROJECT}{suffix}:{verb}", text)
+        recorded = {"name": name, "method": "POST", "path": f"/v1/projects/{P}{suffix}:{verb}",
                     "headers": JSON, "body": json.loads(labelled), "compare": "exact"}
         if defines:
             recorded["defines"] = defines
@@ -303,9 +334,9 @@ def run_sequences(conn_call):
         out.append(recorded)
         return answer
 
-    def begin(label, name, options=None):
+    def begin(label, name, options=None, suffix=""):
         answer = step(name, "beginTransaction", {"transactionOptions": options} if options else {},
-                      defines=label)
+                      defines=label, suffix=suffix)
         tx[label] = json.loads(answer)["transaction"]
 
     begin("t1", "sequence: begin")
@@ -334,6 +365,15 @@ def run_sequences(conn_call):
     begin("t5", "sequence: begin a lookup with a read time")
     step("sequence: a read time in a transaction", "lookup", {"keys": [key(("Task", "twice"))], "readOptions": {"transaction": "<t5>", "readTime": "2020-01-01T00:00:00Z"}})
     step("sequence: an incomplete key in a transaction", "commit", {"mode": "TRANSACTIONAL", "transaction": "<t5>", "mutations": [insert(key(("Task", None)))]})
+    # An allocated ID the transaction wrote before is an internal error, and nothing is written;
+    # one stored before, the error a non-transactional commit gets.
+    begin("t7", "sequence: begin in a project of its own", suffix="-ids8")
+    step("sequence: an allocated id the transaction wrote", "commit", {"mode": "TRANSACTIONAL", "transaction": "<t7>", "mutations": [insert(key(("Task", FIRST))), upsert(key(("Task", None)))]}, suffix="-ids8")
+    step("sequence: nothing written", "lookup", {"keys": [key(("Task", FIRST))]}, suffix="-ids8")
+    step("sequence: the next allocation", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [upsert(key(("Task", None)))]}, suffix="-ids8")
+    step("sequence: store an id before a transaction", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [upsert(key(("Task", FIRST)))]}, suffix="-ids9")
+    begin("t8", "sequence: begin after it", suffix="-ids9")
+    step("sequence: an allocated id stored before the transaction", "commit", {"mode": "TRANSACTIONAL", "transaction": "<t8>", "mutations": [upsert(key(("Task", None)))]}, suffix="-ids9")
     return out
 
 

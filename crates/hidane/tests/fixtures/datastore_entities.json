@@ -441,6 +441,35 @@
    }
   },
   {
+   "name": "allocate a complete key under an incomplete parent",
+   "method": "POST",
+   "path": "/v1/projects/{project}:allocateIds",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "keys": [
+     {
+      "path": [
+       {
+        "kind": "Parent"
+       },
+       {
+        "kind": "Child",
+        "name": "a"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"Key path element must not be complete: [Parent: , Child: a]\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
    "name": "allocate in a key of another project",
    "method": "POST",
    "path": "/v1/projects/{project}:allocateIds",
@@ -5329,6 +5358,285 @@
     "status": 200,
     "contentType": "application/json",
     "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "write a key value in a reserved namespace",
+   "method": "POST",
+   "path": "/v1/projects/{project}:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Bad",
+          "name": "a key value in a reserved namespace"
+         }
+        ]
+       },
+       "properties": {
+        "v": {
+         "keyValue": {
+          "path": [
+           {
+            "kind": "A",
+            "name": "x"
+           }
+          ],
+          "partitionId": {
+           "namespaceId": "__x__"
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "write a key value of an invalid project",
+   "method": "POST",
+   "path": "/v1/projects/{project}:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Bad",
+          "name": "a key value of an invalid project"
+         }
+        ]
+       },
+       "properties": {
+        "v": {
+         "keyValue": {
+          "path": [
+           {
+            "kind": "A",
+            "name": "x"
+           }
+          ],
+          "partitionId": {
+           "projectId": "Bad"
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"\\\"Bad\\\" is an invalid project id.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "write a key value of a project with a domain",
+   "method": "POST",
+   "path": "/v1/projects/{project}:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Bad",
+          "name": "a key value of a project with a domain"
+         }
+        ]
+       },
+       "properties": {
+        "v": {
+         "keyValue": {
+          "path": [
+           {
+            "kind": "A",
+            "name": "x"
+           }
+          ],
+          "partitionId": {
+           "projectId": "example.com:p"
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "write a key value of a partitioned project",
+   "method": "POST",
+   "path": "/v1/projects/{project}:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Bad",
+          "name": "a key value of a partitioned project"
+         }
+        ]
+       },
+       "properties": {
+        "v": {
+         "keyValue": {
+          "path": [
+           {
+            "kind": "A",
+            "name": "x"
+           }
+          ],
+          "partitionId": {
+           "projectId": "s~p"
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"\\\"s~p\\\" is an invalid project id.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "write an entity value keyed in an invalid project",
+   "method": "POST",
+   "path": "/v1/projects/{project}:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Bad",
+          "name": "an entity value keyed in an invalid project"
+         }
+        ]
+       },
+       "properties": {
+        "v": {
+         "entityValue": {
+          "key": {
+           "path": [
+            {
+             "kind": "A",
+             "name": "x"
+            }
+           ],
+           "partitionId": {
+            "projectId": "Bad"
+           }
+          },
+          "properties": {}
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"\\\"Bad\\\" is an invalid project id.\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "write an invalid project before an empty kind",
+   "method": "POST",
+   "path": "/v1/projects/{project}:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Bad",
+          "name": "an invalid project before an empty kind"
+         }
+        ]
+       },
+       "properties": {
+        "v": {
+         "keyValue": {
+          "path": [
+           {
+            "kind": "",
+            "name": "x"
+           }
+          ],
+          "partitionId": {
+           "projectId": "Bad"
+          }
+         }
+        }
+       }
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"\\\"Bad\\\" is an invalid project id.\",\"status\":\"INVALID_ARGUMENT\"}}"
    }
   },
   {
@@ -18741,6 +19049,498 @@
    }
   },
   {
+   "name": "an allocated id written before in the commit",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids1:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "insert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task",
+          "id": "5629499534213120"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     },
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     },
+     {
+      "insert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task",
+          "name": "after"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the id allocated for a new entity was already in use, please try again: app: \\\"{project}-ids1\\\"\\npath <\\n  Element {\\n    type: \\\"Task\\\"\\n    id: 0x14000000000000\\n  }\\n>\\n\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an allocated id: the mutations before it",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids1:lookup",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "keys": [
+     {
+      "path": [
+       {
+        "kind": "Task",
+        "id": "5629499534213120"
+       }
+      ]
+     },
+     {
+      "path": [
+       {
+        "kind": "Task",
+        "name": "after"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"found\": [{\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}-ids1\"\n        },\n        \"path\": [{\n          \"kind\": \"Task\",\n          \"id\": \"5629499534213120\"\n        }]\n      }\n    },\n    \"cursor\": \"<cursor>\",\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"missing\": [{\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}-ids1\"\n        },\n        \"path\": [{\n          \"kind\": \"Task\",\n          \"name\": \"after\"\n        }]\n      }\n    }\n  }],\n  \"readTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an allocated id: the next allocation",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids1:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"mutationResults\": [{\n    \"key\": {\n      \"partitionId\": {\n        \"projectId\": \"{project}-ids1\"\n      },\n      \"path\": [{\n        \"kind\": \"Task\",\n        \"id\": \"5066549580791808\"\n      }]\n    },\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an allocated id stored before: store it",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids2:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task",
+          "id": "5629499534213120"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an allocated id stored before",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids2:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "insert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the id allocated for a new entity was already in use, please try again: app: \\\"{project}-ids2\\\"\\npath <\\n  Element {\\n    type: \\\"Task\\\"\\n    id: 0x14000000000000\\n  }\\n>\\n\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an allocated id of another kind",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids3:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "insert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Other",
+          "id": "5629499534213120"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     },
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }, {\n    \"key\": {\n      \"partitionId\": {\n        \"projectId\": \"{project}-ids3\"\n      },\n      \"path\": [{\n        \"kind\": \"Task\",\n        \"id\": \"5629499534213120\"\n      }]\n    },\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an allocated id below a parent in a namespace",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids4:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "insert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Parent",
+          "id": "7"
+         },
+         {
+          "kind": "Task",
+          "id": "5629499534213120"
+         }
+        ],
+        "partitionId": {
+         "namespaceId": "n1"
+        }
+       },
+       "properties": {}
+      }
+     },
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Parent",
+          "id": "7"
+         },
+         {
+          "kind": "Task"
+         }
+        ],
+        "partitionId": {
+         "namespaceId": "n1"
+        }
+       },
+       "properties": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the id allocated for a new entity was already in use, please try again: app: \\\"{project}-ids4\\\"\\nname_space: \\\"n1\\\"\\npath <\\n  Element {\\n    type: \\\"Parent\\\"\\n    id: 7\\n  }\\n  Element {\\n    type: \\\"Task\\\"\\n    id: 0x14000000000000\\n  }\\n>\\n\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "an allocated id deleted before: store it",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids5:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task",
+          "id": "5629499534213120"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an allocated id deleted before: delete it",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids5:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "delete": {
+       "path": [
+        {
+         "kind": "Task",
+         "id": "5629499534213120"
+        }
+       ]
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "an allocated id deleted before",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids5:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"mutationResults\": [{\n    \"key\": {\n      \"partitionId\": {\n        \"projectId\": \"{project}-ids5\"\n      },\n      \"path\": [{\n        \"kind\": \"Task\",\n        \"id\": \"5629499534213120\"\n      }]\n    },\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "allocateIds gives an id in use: store it",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids6:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task",
+          "id": "5629499534213120"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "allocateIds gives an id in use",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids6:allocateIds",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "keys": [
+     {
+      "path": [
+       {
+        "kind": "Task"
+       }
+      ]
+     }
+    ]
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"keys\": [{\n    \"partitionId\": {\n      \"projectId\": \"{project}-ids6\"\n    },\n    \"path\": [{\n      \"kind\": \"Task\",\n      \"id\": \"5629499534213120\"\n    }]\n  }]\n}\n"
+   }
+  },
+  {
+   "name": "the second allocated id in use",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids7:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "compare": "exact",
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "insert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task",
+          "id": "5066549580791808"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     },
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     },
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     }
+    ]
+   },
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the id allocated for a new entity was already in use, please try again: app: \\\"{project}-ids7\\\"\\npath <\\n  Element {\\n    type: \\\"Task\\\"\\n    id: 0x12000000000000\\n  }\\n>\\n\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
    "name": "found and missing",
    "method": "POST",
    "path": "/v1/projects/{project}:lookup",
@@ -19847,6 +20647,204 @@
     "status": 200,
     "contentType": "application/json",
     "body": "{\n  \"mutationResults\": [{\n    \"key\": {\n      \"partitionId\": {\n        \"projectId\": \"{project}\"\n      },\n      \"path\": [{\n        \"kind\": \"Task\",\n        \"id\": \"4925812092436480\"\n      }]\n    },\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitVersion\": \"<version>\",\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "sequence: begin in a project of its own",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids8:beginTransaction",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {},
+   "compare": "exact",
+   "defines": "t7",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+   }
+  },
+  {
+   "name": "sequence: an allocated id the transaction wrote",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids8:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "mode": "TRANSACTIONAL",
+    "transaction": "<t7>",
+    "mutations": [
+     {
+      "insert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task",
+          "id": "5629499534213120"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     },
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     }
+    ]
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "sequence: nothing written",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids8:lookup",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "keys": [
+     {
+      "path": [
+       {
+        "kind": "Task",
+        "id": "5629499534213120"
+       }
+      ]
+     }
+    ]
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"missing\": [{\n    \"entity\": {\n      \"key\": {\n        \"partitionId\": {\n          \"projectId\": \"{project}-ids8\"\n        },\n        \"path\": [{\n          \"kind\": \"Task\",\n          \"id\": \"5629499534213120\"\n        }]\n      }\n    }\n  }],\n  \"readTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "sequence: the next allocation",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids8:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     }
+    ]
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"mutationResults\": [{\n    \"key\": {\n      \"partitionId\": {\n        \"projectId\": \"{project}-ids8\"\n      },\n      \"path\": [{\n        \"kind\": \"Task\",\n        \"id\": \"5066549580791808\"\n      }]\n    },\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "sequence: store an id before a transaction",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids9:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "mode": "NON_TRANSACTIONAL",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task",
+          "id": "5629499534213120"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     }
+    ]
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"mutationResults\": [{\n    \"version\": \"<version>\",\n    \"updateTime\": \"<time>\",\n    \"createTime\": \"<time>\"\n  }],\n  \"commitTime\": \"<time>\"\n}\n"
+   }
+  },
+  {
+   "name": "sequence: begin after it",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids9:beginTransaction",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {},
+   "compare": "exact",
+   "defines": "t8",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"transaction\": \"<id>\"\n}\n"
+   }
+  },
+  {
+   "name": "sequence: an allocated id stored before the transaction",
+   "method": "POST",
+   "path": "/v1/projects/{project}-ids9:commit",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "mode": "TRANSACTIONAL",
+    "transaction": "<t8>",
+    "mutations": [
+     {
+      "upsert": {
+       "key": {
+        "path": [
+         {
+          "kind": "Task"
+         }
+        ]
+       },
+       "properties": {}
+      }
+     }
+    ]
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"the id allocated for a new entity was already in use, please try again: app: \\\"{project}-ids9\\\"\\npath <\\n  Element {\\n    type: \\\"Task\\\"\\n    id: 0x14000000000000\\n  }\\n>\\n\",\"status\":\"INVALID_ARGUMENT\"}}"
    }
   }
  ]
