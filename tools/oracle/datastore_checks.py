@@ -26,14 +26,17 @@ namespace) and read options (a consistency, a transaction that is not empty) com
 query. A query's filters are walked three times: first each filter's own parts (an operator, a
 name and its length, a value, indexed, no list or vector but in `IN` and `NOT_IN`, the value
 checked as a write checks it but for a projection's meaning and the types a write refuses, no
-entity but a user, a regular expression or a timestamp of a request); later the operands of `IN`, `NOT_IN` and `HAS_ANCESTOR`; last, once the query's index is
+entity but a user, a regular expression or a timestamp of a request, but in `IN` and `NOT_IN`,
+which want an array first); later the operands of `IN`, `NOT_IN` and `HAS_ANCESTOR`; last, once the query's index is
 found, the filter in disjunctive normal form (without its ancestor, an `IN` an equality per
 value), conjunction by conjunction: keys of `__key__` filters, a property filter without a kind,
 an equality on a projected property, then on one the query is distinct on. Between them come,
 in order: one ancestor, the same for every disjunction (each filter of a conjunction holds to
 it, each of a disjunction alike, or none); the kind's name; empty names; limit, offset; one
-`NOT_EQUAL` or `NOT_IN`, and no `NOT_IN` with `IN` or `OR`; one kind; a disjunction of ancestors
-alone (an internal error); cursors; a read time past the epoch; at most 30 disjunctions; orders; then, after the index, the
+`NOT_EQUAL` or `NOT_IN`, and no `NOT_IN` with `IN` or `OR`; the read time of a read-only
+transaction the read options begin (to the microsecond, then past the epoch); one kind; a
+disjunction of ancestors alone (an internal error); cursors; a read time (to the microsecond,
+then past the epoch); at most 30 disjunctions; orders; then, after the index, the
 ancestor's namespace, orders without a kind (the explicit ones, then the distinct, inequality
 and projected properties), distinct on the key, a reserved name projected (`__`, at least one
 character, `__`), a property projected twice (the key may be), distinct on a reserved name, the
@@ -41,7 +44,8 @@ walk above, distinct properties ordered first, the cursors' kind, and the querie
 namespaces (refused only a first order descending). (With `--require_indexes`,
 `datastore_indexes.json`, looking up the index of a query without a kind refuses its orders and
 property filters already.) An aggregation's query goes through other checks, worded otherwise
-(`Missing filter operator.`, `limit is negative`): its aggregations' operators first, an operand
+(`Missing filter operator.`, `limit is negative`): the read time of a read-only transaction the
+read options begin first, its aggregations' operators next, an operand
 read in two steps (first indexed, each value there, a meaning its type takes, a key's path
 there; once the index is found, its property's name and value lengths, a vector, a key's parts,
 the ancestor's key before its namespace), the whole read time with the cursors, a second
@@ -216,6 +220,12 @@ OPERANDS = {
     "an unspecified read consistency": {"readOptions": {"readConsistency": "READ_CONSISTENCY_UNSPECIFIED"}},
     "an empty transaction": {"readOptions": {"transaction": ""}},
     "a read time at the epoch": {"readOptions": {"readTime": "1970-01-01T00:00:00Z"}},
+    "a read time finer than a microsecond": {"readOptions": {"readTime": "2020-01-01T00:00:00.000000001Z"}},
+    "a new read-only transaction at the epoch": {"readOptions": {"newTransaction": {"readOnly": {"readTime": "1970-01-01T00:00:00Z"}}}},
+    "a new read-only transaction finer than a microsecond": {
+        "readOptions": {"newTransaction": {"readOnly": {"readTime": "2020-01-01T00:00:00.000000001Z"}}}},
+    "IN on an entity value": {"filter": pf("a", "IN", {"entityValue": {}})},
+    "NOT_IN on an entity value": {"filter": pf("a", "NOT_IN", {"entityValue": {}})},
 }
 # Filters on values of their own, each alone: each meaning on each type, and the values the
 # differential fuzzer and what explained it found (vectors, decimals, users, keys, elements of IN).

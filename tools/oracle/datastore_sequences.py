@@ -10,8 +10,9 @@ Each sequence of `SEQUENCES` runs in a project of its own, its requests in turn 
 the kinds and namespaces `__kind__` and `__namespace__` list after keys are read and written,
 there or not (`TOUCHED`); a lookup's property mask (`LOOKUP_MASKS`) and a write's
 (`COMMIT_MASKS`), nested paths included; reads in a read-only transaction and at a read time
-(`snapshots`); the versions and times commits and queries answer (`versions`); and a write
-whose client gives up waiting for a lock (`given_up`).
+(`snapshots`); the versions and times commits and queries answer (`versions`); what moves the
+ID counter, and in what order `allocateIds` and `reserveIds` check a key; the database IDs a
+request may name; and a write whose client gives up waiting for a lock.
 
 What the recording shows. Every key a lookup or a commit names is listed, even one that is not
 there or a mutation that fails; queries, `allocateIds` and `reserveIds` list nothing. A mask
@@ -25,7 +26,11 @@ and its commit time is the last one's; a transaction's mutations share one. The 
 key that is not there answers the version it was deleted at, or, if it never was there, the
 time it was read missing (before the commit's). A query's snapshot version is its first
 result's version or, with no results, its read time in seconds. A write that waits for a lock
-goes on once its client gives up, and is applied when the lock is released.
+goes on once its client gives up, and is applied when the lock is released. `reserveIds` moves
+the database's ID counter past each ID it would allocate (2^52 plus 51 bits reversed), anywhere
+in a key's path; IDs written do not. `allocateIds` and `reserveIds` check each key's path
+before its project and database. A database ID is, like a namespace, up to 100 letters, digits,
+`.`, `-` and `_` (`(default)` is not one), checked once the app ID is not empty.
 
 Times and versions are labelled `<t1>`, `<t2>`, ... in the order they first appear in the
 sequence's answers (the same time or version, the same label), a version in seconds
@@ -243,6 +248,59 @@ def versions():
 
 SEQUENCES.append(("the versions and times of commits and queries", versions()))
 
+# --- IDs: what moves the counter, how keys are checked ---------------------------------------
+def scattered(counter):
+    """The ID the official emulator allocates `counter`-th: 2^52 plus its 51 low bits reversed."""
+    return (1 << 52) + int(format(counter & ((1 << 51) - 1), "051b")[::-1], 2)
+
+
+def allocate(n):
+    return step("allocateIds", {"keys": [{"path": [{"kind": "A"}]}] * n})
+
+
+def reserve(*paths, **partition):
+    keys = [dict({"path": path}, **({"partitionId": partition} if partition else {})) for path in paths]
+    return step("reserveIds", {"keys": keys})
+
+
+ids = lambda *ids: [{"kind": "R", "id": str(i)} for i in ids]  # noqa: E731
+for name, steps in [
+    ("an allocated ID reserved", [reserve(ids(scattered(3))), allocate(4)]),
+    ("an ID far ahead reserved", [reserve(ids(scattered(100))), allocate(2)]),
+    ("two allocated IDs reserved", [reserve(ids(scattered(2)), ids(scattered(4))), allocate(4)]),
+    ("an ID the counter does not give reserved", [reserve(ids(5)), reserve(ids((1 << 52) + (1 << 51))), allocate(2)]),
+    ("the ID of a parent reserved", [reserve([{"kind": "P", "id": str(scattered(7))}, {"kind": "R", "name": "r"}]),
+                                     allocate(2)]),
+    ("an ID reserved in a namespace", [reserve(ids(scattered(10)), namespaceId="n"), allocate(2)]),
+    ("an ID reserved in another database", [step("reserveIds", {"databaseId": "db2", "keys": [
+        {"path": ids(scattered(10)), "partitionId": {"databaseId": "db2"}}]}), allocate(2)]),
+    ("an ID written, not reserved", [nontx({"upsert": {"key": {"path": ids(scattered(10))}}}), allocate(2)]),
+    ("allocated, reserved ahead, allocated", [allocate(2), reserve(ids(scattered(3))), allocate(2)]),
+]:
+    SEQUENCES.append((f"IDs: {name}", steps))
+KEY_PROBLEMS = {"a complete key": [{"kind": "K", "name": "a"}], "an incomplete parent": [{"kind": "P"}, {"kind": "K"}],
+                "an empty kind": [{"kind": ""}], "a reserved kind": [{"kind": "__k__"}], "an empty path": [],
+                "a parent ID of 0": [{"kind": "P", "id": "0"}, {"kind": "K"}]}
+for name, path in KEY_PROBLEMS.items():
+    for partition in ({"databaseId": "other"}, {"projectId": "other"}):
+        which = "database" if "databaseId" in partition else "project"
+        SEQUENCES.append((f"IDs: allocateIds, {name}, of another {which}",
+                          [step("allocateIds", {"keys": [{"path": path, "partitionId": partition}]})]))
+        complete = [dict(e, **({"name": "a"} if i == len(path) - 1 and "id" not in e and "name" not in e else {}))
+                    for i, e in enumerate(path)] if name != "a complete key" else [{"kind": "K"}]
+        SEQUENCES.append((f"IDs: reserveIds, {name if name != 'a complete key' else 'an incomplete key'}, of another {which}",
+                          [step("reserveIds", {"keys": [{"path": complete, "partitionId": partition}]})]))
+SEQUENCES.append(("IDs: the first key's database before the second key's path", [
+    step("allocateIds", {"keys": [{"path": [{"kind": "K"}], "partitionId": {"databaseId": "other"}}, {"path": [{"kind": ""}]}]})]))
+
+# --- database IDs ------------------------------------------------------------------------------
+for database in ("(default)", "a" * 100, "a" * 101, "ab.c-_", "ab c", "é", "Other"):
+    for verb, body in [("lookup", {"keys": []}), ("runQuery", {"query": {}}), ("beginTransaction", {}),
+                       ("commit", {"mode": "NON_TRANSACTIONAL", "mutations": []}), ("allocateIds", {"keys": []}),
+                       ("reserveIds", {"keys": []})]:
+        SEQUENCES.append((f"database ID {database[:12]!r}{'…' if len(database) > 12 else ''}: {verb}",
+                          [step(verb, dict(body, databaseId=database))]))
+
 # --- a write whose client gives up waiting for a lock ----------------------------------------
 SEQUENCES.append(("a write goes on once its client gives up waiting", [
     begin("reader"), lookup(key("K", "a"), readOptions={"transaction": "{tx:reader}"}),
@@ -332,7 +390,7 @@ def main():
             answer = json.loads(text) if text else {}
             answers.append(answer)
             if s["verb"] == "beginTransaction" and "transaction" in answer:
-                transactions[s["as"]] = transactions["last"] = answer["transaction"]
+                transactions[s.get("as", "tx")] = transactions["last"] = answer["transaction"]
             recorded_step = {k: v for k, v in s.items() if k not in ("verb", "body")}
             recorded_step.update({"path": f"/v1/projects/{{project}}:{s['verb']}", "body": s["body"]})
             recorded_step["outcome"] = ({"status": None} if status is None else

@@ -780,8 +780,9 @@ RECORDINGS = {
         area="datastore",
         tests=[f"{H}/datastore.rs::sequences_answer_like_the_official_emulator"],
         counted="each request of each sequence (the kinds and namespaces listed after reads and "
-                "writes, property masks, read-only transactions and read times, versions, a write "
-                "whose client gives up), in a project of its own, to a server started with "
+                "writes, property masks, read-only transactions and read times, versions, IDs, "
+                "database IDs, a write whose client gives up), in a project of its own, to a "
+                "server started with "
                 "`--database-mode datastore-mode`; " + OVER_REST,
         compares="in full: status, content type and body byte for byte, server times and versions "
                  "labelled in the order they first appear (which ones are the same), transaction IDs "

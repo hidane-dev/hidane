@@ -375,9 +375,10 @@ fn projection(query: &Query) -> Result<(), Status> {
     Ok(())
 }
 
-/// A filter by equality on a projected property.
+/// A filter by equality on a projected property, but the key.
 fn projected_equality(query: &Query, filter: &PropertyFilter) -> Result<(), Status> {
     if matches!(operator(filter), Some(Operator::Equal | Operator::In))
+        && name(filter) != "__key__"
         && query
             .projection
             .iter()
@@ -435,6 +436,7 @@ pub fn entity_query(
     namespace: &str,
     database: &Database,
     read_time: Result<(), Status>,
+    new_read_time: Result<(), Status>,
 ) -> Checked {
     let all = filters(query.filter.as_ref());
     for (filter, _) in &all {
@@ -470,6 +472,7 @@ pub fn entity_query(
             "'NOT_IN' cannot be used in the same query with 'IN' or 'OR'.",
         ));
     }
+    new_read_time?;
     if query.kind.len() > 1 {
         return Err(invalid("multiple kinds not supported"));
     }
@@ -598,9 +601,10 @@ fn entity_shape(filter: &Filter) -> Result<(), Status> {
             }
             check_filter_operand(name, operand)?;
             // An entity value that stands for a user, a regular expression or a timestamp of a
-            // request is not one.
+            // request is not one; an `IN` or a `NOT_IN` is refused for want of an array first.
             if matches!(value, ValueType::EntityValue(_))
                 && !matches!(operand.meaning, 20 | 35 | 37)
+                && !listed
             {
                 return Err(invalid("An entity value is not allowed"));
             }
@@ -810,13 +814,16 @@ fn aggregated(operator: Option<&Aggregation>) -> Option<&str> {
 }
 
 /// The checks of `RunAggregationQuery`: its aggregations and the query they run over, in
-/// `namespace`.
+/// `namespace`. Of the refusals that come once the index is found, the aggregations' own come
+/// before a read-write transaction's lock (`Ok((Some(_), None))`), the query's after it.
 pub fn aggregation_query(
     aggregation: &AggregationQuery,
     query: &Query,
     namespace: &str,
     read_time: Result<(), Status>,
-) -> Checked {
+    new_read_time: Result<(), Status>,
+) -> Result<(Option<Status>, Option<Status>), Status> {
+    new_read_time?;
     for a in &aggregation.aggregations {
         match &a.operator {
             None => return Err(invalid("Operator field in Aggregation is not set.")),
@@ -845,7 +852,13 @@ pub fn aggregation_query(
     read_time?;
     disjunctions(query)?;
     duplicate_order(query)?;
-    Ok(aggregation_late(aggregation, query, namespace, &all).err())
+    if let Err(refused) = aggregations_late(aggregation, query) {
+        return Ok((Some(refused), None));
+    }
+    Ok((
+        None,
+        aggregation_late(aggregation, query, namespace, &all).err(),
+    ))
 }
 
 /// A filter of an aggregation's query, as its first checks see it.
@@ -892,13 +905,8 @@ fn nested_shape<'a>(filter: &'a Filter, ancestors: &mut Vec<&'a Value>) -> Resul
     }
 }
 
-/// The checks of an aggregation query once its index is found.
-fn aggregation_late(
-    aggregation: &AggregationQuery,
-    query: &Query,
-    namespace: &str,
-    all: &[(&Filter, bool)],
-) -> Result<(), Status> {
+/// The checks of an aggregation query's aggregations once its index is found.
+fn aggregations_late(aggregation: &AggregationQuery, query: &Query) -> Result<(), Status> {
     let list = &aggregation.aggregations;
     if list.is_empty() {
         return Err(invalid("Aggregations can not be empty."));
@@ -969,6 +977,17 @@ fn aggregation_late(
         }
         aliases.push(alias);
     }
+    Ok(())
+}
+
+/// The checks of an aggregation query's query once its index is found.
+fn aggregation_late(
+    aggregation: &AggregationQuery,
+    query: &Query,
+    namespace: &str,
+    all: &[(&Filter, bool)],
+) -> Result<(), Status> {
+    let list = &aggregation.aggregations;
     if query.offset < 0 {
         return Err(invalid("offset is negative"));
     }
