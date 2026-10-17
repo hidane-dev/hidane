@@ -41,7 +41,8 @@ const TINY: &str = r#"{
     "owner_writes": {"warmup": 0, "runs": 2, "commit_warmup": 1, "commits": 3, "batch": 50,
                      "documents": 200},
     "listen_limit_writes": {"warmup": 0, "runs": 2, "documents": 2000, "batch": 500, "limit": 50},
-    "command": {"warmup": 0, "runs": 2}
+    "command": {"warmup": 0, "runs": 2},
+    "large_dataset": {"warmup": 0, "runs": 2, "documents": 1000, "batch": 500}
   }
 }"#;
 
@@ -159,6 +160,10 @@ fn a_hidane_run_matches_the_schema_and_renders_from_its_json() {
     assert_eq!(result["benchmark"]["kind"], "pull-request");
     assert_eq!(result["benchmark"]["canonical"], false);
     assert_eq!(result["benchmark"]["skipped"][0]["scenario"], "ci_firebase");
+    assert_eq!(
+        result["benchmark"]["skipped"][1]["scenario"],
+        "firebase_startup"
+    );
     assert_eq!(result["environment_revision"], 7);
     assert_eq!(result["machine"]["id"], "ci-test");
     assert_eq!(result["machine"]["instance_type"], "c7i.xlarge");
@@ -192,6 +197,10 @@ fn a_hidane_run_matches_the_schema_and_renders_from_its_json() {
     }
     assert_eq!(n("owner_writes", "batch_write"), Some(6));
     assert_eq!(n("owner_writes", "seed_200"), Some(2));
+    assert_eq!(n("large_dataset", "seed_1000"), Some(2));
+    assert_eq!(n("large_dataset", "rss_after_seed_1000"), Some(2));
+    // Without the official emulator, no JVM heap limit.
+    assert!(result["environment"]["java_max_heap_bytes"].is_null());
     let time_to_port = r["startup"]["hidane"]["time_to_port"]["stats"]["median"]
         .as_f64()
         .unwrap();
