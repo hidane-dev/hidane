@@ -436,7 +436,7 @@ pub fn entity_query(
     namespace: &str,
     database: &Database,
     read_time: Result<(), Status>,
-    new_read_time: Result<(), Status>,
+    read_options: Result<(), Status>,
 ) -> Checked {
     let all = filters(query.filter.as_ref());
     for (filter, _) in &all {
@@ -472,7 +472,7 @@ pub fn entity_query(
             "'NOT_IN' cannot be used in the same query with 'IN' or 'OR'.",
         ));
     }
-    new_read_time?;
+    read_options?;
     if query.kind.len() > 1 {
         return Err(invalid("multiple kinds not supported"));
     }
@@ -658,6 +658,43 @@ fn operand_shape(filter: &PropertyFilter) -> Result<(), Status> {
     }
 }
 
+/// A key's refusal when it is not in the request's project and database (a key names its own
+/// project or database, or takes the request's).
+fn key_database(key: &Key, database: &Database) -> Result<(), Status> {
+    let path = |project: &str, id: &str| {
+        let id = if id.is_empty() { "(default)" } else { id };
+        format!("projects/{project}/databases/{id}")
+    };
+    let partition = key.partition_id.clone().unwrap_or_default();
+    let project = if partition.project_id.is_empty() {
+        database.project.as_str()
+    } else {
+        partition.project_id.as_str()
+    };
+    if project != database.project || partition.database_id != database.database {
+        return Err(invalid(format!(
+            "The request was for database '{}' but was attempting to access database '{}'",
+            path(&database.project, &database.database),
+            path(project, &partition.database_id)
+        )));
+    }
+    Ok(())
+}
+
+/// The keys of `HAS_ANCESTOR` filters, in the request's project and database: checked before
+/// their namespaces (`__key__` filters' keys are checked with their namespaces, filter by
+/// filter, [`key_operands`]).
+fn ancestor_databases(all: &[(&Filter, bool)], database: &Database) -> Result<(), Status> {
+    for (filter, _) in properties(all) {
+        if operator(filter) == Some(Operator::HasAncestor)
+            && let Some(ValueType::KeyValue(key)) = value(filter)
+        {
+            key_database(key, database)?;
+        }
+    }
+    Ok(())
+}
+
 fn ancestor_namespace(all: &[(&Filter, bool)], namespace: &str) -> Result<(), Status> {
     for (filter, _) in properties(all) {
         if operator(filter) == Some(Operator::HasAncestor)
@@ -673,12 +710,17 @@ fn ancestor_namespace(all: &[(&Filter, bool)], namespace: &str) -> Result<(), St
     Ok(())
 }
 
-/// A `__key__` filter's operands: keys, in the query's namespace.
-fn key_operands(filter: &PropertyFilter, namespace: &str) -> Result<(), Status> {
+/// A `__key__` filter's operands: keys, in the request's database and the query's namespace.
+fn key_operands(
+    filter: &PropertyFilter,
+    namespace: &str,
+    database: &Database,
+) -> Result<(), Status> {
     for operand in operands(filter) {
         let ValueType::KeyValue(key) = operand else {
             return Err(invalid("__key__ filter value must be a Key"));
         };
+        key_database(key, database)?;
         if key_namespace(key) != namespace {
             return Err(invalid(format!(
                 "The query namespace is '{namespace}' but __key__ filter namespace is '{}'.",
@@ -718,6 +760,7 @@ fn entity_late(
     database: &Database,
     all: &[(&Filter, bool)],
 ) -> Result<(), Status> {
+    ancestor_databases(all, database)?;
     ancestor_namespace(all, namespace)?;
     if query.kind.is_empty() && ordered_beyond_key(query, all) {
         return Err(invalid(KINDLESS_ORDER));
@@ -728,12 +771,19 @@ fn entity_late(
             continue;
         }
         if name(filter) == "__key__" {
-            key_operands(filter, namespace)?;
+            key_operands(filter, namespace, database)?;
         }
         projected_equality(query, filter)?;
         grouped_equality(query, filter)?;
-        // An `IN` filter's element that is an array without values: an internal error.
-        if filter.value.as_ref().is_some_and(empty) {
+        // An `IN` filter's element that is an array without values, or one of a `NOT_IN`'s:
+        // an internal error.
+        let unreadable = match value(filter) {
+            Some(ValueType::ArrayValue(array)) if operator(filter) == Some(Operator::NotIn) => {
+                array.values.iter().any(empty)
+            }
+            _ => filter.value.as_ref().is_some_and(empty),
+        };
+        if unreadable {
             return Err(Status::unknown(""));
         }
         if name(filter) != "__key__" && query.kind.is_empty() {
@@ -820,10 +870,11 @@ pub fn aggregation_query(
     aggregation: &AggregationQuery,
     query: &Query,
     namespace: &str,
+    database: &Database,
     read_time: Result<(), Status>,
-    new_read_time: Result<(), Status>,
+    read_options: Result<(), Status>,
 ) -> Result<(Option<Status>, Option<Status>), Status> {
-    new_read_time?;
+    read_options?;
     for a in &aggregation.aggregations {
         match &a.operator {
             None => return Err(invalid("Operator field in Aggregation is not set.")),
@@ -857,7 +908,7 @@ pub fn aggregation_query(
     }
     Ok((
         None,
-        aggregation_late(aggregation, query, namespace, &all).err(),
+        aggregation_late(aggregation, query, namespace, database, &all).err(),
     ))
 }
 
@@ -985,6 +1036,7 @@ fn aggregation_late(
     aggregation: &AggregationQuery,
     query: &Query,
     namespace: &str,
+    database: &Database,
     all: &[(&Filter, bool)],
 ) -> Result<(), Status> {
     let list = &aggregation.aggregations;
@@ -1002,6 +1054,7 @@ fn aggregation_late(
             check_aggregation_operand_late(name(filter), operand)?;
         }
     }
+    ancestor_databases(all, database)?;
     ancestor_namespace(all, namespace)?;
     if query.kind.iter().any(|k| k.name.is_empty()) {
         return Err(invalid("The query kind is the empty string."));
@@ -1036,7 +1089,7 @@ fn aggregation_late(
             )));
         }
         if name(filter) == "__key__" {
-            key_operands(filter, namespace)?;
+            key_operands(filter, namespace, database)?;
         }
         projected_equality(query, filter)?;
         grouped_equality(query, filter)?;

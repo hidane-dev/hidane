@@ -6290,6 +6290,114 @@
     }
    },
    "properties": {}
+  },
+  {
+   "key": {
+    "path": [
+     {
+      "kind": "Arr",
+      "name": "r1"
+     }
+    ],
+    "partitionId": {
+     "namespaceId": "xa"
+    }
+   },
+   "properties": {
+    "arr": {
+     "arrayValue": {
+      "values": [
+       {
+        "entityValue": {
+         "properties": {
+          "x": {
+           "integerValue": "5"
+          }
+         }
+        }
+       },
+       {
+        "entityValue": {
+         "properties": {
+          "x": {
+           "integerValue": "6"
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    "e": {
+     "entityValue": {
+      "properties": {
+       "t": {
+        "arrayValue": {
+         "values": [
+          {
+           "integerValue": "3"
+          },
+          {
+           "integerValue": "4"
+          }
+         ]
+        }
+       }
+      }
+     }
+    },
+    "n": {
+     "integerValue": "1"
+    }
+   }
+  },
+  {
+   "key": {
+    "path": [
+     {
+      "kind": "Arr",
+      "name": "r2"
+     }
+    ],
+    "partitionId": {
+     "namespaceId": "xa"
+    }
+   },
+   "properties": {
+    "arr": {
+     "arrayValue": {
+      "values": [
+       {
+        "entityValue": {
+         "properties": {
+          "x": {
+           "integerValue": "7"
+          }
+         }
+        }
+       }
+      ]
+     }
+    },
+    "e": {
+     "entityValue": {
+      "properties": {
+       "t": {
+        "arrayValue": {
+         "values": [
+          {
+           "integerValue": "8"
+          }
+         ]
+        }
+       }
+      }
+     }
+    },
+    "n": {
+     "integerValue": "2"
+    }
+   }
   }
  ],
  "cases": [
@@ -19243,7 +19351,7 @@
    "outcome": {
     "status": 200,
     "contentType": "application/json",
-    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"C\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"G\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"L\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Many\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Other\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"P\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Q\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"T\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Arr\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"C\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"G\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"L\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Many\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Other\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"P\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Q\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"T\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
    }
   },
   {
@@ -19269,7 +19377,7 @@
    "outcome": {
     "status": 200,
     "contentType": "application/json",
-    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"C\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"G\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"L\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Many\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Other\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"P\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Q\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"T\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Arr\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"C\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"G\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"L\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Many\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Other\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"P\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Q\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"T\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
    }
   },
   {
@@ -19333,7 +19441,7 @@
    "outcome": {
     "status": 200,
     "contentType": "application/json",
-    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"id\": \"1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns2\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xc\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xcns\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"id\": \"1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns2\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xa\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xc\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xcns\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
    }
   },
   {
@@ -19363,7 +19471,7 @@
    "outcome": {
     "status": 200,
     "contentType": "application/json",
-    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"KEY_ONLY\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"id\": \"1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns2\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xc\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xcns\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"KEY_ONLY\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"id\": \"1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns2\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xa\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xc\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xcns\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
    }
   },
   {
@@ -22463,6 +22571,678 @@
     "status": 200,
     "contentType": "application/json",
     "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"property_1\": {\n          \"integerValue\": \"1\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "limit 0, a < null",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "P"
+      }
+     ],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "a"
+       },
+       "op": "LESS_THAN",
+       "value": {
+        "nullValue": null
+       }
+      }
+     },
+     "limit": 0
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "limit 0, a <= null",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "P"
+      }
+     ],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "a"
+       },
+       "op": "LESS_THAN_OR_EQUAL",
+       "value": {
+        "nullValue": null
+       }
+      }
+     },
+     "limit": 0
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"MORE_RESULTS_AFTER_LIMIT\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "limit 0, a > 3 and a < 3",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "P"
+      }
+     ],
+     "filter": {
+      "compositeFilter": {
+       "op": "AND",
+       "filters": [
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "a"
+          },
+          "op": "GREATER_THAN",
+          "value": {
+           "integerValue": "3"
+          }
+         }
+        },
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "a"
+          },
+          "op": "LESS_THAN",
+          "value": {
+           "integerValue": "3"
+          }
+         }
+        }
+       ]
+      }
+     },
+     "limit": 0
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "limit 0, a >= 3 and a <= 3",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "P"
+      }
+     ],
+     "filter": {
+      "compositeFilter": {
+       "op": "AND",
+       "filters": [
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "a"
+          },
+          "op": "GREATER_THAN_OR_EQUAL",
+          "value": {
+           "integerValue": "3"
+          }
+         }
+        },
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "a"
+          },
+          "op": "LESS_THAN_OR_EQUAL",
+          "value": {
+           "integerValue": "3"
+          }
+         }
+        }
+       ]
+      }
+     },
+     "limit": 0
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"MORE_RESULTS_AFTER_LIMIT\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "limit 0, a > 'x' and a < 5",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "P"
+      }
+     ],
+     "filter": {
+      "compositeFilter": {
+       "op": "AND",
+       "filters": [
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "a"
+          },
+          "op": "GREATER_THAN",
+          "value": {
+           "stringValue": "x"
+          }
+         }
+        },
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "a"
+          },
+          "op": "LESS_THAN",
+          "value": {
+           "integerValue": "5"
+          }
+         }
+        }
+       ]
+      }
+     },
+     "limit": 0
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "limit 0, a = 1 and a > 5",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "P"
+      }
+     ],
+     "filter": {
+      "compositeFilter": {
+       "op": "AND",
+       "filters": [
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "a"
+          },
+          "op": "EQUAL",
+          "value": {
+           "integerValue": "1"
+          }
+         }
+        },
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "a"
+          },
+          "op": "GREATER_THAN",
+          "value": {
+           "integerValue": "5"
+          }
+         }
+        }
+       ]
+      }
+     },
+     "limit": 0
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"MORE_RESULTS_AFTER_LIMIT\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "limit 0, a < false",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "P"
+      }
+     ],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "a"
+       },
+       "op": "LESS_THAN",
+       "value": {
+        "booleanValue": false
+       }
+      }
+     },
+     "limit": 0
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"MORE_RESULTS_AFTER_LIMIT\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "limit 0, a < null or b = 'x'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "P"
+      }
+     ],
+     "filter": {
+      "compositeFilter": {
+       "op": "OR",
+       "filters": [
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "a"
+          },
+          "op": "LESS_THAN",
+          "value": {
+           "nullValue": null
+          }
+         }
+        },
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "b"
+          },
+          "op": "EQUAL",
+          "value": {
+           "stringValue": "x"
+          }
+         }
+        }
+       ]
+      }
+     },
+     "limit": 0
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"MORE_RESULTS_AFTER_LIMIT\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "limit 0, a < null, or a > 3 and a < 3",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "P"
+      }
+     ],
+     "filter": {
+      "compositeFilter": {
+       "op": "OR",
+       "filters": [
+        {
+         "propertyFilter": {
+          "property": {
+           "name": "a"
+          },
+          "op": "LESS_THAN",
+          "value": {
+           "nullValue": null
+          }
+         }
+        },
+        {
+         "compositeFilter": {
+          "op": "AND",
+          "filters": [
+           {
+            "propertyFilter": {
+             "property": {
+              "name": "a"
+             },
+             "op": "GREATER_THAN",
+             "value": {
+              "integerValue": "3"
+             }
+            }
+           },
+           {
+            "propertyFilter": {
+             "property": {
+              "name": "a"
+             },
+             "op": "LESS_THAN",
+             "value": {
+              "integerValue": "3"
+             }
+            }
+           }
+          ]
+         }
+        }
+       ]
+      }
+     },
+     "limit": 0
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "limit 0, offset 1, a < null",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "P"
+      }
+     ],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "a"
+       },
+       "op": "LESS_THAN",
+       "value": {
+        "nullValue": null
+       }
+      }
+     },
+     "limit": 0,
+     "offset": 1
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "an array's entity values, filtered",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "Arr"
+      }
+     ],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "arr.x"
+       },
+       "op": "EQUAL",
+       "value": {
+        "integerValue": "5"
+       }
+      }
+     }
+    },
+    "partitionId": {
+     "namespaceId": "xa"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "an array's entity values, ordered",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "Arr"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "arr.x"
+       }
+      }
+     ]
+    },
+    "partitionId": {
+     "namespaceId": "xa"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "an entity value's array, filtered",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "Arr"
+      }
+     ],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "e.t"
+       },
+       "op": "EQUAL",
+       "value": {
+        "integerValue": "3"
+       }
+      }
+     }
+    },
+    "partitionId": {
+     "namespaceId": "xa"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xa\"\n          },\n          \"path\": [{\n            \"kind\": \"Arr\",\n            \"name\": \"r1\"\n          }]\n        },\n        \"properties\": {\n          \"arr\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"entityValue\": {\n                  \"properties\": {\n                    \"x\": {\n                      \"integerValue\": \"5\"\n                    }\n                  }\n                }\n              }, {\n                \"entityValue\": {\n                  \"properties\": {\n                    \"x\": {\n                      \"integerValue\": \"6\"\n                    }\n                  }\n                }\n              }]\n            }\n          },\n          \"e\": {\n            \"entityValue\": {\n              \"properties\": {\n                \"t\": {\n                  \"arrayValue\": {\n                    \"values\": [{\n                      \"integerValue\": \"3\"\n                    }, {\n                      \"integerValue\": \"4\"\n                    }]\n                  }\n                }\n              }\n            }\n          },\n          \"n\": {\n            \"integerValue\": \"1\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "a sum over an array's entity values",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "Arr"
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "sum": {
+        "property": {
+         "name": "arr.x"
+        }
+       },
+       "alias": "s"
+      },
+      {
+       "count": {},
+       "alias": "n"
+      }
+     ]
+    },
+    "partitionId": {
+     "namespaceId": "xa"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"s\": {\n          \"integerValue\": \"0\"\n        },\n        \"n\": {\n          \"integerValue\": \"0\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "a sum over an entity value's array",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "Arr"
+       }
+      ]
+     },
+     "aggregations": [
+      {
+       "sum": {
+        "property": {
+         "name": "e.t"
+        }
+       },
+       "alias": "s"
+      },
+      {
+       "avg": {
+        "property": {
+         "name": "e.t"
+        }
+       },
+       "alias": "m"
+      }
+     ]
+    },
+    "partitionId": {
+     "namespaceId": "xa"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"s\": {\n          \"integerValue\": \"15\"\n        },\n        \"m\": {\n          \"doubleValue\": 5.0\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
    }
   },
   {

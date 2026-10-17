@@ -103,6 +103,14 @@
    "earlier": {"method": "^POST$", "path": ":commit$", "status": [null]}
   },
   {
+   "id": "entity-operand-in-an-aggregation",
+   "exception": "D094",
+   "why": "An aggregation's filter that orders a property against an entity value compares it, on the official emulator, as the bytes of the entity's internal encoding; hidane's entity values order with nothing. Matched on the request.",
+   "kinds": ["data"],
+   "verbs": "^datastore:runAggregationQuery$",
+   "request": {"predicates": ["entity-operand"]}
+  },
+  {
    "id": "datastore-body-of-another-project",
    "exception": "D046",
    "why": "The official emulator never answers a Datastore API request whose body names another `projectId` than its path; hidane answers it for the path's project. Matched on the request.",

@@ -403,6 +403,25 @@ fn snapshot(mode: Mode) -> Option<i64> {
     }
 }
 
+impl DatastoreService {
+    /// What a query's read options are refused for among its first checks: a transaction that
+    /// is not open, or the read time of a read-only one they begin ([`new_read_time`]).
+    fn read_options_early(
+        &self,
+        options: Option<&ReadOptions>,
+        database: &Database,
+    ) -> Result<(), Status> {
+        match options.and_then(|o| o.consistency_type.as_ref()) {
+            Some(read_options::ConsistencyType::Transaction(transaction)) => self
+                .state
+                .transactions
+                .check(&database.name(), transaction)
+                .map(|_| ()),
+            _ => new_read_time(options),
+        }
+    }
+}
+
 /// What a query's read options say: the transaction to report a new one in, the time to read at.
 struct Reading {
     new_transaction: Vec<u8>,
@@ -884,7 +903,7 @@ impl Datastore for DatastoreService {
             &namespace,
             &database,
             past_epoch(req.read_options.as_ref()),
-            new_read_time(req.read_options.as_ref()),
+            self.read_options_early(req.read_options.as_ref(), &database),
         )?;
         let plan = query::plan(&query, &database, &namespace)?;
         let reading = self.read_query(req.read_options.clone(), &database, plan.kind.as_deref())?;
@@ -952,8 +971,9 @@ impl Datastore for DatastoreService {
             &aggregation,
             &nested,
             &namespace,
+            &database,
             read_time.clone().map(|_| ()),
-            new_read_time(req.read_options.as_ref()),
+            self.read_options_early(req.read_options.as_ref(), &database),
         )?;
         let mut plan = query::plan(&nested, &database, &namespace)?;
         let reading = self.read_query(req.read_options.clone(), &database, plan.kind.as_deref())?;
@@ -1109,7 +1129,7 @@ fn past_epoch(options: Option<&ReadOptions>) -> Result<(), Status> {
 }
 
 /// The shape of the read time of a read-only transaction that the read options begin, which
-/// the official emulator checks among a query's first checks.
+/// the official emulator checks among a lookup's first checks.
 fn new_read_time(options: Option<&ReadOptions>) -> Result<(), Status> {
     match options.and_then(|o| o.consistency_type.as_ref()) {
         Some(read_options::ConsistencyType::NewTransaction(TransactionOptions {
