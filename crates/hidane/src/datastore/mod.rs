@@ -309,17 +309,20 @@ impl DatastoreService {
     /// A query's partition: its project must be the request's; its namespace is the query's.
     fn namespace(partition: Option<PartitionId>, database: &Database) -> Result<String, Status> {
         let partition = partition.unwrap_or_default();
-        if !partition.project_id.is_empty() && partition.project_id != database.project {
-            return Err(Status::invalid_argument(format!(
-                "mismatched databases within request: <unknown!>~{} vs. <unknown!>~{}",
-                database.project, partition.project_id
-            )));
-        }
+        keys::check_partition(
+            &hidane_proto::google::datastore::v1::Key {
+                partition_id: Some(partition.clone()),
+                path: Vec::new(),
+            },
+            database,
+        )?;
+        keys::check_namespace(&partition.namespace_id)?;
         Ok(partition.namespace_id)
     }
 
-    /// A query's read options: a transaction locks `kind` (every kind without one, as a key
-    /// range); eventual consistency reads as strong. A read time is checked by [`Self::read_at`].
+    /// A query's read options: a read-write transaction locks `kind` (a query without one is an
+    /// internal error there); eventual consistency reads as strong. A read time is checked by
+    /// [`Self::read_at`].
     fn read_query(
         &self,
         options: Option<ReadOptions>,
@@ -329,13 +332,17 @@ impl DatastoreService {
         let mut reading = Reading {
             new_transaction: Vec::new(),
         };
+        // A read-write transaction locks the kind it queries; a query without a kind is an
+        // internal error there on the official emulator.
         let lock = |transaction: &[u8]| {
-            self.state.transactions.read(
-                &database.name(),
-                transaction,
-                &[],
-                Some(kind.unwrap_or("")),
-            )
+            let mode = self
+                .state
+                .transactions
+                .read(&database.name(), transaction, &[], kind)?;
+            if kind.is_none() && mode == Mode::ReadWrite {
+                return Err(Status::unknown(""));
+            }
+            Ok(mode)
         };
         match options.and_then(|o| o.consistency_type) {
             None | Some(read_options::ConsistencyType::ReadConsistency(_)) => {}
@@ -442,6 +449,7 @@ impl Datastore for DatastoreService {
             }
         }
         read_options_shape(req.read_options.as_ref())?;
+        past_epoch(req.read_options.as_ref())?;
         if let Some(mask) = &req.property_mask {
             values::check_paths(&mask.paths)?;
         }
@@ -582,7 +590,7 @@ impl Datastore for DatastoreService {
             };
             let checked_key = keys::check_unpartitioned(key, Rules::Write, last)?;
             if let Some((_, properties)) = write {
-                values::check_properties(properties, &database)?;
+                values::check_properties(properties)?;
             }
             keys::check_partition(key, &database)?;
             if mutation.conflict_detection_strategy.is_some() && checked_key.complete().is_none() {
@@ -703,12 +711,18 @@ impl Datastore for DatastoreService {
         let req = request.into_inner();
         let database = self.admit(req.project_id, req.database_id)?;
         let defined = self.indexes(&database)?;
-        let namespace = Self::namespace(req.partition_id, &database)?;
+        // GQL is read first, a key in it without a partition in the request's namespace; then the
+        // request's partition and read options are checked, then the query.
+        let requested = req
+            .partition_id
+            .as_ref()
+            .map(|p| p.namespace_id.clone())
+            .unwrap_or_default();
         let mut echo = None;
         let query = match req.query_type {
             Some(run_query_request::QueryType::Query(query)) => query,
             Some(run_query_request::QueryType::GqlQuery(text)) => {
-                match gql::read(&text, &namespace, gql::Expect::Entities)? {
+                match gql::read(&text, &requested, gql::Expect::Entities)? {
                     gql::Read::Entities(query) => {
                         echo = Some(query.clone());
                         query
@@ -722,7 +736,14 @@ impl Datastore for DatastoreService {
                 ));
             }
         };
-        let refused = checks::entity_query(&query, &namespace, &database)?;
+        let namespace = Self::namespace(req.partition_id, &database)?;
+        read_options_shape(req.read_options.as_ref())?;
+        let refused = checks::entity_query(
+            &query,
+            &namespace,
+            &database,
+            past_epoch(req.read_options.as_ref()),
+        )?;
         let plan = query::plan(&query, &database, &namespace)?;
         let reading = self.read_query(req.read_options.clone(), &database, plan.kind.as_deref())?;
         if let Some(defined) = &defined {
@@ -753,11 +774,15 @@ impl Datastore for DatastoreService {
         let req = request.into_inner();
         let database = self.admit(req.project_id, req.database_id)?;
         let defined = self.indexes(&database)?;
-        let namespace = Self::namespace(req.partition_id, &database)?;
+        let requested = req
+            .partition_id
+            .as_ref()
+            .map(|p| p.namespace_id.clone())
+            .unwrap_or_default();
         let aggregation = match req.query_type {
             Some(run_aggregation_query_request::QueryType::AggregationQuery(a)) => a,
             Some(run_aggregation_query_request::QueryType::GqlQuery(text)) => {
-                match gql::read(&text, &namespace, gql::Expect::Aggregation)? {
+                match gql::read(&text, &requested, gql::Expect::Aggregation)? {
                     gql::Read::Aggregation(aggregation) => aggregation,
                     gql::Read::Entities(_) => unreachable!("an aggregation was expected"),
                 }
@@ -772,7 +797,12 @@ impl Datastore for DatastoreService {
             Some(aggregation_query::QueryType::NestedQuery(query)) => query.clone(),
             None => hidane_proto::google::datastore::v1::Query::default(),
         };
-        let refused = checks::aggregation_query(&aggregation, &nested, &namespace)?;
+        let namespace = Self::namespace(req.partition_id, &database)?;
+        read_options_shape(req.read_options.as_ref())?;
+        // An aggregation's read time is checked whole among its query's first checks.
+        let read_time = past_epoch(req.read_options.as_ref())
+            .and_then(|()| self.read_at(req.read_options.as_ref(), &database));
+        let refused = checks::aggregation_query(&aggregation, &nested, &namespace, read_time)?;
         let mut plan = query::plan(&nested, &database, &namespace)?;
         let reading = self.read_query(req.read_options.clone(), &database, plan.kind.as_deref())?;
         if let Some(defined) = &defined {
@@ -783,7 +813,6 @@ impl Datastore for DatastoreService {
             return Err(refused);
         }
         let aggregations = aggregations(&aggregation.aggregations);
-        self.read_at(req.read_options.as_ref(), &database)?;
         // A sum or an average reads its property: only entities that have it count.
         let key = plan.orders.pop();
         for (_, property) in &aggregations {
@@ -873,6 +902,16 @@ fn read_options_shape(options: Option<&ReadOptions>) -> Result<(), Status> {
         Some(read_options::ConsistencyType::ReadConsistency(0)) => Err(Status::invalid_argument(
             "ReadConsistency must be specified.",
         )),
+        Some(read_options::ConsistencyType::Transaction(t)) if t.is_empty() => Err(
+            Status::invalid_argument("a transaction cannot be the empty string."),
+        ),
+        _ => Ok(()),
+    }
+}
+
+/// A read time past the epoch, to the microsecond.
+fn past_epoch(options: Option<&ReadOptions>) -> Result<(), Status> {
+    match options.and_then(|o| o.consistency_type.as_ref()) {
         Some(read_options::ConsistencyType::ReadTime(time))
             if time.seconds < 0 || (time.seconds == 0 && time.nanos < 1_000) =>
         {
@@ -880,9 +919,6 @@ fn read_options_shape(options: Option<&ReadOptions>) -> Result<(), Status> {
                 "Only timestamps past epoch are supported.",
             ))
         }
-        Some(read_options::ConsistencyType::Transaction(t)) if t.is_empty() => Err(
-            Status::invalid_argument("a transaction cannot be the empty string."),
-        ),
         _ => Ok(()),
     }
 }

@@ -13,19 +13,26 @@ mutations (the second of `K/b`), and every ordered pair that fits in one mutatio
 that set the same part of a mutation do not); each problem of `REQUEST` (the commit's mode,
 transaction and mutations) with each of `MUTATION`; each problem of `LOOKUP` (a key, the read
 options) alone and every ordered pair; and the commits and lookups of `ALONE`, too large to
-pair; and the requests of `SEQUENCES` in turn (how mutations apply, base versions). Each runs in a
-project of its own, after `SEED` wrote entity `K/b`.
+pair; the values of `VALUES` and each meaning from -1 to 41 on a value of each type
+(`MEANING_TYPES`), each the only property of an upsert; and the requests of `SEQUENCES` in turn
+(how mutations apply, base versions). Each runs in a project of its own, after `SEED` wrote
+entity `K/b`.
 
 What the recording shows. A commit's mode and transaction come first. Then each mutation in
 turn: its operation, its entity's key, the key (namespace, then path), the properties (names,
-flattened names, values: meaning, length, geo points, key values, lists excluded from indexes),
-the key's project and database, a base version with an incomplete key, the property mask's
+flattened names, values: that there is one, a list's meaning, what it holds (key values, an
+entity value's key and properties, a point's coordinates, a vector's doubles, a list's
+elements), its meaning, its length), the key's project and database, a base version with an incomplete key, the property mask's
 paths. Then a non-transactional commit's entities written twice, and the transaction. Then, each
 mutation in turn: a resolution strategy without a detection strategy, nested arrays, more than
 5,000 index values, the base version of an insert (none) and of an update (not zero), the
 `FAIL` strategy against the stored version, whether the entity exists, and its size (1,048,576
 bytes, counted as a Firestore document is). A base version that does not match is written over
-unless the strategy is `FAIL`. A lookup checks each key (reserved names and namespaces pass),
+unless the strategy is `FAIL`. The meanings run from 0 to 40, each with a value field; some
+stand for values Datastore reads but does not store (a decimal, an object ID, a regular
+expression, a timestamp of a request, a 32-bit integer, the least and greatest keys), refused
+once what they hold is checked; a user (20) is an entity of strings, unindexed; a vector (31) is
+1 to 2,048 doubles, none NaN. A lookup checks each key (reserved names and namespaces pass),
 then its read options' shape (a consistency left unspecified, a read time before the epoch, an
 empty transaction), the property mask, then the read time and the transaction. Keys print in
 messages as protocol-buffer text: IDs from 2,000,000,000 up in hexadecimal, strings escaped in
@@ -199,6 +206,122 @@ ALONE = [
         {"upsert": {"key": key("K", n + 1)}} for n in range(500)]}),
 ]
 
+# Values of their own, each the only property of an upsert: vectors, decimals, object IDs, users,
+# regular expressions and timestamps of a request (meanings 20 and 31 to 39), a point's NaN, an
+# entity value's key, and which of a value's checks comes first (its key and what an entity value
+# holds before its meaning, its meaning before its length).
+VALUES = [
+    {"arrayValue": {"values": [{"doubleValue": 1}]}, "meaning": 31},
+    {"arrayValue": {"values": [{"doubleValue": 1}, {"doubleValue": 2}]}, "meaning": 31},
+    {"arrayValue": {"values": []}, "meaning": 31},
+    {"arrayValue": {"values": [{"doubleValue": 1}]}, "meaning": 31, "excludeFromIndexes": True},
+    {"arrayValue": {"values": [{"doubleValue": 1, "excludeFromIndexes": True}]}, "meaning": 31},
+    {"arrayValue": {"values": [{"doubleValue": 1, "meaning": 1}]}, "meaning": 31},
+    {"arrayValue": {"values": [{"integerValue": "1"}, {"doubleValue": 1}]}, "meaning": 31},
+    {"arrayValue": {"values": [{"doubleValue": "NaN"}]}, "meaning": 31},
+    {"arrayValue": {"values": [{"doubleValue": "Infinity"}]}, "meaning": 31},
+    {"arrayValue": {"values": [{"doubleValue": 1}, {"arrayValue": {}}]}, "meaning": 31},
+    {"arrayValue": {"values": [{"NoneValue": None}]}, "meaning": 31},
+    {"arrayValue": {"values": []}, "meaning": 31, "excludeFromIndexes": True},
+    {"stringValue": "1", "meaning": 32},
+    {"stringValue": "1.5", "meaning": 32},
+    {"stringValue": "-1.5E10", "meaning": 32},
+    {"stringValue": "NaN", "meaning": 32},
+    {"stringValue": "Infinity", "meaning": 32},
+    {"stringValue": "-Infinity", "meaning": 32},
+    {"stringValue": "1E6145", "meaning": 32},
+    {"stringValue": "1E6144", "meaning": 32},
+    {"stringValue": "1E-6176", "meaning": 32},
+    {"stringValue": "1E-6177", "meaning": 32},
+    {"stringValue": "12345678901234567890123456789012345", "meaning": 32},
+    {"stringValue": "1234567890123456789012345678901234", "meaning": 32},
+    {"stringValue": " 1", "meaning": 32},
+    {"stringValue": "+1", "meaning": 32},
+    {"stringValue": ".5", "meaning": 32},
+    {"stringValue": "1.", "meaning": 32},
+    {"stringValue": "0x1", "meaning": 32},
+    {"stringValue": "inf", "meaning": 32},
+    {"stringValue": "nan", "meaning": 32},
+    {"stringValue": "-0", "meaning": 32},
+    {"stringValue": "1", "meaning": 32, "excludeFromIndexes": True},
+    {"stringValue": "", "meaning": 32},
+    {"stringValue": "-", "meaning": 32},
+    {"stringValue": "1e5", "meaning": 32},
+    {"stringValue": "10E6144", "meaning": 32},
+    {"stringValue": "10E-6177", "meaning": 32},
+    {"stringValue": "12345678901234567890123456789012340", "meaning": 32},
+    {"stringValue": "1.2345678901234567890123456789012345", "meaning": 32},
+    {"stringValue": "0E-6200", "meaning": 32},
+    {"stringValue": "0E7000", "meaning": 32},
+    {"stringValue": "-Inf", "meaning": 32},
+    {"stringValue": "INFINITY", "meaning": 32},
+    {"stringValue": "Infinite", "meaning": 32},
+    {"stringValue": "sNaN", "meaning": 32},
+    {"stringValue": "1_000", "meaning": 32},
+    {"stringValue": "١", "meaning": 32},
+    {"stringValue": "1e", "meaning": 32},
+    {"stringValue": "1e+", "meaning": 32},
+    {"stringValue": "1e99999999999", "meaning": 32},
+    {"stringValue": "0123456789abcdef01234567", "meaning": 34},
+    {"stringValue": "0123456789ABCDEF01234567", "meaning": 34},
+    {"stringValue": "0123456789abcdef0123456g", "meaning": 34},
+    {"stringValue": "0123456789abcdef0123456", "meaning": 34},
+    {"stringValue": "x", "meaning": 34},
+    {"entityValue": {"properties": {"pattern": {"stringValue": "a"}}}, "meaning": 35},
+    {"entityValue": {"properties": {"pattern": {"integerValue": "1"}}}, "meaning": 35},
+    {"entityValue": {"properties": {"pattern": {"stringValue": "a"}, "x": {"stringValue": "i"}}}, "meaning": 35},
+    {"entityValue": {"properties": {"options": {"stringValue": "i"}}}, "meaning": 35},
+    {"entityValue": {"properties": {"pattern": {"stringValue": "a", "excludeFromIndexes": True}}}, "meaning": 35},
+    {"entityValue": {"properties": {"pattern": {"stringValue": "a", "excludeFromIndexes": True}, "options": {"stringValue": "i", "excludeFromIndexes": True}}}, "meaning": 35},
+    {"entityValue": {"properties": {"pattern": {"stringValue": "a", "excludeFromIndexes": True}, "x": {"stringValue": "i", "excludeFromIndexes": True}}}, "meaning": 35},
+    {"entityValue": {"properties": {"x": {"stringValue": "i"}}}, "meaning": 35},
+    {"entityValue": {}, "meaning": 35},
+    {"entityValue": {"key": {"path": [{"kind": "K", "name": "x"}]}}, "meaning": 35},
+    {"entityValue": {"properties": {"seconds": {"integerValue": "1", "excludeFromIndexes": True}, "increment": {"integerValue": "1", "excludeFromIndexes": True}}}, "meaning": 37},
+    {"entityValue": {"properties": {"seconds": {"integerValue": "1", "excludeFromIndexes": True}}}, "meaning": 37},
+    {"entityValue": {"properties": {"seconds": {"integerValue": "-1", "excludeFromIndexes": True}, "increment": {"integerValue": "1", "excludeFromIndexes": True}}}, "meaning": 37},
+    {"entityValue": {"properties": {"seconds": {"integerValue": "4294967296", "excludeFromIndexes": True}, "increment": {"integerValue": "1", "excludeFromIndexes": True}}}, "meaning": 37},
+    {"entityValue": {"properties": {"seconds": {"integerValue": "1", "excludeFromIndexes": True}, "increment": {"integerValue": "-5000000000", "excludeFromIndexes": True}}}, "meaning": 37},
+    {"entityValue": {"properties": {"seconds": {"stringValue": "1"}, "increment": {"integerValue": "1"}}}, "meaning": 37},
+    {"entityValue": {"key": {"path": [{"kind": "K", "name": "x"}]}}, "meaning": 37},
+    {"entityValue": {"properties": {"email": {"stringValue": "e", "excludeFromIndexes": True}}}, "meaning": 20},
+    {"entityValue": {"properties": {"email": {"stringValue": "e", "excludeFromIndexes": True}, "auth_domain": {"stringValue": "d", "excludeFromIndexes": True}}}, "meaning": 20},
+    {"entityValue": {"properties": {"email": {"stringValue": "e", "excludeFromIndexes": True}, "auth_domain": {"integerValue": "1", "excludeFromIndexes": True}}}, "meaning": 20},
+    {"entityValue": {"properties": {"email": {"stringValue": "e", "excludeFromIndexes": True}, "auth_domain": {"stringValue": "d", "excludeFromIndexes": True}, "user_id": {"integerValue": "1", "excludeFromIndexes": True}}}, "meaning": 20},
+    {"entityValue": {"properties": {"auth_domain": {"stringValue": "d", "excludeFromIndexes": True}}}, "meaning": 20},
+    {"entityValue": {"properties": {"x": {"stringValue": "d"}, "email": {"stringValue": "e"}}}, "meaning": 20},
+    {"entityValue": {"properties": {"email": {"stringValue": "e"}, "x": {"stringValue": "d"}}}, "meaning": 20},
+    {"entityValue": {"properties": {"email": {"stringValue": "e", "meaning": 1}}}, "meaning": 20},
+    {"entityValue": {"properties": {"email": {"integerValue": "1", "meaning": 1}}}, "meaning": 20},
+    {"entityValue": {"properties": {"": {"stringValue": "e"}}}, "meaning": 20},
+    {"entityValue": {"properties": {"__x__": {"stringValue": "e"}}}, "meaning": 20},
+    {"entityValue": {"key": {"path": [{"kind": "K", "name": "x"}]}, "properties": {"email": {"stringValue": "e", "excludeFromIndexes": True}}}, "meaning": 20},
+    {"NoneValue": None, "meaning": 38},
+    {"NoneValue": None, "meaning": 39},
+    {"integerValue": "1", "meaning": 36},
+    {"geoPointValue": {"latitude": "NaN"}},
+    {"geoPointValue": {"longitude": "NaN"}},
+    {"geoPointValue": {"latitude": "NaN", "longitude": 181}},
+    {"entityValue": {"key": {"path": [{"kind": "K"}, {"kind": "K"}]}}},
+    {"entityValue": {"key": {"path": []}}},
+    {"entityValue": {"properties": {"": {"integerValue": "1"}}}, "meaning": 14},
+    {"stringValue": "s" * 1501, "meaning": 14},
+    {"geoPointValue": {"latitude": 91}, "meaning": 14},
+    {"entityValue": {"key": {"path": []}}, "meaning": 14},
+    {"keyValue": {"path": [{"kind": "K"}]}, "meaning": 14},
+    {"keyValue": {"path": [{"kind": "K", "name": "x"}], "partitionId": {"namespaceId": "é"}}, "meaning": 14},
+    {"arrayValue": {"values": [{"keyValue": {"path": [{"kind": "K"}]}}]}, "meaning": 14},
+    {"arrayValue": {"values": [{"integerValue": "1"}]}, "excludeFromIndexes": True, "meaning": 14},
+]
+# Each meaning, -1 to 41, on a value of each type.
+MEANING_TYPES = {
+    "an integer": ONE, "a string": {"stringValue": "x"}, "a blob": {"blobValue": "YQ=="},
+    "an entity": {"entityValue": {}}, "null": {"nullValue": None}, "a point": {"geoPointValue": {"latitude": 1}},
+    "a key": {"keyValue": key("K", "a")}, "a timestamp": {"timestampValue": "2020-01-01T00:00:00Z"},
+    "an array": {"arrayValue": {"values": [{"doubleValue": 1}]}},
+}
+
+
 def nontx(*mutations):
     return ("commit", {"mode": "NON_TRANSACTIONAL", "mutations": list(mutations)})
 
@@ -341,6 +464,12 @@ def cases():
             out.append((f"lookup: {n1}, then {n2}", "lookup", lookup(p1, p2)))
     for name, verb, body in ALONE:
         out.append((f"{verb}: {name}", verb, body))
+    for n, value in enumerate(VALUES):
+        out.append((f"commit: value {n}", "commit", commit({"upsert": {"key": a, "properties": {"v": value}}})))
+    for meaning in range(-1, 42):
+        for name, value in MEANING_TYPES.items():
+            out.append((f"commit: {name} meaning {meaning}", "commit",
+                        commit({"upsert": {"key": a, "properties": {"v": {**value, "meaning": meaning}}}})))
     return out
 
 
@@ -359,11 +488,24 @@ def masked(text, project):
     return CURSOR.sub(lambda m: f'"{m.group(1)}": "<cursor>"', text)
 
 
+CONNECTION = []
+
+
 def call(project, verb, body):
-    conn = http.client.HTTPConnection(*HOST.split(":"), timeout=60)
-    conn.request("POST", f"/v1/projects/{project}:{verb}", body=json.dumps(body).encode(), headers=JSON)
-    r = conn.getresponse()
-    return r.status, r.getheader("content-type"), r.read().decode()
+    """One request, on a connection kept open: thousands of new ones would use up local ports."""
+    for attempt in range(2):
+        if not CONNECTION:
+            CONNECTION.append(http.client.HTTPConnection(*HOST.split(":"), timeout=60))
+        conn = CONNECTION[0]
+        try:
+            conn.request("POST", f"/v1/projects/{project}:{verb}", body=json.dumps(body).encode(), headers=JSON)
+            r = conn.getresponse()
+            return r.status, r.getheader("content-type"), r.read().decode()
+        except (http.client.HTTPException, OSError):
+            conn.close()
+            CONNECTION.clear()
+            if attempt:
+                raise
 
 
 def main():

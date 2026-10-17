@@ -14079,6 +14079,50 @@
    }
   },
   {
+   "name": "no kind, in a new transaction",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {},
+    "readOptions": {
+     "newTransaction": {}
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "no kind, in a new read-only transaction",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "limit": 1
+    },
+    "readOptions": {
+     "newTransaction": {
+      "readOnly": {}
+     }
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"C\",\n            \"name\": \"top\"\n          }]\n        },\n        \"properties\": {\n          \"n\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"MORE_RESULTS_AFTER_LIMIT\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  },\n  \"transaction\": \"<id>\"\n}\n"
+   }
+  },
+  {
    "name": "count P",
    "method": "POST",
    "path": "/v1/projects/{project}:runAggregationQuery",
@@ -14873,6 +14917,33 @@
     "status": 200,
     "contentType": "application/json",
     "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"property_1\": {\n          \"integerValue\": \"401\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "an aggregation without a kind, in a new transaction",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {},
+     "aggregations": [
+      {
+       "count": {}
+      }
+     ]
+    },
+    "readOptions": {
+     "newTransaction": {}
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
    }
   }
  ]

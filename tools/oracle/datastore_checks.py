@@ -13,18 +13,27 @@ set the same part of a query do not: the second would replace the first; their f
 joined with `AND`, the first's first); then the same for `AGGREGATION` (`:runAggregationQuery`,
 problems of the aggregations and of the query they run over); then the queries of `PARTS` and
 `AGGREGATION_PARTS`, several problems in one part (a filter, a projection, a query of the
-kinds or namespaces). The database is empty: these are refused before anything is read.
+kinds or namespaces). Each problem of `OPERANDS` (a filter's operand, the request's partition
+and read options) is sent alone, with the others of the request's, and with each problem of
+`REPRESENTATIVE` (`AGGREGATION_REPRESENTATIVE`), one or two of each stage of the checks, both
+ways; then the filters of `OPERAND_VALUES` and each meaning on a value of each type
+(`MEANING_TYPES`), alone, to both RPCs. Runs of one character are recorded as
+`{repeat:<c>:<n>}`, which the test expands. The database is empty: these are refused before
+anything is read.
 
-What the recording shows. A query's filters are walked three times: first each filter's own
-parts (an operator, a name, a value, no array or entity operand but in `IN`, `HAS_ANCESTOR`'s
-too); later the operands of `IN`, `NOT_IN` and `HAS_ANCESTOR`; last, once the query's index is
+What the recording shows. The request's partition (its project and database, a legal
+namespace) and read options (a consistency, a transaction that is not empty) come before the
+query. A query's filters are walked three times: first each filter's own parts (an operator, a
+name and its length, a value, indexed, no list or vector but in `IN` and `NOT_IN`, the value
+checked as a write checks it but for a projection's meaning and the types a write refuses, no
+entity but a user, a regular expression or a timestamp of a request); later the operands of `IN`, `NOT_IN` and `HAS_ANCESTOR`; last, once the query's index is
 found, the filter in disjunctive normal form (without its ancestor, an `IN` an equality per
 value), conjunction by conjunction: keys of `__key__` filters, a property filter without a kind,
 an equality on a projected property, then on one the query is distinct on. Between them come,
 in order: one ancestor, the same for every disjunction (each filter of a conjunction holds to
 it, each of a disjunction alike, or none); the kind's name; empty names; limit, offset; one
 `NOT_EQUAL` or `NOT_IN`, and no `NOT_IN` with `IN` or `OR`; one kind; a disjunction of ancestors
-alone (an internal error); cursors; at most 30 disjunctions; orders; then, after the index, the
+alone (an internal error); cursors; a read time past the epoch; at most 30 disjunctions; orders; then, after the index, the
 ancestor's namespace, orders without a kind (the explicit ones, then the distinct, inequality
 and projected properties), distinct on the key, a reserved name projected (`__`, at least one
 character, `__`), a property projected twice (the key may be), distinct on a reserved name, the
@@ -32,7 +41,10 @@ walk above, distinct properties ordered first, the cursors' kind, and the querie
 namespaces (refused only a first order descending). (With `--require_indexes`,
 `datastore_indexes.json`, looking up the index of a query without a kind refuses its orders and
 property filters already.) An aggregation's query goes through other checks, worded otherwise
-(`Missing filter operator.`, `limit is negative`): its aggregations' operators first, a second
+(`Missing filter operator.`, `limit is negative`): its aggregations' operators first, an operand
+read in two steps (first indexed, each value there, a meaning its type takes, a key's path
+there; once the index is found, its property's name and value lengths, a vector, a key's parts,
+the ancestor's key before its namespace), the whole read time with the cursors, a second
 ancestor that is another one is a duplicate, and an ancestor in a disjunction, `NOT_IN` with
 `IN`, several `NOT_EQUAL` and entity operands pass, while an array in an operand is an internal
 error (`UNKNOWN`, no message), after the key's operands and the equalities on projected and
@@ -178,6 +190,199 @@ QUERY = {
     "36 disjunctions": {"filter": composite("AND", pf("d", "IN", numbers(6)), pf("e", "IN", numbers(6)))},
 }
 
+LONG = "s" * 1501
+# Problems of a filter's operand and of the request (its partition, its read options), each paired
+# with every problem of `REPRESENTATIVE` (one or two of each stage of the checks) in both orders,
+# and with each other.
+OPERANDS = {
+    "a long property name": {"filter": pf("n" * 1501, "EQUAL", ONE)},
+    "a long string operand": {"filter": pf("a", "EQUAL", {"stringValue": LONG})},
+    "an unknown meaning": {"filter": pf("a", "EQUAL", {"integerValue": "1", "meaning": 99})},
+    "an unexpected meaning": {"filter": pf("a", "EQUAL", {"integerValue": "1", "meaning": 14})},
+    "a meaning of another type": {"filter": pf("a", "EQUAL", {"integerValue": "1", "meaning": 1})},
+    "an unindexed operand": {"filter": pf("a", "EQUAL", {"integerValue": "1", "excludeFromIndexes": True})},
+    "an unindexed list": {"filter": pf("a", "EQUAL", {**array(ONE), "excludeFromIndexes": True})},
+    "a vector operand": {"filter": pf("a", "EQUAL", {**array({"doubleValue": 1}), "meaning": 31})},
+    "a point out of range": {"filter": pf("a", "EQUAL", {"geoPointValue": {"latitude": 91}})},
+    "a key without a kind": {"filter": pf("a", "EQUAL", {"keyValue": {"path": [{"name": "a"}]}})},
+    "an incomplete key": {"filter": pf("a", "LESS_THAN", {"keyValue": {"path": [{"kind": "K"}]}})},
+    "a key without a path": {"filter": pf("a", "EQUAL", {"keyValue": {}})},
+    "a key in an illegal namespace": {"filter": pf("a", "EQUAL", {"keyValue": key("K", "a", ns="é")})},
+    "an entity with a property without a value": {"filter": pf("a", "EQUAL", {"entityValue": {"properties": {"x": {}}}})},
+    "an entity with an empty property name": {"filter": pf("a", "EQUAL", {"entityValue": {"properties": {"": ONE}}})},
+    "an IN element without a value": {"filter": pf("a", "IN", array({}))},
+    "an illegal namespace": {"partitionId": {"namespaceId": "é"}},
+    "another database's partition": {"partitionId": {"databaseId": "other"}},
+    "an unspecified read consistency": {"readOptions": {"readConsistency": "READ_CONSISTENCY_UNSPECIFIED"}},
+    "an empty transaction": {"readOptions": {"transaction": ""}},
+    "a read time at the epoch": {"readOptions": {"readTime": "1970-01-01T00:00:00Z"}},
+}
+# Filters on values of their own, each alone: each meaning on each type, and the values the
+# differential fuzzer and what explained it found (vectors, decimals, users, keys, elements of IN).
+OPERAND_VALUES = [
+    ("a", "EQUAL", {"arrayValue": {"values": [{"doubleValue": 1}]}, "meaning": 31}),
+    ("a", "EQUAL", {"arrayValue": {"values": [{"doubleValue": 1}, {"doubleValue": 2}]}, "meaning": 31}),
+    ("a", "EQUAL", {"arrayValue": {"values": []}, "meaning": 31}),
+    ("a", "EQUAL", {"arrayValue": {"values": [{"doubleValue": 1}]}, "meaning": 31, "excludeFromIndexes": True}),
+    ("a", "EQUAL", {"arrayValue": {"values": [{"doubleValue": 1, "excludeFromIndexes": True}]}, "meaning": 31}),
+    ("a", "EQUAL", {"arrayValue": {"values": [{"doubleValue": 1, "meaning": 1}]}, "meaning": 31}),
+    ("a", "EQUAL", {"arrayValue": {"values": [{"integerValue": "1"}, {"doubleValue": 1}]}, "meaning": 31}),
+    ("a", "EQUAL", {"arrayValue": {"values": [{"doubleValue": "NaN"}]}, "meaning": 31}),
+    ("a", "EQUAL", {"arrayValue": {"values": [{"doubleValue": "Infinity"}]}, "meaning": 31}),
+    ("a", "EQUAL", {"arrayValue": {"values": [{"doubleValue": 1}, {"arrayValue": {}}]}, "meaning": 31}),
+    ("a", "EQUAL", {"arrayValue": {"values": [{"NoneValue": None}]}, "meaning": 31}),
+    ("a", "EQUAL", {"arrayValue": {"values": []}, "meaning": 31, "excludeFromIndexes": True}),
+    ("a", "EQUAL", {"stringValue": "1", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "1.5", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "-1.5E10", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "NaN", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "Infinity", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "-Infinity", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "1E6145", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "1E6144", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "1E-6176", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "1E-6177", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "12345678901234567890123456789012345", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "1234567890123456789012345678901234", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": " 1", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "+1", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": ".5", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "1.", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "0x1", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "inf", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "nan", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "-0", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "1", "meaning": 32, "excludeFromIndexes": True}),
+    ("a", "EQUAL", {"stringValue": "", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "-", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "1e5", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "10E6144", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "10E-6177", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "12345678901234567890123456789012340", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "1.2345678901234567890123456789012345", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "0E-6200", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "0E7000", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "-Inf", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "INFINITY", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "Infinite", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "sNaN", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "1_000", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "١", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "1e", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "1e+", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "1e99999999999", "meaning": 32}),
+    ("a", "EQUAL", {"stringValue": "0123456789abcdef01234567", "meaning": 34}),
+    ("a", "EQUAL", {"stringValue": "0123456789ABCDEF01234567", "meaning": 34}),
+    ("a", "EQUAL", {"stringValue": "0123456789abcdef0123456g", "meaning": 34}),
+    ("a", "EQUAL", {"stringValue": "0123456789abcdef0123456", "meaning": 34}),
+    ("a", "EQUAL", {"stringValue": "x", "meaning": 34}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"pattern": {"stringValue": "a"}}}, "meaning": 35}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"pattern": {"integerValue": "1"}}}, "meaning": 35}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"pattern": {"stringValue": "a"}, "x": {"stringValue": "i"}}}, "meaning": 35}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"options": {"stringValue": "i"}}}, "meaning": 35}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"pattern": {"stringValue": "a", "excludeFromIndexes": True}}}, "meaning": 35}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"pattern": {"stringValue": "a", "excludeFromIndexes": True}, "options": {"stringValue": "i", "excludeFromIndexes": True}}}, "meaning": 35}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"pattern": {"stringValue": "a", "excludeFromIndexes": True}, "x": {"stringValue": "i", "excludeFromIndexes": True}}}, "meaning": 35}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"x": {"stringValue": "i"}}}, "meaning": 35}),
+    ("a", "EQUAL", {"entityValue": {}, "meaning": 35}),
+    ("a", "EQUAL", {"entityValue": {"key": {"path": [{"kind": "K", "name": "x"}]}}, "meaning": 35}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"seconds": {"integerValue": "1", "excludeFromIndexes": True}, "increment": {"integerValue": "1", "excludeFromIndexes": True}}}, "meaning": 37}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"seconds": {"integerValue": "1", "excludeFromIndexes": True}}}, "meaning": 37}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"seconds": {"integerValue": "-1", "excludeFromIndexes": True}, "increment": {"integerValue": "1", "excludeFromIndexes": True}}}, "meaning": 37}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"seconds": {"integerValue": "4294967296", "excludeFromIndexes": True}, "increment": {"integerValue": "1", "excludeFromIndexes": True}}}, "meaning": 37}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"seconds": {"integerValue": "1", "excludeFromIndexes": True}, "increment": {"integerValue": "-5000000000", "excludeFromIndexes": True}}}, "meaning": 37}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"seconds": {"stringValue": "1"}, "increment": {"integerValue": "1"}}}, "meaning": 37}),
+    ("a", "EQUAL", {"entityValue": {"key": {"path": [{"kind": "K", "name": "x"}]}}, "meaning": 37}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"email": {"stringValue": "e", "excludeFromIndexes": True}}}, "meaning": 20}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"email": {"stringValue": "e", "excludeFromIndexes": True}, "auth_domain": {"stringValue": "d", "excludeFromIndexes": True}}}, "meaning": 20}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"email": {"stringValue": "e", "excludeFromIndexes": True}, "auth_domain": {"integerValue": "1", "excludeFromIndexes": True}}}, "meaning": 20}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"email": {"stringValue": "e", "excludeFromIndexes": True}, "auth_domain": {"stringValue": "d", "excludeFromIndexes": True}, "user_id": {"integerValue": "1", "excludeFromIndexes": True}}}, "meaning": 20}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"auth_domain": {"stringValue": "d", "excludeFromIndexes": True}}}, "meaning": 20}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"x": {"stringValue": "d"}, "email": {"stringValue": "e"}}}, "meaning": 20}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"email": {"stringValue": "e"}, "x": {"stringValue": "d"}}}, "meaning": 20}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"email": {"stringValue": "e", "meaning": 1}}}, "meaning": 20}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"email": {"integerValue": "1", "meaning": 1}}}, "meaning": 20}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"": {"stringValue": "e"}}}, "meaning": 20}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"__x__": {"stringValue": "e"}}}, "meaning": 20}),
+    ("a", "EQUAL", {"entityValue": {"key": {"path": [{"kind": "K", "name": "x"}]}, "properties": {"email": {"stringValue": "e", "excludeFromIndexes": True}}}, "meaning": 20}),
+    ("a", "EQUAL", {"NoneValue": None, "meaning": 38}),
+    ("a", "EQUAL", {"NoneValue": None, "meaning": 39}),
+    ("a", "EQUAL", {"integerValue": "1", "meaning": 36}),
+    ("a", "EQUAL", {"geoPointValue": {"latitude": "NaN"}}),
+    ("a", "EQUAL", {"geoPointValue": {"longitude": "NaN"}}),
+    ("a", "EQUAL", {"geoPointValue": {"latitude": "NaN", "longitude": 181}}),
+    ("a", "EQUAL", {"entityValue": {"key": {"path": [{"kind": "K"}, {"kind": "K"}]}}}),
+    ("a", "EQUAL", {"entityValue": {"key": {"path": []}}}),
+    ("a", "EQUAL", {"entityValue": {"properties": {"": {"integerValue": "1"}}}, "meaning": 14}),
+    ("a", "EQUAL", {"stringValue": "s" * 1501, "meaning": 14}),
+    ("a", "EQUAL", {"geoPointValue": {"latitude": 91}, "meaning": 14}),
+    ("a", "EQUAL", {"entityValue": {"key": {"path": []}}, "meaning": 14}),
+    ("a", "EQUAL", {"keyValue": {"path": [{"kind": "K"}]}, "meaning": 14}),
+    ("a", "EQUAL", {"keyValue": {"path": [{"kind": "K", "name": "x"}], "partitionId": {"namespaceId": "é"}}, "meaning": 14}),
+    ("a", "EQUAL", {"arrayValue": {"values": [{"keyValue": {"path": [{"kind": "K"}]}}]}, "meaning": 14}),
+    ("a", "EQUAL", {"arrayValue": {"values": [{"integerValue": "1"}]}, "excludeFromIndexes": True, "meaning": 14}),
+    ("a", "IN", {"arrayValue": {"values": [{"arrayValue": {"values": [{"doubleValue": 1}]}, "meaning": 31}]}}),
+    ("a", "IN", {"arrayValue": {"values": [{"arrayValue": {"values": [{"doubleValue": 1}, {"doubleValue": 2}]}, "meaning": 31}]}}),
+    ("a", "IN", {"arrayValue": {"values": [{"arrayValue": {"values": []}, "meaning": 31}]}}),
+    ("a", "IN", {"arrayValue": {"values": [{"arrayValue": {"values": [{"doubleValue": 1}]}, "meaning": 31, "excludeFromIndexes": True}]}}),
+    ("a", "IN", {"arrayValue": {"values": [{"arrayValue": {"values": [{"doubleValue": 1, "excludeFromIndexes": True}]}, "meaning": 31}]}}),
+    ("a", "IN", {"arrayValue": {"values": [{"arrayValue": {"values": [{"doubleValue": 1, "meaning": 1}]}, "meaning": 31}]}}),
+    ("a", "IN", {"arrayValue": {"values": [{"arrayValue": {"values": [{"integerValue": "1"}, {"doubleValue": 1}]}, "meaning": 31}]}}),
+    ("a", "IN", {"arrayValue": {"values": [{"arrayValue": {"values": [{"doubleValue": "NaN"}]}, "meaning": 31}]}}),
+    ("a", "IN", {"arrayValue": {"values": [{"arrayValue": {"values": [{"doubleValue": "Infinity"}]}, "meaning": 31}]}}),
+    ("a", "IN", {"arrayValue": {"values": [{"arrayValue": {"values": [{"doubleValue": 1}, {"arrayValue": {}}]}, "meaning": 31}]}}),
+    ("a", "IN", {"arrayValue": {"values": [{"arrayValue": {"values": [{"NoneValue": None}]}, "meaning": 31}]}}),
+    ("a", "IN", {"arrayValue": {"values": [{"arrayValue": {"values": []}, "meaning": 31, "excludeFromIndexes": True}]}}),
+    ("a", "EQUAL", {"integerValue": "1", "meaning": 18}),
+    ("a", "EQUAL", {"timestampValue": "2020-01-01T00:00:00Z", "meaning": 18}),
+    ("a", "EQUAL", {"geoPointValue": {}, "meaning": 23}),
+    ("a", "EQUAL", {"integerValue": "1", "excludeFromIndexes": True}),
+    ("a", "IN", {"arrayValue": {"values": [{"integerValue": "1", "excludeFromIndexes": True}]}}),
+    ("a", "IN", {"arrayValue": {"values": [{"integerValue": "1"}]}, "excludeFromIndexes": True}),
+    ("a", "IN", {"arrayValue": {"values": [{"stringValue": "s" * 1947}]}}),
+    ("a", "NOT_IN", {"arrayValue": {"values": [{"stringValue": "s" * 2001}]}}),
+    ("a", "NOT_IN", {"arrayValue": {"values": [{}]}}),
+    ("a", "IN", {"arrayValue": {"values": [{}]}}),
+    ("a", "EQUAL", {"arrayValue": {"values": [{}]}}),
+    ("a", "IN", {"arrayValue": {"values": [{"arrayValue": {"values": [{"doubleValue": 1}]}, "meaning": 31}]}}),
+    ("a", "IN", {"arrayValue": {"values": [{"doubleValue": 1}]}, "meaning": 31}),
+    ("a", "LESS_THAN", {"arrayValue": {"values": [{"doubleValue": 1}]}, "meaning": 31}),
+    ("a", "IN", {"arrayValue": {"values": [{"integerValue": "1"}]}, "meaning": 14}),
+    ("__key__", "EQUAL", {"keyValue": {"path": [{"kind": "K", "name": "x"}]}, "meaning": 14}),
+    ("__key__", "HAS_ANCESTOR", {"keyValue": {"path": [{"kind": "K", "name": "x"}]}, "excludeFromIndexes": True}),
+    ("__key__", "HAS_ANCESTOR", {"keyValue": {"path": [{}]}}),
+]
+MEANING_TYPES = {
+    "an integer": ONE, "a string": {"stringValue": "x"}, "a blob": {"blobValue": "YQ=="},
+    "an entity": {"entityValue": {}}, "null": {"nullValue": None}, "a point": {"geoPointValue": {"latitude": 1}},
+    "a key": {"keyValue": key("K", "a")}, "a timestamp": {"timestampValue": "2020-01-01T00:00:00Z"},
+}
+
+
+def operand_values():
+    """Each filter of `OPERAND_VALUES`, then each meaning on each type, as one problem each."""
+    out = [(f"operand {n}", {"filter": pf(name, op, value)}) for n, (name, op, value) in enumerate(OPERAND_VALUES)]
+    for meaning in range(-1, 42):
+        for name, value in MEANING_TYPES.items():
+            out.append((f"{name} meaning {meaning}", {"filter": pf("a", "EQUAL", {**value, "meaning": meaning})}))
+    return out
+
+
+REPRESENTATIVE = [
+    "a composite filter without an operator", "a filter without a value", "an array operand", "an entity operand",
+    "IN arrays", "an ancestor in a disjunction", "an empty kind", "an empty projected name", "a negative limit",
+    "two NOT_EQUAL", "NOT_IN with IN", "two kinds", "IN an empty array", "an ancestor that is not a key",
+    "a cursor that does not parse", "36 disjunctions", "a property ordered twice", "an order without a kind",
+    "a key filter on a string", "a projection of an equality", "a kind query with a property filter",
+]
+AGGREGATION_REPRESENTATIVE = [
+    "an aggregation without an operator", "a negative up_to", "two kinds", "an empty filter", "a filter without a value",
+    "IN an empty array", "two ancestors", "a cursor that does not parse", "36 disjunctions", "a property ordered twice",
+    "six aggregations", "a reserved kind", "a negative limit", "an ancestor in another namespace",
+    "a filter without a kind", "a projection of an equality", "an array operand", "a key filter on a string",
+    "an empty projected name", "no aggregations",
+]
+
 # A problem of an aggregation query: aggregations it adds, and parts of the nested query it sets.
 AGGREGATION = {
     "an aggregation without an operator": {"aggregations": [{"alias": "op"}]},
@@ -277,6 +482,14 @@ AGGREGATION_PARTS = {
     "a disjunction of the same ancestor alone": {"filter": composite("OR", ANCESTOR, ANCESTOR)},
     "the key projected twice": {"projection": [prop("__key__"), prop("__key__")]},
     "a kind of four underscores": {"kind": [{"name": "____"}]},
+    "a filter without a property": {"filter": {"propertyFilter": {"op": "EQUAL", "value": ONE}}},
+    "a filter without a property or an operator": {"filter": {"propertyFilter": {"value": ONE}}},
+    "a filter without a property, IN an array without values": {"filter": {"propertyFilter": {
+        "op": "IN", "value": array(array())}}},
+    "NOT_IN an array without values": {"filter": pf("a", "NOT_IN", array(array()))},
+    "NOT_IN an unindexed element": {"filter": pf("a", "NOT_IN", array({**ONE, "excludeFromIndexes": True}))},
+    "IN an unindexed element": {"filter": pf("a", "IN", array({**ONE, "excludeFromIndexes": True}))},
+    "IN an array without values, without a kind": {"kind": [], "filter": pf("a", "IN", array(array()))},
     "a sum of four underscores": {"aggregations": [{"sum": {"property": {"name": "____"}}}]},
     "an alias of four underscores": {"aggregations": [{"count": {}, "alias": "____"}]},
 }
@@ -371,6 +584,12 @@ PARTS = {
         "__property__", order=[{**prop("a"), "direction": "DESCENDING"}]),
     "a kind query ordered by a property, then descending": kind_query(
         order=[prop("a"), {**prop("b"), "direction": "DESCENDING"}]),
+    "NOT_IN an array without values": {"filter": pf("a", "NOT_IN", array(array()))},
+    "NOT_IN an array without values, without a kind": {"kind": [], "filter": pf("a", "NOT_IN", array(array()))},
+    "IN an array without values, without a kind": {"kind": [], "filter": pf("a", "IN", array(array()))},
+    "IN an array without values, projected": {"projection": [prop("a")], "filter": pf("a", "IN", array(array()))},
+    "NOT_IN an unindexed element": {"filter": pf("a", "NOT_IN", array({**ONE, "excludeFromIndexes": True}))},
+    "IN an unindexed element, without a kind": {"kind": [], "filter": pf("a", "IN", array({**ONE, "excludeFromIndexes": True}))},
     "four underscores projected": {"projection": [prop("____")]},
     "distinct on four underscores": {"distinctOn": [{"name": "____"}]},
     "a property projected twice, then a reserved name": {"projection": [prop("a"), prop("a"), prop("__x__")]},
@@ -413,16 +632,44 @@ def cases(catalogue, build):
     return out
 
 
+def paired(operands, catalogue, representative, build):
+    """Each of `operands` alone, with each problem of the request, and with each representative
+    problem, both ways."""
+    out = [(name, build([problem])) for name, problem in operands.items()]
+    of_request = lambda p: any(part in REQUEST for part in p)  # noqa: E731
+    for (a, pa), (b, pb) in itertools.permutations(operands.items(), 2):
+        if fits(pa, pb) and (of_request(pa) or of_request(pb)):
+            out.append((f"{a}, then {b}", build([pa, pb])))
+    for a, pa in operands.items():
+        for b in representative:
+            pb = catalogue[b]
+            if fits(pa, pb):
+                out.append((f"{a}, then {b}", build([pa, pb])))
+                out.append((f"{b}, then {a}", build([pb, pa])))
+    return out
+
+
+# Parts of the request a problem may set, outside the query.
+REQUEST = ("partitionId", "readOptions")
+
+
 def query_body(problems):
     q, _ = combined(problems, {"kind": [{"name": "K"}]})
-    return "runQuery", {"query": q}
+    request = {part: q.pop(part) for part in REQUEST if part in q}
+    return "runQuery", {"query": q, **request}
 
 
 def aggregation_body(problems):
     q, aggregations = combined(problems, {"kind": [{"name": "K"}]})
+    request = {part: q.pop(part) for part in REQUEST if part in q}
     if not aggregations and not any(p.get("aggregations") == [] for p in problems):
         aggregations = [{"count": {}, "alias": "c"}]
-    return "runAggregationQuery", {"aggregationQuery": {"nestedQuery": q, "aggregations": aggregations}}
+    return "runAggregationQuery", {"aggregationQuery": {"nestedQuery": q, "aggregations": aggregations}, **request}
+
+
+def compress(text):
+    """Runs of 200 or more of one character as `{repeat:<c>:<n>}`; the test expands them."""
+    return re.sub(r"(.)\1{199,}", lambda m: f"{{repeat:{m.group(1)}:{len(m.group(0))}}}", text)
 
 
 def call(path, body):
@@ -445,13 +692,18 @@ def record(section, built):
 def main():
     recorded = (record("query", cases(QUERY, query_body))
                 + record("query", [(name, query_body([p])) for name, p in PARTS.items()])
+                + record("query", paired(OPERANDS, QUERY, REPRESENTATIVE, query_body))
+                + record("query", [(name, query_body([p])) for name, p in operand_values()])
                 + record("aggregation", cases(AGGREGATION, aggregation_body))
-                + record("aggregation", [(name, aggregation_body([p])) for name, p in AGGREGATION_PARTS.items()]))
+                + record("aggregation", [(name, aggregation_body([p])) for name, p in AGGREGATION_PARTS.items()])
+                + record("aggregation", paired(OPERANDS, AGGREGATION, AGGREGATION_REPRESENTATIVE, aggregation_body))
+                + record("aggregation", [(name, aggregation_body([p])) for name, p in operand_values()]))
     sys.stdout.write('{\n "oracle": "cloud-firestore-emulator v1.22.0 (sha256 '
                      '9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c)",\n'
                      ' "generated_by": "tools/oracle/datastore_checks.py",\n'
                      f' "every_case": {json.dumps(EVERY_CASE)},\n "cases": [\n')
-    sys.stdout.write(",\n".join("  " + json.dumps(c, ensure_ascii=False, separators=(",", ":")) for c in recorded))
+    sys.stdout.write(",\n".join("  " + compress(json.dumps(c, ensure_ascii=False, separators=(",", ":")))
+                                 for c in recorded))
     sys.stdout.write("\n ]\n}\n")
 
 

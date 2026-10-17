@@ -512,6 +512,12 @@ SENT = [
     (Q, "SELECT * FROM K WHERE a HAS ANCESTOR ARRAY(1)"),
     (Q, "SELECT * FROM K WHERE a HAS ANCESTOR @a", {'namedBindings': {'a': {'value': {'entityValue': {}}}}}),
     (Q, "SELECT * FROM K WHERE ARRAY(KEY(K, 1)) HAS DESCENDANT a"),
+    # GQL is read before the request's partition and read options are checked.
+    (Q, "SELECT x x", {'partitionId': {'namespaceId': 'é'}}),
+    (Q, "SELECT x x", {'readOptions': {'readConsistency': 'READ_CONSISTENCY_UNSPECIFIED'}}),
+    (A, "SELECT x x", {'readOptions': {'transaction': ''}}),
+    (A, "SELECT COUNT(*) FROM K", {'partitionId': {'namespaceId': 'é'}}),
+    (Q, "SELECT * FROM K WHERE a = KEY(K, 1)", {'partitionId': {'namespaceId': 'é'}}),
     # Binding names.
     (Q, "SELECT * FROM K", {'namedBindings': {'': {'value': {}}}}),
     (Q, "SELECT * FROM K", {'namedBindings': {'': {'cursor': ''}}}),
@@ -600,10 +606,8 @@ def main():
               for verb, text in probes()]
     for verb, text, *own in SENT:
         own = dict(own[0]) if own else {}
-        partition = own.pop("partitionId", None)
-        body = {"gqlQuery": {"queryString": text, "allowLiterals": True, **own}}
-        if partition:
-            body["partitionId"] = partition
+        request = {part: own.pop(part) for part in ("partitionId", "readOptions") if part in own}
+        body = {"gqlQuery": {"queryString": text, "allowLiterals": True, **own}, **request}
         bodies.append((verb, text, body))
     for verb, text, body in bodies:
         status, ctype, answer = call(verb, body)
