@@ -29,10 +29,17 @@ const KNOWN_QUERIES: &[&str] = &[];
 /// The GQL queries hidane answers otherwise, on purpose (docs/parity-exceptions.md).
 const KNOWN_GQL: &[&str] = &[];
 
+/// The requests of `datastore_indexes.json` hidane answers otherwise, on purpose
+/// (docs/parity-exceptions.md), as `run: request`.
+const KNOWN_INDEXES: &[&str] = &[];
+
 async fn start() -> SocketAddr {
+    start_with(hidane::Admin::default().with_datastore_mode(true)).await
+}
+
+async fn start_with(admin: hidane::Admin) -> SocketAddr {
     let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let addr = listener.local_addr().unwrap();
-    let admin = hidane::Admin::default().with_datastore_mode(true);
     tokio::spawn(hidane::serve(
         vec![listener],
         hidane::grpc_routes(&admin),
@@ -150,6 +157,12 @@ fn at<'a>(json: &'a Json, path: &str) -> Option<&'a Json> {
 async fn replay(fixture: &Json, known: &[&str]) -> Vec<String> {
     assert_eq!(fixture["mode"], "datastore-mode");
     let addr = start().await;
+    seed(addr, fixture).await;
+    replay_cases(addr, fixture["cases"].as_array().unwrap(), known, None).await
+}
+
+/// Writes the fixture's dataset, if it has one.
+async fn seed(addr: SocketAddr, fixture: &Json) {
     if let Some(dataset) = fixture.get("dataset").and_then(Json::as_array) {
         for chunk in dataset.chunks(500) {
             let mutations: Vec<Json> = chunk
@@ -168,11 +181,29 @@ async fn replay(fixture: &Json, known: &[&str]) -> Vec<String> {
             assert_eq!(answer.status, 200, "{}", answer.body);
         }
     }
+}
+
+/// Sends each case in order and compares the answers. A step that writes the index file
+/// (`write_index_file`) writes `dir/index.yaml`, or removes it.
+async fn replay_cases(
+    addr: SocketAddr,
+    cases: &[Json],
+    known: &[&str],
+    dir: Option<&std::path::Path>,
+) -> Vec<String> {
     // Transactions and cursors the server gave, by the names the fixture gives them.
     let mut labels: Vec<(String, String)> = Vec::new();
     let mut differences = Vec::new();
-    for case in fixture["cases"].as_array().unwrap() {
+    for case in cases {
         let name = case["name"].as_str().unwrap();
+        if let Some(content) = case.get("write_index_file") {
+            let path = dir.expect("a run's directory").join("index.yaml");
+            match content.as_str() {
+                Some(text) => std::fs::write(&path, text).unwrap(),
+                None => std::fs::remove_file(&path).unwrap(),
+            }
+            continue;
+        }
         let path = case["path"].as_str().unwrap().replace("{project}", PROJECT);
         let mut body = match (case.get("raw"), case.get("body")) {
             (Some(raw), _) => Some(raw.as_str().unwrap().replace("{project}", PROJECT)),
@@ -370,6 +401,135 @@ async fn gql_answers_like_the_official_emulator() {
     let cases = fixture["cases"].as_array().unwrap().len();
     assert!(cases > 100);
     let differences = replay(&fixture, KNOWN_GQL).await;
+    assert!(
+        differences.is_empty(),
+        "{} of {cases} requests differ:\n{}",
+        differences.len(),
+        differences.join("\n")
+    );
+}
+
+/// `--require_indexes` over gRPC, as the official emulator answers there: a missing index as
+/// `FAILED_PRECONDITION`, an index file that cannot be read as `UNKNOWN` without a message.
+#[tokio::test]
+async fn index_enforcement_over_grpc() {
+    use hidane_proto::google::datastore::v1::{
+        KindExpression, LookupRequest, PropertyOrder, PropertyReference, Query, RunQueryRequest,
+        datastore_client::DatastoreClient, run_query_request::QueryType,
+    };
+    use tonic::transport::Channel;
+
+    let dir = std::env::temp_dir().join(format!("hidane-datastore-grpc-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(dir.join("index.yaml"), "indexes:\n- kind: P\n").unwrap();
+    let client = |admin: hidane::Admin| async {
+        let addr = start_with(admin).await;
+        let channel = Channel::from_shared(format!("http://{addr}"))
+            .unwrap()
+            .connect()
+            .await
+            .unwrap();
+        DatastoreClient::new(channel)
+    };
+    let query = |properties: &[&str]| RunQueryRequest {
+        project_id: "grpc".into(),
+        query_type: Some(QueryType::Query(Query {
+            kind: vec![KindExpression { name: "P".into() }],
+            order: properties
+                .iter()
+                .map(|name| PropertyOrder {
+                    property: Some(PropertyReference {
+                        name: (*name).into(),
+                    }),
+                    direction: 0,
+                })
+                .collect(),
+            ..Query::default()
+        })),
+        ..RunQueryRequest::default()
+    };
+    let admin = hidane::Admin::default().with_datastore_mode(true);
+    let mut enforced = client(
+        admin
+            .clone()
+            .with_datastore_indexes(Some(dir.join("index.yaml"))),
+    )
+    .await;
+    assert!(enforced.run_query(query(&[])).await.is_ok());
+    let missing = enforced.run_query(query(&["a", "b"])).await.unwrap_err();
+    assert_eq!(missing.code(), tonic::Code::FailedPrecondition);
+    assert_eq!(
+        missing.message(),
+        "The query requires a composite index that is not defined in your indexes file."
+    );
+    let mut unread = client(admin.with_datastore_indexes(Some(dir.join("none.yaml")))).await;
+    let failed = unread
+        .lookup(LookupRequest {
+            project_id: "grpc".into(),
+            ..LookupRequest::default()
+        })
+        .await
+        .unwrap_err();
+    assert_eq!(
+        (failed.code(), failed.message()),
+        (tonic::Code::Unknown, "")
+    );
+    std::fs::remove_dir_all(&dir).unwrap();
+}
+
+/// `--require_indexes` (`fixtures/datastore_indexes.json`, from
+/// `tools/oracle/datastore_indexes.py`): each run's flags and index file, then its requests:
+/// which queries the file's indexes serve, which refusals come before the index and which after,
+/// the spellings and mistakes of the file, and when it is read.
+#[tokio::test]
+async fn indexes_answer_like_the_official_emulator() {
+    static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+    let fixture: Json =
+        serde_json::from_str(include_str!("fixtures/datastore_indexes.json")).unwrap();
+    assert_eq!(fixture["mode"], "datastore-mode");
+    let mut cases = 0;
+    let mut differences = Vec::new();
+    for run in fixture["runs"].as_array().unwrap() {
+        let name = run["name"].as_str().unwrap();
+        let n = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        let dir = std::env::temp_dir().join(format!(
+            "hidane-datastore-indexes-{}-{n}",
+            std::process::id()
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        if let Some(text) = run["index_file"].as_str() {
+            std::fs::write(dir.join("index.yaml"), text).unwrap();
+        }
+        let flags: Vec<String> = run["flags"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|f| f.as_str().unwrap().replace("{dir}", dir.to_str().unwrap()))
+            .collect();
+        let mut admin = hidane::Admin::default().with_datastore_mode(true);
+        if flags.iter().any(|f| f == "--require_indexes") {
+            let file = flags
+                .iter()
+                .position(|f| f == "--index_file")
+                .map(|i| std::path::PathBuf::from(&flags[i + 1]));
+            admin = admin.with_datastore_indexes(file);
+        }
+        let addr = start_with(admin).await;
+        if run["seeded"] == true {
+            seed(addr, &fixture).await;
+        }
+        let list = run["cases"].as_array().unwrap();
+        cases += list.iter().filter(|c| c.get("outcome").is_some()).count();
+        let known: Vec<&str> = KNOWN_INDEXES
+            .iter()
+            .filter_map(|k| k.strip_prefix(name)?.strip_prefix(": "))
+            .collect();
+        for difference in replay_cases(addr, list, &known, Some(&dir)).await {
+            differences.push(format!("[{name}] {difference}"));
+        }
+        std::fs::remove_dir_all(&dir).unwrap();
+    }
+    assert!(cases > 400);
     assert!(
         differences.is_empty(),
         "{} of {cases} requests differ:\n{}",

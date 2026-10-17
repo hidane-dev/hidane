@@ -260,9 +260,9 @@ fn other_scripts_and_unserved_flags_are_refused() {
             "`--store-on-disk` is not a flag",
         ),
         (
-            "gcloud beta emulators firestore start --database-mode=datastore-mode --require-indexes",
+            "gcloud beta emulators firestore start --database-mode=firestore-native --require-indexes",
             2,
-            "hidane does not enforce indexes in Datastore mode yet",
+            "Firestore Native mode does not support index enforcement",
         ),
     ] {
         let output = Command::new(BIN)

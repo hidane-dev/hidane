@@ -66,6 +66,7 @@ FIXTURE_CLIENTS = {
     "cors.py": ([REST], PY),
     "datastore_entities.py": ([REST], PY),
     "datastore_gql.py": ([REST], PY),
+    "datastore_indexes.py": ([REST, PROCESS], PY),
     "datastore_queries.py": ([REST], PY),
     "document_writes.py": ([REST], PY),
     "export_import.py": ([REST, PROCESS], PY),

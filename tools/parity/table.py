@@ -680,6 +680,16 @@ RECORDINGS = {
                  "the text reads as, the results, the parser's messages), server times, "
                  "versions, transaction IDs and cursors masked",
         count=lambda f: [(REST, FULL) for _ in f["cases"]]),
+    f"{H}/fixtures/datastore_indexes.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::indexes_answer_like_the_official_emulator"],
+        counted="each request of each run, to a server started with `--database-mode "
+                "datastore-mode` and the run's flags (`--require_indexes`, `--index_file`) and "
+                "index file; " + OVER_REST,
+        compares="in full: status, content type and body byte for byte, server times, versions, "
+                 "transaction IDs and cursors masked",
+        count=lambda f: [(REST, FULL) for run in f["runs"] for case in run["cases"]
+                         if "outcome" in case]),
     f"{H}/fixtures/datastore_queries.json": dict(
         area="datastore",
         tests=[f"{H}/datastore.rs::datastore_queries_answer_like_the_official_emulator"],

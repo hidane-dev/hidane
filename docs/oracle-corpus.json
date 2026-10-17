@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:4e6f4111e40bc5ed48257f9aaa55275af913f750b69117a859a20dbc151c14be",
+ "digest": "sha256:dadc35197eb2cd2b0df41c715672ef70e8985732ba4f6067850de347afdb2cf8",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,13 +14,13 @@
   }
  ],
  "totals": {
-  "files": 106,
-  "fixtures": 64,
+  "files": 107,
+  "fixtures": 65,
   "transcripts": 42,
-  "answers": 36192,
-  "bytes": 25471131,
+  "answers": 36791,
+  "bytes": 26196525,
   "levels": {
-   "full": 24862,
+   "full": 25461,
    "reasons": 4344,
    "part": 1481,
    "status": 5189,
@@ -80,20 +80,20 @@
     "answers": 278
    },
    "datastore": {
-    "fixtures": 3,
+    "fixtures": 4,
     "transcripts": 0,
-    "answers": 560
+    "answers": 1159
    }
   },
   "by_release": {
    "v1.22.0": {
-    "fixtures": 64,
+    "fixtures": 65,
     "transcripts": 42,
-    "answers": 36192
+    "answers": 36791
    }
   },
   "by_release_source": {
-   "header": 39,
+   "header": 40,
    "file name": 43,
    "git history": 24
   }
@@ -2543,6 +2543,43 @@
    ],
    "counted": "each GQL query and aggregation query, to a server started with `--database-mode datastore-mode` over the dataset of `datastore_queries.json`; recorded over REST",
    "compared": "in full: status, content type and body byte for byte (the structured query the text reads as, the results, the parser's messages), server times, versions, transaction IDs and cursors masked"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/datastore_indexes.json",
+   "kind": "fixture",
+   "area": "datastore",
+   "recorder": "tools/oracle/datastore_indexes.py",
+   "client": {
+    "over": [
+     "REST",
+     "process"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-16",
+    "last_changed": "2026-10-16"
+   },
+   "bytes": 725394,
+   "sha256": "da64d63b8161b892b079d19ce2f915955717b4c9c518879ca93ac134666e32d3",
+   "answers": 599,
+   "levels": {
+    "full": 599
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/datastore.rs::indexes_answer_like_the_official_emulator"
+   ],
+   "counted": "each request of each run, to a server started with `--database-mode datastore-mode` and the run's flags (`--require_indexes`, `--index_file`) and index file; recorded over REST",
+   "compared": "in full: status, content type and body byte for byte, server times, versions, transaction IDs and cursors masked"
   },
   {
    "path": "crates/hidane/tests/fixtures/datastore_queries.json",

@@ -182,6 +182,17 @@ impl Admin {
         self
     }
 
+    /// `--require_indexes` in Datastore mode: queries need the indexes `--index_file` defines
+    /// (`file`), read as the official emulator reads them (#81). After
+    /// [`Admin::with_datastore_mode`]; nothing in Firestore Native mode.
+    #[must_use]
+    pub fn with_datastore_indexes(mut self, file: Option<std::path::PathBuf>) -> Self {
+        if self.datastore.is_some() {
+            self.datastore = Some(datastore::DatastoreService::with_indexes(file));
+        }
+        self
+    }
+
     /// `--database-edition enterprise`.
     #[must_use]
     pub fn with_enterprise_edition(mut self, enterprise: bool) -> Self {

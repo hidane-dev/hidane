@@ -640,7 +640,7 @@ fn dependency_findings(facts: &Facts, ci: &ci::Ci, out: &mut Vec<Finding>) -> Ve
                 Finding::unknown(
                     "dependency.datastore",
                     g,
-                    format!("{} {shown}: hidane serves Datastore mode (entities, transactions, queries, aggregations, GQL), not index enforcement yet (#81); if these clients use the Firestore emulator in Datastore mode — manual verification required", dep.name),
+                    format!("{} {shown}: hidane serves Datastore mode (entities, transactions, queries, aggregations, GQL, index enforcement), not yet tested with the Datastore client libraries (#81); if these clients use the Firestore emulator in Datastore mode — manual verification required", dep.name),
                 )
                 .with_source(verified::GAP_DATASTORE),
             ),
@@ -915,7 +915,7 @@ fn workflow_findings(facts: &Facts, ci: &ci::Ci, out: &mut Vec<Finding>) {
                 "gcloud.datastore-mode",
                 group,
                 format!(
-                    "{}:{}: hidane serves Datastore mode (entities, transactions, queries, aggregations, GQL), not index enforcement yet (#81) — manual verification required",
+                    "{}:{}: hidane serves Datastore mode (entities, transactions, queries, aggregations, GQL, index enforcement), not yet tested with the Datastore client libraries (#81) — manual verification required",
                     note.file, note.line
                 ),
             )

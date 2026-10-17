@@ -10,9 +10,11 @@
 //! `Lookup`, `Commit`, `BeginTransaction`, `Rollback`, `AllocateIds` and `ReserveIds`
 //! (`tests/fixtures/datastore_entities.json`), and structured `RunQuery` and
 //! `RunAggregationQuery` ([`query`], `tests/fixtures/datastore_queries.json`), and GQL
-//! ([`gql`], `tests/fixtures/datastore_gql.json`).
+//! ([`gql`], `tests/fixtures/datastore_gql.json`), with the indexes `--require_indexes` asks for
+//! ([`indexes`], `tests/fixtures/datastore_indexes.json`).
 
 mod gql;
+mod indexes;
 pub(crate) mod keys;
 mod query;
 pub(crate) mod rest;
@@ -61,6 +63,8 @@ pub struct DatastoreService {
 struct State {
     data: Mutex<Data>,
     transactions: Transactions,
+    /// `--require_indexes`: the indexes queries need.
+    enforcement: Option<indexes::Enforcement>,
 }
 
 #[derive(Default)]
@@ -157,10 +161,34 @@ impl DatastoreService {
             .unwrap_or_else(PoisonError::into_inner)
     }
 
-    /// Every entity of every database, and every open transaction (`POST /reset`).
+    /// `--require_indexes`: queries need the indexes `file` (`--index_file`) defines.
+    #[must_use]
+    pub fn with_indexes(file: Option<std::path::PathBuf>) -> Self {
+        Self {
+            state: Arc::new(State {
+                enforcement: Some(indexes::Enforcement::new(file)),
+                ..State::default()
+            }),
+        }
+    }
+
+    /// Every entity of every database, and every open transaction (`POST /reset`); the index
+    /// file is read again.
     pub fn reset(&self) {
         *self.data() = Data::default();
         self.state.transactions.clear();
+        if let Some(enforcement) = &self.state.enforcement {
+            enforcement.reset();
+        }
+    }
+
+    /// With `--require_indexes`, the indexes `database` read from the file.
+    fn indexes(&self, database: &Database) -> Result<Option<Arc<Vec<indexes::Composite>>>, Status> {
+        self.state
+            .enforcement
+            .as_ref()
+            .map(|enforcement| enforcement.indexes(database))
+            .transpose()
     }
 
     /// A read time a request names: not before the database was first used.
@@ -224,8 +252,8 @@ impl DatastoreService {
         Ok(partition.namespace_id)
     }
 
-    /// A query's read options: a read time is checked; a transaction locks `kind` (every kind
-    /// without one, as a key range); eventual consistency reads as strong.
+    /// A query's read options: a transaction locks `kind` (every kind without one, as a key
+    /// range); eventual consistency reads as strong. A read time is checked by [`Self::read_at`].
     fn read_query(
         &self,
         options: Option<ReadOptions>,
@@ -245,9 +273,7 @@ impl DatastoreService {
         };
         match options.and_then(|o| o.consistency_type) {
             None | Some(read_options::ConsistencyType::ReadConsistency(_)) => {}
-            Some(read_options::ConsistencyType::ReadTime(time)) => {
-                self.check_read_time(database, &time)?;
-            }
+            Some(read_options::ConsistencyType::ReadTime(_)) => {}
             Some(read_options::ConsistencyType::Transaction(transaction)) => {
                 lock(&transaction)?;
             }
@@ -258,6 +284,16 @@ impl DatastoreService {
             }
         }
         Ok(reading)
+    }
+
+    /// A query's read time: checked once everything else is.
+    fn read_at(&self, options: Option<&ReadOptions>, database: &Database) -> Result<(), Status> {
+        if let Some(read_options::ConsistencyType::ReadTime(time)) =
+            options.and_then(|o| o.consistency_type.as_ref())
+        {
+            self.check_read_time(database, time)?;
+        }
+        Ok(())
     }
 }
 
@@ -296,6 +332,7 @@ impl Datastore for DatastoreService {
             project: req.project_id,
             database: req.database_id,
         };
+        self.indexes(&database)?;
         let mut wanted: Vec<Located> = Vec::with_capacity(req.keys.len());
         for key in &req.keys {
             let located = keys::check(key, &database, Rules::Read, Last::Complete)?
@@ -377,6 +414,7 @@ impl Datastore for DatastoreService {
             project: req.project_id,
             database: req.database_id,
         };
+        self.indexes(&database)?;
         let transaction = self.begin(&database, req.transaction_options.as_ref())?;
         Ok(Response::new(BeginTransactionResponse { transaction }))
     }
@@ -390,6 +428,7 @@ impl Datastore for DatastoreService {
             project: req.project_id,
             database: req.database_id,
         };
+        self.indexes(&database)?;
         let name = database.name();
         let transaction = match req.transaction_selector {
             Some(commit_request::TransactionSelector::Transaction(t)) => Some(t),
@@ -516,6 +555,7 @@ impl Datastore for DatastoreService {
             project: req.project_id,
             database: req.database_id,
         };
+        self.indexes(&database)?;
         self.state
             .transactions
             .rollback(&database.name(), &req.transaction)?;
@@ -531,6 +571,7 @@ impl Datastore for DatastoreService {
             project: req.project_id,
             database: req.database_id,
         };
+        self.indexes(&database)?;
         let checked = req
             .keys
             .iter()
@@ -557,6 +598,7 @@ impl Datastore for DatastoreService {
             project: req.project_id,
             database: req.database_id,
         };
+        let defined = self.indexes(&database)?;
         let namespace = Self::namespace(req.partition_id, &database)?;
         let mut echo = None;
         let query = match req.query_type {
@@ -578,8 +620,15 @@ impl Datastore for DatastoreService {
                 ));
             }
         };
-        let plan = query::plan(&query, &database, &namespace)?;
-        let reading = self.read_query(req.read_options, &database, plan.kind.as_deref())?;
+        let mut plan = query::plan(&query, &database, &namespace)?;
+        let reading = self.read_query(req.read_options.clone(), &database, plan.kind.as_deref())?;
+        if let Some(defined) = &defined {
+            indexes::check(&query, &[], defined)?;
+        }
+        if let Some(refused) = plan.refused.take() {
+            return Err(refused);
+        }
+        self.read_at(req.read_options.as_ref(), &database)?;
         let mut data = self.data();
         let read = data.read_micros();
         let stored = data.database(&database);
@@ -602,6 +651,7 @@ impl Datastore for DatastoreService {
             project: req.project_id,
             database: req.database_id,
         };
+        let defined = self.indexes(&database)?;
         let namespace = Self::namespace(req.partition_id, &database)?;
         let aggregation = match req.query_type {
             Some(run_aggregation_query_request::QueryType::AggregationQuery(a)) => a,
@@ -621,12 +671,20 @@ impl Datastore for DatastoreService {
                 ));
             }
         };
-        let aggregations = aggregations(&aggregation.aggregations)?;
         let nested = match aggregation.query_type {
             Some(aggregation_query::QueryType::NestedQuery(query)) => query,
             None => hidane_proto::google::datastore::v1::Query::default(),
         };
         let mut plan = query::plan(&nested, &database, &namespace)?;
+        let reading = self.read_query(req.read_options.clone(), &database, plan.kind.as_deref())?;
+        if let Some(defined) = &defined {
+            indexes::check(&nested, &aggregated(&aggregation.aggregations), defined)?;
+        }
+        if let Some(refused) = plan.refused.take() {
+            return Err(refused);
+        }
+        let aggregations = aggregations(&aggregation.aggregations, &nested)?;
+        self.read_at(req.read_options.as_ref(), &database)?;
         // A sum or an average reads its property: only entities that have it count.
         let key = plan.orders.pop();
         for (_, property) in &aggregations {
@@ -638,7 +696,6 @@ impl Datastore for DatastoreService {
             }
         }
         plan.orders.extend(key);
-        let reading = self.read_query(req.read_options, &database, plan.kind.as_deref())?;
         let mut data = self.data();
         let read = data.read_micros();
         let stored = data.database(&database);
@@ -700,6 +757,7 @@ impl Datastore for DatastoreService {
             project: req.project_id,
             database: req.database_id,
         };
+        self.indexes(&database)?;
         if req.keys.is_empty() {
             return Err(Status::failed_precondition(
                 "List of Ids to reserve cannot be empty.",
@@ -717,8 +775,21 @@ const MAX_AGGREGATIONS: usize = 5;
 
 /// Each aggregation's alias (`property_<n>` for one without, counted from 1) and the property a
 /// sum or an average reads.
+/// The properties a query's sums and averages read.
+fn aggregated(list: &[aggregation_query::Aggregation]) -> Vec<String> {
+    use aggregation_query::aggregation::Operator;
+    list.iter()
+        .filter_map(|aggregation| match &aggregation.operator {
+            Some(Operator::Sum(sum)) => sum.property.as_ref().map(|p| p.name.clone()),
+            Some(Operator::Avg(avg)) => avg.property.as_ref().map(|p| p.name.clone()),
+            Some(Operator::Count(_)) | None => None,
+        })
+        .collect()
+}
+
 fn aggregations(
     list: &[aggregation_query::Aggregation],
+    nested: &hidane_proto::google::datastore::v1::Query,
 ) -> Result<Vec<(String, Option<String>)>, Status> {
     use aggregation_query::aggregation::Operator;
     if list.is_empty() {
@@ -754,6 +825,21 @@ fn aggregations(
             Some(Operator::Sum(sum)) => sum.property.as_ref().map(|p| p.name.clone()),
             Some(Operator::Avg(avg)) => avg.property.as_ref().map(|p| p.name.clone()),
         };
+        if let Some(property) = &property {
+            if property == "__key__" {
+                return Err(Status::invalid_argument(
+                    "Aggregations are not supported for the property: __key__",
+                ));
+            }
+            let projected = |p: &hidane_proto::google::datastore::v1::Projection| {
+                p.property.as_ref().is_some_and(|p| p.name == *property)
+            };
+            if !nested.projection.is_empty() && !nested.projection.iter().any(projected) {
+                return Err(Status::invalid_argument(format!(
+                    "The aggregation property {property} is not present in the base query's projection."
+                )));
+            }
+        }
         out.push((alias, property));
     }
     Ok(out)
