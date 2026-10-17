@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"cloud.google.com/go/datastore"
 	"cloud.google.com/go/firestore"
 	"github.com/testcontainers/testcontainers-go"
 	tcfirestore "github.com/testcontainers/testcontainers-go/modules/gcloud/firestore"
@@ -95,6 +96,55 @@ func TestFirestoreModule(t *testing.T) {
 		}
 		run(t, client)
 	})
+}
+
+// The module's WithDatastoreMode() (#81): the Datastore API through the client library of
+// Datastore, and the Firestore API refused, as the official emulator does in that mode. Served from
+// the release after 0.6.0 on: HIDANE_DATASTORE says the image under test serves it.
+func TestFirestoreModuleInDatastoreMode(t *testing.T) {
+	if os.Getenv("HIDANE_DATASTORE") == "" {
+		t.Skip("set HIDANE_DATASTORE when the image serves Datastore mode")
+	}
+	ctx := context.Background()
+	ctr, err := tcfirestore.Run(ctx, image(t), tcfirestore.WithProjectID(project),
+		tcfirestore.WithDatastoreMode())
+	testcontainers.CleanupContainer(t, ctr)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("DATASTORE_EMULATOR_HOST", ctr.URI())
+	client, err := datastore.NewClient(ctx, ctr.ProjectID())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer client.Close()
+	type task struct {
+		Text string
+		Done bool
+	}
+	key := datastore.NameKey("Task", "t1", nil)
+	if _, err := client.Put(ctx, key, &task{Text: "a"}); err != nil {
+		t.Fatal(err)
+	}
+	var got task
+	if err := client.Get(ctx, key, &got); err != nil || got != (task{Text: "a"}) {
+		t.Fatalf("get: %v %+v", err, got)
+	}
+	keys, err := client.GetAll(ctx, datastore.NewQuery("Task").FilterField("Done", "=", false).KeysOnly(), nil)
+	if err != nil || len(keys) != 1 || keys[0].Name != "t1" {
+		t.Fatalf("query: %v %v", err, keys)
+	}
+
+	t.Setenv("FIRESTORE_EMULATOR_HOST", ctr.URI())
+	fs, err := firestore.NewClient(ctx, ctr.ProjectID())
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer fs.Close()
+	_, err = fs.Doc("c/d").Get(ctx)
+	if status.Code(err) != codes.InvalidArgument || !strings.Contains(err.Error(), "Database mode not set to Firestore Mode") {
+		t.Fatalf("the Firestore API in Datastore mode: %v", err)
+	}
 }
 
 func TestGenericContainer(t *testing.T) {

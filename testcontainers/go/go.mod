@@ -3,6 +3,7 @@ module github.com/hidane-dev/hidane/testcontainers/go
 go 1.26.0
 
 require (
+	cloud.google.com/go/datastore v1.27.0
 	cloud.google.com/go/firestore v1.26.0
 	github.com/testcontainers/testcontainers-go v0.44.0
 	github.com/testcontainers/testcontainers-go/modules/gcloud v0.44.0

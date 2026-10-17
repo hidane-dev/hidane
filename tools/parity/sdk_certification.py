@@ -135,6 +135,22 @@ CLIENTS = [
     dict(id="python", client="google-cloud-firestore (Python)", ecosystem="pypi",
          package="google-cloud-firestore", platform="Python", transport=[GRPC], core=SDK,
          scope="over gRPC", compatibility="google-cloud-firestore (Python)"),
+    dict(id="datastore-node", client="@google-cloud/datastore, in Datastore mode", ecosystem="npm",
+         package="@google-cloud/datastore", platform="Node.js", transport=[GRPC],
+         core=["documents", "queries", "aggregations", "transactions"],
+         scope="over gRPC, against `--database-mode datastore-mode`"),
+    dict(id="datastore-python", client="google-cloud-datastore (Python), in Datastore mode",
+         ecosystem="pypi", package="google-cloud-datastore", platform="Python",
+         transport=[GRPC, REST], core=["documents", "queries", "aggregations", "transactions"],
+         scope="over gRPC and over HTTP, against `--database-mode datastore-mode`"),
+    dict(id="datastore-java", client="java-datastore, in Datastore mode", ecosystem="maven",
+         package="com.google.cloud:google-cloud-datastore", platform="JVM",
+         transport=[GRPC, REST], core=["documents", "queries", "aggregations", "transactions"],
+         scope="over gRPC and over HTTP, against `--database-mode datastore-mode`"),
+    dict(id="datastore-go", client="google-cloud-go datastore, in Datastore mode", ecosystem="go",
+         package="cloud.google.com/go/datastore", platform="Go", transport=[GRPC],
+         core=["documents", "queries", "aggregations", "transactions"],
+         scope="over gRPC, against `--database-mode datastore-mode`"),
     dict(id="go", client="google-cloud-go firestore", ecosystem="go",
          package="cloud.google.com/go/firestore", platform="Go", transport=[GRPC], core=SDK,
          scope="over gRPC", compatibility="google-cloud-go `firestore`"),
@@ -211,6 +227,15 @@ for _sdk in ("go", "java", "python"):
     EVIDENCE[f"sdk-{_sdk}-transactions"] = {_sdk: ["transactions"]}
     EVIDENCE[f"sdk-{_sdk}-listen"] = {_sdk: ["listeners"]}
 
+for _section, _features in (("entities", ["documents"]),
+                            ("queries", ["queries", "aggregations"]),
+                            ("transactions", ["transactions"])):
+    for _sdk in ("java", "python"):
+        EVIDENCE[f"sdk-datastore-{_sdk}-{_section}"] = {f"datastore-{_sdk}": _features}
+        EVIDENCE[f"sdk-datastore-{_sdk}-http-{_section}"] = {f"datastore-{_sdk}": _features}
+    EVIDENCE[f"sdk-datastore-go-{_section}"] = {"datastore-go": _features}
+    EVIDENCE[f"sdk-datastore-node-{_section}"] = {"datastore-node": _features}
+
 # How docs/migrating.md names each package hidane doctor judges.
 PACKAGE_LABELS = {
     ("npm", "firebase"): "`firebase` (JS SDK)",
@@ -218,12 +243,17 @@ PACKAGE_LABELS = {
                                         "`firebase-admin`)",
     ("npm", "@firebase/rules-unit-testing"): "`@firebase/rules-unit-testing`",
     ("npm", "firebase-tools"): "`firebase-tools`",
+    ("npm", "@google-cloud/datastore"): "`@google-cloud/datastore` (Node.js, Datastore mode)",
     ("npm", "firebase-functions"): "`firebase-functions` (Firestore triggers under the "
                                    "Functions emulator)",
     ("pypi", "google-cloud-firestore"): "`google-cloud-firestore` (Python)",
+    ("pypi", "google-cloud-datastore"): "`google-cloud-datastore` (Python, Datastore mode)",
     ("go", "cloud.google.com/go/firestore"): "`cloud.google.com/go/firestore`",
+    ("go", "cloud.google.com/go/datastore"): "`cloud.google.com/go/datastore` (Datastore mode)",
     ("maven", "com.google.cloud:google-cloud-firestore"):
         "`com.google.cloud:google-cloud-firestore` (Java)",
+    ("maven", "com.google.cloud:google-cloud-datastore"):
+        "`com.google.cloud:google-cloud-datastore` (Java, Datastore mode)",
     ("pub", "cloud_firestore"): "`cloud_firestore` (Flutter)",
     ("swiftpm", "FirebaseFirestore"): "`FirebaseFirestore` (firebase-ios-sdk)",
     ("maven", "com.google.firebase:firebase-firestore"):

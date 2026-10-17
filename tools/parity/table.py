@@ -690,6 +690,15 @@ RECORDINGS = {
                  "transaction IDs and cursors masked",
         count=lambda f: [(REST, FULL) for run in f["runs"] for case in run["cases"]
                          if "outcome" in case]),
+    f"{H}/fixtures/datastore_protobuf.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::protobuf_answers_like_the_official_emulator"],
+        counted="each request, to a server started with `--database-mode datastore-mode`, its "
+                "body in protobuf or JSON as its `Content-Type` says; " + OVER_REST,
+        compares="in full: status, content type and body byte for byte, where the answer holds no "
+                 "time or version; status and content type where it does",
+        count=lambda f: [(REST, FULL if case["compare"] == "exact" else STATUS)
+                         for case in f["cases"]]),
     f"{H}/fixtures/datastore_queries.json": dict(
         area="datastore",
         tests=[f"{H}/datastore.rs::datastore_queries_answer_like_the_official_emulator"],
@@ -1066,6 +1075,23 @@ for _sdk, _client in (("go", "Go SDK"), ("java", "Java SDK"), ("python", "Python
     for _section, _area in (("documents", "documents"), ("listen", "streams"),
                             ("queries", "queries"), ("transactions", "transactions")):
         TRANSCRIPTS[f"sdk-{_sdk}-{_section}"] = dict(area=_area, client=_client, transport="gRPC")
+
+# One transcript per section of tools/oracle/sdk_datastore_python/ and sdk_datastore_java/, over
+# gRPC and over HTTP, and of sdk_datastore_go/ and sdk_datastore_node.mjs, over gRPC.
+for _sdk, _client in (("python", "Datastore Python client (google-cloud-datastore)"),
+                      ("java", "Datastore Java client (google-cloud-datastore)")):
+    for _section in ("entities", "queries", "transactions"):
+        TRANSCRIPTS[f"sdk-datastore-{_sdk}-{_section}"] = dict(
+            area="datastore", client=_client, transport="gRPC")
+        TRANSCRIPTS[f"sdk-datastore-{_sdk}-http-{_section}"] = dict(
+            area="datastore", client=f"{_client} over HTTP", transport="REST")
+for _section in ("entities", "queries", "transactions"):
+    TRANSCRIPTS[f"sdk-datastore-go-{_section}"] = dict(
+        area="datastore", client="Datastore Go client (cloud.google.com/go/datastore)",
+        transport="gRPC")
+    TRANSCRIPTS[f"sdk-datastore-node-{_section}"] = dict(
+        area="datastore", client="Datastore Node.js client (@google-cloud/datastore)",
+        transport="gRPC")
 
 # JSON files in results/ that are neither a transcript nor a replayed recording.
 IGNORED = {
