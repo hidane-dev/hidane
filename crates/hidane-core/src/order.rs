@@ -7,6 +7,13 @@
 //! null < booleans < NaN < numbers < timestamps < strings < bytes < references < geo points
 //! < arrays < vectors < maps
 //!
+//! On an enterprise database the BSON types ([`crate::bson`]) take their places in it: min
+//! keys after null, 32-bit integers and 128-bit decimals among the numbers (by exact value),
+//! BSON timestamps after timestamps, binary data among the bytes (plain bytes being subtype 0:
+//! by subtype, then the data), object IDs after references, regular expressions after geo
+//! points (by pattern, then options), max keys after maps
+//! (`tests/fixtures/bson_types.json`).
+//!
 //! Within a type:
 //!
 //! - numbers compare by exact numeric value, integers and doubles mixed: `1 == 1.0`,
@@ -22,6 +29,7 @@
 
 use std::cmp::Ordering;
 
+use crate::bson::{self, AnyNumber, Bson};
 use hidane_proto::google::{
     firestore::v1::{ArrayValue, MapValue, Value, value::ValueType},
     r#type::LatLng,
@@ -33,16 +41,21 @@ use prost_types::Timestamp;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum TypeRank {
     Null,
+    MinKey,
     Boolean,
     Number,
     Timestamp,
+    BsonTimestamp,
     String,
     Bytes,
     Reference,
+    ObjectId,
     GeoPoint,
+    Regex,
     Array,
     Vector,
     Map,
+    MaxKey,
     /// Pipeline expressions (field / variable references, functions, pipelines). They are
     /// never stored, so their position is arbitrary; they compare equal to each other.
     Expression,
@@ -84,7 +97,16 @@ pub fn type_rank(value: &Value) -> TypeRank {
         Some(ValueType::GeoPointValue(_)) => TypeRank::GeoPoint,
         Some(ValueType::ArrayValue(_)) => TypeRank::Array,
         Some(ValueType::MapValue(map)) if is_vector(map) => TypeRank::Vector,
-        Some(ValueType::MapValue(_)) => TypeRank::Map,
+        Some(ValueType::MapValue(map)) => match bson::bson(map) {
+            None => TypeRank::Map,
+            Some(Bson::MinKey) => TypeRank::MinKey,
+            Some(Bson::MaxKey) => TypeRank::MaxKey,
+            Some(Bson::ObjectId(_)) => TypeRank::ObjectId,
+            Some(Bson::Regex { .. }) => TypeRank::Regex,
+            Some(Bson::Int32(_) | Bson::Decimal128(_)) => TypeRank::Number,
+            Some(Bson::Timestamp { .. }) => TypeRank::BsonTimestamp,
+            Some(Bson::Binary(_)) => TypeRank::Bytes,
+        },
         Some(
             ValueType::FieldReferenceValue(_)
             | ValueType::VariableReferenceValue(_)
@@ -102,12 +124,51 @@ pub fn compare(a: &Value, b: &Value) -> Ordering {
     }
     match (&a.value_type, &b.value_type) {
         (Some(ValueType::BooleanValue(x)), Some(ValueType::BooleanValue(y))) => x.cmp(y),
+        (Some(ValueType::MapValue(_)), _) | (_, Some(ValueType::MapValue(_)))
+            if rank_a == TypeRank::Number =>
+        {
+            match (AnyNumber::of(a), AnyNumber::of(b)) {
+                (Some(x), Some(y)) => bson::compare_numbers(x, y),
+                _ => Ordering::Equal,
+            }
+        }
         (Some(x), Some(y)) if rank_a == TypeRank::Number => compare_numbers(x, y),
+        (Some(ValueType::BytesValue(x)), Some(ValueType::BytesValue(y))) => x.cmp(y),
+        _ if rank_a == TypeRank::Bytes => bson::compare_bytes(subtyped(a), subtyped(b)),
+        _ if matches!(
+            rank_a,
+            TypeRank::ObjectId | TypeRank::Regex | TypeRank::BsonTimestamp
+        ) =>
+        {
+            match (bson::of(a), bson::of(b)) {
+                (Some(Bson::ObjectId(x)), Some(Bson::ObjectId(y))) => x.cmp(y),
+                (
+                    Some(Bson::Regex {
+                        pattern: p,
+                        options: o,
+                    }),
+                    Some(Bson::Regex {
+                        pattern: q,
+                        options: r,
+                    }),
+                ) => p.cmp(q).then_with(|| o.cmp(r)),
+                (
+                    Some(Bson::Timestamp {
+                        seconds: s,
+                        increment: i,
+                    }),
+                    Some(Bson::Timestamp {
+                        seconds: t,
+                        increment: j,
+                    }),
+                ) => (s, i).cmp(&(t, j)),
+                _ => Ordering::Equal,
+            }
+        }
         (Some(ValueType::TimestampValue(x)), Some(ValueType::TimestampValue(y))) => {
             compare_timestamps(x, y)
         }
         (Some(ValueType::StringValue(x)), Some(ValueType::StringValue(y))) => x.cmp(y),
-        (Some(ValueType::BytesValue(x)), Some(ValueType::BytesValue(y))) => x.cmp(y),
         (Some(ValueType::ReferenceValue(x)), Some(ValueType::ReferenceValue(y))) => {
             compare_paths(x.split('/'), y.split('/'))
         }
@@ -120,9 +181,22 @@ pub fn compare(a: &Value, b: &Value) -> Ordering {
         {
             compare_vectors(x, y)
         }
-        (Some(ValueType::MapValue(x)), Some(ValueType::MapValue(y))) => compare_maps(x, y),
-        // Null and expressions: equal within their rank.
+        (Some(ValueType::MapValue(x)), Some(ValueType::MapValue(y))) if rank_a == TypeRank::Map => {
+            compare_maps(x, y)
+        }
+        // Null, min and max keys and expressions: equal within their rank.
         _ => Ordering::Equal,
+    }
+}
+
+/// Bytes, or binary data, as a subtype and the data: plain bytes are subtype 0.
+fn subtyped(value: &Value) -> (u8, &[u8]) {
+    match &value.value_type {
+        Some(ValueType::BytesValue(b)) => (0, b),
+        _ => match bson::of(value) {
+            Some(Bson::Binary(b)) => b.split_first().map_or((0, &[][..]), |(s, d)| (*s, d)),
+            _ => (0, &[]),
+        },
     }
 }
 

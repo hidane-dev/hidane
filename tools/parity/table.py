@@ -606,6 +606,15 @@ RECORDINGS = {
         counted="each request (the writes before a bulk delete and the query after it too)",
         compares="in full: status, content type and body byte for byte, server times masked",
         count=lambda f: rest(f["cases"])),
+    f"{H}/fixtures/bson_types.json": dict(
+        area="values",
+        tests=[f"{H}/bson_types.rs::bson_types_behave_like_the_official_emulator"],
+        counted="each write, each order, each filter and each value's pipeline, on an enterprise "
+                "database; " + OVER_REST,
+        compares="in full: a write's status and message and the value read back (numbers as "
+                 "doubles); the names in order for an order and as a set for a filter; the "
+                 "fields a pipeline gives",
+        count=lambda f: each(f["writes"] + f["orders"] + f["filters"] + f["pipelines"], REST, FULL)),
     f"{H}/fixtures/index_usage.json": dict(
         area="queries",
         tests=[f"{H}/index_usage.rs::index_usage_answers_like_the_official_emulator"],

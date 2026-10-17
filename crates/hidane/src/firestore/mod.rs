@@ -646,6 +646,7 @@ impl Firestore for FirestoreService {
                 order_by: orders,
                 ..StructuredQuery::default()
             },
+            self.enterprise,
         )?;
         let ordered = (!ordered.orders_by_name()).then_some(ordered);
         if req.show_missing && !caller.is_admin() {
@@ -847,7 +848,7 @@ impl Firestore for FirestoreService {
         let guard = self
             .guard(&caller, &parent.database)
             .map(|guard| guard.auto_id(req.document_id.is_empty()));
-        let mask = read_mask(&parent.database, &write, req.mask.as_ref())?;
+        let mask = read_mask(&parent.database, &write, req.mask.as_ref(), self.enterprise)?;
         let (commit_time, _) = self
             .write(
                 &parent.database,
@@ -882,7 +883,7 @@ impl Firestore for FirestoreService {
             ..Write::default()
         };
         let guard = self.guard(&caller, &name.database);
-        let mask = read_mask(&name.database, &write, req.mask.as_ref())?;
+        let mask = read_mask(&name.database, &write, req.mask.as_ref(), self.enterprise)?;
         let (commit_time, _) = self
             .write(
                 &name.database,
@@ -1414,7 +1415,7 @@ impl Firestore for FirestoreService {
         let targets = req
             .writes
             .iter()
-            .map(|write| writes::check_names(&database, write))
+            .map(|write| writes::check_names(&database, write, self.enterprise))
             .collect::<Result<Vec<_>, _>>()?;
         for (write, path) in req.writes.iter().zip(&targets) {
             writes::check_values(path, write, self.enterprise)?;
@@ -1551,8 +1552,9 @@ fn read_mask(
     database: &str,
     write: &Write,
     mask: Option<&DocumentMask>,
+    enterprise: bool,
 ) -> Result<Option<Vec<FieldPath>>, Status> {
-    writes::check_names(database, write)?;
+    writes::check_names(database, write, enterprise)?;
     parse_mask(mask)
 }
 

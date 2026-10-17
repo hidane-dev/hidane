@@ -45,26 +45,27 @@ pub enum Place {
 
 /// The names in `fields`, in order and depth first: reserved names, values without a type
 /// ([`unset`]), references ([`reference`]), geo points ([`geo_point`]), and the special values
-/// (maps with a `__type__` key) they spell.
-pub fn names(fields: &Fields) -> Result<(), Status> {
+/// (maps with a `__type__` key) they spell; on an enterprise database (`bson`), the BSON
+/// values too ([`bson_value`]).
+pub fn names(fields: &Fields, bson: bool) -> Result<(), Status> {
     for (name, value) in fields {
         if reserved_name(name) {
             return Err(Status::invalid_argument(format!(
                 "field name {name} is reserved"
             )));
         }
-        value_names(value, Place::Document)?;
+        value_names(value, Place::Document, bson)?;
     }
     Ok(())
 }
 
 /// A value of a filter, a cursor or a query vector, read as a document's is ([`names`]) when
 /// the query names it (`tools/oracle/queries.py`, #262).
-pub fn query_value(value: &Value) -> Result<(), Status> {
-    value_names(value, Place::Query)
+pub fn query_value(value: &Value, bson: bool) -> Result<(), Status> {
+    value_names(value, Place::Query, bson)
 }
 
-fn value_names(value: &Value, place: Place) -> Result<(), Status> {
+fn value_names(value: &Value, place: Place, bson: bool) -> Result<(), Status> {
     match &value.value_type {
         None => Err(unset()),
         Some(ValueType::ReferenceValue(name)) => reference(name, place),
@@ -72,7 +73,18 @@ fn value_names(value: &Value, place: Place) -> Result<(), Status> {
         Some(ValueType::ArrayValue(array)) => array
             .values
             .iter()
-            .try_for_each(|value| value_names(value, place)),
+            .try_for_each(|value| value_names(value, place, bson)),
+        Some(ValueType::MapValue(map))
+            if bson
+                && map.fields.len() == 1
+                && map
+                    .fields
+                    .keys()
+                    .all(|k| hidane_core::bson::KEYS.contains(&k.as_str())) =>
+        {
+            let (key, value) = map.fields.iter().next().expect("one field");
+            bson_value(key, value)
+        }
         // A `__type__` key spells a special value on the wire; only vectors exist. A vector's
         // shape is checked here, its elements with the values; another type is an invalid
         // nested entity, also with the values. Every value in the map is read first.
@@ -96,12 +108,161 @@ fn value_names(value: &Value, place: Place) -> Result<(), Status> {
                         "field name '{name}' is reserved."
                     )));
                 }
-                value_names(nested, place)?;
+                value_names(nested, place, bson)?;
             }
             Ok(())
         }
         _ => Ok(()),
     }
+}
+
+/// The value of a BSON value's key, as an enterprise database checks it
+/// (`tests/fixtures/bson_types.json`): its type, then what it may hold.
+fn bson_value(key: &str, value: &Value) -> Result<(), Status> {
+    use hidane_core::bson::{
+        BINARY, DECIMAL128, Decimal, INT32, MAX_KEY, MIN_KEY, OBJECT_ID, REGEX, TIMESTAMP,
+    };
+    let invalid = |message: String| Err(Status::invalid_argument(message));
+    let founds = |what: &str| {
+        Status::invalid_argument(format!(
+            "Field {key} must {what}; founds {}.",
+            kind(value.value_type.as_ref())
+        ))
+    };
+    let inner = value.value_type.as_ref();
+    match key {
+        MIN_KEY | MAX_KEY => match inner {
+            Some(ValueType::NullValue(_)) => Ok(()),
+            _ => Err(founds("be null")),
+        },
+        OBJECT_ID => match inner {
+            Some(ValueType::StringValue(hex)) if hex.len() != 24 => {
+                invalid("Object ID hex string has incorrect length.".to_owned())
+            }
+            Some(ValueType::StringValue(hex))
+                if !hex.bytes().all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f')) =>
+            {
+                invalid("Invalid object ID hex string.".to_owned())
+            }
+            Some(ValueType::StringValue(_)) => Ok(()),
+            _ => Err(founds("be a string")),
+        },
+        REGEX => {
+            let Some(ValueType::MapValue(map)) = inner else {
+                return Err(founds("be a map"));
+            };
+            for part in ["pattern", "options"] {
+                if !map.fields.contains_key(part) {
+                    return invalid(format!("{REGEX} map is missing value for key \"{part}\"."));
+                }
+            }
+            let pattern = map.fields["pattern"].value_type.as_ref();
+            if !matches!(pattern, Some(ValueType::StringValue(_))) {
+                return invalid(format!(
+                    "Field pattern must be a string; founds {}.",
+                    kind(pattern)
+                ));
+            }
+            let options = match map.fields["options"].value_type.as_ref() {
+                Some(ValueType::StringValue(options)) => options,
+                other => {
+                    return invalid(format!(
+                        "Field options must be a string; founds {}.",
+                        kind(other)
+                    ));
+                }
+            };
+            let mut last: Option<char> = None;
+            for option in options.chars() {
+                if !"imsux".contains(option) {
+                    return invalid(format!(
+                        "Invalid regex option '{option}'. Supported options are 'i', 'm', 's', \
+                         'u', and 'x'."
+                    ));
+                }
+                match last {
+                    Some(previous) if previous == option => {
+                        return invalid(format!("Duplicate regex option '{option}'."));
+                    }
+                    Some(previous) if previous > option => {
+                        return invalid("Regex options must be sorted.".to_owned());
+                    }
+                    _ => last = Some(option),
+                }
+            }
+            Ok(())
+        }
+        INT32 => match inner {
+            Some(ValueType::IntegerValue(i)) if i32::try_from(*i).is_err() => invalid(format!(
+                "The field '{INT32}' value ({}) is too large to be converted to a 32-bit integer.",
+                grouped(*i)
+            )),
+            Some(ValueType::IntegerValue(_)) => Ok(()),
+            _ => Err(founds("be a long")),
+        },
+        DECIMAL128 => match inner {
+            Some(ValueType::StringValue(text)) if Decimal::parse(text).is_none() => {
+                invalid("Invalid decimal128 string".to_owned())
+            }
+            Some(ValueType::StringValue(_)) => Ok(()),
+            _ => Err(founds("be a string")),
+        },
+        TIMESTAMP => {
+            let Some(ValueType::MapValue(map)) = inner else {
+                return Err(founds("be a map"));
+            };
+            for part in ["seconds", "increment"] {
+                let Some(v) = map.fields.get(part) else {
+                    return invalid(format!(
+                        "{TIMESTAMP} map is missing value for key \"{part}\"."
+                    ));
+                };
+                match v.value_type.as_ref() {
+                    Some(ValueType::IntegerValue(n)) if u32::try_from(*n).is_err() => {
+                        return invalid(format!(
+                            "The field '{part}' value ({}) does not represent an unsigned 32-bit \
+                             integer.",
+                            grouped(*n)
+                        ));
+                    }
+                    Some(ValueType::IntegerValue(_)) => {}
+                    other => {
+                        return invalid(format!(
+                            "Field {part} must be a long; founds {}.",
+                            kind(other)
+                        ));
+                    }
+                }
+            }
+            Ok(())
+        }
+        BINARY => match inner {
+            Some(ValueType::BytesValue(b)) if b.is_empty() => {
+                invalid("BytesWithSubtype cannot be empty.".to_owned())
+            }
+            Some(ValueType::BytesValue(b)) if b[0] == 0 => invalid(
+                "Invalid BytesWithSubtype: subtype 0 is not permitted. Use the standard bytes type \
+                 instead."
+                    .to_owned(),
+            ),
+            Some(ValueType::BytesValue(_)) => Ok(()),
+            _ => Err(founds("contain bytes")),
+        },
+        _ => unreachable!("a BSON key"),
+    }
+}
+
+/// An integer with its thousands grouped by commas, as Java's `%,d` prints it.
+fn grouped(n: i64) -> String {
+    let digits = n.unsigned_abs().to_string();
+    let mut out = String::new();
+    for (i, digit) in digits.chars().enumerate() {
+        if i > 0 && (digits.len() - i).is_multiple_of(3) {
+            out.push(',');
+        }
+        out.push(digit);
+    }
+    if n < 0 { format!("-{out}") } else { out }
 }
 
 /// `value` and every value in it: a type, references, geo points; no names (the values of a map
@@ -216,7 +377,7 @@ fn transform_operation(transform: &FieldTransform) -> Result<(), Status> {
             | TransformType::Maximum(operand)
             | TransformType::Minimum(operand),
         ) => {
-            value_names(operand, Place::Document)?;
+            value_names(operand, Place::Document, false)?;
             match operand.value_type.as_ref().and_then(Number::of) {
                 Some(_) => Ok(()),
                 None => Err(Status::invalid_argument("Input must be int64 or double.")),
@@ -228,7 +389,7 @@ fn transform_operation(transform: &FieldTransform) -> Result<(), Status> {
         ) => operands
             .values
             .iter()
-            .try_for_each(|operand| value_names(operand, Place::Document)),
+            .try_for_each(|operand| value_names(operand, Place::Document, false)),
     }
 }
 

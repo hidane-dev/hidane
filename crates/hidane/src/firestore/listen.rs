@@ -362,7 +362,12 @@ impl Listener<'_> {
                     Some(query_target::QueryType::StructuredQuery(q)) => q,
                     None => &default,
                 };
-                let mut query = Query::parse(&parent.database, parent.path, structured)?;
+                let mut query = Query::parse(
+                    &parent.database,
+                    parent.path,
+                    structured,
+                    self.service.enterprise,
+                )?;
                 // An enterprise database checks a listener's query as a standard one, but
                 // matches null and NaN as values (#338).
                 if self.service.enterprise {
