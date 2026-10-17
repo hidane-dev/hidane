@@ -333,7 +333,7 @@ pub fn proto_text(database: &Database, located: &Located) -> String {
 }
 
 /// A complete key as the official emulator prints one in "entity already exists":
-/// `EntityRef[partitionRef=p, path=/Kind/name]`.
+/// `EntityRef[partitionRef=p!namespace, path=/Kind/name/Kind/5L]`, numeric IDs as Java longs.
 pub fn entity_ref(database: &Database, located: &Located) -> String {
     let mut path = String::new();
     for (kind, id) in &located.path {
@@ -341,7 +341,7 @@ pub fn entity_ref(database: &Database, located: &Located) -> String {
         path.push_str(kind);
         path.push('/');
         match id {
-            Id::Id(n) => path.push_str(&n.to_string()),
+            Id::Id(n) => path.push_str(&format!("{n}L")),
             Id::Name(name) => path.push_str(name),
         }
     }
@@ -413,7 +413,7 @@ mod tests {
         );
         assert_eq!(
             entity_ref(&database, &located),
-            "EntityRef[partitionRef=p, path=/P/3/Task/x]"
+            "EntityRef[partitionRef=p, path=/P/3L/Task/x]"
         );
     }
 }

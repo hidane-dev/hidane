@@ -338,6 +338,38 @@ async fn datastore_queries_answer_like_the_official_emulator() {
     );
 }
 
+/// Which problem of a query or an aggregation query is reported first, and the queries of kinds
+/// and namespaces (`fixtures/datastore_checks.json`, from `tools/oracle/datastore_checks.py`):
+/// every two problems, in both orders.
+#[tokio::test]
+async fn checks_come_in_the_official_emulators_order() {
+    let fixture: Json =
+        serde_json::from_str(include_str!("fixtures/datastore_checks.json")).unwrap();
+    let every = fixture["every_case"].as_object().unwrap();
+    let cases: Vec<Json> = fixture["cases"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|case| {
+            let mut case = case.clone();
+            let fields = case.as_object_mut().unwrap();
+            for (key, value) in every {
+                fields.insert(key.clone(), value.clone());
+            }
+            case
+        })
+        .collect();
+    assert!(cases.len() > 4000);
+    let differences = replay_cases(start().await, &cases, &[], None, PROJECT).await;
+    assert!(
+        differences.is_empty(),
+        "{} of {} requests differ:\n{}",
+        differences.len(),
+        cases.len(),
+        differences.join("\n")
+    );
+}
+
 /// The same service over gRPC, on the same port, and the Firestore API refused there too.
 #[tokio::test]
 async fn datastore_mode_serves_grpc_and_refuses_firestore() {

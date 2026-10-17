@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:07cd39f4089bb02c16c452474cf672f8dfea4b9c6caeb05967cec560a2341b40",
+ "digest": "sha256:7700d448559416aca12aeb4589347935ee872df5eac4bf5a5fdaec8bb8eedae9",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -14,13 +14,13 @@
   }
  ],
  "totals": {
-  "files": 130,
-  "fixtures": 70,
+  "files": 131,
+  "fixtures": 71,
   "transcripts": 60,
-  "answers": 37152,
-  "bytes": 26471023,
+  "answers": 41575,
+  "bytes": 29126280,
   "levels": {
-   "full": 25784,
+   "full": 30207,
    "reasons": 4344,
    "part": 1495,
    "status": 5197,
@@ -80,20 +80,20 @@
     "answers": 278
    },
    "datastore": {
-    "fixtures": 8,
+    "fixtures": 9,
     "transcripts": 18,
-    "answers": 1483
+    "answers": 5906
    }
   },
   "by_release": {
    "v1.22.0": {
-    "fixtures": 70,
+    "fixtures": 71,
     "transcripts": 60,
-    "answers": 37152
+    "answers": 41575
    }
   },
   "by_release_source": {
-   "header": 45,
+   "header": 46,
    "file name": 61,
    "git history": 24
   }
@@ -2510,6 +2510,42 @@
    ],
    "counted": "each step",
    "compared": "in full: the answer as the recording summarises it, each double spelled out; the steps that write `-1e-400` as intentionally different"
+  },
+  {
+   "path": "crates/hidane/tests/fixtures/datastore_checks.json",
+   "kind": "fixture",
+   "area": "datastore",
+   "recorder": "tools/oracle/datastore_checks.py",
+   "client": {
+    "over": [
+     "REST"
+    ],
+    "using": "Python standard library",
+    "packages": []
+   },
+   "oracle": {
+    "release": "v1.22.0",
+    "jar_sha256": "9b6498b7f62714d67f48f59b3818883cd682dbcd46b9f59511de81c97bb5166c",
+    "source": "header"
+   },
+   "recorded": {
+    "first_recorded": "2026-10-17",
+    "last_changed": "2026-10-17"
+   },
+   "bytes": 2655257,
+   "sha256": "68cb1aad2a86c3cd7d3a81e47f753ed018b75c06c3124a4b2ecbd91f5e2c2814",
+   "answers": 4423,
+   "levels": {
+    "full": 4423
+   },
+   "replayed_over": [
+    "REST"
+   ],
+   "tests": [
+    "crates/hidane/tests/datastore.rs::checks_come_in_the_official_emulators_order"
+   ],
+   "counted": "each query and aggregation query with one or two problems (every ordered pair), to a server started with `--database-mode datastore-mode`; recorded over REST",
+   "compared": "in full: status, content type and body byte for byte, server times and versions masked"
   },
   {
    "path": "crates/hidane/tests/fixtures/datastore_entities.json",

@@ -9,10 +9,12 @@
 //! with the same messages, a key's lock kept under [`keys::lock_path`]. What is served so far:
 //! `Lookup`, `Commit`, `BeginTransaction`, `Rollback`, `AllocateIds` and `ReserveIds`
 //! (`tests/fixtures/datastore_entities.json`), and structured `RunQuery` and
-//! `RunAggregationQuery` ([`query`], `tests/fixtures/datastore_queries.json`), and GQL
+//! `RunAggregationQuery` ([`query`], `tests/fixtures/datastore_queries.json`), refused in the
+//! official emulator's order ([`checks`], `tests/fixtures/datastore_checks.json`), and GQL
 //! ([`gql`], `tests/fixtures/datastore_gql.json`), with the indexes `--require_indexes` asks for
 //! ([`indexes`], `tests/fixtures/datastore_indexes.json`).
 
+mod checks;
 mod export;
 mod gql;
 mod indexes;
@@ -631,12 +633,14 @@ impl Datastore for DatastoreService {
                 ));
             }
         };
-        let mut plan = query::plan(&query, &database, &namespace)?;
+        let refused = checks::entity_query(&query, &namespace, &database)?;
+        let plan = query::plan(&query, &database, &namespace)?;
         let reading = self.read_query(req.read_options.clone(), &database, plan.kind.as_deref())?;
         if let Some(defined) = &defined {
+            checks::kindless(&query)?;
             indexes::check(&query, &[], defined)?;
         }
-        if let Some(refused) = plan.refused.take() {
+        if let Some(refused) = refused {
             return Err(refused);
         }
         self.read_at(req.read_options.as_ref(), &database)?;
@@ -679,19 +683,21 @@ impl Datastore for DatastoreService {
                 ));
             }
         };
-        let nested = match aggregation.query_type {
-            Some(aggregation_query::QueryType::NestedQuery(query)) => query,
+        let nested = match &aggregation.query_type {
+            Some(aggregation_query::QueryType::NestedQuery(query)) => query.clone(),
             None => hidane_proto::google::datastore::v1::Query::default(),
         };
+        let refused = checks::aggregation_query(&aggregation, &nested, &namespace)?;
         let mut plan = query::plan(&nested, &database, &namespace)?;
         let reading = self.read_query(req.read_options.clone(), &database, plan.kind.as_deref())?;
         if let Some(defined) = &defined {
+            checks::kindless(&nested)?;
             indexes::check(&nested, &aggregated(&aggregation.aggregations), defined)?;
         }
-        if let Some(refused) = plan.refused.take() {
+        if let Some(refused) = refused {
             return Err(refused);
         }
-        let aggregations = aggregations(&aggregation.aggregations, &nested)?;
+        let aggregations = aggregations(&aggregation.aggregations);
         self.read_at(req.read_options.as_ref(), &database)?;
         // A sum or an average reads its property: only entities that have it count.
         let key = plan.orders.pop();
@@ -775,11 +781,6 @@ impl Datastore for DatastoreService {
     }
 }
 
-/// The most aggregations a query may have.
-const MAX_AGGREGATIONS: usize = 5;
-
-/// Each aggregation's alias (`property_<n>` for one without, counted from 1) and the property a
-/// sum or an average reads.
 /// The properties a query's sums and averages read.
 fn aggregated(list: &[aggregation_query::Aggregation]) -> Vec<String> {
     use aggregation_query::aggregation::Operator;
@@ -792,62 +793,27 @@ fn aggregated(list: &[aggregation_query::Aggregation]) -> Vec<String> {
         .collect()
 }
 
-fn aggregations(
-    list: &[aggregation_query::Aggregation],
-    nested: &hidane_proto::google::datastore::v1::Query,
-) -> Result<Vec<(String, Option<String>)>, Status> {
+/// Each aggregation's alias (`property_<n>` for one without, counted from 1) and the property a
+/// sum or an average reads, once `checks` has accepted them.
+fn aggregations(list: &[aggregation_query::Aggregation]) -> Vec<(String, Option<String>)> {
     use aggregation_query::aggregation::Operator;
-    if list.is_empty() {
-        return Err(Status::invalid_argument("Aggregations can not be empty."));
-    }
-    if list.len() > MAX_AGGREGATIONS {
-        return Err(Status::invalid_argument(format!(
-            "The maximum number of aggregations allowed in an aggregation query is {MAX_AGGREGATIONS}. Received: {}",
-            list.len()
-        )));
-    }
-    let mut out: Vec<(String, Option<String>)> = Vec::new();
     let mut unnamed = 0;
-    for aggregation in list {
-        let alias = if aggregation.alias.is_empty() {
-            unnamed += 1;
-            format!("property_{unnamed}")
-        } else {
-            aggregation.alias.clone()
-        };
-        if alias.len() >= 4 && alias.starts_with("__") && alias.ends_with("__") {
-            return Err(Status::invalid_argument(format!(
-                "The property.name \"{alias}\" is reserved."
-            )));
-        }
-        if out.iter().any(|(a, _)| *a == alias) {
-            return Err(Status::invalid_argument(format!(
-                "Aggregation aliases contain duplicate alias: {alias}."
-            )));
-        }
-        let property = match &aggregation.operator {
-            Some(Operator::Count(_)) | None => None,
-            Some(Operator::Sum(sum)) => sum.property.as_ref().map(|p| p.name.clone()),
-            Some(Operator::Avg(avg)) => avg.property.as_ref().map(|p| p.name.clone()),
-        };
-        if let Some(property) = &property {
-            if property == "__key__" {
-                return Err(Status::invalid_argument(
-                    "Aggregations are not supported for the property: __key__",
-                ));
-            }
-            let projected = |p: &hidane_proto::google::datastore::v1::Projection| {
-                p.property.as_ref().is_some_and(|p| p.name == *property)
+    list.iter()
+        .map(|aggregation| {
+            let alias = if aggregation.alias.is_empty() {
+                unnamed += 1;
+                format!("property_{unnamed}")
+            } else {
+                aggregation.alias.clone()
             };
-            if !nested.projection.is_empty() && !nested.projection.iter().any(projected) {
-                return Err(Status::invalid_argument(format!(
-                    "The aggregation property {property} is not present in the base query's projection."
-                )));
-            }
-        }
-        out.push((alias, property));
-    }
-    Ok(out)
+            let property = match &aggregation.operator {
+                Some(Operator::Count(_)) | None => None,
+                Some(Operator::Sum(sum)) => sum.property.as_ref().map(|p| p.name.clone()),
+                Some(Operator::Avg(avg)) => avg.property.as_ref().map(|p| p.name.clone()),
+            };
+            (alias, property)
+        })
+        .collect()
 }
 
 fn integer(n: i64) -> Value {
