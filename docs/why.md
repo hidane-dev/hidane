@@ -6,10 +6,11 @@ local development and CI. Every number below comes from Phase 0 measurements of 
 emulator v1.22.0; the numbers are in [`results/official-v1.22.0-baseline.md`](../results/official-v1.22.0-baseline.md).
 
 > Measurement caveat: the Phase 0 numbers were taken on an M1 Max **while other heavy jobs were
-> running** (load average 12–58). They are indicative, not final. Startup, memory and plain writes
-> have since been measured side by side on a quiet machine, in the canonical benchmark
-> environment ([section 2](#2-startup-and-memory)); re-measuring the rest is tracked in
-> [#50](https://github.com/hidane-dev/hidane/issues/50).
+> running** (load average 12–58). They are indicative, not final. Startup, memory, plain writes and
+> writes with a listener attached have since been measured side by side on a quiet machine, in the
+> canonical benchmark environment ([section 2](#2-startup-and-memory),
+> [section 3](#3-writes-slow-down-while-a-listener-is-attached),
+> [#50](https://github.com/hidane-dev/hidane/issues/50)).
 
 ## 1. You need Java 21 to run a local database
 
@@ -44,23 +45,25 @@ hidane is a single Rust binary. No JVM, no `PATH` juggling.
 | JVM default heap limit | 25 % of physical RAM (16 GiB on the test machine) | `results/official-v1.22.0-baseline.md` |
 
 Side by side, in the canonical benchmark environment (an AWS c7i.xlarge, Ubuntu 24.04, Java
-21.0.12.1, firebase-tools 15.33.0, both emulators on the same quiet machine, 2026-10-13), the
+21.0.12.1, firebase-tools 15.33.0, both emulators on the same quiet machine, 2026-10-15), the
 medians were:
 
-| Measurement | Official emulator v1.22.0 | hidane v0.5.1 |
+| Measurement | Official emulator v1.22.0 | hidane v0.6.0 |
 |---|---|---|
-| Time until the port accepts | 852 ms | 1.53 ms |
-| RSS idle | 148 MiB | 9.3 MiB |
-| RSS after writing 1,000 documents | 276 MiB | 11.9 MiB |
-| `firebase emulators:exec` around 100 seeded documents and 200 tests | 6.47 s | 1.56 s |
+| Time until the port accepts | 981 ms | 1.56 ms |
+| RSS idle | 148 MiB | 9.4 MiB |
+| RSS after writing 1,000 documents | 267 MiB | 12.3 MiB |
+| `firebase emulators:exec` around 100 seeded documents and 200 tests | 6.81 s | 1.69 s |
 
-Every sample is in the [result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-13-release-150328.md); the harness, which anyone can rerun, is
+Every sample is in the [result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-15-release.md); the harness, which anyone can rerun, is
 [`bench/`](../bench/README.md). The targets were under 100 ms and under 50 MiB.
 
 The benchmark's client sends no credential, as a signed-out app does, so Security Rules apply to
 its requests, the last row's workload included. With the owner credential that the Admin SDKs
 send, which skips the Rules, the official emulator's writes are many times as fast and hidane's
-take about the same time ([`bench/`](../bench/README.md#fairness-rules), #286).
+take about the same time: in the same run, 100,000 documents in commits of 500 took 1.84 s on
+the official emulator and 1.73 s on hidane with it, 17.5 s and 1.61 s without
+([`bench/`](../bench/README.md#fairness-rules), #286).
 
 ## 3. Writes slow down while a listener is attached
 
@@ -78,13 +81,22 @@ as the database grows. Phase 0 reproduced the condition:
 The slowdown is proportional to the number of documents already stored, not to the size of the
 write. The Emulator UI keeps listeners open, which matches the "only slow when the UI is open"
 comments in the issue. hidane is designed so that a commit costs only what it changes
-(see [ROADMAP](ROADMAP.md) and ADR 0002): the same 100,000 documents with a listener on the whole
-collection take 4.9 s on `main`, about 10.5 ms per batch from start to end
-(`results/listen-batch-writes-hidane.csv`, #30). These figures come from different machines and
-clients. The canonical benchmark's `listen_writes` scenario measures the same case for both
-emulators side by side ([`bench/`](../bench/README.md#writes-with-a-listener-attached)), and
-`listen_limit_writes` the one with `limit(50)` ([`bench/`](../bench/README.md#a-limited-listener),
-#250); their figures will replace these once a published result has them (#50).
+(see [ROADMAP](ROADMAP.md) and ADR 0002).
+
+Side by side, in the same canonical benchmark run as section 2 (2026-10-15), the
+`listen_writes` scenario ([`bench/`](../bench/README.md#writes-with-a-listener-attached)) and the
+`listen_limit_writes` one ([`bench/`](../bench/README.md#a-limited-listener), #250) gave these
+medians for 100,000 documents in commits of 500:
+
+| Run | Official emulator v1.22.0 | hidane v0.6.0 |
+|---|---|---|
+| No listener | 17.5 s | 1.61 s |
+| A listener on the whole collection | 191 s | 2.51 s |
+| Growth of a commit's time per 10,000 documents already stored | 195 ms | 0.15 ms |
+| A listener with `limit(50)` | 124 s | 1.50 s |
+| Growth of a commit's time per 10,000 documents already stored | 116 ms | 0.01 ms |
+
+Every sample is in the [result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-15-release.md).
 
 ## What hidane is not
 
