@@ -25,6 +25,8 @@ const SCENARIOS: &[(&str, &str)] = &[
         "Writes with a limited listener attached",
     ),
     ("command", "Command"),
+    ("firebase_startup", "Startup through firebase-tools"),
+    ("large_dataset", "A large dataset"),
 ];
 
 fn str_of(value: &Value) -> Option<&str> {
@@ -232,6 +234,20 @@ fn summary(result: &Value) -> Vec<String> {
         "total",
         "wall-clock time of the command from emulator start to shutdown",
     ));
+    lines.push(sentence(
+        result,
+        "firebase_startup",
+        "time_to_port",
+        "time from `firebase emulators:start --only firestore` until the Firestore port accepted a connection",
+    ));
+    if let Some(n) = scenarios["large_dataset"]["documents"].as_u64() {
+        lines.push(sentence(
+            result,
+            "large_dataset",
+            &format!("rss_after_seed_{n}"),
+            &format!("RSS after writing {} documents", thousands(n)),
+        ));
+    }
     lines.into_iter().flatten().collect()
 }
 
@@ -409,6 +425,13 @@ fn environment(result: &Value, out: &mut String) {
                 let _ = write!(text, ", `{}`", options.join(" "));
             }
         }
+        if let Some(heap) = env["java_max_heap_bytes"].as_f64() {
+            let _ = write!(
+                text,
+                ", the JVM's default heap limit {}",
+                format_value(heap, "bytes")
+            );
+        }
         row(out, "Official emulator", text);
     }
     let mut tools = Vec::new();
@@ -557,6 +580,18 @@ fn scenario_line(scenario: &str, p: &Value) -> String {
             "A fresh process per run ({} warm-up, {} measured per target); the command runs with FIRESTORE_EMULATOR_HOST pointing at it.",
             n("warmup"),
             n("runs")
+        ),
+        "firebase_startup" => format!(
+            "`firebase emulators:start --only firestore` per run ({} warm-up, {} measured per target), in a scratch project as for the CI workload through firebase-tools, until the Firestore emulator's port accepts a TCP connection; then firebase-tools is interrupted. firebase-tools' own start is part of the time.",
+            n("warmup"),
+            n("runs")
+        ),
+        "large_dataset" => format!(
+            "A fresh process per run ({} warm-up, {} measured per target): {} documents written in commits of {}, then RSS read. The official emulator runs with the JVM's default heap limit (Environment).",
+            n("warmup"),
+            n("runs"),
+            thousands(n("documents")),
+            n("batch")
         ),
         _ => String::new(),
     }
