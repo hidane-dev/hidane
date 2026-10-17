@@ -290,13 +290,15 @@ async fn replay_order(text: &str, known_cases: &[&str]) {
     );
 }
 
-/// A directory removed when dropped.
+/// A directory removed when dropped, of its own: tests run in parallel in one process.
 struct TempDir(PathBuf);
 
 impl TempDir {
     fn new() -> Self {
+        static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+        let n = NEXT.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         let path =
-            std::env::temp_dir().join(format!("hidane-commit-checks-{}", std::process::id()));
+            std::env::temp_dir().join(format!("hidane-commit-checks-{}-{n}", std::process::id()));
         let _ = std::fs::remove_dir_all(&path);
         std::fs::create_dir_all(&path).unwrap();
         Self(path)

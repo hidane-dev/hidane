@@ -492,8 +492,14 @@ fn ec2() -> Option<Value> {
     }))
 }
 
-/// Tool versions (`environment`). Each is `null` when the tool is not installed.
-pub fn environment(java: Option<&str>, firebase: Option<&Path>) -> Value {
+/// Tool versions (`environment`). Each is `null` when the tool is not installed. With the Java
+/// that runs the official emulator (`java_program`), its default heap limit too, which the
+/// official emulator runs with (it is given no `-Xmx`).
+pub fn environment(
+    java: Option<&str>,
+    java_program: Option<&Path>,
+    firebase: Option<&Path>,
+) -> Value {
     let version_word = |text: Option<String>, prefix: &str| {
         text.as_deref()
             .and_then(clean)
@@ -507,12 +513,28 @@ pub fn environment(java: Option<&str>, firebase: Option<&Path>) -> Value {
         let rest = t.strip_prefix("Docker version ")?;
         clean(rest.split(',').next()?)
     });
+    let max_heap = java_program
+        .and_then(|program| probe(program.to_str()?, &["-XX:+PrintFlagsFinal", "-version"]))
+        .and_then(|flags| max_heap_size(&flags));
     json!({
         "java": java,
+        "java_max_heap_bytes": max_heap,
         "node": version_word(probe("node", &["--version"]), "v"),
         "firebase_tools": firebase_tools(firebase),
         "docker": docker,
         "rustc": version_word(probe("rustc", &["--version"]), "rustc"),
+    })
+}
+
+/// `MaxHeapSize` from `java -XX:+PrintFlagsFinal -version`'s output, in bytes:
+/// `   size_t MaxHeapSize   = 2147483648   {product} {ergonomic}`.
+fn max_heap_size(flags: &str) -> Option<u64> {
+    flags.lines().find_map(|line| {
+        let mut words = line.split_whitespace();
+        let (_, name, equals, value) = (words.next()?, words.next()?, words.next()?, words.next()?);
+        (name == "MaxHeapSize" && equals == "=")
+            .then(|| value.parse().ok())
+            .flatten()
     })
 }
 
@@ -1034,6 +1056,13 @@ mod tests {
         assert_eq!(known_job("qemu-system-x86_64"), Some("qemu-system"));
         assert_eq!(known_job("Sourcetree"), None);
         assert_eq!(known_job("javac"), None);
+    }
+
+    #[test]
+    fn the_default_heap_limit_is_read_from_the_jvm_flags() {
+        let flags = "[Global flags]\n   size_t MaxHeapSize                              = 2147483648                                {product} {ergonomic}\n   size_t MaxNewSize                               = 1287651328                                {product} {ergonomic}\n";
+        assert_eq!(max_heap_size(flags), Some(2_147_483_648));
+        assert_eq!(max_heap_size("openjdk version \"21\""), None);
     }
 
     #[test]
