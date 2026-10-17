@@ -713,6 +713,15 @@ RECORDINGS = {
                  "transaction IDs and cursors masked",
         count=lambda f: [(REST, FULL) for run in f["runs"] for case in run["cases"]
                          if "outcome" in case]),
+    f"{H}/fixtures/datastore_projects.json": dict(
+        area="datastore",
+        tests=[f"{H}/datastore.rs::projects_are_read_as_on_the_official_emulator"],
+        counted="each Datastore request, over gRPC and REST, to a server in Firestore Native "
+                "mode and to one in Datastore mode",
+        compares="in full: gRPC code and message (an answer's content not); REST status, content "
+                 "type and body byte for byte, times, versions and transaction IDs masked",
+        count=lambda f: [(GRPC, FULL) for run in f["runs"] for _ in run["grpc"]]
+                        + [(REST, FULL) for run in f["runs"] for _ in run["cases"]]),
     f"{H}/fixtures/datastore_protobuf.json": dict(
         area="datastore",
         tests=[f"{H}/datastore.rs::protobuf_answers_like_the_official_emulator"],

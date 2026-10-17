@@ -1,7 +1,6 @@
 //! Generated protobuf messages and gRPC services for `google.firestore.v1`, `google.datastore.v1`
-//! (Datastore mode, #81; not in the descriptor sets below) and the googleapis packages they
-//! depend on (`google.api`, `google.rpc`, `google.type`). Well-known types (`google.protobuf.*`)
-//! come from `prost-types`.
+//! (Datastore mode, #81) and the googleapis packages they depend on (`google.api`, `google.rpc`,
+//! `google.type`). Well-known types (`google.protobuf.*`) come from `prost-types`.
 //!
 //! The protos are vendored in this crate's `proto/` directory; see `proto/README.md` there.
 
@@ -47,14 +46,14 @@ mod tests {
         assert_eq!(Entity::decode(bytes.as_slice()).unwrap(), entity);
     }
 
-    /// Reflection lists what the descriptor set holds: Datastore is not served yet.
+    /// Reflection lists what the descriptor set holds: both APIs, as the official emulator does.
     #[test]
-    fn the_descriptor_set_leaves_datastore_out() {
+    fn the_descriptor_set_holds_both_apis() {
         let set = prost_types::FileDescriptorSet::decode(crate::FILE_DESCRIPTOR_SET).unwrap();
         assert!(
             set.file
                 .iter()
-                .all(|f| f.package() != "google.datastore.v1")
+                .any(|f| f.package() == "google.datastore.v1")
         );
         assert!(
             set.file
