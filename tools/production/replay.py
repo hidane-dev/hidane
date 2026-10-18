@@ -245,47 +245,171 @@ def number(value):
     return isinstance(value, (int, float)) and not isinstance(value, bool)
 
 
-def same_json(official, production):
+# Differences docs/parity-exceptions.md records, told apart from new ones: a message of the
+# official emulator and one of production that match a pair, and the shapes of an answer that
+# D097 (`details` in an error), D098 (an error inside an array) and D099 (no `done`) describe.
+KNOWN_MESSAGES = [
+    ("D097", r"^Document \(.*\) not found\.$", r'^Document ".*" not found\.$'),
+    ("D097", r"^Payload isn't valid for request\.$", r"^Invalid (?:JSON payload received\.|value at )"),
+    ("D097", r"^Transaction is invalid or expired\.$", r"^Invalid transaction\.$"),
+    ("D097", r"^Input must be int64 or double\.$", r"^Input must be a number\.$"),
+    ("D064", r"^entity already exists: ", r"^Document already exists: "),
+    ("D064", r"^no entity to update: ", r"^No document to update: "),
+    ("D106", r"^Only a single array-contains clause is allowed in a query$",
+     r"^A maximum of 1 'ARRAY_CONTAINS' filter is allowed per disjunction\.$"),
+    ("D106", r"requires an index that has fields \[.*\] after __name__", r"requires an index with fields \[.*\] after __name__"),
+]
+
+
+# Errors whose status differs too: (entry, the official emulator's status and message, production's);
+# None matches any answer of that side.
+KNOWN_ERRORS = [
+    ("D074", "FAILED_PRECONDITION", r"^Firestore does not support descending key scans$", None, None),
+    ("D066", "INVALID_ARGUMENT", r"^Only timestamps past epoch are supported\.$", None, None),
+    ("D107", "INVALID_ARGUMENT", r"^The query may not have more than 100 filters", None, None),
+    ("D107", None, None, "INVALID_ARGUMENT", r"^Too many disjunctions after normalization"),
+    # A query with several faults: the emulator reports its orders or filters, production what it holds.
+    ("D105", None, r"^(?:order by clause cannot contain (?:duplicate fields|more fields after the key)|Equality on key is "
+                   r"not allowed|This query requires an index that has fields|the name __key__ is reserved|kind is "
+                   r"required for filter|Too many disjunctions after normalization)",
+     None, r"^(?:limit is negative|__key__ filter value must be a Key|the name __key__ is reserved|Invalid property "
+           r"path|Key path is empty\.|kind is required|order by clause cannot contain duplicate fields|This query "
+           r"requires an index with fields)"),
+    ("D106", "FAILED_PRECONDITION", r"^Only a single array-contains clause is allowed in a query$",
+     "INVALID_ARGUMENT", r"^A maximum of 1 'ARRAY_CONTAINS' filter is allowed per disjunction\.$"),
+    ("D097", "FAILED_PRECONDITION", r"^The requested 'read_time' is too old\.$",
+     "INVALID_ARGUMENT", r"^The requested 'read_time' cannot be before database creation time\.$"),
+    ("D108", "INVALID_ARGUMENT", r"^kind is required for all orders except __key__ ascending$",
+     "INVALID_ARGUMENT", r"^kind is required for filter: "),
+    ("D108", "INVALID_ARGUMENT", r"^kind is required for all orders except __key__ ascending$",
+     "INTERNAL", r"^An internal error occurred\.$"),
+]
+# Cases about a difference an entry records, by recording and name: what they answer differently
+# is that difference.
+KNOWN_CASES = {
+    "rest.json": [
+        ("D100", r"^JsonFormat: |lenient JSON|a null body|a body that does not read|unknown query parameter|"
+                 r"numbers and booleans as strings|a number as "),
+        ("D101", r"whitespace|path ending with a slash|^list it again$"),
+        ("D102", r"__key__|__type__"),
+        ("D103", r"is not REST|unknown verb|PUT is not a method|the database root|GET with a verb"),
+        ("D104", r"Emulator UI|a page of all five"),
+        ("D099", r"skippedResults"),
+        ("D076", r"^partitionQuery$"),
+        ("D074", r"__name__%20desc"),
+    ],
+    "transforms.json": [("D102", r"__name__|__type__")],
+}
+
+
+def known_error(official, production, known):
+    """Whether two answers are a pair `KNOWN_ERRORS` records: a status (an error's name, where an
+    answer has one) and a message for each side, or for one."""
+    def matches(answer, status, message):
+        name = answer.get("error") if isinstance(answer.get("error"), str) else answer.get("status")
+        return (status is None or name == status) and (
+            message is None or re.search(message, str(answer.get("message", ""))) is not None)
+    for entry, their_status, theirs, our_status, ours in KNOWN_ERRORS:
+        if matches(official, their_status, theirs) and matches(production, our_status, ours):
+            known.add(entry)
+            return True
+    return False
+
+
+def known_message(official, production, known):
+    """Whether two messages are a pair `KNOWN_MESSAGES` records; adds its entry to `known`."""
+    for entry, theirs, ours in KNOWN_MESSAGES:
+        if re.search(theirs, official) and re.search(ours, production):
+            known.add(entry)
+            return True
+    return False
+
+
+def same_json(official, production, known=None):
     """Whether two JSON values are the same, a recording's placeholder matching anything.
     Numbers compare by value: production prints a double without `.0` (`1`), the official
-    emulator as Java does (`1.0`)."""
+    emulator as Java does (`1.0`). With a set for `known`, the differences the parity exceptions
+    record count as the same, and their entries are added to it."""
     if isinstance(official, str):
-        return isinstance(production, str) and same_string(official, production)
+        return isinstance(production, str) and (
+            same_string(official, production) or (known is not None and known_message(official, production, known)))
     if number(official) and number(production):
         return official == production
     if isinstance(official, dict):
-        return (isinstance(production, dict) and official.keys() == production.keys()
-                and all(same_json(official[k], production[k]) for k in official))
+        if (known is not None and "error" in official and isinstance(production, list) and len(production) == 1
+                and isinstance(production[0], dict) and "error" in production[0]):
+            known.add("D098")
+            return same_json(official, production[0], known)
+        if not isinstance(production, dict):
+            return False
+        if known is not None and ("message" in official or "message" in production) and \
+                not same_json(official, production) and known_error(official, production, known):
+            return True
+        theirs, ours = official.keys() - production.keys(), production.keys() - official.keys()
+        if theirs or ours:
+            if known is None or not (theirs <= {"done"} and ours <= {"details", "skipped"}):
+                return False
+            known.update(["D099"] if theirs or "skipped" in ours else [])
+            known.update(["D097"] if "details" in ours else [])
+        return all(same_json(official[k], production[k], known) for k in official.keys() & production.keys())
     if isinstance(official, list):
         return (isinstance(production, list) and len(official) == len(production)
-                and all(same_json(o, p) for o, p in zip(official, production)))
+                and all(same_json(o, p, known) for o, p in zip(official, production)))
     return official == production and type(official) is type(production)
+
+
+def parsed(text):
+    """A body as JSON if it is, else as text."""
+    try:
+        return json.loads(text)
+    except ValueError:
+        return text
 
 
 def same_body(official, production):
     """Two answers' bodies: as JSON when both are (production prints it its own way), else as
     text."""
-    try:
-        return same_json(json.loads(official), json.loads(production))
-    except ValueError:
-        return official == production
+    return same_json(parsed(official), parsed(production))
 
 
 def first_difference(official, production, at="$"):
-    """Where two JSON values first differ, and how, or None."""
+    """Where two JSON values first differ in a way the parity exceptions do not record, and how,
+    or None."""
+    if same_json(official, production, set()):
+        return None
+    if isinstance(official, dict) and "error" in official and isinstance(production, list) and len(production) == 1:
+        return first_difference(official, production[0], at + "[0]")
     if isinstance(official, dict) and isinstance(production, dict):
-        if official.keys() != production.keys():
-            only = sorted(official.keys() - production.keys()), sorted(production.keys() - official.keys())
-            return f"{at}: keys only the official has {only[0]}, only production has {only[1]}"
-        return next((d for k in official if (d := first_difference(official[k], production[k], f"{at}.{k}"))), None)
+        theirs, ours = official.keys() - production.keys() - {"done"}, production.keys() - official.keys() - {"details", "skipped"}
+        if theirs or ours:
+            return f"{at}: keys only the official has {sorted(theirs)}, only production has {sorted(ours)}"
+        return next((d for k in official if k in production
+                     and (d := first_difference(official[k], production[k], f"{at}.{k}"))), None)
     if isinstance(official, list) and isinstance(production, list):
         if len(official) != len(production):
             return f"{at}: {len(official)} items, production {len(production)}"
         return next((d for i, (o, p) in enumerate(zip(official, production))
                      if (d := first_difference(o, p, f"{at}[{i}]"))), None)
-    if same_json(official, production):
-        return None
     return f"{at}: {json.dumps(official, ensure_ascii=False)[:80]}, production {json.dumps(production, ensure_ascii=False)[:80]}"
+
+
+def tally(result, official, answered, entry, name=None):
+    """Counts a case: the same; the same but for differences the parity exceptions record (by
+    entry, or by the case's name, `KNOWN_CASES`); or different, with `entry()` saying how."""
+    known = set()
+    if not same_json(official, answered, known):
+        about = [k for k, pattern in KNOWN_CASES.get(result.get("fixture"), []) if name and re.search(pattern, name)]
+        if about:
+            result["knownCases"] += 1
+            result["known"][about[0]] = result["known"].get(about[0], 0) + 1
+            return
+        result["differ"].append(entry())
+    elif known:
+        result["knownCases"] += 1
+        for k in known:
+            result["known"][k] = result["known"].get(k, 0) + 1
+    else:
+        result["same"] += 1
 
 
 def difference(official, answered):
@@ -294,10 +418,7 @@ def difference(official, answered):
         return f"status {official['status']}, production {answered['status']}"
     if media(official.get("contentType")) != media(answered.get("contentType")):
         return f"media type {media(official.get('contentType'))}, production {media(answered.get('contentType'))}"
-    try:
-        return first_difference(json.loads(official.get("body") or ""), json.loads(answered["body"])) or "the body"
-    except ValueError:
-        return "the body, as text"
+    return first_difference(parsed(official.get("body") or ""), parsed(answered["body"])) or "the body"
 
 
 def media(content_type):
@@ -398,14 +519,12 @@ def replay_queries(production, recording, result):
         answered = production_outcome(status, INDEX_LINK.sub("<index link>", mask(text, project)),
                                       f"projects/{{project}}/databases/(default)/documents", aggregation,
                                       "select" in case["query"])
-        if same_json(official, answered):
-            result["same"] += 1
-        else:
-            where = "/" + case["parent"] if case["parent"] else ""
-            result["differ"].append({"name": case["name"], "method": "POST",
-                                     "path": f"/v1/projects/{{project}}/databases/(default)/documents{where}:{verb}",
-                                     "difference": first_difference(official, answered) or "the outcome",
-                                     "official": official, "production": answered})
+        where = "/" + case["parent"] if case["parent"] else ""
+        tally(result, official, answered, lambda: {
+            "name": case["name"], "method": "POST",
+            "path": f"/v1/projects/{{project}}/databases/(default)/documents{where}:{verb}",
+            "difference": first_difference(official, answered) or "the outcome", "official": official,
+            "production": answered})
 
 
 # A condition that reads the document, the request or other documents. The Rules API takes the
@@ -603,7 +722,7 @@ def replay_steps(production, recording, result):
         own = case["steps"][0]["path"].split("projects/")[1].split("/")[0]
         production.empty()
         result["sent"] += 1
-        official_commits, production_commits, first, found = [], [], None, {}
+        official_commits, production_commits, first, found, known = [], [], None, {}, set()
         for n, step in enumerate(case["steps"], 1):
             recorded = step["response"] if "response" in step else ({"error": step["error"]} if "error" in step else None)
             if "require admin authentication" in json.dumps(recorded):
@@ -622,11 +741,19 @@ def replay_steps(production, recording, result):
                 answer = {"error": {"message": text[:300]}}
             carried(recorded, answer, found)
             official = step_answer(step["status"], recorded, own, official_commits)
-            answered = step_answer(status, answer, project, production_commits)
-            if first is None and not same_json(official, answered):
+            # A step recorded with its status alone (`base_versions.json`) is compared on it.
+            answered = step_answer(status, answer if recorded is not None else None, project, production_commits)
+            if first is None and not same_json(official, answered, known):
                 first = (n, official, answered)
-        if first is None:
+        about = [k for k, pattern in KNOWN_CASES.get(result["fixture"], []) if re.search(pattern, case["name"])]
+        if first is not None and about:
+            first, known = None, {about[0]}
+        if first is None and not known:
             result["same"] += 1
+        elif first is None:
+            result["knownCases"] += 1
+            for k in known:
+                result["known"][k] = result["known"].get(k, 0) + 1
         else:
             n, official, answered = first
             result["differ"].append({"name": f"{case['name']}, step {n}", "method": case["steps"][n - 1]["method"],
@@ -641,12 +768,14 @@ def replay(production, fixture):
     project = production.project
     if "results" in recording:
         result = {"fixture": Path(fixture).name, "cases": len(recording["results"]), "sent": 0, "same": 0,
-                  "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "indexes": [], "differ": []}
+                  "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "indexes": [], "knownCases": 0,
+                  "known": {}, "differ": []}
         log(f"{result['fixture']}: {result['cases']} rules")
         replay_rules(production, recording, result)
         return result
     result = {"fixture": Path(fixture).name, "cases": len(recording["cases"]), "sent": 0, "same": 0,
-              "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "indexes": [], "differ": []}
+              "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "indexes": [], "knownCases": 0,
+                  "known": {}, "differ": []}
     production.empty()
     log(f"{result['fixture']}: {len(recording['cases'])} cases")
     if "dataset" in recording:
@@ -686,15 +815,13 @@ def replay(production, fixture):
         if status == 400 and NEEDS_INDEX.search(text) and official["status"] < 400:
             result["needsIndex"].append(case["name"])
             continue
-        same = status == official["status"] and media(content_type) == media(official.get("contentType"))
+        theirs = {"status": official["status"], "media": media(official.get("contentType"))}
+        ours = {"status": status, "media": media(content_type)}
         if case.get("compare", "exact") == "exact":
-            same = same and same_body(official.get("body") or "", answered["body"])
-        if same:
-            result["same"] += 1
-        else:
-            result["differ"].append({"name": case["name"], "method": case["method"], "path": case["path"],
-                                     "difference": difference(official, answered), "official": official,
-                                     "production": answered})
+            theirs["body"], ours["body"] = parsed(official.get("body") or ""), parsed(answered["body"])
+        tally(result, theirs, ours, lambda: {"name": case["name"], "method": case["method"], "path": case["path"],
+                                             "difference": difference(official, answered), "official": official,
+                                             "production": answered}, case["name"])
     production.empty()
     return result
 
@@ -702,11 +829,19 @@ def replay(production, fixture):
 def markdown(report):
     lines = ["## Production parity", "",
              f"Recordings of the official emulator replayed against production Cloud Firestore on {report['started']}.", "",
-             "| Recording | Cases | Sent | Same | Differ | Needs an index | Not sent |",
-             "|---|---:|---:|---:|---:|---:|---:|"]
+             "Known: the same but for differences `docs/parity-exceptions.md` records.", "",
+             "| Recording | Cases | Sent | Same | Known | Differ | Needs an index | Not sent |",
+             "|---|---:|---:|---:|---:|---:|---:|---:|"]
     for r in report["recordings"]:
-        lines.append(f"| `{r['fixture']}` | {r['cases']} | {r['sent']} | {r['same']} | {len(r['differ'])} | "
-                     f"{len(r['needsIndex'])} | {sum(r['skipped'].values())} |")
+        lines.append(f"| `{r['fixture']}` | {r['cases']} | {r['sent']} | {r['same']} | {r['knownCases']} | "
+                     f"{len(r['differ'])} | {len(r['needsIndex'])} | {sum(r['skipped'].values())} |")
+    known = {}
+    for r in report["recordings"]:
+        for k, n in r["known"].items():
+            known[k] = known.get(k, 0) + n
+    if known:
+        lines += ["", "Known differences, by the cases they appear in: "
+                  + ", ".join(f"{k} {n}" for k, n in sorted(known.items())) + "."]
     indexes = {json.dumps(i, sort_keys=True) for r in report["recordings"] for i in r["indexes"]}
     if indexes:
         lines += ["", f"Production asked for {len(indexes)} indexes the project does not have: "
