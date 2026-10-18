@@ -341,6 +341,37 @@ pub struct Plan {
     /// Whether the filter can match nothing, as the official emulator sees it ([`no_range`]):
     /// then a limit of 0 has no more results either.
     pub nothing: bool,
+    /// Whether the key ends the order only because every query's does: the query neither
+    /// orders on it nor compares it.
+    implicit_key: bool,
+    /// The direction of the query's last order, which the orders it implies take.
+    last_descending: bool,
+}
+
+impl Plan {
+    /// Orders the rows by `properties` too, the ones a sum or an average reads (each value of
+    /// an array a row of its own), by name: after the query's orders, before the key unless the
+    /// query orders on it or compares it, in the direction of the query's last order, as the
+    /// official emulator does (`tools/oracle/datastore_queries.py`).
+    pub fn order_by_values_of(&mut self, properties: &[String]) {
+        let key = if self.implicit_key {
+            self.orders.pop()
+        } else {
+            None
+        };
+        let mut by_name: Vec<&String> = properties
+            .iter()
+            .filter(|p| !self.row_properties.contains(p))
+            .collect();
+        by_name.sort_unstable();
+        by_name.dedup();
+        for property in by_name {
+            self.row_properties.push(property.clone());
+            self.orders
+                .push((Some(property.clone()), self.last_descending));
+        }
+        self.orders.extend(key);
+    }
 }
 
 /// Where a result is in a query's order: its row values and its key, just past it in the
@@ -612,7 +643,7 @@ pub fn plan(query: &Query, database: &Database, namespace: &str) -> Result<Plan,
         .collect();
     let cond = query.filter.as_ref().map(|f| hoisted(f, &database.project));
     let nothing = cond.as_ref().is_some_and(no_range);
-    let orders = orders(query, cond.as_ref(), &projection);
+    let (orders, implicit_key, last_descending) = orders(query, cond.as_ref(), &projection);
     let row_properties: Vec<String> = orders.iter().filter_map(|(f, _)| f.clone()).collect();
     let cursor = |bytes: &[u8]| -> Result<Option<Position>, Status> {
         if bytes.is_empty() {
@@ -645,6 +676,8 @@ pub fn plan(query: &Query, database: &Database, namespace: &str) -> Result<Plan,
         start,
         end,
         nothing,
+        implicit_key,
+        last_descending,
     })
 }
 
@@ -664,6 +697,7 @@ pub(super) fn cursors_match(query: &Query, namespace: &str) -> Result<(), Status
         .collect();
     let cond = query.filter.as_ref().map(|f| condition(f, ""));
     let ordered = orders(query, cond.as_ref(), &projection)
+        .0
         .iter()
         .filter(|(f, _)| f.is_some())
         .count();
@@ -700,11 +734,13 @@ pub(super) fn cursors_match(query: &Query, namespace: &str) -> Result<(), Status
 /// (by name) not ordered yet, then the key (`None`). What the query does not order by
 /// explicitly follows its last explicit order's direction; a key ordered last only for being
 /// last, ascending.
+/// The query's orders, then the ones it implies, then the key; whether the key is there only as
+/// the last of them, and the direction the implied ones take.
 fn orders(
     query: &Query,
     cond: Option<&Cond>,
     projection: &[String],
-) -> Vec<(Option<String>, bool)> {
+) -> (Vec<(Option<String>, bool)>, bool, bool) {
     let mut inequalities = Vec::new();
     let mut equalities = Vec::new();
     if let Some(cond) = cond {
@@ -750,8 +786,9 @@ fn orders(
     for name in &by_name {
         add(&mut orders, Some(name), last);
     }
+    let implicit_key = orders.iter().all(|(field, _)| field.is_some());
     add(&mut orders, None, false);
-    orders
+    (orders, implicit_key, last)
 }
 
 /// Whether a condition compares the key with an inequality.
@@ -774,10 +811,13 @@ fn matches(cond: &Cond, row: &Row<'_>, plan: &Plan) -> bool {
     match cond {
         Cond::And(children) => children.iter().all(|c| matches(c, row, plan)),
         Cond::Or(children) => children.iter().any(|c| matches(c, row, plan)),
+        // An equality holds of the entity, whichever of its values the row has: a property
+        // filtered by equality and ordered has a row for each of its values, as on the official
+        // emulator. An inequality holds of the row's value.
         Cond::Prop { name, op, values } => {
             match plan.row_properties.iter().position(|p| p == name) {
-                Some(i) => op.test(&row.values[i].0, values),
-                None => index_values(&row.entity.properties, name)
+                Some(i) if op.inequality() => op.test(&row.values[i].0, values),
+                _ => index_values(&row.entity.properties, name)
                     .iter()
                     .any(|(v, _)| op.test(v, values)),
             }
@@ -976,7 +1016,10 @@ pub struct AggregateRow {
     pub values: Vec<Value>,
 }
 
-/// The rows of `plan` an aggregation reads: past its offset, up to its limit.
+/// The rows of `plan` an aggregation reads: past its offset, up to its limit. A property the
+/// first disjunct an entity meets (in the filter's order, an `IN` a disjunct per value) holds
+/// equal to a value reads as that value in each of the entity's rows, as on the official
+/// emulator: `b = 1` sums 1 for each value of `[1, 2]`.
 pub fn aggregate_rows(
     plan: &Plan,
     entities: &std::collections::BTreeMap<Located, super::Stored>,
@@ -985,12 +1028,76 @@ pub fn aggregate_rows(
     let skipped = plan.offset.min(results.len());
     let after = &results[skipped..];
     let taken = plan.limit.map_or(after.len(), |l| l.min(after.len()));
+    let disjuncts = plan.cond.as_ref().map(disjuncts).unwrap_or_default();
     Ok(after[..taken]
         .iter()
-        .map(|row| AggregateRow {
-            values: row.values.iter().map(|(_, v)| v.clone()).collect(),
+        .map(|row| {
+            let mut values: Vec<Value> = row.values.iter().map(|(_, v)| v.clone()).collect();
+            let met = disjuncts
+                .iter()
+                .find(|disjunct| disjunct.iter().all(|leaf| matches(leaf, row, plan)));
+            for leaf in met.into_iter().flatten() {
+                if let Cond::Prop {
+                    name,
+                    op: Op::Eq,
+                    values: operands,
+                } = leaf
+                    && let Some(i) = plan.row_properties.iter().position(|p| p == name)
+                    && let Some(operand) = operands.first()
+                {
+                    values[i] = summed(operand);
+                }
+            }
+            AggregateRow { values }
         })
         .collect())
+}
+
+/// A condition in disjunctive normal form, in its order: each disjunct's conditions, an `IN` an
+/// equality per value.
+fn disjuncts(cond: &Cond) -> Vec<Vec<Cond>> {
+    match cond {
+        Cond::Or(children) => children.iter().flat_map(disjuncts).collect(),
+        Cond::And(children) => children.iter().fold(vec![Vec::new()], |product, child| {
+            let terms = disjuncts(child);
+            product
+                .iter()
+                .flat_map(|left| {
+                    terms
+                        .iter()
+                        .map(move |right| left.iter().chain(right).cloned().collect::<Vec<Cond>>())
+                })
+                .collect()
+        }),
+        Cond::Prop {
+            name,
+            op: Op::In,
+            values,
+        } => values
+            .iter()
+            .map(|value| {
+                vec![Cond::Prop {
+                    name: name.clone(),
+                    op: Op::Eq,
+                    values: vec![value.clone()],
+                }]
+            })
+            .collect(),
+        leaf => vec![vec![leaf.clone()]],
+    }
+}
+
+/// An index value as a sum reads it: a number, or nothing it counts.
+fn summed(value: &Indexed) -> Value {
+    let value_type = match value {
+        Indexed::Int(n) => ValueType::IntegerValue(*n),
+        Indexed::Double(d) => ValueType::DoubleValue(*d),
+        _ => ValueType::NullValue(0),
+    };
+    Value {
+        value_type: Some(value_type),
+        ..Value::default()
+    }
 }
 
 /// Runs `plan` over `entities` (every entity of the database, by key), as of `read_micros`.

@@ -370,12 +370,14 @@ fn check_value(name: &str, flattened: &str, value: &Value, used: Use) -> Result<
                 }
             }
         }
-        // A key value may name another project or database.
+        // A key value may name another project or database, but a valid one.
         ValueType::KeyValue(key) => {
+            keys::check_value_project(key)?;
             keys::check_unpartitioned(key, Rules::Read, Last::Complete)?;
         }
         ValueType::EntityValue(entity) => {
             if let Some(key) = &entity.key {
+                keys::check_value_project(key)?;
                 keys::check_unpartitioned(key, Rules::Read, Last::Either)?;
             }
             check_nested(&entity.properties, &format!("{flattened}."), used)?;
@@ -614,9 +616,13 @@ pub fn check_aggregation_operand_late(name: &str, value: &Value) -> Result<(), S
     Ok(())
 }
 
-/// A key of an aggregation's filter, as the official emulator reads it there.
+/// A key of an aggregation's filter, as the official emulator reads it there: an invalid project
+/// is an internal error.
 fn aggregation_key(key: &hidane_proto::google::datastore::v1::Key) -> Result<(), Status> {
     use hidane_proto::google::datastore::v1::key::path_element::IdType;
+    if keys::check_value_project(key).is_err() {
+        return Err(Status::unknown(""));
+    }
     let invalid = |message: String| Err(Status::invalid_argument(message));
     let namespace = key
         .partition_id

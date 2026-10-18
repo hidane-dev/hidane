@@ -669,6 +669,64 @@ async fn an_aggregation_compares_entity_values_with_nothing() {
     }
 }
 
+/// A transaction ID hidane did not give is invalid, whatever ran before: the official emulator
+/// numbers the transactions of non-transactional reads and writes too, in one table for every
+/// database, and answers such an ID by what had it (D025).
+#[tokio::test]
+async fn a_transaction_id_not_given_is_invalid() {
+    let addr = start().await;
+    let path = |verb: &str| format!("/v1/projects/transaction-ids:{verb}");
+    let key = r#"{"path":[{"kind":"K","name":"a"}]}"#;
+    for (verb, body) in [
+        ("lookup", format!(r#"{{"keys":[{key}]}}"#)),
+        (
+            "commit",
+            format!(r#"{{"mode":"NON_TRANSACTIONAL","mutations":[{{"upsert":{{"key":{key}}}}}]}}"#),
+        ),
+    ] {
+        let answer = send(
+            addr,
+            "POST",
+            &path(verb),
+            Some(&body),
+            Some("application/json"),
+        )
+        .await;
+        assert_eq!(answer.status, 200, "{verb}: {}", answer.body);
+    }
+    // The first two transaction IDs of a database, which neither request was given.
+    for transaction in ["EQEAAAAAAAAA", "EQIAAAAAAAAA"] {
+        for (verb, body) in [
+            (
+                "lookup",
+                format!(r#"{{"keys":[{key}],"readOptions":{{"transaction":"{transaction}"}}}}"#),
+            ),
+            (
+                "commit",
+                format!(
+                    r#"{{"transaction":"{transaction}","mutations":[{{"upsert":{{"key":{key}}}}}]}}"#
+                ),
+            ),
+            ("rollback", format!(r#"{{"transaction":"{transaction}"}}"#)),
+        ] {
+            let answer = send(
+                addr,
+                "POST",
+                &path(verb),
+                Some(&body),
+                Some("application/json"),
+            )
+            .await;
+            assert_eq!(answer.status, 400, "{verb} {transaction}: {}", answer.body);
+            assert!(
+                answer.body.contains("Transaction is invalid or expired."),
+                "{verb} {transaction}: {}",
+                answer.body
+            );
+        }
+    }
+}
+
 /// A Datastore request whose body names another project than its path, which the official
 /// emulator never answers, is answered for the path's project (D046).
 #[tokio::test]

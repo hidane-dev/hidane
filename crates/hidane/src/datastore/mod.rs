@@ -431,6 +431,9 @@ struct Reading {
     /// A read-write transaction to lock no kind: an internal error on the official emulator,
     /// once the query's index is found and the aggregations are checked.
     kindless: bool,
+    /// Whether the read is in a read-write transaction, where `__namespace__` and `__kind__`
+    /// find nothing on the official emulator.
+    read_write: bool,
 }
 
 impl Reading {
@@ -471,6 +474,7 @@ impl DatastoreService {
             new_transaction: Vec::new(),
             at: None,
             kindless: false,
+            read_write: false,
         };
         // A read-write transaction locks the kind it queries; a query without a kind is an
         // internal error there on the official emulator ([`Reading::lock`]).
@@ -494,6 +498,7 @@ impl DatastoreService {
         };
         if let Some(mode) = mode {
             reading.kindless = kind.is_none() && mode == Mode::ReadWrite;
+            reading.read_write = mode == Mode::ReadWrite;
             reading.at = snapshot(mode);
         }
         Ok(reading)
@@ -920,7 +925,12 @@ impl Datastore for DatastoreService {
         let read = at.unwrap_or_else(|| data.read_micros());
         let stored = data.database(&database);
         let entities = stored.entities_at(at);
-        let batch = match query::metadata(&plan, &entities, &stored.touched, &database, read) {
+        let metadata = if reading.read_write {
+            query::metadata(&plan, &BTreeMap::new(), &BTreeSet::new(), &database, read)
+        } else {
+            query::metadata(&plan, &entities, &stored.touched, &database, read)
+        };
+        let batch = match metadata {
             Some(batch) => batch,
             None => query::run(&plan, &entities, &database, read)?,
         };
@@ -990,17 +1000,13 @@ impl Datastore for DatastoreService {
             return Err(refused);
         }
         let aggregations = aggregations(&aggregation.aggregations);
-        // A sum or an average reads its property: only entities that have it count.
-        let key = plan.orders.pop();
-        for (_, property) in &aggregations {
-            if let Some(property) = property
-                && !plan.row_properties.contains(property)
-            {
-                plan.row_properties.push(property.clone());
-                plan.orders.push((Some(property.clone()), false));
-            }
-        }
-        plan.orders.extend(key);
+        // A sum or an average reads its property: only entities that have it count, a row for
+        // each of their values.
+        let read: Vec<String> = aggregations
+            .iter()
+            .filter_map(|(_, property)| property.clone())
+            .collect();
+        plan.order_by_values_of(&read);
         // The read time was checked among the query's checks, which refused it if it was bad.
         let at = read_time.ok().flatten().or(reading.at);
         let mut data = self.data();
@@ -1366,7 +1372,22 @@ fn apply(
                     Some(located) => (located, false),
                     None => {
                         stored.allocated += 1;
-                        (key.with_id(scattered(stored.allocated)), true)
+                        let located = key.with_id(scattered(stored.allocated));
+                        // An ID an entity already has fails the commit, and the counter stays
+                        // past it; one a transaction wrote before is an internal error
+                        // (`tools/oracle/datastore_entities.py`).
+                        match working.get(&located) {
+                            Some(Some(_)) => return Err(Status::unknown("")),
+                            Some(None) => {}
+                            None if stored.entities.contains_key(&located) => {
+                                return Err(Status::invalid_argument(format!(
+                                    "the id allocated for a new entity was already in use, please try again: {}",
+                                    keys::proto_text(database, &located)
+                                )));
+                            }
+                            None => {}
+                        }
+                        (located, true)
                     }
                 };
                 let properties = match &mask {
