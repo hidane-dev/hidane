@@ -720,11 +720,12 @@
    "topic": null,
    "kind": "equivalent",
    "official": "RunAggregationQuery responses carry `done: true`, a field the published protos do not define (visible over REST)",
-   "firestore": null,
+   "firestore": "Not sent: over REST, query results end without `done` (D099)",
    "hidane": "Not sent over gRPC, where clients built from the published protos would drop it; sent over REST, as the official emulator does (#34)",
    "reason": "Not part of the published API",
    "references": [
-    "hidane-dev/hidane#34"
+    "hidane-dev/hidane#34",
+    "https://github.com/hidane-dev/hidane/actions/runs/39089145449"
    ],
    "pinned_by": [],
    "unpinned": "Structural: the published gRPC protos have no `done` field for hidane to send."
@@ -1322,11 +1323,13 @@
    "topic": "Descending document order",
    "kind": "bug-for-bug",
    "official": "`order_by __name__ desc` as the only ordering (once or more), without a filter on another field (array-contains on `__name__` is one), fails with `FAILED_PRECONDITION` \"Firestore does not support descending key scans\", before any other check of the orders, the limit or the fields a `sum` or an `avg` reads",
-   "firestore": "Served",
+   "firestore": "Served. Listing documents with `orderBy=__name__ desc` answers `FAILED_PRECONDITION` \"The query requires an index\" (#82)",
    "hidane": "As the official emulator",
    "reason": "Follow the emulator, measured in #21",
    "references": [
-    "hidane-dev/hidane#21"
+    "hidane-dev/hidane#21",
+    "hidane-dev/hidane#82",
+    "https://github.com/hidane-dev/hidane/actions/runs/39089145449"
    ],
    "pinned_by": [
     "crates/hidane/tests/queries.rs::queries_answer_like_the_official_emulator"
@@ -1360,11 +1363,13 @@
    "topic": "`PartitionQuery`",
    "kind": "bug-for-bug",
    "official": "501 `UNIMPLEMENTED`",
-   "firestore": "Supported",
+   "firestore": "Supported: a request without a query answers `400` \"Query is required.\" (#82)",
    "hidane": "As the official emulator: 501 `UNIMPLEMENTED`",
    "reason": "Follow the emulator (issue #26)",
    "references": [
-    "hidane-dev/hidane#26"
+    "hidane-dev/hidane#26",
+    "hidane-dev/hidane#82",
+    "https://github.com/hidane-dev/hidane/actions/runs/39089145449"
    ],
    "pinned_by": [
     "crates/hidane/tests/unsupported.rs::ignored_and_refused_like_the_official_emulator"
@@ -1589,6 +1594,152 @@
    ],
    "pinned_by": [
     "crates/hidane/tests/datastore.rs::a_keys_only_cursor_is_read_after_the_key"
+   ]
+  },
+  {
+   "id": "D097",
+   "table": "production",
+   "area": "rest",
+   "topic": "Error messages",
+   "kind": "bug-for-bug",
+   "official": "A missing document: `Document (<name>) not found.` A body that does not parse: `Payload isn't valid for request.` Rolling back an unknown transaction: `Transaction is invalid or expired.` A numeric transform of a value that is not a number: `Input must be int64 or double.` A read time older than the versions kept: `FAILED_PRECONDITION` \"The requested 'read_time' is too old.\" An error has a `code`, a `message` and a `status`, nothing else",
+   "firestore": "`Document \"<name>\" not found.`; `Invalid JSON payload received.` and where the parser stopped (`Expected : between key:value pair.`, the text and a caret); `Invalid transaction.`; `Input must be a number.`; a read time before the database was created: `INVALID_ARGUMENT` \"The requested 'read_time' cannot be before database creation time.\" A body that does not fit the request's message names the field (`Invalid value at 'document.fields[0].value.string_value' (TYPE_STRING), 1`) and adds `details` (`google.rpc.BadRequest` field violations)",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). The status codes are the same; clients read those, not the wording",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/39089145449",
+    "hidane-dev/hidane#82"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::rest_answers_like_the_official_emulator",
+    "crates/hidane/tests/rest.rs::conformance_requests_answer_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D098",
+   "table": "production",
+   "area": "rest",
+   "topic": "Errors of streamed methods over REST",
+   "kind": "bug-for-bug",
+   "official": "`runQuery`, `runAggregationQuery` and `batchGet` answer a request they refuse with one error object, `{\"error\": {…}}`",
+   "firestore": "An array holding the error, `[{\"error\": {…}}]`, the stream's only element",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82)",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/39089145449",
+    "hidane-dev/hidane#82"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::rest_answers_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D099",
+   "table": "production",
+   "area": "queries",
+   "topic": "Query results over REST",
+   "kind": "bug-for-bug",
+   "official": "The last result of `runQuery` or `runAggregationQuery` carries `\"done\": true`: a query without results answers `[{\"readTime\": …, \"done\": true}]`. With an `offset`, every document's result carries `skippedResults`",
+   "firestore": "No `done`: a query without results answers `[{\"readTime\": …}]`. With an `offset`, the number skipped comes first, in a result of its own without a document",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). The SDKs read either",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/39089145449",
+    "hidane-dev/hidane#82"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::rest_answers_like_the_official_emulator",
+    "crates/hidane/tests/rest.rs::conformance_requests_answer_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D100",
+   "table": "production",
+   "area": "rest",
+   "topic": "Request bodies and query parameters",
+   "kind": "bug-for-bug",
+   "official": "Read leniently. Accepted: an unknown query parameter; a body on `GET` or `DELETE` (`null`, or one that does not parse), which is ignored; Gson's lenient JSON (comments, unquoted names and strings, the `)]}'` prefix, `=` or `=>` after a name, `;` between pairs or elements, a second value after the first); and JsonFormat's (a scalar inside a one-element array, `{\"stringValue\": [\"a\"]}`; a number or a boolean where a string is expected; `\"1e2\"` or `\"1.0\"` for an integer; `true` or a number for bytes; any value for `nullValue`). Refused with `Payload isn't valid for request.`: `\"True\"`, `\"1\"` or `1` for a boolean, `\"0x10\"` for a double, an operator in lowercase, an object or a string for a repeated field, an element left out of an array, an escape Gson does not know, a form feed between tokens",
+   "firestore": "Strict where the emulator is lenient: `400` `INVALID_ARGUMENT` for each, an HTML error page for a body on `GET` or `DELETE`, and `500` `INTERNAL` for `{\"nullValue\": 1}`. Lenient where the emulator is strict: each of those is read (`\"0x10\"` is 16, `\"True\"` is true)",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). Tests written against the emulator send what it reads",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/39089145449",
+    "hidane-dev/hidane#82"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::rest_answers_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D101",
+   "table": "production",
+   "area": "documents",
+   "topic": "Whitespace around path segments",
+   "kind": "bug-for-bug",
+   "official": "Whitespace around each segment of a REST path is trimmed: `PATCH …/ws/%20a%09` writes `ws/a`, a collection ` ws` is `ws`, and an ID of whitespace alone is an empty ID (`400` `has invalid trailing \"/\"`). A `documentId` parameter is kept as given. A path ending with `/` is refused (`400`)",
+   "firestore": "Kept: ` a\\t` and ` ws` are IDs of their own, so `GET …/ws/a` does not find `ws/ a\\t`, and an ID of whitespace alone is an ID. A `/` at the end of a document's path is ignored",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). A client that puts whitespace around an ID writes another document in production",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/39089145449",
+    "hidane-dev/hidane#82"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::rest_answers_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D102",
+   "table": "production",
+   "area": "documents",
+   "topic": "Transforms of reserved names",
+   "kind": "bug-for-bug",
+   "official": "A field transform of `__name__` writes a field `__key__`, which reads back with the document; transforms of `__type__`, in a document or inside a vector, are applied",
+   "firestore": "`400` `INVALID_ARGUMENT` \"the name __key__ is reserved\", \"the name __type__ is reserved\"",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82)",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/39089145449",
+    "hidane-dev/hidane#82"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::rest_answers_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D103",
+   "table": "production",
+   "area": "rest",
+   "topic": "Paths that name no method",
+   "kind": "bug-for-bug",
+   "official": "`404` with the text `Not Found` and no media type: the database root, an unknown verb, `PUT`, `GET` of a verb (`GET …/documents:commit`), and `:write` and `:listen`, which only gRPC has",
+   "firestore": "Google's HTML error page (`404`, `text/html`) for the database root, an unknown verb and `PUT`; `400` `Invalid value (Object)` for `:write` and `:listen`; `200` `{}` for `GET …/documents:commit`",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82)",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/39089145449",
+    "hidane-dev/hidane#82"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::rest_answers_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D104",
+   "table": "production",
+   "area": "rest",
+   "topic": "Listing documents",
+   "kind": "bug-for-bug",
+   "official": "`mask.fieldPaths=_none_` with `showMissing=true`, as the Emulator UI lists, returns every field. A full page that ends at the last document still has a `nextPageToken`",
+   "firestore": "The mask applies: `_none_`, a field no document has, returns names and times only. The last page has no `nextPageToken`",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82)",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/39089145449",
+    "hidane-dev/hidane#82"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::rest_answers_like_the_official_emulator"
    ]
   }
  ],
