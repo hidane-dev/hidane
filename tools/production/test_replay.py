@@ -5,6 +5,7 @@ import os
 import sys
 import tempfile
 import threading
+import time
 import unittest
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -220,6 +221,12 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual(result["needsIndex"], ["needs an index"])
         self.assertEqual(result["skipped"], {"names another project": 1})
         self.assertEqual(StandIn.documents, {})
+
+    def test_a_pace_spaces_the_requests(self):
+        pace, started = replay.Pace(1200), time.monotonic()
+        for _ in range(5):
+            pace.wait()
+        self.assertGreaterEqual(time.monotonic() - started, 0.2)
 
     def test_rules_are_tested_with_the_rules_api(self):
         template = "service cloud.firestore {\n  match /rooms/{room} {\n    allow read: if %s;\n  }\n}\n"
