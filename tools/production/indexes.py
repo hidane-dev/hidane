@@ -140,15 +140,18 @@ def index_asked(text):
 
 
 def key(index):
-    """What makes two indexes the same. Production adds `__name__` at the end of a composite
-    index it lists or asks for; one without it is the same index."""
+    """What makes two indexes the same. Production adds `__name__` to a composite index it lists
+    or asks for, at the end, or at the start of a vector index; one without it is the same
+    index."""
     group = index.get("collectionGroup") or index["name"].split("/collectionGroups/")[1].split("/")[0]
     if "fieldPath" in index:
         return json.dumps([group, index["fieldPath"], index["indexes"]], sort_keys=True)
     fields = [{k: v for k, v in f.items() if k in ("fieldPath", "order", "arrayConfig", "vectorConfig")}
               for f in index["fields"]]
-    if fields and fields[-1]["fieldPath"] == "__name__":
+    if len(fields) > 1 and fields[-1]["fieldPath"] == "__name__":
         fields = fields[:-1]
+    if len(fields) > 1 and fields[0]["fieldPath"] == "__name__" and any("vectorConfig" in f for f in fields):
+        fields = fields[1:]
     return json.dumps([group, index["queryScope"], fields], sort_keys=True)
 
 
