@@ -188,8 +188,14 @@ NEEDS_INDEX = "The query requires an index."
 INDEX_LINK = re.compile(r'https://console\.firebase\.google\.com/[^"\s]*')
 
 
+# An error about a resource name says where in the name it went wrong, counting the characters of
+# the project ID, which is not the recording's: `Document name "…" lacks "/" at index 53.`
+NAME_INDEX = re.compile(r"(?<=\bat index )\d+")
+
+
 def same_string(official, production):
     """Whether two strings are the same, a placeholder in the official one matching any text."""
+    official, production = (NAME_INDEX.sub("<index>", s) for s in (official, production))
     parts = PLACEHOLDER.split(official)
     if len(parts) == 1:
         return official == production

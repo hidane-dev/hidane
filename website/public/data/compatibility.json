@@ -973,9 +973,9 @@
    }
   },
   "production": {
-   "count": 15,
+   "count": 23,
    "by_kind": {
-    "bug-for-bug": 12,
+    "bug-for-bug": 20,
     "more-correct": 3
    }
   },

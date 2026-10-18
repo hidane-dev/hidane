@@ -19,7 +19,9 @@ recorded answer:
 - the media type;
 - the body, where the recording compares it, as JSON. Production prints JSON its own way (a
   double without `.0`, so numbers compare by value), and a recording's placeholders (`<time>`, `<now>` and the like) match any value, alone or within a
-  string (`the stored version (<version>) does not match ...`).
+  string (`the stored version (<version>) does not match ...`). Where an error says at which
+  character of a resource name it went wrong (`lacks "/" at index 53`), the index is not
+  compared: it counts the characters of a project ID that is not the recording's.
 
 A query production refuses for want of a composite index, which the emulators never ask for
 ([D070](../../docs/parity-exceptions.md)), is counted apart as needing an index rather than
