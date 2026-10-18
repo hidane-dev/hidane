@@ -6590,6 +6590,126 @@
      "integerValue": "7"
     }
    }
+  },
+  {
+   "key": {
+    "path": [
+     {
+      "kind": "D",
+      "name": "d1"
+     }
+    ],
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "properties": {
+    "t": {
+     "arrayValue": {
+      "values": [
+       {
+        "nullValue": null
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "key": {
+    "path": [
+     {
+      "kind": "D",
+      "name": "d2"
+     }
+    ],
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "properties": {
+    "a": {
+     "integerValue": "1"
+    },
+    "b": {
+     "integerValue": "1"
+    },
+    "c": {
+     "integerValue": "5"
+    },
+    "t": {
+     "arrayValue": {
+      "values": [
+       {
+        "integerValue": "4"
+       }
+      ]
+     }
+    }
+   }
+  },
+  {
+   "key": {
+    "path": [
+     {
+      "kind": "D",
+      "name": "d3"
+     }
+    ],
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "properties": {
+    "a": {
+     "integerValue": "2"
+    },
+    "b": {
+     "integerValue": "2"
+    },
+    "c": {
+     "integerValue": "6"
+    }
+   }
+  },
+  {
+   "key": {
+    "path": [
+     {
+      "kind": "D",
+      "name": "d4"
+     }
+    ],
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "properties": {
+    "a": {
+     "integerValue": "3"
+    },
+    "b": {
+     "nullValue": null
+    }
+   }
+  },
+  {
+   "key": {
+    "path": [
+     {
+      "kind": "DP",
+      "name": "p1"
+     }
+    ],
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "properties": {
+    "b": {
+     "integerValue": "5"
+    }
+   }
   }
  ],
  "cases": [
@@ -19524,6 +19644,3595 @@
    }
   },
   {
+   "name": "cursor source D: t descending",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "t"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "limit": 1
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "defines": {
+    "xd t descending": "batch.endCursor"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"MORE_RESULTS_AFTER_LIMIT\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "cursor source D: t",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "t"
+       }
+      }
+     ],
+     "limit": 1
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "defines": {
+    "xd t": "batch.endCursor"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d1\"\n          }]\n        },\n        \"properties\": {\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"nullValue\": null\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"MORE_RESULTS_AFTER_LIMIT\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "cursor source D: b descending",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "limit": 1
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "defines": {
+    "xd b descending": "batch.endCursor"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"MORE_RESULTS_AFTER_LIMIT\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "cursor source D: distinct on b",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "distinctOn": [
+      {
+       "name": "b"
+      }
+     ],
+     "limit": 1
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "defines": {
+    "xd distinct on b": "batch.endCursor"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"MORE_RESULTS_AFTER_LIMIT\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "cursor source D: no kind",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "limit": 2
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "defines": {
+    "xd no kind": "batch.endCursor"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d1\"\n          }]\n        },\n        \"properties\": {\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"nullValue\": null\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"MORE_RESULTS_AFTER_LIMIT\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "cursor source D: key",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "limit": 1
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "defines": {
+    "xd key": "batch.endCursor"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d1\"\n          }]\n        },\n        \"properties\": {\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"nullValue\": null\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"MORE_RESULTS_AFTER_LIMIT\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 't descending' in 'b, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<xd t descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 't descending' in 'b, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<xd t descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 't descending' in 'b descending, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<xd t descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 't descending' in 'b descending, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<xd t descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 't descending' in 'b, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<xd t descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 't descending' in 'b, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<xd t descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 't descending' in 'b descending, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<xd t descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 't descending' in 'b descending, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<xd t descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 't descending' in 'key, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "startCursor": "<xd t descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 't descending' in 'key, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "endCursor": "<xd t descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 't descending' in 'key descending, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "startCursor": "<xd t descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 't descending' in 'key descending, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "endCursor": "<xd t descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 't' in 'b, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<xd t>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 't' in 'b, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<xd t>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 't' in 'b descending, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<xd t>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of D 't' in 'b descending, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<xd t>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of D 't' in 'b, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<xd t>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of D 't' in 'b, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<xd t>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of D 't' in 'b descending, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<xd t>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 't' in 'b descending, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<xd t>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 't' in 'key, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "startCursor": "<xd t>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 't' in 'key, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "endCursor": "<xd t>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 't' in 'key descending, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "startCursor": "<xd t>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 't' in 'key descending, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "endCursor": "<xd t>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'b descending' in 'b, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<xd b descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of D 'b descending' in 'b, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<xd b descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of D 'b descending' in 'b descending, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<xd b descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'b descending' in 'b descending, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<xd b descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'b descending' in 'b, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<xd b descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'b descending' in 'b, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<xd b descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'b descending' in 'b descending, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<xd b descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of D 'b descending' in 'b descending, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<xd b descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of D 'b descending' in 'key, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "startCursor": "<xd b descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'b descending' in 'key, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "endCursor": "<xd b descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'b descending' in 'key descending, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "startCursor": "<xd b descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'b descending' in 'key descending, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "endCursor": "<xd b descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'distinct on b' in 'b, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'distinct on b' in 'b, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'distinct on b' in 'b descending, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of D 'distinct on b' in 'b descending, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of D 'distinct on b' in 'b, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of D 'distinct on b' in 'b, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of D 'distinct on b' in 'b descending, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'distinct on b' in 'b descending, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'distinct on b' in 'key, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "startCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'distinct on b' in 'key, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "endCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'distinct on b' in 'key descending, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "startCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'distinct on b' in 'key descending, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "endCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'no kind' in 'b, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<xd no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'no kind' in 'b, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<xd no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'no kind' in 'b descending, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<xd no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of D 'no kind' in 'b descending, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<xd no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of D 'no kind' in 'b, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<xd no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of D 'no kind' in 'b, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<xd no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of D 'no kind' in 'b descending, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<xd no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'no kind' in 'b descending, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<xd no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'no kind' in 'key, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "startCursor": "<xd no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'no kind' in 'key, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "endCursor": "<xd no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'no kind' in 'key descending, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "startCursor": "<xd no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'no kind' in 'key descending, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "endCursor": "<xd no kind>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'key' in 'b, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<xd key>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'key' in 'b, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<xd key>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'key' in 'b descending, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "startCursor": "<xd key>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of D 'key' in 'b descending, a'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "endCursor": "<xd key>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of D 'key' in 'b, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<xd key>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "endCursor of D 'key' in 'b, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<xd key>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 500,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":500,\"status\":\"UNKNOWN\"}}"
+   }
+  },
+  {
+   "name": "startCursor of D 'key' in 'b descending, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "startCursor": "<xd key>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'key' in 'b descending, a descending'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "a"
+       },
+       "direction": "DESCENDING"
+      }
+     ],
+     "endCursor": "<xd key>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'key' in 'key, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "startCursor": "<xd key>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'key' in 'key, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "endCursor": "<xd key>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'key' in 'key descending, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "startCursor": "<xd key>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'key' in 'key descending, b'",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       },
+       "direction": "DESCENDING"
+      },
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "endCursor": "<xd key>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'distinct on b' in another kind",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "DP"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "startCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"DP\",\n            \"name\": \"p1\"\n          }]\n        },\n        \"properties\": {\n          \"b\": {\n            \"integerValue\": \"5\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'distinct on b' in another kind, by its key",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "DP"
+      }
+     ],
+     "startCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"cursor does not match query\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "startCursor of D 'distinct on b' in another namespace",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "startCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'distinct on b' in another kind",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "DP"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "endCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'distinct on b' in another kind, by its key",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "DP"
+      }
+     ],
+     "endCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"cursor does not match query\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "endCursor of D 'distinct on b' in another namespace",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "b"
+       }
+      }
+     ],
+     "endCursor": "<xd distinct on b>"
+    },
+    "partitionId": {
+     "namespaceId": "xc"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "cursor source D: c compared, a projected",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "c"
+       },
+       "op": "GREATER_THAN",
+       "value": {
+        "integerValue": "0"
+       }
+      }
+     },
+     "projection": [
+      {
+       "property": {
+        "name": "a"
+       }
+      }
+     ],
+     "limit": 1
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "defines": {
+    "xd c then a": "batch.endCursor"
+   },
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"PROJECTION\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\",\n            \"meaning\": 18\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"MORE_RESULTS_AFTER_LIMIT\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'c then a' in a count, ordered by a",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "D"
+       }
+      ],
+      "order": [
+       {
+        "property": {
+         "name": "a"
+        }
+       }
+      ],
+      "startCursor": "<xd c then a>"
+     },
+     "aggregations": [
+      {
+       "count": {},
+       "alias": "n"
+      }
+     ]
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"cursor does not match query\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "endCursor of D 'c then a' in a count, ordered by a",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "D"
+       }
+      ],
+      "order": [
+       {
+        "property": {
+         "name": "a"
+        }
+       }
+      ],
+      "endCursor": "<xd c then a>"
+     },
+     "aggregations": [
+      {
+       "count": {},
+       "alias": "n"
+      }
+     ]
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 400,
+    "contentType": "application/json",
+    "body": "{\"error\":{\"code\":400,\"message\":\"cursor does not match query\",\"status\":\"INVALID_ARGUMENT\"}}"
+   }
+  },
+  {
+   "name": "startCursor of D 'c then a' in an average of b, ordered by a",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "D"
+       }
+      ],
+      "order": [
+       {
+        "property": {
+         "name": "a"
+        }
+       }
+      ],
+      "startCursor": "<xd c then a>"
+     },
+     "aggregations": [
+      {
+       "avg": {
+        "property": {
+         "name": "b"
+        }
+       },
+       "alias": "m"
+      },
+      {
+       "count": {},
+       "alias": "n"
+      }
+     ]
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"m\": {\n          \"nullValue\": null\n        },\n        \"n\": {\n          \"integerValue\": \"0\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'c then a' in an average of b, ordered by a",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "D"
+       }
+      ],
+      "order": [
+       {
+        "property": {
+         "name": "a"
+        }
+       }
+      ],
+      "endCursor": "<xd c then a>"
+     },
+     "aggregations": [
+      {
+       "avg": {
+        "property": {
+         "name": "b"
+        }
+       },
+       "alias": "m"
+      },
+      {
+       "count": {},
+       "alias": "n"
+      }
+     ]
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"m\": {\n          \"doubleValue\": 1.5\n        },\n        \"n\": {\n          \"integerValue\": \"3\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "startCursor of D 'c then a' in sums of b and c",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "D"
+       }
+      ],
+      "order": [],
+      "startCursor": "<xd c then a>"
+     },
+     "aggregations": [
+      {
+       "sum": {
+        "property": {
+         "name": "b"
+        }
+       },
+       "alias": "s"
+      },
+      {
+       "sum": {
+        "property": {
+         "name": "c"
+        }
+       },
+       "alias": "t"
+      }
+     ]
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"s\": {\n          \"integerValue\": \"0\"\n        },\n        \"t\": {\n          \"integerValue\": \"0\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 'c then a' in sums of b and c",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runAggregationQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "aggregationQuery": {
+     "nestedQuery": {
+      "kind": [
+       {
+        "name": "D"
+       }
+      ],
+      "order": [],
+      "endCursor": "<xd c then a>"
+     },
+     "aggregations": [
+      {
+       "sum": {
+        "property": {
+         "name": "b"
+        }
+       },
+       "alias": "s"
+      },
+      {
+       "sum": {
+        "property": {
+         "name": "c"
+        }
+       },
+       "alias": "t"
+      }
+     ]
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"aggregationResults\": [{\n      \"aggregateProperties\": {\n        \"s\": {\n          \"integerValue\": \"3\"\n        },\n        \"t\": {\n          \"integerValue\": \"11\"\n        }\n      }\n    }],\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
    "name": "__kind__",
    "method": "POST",
    "path": "/v1/projects/{project}:runQuery",
@@ -19543,7 +23252,7 @@
    "outcome": {
     "status": 200,
     "contentType": "application/json",
-    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Arr\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"C\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"E\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"G\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"H\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"L\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Many\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Other\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"P\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Q\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"T\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Arr\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"C\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"D\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"DP\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"E\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"G\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"H\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"L\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Many\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Other\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"P\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Q\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"T\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
    }
   },
   {
@@ -19569,7 +23278,7 @@
    "outcome": {
     "status": 200,
     "contentType": "application/json",
-    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Arr\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"C\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"E\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"G\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"H\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"L\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Many\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Other\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"P\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Q\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"T\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Arr\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"C\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"D\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"DP\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"E\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"G\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"H\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"L\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Many\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Other\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"P\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Q\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"T\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
    }
   },
   {
@@ -19633,7 +23342,7 @@
    "outcome": {
     "status": 200,
     "contentType": "application/json",
-    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"id\": \"1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns2\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xa\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xc\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xcns\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xg\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"id\": \"1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns2\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xa\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xc\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xcns\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xd\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xg\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
    }
   },
   {
@@ -19663,7 +23372,7 @@
    "outcome": {
     "status": 200,
     "contentType": "application/json",
-    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"KEY_ONLY\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"id\": \"1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns2\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xa\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xc\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xcns\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xg\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"KEY_ONLY\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"id\": \"1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns2\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xa\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xc\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xcns\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xd\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xg\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
    }
   },
   {
@@ -25605,7 +29314,7 @@
    "outcome": {
     "status": 200,
     "contentType": "application/json",
-    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"id\": \"1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns2\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xa\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xc\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xcns\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xg\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  },\n  \"transaction\": \"<id>\"\n}\n"
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"id\": \"1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns1\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"ns2\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xa\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xc\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xcns\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xd\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__namespace__\",\n            \"name\": \"xg\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  },\n  \"transaction\": \"<id>\"\n}\n"
    }
   },
   {
@@ -25686,7 +29395,7 @@
    "outcome": {
     "status": 200,
     "contentType": "application/json",
-    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Arr\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"C\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"E\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"G\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"H\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"L\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Many\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Other\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"P\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Q\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"T\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  },\n  \"transaction\": \"<id>\"\n}\n"
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Arr\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"C\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"D\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"DP\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"E\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"G\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"H\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"L\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Many\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Other\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"P\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"Q\"\n          }]\n        }\n      }\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\"\n          },\n          \"path\": [{\n            \"kind\": \"__kind__\",\n            \"name\": \"T\"\n          }]\n        }\n      }\n    }],\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"readTime\": \"<time>\"\n  },\n  \"transaction\": \"<id>\"\n}\n"
    }
   },
   {
