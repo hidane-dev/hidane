@@ -23,6 +23,18 @@ recorded answer:
   character of a resource name it went wrong (`lacks "/" at index 53`), the index is not
   compared: it counts the characters of a project ID that is not the recording's.
 
+A difference `docs/parity-exceptions.md` already records counts as known rather than as a
+difference. The rules for this are in `replay.py`:
+
+- a pair of messages (`KNOWN_MESSAGES`);
+- a pair of errors (`KNOWN_ERRORS`);
+- the shapes of an answer that D097 to D099 describe: `details` in an error, an error inside an
+  array, no `done`;
+- a case about such a difference, by its name (`KNOWN_CASES`).
+
+The report counts the known cases, says how many each entry explains, and lists the rest. An
+entry that settles a new difference adds its rule there.
+
 A query production refuses for want of a composite index, which the emulators never ask for
 ([D070](../../docs/parity-exceptions.md)), is counted apart as needing an index rather than
 compared. The report lists the index, read from the link production gives to create it, and

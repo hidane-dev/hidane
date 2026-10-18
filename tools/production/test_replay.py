@@ -183,14 +183,44 @@ class ReplayTest(unittest.TestCase):
         def official(status, body):
             return {"status": status, "contentType": "application/json", "body": body}
         self.assertEqual(replay.difference(official(200, "{}"), official(400, "{}")), "status 200, production 400")
-        self.assertEqual(replay.difference(official(404, '{"error":{"message":"Document (a) not found."}}'),
-                                           official(404, '{"error": {"message": "Document \\"a\\" not found."}}')),
-                         '$.error.message: "Document (a) not found.", production "Document \\"a\\" not found."')
+        self.assertEqual(replay.difference(official(404, '{"error":{"message":"Document (a) gone."}}'),
+                                           official(404, '{"error": {"message": "No document a."}}')),
+                         '$.error.message: "Document (a) gone.", production "No document a."')
+        # A difference the parity exceptions record is not where they differ.
+        self.assertEqual(replay.difference(official(404, '{"error":{"message":"Document (a) not found.", "x": 1}}'),
+                                           official(404, '{"error": {"message": "Document \\"a\\" not found.", "x": 2}}')),
+                         "$.error.x: 1, production 2")
         self.assertEqual(replay.difference(official(200, '[{"readTime":"<time>","done":true}]'),
-                                           official(200, '[{"readTime":"2026-01-01T00:00:00Z"}]')),
-                         "$[0]: keys only the official has ['done'], only production has []")
+                                           official(200, '[{"readTime":"2026-01-01T00:00:00Z", "x": 1}]')),
+                         "$[0]: keys only the official has [], only production has ['x']")
         self.assertEqual(replay.difference(official(200, '{"a":[1]}'), official(200, '{"a":[1,2]}')),
                          "$.a: 1 items, production 2")
+
+    def test_differences_the_exceptions_record_are_known(self):
+        def known(official, production):
+            found = set()
+            return replay.same_json(official, production, found) and found
+        error = {"error": {"code": 404, "message": "Document (p/c/d) not found.", "status": "NOT_FOUND"}}
+        ours = {"error": {"code": 404, "message": 'Document "p/c/d" not found.', "status": "NOT_FOUND",
+                          "details": [{"@type": "type.googleapis.com/google.rpc.BadRequest"}]}}
+        self.assertEqual(known(error, ours), {"D097"})
+        self.assertEqual(known(error, [ours]), {"D097", "D098"})
+        self.assertEqual(known([{"readTime": "<time>", "done": True}], [{"readTime": "2026-01-01T00:00:00Z"}]), {"D099"})
+        self.assertFalse(known(error, {"error": dict(ours["error"], status="INTERNAL")}))
+        self.assertFalse(replay.same_json(error, ours))
+        result = {"same": 0, "knownCases": 0, "known": {}, "differ": []}
+        replay.tally(result, error, ours, lambda: "differs")
+        replay.tally(result, error, error, lambda: "differs")
+        replay.tally(result, error, {}, lambda: "differs")
+        self.assertEqual(result, {"same": 1, "knownCases": 1, "known": {"D097": 1}, "differ": ["differs"]})
+        # An error whose status differs too, and a case about a recorded difference.
+        self.assertEqual(known({"status": "FAILED_PRECONDITION", "message": "Only a single array-contains clause is allowed in a query"},
+                               {"status": "INVALID_ARGUMENT", "message": "A maximum of 1 'ARRAY_CONTAINS' filter is allowed per disjunction."}),
+                         {"D106"})
+        result = {"fixture": "rest.json", "same": 0, "knownCases": 0, "known": {}, "differ": []}
+        replay.tally(result, {"status": 200}, {"status": 400}, lambda: "differs", 'JsonFormat: {"stringValue": 1}')
+        replay.tally(result, {"status": 200}, {"status": 400}, lambda: "differs", "something new")
+        self.assertEqual(result, {"fixture": "rest.json", "same": 0, "knownCases": 1, "known": {"D100": 1}, "differ": ["differs"]})
 
     def test_a_query_that_needs_an_index_is_counted_apart(self):
         base = "/v1/projects/{project}/databases/(default)/documents"
@@ -277,12 +307,14 @@ class ReplayTest(unittest.TestCase):
                 step("GET", "projects/s-2/databases/(default)/documents/c/d", 404,
                      {"error": {"code": 404, "message": "not found", "status": "NOT_FOUND"}})]},
             {"name": "differs", "steps": [step("GET", "projects/s-3/databases/(default)/documents/c/x", 200, {})]},
+            {"name": "a status alone", "steps": [{"method": "POST", "path": "/v1/projects/s-4/databases/(default)/documents:commit",
+                                                  "body": {"writes": []}, "owner": True, "status": 200}]},
             {"name": "with rules", "rules": True, "steps": [dict(step("GET", f"{d}/c/d", 403, {}), owner=False)]},
         ]}
         path = Path(self.dir.name) / "same_document_writes.json"
         path.write_text(json.dumps(recording))
         result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
-        self.assertEqual((result["sent"], result["same"]), (3, 2))
+        self.assertEqual((result["sent"], result["same"]), (4, 3))
         self.assertEqual([d["name"] for d in result["differ"]], ["differs, step 1"])
         self.assertEqual(result["skipped"], {"evaluates rules": 1})
 
