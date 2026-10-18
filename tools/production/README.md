@@ -62,8 +62,10 @@ Recordings it reads:
   floats, and runs lookups only on mocks. With a user's credentials, the Rules API needs a quota
   project: `--quota-project <id>`.
 
-The workflow replays the four Firestore recordings nightly. Testing rules takes the permission
-`firebaserules.rulesets.test`, which its service account does not have.
+The workflow replays all five nightly. Testing rules takes the permission
+`firebaserules.rulesets.test`: the workflow's service account has it through a custom role that
+holds that one permission (`rulesTester`), so it may test rulesets but not deploy them. The Rules
+API takes seconds to compile each ruleset, so tests are sent eight at a time.
 
 [`test_replay.py`](test_replay.py) tests it offline, against a stand-in for production on
 `127.0.0.1`; CI runs it.

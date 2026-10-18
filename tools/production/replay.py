@@ -34,10 +34,12 @@ import json
 import os
 import re
 import sys
+import threading
 import time
 import urllib.error
 import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -53,6 +55,8 @@ DATABASE = "/v1/projects/{project}/databases/(default)/"
 PROJECT_NAME = re.compile(r"projects/([^/\s\"'?:]+)")
 TRANSIENT = {429, 500, 502, 503, 504}
 NETWORK_TRIES = 4
+# Tests of rules sent at once: the Rules API takes seconds to compile each ruleset.
+RULES_AT_ONCE = 8
 
 
 def log(message):
@@ -70,14 +74,16 @@ class Production:
         self.budget = budget
         self.quota_project = quota_project
         self.sent = 0
+        self.counting = threading.Lock()
 
     def send(self, method, path, data=None, content_type="application/json", base=None):
         """One request, to Firestore or another API (`base`); answers (status, content type, body
         as text). A connection that fails before an answer is tried again a few times; then the
         answer is status 0."""
-        if self.sent >= self.budget:
-            raise RuntimeError(f"stopped at the budget of {self.budget} requests")
-        self.sent += 1
+        with self.counting:
+            if self.sent >= self.budget:
+                raise RuntimeError(f"stopped at the budget of {self.budget} requests")
+            self.sent += 1
         headers = {"Authorization": f"Bearer {self.token}", "Content-Type": content_type}
         if self.quota_project:
             headers["x-goog-user-project"] = self.quota_project
@@ -413,6 +419,7 @@ def replay_rules(production, recording, result):
     `rooms/r1` with no `auth`, and its outcome and warnings are compared. A denial's message is
     the emulator's own and is not; nor are batches of writes, and conditions that read the
     document, the request or other documents (`READS`)."""
+    tested = []
     for case in recording["results"]:
         if "writes" in case or "answers" in case:
             why = "a batch of writes"
@@ -422,13 +429,26 @@ def replay_rules(production, recording, result):
             why = None
         if why:
             result["skipped"][why] = result["skipped"].get(why, 0) + 1
-            continue
+        else:
+            tested.append(case)
+
+    def test(case):
+        """One test of the Rules API, tried again while the API is busy."""
         source = case.get("rules") or recording["rules"].replace("%s", case["condition"], 1)
         body = {"source": {"files": [{"name": "firestore.rules", "content": source}]},
                 "testSuite": {"testCases": [{"expectation": "ALLOW", "request": {
                     "auth": None, "method": "get", "path": "/databases/(default)/documents/rooms/r1"}}]}}
-        status, _, text = production.send("POST", f"/v1/projects/{production.project}:test",
-                                          json.dumps(body).encode(), base=production.rules)
+        for attempt in range(5):
+            status, _, text = production.send("POST", f"/v1/projects/{production.project}:test",
+                                              json.dumps(body).encode(), base=production.rules)
+            if status not in TRANSIENT:
+                break
+            time.sleep(2 ** attempt)
+        return source, status, text
+
+    with ThreadPoolExecutor(RULES_AT_ONCE) as pool:
+        answers = list(pool.map(test, tested))
+    for case, (source, status, text) in zip(tested, answers):
         result["sent"] += 1
         outcome = case["outcome"] if case["outcome"] in ("allow", "deny", "compile") else str(case["outcome"])
         official = {"outcome": outcome, "issues": [] if outcome == "compile" else sorted(case.get("issues", []))}
