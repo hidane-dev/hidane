@@ -114,6 +114,23 @@ tables:
 A new difference gets its row in the pull request that introduces it, and the pull request's
 "Parity impact" section says so.
 
+## Observing production
+
+Production Cloud Firestore is observed the same way, from the outside, to learn where it answers
+differently from the official emulator (#82). The Production parity workflow
+([`.github/workflows/production-parity.yml`](../../.github/workflows/production-parity.yml))
+replays recordings of the official emulator against it with
+[`tools/production/replay.py`](../../tools/production/README.md).
+
+| Rule | Why |
+|---|---|
+| Only a project of the maintainers' own, made for this, which holds nothing else | No real application's data or users are ever read or written |
+| Only that workflow, on `main`, signs in to it: through Workload Identity Federation as a service account that may read and write Firestore and test rulesets, nothing else. No key exists; the token lasts an hour and is never written down | No credential can leak from the repository or a run |
+| The data are the recordings' own synthetic data, for the project's `(default)` database only; a case that names another project is not sent, and the database is emptied before and after each recording | Nothing from elsewhere is touched, and each recording starts as it did on the emulator |
+| What a run finds keeps the project ID as `{project}` and holds no credential | It can be shared like a recording |
+| What a run finds is a workflow artifact and its job summary, not a recording. A person reads it before it informs the production column of [`docs/parity-exceptions.md`](../parity-exceptions.md), citing the run | Production changes without notice; a difference is checked before it is relied on |
+| A run stays within Firestore's free quota, and no billing account is linked to the project | A run costs nothing, and a mistake cannot run up a bill |
+
 ## History: before this policy
 
 This policy was written down on 2026-10-13. The project's own records show what was done with the
