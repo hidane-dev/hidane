@@ -1720,12 +1720,13 @@
    "topic": "Paths that name no method",
    "kind": "bug-for-bug",
    "official": "`404` with the text `Not Found` and no media type: the database root, an unknown verb, `PUT`, `GET` of a verb (`GET …/documents:commit`), and `:write` and `:listen`, which only gRPC has",
-   "firestore": "Google's HTML error page (`404`, `text/html`) for the database root, an unknown verb and `PUT`; `400` `Invalid value (Object)` for `:write` and `:listen`; `200` `{}` for `GET …/documents:commit`",
+   "firestore": "Google's HTML error page (`404`, `text/html`) for the database root, an unknown verb and `PUT`; `400` `Invalid value (Object)` for `:write` and `:listen`; `200` `{}` for `GET …/documents:commit`. `:runQuery` on a collection's path is read as a document to create (`Unknown name \"structuredQuery\" at 'document'`)",
    "hidane": "As the official emulator",
    "reason": "Follow the emulator. Seen by the Production parity workflow (#82)",
    "references": [
+    "hidane-dev/hidane#82",
     "https://github.com/hidane-dev/hidane/actions/runs/39089145449",
-    "hidane-dev/hidane#82"
+    "https://github.com/hidane-dev/hidane/actions/runs/39102098636"
    ],
    "pinned_by": [
     "crates/hidane/tests/rest.rs::rest_answers_like_the_official_emulator"
@@ -1823,6 +1824,79 @@
    "pinned_by": [
     "crates/hidane/tests/queries.rs::queries_answer_like_the_official_emulator",
     "crates/hidane/tests/aggregations.rs::aggregations_answer_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D109",
+   "table": "production",
+   "area": "documents",
+   "topic": "The version of a deleted document",
+   "kind": "bug-for-bug",
+   "official": "A deleted document's version is the time of its delete. A precondition of version 0 (an `updateTime` of the epoch) fails, `FAILED_PRECONDITION` \"the stored version (<the delete's time>) does not match the required base version (0)\"; one of the delete's time holds, so an update then answers `NOT_FOUND` \"no entity to update …\" and a delete succeeds",
+   "firestore": "A deleted document has version 0, as one that never existed: a precondition of version 0 holds, and one of the delete's time fails, `FAILED_PRECONDITION` \"the stored version (0) does not match the required base version (<the delete's time>)\"",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82)",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/39102098636",
+    "hidane-dev/hidane#82"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/base_versions.rs::update_time_preconditions_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D110",
+   "table": "production",
+   "area": "documents",
+   "topic": "A base version past the stored one",
+   "kind": "bug-for-bug",
+   "official": "`INVALID_ARGUMENT` \"Invalid base version, it is greater than the stored version: <the Datastore key, as protobuf text>\". With another write of the commit failing too (an update of a missing document), the first write's error is reported",
+   "firestore": "\"Invalid base version, it is greater than the stored version: <the document's name>\". With another write failing too, the second write's error is reported, in either order",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82)",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/39102098636",
+    "hidane-dev/hidane#82"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/base_versions.rs::update_time_preconditions_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D111",
+   "table": "production",
+   "area": "admin",
+   "topic": "Databases that do not exist",
+   "kind": "bug-for-bug",
+   "official": "Any database ID is served: a read of a database never written answers as an empty one, and a write creates it",
+   "firestore": "`404` `NOT_FOUND` \"The database <id> does not exist for project <project> …\", for reads and writes alike",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). Tests use named databases without creating them",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/39102098636",
+    "hidane-dev/hidane#82"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/documents.rs::databases_are_separate_and_reset_clears_everything"
+   ]
+  },
+  {
+   "id": "D112",
+   "table": "production",
+   "area": "documents",
+   "topic": "The order of a `batchGet`'s results",
+   "kind": "bug-for-bug",
+   "official": "In the order of the request, a document named twice answered once",
+   "firestore": "The documents found first, then the missing ones",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). The API does not promise an order",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/39102098636",
+    "hidane-dev/hidane#82"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/documents.rs::batch_get_keeps_request_order_and_one_read_time",
+    "crates/hidane/tests/rest.rs::rest_answers_like_the_official_emulator"
    ]
   }
  ],

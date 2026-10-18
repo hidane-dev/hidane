@@ -335,6 +335,13 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual(replay.handed_on("c?pageToken=Cj%2Fx%3D", found), "c?pageToken=AFT")
         self.assertEqual(replay.handed_on('{"transaction": "T1"}', found), '{"transaction": "P1"}')
 
+    def test_templates_are_filled_with_the_commits(self):
+        commits = ["2026-10-18T05:00:00.000010Z", "2026-10-18T05:00:01Z"]
+        self.assertEqual(replay.filled('{"updateTime": "{C1+1}"} {C2} {C3}', commits),
+                         '{"updateTime": "2026-10-18T05:00:00.000011Z"} 2026-10-18T05:00:01.000000Z {C3}')
+        self.assertEqual(replay.filled("the stored version ({V1}) does not match", commits),
+                         "the stored version (1792299600000010) does not match")
+
     def test_times_are_read_against_the_commits(self):
         commits = []
         answer = {"writeResults": [{"updateTime": "2026-01-01T00:00:01.5Z", "transformResults": [
@@ -346,6 +353,9 @@ class ReplayTest(unittest.TestCase):
             "commitTime": "<commit 1>"})
         self.assertEqual(replay.step_answer(200, {"readTime": "2027-01-01T00:00:00Z"}, "p", commits)["body"],
                          {"readTime": "<time>"})
+        missing = {"error": {"status": "NOT_FOUND", "message": "The database second does not exist for project own-1 Please visit "
+                                                          "https://console.cloud.google.com/datastore/setup?project=own-1"}}
+        self.assertNotIn("own-1", json.dumps(replay.step_answer(404, missing, "own-1", [])))
         listed = {"documents": [{"name": "projects/p/databases/(default)/documents/c/TCvDCsQgNWUpqCrYXQTB"}], "nextPageToken": "x"}
         self.assertEqual(replay.step_answer(200, listed, "p", [])["body"],
                          {"documents": [{"name": "projects/{project}/databases/(default)/documents/c/<auto>"}], "nextPageToken": "<token>"})
