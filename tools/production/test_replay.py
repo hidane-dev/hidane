@@ -23,6 +23,7 @@ class StandIn(BaseHTTPRequestHandler):
 
     documents = {}
     seen = []
+    commits = 0
 
     def log_message(self, *args):
         pass
@@ -57,11 +58,22 @@ class StandIn(BaseHTTPRequestHandler):
             names = sorted({prefix + n[len(prefix):].split("/")[0] for n in StandIn.documents if n.startswith(prefix)})
             return self.answer(200, {"documents": [{"name": n} for n in names]} if names else {})
         if self.path == f"{root}:commit":
+            StandIn.commits += 1
+            now = f"2026-01-01T00:00:{StandIn.commits:02d}.000001Z"
+            results = []
             for write in json.loads(body)["writes"]:
                 if "update" in write:
-                    StandIn.documents[write["update"]["name"]] = {"fields": write["update"].get("fields", {})}
+                    StandIn.documents[write["update"]["name"]] = {"fields": write["update"].get("fields", {}), "time": now}
+                    results.append({"updateTime": now})
+                else:
+                    results.append({})
                 StandIn.documents.pop(write.get("delete"), None)
-            return self.answer(200, {"commitTime": "2026-01-01T00:00:00Z"})
+            return self.answer(200, {"writeResults": results, "commitTime": now})
+        name = urllib.parse.unquote(self.path[len("/v1/"):])
+        if self.command == "GET" and name in StandIn.documents:
+            document = StandIn.documents[name]
+            return self.answer(200, {"name": name, "fields": document["fields"], "createTime": document.get("time"),
+                                     "updateTime": document.get("time")})
         if self.path.endswith((":runQuery", ":runAggregationQuery")):
             # As production answers: no `done`, an offset's count in a result of its own.
             parent, verb = urllib.parse.unquote(self.path[len("/v1/"):]).rsplit(":", 1)
@@ -95,6 +107,7 @@ class ReplayTest(unittest.TestCase):
     def setUp(self):
         StandIn.documents = {f"projects/{PROJECT}/databases/(default)/documents/old/x": {}}
         StandIn.seen = []
+        StandIn.commits = 0
         self.server = ThreadingHTTPServer(("127.0.0.1", 0), StandIn)
         threading.Thread(target=self.server.serve_forever, daemon=True).start()
         self.base = f"http://127.0.0.1:{self.server.server_address[1]}"
@@ -248,6 +261,65 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual(result["differ"][0]["difference"], '$.outcome: "allow", production "deny"')
         self.assertEqual(result["skipped"], {"reads the document, the request or other documents": 1,
                                              "a batch of writes": 1})
+
+    def test_a_recording_of_steps_runs_each_case_on_an_empty_database(self):
+        def step(method, path, status, response, body=None):
+            return {"method": method, "path": path, "body": body, "status": status, "response": response}
+        d = "projects/s-1/databases/(default)/documents"
+        written = "2026-10-13T14:35:37.991178Z"
+        recording = {"cases": [
+            {"name": "write then read", "steps": [
+                step("POST", f"{d}:commit", 200, {"writeResults": [{"updateTime": written}], "commitTime": written},
+                     {"writes": [{"update": {"name": f"{d}/c/d", "fields": {"v": {"integerValue": "1"}}}}]}),
+                step("GET", f"{d}/c/d", 200, {"name": f"{d}/c/d", "fields": {"v": {"integerValue": "1"}},
+                                              "createTime": written, "updateTime": written})]},
+            {"name": "a missing document", "steps": [
+                step("GET", "projects/s-2/databases/(default)/documents/c/d", 404,
+                     {"error": {"code": 404, "message": "not found", "status": "NOT_FOUND"}})]},
+            {"name": "differs", "steps": [step("GET", "projects/s-3/databases/(default)/documents/c/x", 200, {})]},
+            {"name": "with rules", "rules": True, "steps": [dict(step("GET", f"{d}/c/d", 403, {}), owner=False)]},
+        ]}
+        path = Path(self.dir.name) / "same_document_writes.json"
+        path.write_text(json.dumps(recording))
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
+        self.assertEqual((result["sent"], result["same"]), (3, 2))
+        self.assertEqual([d["name"] for d in result["differ"]], ["differs, step 1"])
+        self.assertEqual(result["skipped"], {"evaluates rules": 1})
+
+    def test_times_sent_follow_the_commits(self):
+        official, production = ["2026-10-10T02:41:04.131568Z"], ["2026-10-18T05:00:00.000010Z"]
+        path = "c/d?readTime=2026-10-10T02%3A41%3A04.131567Z&x=2026-10-10T03%3A41%3A04.131568Z&y=2001-01-01T00:00:00Z"
+        self.assertEqual(replay.shift(path, official, production),
+                         "c/d?readTime=2026-10-18T05%3A00%3A00.000009Z&x=2026-10-18T06%3A00%3A00.000010Z&y=2001-01-01T00:00:00Z")
+        body = '{"currentDocument": {"updateTime": "2026-10-10T02:41:04.131568Z"}}'
+        self.assertEqual(replay.shift(body, official, production), '{"currentDocument": {"updateTime": "2026-10-18T05:00:00.000010Z"}}')
+        self.assertEqual(replay.shift(body, official, []), body)
+
+    def test_what_an_answer_hands_out_is_carried(self):
+        found = {}
+        replay.carried({"documents": [], "nextPageToken": "Cj/x="}, {"documents": [], "nextPageToken": "AFT"}, found)
+        replay.carried([{"transaction": "T1"}], [{"transaction": "P1"}], found)
+        self.assertEqual(found, {"Cj/x=": "AFT", "T1": "P1"})
+        self.assertEqual(replay.handed_on("c?pageToken=Cj%2Fx%3D", found), "c?pageToken=AFT")
+        self.assertEqual(replay.handed_on('{"transaction": "T1"}', found), '{"transaction": "P1"}')
+
+    def test_times_are_read_against_the_commits(self):
+        commits = []
+        answer = {"writeResults": [{"updateTime": "2026-01-01T00:00:01.5Z", "transformResults": [
+            {"timestampValue": "2026-01-01T00:00:01.2Z"}, {"timestampValue": "2020-01-01T00:00:00Z"}]}],
+            "commitTime": "2026-01-01T00:00:01.5Z"}
+        self.assertEqual(replay.step_answer(200, answer, "p", commits)["body"], {
+            "writeResults": [{"updateTime": "<commit 1>", "transformResults": [
+                {"timestampValue": "<near commit 1>"}, {"timestampValue": "2020-01-01T00:00:00Z"}]}],
+            "commitTime": "<commit 1>"})
+        self.assertEqual(replay.step_answer(200, {"readTime": "2027-01-01T00:00:00Z"}, "p", commits)["body"],
+                         {"readTime": "<time>"})
+        listed = {"documents": [{"name": "projects/p/databases/(default)/documents/c/TCvDCsQgNWUpqCrYXQTB"}], "nextPageToken": "x"}
+        self.assertEqual(replay.step_answer(200, listed, "p", [])["body"],
+                         {"documents": [{"name": "projects/{project}/databases/(default)/documents/c/<auto>"}], "nextPageToken": "<token>"})
+        self.assertEqual(replay.step_answer(400, {"error": {"status": "FAILED_PRECONDITION", "message":
+                                                            "the stored version (1792261663729293) does not match"}}, "p", [])["message"],
+                         "the stored version (<version>) does not match")
 
     def test_a_placeholder_matches_within_a_string(self):
         official = '{"error":{"message":"the stored version (<version>) does not match (42)"}}'

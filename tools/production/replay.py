@@ -484,6 +484,157 @@ def replay_rules(production, recording, result):
                                      "rules": case.get("condition") or source})
 
 
+TIMESTAMP = re.compile(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z")
+# A time in a step's path or body, `:` maybe written `%3A`.
+SENT_TIME = re.compile(r"\d{4}-\d\d-\d\dT\d\d(?::|%3A)\d\d(?::|%3A)\d\d(?:\.\d+)?Z")
+SERVER_TIMES = {"createTime", "updateTime", "readTime", "commitTime"}
+# A document ID the server chose: 20 letters and digits, at the end of a document's name.
+AUTO_ID = re.compile(r"(?<=/documents/)((?:[^/]+/[^/]+/)*[^/]+/)[A-Za-z0-9]{20}")
+# A stored version in an error is the document's update time in microseconds.
+STORED_VERSION = re.compile(r"(?<=version \()(?:1[6-9]|[2-9]\d)\d{14}(?=\))")
+
+
+def micros(timestamp):
+    """An RFC 3339 UTC time, in microseconds since the epoch."""
+    whole = datetime.strptime(timestamp[:19], "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
+    return int(whole.timestamp()) * 1_000_000 + int((timestamp[20:-1] + "000000")[:6] or 0)
+
+
+def rfc3339(us):
+    return datetime.fromtimestamp(us // 1_000_000, timezone.utc).strftime("%Y-%m-%dT%H:%M:%S") + f".{us % 1_000_000:06d}Z"
+
+
+def shift(text, official, production):
+    """A step's path or body with each time near one of the official emulator's commits of the
+    case (within a day) moved by as much as production's commit is from it: a precondition on
+    the update time a step got, or a read time an hour after it."""
+    def moved(found):
+        sent = found.group(0)
+        at = micros(sent.replace("%3A", ":"))
+        near = [(abs(at - micros(c)), i) for i, c in enumerate(official) if abs(at - micros(c)) < 86_400_000_000]
+        if not near or min(near)[1] >= len(production):
+            return sent
+        i = min(near)[1]
+        new = rfc3339(micros(production[i]) + at - micros(official[i]))
+        return new.replace(":", "%3A") if "%3A" in sent else new
+    return SENT_TIME.sub(moved, text)
+
+
+def step_answer(status, answer, project, commits):
+    """A step's answer as it is compared: its status, and the error's status and message or the
+    body. The case's project reads `{project}`. The times in a body are read against the case's
+    commits so far (`commits`, which a body with a `commitTime` adds to): a commit's own time is
+    `<commit 2>`, one within a minute of a commit `<near commit 2>`, another server time (a
+    `readTime`) `<time>`; a time the client wrote stays as it is. Page tokens read `<token>`, and
+    IDs the server chose `<auto>`."""
+    if answer is None:
+        return {"status": status}
+    answer = json.loads(json.dumps(answer).replace(f"projects/{project}/", "projects/{project}/"))
+    error = answer.get("error") if isinstance(answer, dict) else None
+    if isinstance(error, dict):
+        return {"status": status, "error": error.get("status"),
+                "message": STORED_VERSION.sub("<version>", error.get("message", ""))}
+    if isinstance(answer, dict) and isinstance(answer.get("commitTime"), str):
+        commits.append(answer["commitTime"])
+
+    def read(value, key=None):
+        if isinstance(value, dict):
+            return {k: read(v, k) for k, v in value.items()}
+        if isinstance(value, list):
+            return [read(v) for v in value]
+        if isinstance(value, str) and TIMESTAMP.fullmatch(value):
+            if value in commits:
+                return f"<commit {commits.index(value) + 1}>"
+            near = [i for i, c in enumerate(commits) if abs(micros(c) - micros(value)) < 60_000_000]
+            if near:
+                return f"<near commit {near[-1] + 1}>"
+            if key in SERVER_TIMES:
+                return "<time>"
+        if key == "nextPageToken":
+            return "<token>"
+        if isinstance(value, str) and "/documents/" in value:
+            return AUTO_ID.sub(r"\1<auto>", value)
+        return value
+
+    return {"status": status, "body": read(answer)}
+
+
+# What a step carries from an earlier answer: a page token, a transaction.
+CARRIED = {"nextPageToken", "transaction"}
+
+
+def carried(official, production, found):
+    """Pairs what two answers hand out for later steps (`CARRIED`), the official emulator's value
+    with production's, in `found`."""
+    if isinstance(official, dict) and isinstance(production, dict):
+        for k, v in official.items():
+            if k in CARRIED and isinstance(v, str) and isinstance(production.get(k), str):
+                found[v] = production[k]
+            elif k in production:
+                carried(v, production[k], found)
+    elif isinstance(official, list) and isinstance(production, list):
+        for o, p in zip(official, production):
+            carried(o, p, found)
+
+
+def handed_on(text, found):
+    """A step's path or body with what the official emulator handed out replaced by what
+    production did, as it is or percent-encoded."""
+    for official, production in found.items():
+        text = text.replace(official, production)
+        text = text.replace(urllib.parse.quote(official, safe=""), urllib.parse.quote(production, safe=""))
+    return text
+
+
+def replay_steps(production, recording, result):
+    """A recording of steps (`same_document_writes.json`, `document_writes.json`,
+    `transforms.json`, `base_versions.json`). On the official emulator each case ran in a project
+    of its own; here each runs on the database emptied, in the replay's project, and every step's
+    answer is compared as `step_answer` reads it. What an earlier answer handed out (a page token,
+    a transaction) is replaced by what production handed out, and times near a commit are moved
+    with it (`shift`). A case that sets rules, or sends a step as someone other than the owner, is
+    not run. A step the emulator refused for want of admin credentials (`… require admin
+    authentication.`: its recorder sent none) is not sent: the replay always has them."""
+    project = production.project
+    for case in recording["cases"]:
+        if case.get("rules") or not all(step.get("owner", True) for step in case["steps"]):
+            result["skipped"]["evaluates rules"] = result["skipped"].get("evaluates rules", 0) + 1
+            continue
+        own = case["steps"][0]["path"].split("projects/")[1].split("/")[0]
+        production.empty()
+        result["sent"] += 1
+        official_commits, production_commits, first, found = [], [], None, {}
+        for n, step in enumerate(case["steps"], 1):
+            recorded = step["response"] if "response" in step else ({"error": step["error"]} if "error" in step else None)
+            if "require admin authentication" in json.dumps(recorded):
+                continue
+
+            def sent(text):
+                return handed_on(shift(text.replace(f"projects/{own}/", f"projects/{project}/"), official_commits,
+                                       production_commits), found)
+
+            path = sent(step["path"] if step["path"].startswith("/") else "/v1/" + step["path"])
+            data = None if step.get("body") is None else sent(json.dumps(step["body"])).encode()
+            status, _, text = production.send(step["method"], path, data)
+            try:
+                answer = json.loads(text) if text.strip() else None
+            except ValueError:
+                answer = {"error": {"message": text[:300]}}
+            carried(recorded, answer, found)
+            official = step_answer(step["status"], recorded, own, official_commits)
+            answered = step_answer(status, answer, project, production_commits)
+            if first is None and not same_json(official, answered):
+                first = (n, official, answered)
+        if first is None:
+            result["same"] += 1
+        else:
+            n, official, answered = first
+            result["differ"].append({"name": f"{case['name']}, step {n}", "method": case["steps"][n - 1]["method"],
+                                     "path": case["steps"][n - 1]["path"].replace(own, "{project}"),
+                                     "difference": first_difference(official, answered) or "the answer",
+                                     "official": official, "production": answered})
+
+
 def replay(production, fixture):
     """Sends a recording's cases; what each answered next to what the official emulator did."""
     recording = json.loads(Path(fixture).read_text())
@@ -500,6 +651,10 @@ def replay(production, fixture):
     log(f"{result['fixture']}: {len(recording['cases'])} cases")
     if "dataset" in recording:
         replay_queries(production, recording, result)
+        production.empty()
+        return result
+    if recording["cases"] and "steps" in recording["cases"][0]:
+        replay_steps(production, recording, result)
         production.empty()
         return result
     for n, case in enumerate(recording["cases"], 1):
@@ -574,7 +729,7 @@ def main(argv=None):
     parser.add_argument("--out", required=True, help="where report.json and report.md go")
     parser.add_argument("--base", default="https://firestore.googleapis.com")
     parser.add_argument("--rules-base", default=RULES_API)
-    parser.add_argument("--budget", type=int, default=5000, help="the most requests a run sends")
+    parser.add_argument("--budget", type=int, default=10000, help="the most requests a run sends")
     parser.add_argument("--quota-project", help="the project a user's token is billed to (x-goog-user-project); "
                                                 "the Rules API needs one with a user's credentials, not a service account's")
     parser.add_argument("fixtures", nargs="+")
