@@ -533,7 +533,7 @@ def replay_queries(production, recording, result):
             "name": case["name"], "method": "POST",
             "path": f"/v1/projects/{{project}}/databases/(default)/documents{where}:{verb}",
             "difference": first_difference(official, answered) or "the outcome", "official": official,
-            "production": answered})
+            "production": answered}, case["name"])
 
 
 # A condition that reads the document, the request or other documents. The Rules API takes the
