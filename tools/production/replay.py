@@ -55,8 +55,26 @@ DATABASE = "/v1/projects/{project}/databases/(default)/"
 PROJECT_NAME = re.compile(r"projects/([^/\s\"'?:]+)")
 TRANSIENT = {429, 500, 502, 503, 504}
 NETWORK_TRIES = 4
-# Tests of rules sent at once: the Rules API takes seconds to compile each ruleset.
+# Tests of rules sent at once: the Rules API takes seconds to compile each ruleset. It allows a
+# project 300 tests a minute, so they are started at most 240 times a minute.
 RULES_AT_ONCE = 8
+RULES_PER_MINUTE = 240
+
+
+class Pace:
+    """Starts at most `per_minute` requests a minute, whichever thread sends them."""
+
+    def __init__(self, per_minute):
+        self.gap = 60 / per_minute
+        self.next = 0.0
+        self.lock = threading.Lock()
+
+    def wait(self):
+        with self.lock:
+            now = time.monotonic()
+            start = max(now, self.next)
+            self.next = start + self.gap
+        time.sleep(start - now)
 
 
 def log(message):
@@ -432,13 +450,16 @@ def replay_rules(production, recording, result):
         else:
             tested.append(case)
 
+    pace = Pace(RULES_PER_MINUTE)
+
     def test(case):
         """One test of the Rules API, tried again while the API is busy."""
         source = case.get("rules") or recording["rules"].replace("%s", case["condition"], 1)
         body = {"source": {"files": [{"name": "firestore.rules", "content": source}]},
                 "testSuite": {"testCases": [{"expectation": "ALLOW", "request": {
                     "auth": None, "method": "get", "path": "/databases/(default)/documents/rooms/r1"}}]}}
-        for attempt in range(5):
+        for attempt in range(6):
+            pace.wait()
             status, _, text = production.send("POST", f"/v1/projects/{production.project}:test",
                                               json.dumps(body).encode(), base=production.rules)
             if status not in TRANSIENT:

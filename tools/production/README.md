@@ -65,7 +65,8 @@ Recordings it reads:
 The workflow replays all five nightly. Testing rules takes the permission
 `firebaserules.rulesets.test`: the workflow's service account has it through a custom role that
 holds that one permission (`rulesTester`), so it may test rulesets but not deploy them. The Rules
-API takes seconds to compile each ruleset, so tests are sent eight at a time.
+API takes seconds to compile each ruleset, so tests are sent eight at a time, and at most 240 a
+minute: it allows a project 300.
 
 [`test_replay.py`](test_replay.py) tests it offline, against a stand-in for production on
 `127.0.0.1`; CI runs it.
