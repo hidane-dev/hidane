@@ -15,8 +15,13 @@ compared with the official emulator's recorded answer: the status, the media typ
 where the recording compares it, as JSON (production prints JSON its own way), a recording's
 placeholders (`<time>`, `<now>` and the like) matching any value, alone or within a string. A
 query production refuses for want of a composite index, which the emulators never ask for, is
-counted apart, not compared. The official emulator's own deletes are done in production by
-deleting the same documents. The database is emptied before each recording and at the end.
+counted apart, not compared; the report lists the indexes production asked for (`indexes.py`). The official emulator's own
+deletes are done in production by deleting the same documents.
+
+Recordings of queries (`queries.json`, `aggregations.json`) hold a dataset and structured
+queries: the dataset is written, each query run over REST as its recorder ran it, and the outcome
+compared as the recorder put it (the documents in order, what an offset skipped, a projection's
+fields, an aggregation's results, or the error), without `done` (D099). The database is emptied before each recording and at the end.
 
 What differs goes to `<out>/report.json` and `<out>/report.md`, and to the job summary in GitHub
 Actions. It is not a recording: it stays a workflow artifact until a person has looked at it
@@ -37,7 +42,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "oracle"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # `-I` leaves it out
 from harness import mask  # noqa: E402
+from indexes import index_asked  # noqa: E402
 
 TOKEN_ENV = "PRODUCTION_ACCESS_TOKEN"
 DATABASE = "/v1/projects/{project}/databases/(default)/"
@@ -181,10 +188,11 @@ def sendable(case):
 # alone or within a string ("the stored version (<version>) does not match ...").
 PLACEHOLDERS = {"<time>", "<now>", "<id>", "<token>", "<auto>", "<version>", "<cursor>"}
 PLACEHOLDER = re.compile("(" + "|".join(re.escape(p) for p in sorted(PLACEHOLDERS)) + ")")
-# Production's refusal of a query that needs a composite index. The emulators never ask for one;
-# such a case is counted apart until the replay creates the indexes. The link to create the
-# index names the project in base64, so it is masked.
-NEEDS_INDEX = "The query requires an index."
+# Production's refusal of a query that needs an index: a composite one, one of a single field for
+# a collection group (`The query requires a COLLECTION_GROUP_ASC index …`), or a vector index.
+# The emulators never ask for one (D070). The link to create the index names the project in
+# base64, so it is masked.
+NEEDS_INDEX = re.compile(r"The query requires (?:an|a \w+) index|Missing vector index configuration")
 INDEX_LINK = re.compile(r'https://console\.firebase\.google\.com/[^"\s]*')
 
 
@@ -266,14 +274,122 @@ def media(content_type):
     return (content_type or "").split(";")[0].strip().lower() or None
 
 
+def asked(result, text):
+    """Keeps the index an answer asks for, if any, in the recording's result (`indexes.py`)."""
+    index = index_asked(text) if NEEDS_INDEX.search(text) else None
+    if index and index not in result["indexes"]:
+        result["indexes"].append(index)
+
+
+def official_outcome(outcome, aggregation):
+    """A recorded outcome of a query (`tools/oracle/queries.py`, `aggregations.py`), as it is
+    compared: the error; or the documents in order, the number an offset skipped and, with a
+    projection, their fields; or an aggregation's results. `done` is left out: production does
+    not send it (D099)."""
+    if outcome["status"] != "OK":
+        return {"status": outcome["status"], "message": outcome.get("message", "")}
+    responses = outcome["responses"]
+    if aggregation:
+        return {"status": "OK", "results": [r["result"] for r in responses if "result" in r]}
+    compared = {"status": "OK", "documents": [r["document"] for r in responses if "document" in r]}
+    skipped = max((r.get("skipped", 0) for r in responses), default=0)
+    if skipped:
+        compared["skipped"] = skipped
+    if "fields" in outcome:
+        compared["fields"] = outcome["fields"]
+    return compared
+
+
+def production_outcome(status, text, documents, aggregation, projection):
+    """Production's answer to a query, as `official_outcome` puts the official emulator's.
+    Production sends an error inside an array (D098), and the number an offset skipped once, in
+    a result of its own (D099)."""
+    try:
+        answer = json.loads(text)
+    except ValueError:
+        return {"status": str(status), "message": text[:300]}
+    results = answer if isinstance(answer, list) else [answer]
+    errors = [r["error"] for r in results if isinstance(r, dict) and "error" in r]
+    if status != 200 or errors:
+        error = errors[0] if errors else {}
+        return {"status": error.get("status", str(status)), "message": error.get("message", "")}
+    if aggregation:
+        return {"status": "OK", "results": [r["result"] for r in results if "result" in r]}
+    compared, fields, skipped = {"status": "OK", "documents": []}, {}, 0
+    for r in results:
+        if "document" in r:
+            name = r["document"]["name"][len(documents) + 1:]
+            compared["documents"].append(name)
+            fields[name] = json.loads(json.dumps(r["document"].get("fields", {})).replace(documents, "{documents}"))
+        skipped = max(skipped, r.get("skippedResults", 0))
+    if skipped:
+        compared["skipped"] = skipped
+    if projection:
+        compared["fields"] = fields
+    return compared
+
+
+def replay_queries(production, recording, result):
+    """A recording of queries or aggregations: its dataset is written, then each case is run over
+    REST, as its recorder ran it, and compared as `official_outcome` puts it."""
+    project = production.project
+    database = f"projects/{project}/databases/(default)"
+    documents = f"{database}/documents"
+
+    def fill(value):
+        return json.loads(json.dumps(value).replace("{documents}", documents).replace("{database}", database))
+
+    writes = [{"update": {"name": f"{documents}/{doc['name']}", "fields": fill(doc["fields"])}}
+              for doc in recording["dataset"]]
+    for start in range(0, len(writes), 500):
+        production.call("POST", f"/v1/{documents}:commit", {"writes": writes[start:start + 500]})
+    for n, case in enumerate(recording["cases"], 1):
+        if n % 100 == 0:
+            log(f"{result['fixture']}: case {n}, {production.sent} requests so far")
+        sent = {k: case[k] for k in ("parent", "query", "aggregations") if k in case}
+        if any(name != "{project}" for name in PROJECT_NAME.findall(json.dumps(sent))):
+            result["skipped"]["names another project"] = result["skipped"].get("names another project", 0) + 1
+            continue
+        aggregation = "aggregations" in case
+        parent = documents + ("/" + case["parent"] if case["parent"] else "")
+        if aggregation:
+            verb, body = "runAggregationQuery", {"structuredAggregationQuery": {
+                "structuredQuery": fill(case["query"]), "aggregations": fill(case["aggregations"])}}
+        else:
+            verb, body = "runQuery", {"structuredQuery": fill(case["query"])}
+        status, _, text = production.send("POST", f"/v1/{urllib.parse.quote(parent, safe='/()')}:{verb}",
+                                          json.dumps(body).encode())
+        result["sent"] += 1
+        official = official_outcome(case["outcome"], aggregation)
+        asked(result, text)
+        if NEEDS_INDEX.search(text) and official["status"] == "OK":
+            result["needsIndex"].append(case["name"])
+            continue
+        answered = production_outcome(status, INDEX_LINK.sub("<index link>", mask(text, project)),
+                                      f"projects/{{project}}/databases/(default)/documents", aggregation,
+                                      "select" in case["query"])
+        if same_json(official, answered):
+            result["same"] += 1
+        else:
+            where = "/" + case["parent"] if case["parent"] else ""
+            result["differ"].append({"name": case["name"], "method": "POST",
+                                     "path": f"/v1/projects/{{project}}/databases/(default)/documents{where}:{verb}",
+                                     "difference": first_difference(official, answered) or "the outcome",
+                                     "official": official, "production": answered})
+
+
 def replay(production, fixture):
     """Sends a recording's cases; what each answered next to what the official emulator did."""
     recording = json.loads(Path(fixture).read_text())
     project = production.project
     result = {"fixture": Path(fixture).name, "cases": len(recording["cases"]), "sent": 0, "same": 0,
-              "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "differ": []}
+              "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "indexes": [], "differ": []}
     production.empty()
     log(f"{result['fixture']}: {len(recording['cases'])} cases")
+    if "dataset" in recording:
+        replay_queries(production, recording, result)
+        production.empty()
+        return result
     for n, case in enumerate(recording["cases"], 1):
         if n % 50 == 0:
             log(f"{result['fixture']}: case {n}, {production.sent} requests so far")
@@ -299,7 +415,8 @@ def replay(production, fixture):
         official = case["outcome"]
         answered = {"status": status, "contentType": content_type,
                     "body": INDEX_LINK.sub("<index link>", mask(text, project))}
-        if status == 400 and NEEDS_INDEX in text and official["status"] < 400:
+        asked(result, text)
+        if status == 400 and NEEDS_INDEX.search(text) and official["status"] < 400:
             result["needsIndex"].append(case["name"])
             continue
         same = status == official["status"] and media(content_type) == media(official.get("contentType"))
@@ -323,6 +440,10 @@ def markdown(report):
     for r in report["recordings"]:
         lines.append(f"| `{r['fixture']}` | {r['cases']} | {r['sent']} | {r['same']} | {len(r['differ'])} | "
                      f"{len(r['needsIndex'])} | {sum(r['skipped'].values())} |")
+    indexes = {json.dumps(i, sort_keys=True) for r in report["recordings"] for i in r["indexes"]}
+    if indexes:
+        lines += ["", f"Production asked for {len(indexes)} indexes the project does not have: "
+                  "`tools/production/indexes.py add` lists them in `indexes.json`, and `create` makes them."]
     for r in report["recordings"]:
         if r["differ"]:
             lines += ["", f"### `{r['fixture']}`", "", "| Case | Official | Production | First difference |",

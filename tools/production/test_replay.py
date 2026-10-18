@@ -12,6 +12,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import replay  # noqa: E402
+from test_indexes import index_link  # noqa: E402
 
 PROJECT = "own-project"
 
@@ -48,12 +49,29 @@ class StandIn(BaseHTTPRequestHandler):
             return self.answer(200, {"documents": [{"name": n} for n in names]} if names else {})
         if self.path == f"{root}:commit":
             for write in json.loads(body)["writes"]:
+                if "update" in write:
+                    StandIn.documents[write["update"]["name"]] = {"fields": write["update"].get("fields", {})}
                 StandIn.documents.pop(write.get("delete"), None)
             return self.answer(200, {"commitTime": "2026-01-01T00:00:00Z"})
-        if self.path.endswith(":runQuery"):
-            link = f"https://console.firebase.google.com/v1/r/project/{PROJECT}/firestore/indexes?create_composite=Q2tS"
-            return self.answer(400, [{"error": {"code": 400, "message": f"The query requires an index. You can create it here: {link}",
-                                                "status": "FAILED_PRECONDITION"}}])
+        if self.path.endswith((":runQuery", ":runAggregationQuery")):
+            # As production answers: no `done`, an offset's count in a result of its own.
+            parent, verb = urllib.parse.unquote(self.path[len("/v1/"):]).rsplit(":", 1)
+            request = json.loads(body)
+            query = request.get("structuredQuery") or request["structuredAggregationQuery"]["structuredQuery"]
+            collection = query["from"][0]["collectionId"]
+            if collection == "ix":
+                link = index_link(PROJECT, "ix", [("a", 1), ("__name__", 1)])
+                return self.answer(400, [{"error": {"code": 400, "message": f"The query requires an index. You can create it here: {link}",
+                                                    "status": "FAILED_PRECONDITION"}}])
+            names = sorted(n for n in StandIn.documents if n.rsplit("/", 1)[0] == f"{parent}/{collection}")
+            now = "2026-01-01T00:00:00Z"
+            if verb == "runAggregationQuery":
+                return self.answer(200, [{"result": {"aggregateFields": {"n": {"integerValue": str(len(names))}}}, "readTime": now}])
+            offset = query.get("offset", 0)
+            results = [{"readTime": now, "skippedResults": offset}] if offset else []
+            results += [{"document": {"name": n, "fields": StandIn.documents[n]["fields"], "createTime": now, "updateTime": now},
+                         "readTime": now} for n in names[offset:]]
+            return self.answer(200, results or [{"readTime": now}])
         if self.command == "PATCH":
             name = f"projects/{PROJECT}/databases/(default)/documents/" + self.path.split("/documents/")[1]
             StandIn.documents[name] = json.loads(body)
@@ -154,12 +172,46 @@ class ReplayTest(unittest.TestCase):
 
     def test_a_query_that_needs_an_index_is_counted_apart(self):
         base = "/v1/projects/{project}/databases/(default)/documents"
-        cases = [{"name": "ordered", "method": "POST", "path": base + "/c:runQuery", "headers": {"Authorization": "Bearer owner"},
-                  "body": {"structuredQuery": {}}, "compare": "exact",
+        cases = [{"name": "ordered", "method": "POST", "path": base + ":runQuery", "headers": {"Authorization": "Bearer owner"},
+                  "body": {"structuredQuery": {"from": [{"collectionId": "ix"}]}}, "compare": "exact",
                   "outcome": {"status": 200, "contentType": "application/json", "body": "[]"}}]
         result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), self.fixture(cases))
         self.assertEqual((result["sent"], result["same"], result["differ"]), (1, 0, []))
         self.assertEqual(result["needsIndex"], ["ordered"])
+        self.assertEqual(result["indexes"], [{
+            "collectionGroup": "ix", "queryScope": "COLLECTION",
+            "fields": [{"fieldPath": "a", "order": "ASCENDING"}, {"fieldPath": "__name__", "order": "ASCENDING"}]}])
+
+    def test_a_recording_of_queries_is_seeded_run_and_compared(self):
+        recording = {"dataset": [{"name": f"q/{x}", "fields": {"v": {"integerValue": "1"}}} for x in "abc"], "cases": [
+            {"name": "all", "parent": "", "query": {"from": [{"collectionId": "q"}]},
+             "outcome": {"status": "OK", "responses": [{"document": "q/a"}, {"document": "q/b"}, {"document": "q/c", "done": True}]}},
+            {"name": "offset 1", "parent": "", "query": {"from": [{"collectionId": "q"}], "offset": 1},
+             "outcome": {"status": "OK", "responses": [{"document": "q/b", "skipped": 1}, {"document": "q/c", "skipped": 1, "done": True}]}},
+            {"name": "a projection", "parent": "", "query": {"from": [{"collectionId": "q"}], "select": {"fields": []}, "offset": 2},
+             "outcome": {"status": "OK", "responses": [{"document": "q/c", "skipped": 2, "done": True}],
+                         "fields": {"q/c": {"v": {"integerValue": "1"}}}}},
+            {"name": "differs", "parent": "", "query": {"from": [{"collectionId": "q"}]},
+             "outcome": {"status": "OK", "responses": [{"document": "q/a", "done": True}]}},
+            {"name": "needs an index", "parent": "", "query": {"from": [{"collectionId": "ix"}]},
+             "outcome": {"status": "OK", "responses": [{"done": True}]}},
+            {"name": "count", "parent": "", "query": {"from": [{"collectionId": "q"}]}, "aggregations": [{"count": {}, "alias": "n"}],
+             "outcome": {"status": "OK", "responses": [{"result": {"aggregateFields": {"n": {"integerValue": "3"}}},
+                                                        "readTime": "<time>", "done": True}]}},
+            {"name": "another project", "parent": "", "query": {"from": [{"collectionId": "q"}], "where": {"fieldFilter": {
+                "field": {"fieldPath": "__name__"}, "op": "EQUAL",
+                "value": {"referenceValue": "projects/other/databases/(default)/documents/q/a"}}}},
+             "outcome": {"status": "OK", "responses": [{"done": True}]}},
+        ]}
+        path = Path(self.dir.name) / "queries.json"
+        path.write_text(json.dumps(recording))
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
+        self.assertEqual((result["sent"], result["same"]), (6, 4))
+        self.assertEqual([d["name"] for d in result["differ"]], ["differs"])
+        self.assertEqual(result["differ"][0]["difference"], "$.documents: 1 items, production 3")
+        self.assertEqual(result["needsIndex"], ["needs an index"])
+        self.assertEqual(result["skipped"], {"names another project": 1})
+        self.assertEqual(StandIn.documents, {})
 
     def test_a_placeholder_matches_within_a_string(self):
         official = '{"error":{"message":"the stored version (<version>) does not match (42)"}}'
