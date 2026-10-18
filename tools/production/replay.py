@@ -47,6 +47,7 @@ from harness import mask  # noqa: E402
 from indexes import index_asked  # noqa: E402
 
 TOKEN_ENV = "PRODUCTION_ACCESS_TOKEN"
+RULES_API = "https://firebaserules.googleapis.com"
 DATABASE = "/v1/projects/{project}/databases/(default)/"
 # A project named anywhere in a case: only the replay's own may be.
 PROJECT_NAME = re.compile(r"projects/([^/\s\"'?:]+)")
@@ -61,21 +62,26 @@ def log(message):
 class Production:
     """Requests to one project's `(default)` database, with a bearer token."""
 
-    def __init__(self, base, project, token, budget):
+    def __init__(self, base, project, token, budget, rules=RULES_API, quota_project=None):
         self.base = base.rstrip("/")
+        self.rules = rules.rstrip("/")
         self.project = project
         self.token = token
         self.budget = budget
+        self.quota_project = quota_project
         self.sent = 0
 
-    def send(self, method, path, data=None, content_type="application/json"):
-        """One request; answers (status, content type, body as text). A connection that fails
-        before an answer is tried again a few times; then the answer is status 0."""
+    def send(self, method, path, data=None, content_type="application/json", base=None):
+        """One request, to Firestore or another API (`base`); answers (status, content type, body
+        as text). A connection that fails before an answer is tried again a few times; then the
+        answer is status 0."""
         if self.sent >= self.budget:
             raise RuntimeError(f"stopped at the budget of {self.budget} requests")
         self.sent += 1
-        req = urllib.request.Request(self.base + path, method=method, data=data,
-                                     headers={"Authorization": f"Bearer {self.token}", "Content-Type": content_type})
+        headers = {"Authorization": f"Bearer {self.token}", "Content-Type": content_type}
+        if self.quota_project:
+            headers["x-goog-user-project"] = self.quota_project
+        req = urllib.request.Request((base or self.base) + path, method=method, data=data, headers=headers)
         for attempt in range(NETWORK_TRIES):
             try:
                 with urllib.request.urlopen(req, timeout=60) as res:
@@ -378,10 +384,75 @@ def replay_queries(production, recording, result):
                                      "official": official, "production": answered})
 
 
+# A condition that reads the document, the request or other documents. The Rules API takes the
+# document as JSON, whose numbers are all floats (`1 is int` is false), and runs lookups only on
+# mocks; such a condition is not tested.
+READS = re.compile(r"\b(?:resource|request)\b|(?<![.\w])(?:get|exists|getAfter|existsAfter|value)\(")
+
+
+def rules_outcome(status, text):
+    """The Rules API's answer to a test, as a recording of rules puts the official emulator's:
+    `allow`, `deny` or `compile`, and the warnings (`issues`)."""
+    try:
+        answer = json.loads(text)
+    except ValueError:
+        return {"outcome": str(status), "issues": []}
+    if status != 200:
+        return {"outcome": "compile" if status == 400 else str(status), "issues": []}
+    issues = answer.get("issues", [])
+    if any(i.get("severity") == "ERROR" for i in issues):
+        return {"outcome": "compile", "issues": []}
+    state = (answer.get("testResults") or [{}])[0].get("state")
+    return {"outcome": {"SUCCESS": "allow", "FAILURE": "deny"}.get(state, str(state)),
+            "issues": sorted(i["description"] for i in issues)}
+
+
+def replay_rules(production, recording, result):
+    """A recording of Security Rules (`rules_eval.json`): each condition, in the recording's
+    ruleset, or each whole ruleset, is tested with the Rules API (`projects.test`), for a `get` of
+    `rooms/r1` with no `auth`, and its outcome and warnings are compared. A denial's message is
+    the emulator's own and is not; nor are batches of writes, and conditions that read the
+    document, the request or other documents (`READS`)."""
+    for case in recording["results"]:
+        if "writes" in case or "answers" in case:
+            why = "a batch of writes"
+        elif READS.search(case.get("condition") or case.get("rules", "")):
+            why = "reads the document, the request or other documents"
+        else:
+            why = None
+        if why:
+            result["skipped"][why] = result["skipped"].get(why, 0) + 1
+            continue
+        source = case.get("rules") or recording["rules"].replace("%s", case["condition"], 1)
+        body = {"source": {"files": [{"name": "firestore.rules", "content": source}]},
+                "testSuite": {"testCases": [{"expectation": "ALLOW", "request": {
+                    "auth": None, "method": "get", "path": "/databases/(default)/documents/rooms/r1"}}]}}
+        status, _, text = production.send("POST", f"/v1/projects/{production.project}:test",
+                                          json.dumps(body).encode(), base=production.rules)
+        result["sent"] += 1
+        outcome = case["outcome"] if case["outcome"] in ("allow", "deny", "compile") else str(case["outcome"])
+        official = {"outcome": outcome, "issues": [] if outcome == "compile" else sorted(case.get("issues", []))}
+        answered = rules_outcome(status, mask(text, production.project))
+        if same_json(official, answered):
+            result["same"] += 1
+        else:
+            result["differ"].append({"name": case["name"], "method": "POST", "path": "/v1/projects/{project}:test",
+                                     "difference": first_difference(official, answered) or "the outcome",
+                                     "official": {"status": outcome, **official},
+                                     "production": {"status": answered["outcome"], **answered},
+                                     "rules": case.get("condition") or source})
+
+
 def replay(production, fixture):
     """Sends a recording's cases; what each answered next to what the official emulator did."""
     recording = json.loads(Path(fixture).read_text())
     project = production.project
+    if "results" in recording:
+        result = {"fixture": Path(fixture).name, "cases": len(recording["results"]), "sent": 0, "same": 0,
+                  "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "indexes": [], "differ": []}
+        log(f"{result['fixture']}: {result['cases']} rules")
+        replay_rules(production, recording, result)
+        return result
     result = {"fixture": Path(fixture).name, "cases": len(recording["cases"]), "sent": 0, "same": 0,
               "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "indexes": [], "differ": []}
     production.empty()
@@ -461,13 +532,16 @@ def main(argv=None):
     parser.add_argument("--project", required=True, help="the project of the maintainers' own")
     parser.add_argument("--out", required=True, help="where report.json and report.md go")
     parser.add_argument("--base", default="https://firestore.googleapis.com")
+    parser.add_argument("--rules-base", default=RULES_API)
     parser.add_argument("--budget", type=int, default=5000, help="the most requests a run sends")
+    parser.add_argument("--quota-project", help="the project a user's token is billed to (x-goog-user-project); "
+                                                "the Rules API needs one with a user's credentials, not a service account's")
     parser.add_argument("fixtures", nargs="+")
     args = parser.parse_args(argv)
     token = os.environ.get(TOKEN_ENV)
     if not token:
         parser.error(f"{TOKEN_ENV} is not set")
-    production = Production(args.base, args.project, token, args.budget)
+    production = Production(args.base, args.project, token, args.budget, args.rules_base, args.quota_project)
     report = {"started": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "project": "{project}",
               "recordings": []}
     try:
