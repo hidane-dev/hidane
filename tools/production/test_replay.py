@@ -264,6 +264,11 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual(result["needsIndex"], ["needs an index"])
         self.assertEqual(result["skipped"], {"names another project": 1})
         self.assertEqual(StandIn.documents, {})
+        # A case about a recorded difference, by its name, is known.
+        replay.KNOWN_CASES["queries.json"].append(("D000", r"^differs$"))
+        self.addCleanup(replay.KNOWN_CASES["queries.json"].pop)
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
+        self.assertEqual((result["differ"], result["known"]), ([], {"D000": 1}))
 
     def test_a_pace_spaces_the_requests(self):
         pace, started = replay.Pace(1200), time.monotonic()
