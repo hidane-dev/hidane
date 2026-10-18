@@ -9,7 +9,8 @@ datastore-mode` under an English locale:
 Over REST (`google.datastore.v1.Datastore`'s HTTP bindings, `POST /v1/projects/{p}:…`), in
 order, against one fresh process (the IDs it allocates depend on everything allocated before):
 how it refuses the Firestore API; `allocateIds` and `reserveIds`; `commit` with each mutation,
-each kind of value and each invalid key, value and request; `lookup`; and transactions
+each kind of value and each invalid key, value and request, IDs allocated that an entity
+already has, base versions past the stored one; `lookup`; and transactions
 (`beginTransaction`, `commit` in one, `rollback`, a read-only one, a lock held by another). The
 fixture has the format of `rest.json`; server times, versions and transaction IDs are masked.
 `crates/hidane/tests/datastore.rs` replays it. Stdlib only.
@@ -246,6 +247,11 @@ for label, value in [
     ("a key value of a partitioned project", {"keyValue": key(("A", "x"), project="s~p")}),
     ("an entity value keyed in an invalid project", {"entityValue": {"key": key(("A", "x"), project="Bad"), "properties": {}}}),
     ("an invalid project before an empty kind", {"keyValue": key(("", "x"), project="Bad")}),
+    ("an array of an array excluded from indexes", {"arrayValue": {"values": [{"arrayValue": {}, "excludeFromIndexes": True}]}}),
+    ("an array of an array with a meaning", {"arrayValue": {"values": [{"arrayValue": {}, "meaning": 1}]}}),
+    ("an array of an array of a latitude of 91", {"arrayValue": {"values": [{"arrayValue": {"values": [{"geoPointValue": {"latitude": 91, "longitude": 0}}]}}]}}),
+    ("an array of an excluded array, then a latitude of 91", {"arrayValue": {"values": [
+        {"arrayValue": {}, "excludeFromIndexes": True}, {"geoPointValue": {"latitude": 91, "longitude": 0}}]}}),
     ("a meaning of 99", {"integerValue": "1", "meaning": 99}),
     ("an integer as text", {"integerValue": "x"}),
     ("an entity value with a reserved property", {"entityValue": {"properties": {"__x__": I(1)}}}),
@@ -287,6 +293,24 @@ in_project("an allocated id deleted before", "ids5", "commit", {"mode": "NON_TRA
 in_project("allocateIds gives an id in use: store it", "ids6", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [upsert(key(("Task", FIRST)))]})
 in_project("allocateIds gives an id in use", "ids6", "allocateIds", {"keys": [key(("Task", None))]})
 in_project("the second allocated id in use", "ids7", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [insert(key(("Task", SECOND))), upsert(key(("Task", None))), upsert(key(("Task", None)))]})
+
+# A base version past the entity's is refused, whatever the strategy; a write before it in the
+# commit stays.
+in_project("base versions: store an entity", "base", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [upsert(key(("Task", "v")))]})
+for strategy in (None, "SERVER_VALUE", "FAIL"):
+    for detection, value in (("baseVersion", "9000000000000000"), ("updateTime", "2255-01-01T00:00:00Z")):
+        for op in ("upsert", "update", "delete"):
+            mutation = {op: key(("Task", "v")) if op == "delete" else {"key": key(("Task", "v"))}, detection: value}
+            if strategy:
+                mutation["conflictResolutionStrategy"] = strategy
+            in_project(f"a {detection} past the stored version, {op}, {strategy or 'no strategy'}", "base", "commit",
+                       {"mode": "NON_TRANSACTIONAL", "mutations": [mutation]})
+in_project("a baseVersion past an entity never stored", "base", "commit",
+           {"mode": "NON_TRANSACTIONAL", "mutations": [{"upsert": {"key": key(("Task", "never"))}, "baseVersion": "9000000000000000"}]})
+in_project("a write, then a baseVersion past the stored version", "base", "commit",
+           {"mode": "NON_TRANSACTIONAL", "mutations": [upsert(key(("Task", "before"))),
+                                                         {"upsert": {"key": key(("Task", "v"))}, "baseVersion": "9000000000000000"}]})
+in_project("the write before it stays", "base", "lookup", {"keys": [key(("Task", "before"))]})
 
 # --- lookup -----------------------------------------------------------------------------------
 lookup("found and missing", key(("Task", "twice")), key(("Task", "never")), key(("Task", "nope"), ns="ns1"))

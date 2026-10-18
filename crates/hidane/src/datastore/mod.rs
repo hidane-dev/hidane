@@ -434,6 +434,9 @@ struct Reading {
     /// Whether the read is in a read-write transaction, where `__namespace__` and `__kind__`
     /// find nothing on the official emulator.
     read_write: bool,
+    /// A read-write transaction that has yet to lock the kind it reads
+    /// ([`DatastoreService::lock_read`]).
+    unlocked: Option<Vec<u8>>,
 }
 
 impl Reading {
@@ -469,39 +472,65 @@ impl DatastoreService {
         options: Option<ReadOptions>,
         database: &Database,
         kind: Option<&str>,
+        lock_now: bool,
     ) -> Result<Reading, Status> {
         let mut reading = Reading {
             new_transaction: Vec::new(),
             at: None,
             kindless: false,
             read_write: false,
+            unlocked: None,
         };
-        // A read-write transaction locks the kind it queries; a query without a kind is an
-        // internal error there on the official emulator ([`Reading::lock`]).
+        // A read-write transaction locks the kind it queries, now or once the aggregations are
+        // checked (`lock_now`); a query without a kind is an internal error there on the
+        // official emulator ([`Reading::lock`]).
         let lock = |transaction: &[u8]| {
-            self.state
-                .transactions
-                .read(&database.name(), transaction, &[], kind)
+            if lock_now {
+                self.state
+                    .transactions
+                    .read(&database.name(), transaction, &[], kind)
+            } else {
+                self.state.transactions.check(&database.name(), transaction)
+            }
         };
-        let mode = match options.and_then(|o| o.consistency_type) {
-            None | Some(read_options::ConsistencyType::ReadConsistency(_)) => None,
-            Some(read_options::ConsistencyType::ReadTime(_)) => None,
+        let (mode, transaction) = match options.and_then(|o| o.consistency_type) {
+            None | Some(read_options::ConsistencyType::ReadConsistency(_)) => (None, None),
+            Some(read_options::ConsistencyType::ReadTime(_)) => (None, None),
             Some(read_options::ConsistencyType::Transaction(transaction)) => {
-                Some(lock(&transaction)?)
+                (Some(lock(&transaction)?), Some(transaction))
             }
             Some(read_options::ConsistencyType::NewTransaction(options)) => {
                 let transaction = self.begin(database, Some(&options))?;
                 let mode = lock(&transaction)?;
-                reading.new_transaction = transaction;
-                Some(mode)
+                reading.new_transaction = transaction.clone();
+                (Some(mode), Some(transaction))
             }
         };
+        if !lock_now && mode == Some(Mode::ReadWrite) {
+            reading.unlocked = transaction;
+        }
         if let Some(mode) = mode {
             reading.kindless = kind.is_none() && mode == Mode::ReadWrite;
             reading.read_write = mode == Mode::ReadWrite;
             reading.at = snapshot(mode);
         }
         Ok(reading)
+    }
+
+    /// Locks the kind a read-write transaction's aggregation reads, once its aggregations are
+    /// checked: one they refuse locks nothing, as on the official emulator.
+    fn lock_read(
+        &self,
+        reading: &Reading,
+        database: &Database,
+        kind: Option<&str>,
+    ) -> Result<(), Status> {
+        if let Some(transaction) = &reading.unlocked {
+            self.state
+                .transactions
+                .read(&database.name(), transaction, &[], kind)?;
+        }
+        Ok(())
     }
 
     /// A query's read time: checked once everything else is; the time it names, if any.
@@ -911,7 +940,12 @@ impl Datastore for DatastoreService {
             self.read_options_early(req.read_options.as_ref(), &database),
         )?;
         let plan = query::plan(&query, &database, &namespace)?;
-        let reading = self.read_query(req.read_options.clone(), &database, plan.kind.as_deref())?;
+        let reading = self.read_query(
+            req.read_options.clone(),
+            &database,
+            plan.kind.as_deref(),
+            true,
+        )?;
         if let Some(defined) = &defined {
             checks::kindless(&query)?;
             indexes::check(&query, &[], defined)?;
@@ -986,7 +1020,12 @@ impl Datastore for DatastoreService {
             self.read_options_early(req.read_options.as_ref(), &database),
         )?;
         let mut plan = query::plan(&nested, &database, &namespace)?;
-        let reading = self.read_query(req.read_options.clone(), &database, plan.kind.as_deref())?;
+        let reading = self.read_query(
+            req.read_options.clone(),
+            &database,
+            plan.kind.as_deref(),
+            false,
+        )?;
         if let Some(defined) = &defined {
             checks::kindless(&nested)?;
             indexes::check(&nested, &aggregated(&aggregation.aggregations), defined)?;
@@ -995,6 +1034,7 @@ impl Datastore for DatastoreService {
         if let Some(refused) = aggregations_refused {
             return Err(refused);
         }
+        self.lock_read(&reading, &database, plan.kind.as_deref())?;
         reading.lock()?;
         if let Some(refused) = refused {
             return Err(refused);
@@ -1330,10 +1370,25 @@ fn apply(
             Some(entity) => entity.clone(),
             None => stored.entities.get(l).cloned(),
         });
+        // A base version past the entity's is refused, whatever the strategy; with no entity,
+        // there is nothing to be past.
+        if let (Some(required), Some(located), Some(entity)) = (late.required, &located, &current)
+            && required > entity.version
+        {
+            return Err(Status::invalid_argument(format!(
+                "Invalid base version, it is greater than the stored version: {}",
+                keys::proto_text(database, located)
+            )));
+        }
         if late.resolution == mutation::ConflictResolutionStrategy::Fail as i32
             && let Some(required) = late.required
         {
-            let version = current.as_ref().map_or(0, |e| e.version);
+            // An entity deleted is at the version of its deletion; one never there, at 0.
+            let version = match (&current, &located) {
+                (Some(entity), _) => entity.version,
+                (None, Some(located)) => stored.deleted.get(located).copied().unwrap_or(0),
+                (None, None) => 0,
+            };
             if version != required {
                 return Err(Status::failed_precondition(format!(
                     "the stored version ({version}) does not match the required base version ({required})"

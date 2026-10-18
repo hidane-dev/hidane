@@ -22905,6 +22905,96 @@
    }
   },
   {
+   "name": "startCursor of D 't descending' in 'key', b compared",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      }
+     ],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "b"
+       },
+       "op": "LESS_THAN",
+       "value": {
+        "booleanValue": true
+       }
+      }
+     },
+     "startCursor": "<xd t descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"entityResults\": [{\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d2\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"1\"\n          },\n          \"b\": {\n            \"integerValue\": \"1\"\n          },\n          \"c\": {\n            \"integerValue\": \"5\"\n          },\n          \"t\": {\n            \"arrayValue\": {\n              \"values\": [{\n                \"integerValue\": \"4\"\n              }]\n            }\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d3\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"2\"\n          },\n          \"b\": {\n            \"integerValue\": \"2\"\n          },\n          \"c\": {\n            \"integerValue\": \"6\"\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }, {\n      \"entity\": {\n        \"key\": {\n          \"partitionId\": {\n            \"projectId\": \"{project}\",\n            \"namespaceId\": \"xd\"\n          },\n          \"path\": [{\n            \"kind\": \"D\",\n            \"name\": \"d4\"\n          }]\n        },\n        \"properties\": {\n          \"a\": {\n            \"integerValue\": \"3\"\n          },\n          \"b\": {\n            \"nullValue\": null\n          }\n        }\n      },\n      \"cursor\": \"<cursor>\",\n      \"version\": \"<version>\",\n      \"updateTime\": \"<time>\",\n      \"createTime\": \"<time>\"\n    }],\n    \"endCursor\": \"<cursor>\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
+   "name": "endCursor of D 't descending' in 'key', b compared",
+   "method": "POST",
+   "path": "/v1/projects/{project}:runQuery",
+   "headers": {
+    "Content-Type": "application/json"
+   },
+   "body": {
+    "query": {
+     "kind": [
+      {
+       "name": "D"
+      }
+     ],
+     "order": [
+      {
+       "property": {
+        "name": "__key__"
+       }
+      }
+     ],
+     "filter": {
+      "propertyFilter": {
+       "property": {
+        "name": "b"
+       },
+       "op": "LESS_THAN",
+       "value": {
+        "booleanValue": true
+       }
+      }
+     },
+     "endCursor": "<xd t descending>"
+    },
+    "partitionId": {
+     "namespaceId": "xd"
+    }
+   },
+   "compare": "exact",
+   "outcome": {
+    "status": 200,
+    "contentType": "application/json",
+    "body": "{\n  \"batch\": {\n    \"entityResultType\": \"FULL\",\n    \"moreResults\": \"NO_MORE_RESULTS\",\n    \"snapshotVersion\": \"<version>\",\n    \"readTime\": \"<time>\"\n  }\n}\n"
+   }
+  },
+  {
    "name": "cursor source D: c compared, a projected",
    "method": "POST",
    "path": "/v1/projects/{project}:runQuery",

@@ -572,6 +572,14 @@ SENT = [
     (A, "AGGREGATE COUNT(*) OVER (SELECT * FROM K)", {'positionalBindings': [{'value': {'integerValue': '1'}}]}),
     (A, "AGGREGATE COUNT(*) OVER (SELECT * FROM K WHERE A > KEY(K, 0))", {'positionalBindings': [{'value': {'integerValue': '1'}}]}),
     (A, "AGGREGATE COUNT(*) OVER (SELECT * FROM __kind__)", {'positionalBindings': [{'value': {'integerValue': '1'}}]}),
+    # A character the lexer refuses that ends the text: the end met after it, the character in
+    # the prefix.
+    (Q, "SELECT * FROM K@)"),
+    (Q, "SELECT * FROM K@ "),
+    (Q, "SELECT * FROM K@)x"),
+    (Q, "SELECT * FROM K WHERE a = @)"),
+    (A, "AGGREGATE COUNT(*) OVER (SELECT * FROM K@)"),
+    (A, "AGGREGATE AVG(b) AS m, COUNT(*) OVER (SELECT * FROM __namespace__@)"),
 ]
 
 TOKEN = re.compile(r"""\s*(`(?:[^`\\]|\\.|``)*`|'(?:[^'\\]|\\.|'')*'|"(?:[^"\\]|\\.|"")*"|@\w+|[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?|\w+|!=|<=|>=|.)""")

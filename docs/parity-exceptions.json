@@ -1572,6 +1572,24 @@
    "pinned_by": [
     "crates/hidane/tests/rest.rs::set_database_edition_refuses_another_database_in_the_body"
    ]
+  },
+  {
+   "id": "D096",
+   "table": "intentional",
+   "area": "queries",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "In Datastore mode, a cursor of a query ordered by its key alone (or of a query without a kind) given to a query ordered by its key and then by properties is an internal error in some combinations of those properties' directions, whatever the rows; the other cursors of other queries are read as `tools/oracle/datastore_queries.py` records",
+   "firestore": null,
+   "hidane": "Reads such a cursor by its values alone: the key it ends on is not compared, and the query answers",
+   "reason": "Bug (an internal error); a cursor is meant for the query that gave it",
+   "references": [
+    "hidane-dev/hidane#81",
+    "tools/oracle/datastore_queries.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/datastore.rs::a_keys_only_cursor_is_read_after_the_key"
+   ]
   }
  ],
  "retired": [
