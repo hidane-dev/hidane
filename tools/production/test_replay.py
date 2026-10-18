@@ -38,6 +38,14 @@ class StandIn(BaseHTTPRequestHandler):
         body = self.rfile.read(length).decode() if length else None
         StandIn.seen.append((self.command, self.path, self.headers.get("Authorization"), body))
         root = f"/v1/projects/{PROJECT}/databases/(default)/documents"
+        if self.path == f"/v1/projects/{PROJECT}:test":
+            # As the Rules API answers: `true` passes, `bad(` does not compile, `&& 1` warns.
+            source = json.loads(body)["source"]["files"][0]["content"]
+            if "bad(" in source:
+                return self.answer(200, {"issues": [{"description": "mismatched input", "severity": "ERROR"}]})
+            issues = [{"description": "Invalid type.", "severity": "WARNING"}] if "&& 1" in source else []
+            state = "SUCCESS" if "if true;" in source else "FAILURE"
+            return self.answer(200, {"issues": issues, "testResults": [{"state": state}]})
         if self.path.endswith(":listCollectionIds"):
             parent = urllib.parse.unquote(self.path[len("/v1/"):-len(":listCollectionIds")]) + "/"
             ids = sorted({n[len(parent):].split("/")[0] for n in StandIn.documents if n.startswith(parent)})
@@ -212,6 +220,27 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual(result["needsIndex"], ["needs an index"])
         self.assertEqual(result["skipped"], {"names another project": 1})
         self.assertEqual(StandIn.documents, {})
+
+    def test_rules_are_tested_with_the_rules_api(self):
+        template = "service cloud.firestore {\n  match /rooms/{room} {\n    allow read: if %s;\n  }\n}\n"
+        recording = {"document": {}, "rules": template, "results": [
+            {"name": "true", "condition": "true", "outcome": "allow"},
+            {"name": "a warning", "condition": "false && 1", "issues": ["Invalid type."], "outcome": "deny", "message": "…"},
+            {"name": "does not compile", "condition": "bad(", "outcome": "compile", "message": "…"},
+            {"name": "differs", "condition": "false", "outcome": "allow"},
+            {"name": "a whole ruleset", "rules": template.replace("%s", "true"), "outcome": "allow"},
+            {"name": "reads the document", "condition": "resource.data.n is int", "outcome": "allow"},
+            {"name": "a batch", "condition": "true", "writes": [], "outcome": "allow"},
+        ]}
+        path = Path(self.dir.name) / "rules_eval.json"
+        path.write_text(json.dumps(recording))
+        production = replay.Production(self.base, PROJECT, "a-token", 100, rules=self.base)
+        result = replay.replay(production, str(path))
+        self.assertEqual((result["sent"], result["same"]), (5, 4))
+        self.assertEqual([d["name"] for d in result["differ"]], ["differs"])
+        self.assertEqual(result["differ"][0]["difference"], '$.outcome: "allow", production "deny"')
+        self.assertEqual(result["skipped"], {"reads the document, the request or other documents": 1,
+                                             "a batch of writes": 1})
 
     def test_a_placeholder_matches_within_a_string(self):
         official = '{"error":{"message":"the stored version (<version>) does not match (42)"}}'

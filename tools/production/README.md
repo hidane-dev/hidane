@@ -53,7 +53,17 @@ Recordings it reads:
   offset skipped, a projection's fields, an aggregation's results, or the error's status and
   message. `done`, which production does not send (D099), is not compared.
 
-All four are replayed nightly. The Rules API (`projects.test`) comes later.
+- recordings of Security Rules conditions (`rules_eval.json`, in
+  `crates/hidane-rules/tests/fixtures/`): each condition, in the recording's ruleset, or each whole
+  ruleset, is tested with the Rules API (`projects.test`) for a `get` of `rooms/r1` without
+  `auth`, and the outcome (allowed, denied, or not compiled) and the warnings are compared. A
+  denial's message, the emulator's own, is not. Conditions that read the document, the request or
+  other documents are not tested: the API takes the document as JSON, whose numbers are all
+  floats, and runs lookups only on mocks. With a user's credentials, the Rules API needs a quota
+  project: `--quota-project <id>`.
+
+The workflow replays the four Firestore recordings nightly. Testing rules takes the permission
+`firebaserules.rulesets.test`, which its service account does not have.
 
 [`test_replay.py`](test_replay.py) tests it offline, against a stand-in for production on
 `127.0.0.1`; CI runs it.
