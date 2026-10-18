@@ -126,6 +126,22 @@ pub fn check_project_id(project: &str) -> Result<(), Status> {
     Ok(())
 }
 
+/// A key value's project, when it names one: an app ID without a partition, or the official
+/// emulator refuses it ("\"Bad\" is an invalid project id."), in a written value, a query's
+/// operand and a GQL query's key alike.
+pub fn check_value_project(key: &Key) -> Result<(), Status> {
+    let project = key
+        .partition_id
+        .as_ref()
+        .map_or("", |p| p.project_id.as_str());
+    if project.is_empty() || valid_app_id(project) {
+        return Ok(());
+    }
+    Err(Status::invalid_argument(format!(
+        "\"{project}\" is an invalid project id."
+    )))
+}
+
 fn id_byte(b: u8) -> bool {
     b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'-'
 }
@@ -154,7 +170,7 @@ fn valid_app_id(app: &str) -> bool {
 pub enum Rules {
     /// A key that is written: reserved kinds and names are refused.
     Write,
-    /// A key value: reserved kinds and names are allowed.
+    /// A key value: reserved kinds, names and namespaces are allowed.
     Read,
     /// A key that is looked up: reserved kinds, names and namespaces are allowed.
     Lookup,
@@ -300,7 +316,7 @@ pub fn check_unpartitioned(key: &Key, rules: Rules, last: Last) -> Result<Checke
         .map(|p| p.namespace_id.clone())
         .unwrap_or_default();
     if !namespace.is_empty() {
-        if rules != Rules::Lookup && reserved(&namespace) {
+        if rules == Rules::Write && reserved(&namespace) {
             return Err(Status::invalid_argument(format!(
                 "The namespace id \"{namespace}\" is reserved."
             )));
@@ -366,15 +382,16 @@ pub fn check_unpartitioned(key: &Key, rules: Rules, last: Last) -> Result<Checke
     }
     let incomplete_parent = path[..path.len() - 1].iter().any(|(_, id)| id.is_none());
     let incomplete_last = path.last().is_some_and(|(_, id)| id.is_none());
-    if incomplete_parent || (last == Last::Complete && incomplete_last) {
-        return Err(Status::invalid_argument(format!(
-            "Key path element must not be incomplete: {}",
-            shown(&key.path)
-        )));
-    }
+    // A complete last element is refused before an incomplete parent (`allocateIds`).
     if last == Last::Incomplete && !incomplete_last {
         return Err(Status::invalid_argument(format!(
             "Key path element must not be complete: {}",
+            shown(&key.path)
+        )));
+    }
+    if incomplete_parent || (last == Last::Complete && incomplete_last) {
+        return Err(Status::invalid_argument(format!(
+            "Key path element must not be incomplete: {}",
             shown(&key.path)
         )));
     }

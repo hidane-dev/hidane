@@ -24,6 +24,8 @@ use hidane_proto::google::datastore::v1::{
 use prost_types::Timestamp;
 use tonic::Status;
 
+use super::keys;
+
 fn invalid(message: impl Into<String>) -> Status {
     Status::invalid_argument(message)
 }
@@ -158,8 +160,22 @@ impl Lexer {
 
     /// A lexical error: `found` (`None` for the end) after `prefix` of the current token, as
     /// JavaCC writes it. JavaCC leaves the prefix out when it read at most one character, the
-    /// end not counted (`'` at the end), and the official emulator drops the empty prefix.
+    /// end not counted (`'` at the end), and the official emulator drops the empty prefix. A
+    /// character met last in the text is the end met after it, as JavaCC reads one more.
     fn error(&self, found: Option<char>, prefix: &str) -> Status {
+        if let Some(c) = found
+            && self.pos + 1 == self.chars.len()
+            && self.chars[self.pos] == c
+        {
+            let mut past = Lexer {
+                chars: self.chars.clone(),
+                pos: self.pos,
+                line: self.line,
+                column: self.column,
+            };
+            past.bump();
+            return past.error(None, &format!("{prefix}{c}"));
+        }
         let at = match found {
             Some(c) => format!("'{}' ({}), ", add_escapes(&c.to_string()), c as u32),
             None => "<EOF> ".into(),
@@ -485,6 +501,9 @@ struct Parser<'a> {
     bindings: Bindings<'a>,
     /// A refusal that comes once the whole text is read.
     refused: Option<Status>,
+    /// Whether a key value named an invalid project before any refusal: an aggregation's
+    /// internal error on the official emulator.
+    bad_project_first: bool,
     /// The request's namespace, a key's when it names no partition.
     namespace: &'a str,
 }
@@ -1397,7 +1416,16 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// A value, a literal's or a binding's, its keys' projects noted.
     fn value(&mut self) -> Result<Value, Status> {
+        let value = self.value_read()?;
+        if self.refused.is_none() && bad_project(&value) {
+            self.bad_project_first = true;
+        }
+        Ok(value)
+    }
+
+    fn value_read(&mut self) -> Result<Value, Status> {
         let token = self.peek()?.clone();
         if !(Self::value_start(&token.kind) || token.kind == Kind::Name) {
             return Err(self.error(VALUE));
@@ -1580,6 +1608,56 @@ impl<'a> Parser<'a> {
             path,
         })
     }
+}
+
+/// Whether `value` holds a key of an invalid project ([`keys::check_value_project`]).
+fn bad_project(value: &Value) -> bool {
+    match &value.value_type {
+        Some(ValueType::KeyValue(key)) => keys::check_value_project(key).is_err(),
+        Some(ValueType::ArrayValue(array)) => array.values.iter().any(bad_project),
+        Some(ValueType::EntityValue(entity)) => {
+            entity
+                .key
+                .as_ref()
+                .is_some_and(|key| keys::check_value_project(key).is_err())
+                || entity.properties.values().any(bad_project)
+        }
+        _ => false,
+    }
+}
+
+/// Checks the keys of `filter`'s operands in the order they came, each as an operand's is: its
+/// project, then its namespace and path.
+fn check_keys(filter: Option<&Filter>) -> Result<(), Status> {
+    fn value_keys(value: &Value) -> Result<(), Status> {
+        match &value.value_type {
+            Some(ValueType::KeyValue(key)) => {
+                keys::check_value_project(key)?;
+                keys::check_unpartitioned(key, keys::Rules::Read, keys::Last::Complete)?;
+            }
+            Some(ValueType::ArrayValue(array)) => {
+                for element in &array.values {
+                    value_keys(element)?;
+                }
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+    match filter.and_then(|f| f.filter_type.as_ref()) {
+        Some(FilterType::CompositeFilter(composite)) => {
+            for child in &composite.filters {
+                check_keys(Some(child))?;
+            }
+        }
+        Some(FilterType::PropertyFilter(property)) => {
+            if let Some(value) = &property.value {
+                value_keys(value)?;
+            }
+        }
+        None => {}
+    }
+    Ok(())
 }
 
 /// `IN` a value that is not an array: an equality.
@@ -1889,17 +1967,32 @@ pub fn read(gql: &GqlQuery, namespace: &str, expect: Expect) -> Result<Read, Sta
             allow_literals: gql.allow_literals,
         },
         refused: None,
+        bad_project_first: false,
         namespace,
     };
     let read = parser.read(expect)?;
+    match &read {
+        // An aggregation never tells of an unused positional binding; a key of an invalid
+        // project is an internal error, unless a refusal came first.
+        Read::Aggregation(_) => {
+            if parser.bad_project_first {
+                return Err(Status::unknown(""));
+            }
+        }
+        // An entity query tells of an unused positional binding, then of its keys, in the
+        // order they came, then of a refusal.
+        Read::Entities(query) => {
+            if let Some(unused) = parser.bindings.used.iter().position(|used| !used) {
+                return Err(invalid(format!(
+                    "Unused positional binding: {}.",
+                    unused + 1
+                )));
+            }
+            check_keys(query.filter.as_ref())?;
+        }
+    }
     if let Some(refused) = parser.refused {
         return Err(refused);
-    }
-    if let Some(unused) = parser.bindings.used.iter().position(|used| !used) {
-        return Err(invalid(format!(
-            "Unused positional binding: {}.",
-            unused + 1
-        )));
     }
     Ok(read)
 }

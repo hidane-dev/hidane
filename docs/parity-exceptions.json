@@ -438,9 +438,9 @@
    "area": "transactions",
    "topic": null,
    "kind": "more-correct",
-   "official": "A commit or read with a well-formed transaction ID that was never issued (or was forgotten by a reset) fails with `UNKNOWN` and no message; a rollback answers `INVALID_ARGUMENT` \"Transaction is invalid or expired.\" The same in Datastore mode (`tools/oracle/datastore_entities.py`), for `lookup`, `commit` and a read-write `beginTransaction` retrying one.",
+   "official": "A commit or read with a well-formed transaction ID that was never issued (or was forgotten by a reset) fails with `UNKNOWN` and no message; a rollback answers `INVALID_ARGUMENT` \"Transaction is invalid or expired.\" The same in Datastore mode (`tools/oracle/datastore_entities.py`), for `lookup`, `commit` and a read-write `beginTransaction` retrying one. There it numbers transactions per database, counting those it runs for each non-transactional lookup, query and mutation, but keeps them in one table for every database: an ID it did not give answers as the transaction that had it, another database's or one of its own non-transactional reads (`UNKNOWN`), or one of its non-transactional writes (`409` \"The referenced transaction has expired or is no longer valid.\", and `:rollback` then answers `200`)",
    "firestore": null,
-   "hidane": "`INVALID_ARGUMENT` \"Transaction is invalid or expired.\" everywhere; an ID that has ended answers `ABORTED` \"The referenced transaction has expired or is no longer valid.\", as on the official emulator",
+   "hidane": "`INVALID_ARGUMENT` \"Transaction is invalid or expired.\" everywhere; an ID that has ended answers `ABORTED` \"The referenced transaction has expired or is no longer valid.\", as on the official emulator; in Datastore mode only the transactions it gives are numbered",
    "reason": "Bug (an internal error)",
    "references": [
     "tools/oracle/datastore_entities.py"
@@ -448,7 +448,8 @@
    "pinned_by": [
     "crates/hidane/tests/transactions.rs::unknown_and_stale_transactions",
     "crates/hidane/src/firestore/transactions/tests.rs::ids_count_per_database_in_the_official_encoding",
-    "crates/hidane/tests/datastore.rs::datastore_mode_answers_like_the_official_emulator"
+    "crates/hidane/tests/datastore.rs::datastore_mode_answers_like_the_official_emulator",
+    "crates/hidane/tests/datastore.rs::a_transaction_id_not_given_is_invalid"
    ]
   },
   {
@@ -1570,6 +1571,24 @@
    ],
    "pinned_by": [
     "crates/hidane/tests/rest.rs::set_database_edition_refuses_another_database_in_the_body"
+   ]
+  },
+  {
+   "id": "D096",
+   "table": "intentional",
+   "area": "queries",
+   "topic": null,
+   "kind": "more-correct",
+   "official": "In Datastore mode, a cursor of a query ordered by its key alone (or of a query without a kind) given to a query ordered by its key and then by properties is an internal error in some combinations of those properties' directions, whatever the rows; the other cursors of other queries are read as `tools/oracle/datastore_queries.py` records",
+   "firestore": null,
+   "hidane": "Reads such a cursor by its values alone: the key it ends on is not compared, and the query answers",
+   "reason": "Bug (an internal error); a cursor is meant for the query that gave it",
+   "references": [
+    "hidane-dev/hidane#81",
+    "tools/oracle/datastore_queries.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/datastore.rs::a_keys_only_cursor_is_read_after_the_key"
    ]
   }
  ],

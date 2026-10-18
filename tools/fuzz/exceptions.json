@@ -111,6 +111,15 @@
    "request": {"predicates": ["entity-operand"]}
   },
   {
+   "id": "keys-only-cursor-after-the-key",
+   "exception": "D096",
+   "why": "A cursor of a query ordered by its key alone, given to a query ordered by its key and then by properties, is an internal error on the official emulator in some combinations of directions, whatever the rows; hidane reads it by its values. Matched on the request.",
+   "kinds": ["crash"],
+   "verbs": "^datastore:runQuery$",
+   "official": {"status": 500},
+   "request": {"predicates": ["cursor-after-the-key"]}
+  },
+  {
    "id": "datastore-body-of-another-project",
    "exception": "D046",
    "why": "The official emulator never answers a Datastore API request whose body names another `projectId` than its path; hidane answers it for the path's project. Matched on the request.",

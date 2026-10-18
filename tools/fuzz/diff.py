@@ -529,6 +529,42 @@ def other_body_project(step):
             and body["projectId"] not in ("", "{project}"))
 
 
+def cursor_after_the_key(step):
+    """A Datastore `runQuery` with a start or end cursor that orders by the key first, then by at
+    least two properties (ordered, compared by an inequality, projected or distinct)."""
+    body = body_of(step)
+    query = body.get("query") if isinstance(body, dict) else None
+    if not isinstance(query, dict) or not (query.get("startCursor") or query.get("endCursor")):
+        return False
+    names = [(o.get("property") or {}).get("name") for o in query.get("order") or [] if isinstance(o, dict)]
+    if not names or names[0] != "__key__":
+        return False
+    properties = {n for n in names[1:] if isinstance(n, str) and n != "__key__"}
+    # A projected or distinct property is ordered too.
+    for p in (query.get("projection") or []) + (query.get("distinctOn") or []):
+        name = (p.get("property") or p).get("name") if isinstance(p, dict) else None
+        if isinstance(name, str) and name != "__key__":
+            properties.add(name)
+
+    def inequalities(f):
+        if not isinstance(f, dict):
+            return
+        composite = f.get("compositeFilter")
+        if isinstance(composite, dict):
+            for child in composite.get("filters") or []:
+                inequalities(child)
+            return
+        prop = f.get("propertyFilter")
+        if isinstance(prop, dict) and prop.get("op") in {
+                "LESS_THAN", "LESS_THAN_OR_EQUAL", "GREATER_THAN", "GREATER_THAN_OR_EQUAL", "NOT_EQUAL", "NOT_IN"}:
+            name = (prop.get("property") or {}).get("name")
+            if isinstance(name, str) and name != "__key__":
+                properties.add(name)
+
+    inequalities(query.get("filter"))
+    return len(properties) >= 2
+
+
 def collection_group(step):
     """The body's query reads a collection group or every descendant (`allDescendants`), in a
     `structuredQuery` or a `structuredAggregationQuery`."""
@@ -554,6 +590,7 @@ PREDICATES = {
     "several-targets": several_targets,
     "other-body-project": other_body_project,
     "entity-operand": entity_operand,
+    "cursor-after-the-key": cursor_after_the_key,
 }
 
 

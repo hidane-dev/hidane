@@ -395,6 +395,18 @@ class RequestRules(unittest.TestCase):
         self.assertFalse(diff.entity_operand({"method": "POST", "path": "/v1/projects/{project}:runQuery",
                                               "body": {"query": {"filter": on("LESS_THAN", {"entityValue": {}})}}}))
 
+        order = lambda *names: [{"property": {"name": n}} for n in names]  # noqa: E731
+        cursor_query = lambda **q: {"method": "POST", "path": "/v1/projects/{project}:runQuery",  # noqa: E731
+                                    "body": {"query": {"kind": [{"name": "K"}], **q}}}
+        self.assertTrue(diff.cursor_after_the_key(cursor_query(order=order("__key__", "e", "a"), startCursor="c")))
+        self.assertTrue(diff.cursor_after_the_key(cursor_query(order=order("__key__", "e"), endCursor="c",
+                                                               filter=on("LESS_THAN", {"integerValue": "1"}))))
+        self.assertTrue(diff.cursor_after_the_key(cursor_query(order=order("__key__", "a"), startCursor="c",
+                                                               projection=[{"property": {"name": "tags"}}])))
+        self.assertFalse(diff.cursor_after_the_key(cursor_query(order=order("__key__", "e"), startCursor="c")))
+        self.assertFalse(diff.cursor_after_the_key(cursor_query(order=order("e", "__key__", "a"), startCursor="c")))
+        self.assertFalse(diff.cursor_after_the_key(cursor_query(order=order("__key__", "e", "a"))))
+
         begin = {"method": "POST", "path": "/v1/projects/{project}:beginTransaction", "raw": '{"projectId": "other"}'}
         self.assertTrue(diff.other_body_project(begin))
         self.assertTrue(diff.other_body_project({**begin, "raw": '{"projectId": "{project}x"}'}))

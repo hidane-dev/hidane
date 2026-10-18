@@ -525,14 +525,21 @@ fn common_ancestor(filter: &Filter) -> Result<Option<&Value>, ()> {
 }
 
 /// A disjunction of `HAS_ANCESTOR` filters alone is an internal error on the official emulator:
-/// without them ([`normalized`]), it is empty.
+/// without them ([`normalized`]), it is empty. Their operands are checked first, the other
+/// filters' after.
 fn ancestors_alone(all: &[(&Filter, bool)]) -> Result<(), Status> {
-    let alone = all.iter().any(|(filter, _)| {
-        matches!(&filter.filter_type, Some(FilterType::CompositeFilter(c))
-            if c.op == composite_filter::Operator::Or as i32 && c.filters.iter().all(bare_ancestor))
-    });
-    if alone {
-        return Err(Status::unknown(""));
+    for (filter, _) in all {
+        if let Some(FilterType::CompositeFilter(c)) = &filter.filter_type
+            && c.op == composite_filter::Operator::Or as i32
+            && c.filters.iter().all(bare_ancestor)
+        {
+            for ancestor in &c.filters {
+                if let Some(FilterType::PropertyFilter(property)) = &ancestor.filter_type {
+                    operand_shape(property)?;
+                }
+            }
+            return Err(Status::unknown(""));
+        }
     }
     Ok(())
 }
@@ -794,7 +801,7 @@ fn entity_late(
         }
     }
     grouped_first(query)?;
-    cursors_match(query, namespace)?;
+    cursors_match(query, namespace, &[])?;
     metadata(query, database, all)?;
     unreadable_elements(all)
 }
@@ -1126,5 +1133,9 @@ fn aggregation_late(
         return Err(invalid(EMPTY_SEGMENT));
     }
     grouped_first(query)?;
-    cursors_match(query, namespace)
+    let read: Vec<&str> = list
+        .iter()
+        .filter_map(|a| aggregated(a.operator.as_ref()))
+        .collect();
+    cursors_match(query, namespace, &read)
 }

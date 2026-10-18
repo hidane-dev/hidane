@@ -7,7 +7,8 @@ datastore-mode` under an English locale:
         > crates/hidane/tests/fixtures/datastore_locks.json
 
 In each scenario, in a project of its own, a transaction reads what a write then needs: a key
-(`lookup`) or every entity of a kind (`runQuery`, `runAggregationQuery`). The transaction stays
+(`lookup`) or every entity of a kind (`runQuery`, `runAggregationQuery`; an aggregation its
+aggregations refuse locks nothing). The transaction stays
 in use while the write waits (a `lookup` in it every 10 s), so it never expires. The write
 comes from another transaction or from none, to what is locked or to something else. The
 scenarios run at once; each records its requests, their answers and how long the write took, in
@@ -45,6 +46,11 @@ AGGREGATE = ("runAggregationQuery", {"aggregationQuery": {"nestedQuery": {"kind"
                                                           "aggregations": [{"count": {}}]},
                                      "readOptions": {"transaction": "{reader}"}})
 
+
+def refused(nested, *aggregations):
+    return ("runAggregationQuery", {"aggregationQuery": {"nestedQuery": nested, "aggregations": list(aggregations)},
+                                    "readOptions": {"transaction": "{reader}"}})
+
 # A scenario: what the reader reads, the write (`in` a transaction or `outside` one) and its key.
 SCENARIOS = [
     ("a write in another transaction to a key read", LOOKUP, "in", "a"),
@@ -53,6 +59,13 @@ SCENARIOS = [
     ("a write in another transaction to a kind queried", QUERY, "in", "c"),
     ("a write outside a transaction to a kind queried", QUERY, "outside", "c"),
     ("a write outside a transaction to a kind aggregated", AGGREGATE, "outside", "d"),
+    # An aggregation its aggregations refuse locks nothing; one its query refuses, the kind.
+    ("a write in another transaction to a kind an aggregation without aggregations read",
+     refused({"kind": [{"name": "K"}]}), "in", "e"),
+    ("a write in another transaction to a kind an aggregation summing __key__ read",
+     refused({"kind": [{"name": "K"}]}, {"sum": {"property": {"name": "__key__"}}}), "in", "f"),
+    ("a write in another transaction to a kind an aggregation with a negative limit read",
+     refused({"kind": [{"name": "K"}], "limit": -1}, {"count": {}}), "in", "g"),
 ]
 
 
