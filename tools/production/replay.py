@@ -15,7 +15,8 @@ compared with the official emulator's recorded answer: the status, the media typ
 where the recording compares it, as JSON (production prints JSON its own way), a recording's
 placeholders (`<time>`, `<now>` and the like) matching any value, alone or within a string. A
 query production refuses for want of a composite index, which the emulators never ask for, is
-counted apart, not compared. The database is emptied before each recording and at the end.
+counted apart, not compared. The official emulator's own deletes are done in production by
+deleting the same documents. The database is emptied before each recording and at the end.
 
 What differs goes to `<out>/report.json` and `<out>/report.md`, and to the job summary in GitHub
 Actions. It is not a recording: it stays a workflow artifact until a person has looked at it
@@ -92,8 +93,10 @@ class Production:
             raise RuntimeError(f"{method} {mask(path, self.project)} answered {status}: {mask(text, self.project)[:300]}")
         return json.loads(text) if text else {}
 
-    def empty(self):
-        """Deletes every document of the database, those under missing documents included."""
+    def empty(self, under=""):
+        """Deletes every document of the database, or the document or collection `under` names
+        (a path below the documents) and everything below it; those under missing documents
+        included."""
         documents = f"projects/{self.project}/databases/(default)/documents"
         names = []
 
@@ -110,27 +113,54 @@ class Production:
                 if not token or token == previous:
                     return ids
 
-        def walk(parent):
-            for collection in collections(parent):
-                token = None
-                while True:
-                    query = "?pageSize=300&showMissing=true&mask.fieldPaths=__name__"
-                    if token:
-                        query += "&pageToken=" + urllib.parse.quote(token, safe="")
-                    answer = self.call("GET", f"/v1/{url(parent)}/{urllib.parse.quote(collection, safe='')}{query}")
-                    for document in answer.get("documents", []):
-                        walk(document["name"])
-                        names.append(document["name"])
-                    token, previous = answer.get("nextPageToken"), token
-                    if not token or token == previous:
-                        break
+        def collection(parent, collection_id):
+            token = None
+            while True:
+                query = "?pageSize=300&showMissing=true&mask.fieldPaths=__name__"
+                if token:
+                    query += "&pageToken=" + urllib.parse.quote(token, safe="")
+                answer = self.call("GET", f"/v1/{url(parent)}/{urllib.parse.quote(collection_id, safe='')}{query}")
+                for document in answer.get("documents", []):
+                    walk(document["name"])
+                    names.append(document["name"])
+                token, previous = answer.get("nextPageToken"), token
+                if not token or token == previous:
+                    return
 
-        walk(documents)
-        log(f"emptying the database: {len(names)} documents")
+        def walk(parent):
+            for collection_id in collections(parent):
+                collection(parent, collection_id)
+
+        segments = [s for s in under.split("/") if s]
+        if not segments:
+            walk(documents)
+        elif len(segments) % 2:
+            collection("/".join([documents, *segments[:-1]]), segments[-1])
+        else:
+            walk("/".join([documents, *segments]))
+            names.append("/".join([documents, *segments]))
+        log(f"emptying {'the database' if not segments else '/'.join(segments)}: {len(names)} documents")
         for start in range(0, len(names), 500):
             writes = [{"delete": name} for name in names[start:start + 500]]
             self.call("POST", f"/v1/{documents}:commit", {"writes": writes})
         return len(names)
+
+
+# The official emulator's own delete: of the database's documents, or of a document or a
+# collection and everything below it. It trims whitespace around each segment of the path.
+EMULATOR_DELETE = re.compile(r"/emulator/v1/projects/([^/]*)/databases/([^/]*)/documents((?:/[^/]*)*)")
+
+
+def emulator_delete(case):
+    """What an emulator's own delete clears, as a path below the documents (`""` for all of them),
+    or None if the case is not one for the project's `(default)` database."""
+    found = EMULATOR_DELETE.fullmatch(case.get("path", "").split("?")[0])
+    if case.get("method") != "DELETE" or not found:
+        return None
+    project, database = (urllib.parse.unquote(part).strip() for part in found.group(1, 2))
+    if project != "{project}" or database != "(default)":
+        return None
+    return "/".join(urllib.parse.unquote(s).strip() for s in found.group(3).split("/") if s)
 
 
 def sendable(case):
@@ -167,10 +197,18 @@ def same_string(official, production):
     return re.fullmatch(pattern, production, re.S) is not None
 
 
+def number(value):
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
 def same_json(official, production):
-    """Whether two JSON values are the same, a recording's placeholder matching anything."""
+    """Whether two JSON values are the same, a recording's placeholder matching anything.
+    Numbers compare by value: production prints a double without `.0` (`1`), the official
+    emulator as Java does (`1.0`)."""
     if isinstance(official, str):
         return isinstance(production, str) and same_string(official, production)
+    if number(official) and number(production):
+        return official == production
     if isinstance(official, dict):
         return (isinstance(production, dict) and official.keys() == production.keys()
                 and all(same_json(official[k], production[k]) for k in official))
@@ -189,6 +227,35 @@ def same_body(official, production):
         return official == production
 
 
+def first_difference(official, production, at="$"):
+    """Where two JSON values first differ, and how, or None."""
+    if isinstance(official, dict) and isinstance(production, dict):
+        if official.keys() != production.keys():
+            only = sorted(official.keys() - production.keys()), sorted(production.keys() - official.keys())
+            return f"{at}: keys only the official has {only[0]}, only production has {only[1]}"
+        return next((d for k in official if (d := first_difference(official[k], production[k], f"{at}.{k}"))), None)
+    if isinstance(official, list) and isinstance(production, list):
+        if len(official) != len(production):
+            return f"{at}: {len(official)} items, production {len(production)}"
+        return next((d for i, (o, p) in enumerate(zip(official, production))
+                     if (d := first_difference(o, p, f"{at}[{i}]"))), None)
+    if same_json(official, production):
+        return None
+    return f"{at}: {json.dumps(official, ensure_ascii=False)[:80]}, production {json.dumps(production, ensure_ascii=False)[:80]}"
+
+
+def difference(official, answered):
+    """How an answer differs from the official emulator's, in a line."""
+    if official["status"] != answered["status"]:
+        return f"status {official['status']}, production {answered['status']}"
+    if media(official.get("contentType")) != media(answered.get("contentType")):
+        return f"media type {media(official.get('contentType'))}, production {media(answered.get('contentType'))}"
+    try:
+        return first_difference(json.loads(official.get("body") or ""), json.loads(answered["body"])) or "the body"
+    except ValueError:
+        return "the body, as text"
+
+
 def media(content_type):
     return (content_type or "").split(";")[0].strip().lower() or None
 
@@ -198,12 +265,17 @@ def replay(production, fixture):
     recording = json.loads(Path(fixture).read_text())
     project = production.project
     result = {"fixture": Path(fixture).name, "cases": len(recording["cases"]), "sent": 0, "same": 0,
-              "skipped": {}, "needsIndex": [], "differ": []}
+              "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "differ": []}
     production.empty()
     log(f"{result['fixture']}: {len(recording['cases'])} cases")
     for n, case in enumerate(recording["cases"], 1):
         if n % 50 == 0:
             log(f"{result['fixture']}: case {n}, {production.sent} requests so far")
+        under = emulator_delete(case)
+        if under is not None:
+            production.empty(under)
+            result["emulatorDeletes"] += 1
+            continue
         why = sendable(case)
         if why:
             result["skipped"][why] = result["skipped"].get(why, 0) + 1
@@ -231,7 +303,8 @@ def replay(production, fixture):
             result["same"] += 1
         else:
             result["differ"].append({"name": case["name"], "method": case["method"], "path": case["path"],
-                                     "official": official, "production": answered})
+                                     "difference": difference(official, answered), "official": official,
+                                     "production": answered})
     production.empty()
     return result
 
@@ -246,12 +319,13 @@ def markdown(report):
                      f"{len(r['needsIndex'])} | {sum(r['skipped'].values())} |")
     for r in report["recordings"]:
         if r["differ"]:
-            lines += ["", f"### `{r['fixture']}`", "", "| Case | Official | Production |", "|---|---|---|"]
-            for d in r["differ"][:200]:
-                name = d["name"].replace("|", "\\|")
-                lines.append(f"| {name} | {d['official']['status']} | {d['production']['status']} |")
-            if len(r["differ"]) > 200:
-                lines.append(f"| … {len(r['differ']) - 200} more in `report.json` | | |")
+            lines += ["", f"### `{r['fixture']}`", "", "| Case | Official | Production | First difference |",
+                      "|---|---|---|---|"]
+            for d in r["differ"][:300]:
+                name, what = (s.replace("|", "\\|").replace("\n", " ") for s in (d["name"], d["difference"]))
+                lines.append(f"| {name} | {d['official']['status']} | {d['production']['status']} | {what} |")
+            if len(r["differ"]) > 300:
+                lines.append(f"| … {len(r['differ']) - 300} more in `report.json` | | | |")
     return "\n".join(lines) + "\n"
 
 
