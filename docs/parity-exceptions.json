@@ -1256,10 +1256,14 @@
    "topic": "Composite indexes",
    "kind": "bug-for-bug",
    "official": "Not tracked or required",
-   "firestore": "Required for many queries",
+   "firestore": "Required for many queries: the recorded ones need 35 (`tools/production/indexes.json`), among them indexes of `__name__` descending, single-field indexes for collection groups and a vector index (#82)",
    "hidane": "As the official emulator: no index enforcement",
    "reason": "Follow the emulator (no index enforcement)",
-   "references": [],
+   "references": [
+    "hidane-dev/hidane#82",
+    "https://github.com/hidane-dev/hidane/actions/runs/39094418301",
+    "tools/production/indexes.json"
+   ],
    "pinned_by": [
     "crates/hidane/tests/queries.rs::queries_answer_like_the_official_emulator"
    ]
@@ -1323,13 +1327,14 @@
    "topic": "Descending document order",
    "kind": "bug-for-bug",
    "official": "`order_by __name__ desc` as the only ordering (once or more), without a filter on another field (array-contains on `__name__` is one), fails with `FAILED_PRECONDITION` \"Firestore does not support descending key scans\", before any other check of the orders, the limit or the fields a `sum` or an `avg` reads",
-   "firestore": "Served. Listing documents with `orderBy=__name__ desc` answers `FAILED_PRECONDITION` \"The query requires an index\" (#82)",
+   "firestore": "Served, with an index of `__name__` descending: alone, with filters on `__name__`, and over a collection group. Without the index, `FAILED_PRECONDITION` \"The query requires an index\" (#82)",
    "hidane": "As the official emulator",
    "reason": "Follow the emulator, measured in #21",
    "references": [
     "hidane-dev/hidane#21",
     "hidane-dev/hidane#82",
-    "https://github.com/hidane-dev/hidane/actions/runs/39089145449"
+    "https://github.com/hidane-dev/hidane/actions/runs/39089145449",
+    "https://github.com/hidane-dev/hidane/actions/runs/39094418301"
    ],
    "pinned_by": [
     "crates/hidane/tests/queries.rs::queries_answer_like_the_official_emulator"
@@ -1640,16 +1645,18 @@
    "topic": "Query results over REST",
    "kind": "bug-for-bug",
    "official": "The last result of `runQuery` or `runAggregationQuery` carries `\"done\": true`: a query without results answers `[{\"readTime\": …, \"done\": true}]`. With an `offset`, every document's result carries `skippedResults`",
-   "firestore": "No `done`: a query without results answers `[{\"readTime\": …}]`. With an `offset`, the number skipped comes first, in a result of its own without a document",
+   "firestore": "No `done`: a query without results answers `[{\"readTime\": …}]`. With an `offset`, the number skipped comes first, in a result of its own without a document, also when the offset passes every result, where the emulator reports none",
    "hidane": "As the official emulator",
    "reason": "Follow the emulator. Seen by the Production parity workflow (#82). The SDKs read either",
    "references": [
+    "hidane-dev/hidane#82",
     "https://github.com/hidane-dev/hidane/actions/runs/39089145449",
-    "hidane-dev/hidane#82"
+    "https://github.com/hidane-dev/hidane/actions/runs/39094418301"
    ],
    "pinned_by": [
-    "crates/hidane/tests/rest.rs::rest_answers_like_the_official_emulator",
-    "crates/hidane/tests/rest.rs::conformance_requests_answer_like_the_official_emulator"
+    "crates/hidane/tests/queries.rs::queries_answer_like_the_official_emulator",
+    "crates/hidane/tests/rest.rs::conformance_requests_answer_like_the_official_emulator",
+    "crates/hidane/tests/rest.rs::rest_answers_like_the_official_emulator"
    ]
   },
   {
@@ -1740,6 +1747,82 @@
    ],
    "pinned_by": [
     "crates/hidane/tests/rest.rs::rest_answers_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D105",
+   "table": "production",
+   "area": "queries",
+   "topic": "Which fault of a query is reported",
+   "kind": "bug-for-bug",
+   "official": "A query with several faults is refused for its orders (duplicate fields, fields after the key, a descending key order), the number of filters, two `array-contains` or an equality on the key next to an inequality, before what it holds is checked: a `__name__` filter's value, a reserved name, an array offset in a path, an empty key path, a negative limit",
+   "firestore": "The other way: what the query holds first, `__key__ filter value must be a Key`, `the name __key__ is reserved`, `Invalid property path`, `Key path is empty.`, `limit is negative`, then its orders and filters. A query of every collection is refused for that first (`kind is required …`)",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). A query that a test sends with one fault is refused the same way",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/39094418301",
+    "hidane-dev/hidane#82"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/queries.rs::queries_answer_like_the_official_emulator",
+    "crates/hidane/tests/aggregations.rs::aggregations_answer_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D106",
+   "table": "production",
+   "area": "queries",
+   "topic": "Query errors' wording",
+   "kind": "bug-for-bug",
+   "official": "Two `array-contains` (or `array-contains-any`) filters: `FAILED_PRECONDITION` \"Only a single array-contains clause is allowed in a query\". An aggregation ordered by `__name__` and then fields: \"This query requires an index that has fields [v] after __name__ …\"",
+   "firestore": "`INVALID_ARGUMENT` \"A maximum of 1 'ARRAY_CONTAINS' filter is allowed per disjunction.\"; \"This query requires an index with fields [v] after __name__ …\"",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82)",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/39094418301",
+    "hidane-dev/hidane#82"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/queries.rs::queries_answer_like_the_official_emulator",
+    "crates/hidane/tests/aggregations.rs::aggregations_answer_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D107",
+   "table": "production",
+   "area": "queries",
+   "topic": "The number of filters",
+   "kind": "bug-for-bug",
+   "official": "A query with more than 100 filters, orders and ancestor together, each value of an `in` or a `not-in` counted, is refused: `INVALID_ARGUMENT` \"The query may not have more than 100 filters + sort orders + ancestor total. …\" `-0.0` and `0.0` in an `in` are one value: an `or` of `== [-0.0]`, `== [0.0]` and an equality next to an `in` of 11 stays within 30 disjunctions and runs",
+   "firestore": "No such count: those queries run, or ask for an index. `-0.0` and `0.0` are two values: the same query has 33 disjunctions and is refused, \"Too many disjunctions after normalization. Result had 33 disjunctions which is more than the maximum of 30\"",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). Tests rarely come near either limit",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/39094418301",
+    "hidane-dev/hidane#82"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/queries.rs::queries_answer_like_the_official_emulator",
+    "crates/hidane/tests/aggregations.rs::aggregations_answer_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D108",
+   "table": "production",
+   "area": "queries",
+   "topic": "Queries of every collection",
+   "kind": "bug-for-bug",
+   "official": "A query without a collection ID ordered by or filtered on a field is refused, `INVALID_ARGUMENT` \"kind is required for all orders except __key__ ascending\", a `sum` or an `avg` of one too",
+   "firestore": "`kind is required for filter: v` for a filter; a `sum` or an `avg` of every collection answers `500` `INTERNAL` \"An internal error occurred.\"",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82)",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/39094418301",
+    "hidane-dev/hidane#82"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/queries.rs::queries_answer_like_the_official_emulator",
+    "crates/hidane/tests/aggregations.rs::aggregations_answer_like_the_official_emulator"
    ]
   }
  ],

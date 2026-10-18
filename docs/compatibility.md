@@ -35,7 +35,7 @@ firebase-tools that launches it and the official emulator it is compared with.
 | Functions events | `function_events.json`: 152 recorded answers, `function_triggers.json`: 342 recorded answers; functions-triggers: 37 events on hidane, 43 on the official emulator (documented) | [parity-exceptions.md](parity-exceptions.md) |
 | Integration tests | 56 test files (`crates/*/tests/*.rs`), 41 of them replaying recordings, run on every pull request and push to main | [`crates/`](../crates/) |
 | Differential fuzzing | 1 run | [`differential-fuzzing.json`](../results/differential-fuzzing.json) |
-| Differences | 79 intentional differences (1 bug-for-bug, 50 more correct, 20 equivalent, 8 limitation); 23 places where the official emulator departs from production (20 bug-for-bug, 3 more correct) | [parity-exceptions.md](parity-exceptions.md) |
+| Differences | 79 intentional differences (1 bug-for-bug, 50 more correct, 20 equivalent, 8 limitation); 27 places where the official emulator departs from production (24 bug-for-bug, 3 more correct) | [parity-exceptions.md](parity-exceptions.md) |
 
 <!-- compatibility:end -->
 
