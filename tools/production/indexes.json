@@ -1,6 +1,216 @@
 {
  "indexes": [
   {
+   "collectionGroup": "C",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "a",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "b",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "__name__",
+     "order": "ASCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "C",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "a",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "b",
+     "order": "DESCENDING"
+    },
+    {
+     "fieldPath": "__name__",
+     "order": "DESCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "C",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "a",
+     "order": "DESCENDING"
+    },
+    {
+     "fieldPath": "__name__",
+     "order": "ASCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "C",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "b",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "a",
+     "order": "DESCENDING"
+    },
+    {
+     "fieldPath": "__name__",
+     "order": "DESCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "ints",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "a",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e0",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e1",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e2",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e3",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e4",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e5",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e6",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e7",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "v",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "__name__",
+     "order": "ASCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "ints",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "a",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e0",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e1",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e2",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e3",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e4",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e5",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e6",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e7",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "__name__",
+     "order": "ASCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "ints",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "a",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e0",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e1",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e2",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e3",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e4",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e5",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "u",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "v",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "__name__",
+     "order": "ASCENDING"
+    }
+   ]
+  },
+  {
    "collectionGroup": "ints",
    "queryScope": "COLLECTION",
    "fields": [
@@ -39,6 +249,84 @@
     {
      "fieldPath": "__name__",
      "order": "ASCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "lo",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "__name__",
+     "order": "DESCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "lo",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "m",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "n",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "__name__",
+     "order": "ASCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "lo",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "m",
+     "order": "DESCENDING"
+    },
+    {
+     "fieldPath": "n",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "__name__",
+     "order": "ASCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "lo",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "n",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "m",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "__name__",
+     "order": "ASCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "lo",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "n",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "__name__",
+     "order": "DESCENDING"
     }
    ]
   },
@@ -119,6 +407,16 @@
    "queryScope": "COLLECTION",
    "fields": [
     {
+     "fieldPath": "__name__",
+     "order": "DESCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "p",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
      "fieldPath": "b",
      "arrayConfig": "CONTAINS"
     },
@@ -168,6 +466,82 @@
     },
     {
      "fieldPath": "b",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "__name__",
+     "order": "ASCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "p",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "a",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e0",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e1",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e2",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e3",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e4",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e5",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e6",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e7",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "b",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "__name__",
+     "order": "ASCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "p",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "a",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e0",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "e1",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "x",
      "order": "ASCENDING"
     },
     {
@@ -495,6 +869,16 @@
    "queryScope": "COLLECTION_GROUP",
    "fields": [
     {
+     "fieldPath": "__name__",
+     "order": "DESCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "p",
+   "queryScope": "COLLECTION_GROUP",
+   "fields": [
+    {
      "fieldPath": "a",
      "order": "ASCENDING"
     },
@@ -503,7 +887,41 @@
      "order": "DESCENDING"
     }
    ]
+  },
+  {
+   "collectionGroup": "t",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "v",
+     "vectorConfig": {
+      "dimension": 2,
+      "flat": {}
+     }
+    }
+   ]
   }
  ],
- "fieldOverrides": []
+ "fieldOverrides": [
+  {
+   "collectionGroup": "p",
+   "fieldPath": "a",
+   "indexes": [
+    {
+     "queryScope": "COLLECTION_GROUP",
+     "order": "ASCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "sub",
+   "fieldPath": "v",
+   "indexes": [
+    {
+     "queryScope": "COLLECTION_GROUP",
+     "order": "ASCENDING"
+    }
+   ]
+  }
+ ]
 }

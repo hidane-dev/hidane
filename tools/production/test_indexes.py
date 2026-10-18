@@ -83,6 +83,14 @@ class IndexesTest(unittest.TestCase):
             listed = {"name": "projects/x/databases/(default)/collectionGroups/p/indexes/CICAg", "queryScope": "COLLECTION",
                       "fields": [{"fieldPath": "a", "order": "ASCENDING"}], "state": "READY"}
             self.assertEqual(indexes.key(A), indexes.key(listed))
+            vector = {"collectionGroup": "t", "queryScope": "COLLECTION",
+                      "fields": [{"fieldPath": "v", "vectorConfig": {"dimension": 2, "flat": {}}}]}
+            listed_vector = {"name": "projects/x/databases/(default)/collectionGroups/t/indexes/CICAg", "queryScope": "COLLECTION",
+                             "fields": [{"fieldPath": "__name__", "order": "ASCENDING"}, *vector["fields"]]}
+            self.assertEqual(indexes.key(vector), indexes.key(listed_vector))
+            by_name = {"collectionGroup": "p", "queryScope": "COLLECTION"}
+            self.assertNotEqual(indexes.key(by_name | {"fields": [{"fieldPath": "__name__", "order": "DESCENDING"}]}),
+                                indexes.key(by_name | {"fields": [{"fieldPath": "__name__", "order": "ASCENDING"}]}))
             report = Path(tmp) / "report.json"
             report.write_text(json.dumps({"recordings": [{"indexes": [A, GROUP_A]}, {"indexes": [A]}]}))
             self.assertEqual(indexes.add([report]), 2)
