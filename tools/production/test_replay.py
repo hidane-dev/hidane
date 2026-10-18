@@ -6,6 +6,7 @@ import sys
 import tempfile
 import threading
 import unittest
+import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -36,14 +37,14 @@ class StandIn(BaseHTTPRequestHandler):
         body = self.rfile.read(length).decode() if length else None
         StandIn.seen.append((self.command, self.path, self.headers.get("Authorization"), body))
         root = f"/v1/projects/{PROJECT}/databases/(default)/documents"
-        if self.path == f"{root}:listCollectionIds":
-            ids = sorted({name.split("/documents/")[1].split("/")[0] for name in StandIn.documents})
-            return self.answer(200, {"collectionIds": ids} if ids else {})
         if self.path.endswith(":listCollectionIds"):
-            return self.answer(200, {})
+            parent = urllib.parse.unquote(self.path[len("/v1/"):-len(":listCollectionIds")]) + "/"
+            ids = sorted({n[len(parent):].split("/")[0] for n in StandIn.documents if n.startswith(parent)})
+            return self.answer(200, {"collectionIds": ids} if ids else {})
         if self.command == "GET" and "showMissing=true" in self.path:
-            collection = self.path.split("?")[0].rsplit("/", 1)[1]
-            names = [n for n in StandIn.documents if n.split("/documents/")[1].split("/")[0] == collection]
+            # The collection's documents, and the missing ones that have documents below them.
+            prefix = urllib.parse.unquote(self.path.split("?")[0][len("/v1/"):]) + "/"
+            names = sorted({prefix + n[len(prefix):].split("/")[0] for n in StandIn.documents if n.startswith(prefix)})
             return self.answer(200, {"documents": [{"name": n} for n in names]} if names else {})
         if self.path == f"{root}:commit":
             for write in json.loads(body)["writes"]:
@@ -99,12 +100,14 @@ class ReplayTest(unittest.TestCase):
              "compare": "exact", "outcome": written},
             {"name": "another project", "method": "GET", "path": base + "/c/a", "headers": owner,
              "body": {"name": "projects/other/databases/(default)/documents/c/a"}, "compare": "exact", "outcome": written},
+            {"name": "v1beta1", "method": "GET", "path": "/v1beta1/projects/{project}/databases/(default)/documents/c/a",
+             "headers": owner, "compare": "exact", "outcome": written},
             {"name": "the emulator's own", "method": "DELETE", "path": "/emulator/v1/projects/{project}/databases/(default)/documents",
              "headers": owner, "compare": "exact", "outcome": written},
         ]
         production = replay.Production(self.base, PROJECT, "a-token", 100)
         result = replay.replay(production, self.fixture(cases))
-        self.assertEqual(result["sent"], 3)
+        self.assertEqual((result["sent"], result["emulatorDeletes"]), (3, 1))
         self.assertEqual(result["same"], 2)
         self.assertEqual([d["name"] for d in result["differ"]], ["differs"])
         self.assertEqual(result["skipped"], {"not sent as the owner": 1, "names another project": 1,
@@ -115,6 +118,39 @@ class ReplayTest(unittest.TestCase):
         self.assertIn(("PATCH", f"/v1/projects/{PROJECT}/databases/(default)/documents/c/a"),
                       [(m, p) for m, p, _, _ in StandIn.seen])
         self.assertEqual(StandIn.documents, {})
+
+    def test_the_emulators_own_delete_empties_that_part_of_production(self):
+        root = f"projects/{PROJECT}/databases/(default)/documents"
+        StandIn.documents = {f"{root}/{name}": {} for name in ("ws/c", "ws/d", "ws/a/sub/x", "ws/a/other/y", "z/e")}
+        production = replay.Production(self.base, PROJECT, "a-token", 100)
+        # The emulator trims whitespace around each segment.
+        case = {"method": "DELETE", "path": "/emulator/v1/projects/%20{project}/databases/(default)%09/documents/ws%20/c%E3%80%80"}
+        production.empty(replay.emulator_delete(case))
+        self.assertNotIn(f"{root}/ws/c", StandIn.documents)
+        production.empty(replay.emulator_delete({"method": "DELETE", "path": case["path"].split("/documents")[0]
+                                                 + "/documents/%20ws/a%20/sub"}))
+        self.assertEqual(sorted(StandIn.documents), [f"{root}/ws/a/other/y", f"{root}/ws/d", f"{root}/z/e"])
+        production.empty(replay.emulator_delete({"method": "DELETE",
+                                                 "path": "/emulator/v1/projects/{project}%20/databases/(default)/documents"}))
+        self.assertEqual(StandIn.documents, {})
+        for other in ("/emulator/v1/projects/other/databases/(default)/documents",
+                      "/emulator/v1/projects/{project}/databases/named/documents",
+                      "/v1/projects/{project}/databases/(default)/documents/c/a"):
+            self.assertIsNone(replay.emulator_delete({"method": "DELETE", "path": other}))
+        self.assertIsNone(replay.emulator_delete({"method": "GET", "path": case["path"]}))
+
+    def test_a_difference_is_located(self):
+        def official(status, body):
+            return {"status": status, "contentType": "application/json", "body": body}
+        self.assertEqual(replay.difference(official(200, "{}"), official(400, "{}")), "status 200, production 400")
+        self.assertEqual(replay.difference(official(404, '{"error":{"message":"Document (a) not found."}}'),
+                                           official(404, '{"error": {"message": "Document \\"a\\" not found."}}')),
+                         '$.error.message: "Document (a) not found.", production "Document \\"a\\" not found."')
+        self.assertEqual(replay.difference(official(200, '[{"readTime":"<time>","done":true}]'),
+                                           official(200, '[{"readTime":"2026-01-01T00:00:00Z"}]')),
+                         "$[0]: keys only the official has ['done'], only production has []")
+        self.assertEqual(replay.difference(official(200, '{"a":[1]}'), official(200, '{"a":[1,2]}')),
+                         "$.a: 1 items, production 2")
 
     def test_a_query_that_needs_an_index_is_counted_apart(self):
         base = "/v1/projects/{project}/databases/(default)/documents"
@@ -132,6 +168,10 @@ class ReplayTest(unittest.TestCase):
         self.assertFalse(replay.same_body(official, '{"error": {"message": "the stored version () does not match (42)"}}'))
         self.assertFalse(replay.same_body('{"a": "<time>"}', '{"a": 1}'))
         self.assertTrue(replay.same_body('{"a": "x.y"}', '{"a": "x.y"}'))
+        # Numbers by value; a boolean is not a number.
+        self.assertTrue(replay.same_body('{"doubleValue": 1.0}', '{"doubleValue": 1}'))
+        self.assertFalse(replay.same_body('{"doubleValue": 1.5}', '{"doubleValue": 1}'))
+        self.assertFalse(replay.same_body('{"a": true}', '{"a": 1}'))
         self.assertFalse(replay.same_body('{"a": "x.y"}', '{"a": "xzy"}'))
 
     def test_the_budget_stops_a_run_and_the_report_is_written(self):

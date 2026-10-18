@@ -17,8 +17,8 @@ recorded answer:
 
 - the status;
 - the media type;
-- the body, where the recording compares it, as JSON. Production prints JSON its own way, and a
-  recording's placeholders (`<time>`, `<now>` and the like) match any value, alone or within a
+- the body, where the recording compares it, as JSON. Production prints JSON its own way (a
+  double without `.0`, so numbers compare by value), and a recording's placeholders (`<time>`, `<now>` and the like) match any value, alone or within a
   string (`the stored version (<version>) does not match ...`).
 
 A query production refuses for want of a composite index, which the emulators never ask for
@@ -26,8 +26,13 @@ A query production refuses for want of a composite index, which the emulators ne
 compared. The link production gives to create the index is masked: it names the project in
 base64.
 
+A recording's uses of the official emulator's own delete (`DELETE /emulator/v1/…/documents`, of
+the whole database or of a document or collection and what is below it) are not sent: the
+replay deletes the same documents in production, so the cases after it see the same data.
+
 The database is emptied before each recording and at the end. What differs goes to `report.json`
-and `report.md` in `--out`, and to the job summary in GitHub Actions. A run stops at `--budget`
+and `report.md` in `--out`, and to the job summary in GitHub Actions, with where each answer
+first differs from the official emulator's. A run stops at `--budget`
 requests (5,000 by default), within Firestore's free daily quota.
 
 ```sh
