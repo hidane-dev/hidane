@@ -48,6 +48,8 @@ jobs:
           python3 -I -B tools/production/replay.py --project "$PROJECT" --out production-parity
           crates/hidane/tests/fixtures/rest.json
           crates/hidane/tests/fixtures/conformance.json
+          crates/hidane/tests/fixtures/queries.json
+          crates/hidane/tests/fixtures/aggregations.json
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:

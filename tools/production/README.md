@@ -18,15 +18,15 @@ recorded answer:
 - the status;
 - the media type;
 - the body, where the recording compares it, as JSON. Production prints JSON its own way (a
-  double without `.0`, so numbers compare by value), and a recording's placeholders (`<time>`, `<now>` and the like) match any value, alone or within a
-  string (`the stored version (<version>) does not match ...`). Where an error says at which
+  double without `.0`, so numbers compare by value), and a recording's placeholders (`<time>`,
+  `<now>` and the like) match any value, alone or within a string (`the stored version (<version>) does not match ...`). Where an error says at which
   character of a resource name it went wrong (`lacks "/" at index 53`), the index is not
   compared: it counts the characters of a project ID that is not the recording's.
 
 A query production refuses for want of a composite index, which the emulators never ask for
 ([D070](../../docs/parity-exceptions.md)), is counted apart as needing an index rather than
-compared. The link production gives to create the index is masked: it names the project in
-base64.
+compared. The report lists the index, read from the link production gives to create it, and
+masks the link: it names the project in base64.
 
 A recording's uses of the official emulator's own delete (`DELETE /emulator/v1/…/documents`, of
 the whole database or of a document or collection and what is below it) are not sent: the
@@ -42,13 +42,40 @@ PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/replay.py --project <
     --out production-parity crates/hidane/tests/fixtures/rest.json
 ```
 
-Recordings it reads: those in the format of `rest.json`, a list of cases with a method, path,
-headers, body and outcome. `rest.json` and `conformance.json` are replayed nightly. Recordings
-that need composite indexes in production (`queries.json`, `aggregations.json`) and the Rules
-API (`projects.test`) come later.
+Recordings it reads:
+
+- those in the format of `rest.json`, a list of cases with a method, path, headers, body and
+  outcome (`rest.json`, `conformance.json`);
+- recordings of queries (`queries.json`, `aggregations.json`): a dataset, then structured queries
+  with their outcomes. The dataset is written, each query is run over REST as its recorder
+  ([`tools/oracle/queries.py`](../oracle/queries.py), [`aggregations.py`](../oracle/aggregations.py))
+  ran it, and the outcome compared as the recorder put it: the documents in order, what an
+  offset skipped, a projection's fields, an aggregation's results, or the error's status and
+  message. `done`, which production does not send (D099), is not compared.
+
+All four are replayed nightly. The Rules API (`projects.test`) comes later.
 
 [`test_replay.py`](test_replay.py) tests it offline, against a stand-in for production on
 `127.0.0.1`; CI runs it.
+
+## `indexes.py` and `indexes.json`
+
+Production runs many of the recorded queries only with indexes the emulators never ask for:
+composite ones, a single field's for collection group queries, vector indexes. A replay's report
+lists those production asked for (`indexes`, read from the link or the gcloud command in its
+error). [`indexes.json`](indexes.json) keeps them, in the format of `firestore.indexes.json`,
+except that a field override lists only the indexes to add to the field's own; and
+[`indexes.py`](indexes.py) adds to it and creates them:
+
+```sh
+python3 -I -B tools/production/indexes.py add production-parity/report.json
+PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/indexes.py create --project <id> --wait
+```
+
+`create` creates what the project does not have and waits until it is ready. It takes the token
+of a maintainer who may change indexes: the workflow's service account may only read and write
+documents, so a new index waits for a maintainer, and its queries are counted as needing an
+index until then.
 
 ## The Production parity workflow
 
