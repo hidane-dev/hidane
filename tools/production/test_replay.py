@@ -168,6 +168,10 @@ class ReplayTest(unittest.TestCase):
         self.assertFalse(replay.same_body(official, '{"error": {"message": "the stored version () does not match (42)"}}'))
         self.assertFalse(replay.same_body('{"a": "<time>"}', '{"a": 1}'))
         self.assertTrue(replay.same_body('{"a": "x.y"}', '{"a": "x.y"}'))
+        # An index into a resource name counts the project ID's characters.
+        self.assertTrue(replay.same_body('{"m": "Document name \\"x\\" lacks \\"/\\" at index 53."}',
+                                         '{"m": "Document name \\"x\\" lacks \\"/\\" at index 52."}'))
+        self.assertFalse(replay.same_body('{"m": "lacks \\"/\\" at index 53."}', '{"m": "has \\"/\\" at index 52."}'))
         # Numbers by value; a boolean is not a number.
         self.assertTrue(replay.same_body('{"doubleValue": 1.0}', '{"doubleValue": 1}'))
         self.assertFalse(replay.same_body('{"doubleValue": 1.5}', '{"doubleValue": 1}'))
