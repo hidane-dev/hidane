@@ -35,7 +35,7 @@ replay deletes the same documents in production, so the cases after it see the s
 The database is emptied before each recording and at the end. What differs goes to `report.json`
 and `report.md` in `--out`, and to the job summary in GitHub Actions, with where each answer
 first differs from the official emulator's. A run stops at `--budget`
-requests (5,000 by default), within Firestore's free daily quota.
+requests (10,000 by default), within Firestore's free daily quota.
 
 ```sh
 PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/replay.py --project <id> \
@@ -53,6 +53,14 @@ Recordings it reads:
   offset skipped, a projection's fields, an aggregation's results, or the error's status and
   message. `done`, which production does not send (D099), is not compared.
 
+- recordings of steps (`same_document_writes.json`, `document_writes.json`, `transforms.json`,
+  `base_versions.json`): on the official emulator each case ran in a project of its own; here
+  each runs on the database emptied. Every step's status and answer are compared, the times in it
+  read against the case's commits (`<commit 2>`, `<near commit 2>`), and page tokens and IDs the
+  server chose left out. A time a step sends near a commit is moved with production's commit,
+  and a page token or a transaction an earlier answer handed out is replaced by production's.
+  Cases that set rules are not run, nor steps the emulator refused for want of admin credentials
+  (their recorder sent none);
 - recordings of Security Rules conditions (`rules_eval.json`, in
   `crates/hidane-rules/tests/fixtures/`): each condition, in the recording's ruleset, or each whole
   ruleset, is tested with the Rules API (`projects.test`) for a `get` of `rooms/r1` without
@@ -62,7 +70,7 @@ Recordings it reads:
   floats, and runs lookups only on mocks. With a user's credentials, the Rules API needs a quota
   project: `--quota-project <id>`.
 
-The workflow replays all five nightly. Testing rules takes the permission
+The workflow replays all nine nightly. Testing rules takes the permission
 `firebaserules.rulesets.test`: the workflow's service account has it through a custom role that
 holds that one permission (`rulesTester`), so it may test rulesets but not deploy them. The Rules
 API takes seconds to compile each ruleset, so tests are sent eight at a time, and at most 240 a
