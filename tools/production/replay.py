@@ -266,6 +266,9 @@ KNOWN_MESSAGES = [
 KNOWN_ERRORS = [
     ("D074", "FAILED_PRECONDITION", r"^Firestore does not support descending key scans$", None, None),
     ("D066", "INVALID_ARGUMENT", r"^Only timestamps past epoch are supported\.$", None, None),
+    ("D110", "INVALID_ARGUMENT", r"^Invalid base version, it is greater than the stored version: app: ",
+     "INVALID_ARGUMENT", r"^Invalid base version, it is greater than the stored version: projects/"),
+    ("D111", None, None, "NOT_FOUND", r"^The database \S+ does not exist for project "),
     ("D107", "INVALID_ARGUMENT", r"^The query may not have more than 100 filters", None, None),
     ("D107", None, None, "INVALID_ARGUMENT", r"^Too many disjunctions after normalization"),
     # A query with several faults: the emulator reports its orders or filters, production what it holds.
@@ -297,8 +300,14 @@ KNOWN_CASES = {
         ("D099", r"skippedResults"),
         ("D076", r"^partitionQuery$"),
         ("D074", r"__name__%20desc"),
+        ("D112", r"^batchGet with documents named twice$"),
     ],
+    "queries.json": [("D103", r"^parent is a collection$")],
+    "document_writes.json": [("D112", r"^batch get order$"), ("D111", r"^named database$")],
     "transforms.json": [("D102", r"__name__|__type__")],
+    "base_versions.json": [("D066", r"^REST patch"), ("D109", r"version 0, deleted document|the deleted version"),
+                           ("D110", r"past the stored version|then a document that is missing"),
+                           ("D111", r"named database")],
 }
 
 
@@ -648,7 +657,8 @@ def step_answer(status, answer, project, commits):
     IDs the server chose `<auto>`."""
     if answer is None:
         return {"status": status}
-    answer = json.loads(json.dumps(answer).replace(f"projects/{project}/", "projects/{project}/"))
+    alone = re.compile(r"(?<![\w-])" + re.escape(project) + r"(?![\w-])")
+    answer = json.loads(alone.sub("{project}", json.dumps(answer)))
     error = answer.get("error") if isinstance(answer, dict) else None
     if isinstance(error, dict):
         return {"status": status, "error": error.get("status"),
@@ -676,6 +686,22 @@ def step_answer(status, answer, project, commits):
         return value
 
     return {"status": status, "body": read(answer)}
+
+
+# A step's template for a time of the case's commits (`{C1}`, `{C2+1}`: the second commit's time
+# and a microsecond), and for its version in an answer (`{V1}`), as `base_versions.json` writes them.
+TEMPLATE = re.compile(r"\{([CV])(\d+)([+-]\d+)?\}")
+
+
+def filled(text, commits):
+    """A step's templates filled with the times or versions of production's commits so far."""
+    def one(found):
+        kind, n, by = found.group(1), int(found.group(2)), int(found.group(3) or 0)
+        if n > len(commits):
+            return found.group(0)
+        us = micros(commits[n - 1]) + by
+        return str(us) if kind == "V" else rfc3339(us)
+    return TEMPLATE.sub(one, text)
 
 
 # What a step carries from an earlier answer: a page token, a transaction.
@@ -711,7 +737,8 @@ def replay_steps(production, recording, result):
     of its own; here each runs on the database emptied, in the replay's project, and every step's
     answer is compared as `step_answer` reads it. What an earlier answer handed out (a page token,
     a transaction) is replaced by what production handed out, and times near a commit are moved
-    with it (`shift`). A case that sets rules, or sends a step as someone other than the owner, is
+    with it (`shift`), and templates of a commit's time or version are filled with production's
+    (`filled`). A case that sets rules, or sends a step as someone other than the owner, is
     not run. A step the emulator refused for want of admin credentials (`… require admin
     authentication.`: its recorder sent none) is not sent: the replay always has them."""
     project = production.project
@@ -729,8 +756,8 @@ def replay_steps(production, recording, result):
                 continue
 
             def sent(text):
-                return handed_on(shift(text.replace(f"projects/{own}/", f"projects/{project}/"), official_commits,
-                                       production_commits), found)
+                return filled(handed_on(shift(text.replace(f"projects/{own}/", f"projects/{project}/"), official_commits,
+                                              production_commits), found), production_commits)
 
             path = sent(step["path"] if step["path"].startswith("/") else "/v1/" + step["path"])
             data = None if step.get("body") is None else sent(json.dumps(step["body"])).encode()
@@ -740,8 +767,13 @@ def replay_steps(production, recording, result):
             except ValueError:
                 answer = {"error": {"message": text[:300]}}
             carried(recorded, answer, found)
+            if recorded is not None and TEMPLATE.search(json.dumps(recorded)):
+                recorded = json.loads(filled(json.dumps(recorded), production_commits))
             official = step_answer(step["status"], recorded, own, official_commits)
-            # A step recorded with its status alone (`base_versions.json`) is compared on it.
+            # A step recorded with its status alone (`base_versions.json`) is compared on it; its
+            # commit still counts for the templates of later steps.
+            if recorded is None and isinstance(answer, dict) and isinstance(answer.get("commitTime"), str):
+                production_commits.append(answer["commitTime"])
             answered = step_answer(status, answer if recorded is not None else None, project, production_commits)
             if first is None and not same_json(official, answered, known):
                 first = (n, official, answered)
