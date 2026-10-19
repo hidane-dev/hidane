@@ -59,6 +59,9 @@ jobs:
           crates/hidane/tests/fixtures/list_documents.json
           crates/hidane/tests/fixtures/read_time_and_databases.json
           crates/hidane-rules/tests/fixtures/rules_eval.json
+          crates/hidane/tests/fixtures/rules_compile.json
+          crates/hidane-rules/tests/fixtures/rules_warnings.json
+          crates/hidane-rules/tests/fixtures/rules_paths.json
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:

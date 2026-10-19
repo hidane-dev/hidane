@@ -41,13 +41,7 @@ class StandIn(BaseHTTPRequestHandler):
         StandIn.seen.append((self.command, self.path, self.headers.get("Authorization"), body))
         root = f"/v1/projects/{PROJECT}/databases/(default)/documents"
         if self.path == f"/v1/projects/{PROJECT}:test":
-            # As the Rules API answers: `true` passes, `bad(` does not compile, `&& 1` warns.
-            source = json.loads(body)["source"]["files"][0]["content"]
-            if "bad(" in source:
-                return self.answer(200, {"issues": [{"description": "mismatched input", "severity": "ERROR"}]})
-            issues = [{"description": "Invalid type.", "severity": "WARNING"}] if "&& 1" in source else []
-            state = "SUCCESS" if "if true;" in source else "FAILURE"
-            return self.answer(200, {"issues": issues, "testResults": [{"state": state}]})
+            return self.rules_api(json.loads(body))
         if self.path.endswith(":listCollectionIds"):
             parent = urllib.parse.unquote(self.path[len("/v1/"):-len(":listCollectionIds")]) + "/"
             ids = sorted({n[len(parent):].split("/")[0] for n in StandIn.documents if n.startswith(parent)})
@@ -127,6 +121,41 @@ class StandIn(BaseHTTPRequestHandler):
             return self.answer(200, {"name": name, "fields": json.loads(body).get("fields", {}),
                                      "createTime": "2026-01-01T00:00:00Z", "updateTime": "2026-01-01T00:00:00Z"})
         return self.answer(404, {"error": {"code": 404, "message": "not found", "status": "NOT_FOUND"}})
+
+    def rules_api(self, request):
+        """As the Rules API answers `projects.test`: `bad(` does not compile, `foo()` and `&& 1`
+        warn; a test passes for `true`, or for a document whose ID the ruleset names (`'x'`), and
+        fails where the ruleset calls `debug()`, which the API does not have. It takes one file,
+        which is not empty, and refuses fields it does not know."""
+        def refused(message, details=False):
+            error = {"code": 400, "message": message, "status": "INVALID_ARGUMENT"}
+            if details:
+                error["details"] = [{"@type": "type.googleapis.com/google.rpc.BadRequest"}]
+            return self.answer(400, {"error": error})
+        unknown = sorted(request.keys() - {"source", "testSuite"})
+        if unknown:
+            return refused(f'Invalid JSON payload received. Unknown name "{unknown[0]}": Cannot find field.', True)
+        files = request["source"]["files"]
+        if len(files) > 1:
+            return refused("Currently only one file source can be passed to firebase rules.")
+        if not files[0].get("content"):
+            return refused("Content must not be blank.")
+        source = files[0]["content"]
+        at = {"fileName": files[0]["name"], "line": 5, "column": 22, "currentOffset": 137, "endOffset": 139}
+        issues = [{"sourcePosition": at, "description": "mismatched input", "severity": "ERROR"}] if "bad(" in source else []
+        issues += [{"sourcePosition": at, "description": "Invalid function name: foo.", "severity": "WARNING"}] if "foo()" in source else []
+        issues += [{"description": "Invalid type.", "severity": "WARNING"}] if "&& 1" in source else []
+        answer = {"issues": issues} if issues else {}
+        if any(i["severity"] == "ERROR" for i in issues):
+            return self.answer(200, answer)
+        cases = request.get("testSuite", {}).get("testCases", [])
+        if cases and "debug(" in source:
+            answer["testResults"] = [{"state": "FAILURE", "debugMessages": [
+                "Error: firestore.rules line [5], column [22]. Function not found error: Name: [debug]."]} for _ in cases]
+        elif cases:
+            answer["testResults"] = [{"state": "SUCCESS" if "if true;" in source or "'" + c["request"]["path"].rsplit("/", 1)[1] + "'" in source
+                                      else "FAILURE"} for c in cases]
+        return self.answer(200, answer)
 
     do_GET = do_POST = do_PATCH = do_DELETE = handle_one
 
@@ -407,16 +436,103 @@ class ReplayTest(unittest.TestCase):
             {"name": "a whole ruleset", "rules": template.replace("%s", "true"), "outcome": "allow"},
             {"name": "reads the document", "condition": "resource.data.n is int", "outcome": "allow"},
             {"name": "a batch", "condition": "true", "writes": [], "outcome": "allow"},
+            # The Rules API has no `debug()` (D113).
+            {"name": "debug", "condition": "debug(true)", "outcome": "allow"},
         ]}
         path = Path(self.dir.name) / "rules_eval.json"
         path.write_text(json.dumps(recording))
         production = replay.Production(self.base, PROJECT, "a-token", 100, rules=self.base)
         result = replay.replay(production, str(path))
-        self.assertEqual((result["sent"], result["same"]), (5, 4))
+        self.assertEqual((result["sent"], result["same"]), (6, 4))
+        self.assertEqual((result["knownCases"], result["known"]), (1, {"D113": 1}))
         self.assertEqual([d["name"] for d in result["differ"]], ["differs"])
         self.assertEqual(result["differ"][0]["difference"], '$.outcome: "allow", production "deny"')
         self.assertEqual(result["skipped"], {"reads the document, the request or other documents": 1,
                                              "a batch of writes": 1})
+
+    def test_rulesets_are_compiled_with_the_rules_api(self):
+        def ruleset(condition):
+            return "service cloud.firestore {\n  match /rooms/{room} {\n    allow read: if %s;\n  }\n}\n" % condition
+        at = {"line": 5, "column": 22, "currentOffset": 137, "endOffset": 139}
+        warned = {"issues": [{"sourcePosition": {"fileName": "firestore.rules", **at},
+                              "description": "Invalid function name: foo.", "severity": "WARNING"}]}
+        files = {"files": [{"name": "a.rules", "content": ruleset("true")}]}
+        recording = [
+            {"name": "compiles", "content": ruleset("true"), "status": 200, "response": {}},
+            {"name": "a warning", "content": ruleset("foo()"), "status": 200, "response": warned},
+            {"name": "does not compile", "content": ruleset("bad( && foo()"), "status": 400, "response": {"error": {
+                "code": 400, "message": "Error compiling rules:\nL5:22 mismatched input\nL5:22 Invalid function name: foo.",
+                "status": "INVALID_ARGUMENT"}}},
+            {"name": "differs", "content": ruleset("false"), "status": 200, "response": warned},
+            {"name": "empty", "content": "", "status": 400, "response": {"error": {
+                "code": 400, "message": "Error compiling rules:\nL0:0 Rules content empty. Compilation aborted.",
+                "status": "INVALID_ARGUMENT"}}},
+            {"name": "one file", "request": {"rules": files}, "status": 200, "response": {}},
+            {"name": "an unknown field", "request": {"rules": files, "x": 1}, "status": 400, "response": {"error": {
+                "code": 400, "message": "Payload isn't valid for request.", "status": "INVALID_ARGUMENT"}}},
+            {"name": "two files", "request": {"rules": {"files": files["files"] * 2}}, "status": 200, "response": {}},
+            {"name": "no files", "request": {"rules": {"files": []}}, "status": 500, "response": {}},
+            {"name": "not JSON", "raw": "not json", "status": 400, "response": {}},
+        ]
+        path = Path(self.dir.name) / "rules_compile.json"
+        path.write_text(json.dumps(recording))
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100, rules=self.base), str(path))
+        self.assertEqual((result["cases"], result["sent"], result["same"]), (10, 7, 4))
+        # The error of the emulator's own request, and one of the Rules API (D097); a file without
+        # content, which the Rules API refuses (D114).
+        self.assertEqual((result["knownCases"], result["known"]), (2, {"D097": 1, "D114": 1}))
+        self.assertEqual([(d["name"], d["difference"]) for d in result["differ"]], [
+            ("differs", "$.issues: 1 items, production 0")])
+        self.assertEqual(result["skipped"], {"several files: the Rules API tests one": 1, "the emulator's own request": 2})
+        # Without a test suite, which compiles the ruleset; the request's `rules` are the source.
+        sent = [json.loads(body) for _, _, _, body in StandIn.seen]
+        self.assertTrue(all("testSuite" not in body for body in sent))
+        self.assertIn({"source": files, "x": 1}, sent)
+
+    def test_warnings_are_compared_with_their_positions(self):
+        template = "service cloud.firestore {\n  match /rooms/{room} {\n    allow read: if %s;\n  }\n}\n"
+        recording = {"rules": template, "results": [
+            {"name": "none", "condition": "true"},
+            {"name": "a warning", "condition": "foo()", "issues": [[5, 22, 137, 139, "WARNING", "Invalid function name: foo."]]},
+            {"name": "an error", "condition": "bad(", "error": "Error compiling rules:\nL5:22 mismatched input"},
+            {"name": "elsewhere", "condition": "foo()", "issues": [[5, 23, 138, 140, "WARNING", "Invalid function name: foo."]]},
+            {"name": "no position", "condition": "false && 1", "issues": [[None, None, None, None, "WARNING", "Invalid type."]]},
+            {"name": "a whole ruleset", "rules": template.replace("%s", "true")},
+        ]}
+        path = Path(self.dir.name) / "rules_warnings.json"
+        path.write_text(json.dumps(recording))
+        # Tests of rules are not in the budget, which is Firestore's.
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 0, rules=self.base), str(path))
+        self.assertEqual((result["sent"], result["same"]), (6, 5))
+        self.assertEqual([(d["name"], d["difference"]) for d in result["differ"]], [("elsewhere", "$.issues[0][1]: 23, production 22")])
+        self.assertEqual(result["differ"][0]["rules"], "foo()")
+
+    def test_paths_are_read_with_a_test_case_per_document(self):
+        recording = {"documents": ["c/d", "c/x"], "results": [
+            {"version": 2, "match": ["/c/{d}"], "condition": "true", "reads": {"c/d": "allow", "c/x": "allow"}},
+            {"version": 1, "match": ["/c/{d}", "/{rest=**}"], "condition": "d == 'x'", "reads": {"c/d": "deny", "c/x": "allow"}},
+            {"version": 2, "match": ["/c/{d}"], "condition": "foo()", "issues": ["Invalid function name: foo."],
+             "reads": {"c/d": "deny", "c/x": "deny"}},
+            {"version": 2, "match": ["/c/{d}"], "condition": "bad(",
+             "compile": {"status": 400, "message": "Error compiling rules:\nL5:22 mismatched input"}},
+            {"version": 2, "match": ["/c/{d}"], "condition": "false", "reads": {"c/d": "allow", "c/x": "deny"}},
+            {"version": 2, "match": ["/c/{d}"], "condition": "debug(true)", "reads": {"c/d": "allow", "c/x": "allow"}},
+        ]}
+        path = Path(self.dir.name) / "rules_paths.json"
+        path.write_text(json.dumps(recording))
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100, rules=self.base), str(path))
+        self.assertEqual((result["sent"], result["same"]), (6, 4))
+        self.assertEqual((result["knownCases"], result["known"]), (1, {"D113": 1}))
+        self.assertEqual([(d["name"], d["difference"]) for d in result["differ"]],
+                         [("version 2, /c/{d}: false", '$.reads.c/d: "allow", production "deny"')])
+        # The ruleset `rules_paths.py` loaded, and a `get` of each document without `auth`.
+        sent = next(b for b in map(json.loads, (body for _, _, _, body in StandIn.seen)) if "'x'" in json.dumps(b))
+        self.assertEqual(sent["source"]["files"][0]["content"], (
+            "service cloud.firestore {\n  match /databases/{database}/documents {\n    match /c/{d} {\n"
+            "      match /{rest=**} {\n        allow read: if d == 'x';\n      }\n    }\n  }\n}\n"))
+        self.assertEqual(sent["testSuite"]["testCases"], [
+            {"expectation": "ALLOW", "request": {"auth": None, "method": "get", "path": f"/databases/(default)/documents/{d}"}}
+            for d in ("c/d", "c/x")])
 
     def test_a_recording_of_steps_runs_each_case_on_an_empty_database(self):
         def step(method, path, status, response, body=None):
