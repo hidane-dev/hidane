@@ -1347,13 +1347,14 @@
    "topic": "Limits",
    "kind": "bug-for-bug",
    "official": "Per document, with Datastore's messages: 1,048,487 bytes for a string or bytes value, 1,500 bytes for a field name (nested names count their dotted path, an array as `array`) and for a collection or document ID, 20 levels of maps and arrays, 1 MiB for the document. Not per request: a 64 MB gRPC commit is accepted (firebase-tools [#8649](https://github.com/firebase/firebase-tools/issues/8649)); gRPC messages up to 100 MiB, REST bodies up to 16 MiB",
-   "firestore": "Enforced, per document and per request",
+   "firestore": "Enforced, per document and per request. Production answers values, names, IDs and nesting with the official emulator's messages, and a document over 1 MiB with its own: \"Document '…' cannot be written because its size (1,200,058 bytes) exceeds the maximum allowed size of 1,048,576 bytes.\" (#82)",
    "hidane": "As the official emulator, except the document-size boundary (D036)",
    "reason": "Follow the emulator (#121, #25), except the document-size boundary below",
    "references": [
     "firebase/firebase-tools#8649",
     "hidane-dev/hidane#121",
-    "hidane-dev/hidane#25"
+    "hidane-dev/hidane#25",
+    "hidane-dev/hidane#82"
    ],
    "pinned_by": [
     "crates/hidane/tests/limits.rs::limits_like_the_official_emulator",

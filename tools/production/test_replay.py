@@ -58,6 +58,12 @@ class StandIn(BaseHTTPRequestHandler):
             names = sorted({prefix + n[len(prefix):].split("/")[0] for n in StandIn.documents if n.startswith(prefix)})
             return self.answer(200, {"documents": [{"name": n} for n in names]} if names else {})
         if self.path == f"{root}:commit":
+            if '"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' in body:
+                # As production refuses a document over 1 MiB, here one with a string of 50 characters.
+                name = json.loads(body)["writes"][0]["update"]["name"]
+                return self.answer(400, {"error": {"code": 400, "status": "INVALID_ARGUMENT", "message":
+                    f"Document '{name}' cannot be written because its size (1,200,058 bytes) exceeds the maximum "
+                    "allowed size of 1,048,576 bytes."}})
             StandIn.commits += 1
             now = f"2026-01-01T00:00:{StandIn.commits:02d}.000001Z"
             results = []
@@ -269,6 +275,29 @@ class ReplayTest(unittest.TestCase):
         self.addCleanup(replay.KNOWN_CASES["queries.json"].pop)
         result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
         self.assertEqual((result["differ"], result["known"]), ([], {"D000": 1}))
+
+    def test_a_recording_of_limits_commits_each_document(self):
+        recording = {"cases": [
+            {"name": "small", "path": ["c", ["repeat", "d", 3]], "fields": {"s": ["string", 2, "\u20ac"], "f": ["nest", 3, True]},
+             "outcome": {"status": 200, "message": ""}},
+            {"name": "too big", "path": ["c", "x"], "fields": {"s": ["string", 60, "x"]},
+             "outcome": {"status": 400, "message": "maximum entity size is 1048576 bytes"}},
+            {"name": "differs", "path": ["c", "x"], "fields": {"b": ["bytes", 3], "m": ["map", {"a": ["array", [["int"]]]}]},
+             "outcome": {"status": 400, "message": "too long"}},
+        ]}
+        path = Path(self.dir.name) / "limits.json"
+        path.write_text(json.dumps(recording))
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
+        self.assertEqual((result["sent"], result["same"], result["known"]), (3, 1, {"D075": 1}))
+        self.assertEqual([(d["name"], d["difference"]) for d in result["differ"]], [("differs", "$.status: 400, production 200")])
+        self.assertNotIn(PROJECT, json.dumps(result))
+        first = next(w["update"] for method, path, _, body in StandIn.seen if path.endswith(":commit")
+                     for w in json.loads(body)["writes"] if "update" in w)
+        self.assertEqual(first, {"name": f"projects/{PROJECT}/databases/(default)/documents/c/ddd", "fields": {
+            "s": {"stringValue": "\u20ac\u20ac"},
+            "f": {"arrayValue": {"values": [{"mapValue": {"fields": {"m": {"arrayValue": {"values": [{"integerValue": "1"}]}}}}}]}}}})
+        self.assertEqual(replay.limit_value(["bytes", 3]), {"bytesValue": "eHh4"})
+        self.assertEqual(StandIn.documents, {})
 
     def test_a_pace_spaces_the_requests(self):
         pace, started = replay.Pace(1200), time.monotonic()
