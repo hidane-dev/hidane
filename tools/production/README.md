@@ -30,7 +30,10 @@ difference. The rules for this are in `replay.py`:
 - a pair of errors (`KNOWN_ERRORS`);
 - the shapes of an answer that D097 to D099 describe: `details` in an error, an error inside an
   array, no `done`;
-- a case about such a difference, by its name (`KNOWN_CASES`).
+- a case about such a difference, by its name (`KNOWN_CASES`);
+- a test of rules whose ruleset calls what the Rules API answers differently (`KNOWN_RULES`):
+  `debug()`, which it does not have (D113), or whose file it refuses: no content, or a name that
+  is not text (D114).
 
 The report counts the known cases, says how many each entry explains, and lists the rest. An
 entry that settles a new difference adds its rule there.
@@ -47,7 +50,8 @@ replay deletes the same documents in production, so the cases after it see the s
 The database is emptied before each recording and at the end. What differs goes to `report.json`
 and `report.md` in `--out`, and to the job summary in GitHub Actions, with where each answer
 first differs from the official emulator's. A run stops at `--budget`
-requests (10,000 by default), within Firestore's free daily quota.
+requests to Firestore (10,000 by default), within its free daily quota; tests of rules are not
+counted.
 
 ```sh
 PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/replay.py --project <id> \
@@ -100,9 +104,27 @@ Recordings it reads:
   denial's message, the emulator's own, is not. Conditions that read the document, the request or
   other documents are not tested: the API takes the document as JSON, whose numbers are all
   floats, and runs lookups only on mocks. With a user's credentials, the Rules API needs a quota
-  project: `--quota-project <id>`.
+  project: `--quota-project <id>`;
+- recordings of how Security Rules compile, replayed by [`rules.py`](rules.py), each ruleset
+  tested with the Rules API without a test suite, which compiles it:
+  - `rules_compile.json` (in `crates/hidane/tests/fixtures/`), rulesets the official emulator
+    loaded with its own `PUT /emulator/v1/projects/{p}:securityRules`
+    ([`tools/oracle/rules_compile.py`](../oracle/rules_compile.py)). Where it refused one (`400`,
+    "Error compiling rules:" and a line `L<line>:<column> <description>` for each issue),
+    production's issues, one of which is an `ERROR`, are put in the same lines; where it compiled
+    one, its warnings are compared with production's, positions and all. A case of the
+    emulator's request is sent with the request's `rules` as the source, if they hold one file:
+    the Rules API tests one, and refuses several ("Currently only one file source can be passed
+    to firebase rules."). A request without files, or not JSON, is not sent;
+  - `rules_warnings.json`, conditions and rulesets with the warnings the official emulator gave
+    them, each `[line, column, currentOffset, endOffset, severity, description]`
+    ([`rules_warnings.py`](../oracle/rules_warnings.py)), compared the same way;
+- recordings of the documents `match` paths cover (`rules_paths.json`,
+  [`rules_paths.py`](../oracle/rules_paths.py)): each ruleset is tested with a `get` of each of
+  the recording's documents without `auth`, and whether each read is allowed, and the warnings,
+  are compared.
 
-The workflow replays all thirteen nightly. Testing rules takes the permission
+The workflow replays all sixteen nightly. Testing rules takes the permission
 `firebaserules.rulesets.test`: the workflow's service account has it through a custom role that
 holds that one permission (`rulesTester`), so it may test rulesets but not deploy them. The Rules
 API takes seconds to compile each ruleset, so tests are sent eight at a time, and at most 240 a

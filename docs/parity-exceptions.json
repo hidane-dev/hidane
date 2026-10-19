@@ -1901,6 +1901,43 @@
     "crates/hidane/tests/documents.rs::batch_get_keeps_request_order_and_one_read_time",
     "crates/hidane/tests/rest.rs::rest_answers_like_the_official_emulator"
    ]
+  },
+  {
+   "id": "D113",
+   "table": "production",
+   "area": "rules",
+   "topic": "`debug()` in Security Rules",
+   "kind": "bug-for-bug",
+   "official": "`debug(x)` returns `x` and writes it to the emulator's log",
+   "firestore": "The Rules API's `projects.test` has no `debug`: a condition that calls it fails, \"Function not found error: Name: [debug].\" (#82); deployed rules not observed",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). Tests call `debug()` to see in the emulator's log what a rule evaluated",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/39158836335",
+    "hidane-dev/hidane#82"
+   ],
+   "pinned_by": [
+    "crates/hidane-rules/tests/library.rs::evaluation_matches_the_official_emulator",
+    "crates/hidane/tests/rules_coverage.rs::rules_coverage_and_debug"
+   ]
+  },
+  {
+   "id": "D114",
+   "table": "production",
+   "area": "rules",
+   "topic": "A ruleset's files",
+   "kind": "bug-for-bug",
+   "official": "Takes any number of files. A file without content, or with empty content, fails to compile: `L0:0 Rules content empty. Compilation aborted.`; a file without a name compiles, its issues without a `fileName`; a name that is a number is read as text (`\"1\"`)",
+   "firestore": "The Rules API's `projects.test` takes one file (\"Currently only one file source can be passed to firebase rules.\") and refuses the request, `INVALID_ARGUMENT`, for a file without content (\"Content must not be blank.\"), without a name (\"Name must not be blank.\"), or with a number for a name (\"Invalid value at 'source.files[0].name' (TYPE_STRING), 1\") (#82)",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). firebase-tools loads one file with its name and content",
+   "references": [
+    "hidane-dev/hidane#82",
+    "tools/oracle/rules_compile.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rules_compile.rs::compiles_like_the_official_emulator"
+   ]
   }
  ],
  "retired": [

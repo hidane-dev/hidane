@@ -23,6 +23,10 @@ queries: the dataset is written, each query run over REST as its recorder ran it
 compared as the recorder put it (the documents in order, what an offset skipped, a projection's
 fields, an aggregation's results, or the error), without `done` (D099). The database is emptied before each recording and at the end.
 
+Recordings of Security Rules are tested with the Rules API's `projects.test`: the conditions of
+`rules_eval.json` here (`replay_rules`), and how rulesets compile and which documents their
+`match` paths cover in `rules.py`.
+
 What differs goes to `<out>/report.json` and `<out>/report.md`, and to the job summary in GitHub
 Actions. It is not a recording: it stays a workflow artifact until a person has looked at it
 (docs/clean-room/OBSERVATION_POLICY.md). The token is never written anywhere. Stdlib only.
@@ -93,15 +97,19 @@ class Production:
         self.budget = budget
         self.quota_project = quota_project
         self.sent = 0
+        self.firestore = 0
         self.counting = threading.Lock()
 
     def send(self, method, path, data=None, content_type="application/json", base=None):
         """One request, to Firestore or another API (`base`); answers (status, content type, body
         as text). A connection that fails before an answer is tried again a few times; then the
-        answer is status 0."""
+        answer is status 0. The budget counts the requests to Firestore, to stay within its free
+        daily quota; tests of rules, which `Pace` keeps within the Rules API's, are not in it."""
         with self.counting:
-            if self.sent >= self.budget:
-                raise RuntimeError(f"stopped at the budget of {self.budget} requests")
+            if base is None:
+                if self.firestore >= self.budget:
+                    raise RuntimeError(f"stopped at the budget of {self.budget} requests")
+                self.firestore += 1
             self.sent += 1
         headers = {"Authorization": f"Bearer {self.token}", "Content-Type": content_type}
         if self.quota_project:
@@ -872,6 +880,44 @@ def replay_read_times(production, recording, result):
 READS = re.compile(r"\b(?:resource|request)\b|(?<![.\w])(?:get|exists|getAfter|existsAfter|value)\(")
 
 
+def rules_tests(production, bodies):
+    """Each request tested with the Rules API (`projects.test`), `RULES_AT_ONCE` at a time and at
+    most `RULES_PER_MINUTE` a minute, and tried again while the API is busy; the answers (status,
+    body as text), in order."""
+    pace = Pace(RULES_PER_MINUTE)
+
+    def test(body):
+        for attempt in range(6):
+            pace.wait()
+            status, _, text = production.send("POST", f"/v1/projects/{production.project}:test",
+                                              json.dumps(body).encode(), base=production.rules)
+            if status not in TRANSIENT:
+                break
+            time.sleep(2 ** attempt)
+        return status, text
+
+    with ThreadPoolExecutor(RULES_AT_ONCE) as pool:
+        return list(pool.map(test, bodies))
+
+
+# Differences of the Rules API docs/parity-exceptions.md records: (entry, what the ruleset calls,
+# what production's answer says). `projects.test` has no `debug()`, and a condition that calls it
+# fails (D113); it refuses a file without content or a name that is text (D114).
+KNOWN_RULES = [("D113", r"(?<![.\w])debug\(", r"Function not found error: Name: \[debug\]\."),
+               ("D114", r"", r"(?:Content|Name) must not be blank\.|Invalid value at 'source\.files\[\d+\]\.name'")]
+
+
+def known_rules(result, source, text):
+    """Whether production's answer to a ruleset shows a difference `KNOWN_RULES` records; if it
+    does, the case counts as known."""
+    for entry, calls, says in KNOWN_RULES:
+        if re.search(calls, source) and re.search(says, text):
+            result["knownCases"] += 1
+            result["known"][entry] = result["known"].get(entry, 0) + 1
+            return True
+    return False
+
+
 def rules_outcome(status, text):
     """The Rules API's answer to a test, as a recording of rules puts the official emulator's:
     `allow`, `deny` or `compile`, and the warnings (`issues`)."""
@@ -894,7 +940,8 @@ def replay_rules(production, recording, result):
     ruleset, or each whole ruleset, is tested with the Rules API (`projects.test`), for a `get` of
     `rooms/r1` with no `auth`, and its outcome and warnings are compared. A denial's message is
     the emulator's own and is not; nor are batches of writes, and conditions that read the
-    document, the request or other documents (`READS`)."""
+    document, the request or other documents (`READS`). A case that shows a difference
+    `KNOWN_RULES` records counts as known."""
     tested = []
     for case in recording["results"]:
         if "writes" in case or "answers" in case:
@@ -908,33 +955,20 @@ def replay_rules(production, recording, result):
         else:
             tested.append(case)
 
-    pace = Pace(RULES_PER_MINUTE)
-
-    def test(case):
-        """One test of the Rules API, tried again while the API is busy."""
-        source = case.get("rules") or recording["rules"].replace("%s", case["condition"], 1)
-        body = {"source": {"files": [{"name": "firestore.rules", "content": source}]},
-                "testSuite": {"testCases": [{"expectation": "ALLOW", "request": {
-                    "auth": None, "method": "get", "path": "/databases/(default)/documents/rooms/r1"}}]}}
-        for attempt in range(6):
-            pace.wait()
-            status, _, text = production.send("POST", f"/v1/projects/{production.project}:test",
-                                              json.dumps(body).encode(), base=production.rules)
-            if status not in TRANSIENT:
-                break
-            time.sleep(2 ** attempt)
-        return source, status, text
-
-    with ThreadPoolExecutor(RULES_AT_ONCE) as pool:
-        answers = list(pool.map(test, tested))
-    for case, (source, status, text) in zip(tested, answers):
+    sources = [case.get("rules") or recording["rules"].replace("%s", case["condition"], 1) for case in tested]
+    answers = rules_tests(production, [
+        {"source": {"files": [{"name": "firestore.rules", "content": source}]},
+         "testSuite": {"testCases": [{"expectation": "ALLOW", "request": {
+             "auth": None, "method": "get", "path": "/databases/(default)/documents/rooms/r1"}}]}}
+        for source in sources])
+    for case, source, (status, text) in zip(tested, sources, answers):
         result["sent"] += 1
         outcome = case["outcome"] if case["outcome"] in ("allow", "deny", "compile") else str(case["outcome"])
         official = {"outcome": outcome, "issues": [] if outcome == "compile" else sorted(case.get("issues", []))}
         answered = rules_outcome(status, mask(text, production.project))
         if same_json(official, answered):
             result["same"] += 1
-        else:
+        elif not known_rules(result, source, text):
             result["differ"].append({"name": case["name"], "method": "POST", "path": "/v1/projects/{project}:test",
                                      "difference": first_difference(official, answered) or "the outcome",
                                      "official": {"status": outcome, **official},
@@ -1128,12 +1162,25 @@ def replay(production, fixture):
     """Sends a recording's cases; what each answered next to what the official emulator did."""
     recording = json.loads(Path(fixture).read_text())
     project = production.project
-    if "results" in recording:
-        result = {"fixture": Path(fixture).name, "cases": len(recording["results"]), "sent": 0, "same": 0,
+    if isinstance(recording, list) or "results" in recording:
+        # Recordings of Security Rules: conditions evaluated on a document (`rules_eval.json`);
+        # and, in rules.py, rulesets compiled (`rules_compile.json`, a list of cases, and
+        # `rules_warnings.json`) and the documents `match` paths cover (`rules_paths.json`).
+        # rules.py takes its comparisons from this module, so it is imported once this one is.
+        import rules
+        cases = recording if isinstance(recording, list) else recording["results"]
+        result = {"fixture": Path(fixture).name, "cases": len(cases), "sent": 0, "same": 0,
                   "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "indexes": [], "knownCases": 0,
                   "known": {}, "differ": []}
         log(f"{result['fixture']}: {result['cases']} rules")
-        replay_rules(production, recording, result)
+        if isinstance(recording, list):
+            rules.replay_compile(production, recording, result)
+        elif "documents" in recording:
+            rules.replay_paths(production, recording, result)
+        elif "document" in recording:
+            replay_rules(production, recording, result)
+        else:
+            rules.replay_warnings(production, recording, result)
         return result
     if "groups" in recording.get("values", {}):
         result = {"fixture": Path(fixture).name, "cases": 4, "sent": 0, "same": 0, "skipped": {}, "emulatorDeletes": 0,
