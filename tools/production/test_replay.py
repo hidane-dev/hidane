@@ -78,7 +78,21 @@ class StandIn(BaseHTTPRequestHandler):
                     results.append({})
                 StandIn.documents.pop(write.get("delete"), None)
             return self.answer(200, {"writeResults": results, "commitTime": now})
-        name = urllib.parse.unquote(self.path[len("/v1/"):])
+        path = urllib.parse.unquote(self.path.split("?")[0][len("/v1/"):])
+        below = path.split("/documents/", 1)[1].split("/") if "/documents/" in path else []
+        if self.command == "GET" and "showMissing" not in self.path and (path.endswith("/") or len(below) % 2):
+            # ListDocuments: a collection's documents, or without a collection ID (a path that ends
+            # with a slash) those right below the parent, by name.
+            prefix, depth = (path, 1) if path.endswith("/") else (path + "/", 0)
+            query = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query)
+            names = sorted(n for n in StandIn.documents if n.startswith(prefix) and n[len(prefix):].count("/") == depth)
+            size, start = int(query.get("pageSize", ["0"])[0]), int(query.get("pageToken", ["0"])[0])
+            page = names[start:start + size] if size else names[start:]
+            listing = {"documents": [{"name": n, "fields": StandIn.documents[n]["fields"]} for n in page]} if page else {}
+            if size and start + size < len(names):
+                listing["nextPageToken"] = str(start + size)
+            return self.answer(200, listing)
+        name = urllib.parse.unquote(self.path.split("?")[0][len("/v1/"):])
         if self.command == "GET" and name in StandIn.documents:
             document = StandIn.documents[name]
             return self.answer(200, {"name": name, "fields": document["fields"], "createTime": document.get("time"),
@@ -324,6 +338,58 @@ class ReplayTest(unittest.TestCase):
         result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
         self.assertEqual([(d["name"], d["difference"]) for d in result["differ"]], [
             ("values: groups of equal values, in order", "$: 4 items, production 3")])
+
+    def test_list_documents_is_replayed_over_rest(self):
+        both = ["m", "n"]
+        recording = {"seed": [["c/a", "d/b"], ["c/b"]], "grpc": [
+            {"name": "a collection", "request": {"collection_id": "c"}, "parent": "", "owner": True,
+             "outcome": {"documents": [{"name": "c/a", "fields": both}, {"name": "c/b", "fields": both}]}},
+            {"name": "a collection, anonymous", "request": {"collection_id": "c"}, "parent": "", "owner": False,
+             "outcome": {"code": "PERMISSION_DENIED", "message": "denied"}},
+            {"name": "every collection", "request": {}, "parent": "", "owner": True, "outcome": {"documents": []}},
+            {"name": "pages of 1", "request": {"collection_id": "c", "page_size": 1, "pages": True}, "parent": "",
+             "owner": True, "outcome": {"pages": [["c/a"], ["c/b"]]}},
+            {"name": "differs", "request": {"collection_id": "c", "page_size": 1}, "parent": "", "owner": True,
+             "outcome": {"documents": []}},
+        ], "rest": [
+            {"name": "root with a slash", "path": "/", "outcome": {"status": 200, "documents": ["c/a", "c/b", "d/b"],
+                                                                   "next_page": False}},
+        ]}
+        path = Path(self.dir.name) / "list_documents.json"
+        path.write_text(json.dumps(recording))
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
+        self.assertEqual((result["cases"], result["sent"], result["same"]), (6, 4, 3))
+        self.assertEqual(result["skipped"], {"not sent as the owner": 1, "lists every collection, which REST cannot ask": 1})
+        self.assertEqual([(d["name"], d["difference"]) for d in result["differ"]], [("differs", "$.documents: 0 items, production 1")])
+        sent = [p for m, p, _, _ in StandIn.seen if m == "GET"]
+        self.assertIn(f"/v1/projects/{PROJECT}/databases/(default)/documents/c?pageSize=1&pageToken=1", sent)
+        self.assertEqual(StandIn.documents, {})
+
+    def test_reads_at_a_read_time_go_to_a_collection_of_their_own(self):
+        documents = "projects/read-time/databases/(default)/documents"
+        recording = {"databases": {}, "read_time": {"reads": [
+            {"name": "GetDocument", "transport": "grpc", "method": "GetDocument",
+             "body": {"name": f"{documents}/c/d", "readTime": "{readTime}"}},
+            {"name": "elsewhere", "transport": "grpc", "method": "GetDocument",
+             "body": {"name": "projects/read-time-empty/databases/(default)/documents/c/d", "readTime": "{readTime}"}},
+            {"name": "REST :runQuery", "transport": "rest", "method": "POST", "path": f"/v1/{documents}:runQuery",
+             "body": {"structuredQuery": {"from": [{"collectionId": "c"}]}, "readTime": "{readTime}"}},
+        ], "cases": [{"age": 0, "answers": [
+            {"status": "OK", "message": "", "documents": ["c/d"]},
+            {"status": "NOT_FOUND", "message": "not found"},
+            {"status": 200, "response": [{"document": {"name": f"{documents}/c/d", "fields": {"a": {"integerValue": "1"}},
+                                                       "createTime": "<time>", "updateTime": "<time>"},
+                                          "readTime": "<time>", "done": True}]},
+        ]}]}}
+        path = Path(self.dir.name) / "read_time_and_databases.json"
+        path.write_text(json.dumps(recording))
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
+        self.assertEqual((result["cases"], result["sent"], result["same"], result["known"], result["differ"]),
+                         (3, 2, 1, {"D099": 1}, []))
+        self.assertEqual(result["skipped"], {"names another project": 1})
+        read = next(p for m, p, _, _ in StandIn.seen if m == "GET" and "readTime=" in p)
+        self.assertRegex(read, r"/documents/read-time-\d+/d\?readTime=\d{4}-\d\d-\d\dT")
+        self.assertEqual(StandIn.documents, {})
 
     def test_a_pace_spaces_the_requests(self):
         pace, started = replay.Pace(1200), time.monotonic()

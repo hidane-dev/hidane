@@ -69,6 +69,16 @@
    ]
   },
   {
+   "collectionGroup": "c",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "__name__",
+     "order": "DESCENDING"
+    }
+   ]
+  },
+  {
    "collectionGroup": "ints",
    "queryScope": "COLLECTION",
    "fields": [
@@ -349,6 +359,38 @@
    ]
   },
   {
+   "collectionGroup": "o",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "m",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "__name__",
+     "order": "DESCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "o",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "m",
+     "order": "DESCENDING"
+    },
+    {
+     "fieldPath": "n",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "__name__",
+     "order": "ASCENDING"
+    }
+   ]
+  },
+  {
    "collectionGroup": "ordered",
    "queryScope": "COLLECTION",
    "fields": [
@@ -407,16 +449,6 @@
    "queryScope": "COLLECTION",
    "fields": [
     {
-     "fieldPath": "__name__",
-     "order": "DESCENDING"
-    }
-   ]
-  },
-  {
-   "collectionGroup": "p",
-   "queryScope": "COLLECTION",
-   "fields": [
-    {
      "fieldPath": "b",
      "arrayConfig": "CONTAINS"
     },
@@ -427,6 +459,16 @@
     {
      "fieldPath": "__name__",
      "order": "ASCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "p",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "__name__",
+     "order": "DESCENDING"
     }
    ]
   },

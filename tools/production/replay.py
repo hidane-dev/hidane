@@ -289,6 +289,9 @@ KNOWN_ERRORS = [
      "INVALID_ARGUMENT", r"^kind is required for filter: "),
     ("D108", "INVALID_ARGUMENT", r"^kind is required for all orders except __key__ ascending$",
      "INTERNAL", r"^An internal error occurred\.$"),
+    # Production refuses a read time over an hour old (D065), or before the database was created.
+    ("D065", None, None, "FAILED_PRECONDITION", r"^The requested 'read_time' is too old\.$"),
+    ("D097", None, None, "INVALID_ARGUMENT", r"^The requested 'read_time' cannot be before database creation time\.$"),
 ]
 # Cases about a difference an entry records, by recording and name: what they answer differently
 # is that difference.
@@ -308,6 +311,9 @@ KNOWN_CASES = {
     "queries.json": [("D103", r"^parent is a collection$")],
     "document_writes.json": [("D112", r"^batch get order$"), ("D111", r"^named database$")],
     "transforms.json": [("D102", r"__name__|__type__")],
+    "list_documents.json": [("D101", r"slash"), ("D103", r"^root without a slash$"),
+                            ("D089", r"^collection, order by (?:a field|the name), pages of 2$")],
+    "read_time_and_databases.json": [("D112", r"^REST :batchGet, (?:60|3540) s old$")],
     "base_versions.json": [("D066", r"^REST patch"), ("D109", r"version 0, deleted document|the deleted version"),
                            ("D110", r"past the stored version|then a document that is missing"),
                            ("D111", r"named database")],
@@ -664,6 +670,202 @@ def replay_value_order(production, recording, result):
     compare("names: refused", paths["rejected"], refused)
 
 
+# The project `tools/oracle/list_documents.py` recorded in; its answers name it.
+LIST_PROJECT = "list"
+# ListDocuments' fields, as the gRPC requests of `list_documents.json` name them, and as REST takes
+# them in its query.
+LIST_PARAMETERS = {"page_size": "pageSize", "order_by": "orderBy", "show_missing": "showMissing",
+                   "read_time": "readTime", "page_token": "pageToken"}
+
+
+def replay_list_documents(production, recording, result):
+    """The recording of ListDocuments (`list_documents.json`): its seed is written in batches, as
+    its recorder (`tools/oracle/list_documents.py`) wrote it. Each gRPC request is sent as its
+    REST form, `GET …/documents/{parent}/{collection ID}` with the other fields in the query; a
+    request read at the first commit reads at production's. One without a collection ID, which
+    lists every collection, is not: REST has no form of it (`…/documents/` is no path production
+    serves). Each REST path is sent as it is. The documents listed, page by page where the
+    recorder followed the pages, or the error, are compared as the recorder put them."""
+    documents = f"projects/{production.project}/databases/(default)/documents"
+    commits = []
+    for batch in recording["seed"]:
+        writes = [{"update": {"name": f"{documents}/{path}", "fields": {
+            "n": {"integerValue": str(i)}, "m": {"booleanValue": True}}}} for i, path in enumerate(batch)]
+        commits.append(production.call("POST", f"/v1/{documents}:commit", {"writes": writes})["commitTime"])
+
+    def get(path):
+        status, _, text = production.send("GET", f"/v1/{documents}{path}")
+        return status, parsed(text)
+
+    def masked(value):
+        return json.loads(mask(json.dumps(value), production.project))
+
+    def listed(request, parent):
+        """One gRPC request's answer, as the recorder put it: the documents and the next page's
+        token, or the error's code and message."""
+        query = [(LIST_PARAMETERS[k], json.dumps(v) if isinstance(v, bool) else str(v))
+                 for k, v in request.items() if k in LIST_PARAMETERS]
+        query += [("mask.fieldPaths", path) for path in request.get("mask", {}).get("field_paths", [])]
+        path = (f"/{parent}" if parent else "") + "/" + urllib.parse.quote(request.get("collection_id", ""), safe="")
+        status, answer = get(path + ("?" + urllib.parse.urlencode(query) if query else ""))
+        if isinstance(answer, dict) and "error" in answer:
+            asked(result, json.dumps(answer))
+        if status != 200 or not isinstance(answer, dict):
+            error = answer.get("error", {}) if isinstance(answer, dict) else {}
+            return masked({"status": error.get("status", str(status)), "message": error.get("message", str(answer)[:300])})
+        return {"documents": [{"name": d["name"][len(documents) + 1:], "fields": sorted(d.get("fields", {}))}
+                              for d in answer.get("documents", [])],
+                "next_page_token": answer.get("nextPageToken", "")}
+
+    def compare(name, path, official, answered):
+        result["sent"] += 1
+        official = json.loads(json.dumps(official).replace(f"projects/{LIST_PROJECT}/", "projects/{project}/"))
+        tally(result, official, answered, lambda: {
+            "name": name, "method": "GET", "path": path, "difference": first_difference(official, answered) or "the outcome",
+            "official": official, "production": answered}, name)
+
+    for case in recording["grpc"]:
+        why = ("not sent as the owner" if not case["owner"] else
+               "lists every collection, which REST cannot ask" if not case["request"].get("collection_id") else None)
+        if why:
+            result["skipped"][why] = result["skipped"].get(why, 0) + 1
+            continue
+        request = dict(case["request"])
+        pages = request.pop("pages", False)
+        if request.pop("at_first_commit", False):
+            request["read_time"] = commits[0]
+        if not pages:
+            answered = listed(request, case["parent"])
+            answered.pop("next_page_token", None)
+        else:
+            answered, found = {}, []
+            while True:
+                answer = listed(request, case["parent"])
+                if "status" in answer:
+                    answered = {"pages": found, "error": answer} if found else answer
+                    break
+                found.append([d["name"] for d in answer["documents"]])
+                if not answer["next_page_token"]:
+                    answered = {"pages": found}
+                    break
+                request["page_token"] = answer["next_page_token"]
+        # The recorder named a gRPC error's status `code`.
+        official = json.loads(json.dumps(case["outcome"]).replace('{"code": ', '{"status": '))
+        if NEEDS_INDEX.search(answered.get("message", "")) and "status" not in official:
+            result["sent"] += 1
+            result["needsIndex"].append(case["name"])
+            continue
+        answered = json.loads(INDEX_LINK.sub("<index link>", json.dumps(answered)))
+        compare(case["name"], f"/v1/projects/{{project}}/databases/(default)/documents/{case['parent']} ListDocuments",
+                official, answered)
+
+    for case in recording["rest"]:
+        status, answer = get(case["path"])
+        if not isinstance(answer, dict):
+            answered = {"status": status, "body": masked(answer)}
+        elif "documents" in answer or status == 200:
+            answered = {"status": status, "next_page": bool(answer.get("nextPageToken")),
+                        "documents": [d["name"][len(documents) + 1:] for d in answer.get("documents", [])]}
+        else:
+            answered = {"status": status, "error": masked(answer.get("error", answer))}
+        compare(case["name"], f"/v1/projects/{{project}}/databases/(default)/documents{case['path']}", case["outcome"], answered)
+
+
+# The project `tools/oracle/read_time_and_databases.py` recorded its reads in, and the collection
+# they read.
+READ_TIME_PROJECT = "read-time"
+READ_TIME_COLLECTION = "c"
+
+
+def read_answer(status, answer):
+    """A REST read's answer as `replay_read_times` compares it: its status, and the error's
+    status and message, the first error of a stream's included, or the body."""
+    errors = [r["error"] for r in (answer if isinstance(answer, list) else [answer])
+              if isinstance(r, dict) and isinstance(r.get("error"), dict)]
+    if errors:
+        return {"status": status, "error": errors[0].get("status"), "message": errors[0].get("message", "")}
+    return {"status": status, "body": answer}
+
+
+def replay_read_times(production, recording, result):
+    """The recording of how old a read time may be (`read_time_and_databases.json`'s `read_time`):
+    a document is written, then each read is made at each age before now, as its recorder made
+    them. A gRPC read is sent as its REST form: GetDocument and ListDocuments as a `GET` with
+    `readTime` in the query, RunQuery as `:runQuery`. Its status and message, or the documents it
+    found, are compared; a REST read's status and answer (`read_answer`). The recording's named
+    databases are not: they are not the project's `(default)`.
+
+    Production keeps the database's history for an hour, the replays' before this one included,
+    so the reads go to a collection of the run's own, read back as the recording's, and the
+    collection IDs listed are those of it alone."""
+    database = f"projects/{production.project}/databases/(default)"
+    documents = f"{database}/documents"
+    collection = f"read-time-{int(time.time())}"
+    production.call("POST", f"/v1/{documents}:commit", {"writes": [
+        {"update": {"name": f"{documents}/{collection}/d", "fields": {"a": {"integerValue": "1"}}}}]})
+    reads = recording["read_time"]["reads"]
+
+    def ours(value):
+        return json.loads(json.dumps(value).replace(f"projects/{READ_TIME_PROJECT}/", f"projects/{production.project}/")
+                          .replace(f"/documents/{READ_TIME_COLLECTION}/", f"/documents/{collection}/")
+                          .replace(f'"collectionId": "{READ_TIME_COLLECTION}"', f'"collectionId": "{collection}"'))
+
+    def theirs(value):
+        return json.loads(json.dumps(value).replace(f"projects/{READ_TIME_PROJECT}/", "projects/{project}/"))
+
+    def answer_of(text):
+        answer = parsed(mask(text.replace(f"/documents/{collection}/", f"/documents/{READ_TIME_COLLECTION}/"),
+                             production.project))
+        if isinstance(answer, dict) and "collectionIds" in answer:
+            ids = [READ_TIME_COLLECTION for c in answer["collectionIds"] if c == collection]
+            answer = {**answer, "collectionIds": ids} if ids else {k: v for k, v in answer.items() if k != "collectionIds"}
+        return answer
+
+    def read(spec, read_time):
+        body = json.loads(json.dumps(ours(spec["body"])).replace("{readTime}", read_time))
+        if spec["transport"] == "rest":
+            path = ours(spec["path"]).replace("{readTime}", urllib.parse.quote(read_time, safe=""))
+            status, _, text = production.send(spec["method"], path, None if body is None else json.dumps(body).encode())
+            return read_answer(status, answer_of(text) if text else None)
+        when = urllib.parse.quote(body["readTime"], safe="")
+        if spec["method"] == "GetDocument":
+            status, _, text = production.send("GET", f"/v1/{urllib.parse.quote(body['name'], safe='/()')}?readTime={when}")
+        elif spec["method"] == "ListDocuments":
+            status, _, text = production.send(
+                "GET", f"/v1/{urllib.parse.quote(body['parent'], safe='/()')}/{body['collectionId']}?readTime={when}")
+        else:
+            status, _, text = production.send("POST", f"/v1/{urllib.parse.quote(body['parent'], safe='/()')}:runQuery",
+                                              json.dumps({k: v for k, v in body.items() if k != "parent"}).encode())
+        answer = answer_of(text)
+        errors = [r["error"] for r in (answer if isinstance(answer, list) else [answer])
+                  if isinstance(r, dict) and isinstance(r.get("error"), dict)]
+        if status != 200 or errors:
+            error = errors[0] if errors else {}
+            return {"status": error.get("status", str(status)), "message": error.get("message", text[:300])}
+        found = [answer] if spec["method"] == "GetDocument" else (
+            answer.get("documents", []) if spec["method"] == "ListDocuments" else [r["document"] for r in answer if "document" in r])
+        prefix = "projects/{project}/databases/(default)/documents/"
+        return {"status": "OK", "message": "", "documents": [d["name"][len(prefix):] for d in found]}
+
+    for case in recording["read_time"]["cases"]:
+        for spec, official in zip(reads, case["answers"]):
+            name = f"{spec['name']}, {case['age']} s old"
+            text = json.dumps(spec)
+            if any(p != READ_TIME_PROJECT for p in PROJECT_NAME.findall(text)) or "/databases/(default)/" not in text:
+                result["skipped"]["names another project"] = result["skipped"].get("names another project", 0) + 1
+                continue
+            read_time = rfc3339(int(time.time() * 1_000_000) - case["age"] * 1_000_000)
+            answered = read(spec, read_time)
+            result["sent"] += 1
+            official = theirs(official)
+            if spec["transport"] == "rest":
+                official = read_answer(official["status"], official["response"])
+            tally(result, official, answered, lambda: {
+                "name": name, "method": spec.get("method"), "path": theirs(spec.get("path") or spec["method"]),
+                "difference": first_difference(official, answered) or "the outcome", "official": official,
+                "production": answered}, name)
+
+
 # A condition that reads the document, the request or other documents. The Rules API takes the
 # document as JSON, whose numbers are all floats (`1 is int` is false), and runs lookups only on
 # mocks; such a condition is not tested.
@@ -941,6 +1143,25 @@ def replay(production, fixture):
         replay_value_order(production, recording, result)
         production.empty()
         return result
+    if "seed" in recording and "grpc" in recording and "rest" in recording:
+        result = {"fixture": Path(fixture).name, "cases": len(recording["grpc"]) + len(recording["rest"]), "sent": 0,
+                  "same": 0, "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "indexes": [], "knownCases": 0,
+                  "known": {}, "differ": []}
+        production.empty()
+        log(f"{result['fixture']}: {result['cases']} listings")
+        replay_list_documents(production, recording, result)
+        production.empty()
+        return result
+    if "read_time" in recording:
+        read_time = recording["read_time"]
+        result = {"fixture": Path(fixture).name, "cases": len(read_time["reads"]) * len(read_time["cases"]), "sent": 0,
+                  "same": 0, "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "indexes": [], "knownCases": 0,
+                  "known": {}, "differ": []}
+        production.empty()
+        log(f"{result['fixture']}: {result['cases']} reads at a read time")
+        replay_read_times(production, recording, result)
+        production.empty()
+        return result
     result = {"fixture": Path(fixture).name, "cases": len(recording["cases"]), "sent": 0, "same": 0,
               "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "indexes": [], "knownCases": 0,
                   "known": {}, "differ": []}
@@ -1024,7 +1245,8 @@ def markdown(report):
                       "|---|---|---|---|"]
             for d in r["differ"][:300]:
                 name, what = (s.replace("|", "\\|").replace("\n", " ") for s in (d["name"], d["difference"]))
-                lines.append(f"| {name} | {d['official']['status']} | {d['production']['status']} | {what} |")
+                theirs, ours = (side.get("status", "") if isinstance(side, dict) else "" for side in (d["official"], d["production"]))
+                lines.append(f"| {name} | {theirs} | {ours} | {what} |")
             if len(r["differ"]) > 300:
                 lines.append(f"| … {len(r['differ']) - 300} more in `report.json` | | | |")
     return "\n".join(lines) + "\n"

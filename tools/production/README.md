@@ -83,6 +83,16 @@ Recordings it reads:
   value, so that neighbours that swap places are equal; the document names are written and read
   back with a collection group query. The groups of equal values in order, the names in order,
   and the values and names refused, with their messages, are compared;
+- the recording of ListDocuments (`list_documents.json`): its seed is written as its recorder
+  wrote it, each gRPC request is sent as its REST form (`GET …/{parent}/{collection ID}` with
+  the other fields in the query; a listing read at the first commit reads at production's), and
+  each REST path as it is. A request without a collection ID, which lists every collection, is
+  not sent: REST has no form of it. The documents listed, page by page where the recorder
+  followed the pages, or the error, are compared;
+- the read times of `read_time_and_databases.json`: a document is written, then each read is
+  made at each age before now, gRPC reads in their REST form. Production keeps an hour of the
+  database's history, the replays' before this one included, so the reads go to a collection of
+  the run's own, and the collection IDs listed are its alone. Its named databases are not sent;
 - recordings of Security Rules conditions (`rules_eval.json`, in
   `crates/hidane-rules/tests/fixtures/`): each condition, in the recording's ruleset, or each whole
   ruleset, is tested with the Rules API (`projects.test`) for a `get` of `rooms/r1` without
@@ -92,7 +102,7 @@ Recordings it reads:
   floats, and runs lookups only on mocks. With a user's credentials, the Rules API needs a quota
   project: `--quota-project <id>`.
 
-The workflow replays all eleven nightly. Testing rules takes the permission
+The workflow replays all thirteen nightly. Testing rules takes the permission
 `firebaserules.rulesets.test`: the workflow's service account has it through a custom role that
 holds that one permission (`rulesTester`), so it may test rulesets but not deploy them. The Rules
 API takes seconds to compile each ruleset, so tests are sent eight at a time, and at most 240 a
