@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import sys
 import tempfile
 import threading
@@ -94,7 +95,8 @@ class StandIn(BaseHTTPRequestHandler):
         if self.path.endswith((":runQuery", ":runAggregationQuery")):
             # As production answers: no `done`, an offset's count in a result of its own.
             parent, verb = urllib.parse.unquote(self.path[len("/v1/"):]).rsplit(":", 1)
-            request = json.loads(body)
+            # As proto3 JSON, field names in either spelling: `structured_query` or `structuredQuery`.
+            request = json.loads(re.sub(r'"(\w+)":', lambda m: '"%s":' % re.sub(r"_(\w)", lambda c: c.group(1).upper(), m.group(1)), body))
             query = request.get("structuredQuery") or request["structuredAggregationQuery"]["structuredQuery"]
             if "collectionId" not in query["from"][0]:
                 # Every collection below the parent, by name, as the replay's emptying asks.
@@ -484,6 +486,31 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual(production.empty(), 2)
         self.assertEqual(StandIn.documents, {})
         self.assertFalse([p for _, p, _, _ in StandIn.seen if "%00" in p])
+
+    def test_what_the_official_emulator_ignores_is_sent_in_its_rest_form(self):
+        documents = "projects/unsupported/databases/(default)/documents"
+        recording = {"grpc": [
+            {"name": "RunQuery", "rpc": "RunQuery", "authorization": "Bearer owner",
+             "request": {"parent": documents, "structured_query": {"from": [{"collection_id": "c"}]}},
+             "outcome": {"documents": ["c/a", "c/b"], "aggregations": [], "explain_metrics": False, "done": True}},
+            {"name": "RunQuery, explain", "rpc": "RunQuery", "authorization": "Bearer owner",
+             "request": {"parent": documents, "structured_query": {"from": [{"collection_id": "c"}]}, "explain_options": {}},
+             "outcome": {"documents": ["c/a"], "aggregations": [], "explain_metrics": False, "done": True}},
+            {"name": "anonymous", "rpc": "RunQuery", "authorization": None, "request": {"parent": documents},
+             "outcome": {"code": "PERMISSION_DENIED", "message": "denied"}},
+        ], "rest": [
+            {"name": ":runQuery", "verb": "runQuery", "body": {"structuredQuery": {"from": [{"collectionId": "c"}]}},
+             "outcome": {"status": 200, "body": json.dumps([{"document": {
+                 "name": f"{documents}/c/{x}", "fields": {"n": {"integerValue": str(n)}}, "createTime": "<time>",
+                 "updateTime": "<time>"}, "readTime": "<time>"} for n, x in ((1, "a"), (2, "b"))])}},
+        ]}
+        path = Path(self.dir.name) / "unsupported.json"
+        path.write_text(json.dumps(recording))
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
+        self.assertEqual((result["cases"], result["sent"], result["same"]), (4, 3, 2))
+        self.assertEqual(result["skipped"], {"not sent as the owner": 1})
+        self.assertEqual((result["known"], result["differ"]), ({"D079": 1}, []))
+        self.assertEqual(StandIn.documents, {})
 
     def test_a_pace_spaces_the_requests(self):
         pace, started = replay.Pace(1200), time.monotonic()

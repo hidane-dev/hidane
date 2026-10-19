@@ -302,6 +302,7 @@ KNOWN_CASES = {
     "list_documents.json": [("D101", r"slash"), ("D103", r"^root without a slash$"),
                             ("D089", r"^collection, order by (?:a field|the name), pages of 2$")],
     "read_time_and_databases.json": [("D112", r"^REST :batchGet, (?:60|3540) s old$")],
+    "unsupported.json": [("D079", r"explain"), ("D078", r"(?i)executePipeline"), ("D076", r"(?i)partitionQuery")],
     "json_escapes.json": [("D116", r"^get the document with the characters in its ID$|^an error that repeats a document name$")],
     "find_nearest.json": [("D080", r"^cosine, (?:a zero vector last|threshold)$|^a query vector with NaN$"),
                           ("D074", r"^name descending$")],
@@ -929,6 +930,68 @@ def replay_find_nearest(production, recording, result):
         compare(case["name"], "commit", case["outcome"], answered)
 
 
+# The project `tools/oracle/unsupported.py` recorded in; its requests and answers name it.
+UNSUPPORTED_PROJECT = "unsupported"
+
+
+def replay_unsupported(production, recording, result):
+    """The recording of what the official emulator ignores or refuses (`unsupported.json`): its
+    two documents are written, as its recorder (`tools/oracle/unsupported.py`) wrote them, then
+    each REST request is sent as it is, and each gRPC one as its REST form (`:runQuery`,
+    `:runAggregationQuery`, `:executePipeline`, `:partitionQuery`). A REST answer's status and
+    body are compared; a gRPC one as the recorder summed it up: the documents, the aggregations,
+    whether explain metrics came back, or the error. `done`, which production does not send
+    (D099), is not. Requests as someone other than the owner, or naming another database, are
+    not sent."""
+    database = f"projects/{production.project}/databases/(default)"
+    documents = f"{database}/documents"
+    production.call("POST", f"/v1/{documents}:commit", {"writes": [
+        {"update": {"name": f"{documents}/c/{name}", "fields": {"n": {"integerValue": str(n)}}}}
+        for n, name in enumerate("ab", 1)]})
+
+    def theirs(value):
+        return json.loads(json.dumps(value).replace(f"projects/{UNSUPPORTED_PROJECT}/", "projects/{project}/"))
+
+    def compare(name, path, official, answered):
+        result["sent"] += 1
+        official = theirs(official)
+        tally(result, official, answered, lambda: {
+            "name": name, "method": "POST", "path": path, "difference": first_difference(official, answered)
+            or "the outcome", "official": official, "production": answered}, name)
+
+    for case in recording["grpc"]:
+        request = case["request"]
+        named = request.get("parent") or request.get("database") or ""
+        if case["authorization"] != "Bearer owner" or not named.startswith(f"projects/{UNSUPPORTED_PROJECT}/databases/"):
+            why = "not sent as the owner" if case["authorization"] != "Bearer owner" else "names no database"
+            result["skipped"][why] = result["skipped"].get(why, 0) + 1
+            continue
+        verb = case["rpc"][0].lower() + case["rpc"][1:]
+        body = {k: v for k, v in request.items() if k not in ("parent", "database")}
+        status, _, text = production.send("POST", f"/v1/{documents if 'parent' in request else database + '/documents'}:{verb}",
+                                          json.dumps(body).encode())
+        answer = parsed(mask(text, production.project))
+        errors = [r["error"] for r in (answer if isinstance(answer, list) else [answer])
+                  if isinstance(r, dict) and isinstance(r.get("error"), dict)]
+        if status != 200 or errors:
+            error = errors[0] if errors else {}
+            answered = {"status": error.get("status", str(status)), "message": error.get("message", "")}
+        else:
+            answers = answer if isinstance(answer, list) else [answer]
+            answered = {"documents": [r["document"]["name"].split("/documents/", 1)[1] for r in answers if "document" in r],
+                        "aggregations": [r["result"]["aggregateFields"] for r in answers if "result" in r],
+                        "explain_metrics": any("explainMetrics" in r for r in answers)}
+        official = {("status" if k == "code" else k): v for k, v in case["outcome"].items() if k != "done"}
+        compare(case["name"], f"/v1/projects/{{project}}/databases/(default)/documents:{verb}", official, answered)
+
+    for case in recording["rest"]:
+        status, content_type, text = production.send("POST", f"/v1/{documents}:{case['verb']}",
+                                                      json.dumps(case["body"]).encode())
+        compare(case["name"], f"/v1/projects/{{project}}/databases/(default)/documents:{case['verb']}",
+                {"status": case["outcome"]["status"], "body": parsed(case["outcome"]["body"])},
+                {"status": status, "body": parsed(mask(text, production.project))})
+
+
 # A condition that reads the document, the request or other documents. The Rules API takes the
 # document as JSON, whose numbers are all floats (`1 is int` is false), and runs lookups only on
 # mocks; such a condition is not tested.
@@ -1296,6 +1359,15 @@ def replay(production, fixture):
         production.empty()
         log(f"{result['fixture']}: {result['cases']} reads at a read time")
         replay_read_times(production, recording, result)
+        production.empty()
+        return result
+    if "grpc" in recording and "rest" in recording and "verb" in (recording["rest"] or [{}])[0]:
+        result = {"fixture": Path(fixture).name, "cases": len(recording["grpc"]) + len(recording["rest"]), "sent": 0,
+                  "same": 0, "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "indexes": [], "knownCases": 0,
+                  "known": {}, "differ": []}
+        production.empty()
+        log(f"{result['fixture']}: {result['cases']} requests the official emulator ignores or refuses")
+        replay_unsupported(production, recording, result)
         production.empty()
         return result
     if "cases" not in recording and isinstance(recording.get("rest"), list) and "headers" in (recording["rest"] or [{}])[0]:
