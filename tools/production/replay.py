@@ -589,6 +589,81 @@ def replay_limits(production, recording, result):
             "production": answered}, case["name"])
 
 
+def replay_value_order(production, recording, result):
+    """The recording of how values and document names are ordered (`value_order.json`), redone as
+    its recorder (`tools/oracle/value_order.py`) did it: each value is written as the field `v` of
+    a document in two collections, named in the values' order in one and backwards in the other,
+    and both are read back ordered by `v`; neighbours that swap places between the two are equal.
+    Each document name is written, then read back with a collection group query. The groups of
+    equal values, the names' order, and what was refused are compared."""
+    documents = f"projects/{production.project}/databases/(default)/documents"
+
+    def write(name, fields):
+        """Writes a document; answers the error's message if it is refused, else None."""
+        body = {"writes": [{"update": {"name": f"{documents}/{name}", "fields": fields}}]}
+        status, _, text = production.send("POST", f"/v1/{documents}:commit", json.dumps(body).encode())
+        if status == 200:
+            return None
+        try:
+            return mask(json.loads(text)["error"]["message"], production.project)
+        except (ValueError, KeyError, TypeError):
+            return f"{status} {mask(text, production.project)[:300]}"
+
+    def names(query):
+        """The names of the documents a query finds, below the documents; or the error's message."""
+        status, _, text = production.send("POST", f"/v1/{documents}:runQuery",
+                                          json.dumps({"structuredQuery": query}).encode())
+        answer = parsed(text)
+        if status != 200 or not isinstance(answer, list):
+            errors = [r["error"] for r in (answer if isinstance(answer, list) else [answer])
+                      if isinstance(r, dict) and isinstance(r.get("error"), dict)]
+            return mask(errors[0].get("message", "") if errors else f"{status} {text[:300]}", production.project)
+        return [r["document"]["name"][len(documents) + 1:] for r in answer if "document" in r]
+
+    def compare(name, official, answered):
+        result["sent"] += 1
+        tally(result, official, answered, lambda: {
+            "name": name, "method": "POST", "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
+            "difference": first_difference(official, answered) or "the outcome", "official": official,
+            "production": answered}, name)
+
+    recorded = recording["values"]
+    values = [item for group in recorded["groups"] for item in group] + recorded["rejected"]
+    count, refused = len(values), []
+    for i, item in enumerate(values):
+        error = write(f"orderA/{i:03d}", {"v": item["value"]})
+        if error is None:
+            write(f"orderB/{count - 1 - i:03d}", {"v": item["value"]})
+        else:
+            refused.append({"label": item["label"], "error": error})
+    by_v = {"orderBy": [{"field": {"fieldPath": "v"}, "direction": "ASCENDING"}]}
+    found_a = names({"from": [{"collectionId": "orderA"}], **by_v})
+    found_b = names({"from": [{"collectionId": "orderB"}], **by_v})
+    if isinstance(found_a, str) or isinstance(found_b, str):
+        groups = found_a if isinstance(found_a, str) else found_b
+    else:
+        a = [int(name.split("/")[1]) for name in found_a]
+        place = {count - 1 - int(name.split("/")[1]): at for at, name in enumerate(found_b)}
+        groups = [[a[0]]] if a else []
+        for before, case in zip(a, a[1:]):
+            if place.get(case, -1) < place.get(before, -1):
+                groups[-1].append(case)
+            else:
+                groups.append([case])
+        groups = [[values[case]["label"] for case in group] for group in groups]
+    compare("values: groups of equal values, in order", [[item["label"] for item in group] for group in recorded["groups"]],
+            groups)
+    compare("values: refused", [{"label": r["label"], "error": r["error"]} for r in recorded["rejected"]], refused)
+
+    paths, refused = recording["paths"], []
+    for path in paths["order"] + [r["path"] for r in paths["rejected"]]:
+        error = write(path, {"p": {"stringValue": path}})
+        if error is not None:
+            refused.append({"path": path, "error": error})
+    compare("names: in order", paths["order"], names({"from": [{"collectionId": "items", "allDescendants": True}]}))
+    compare("names: refused", paths["rejected"], refused)
+
+
 # A condition that reads the document, the request or other documents. The Rules API takes the
 # document as JSON, whose numbers are all floats (`1 is int` is false), and runs lookups only on
 # mocks; such a condition is not tested.
@@ -857,6 +932,14 @@ def replay(production, fixture):
                   "known": {}, "differ": []}
         log(f"{result['fixture']}: {result['cases']} rules")
         replay_rules(production, recording, result)
+        return result
+    if "groups" in recording.get("values", {}):
+        result = {"fixture": Path(fixture).name, "cases": 4, "sent": 0, "same": 0, "skipped": {}, "emulatorDeletes": 0,
+                  "needsIndex": [], "indexes": [], "knownCases": 0, "known": {}, "differ": []}
+        production.empty()
+        log(f"{result['fixture']}: the order of values and of document names")
+        replay_value_order(production, recording, result)
+        production.empty()
         return result
     result = {"fixture": Path(fixture).name, "cases": len(recording["cases"]), "sent": 0, "same": 0,
               "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "indexes": [], "knownCases": 0,
