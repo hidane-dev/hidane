@@ -1061,7 +1061,7 @@
    "topic": null,
    "kind": "limitation",
    "official": "A `read_time` up to seven days old (604,800 s before now) is served, in microseconds rather than whole minutes, on an emulator started seconds before and for data written just before or never, over every read; one older than the data reads the data's absence. An older one answers `FAILED_PRECONDITION` \"The requested 'read_time' is too old.\" (`tests/fixtures/read_time_and_databases.json`, #86). The same in Datastore mode, for lookups, queries, aggregations and read-only transactions (`tests/fixtures/datastore_sequences.json`). The history behind those reads is not always kept: once, an hour after a document was written and left unread, reads before its creation failed with `UNKNOWN` and no message (`500` over REST), while its first version, replaced minutes after the write, was still served",
-   "firestore": "Up to one hour old; with point-in-time recovery enabled, also whole minutes up to seven days old (the `read_time` fields of `google.firestore.v1`)",
+   "firestore": "Up to one hour old; with point-in-time recovery enabled, also whole minutes up to seven days old (the `read_time` fields of `google.firestore.v1`). Without it, an older one is refused over every read with `FAILED_PRECONDITION` \"The requested 'read_time' is too old.\", the official emulator's message past seven days; one before the database was created with `INVALID_ARGUMENT` (D097) (#82)",
    "hidane": "Up to one hour old, like production Firestore without point-in-time recovery, in both modes; older answers `FAILED_PRECONDITION` \"The requested 'read_time' is too old.\" with the official message",
    "reason": "Bounded memory for old versions (ADR 0002). The maintainer kept one hour, production's default, rather than seven days of every version or the official emulator's history that may be dropped without a message (#86)",
    "references": [
@@ -1069,7 +1069,8 @@
     "docs/adr/0002-storage-engine.md",
     "crates/hidane/tests/fixtures/read_time_and_databases.json",
     "crates/hidane/tests/fixtures/datastore_sequences.json",
-    "crates/hidane/tests/read_time_and_databases.rs"
+    "crates/hidane/tests/read_time_and_databases.rs",
+    "hidane-dev/hidane#82"
    ],
    "pinned_by": [
     "crates/hidane/tests/read_time_and_databases.rs::read_times_up_to_the_window",
@@ -1215,13 +1216,14 @@
    "topic": null,
    "kind": "more-correct",
    "official": "ListDocuments with a page token and an `order_by` (any order, `__name__` included) answers `UNKNOWN` without a message (\"ListDocuments with a pageToken and an orderBy clause is not supported.\" in its log): the first page of an ordered listing comes back with a `next_page_token` that cannot be used",
-   "firestore": "ListDocuments takes `order_by` and `page_token` together",
+   "firestore": "ListDocuments takes `order_by` and `page_token` together: the pages of an ordered listing continue over REST (#82)",
    "hidane": "Continues the listing in the requested order",
    "reason": "The token the official emulator hands out leads only to an error, and production pages ordered listings (#262)",
    "references": [
     "hidane-dev/hidane#262",
     "crates/hidane/tests/list_documents.rs",
-    "tools/oracle/list_documents.py"
+    "tools/oracle/list_documents.py",
+    "hidane-dev/hidane#82"
    ],
    "pinned_by": [
     "crates/hidane/tests/list_documents.rs::list_documents_like_the_official_emulator"
@@ -1684,8 +1686,8 @@
    "area": "documents",
    "topic": "Whitespace around path segments",
    "kind": "bug-for-bug",
-   "official": "Whitespace around each segment of a REST path is trimmed: `PATCH …/ws/%20a%09` writes `ws/a`, a collection ` ws` is `ws`, and an ID of whitespace alone is an empty ID (`400` `has invalid trailing \"/\"`). A `documentId` parameter is kept as given. A path ending with `/` is refused (`400`)",
-   "firestore": "Kept: ` a\\t` and ` ws` are IDs of their own, so `GET …/ws/a` does not find `ws/ a\\t`, and an ID of whitespace alone is an ID. A `/` at the end of a document's path is ignored",
+   "official": "Whitespace around each segment of a REST path is trimmed: `PATCH …/ws/%20a%09` writes `ws/a`, a collection ` ws` is `ws`, and an ID of whitespace alone is an empty ID (`400` `has invalid trailing \"/\"`). A `documentId` parameter is kept as given. A path ending with `/` is refused (`400`), but `GET …/documents/` and `GET …/documents/<document>/` list every collection below them (an empty collection ID)",
+   "firestore": "Kept: ` a\\t` and ` ws` are IDs of their own, so `GET …/ws/a` does not find `ws/ a\\t`, and an ID of whitespace alone is an ID. A `/` at the end of a document's path is ignored, as is one after a collection: `GET …/documents/c/` and `…/c//` list `c`. `GET …/documents/<document>/` lists nothing, and `…/documents/` and `…/documents//` are no path it serves (Google's HTML `404` page) (#82)",
    "hidane": "As the official emulator",
    "reason": "Follow the emulator. Seen by the Production parity workflow (#82). A client that puts whitespace around an ID writes another document in production",
    "references": [
@@ -1888,7 +1890,7 @@
    "topic": "The order of a `batchGet`'s results",
    "kind": "bug-for-bug",
    "official": "In the order of the request, a document named twice answered once",
-   "firestore": "The documents found first, then the missing ones",
+   "firestore": "The documents found first, then the missing ones, and not in the request's order among those: two missing documents came back reversed (#82)",
    "hidane": "As the official emulator",
    "reason": "Follow the emulator. Seen by the Production parity workflow (#82). The API does not promise an order",
    "references": [
