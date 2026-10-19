@@ -58,6 +58,9 @@ jobs:
           crates/hidane-core/tests/fixtures/value_order.json
           crates/hidane/tests/fixtures/list_documents.json
           crates/hidane/tests/fixtures/read_time_and_databases.json
+          crates/hidane/tests/fixtures/field_order.json
+          crates/hidane/tests/fixtures/find_nearest.json
+          crates/hidane/tests/fixtures/json_escapes.json
           crates/hidane-rules/tests/fixtures/rules_eval.json
           crates/hidane/tests/fixtures/rules_compile.json
           crates/hidane-rules/tests/fixtures/rules_warnings.json

@@ -47,7 +47,9 @@ A recording's uses of the official emulator's own delete (`DELETE /emulator/v1/â
 the whole database or of a document or collection and what is below it) are not sent: the
 replay deletes the same documents in production, so the cases after it see the same data.
 
-The database is emptied before each recording and at the end. What differs goes to `report.json`
+The database is emptied before each recording and at the end, with a query of every collection
+(`allDescendants` without a collection ID), so that no document's name goes into a URL: production
+serves no path with a NUL in it (D116). What differs goes to `report.json`
 and `report.md` in `--out`, and to the job summary in GitHub Actions, with where each answer
 first differs from the official emulator's. A run stops at `--budget`
 requests to Firestore (10,000 by default), within its free daily quota; tests of rules are not
@@ -97,6 +99,14 @@ Recordings it reads:
   made at each age before now, gRPC reads in their REST form. Production keeps an hour of the
   database's history, the replays' before this one included, so the reads go to a collection of
   the run's own, and the collection IDs listed are its alone. Its named databases are not sent;
+- the recording of the order of fields (`field_order.json`), a list of cases of steps replayed as
+  the recordings of steps are; the order of each answer's keys is compared too, and production's
+  own order counts as known (D115);
+- the recording of vector search (`find_nearest.json`): its seed is written, then its queries,
+  aggregations and malformed vector values are sent as its recorder
+  ([`tools/oracle/find_nearest.py`](../oracle/find_nearest.py)) sent them, and compared as it
+  put them;
+- the REST cases of `json_escapes.json`, as those of `rest.json`;
 - recordings of Security Rules conditions (`rules_eval.json`, in
   `crates/hidane-rules/tests/fixtures/`): each condition, in the recording's ruleset, or each whole
   ruleset, is tested with the Rules API (`projects.test`) for a `get` of `rooms/r1` without
@@ -124,7 +134,7 @@ Recordings it reads:
   the recording's documents without `auth`, and whether each read is allowed, and the warnings,
   are compared.
 
-The workflow replays all sixteen nightly. Testing rules takes the permission
+The workflow replays all nineteen nightly. Testing rules takes the permission
 `firebaserules.rulesets.test`: the workflow's service account has it through a custom role that
 holds that one permission (`rulesTester`), so it may test rulesets but not deploy them. The Rules
 API takes seconds to compile each ruleset, so tests are sent eight at a time, and at most 240 a

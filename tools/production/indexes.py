@@ -33,8 +33,10 @@ INDEXES = Path(__file__).resolve().parent / "indexes.json"
 TOKEN_ENV = "PRODUCTION_ACCESS_TOKEN"
 ADMIN = "https://firestore.googleapis.com/v1"
 LINK = re.compile(r"create_(composite|exemption)=([A-Za-z0-9_\-+/=%]+)")
-VECTOR = re.compile(r"--collection-group=(\S+) --query-scope=(\S+) "
+VECTOR = re.compile(r"--collection-group=(\S+) --query-scope=(\S+) ((?:--field-config=\S+ )*)"
                     r"--field-config=vector-config='(\{[^']*\})',field-path=(\S+)")
+# A field of a vector index's command before the vector: `order=DESCENDING,field-path=__name__`.
+FIELD_CONFIG = re.compile(r"--field-config=(order|array-config)=(\w+),field-path=(\S+)")
 SCOPES = {1: "COLLECTION", 2: "COLLECTION_GROUP", 3: "COLLECTION_RECURSIVE"}
 ORDERS = {1: "ASCENDING", 2: "DESCENDING"}
 
@@ -125,10 +127,12 @@ def index_asked(text):
         try:
             vector = VECTOR.search(said)
             if vector:
-                group, scope, config, path = vector.groups()
+                group, scope, before, config, path = vector.groups()
                 dimension = int(json.loads(config)["dimension"])
+                fields = [{"fieldPath": field, "order" if kind == "order" else "arrayConfig": how}
+                          for kind, how, field in FIELD_CONFIG.findall(before)]
                 return {"collectionGroup": group, "queryScope": scope,
-                        "fields": [{"fieldPath": path, "vectorConfig": {"dimension": dimension, "flat": {}}}]}
+                        "fields": fields + [{"fieldPath": path, "vectorConfig": {"dimension": dimension, "flat": {}}}]}
             found = LINK.search(said)
             if found:
                 encoded = urllib.parse.unquote(found.group(2)).replace("-", "+").replace("_", "/")
@@ -141,17 +145,19 @@ def index_asked(text):
 
 def key(index):
     """What makes two indexes the same. Production adds `__name__` to a composite index it lists
-    or asks for, at the end, or at the start of a vector index; one without it is the same
-    index."""
+    or asks for: at the end, or in a vector index just before the vector, in the order of the
+    field before it (ascending if none); one without it is the same index. A vector index of the
+    field `__name__` itself keeps its own."""
     group = index.get("collectionGroup") or index["name"].split("/collectionGroups/")[1].split("/")[0]
     if "fieldPath" in index:
         return json.dumps([group, index["fieldPath"], index["indexes"]], sort_keys=True)
     fields = [{k: v for k, v in f.items() if k in ("fieldPath", "order", "arrayConfig", "vectorConfig")}
               for f in index["fields"]]
-    if len(fields) > 1 and fields[-1]["fieldPath"] == "__name__":
+    if len(fields) > 1 and fields[-1]["fieldPath"] == "__name__" and "vectorConfig" not in fields[-1]:
         fields = fields[:-1]
-    if len(fields) > 1 and fields[0]["fieldPath"] == "__name__" and any("vectorConfig" in f for f in fields):
-        fields = fields[1:]
+    at = next((n for n, f in enumerate(fields) if "vectorConfig" in f), 0)
+    if at and fields[at - 1] == {"fieldPath": "__name__", "order": fields[at - 2]["order"] if at > 1 else "ASCENDING"}:
+        fields = fields[:at - 1] + fields[at:]
     return json.dumps([group, index["queryScope"], fields], sort_keys=True)
 
 

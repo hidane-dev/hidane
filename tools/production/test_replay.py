@@ -96,6 +96,12 @@ class StandIn(BaseHTTPRequestHandler):
             parent, verb = urllib.parse.unquote(self.path[len("/v1/"):]).rsplit(":", 1)
             request = json.loads(body)
             query = request.get("structuredQuery") or request["structuredAggregationQuery"]["structuredQuery"]
+            if "collectionId" not in query["from"][0]:
+                # Every collection below the parent, by name, as the replay's emptying asks.
+                after = query.get("startAt", {}).get("values", [{}])[0].get("referenceValue", "")
+                names = sorted(n for n in StandIn.documents if n.startswith(parent + "/") and n > after)
+                return self.answer(200, [{"document": {"name": n}, "readTime": "2026-01-01T00:00:00Z"}
+                                         for n in names[:query["limit"]]] or [{"readTime": "2026-01-01T00:00:00Z"}])
             collection = query["from"][0]["collectionId"]
             if collection == "ix":
                 link = index_link(PROJECT, "ix", [("a", 1), ("__name__", 1)])
@@ -419,6 +425,65 @@ class ReplayTest(unittest.TestCase):
         read = next(p for m, p, _, _ in StandIn.seen if m == "GET" and "readTime=" in p)
         self.assertRegex(read, r"/documents/read-time-\d+/d\?readTime=\d{4}-\d\d-\d\dT")
         self.assertEqual(StandIn.documents, {})
+
+    def test_the_order_of_fields_is_compared_and_known(self):
+        def case(name, written, read):
+            database = f"projects/fo-{len(name)}/databases/(default)"
+            time = "2026-10-11T08:29:42.523502Z"
+            fields = lambda names: {n: {"stringValue": n} for n in names}
+            return {"name": name, "steps": [
+                {"method": "POST", "path": f"{database}/documents:commit", "status": 200,
+                 "body": {"writes": [{"update": {"name": f"{database}/documents/c/d", "fields": fields(written)}}]},
+                 "response": {"writeResults": [{"updateTime": time}], "commitTime": time}},
+                {"method": "GET", "path": f"{database}/documents/c/d", "body": None, "status": 200,
+                 "response": {"name": f"{database}/documents/c/d", "fields": fields(read), "createTime": time,
+                              "updateTime": time}}]}
+        recording = [case("in the written order", ["zeta", "alpha"], ["zeta", "alpha"]),
+                     case("in another order", ["zeta", "alpha"], ["alpha", "zeta"]),
+                     case("other fields", ["zeta", "alpha"], ["zeta", "beta"])]
+        path = Path(self.dir.name) / "field_order.json"
+        path.write_text(json.dumps(recording))
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
+        self.assertEqual((result["cases"], result["same"], result["known"]), (3, 1, {"D115": 1}))
+        self.assertEqual([d["name"] for d in result["differ"]], ["other fields, step 2"])
+        self.assertEqual(replay.order_difference({"f": {"a": 1, "b": 2}}, {"f": {"b": 2, "a": 1}}),
+                         "$.f: keys in the order ['a', 'b'], production ['b', 'a']")
+
+    def test_vector_search_is_replayed(self):
+        vector = {"mapValue": {"fields": {"__type__": {"stringValue": "__vector__"},
+                                          "value": {"arrayValue": {"values": [{"doubleValue": 1}]}}}}}
+        one = {"integerValue": "1"}
+        recording = {"seed": {"v/a": {"v": vector, "k": one}, "v/b": {"v": vector}}, "queries": [
+            {"name": "nearest", "query": {"from": [{"collectionId": "v"}], "findNearest": {}},
+             "outcome": [{"name": "v/a", "fields": {"k": one}}, {"name": "v/b", "fields": {}}]},
+            {"name": "needs an index", "query": {"from": [{"collectionId": "ix"}], "findNearest": {}}, "outcome": []},
+        ], "aggregations": [
+            {"name": "count", "request": {"structuredAggregationQuery": {"structuredQuery": {"from": [{"collectionId": "v"}]},
+                                                                        "aggregations": [{"alias": "n", "count": {}}]}},
+             "outcome": [{"n": {"integerValue": "2"}}]},
+        ], "writes": [
+            {"name": "an array in an array", "fields": {"a": {"arrayValue": {"values": [{"arrayValue": {}}]}}},
+             "outcome": {"status": 400, "message": "Nested arrays are not allowed"}},
+        ]}
+        path = Path(self.dir.name) / "find_nearest.json"
+        path.write_text(json.dumps(recording))
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
+        self.assertEqual((result["cases"], result["sent"], result["same"], result["differ"]), (4, 4, 3, []))
+        self.assertEqual(result["needsIndex"], ["needs an index"])
+        self.assertEqual(len(result["indexes"]), 1)
+        self.assertEqual(StandIn.documents, {})
+
+    def test_emptying_reads_the_names_in_pages_and_puts_none_in_a_url(self):
+        self.addCleanup(setattr, replay, "EMPTYING_PAGE", replay.EMPTYING_PAGE)
+        replay.EMPTYING_PAGE = 2
+        root = f"projects/{PROJECT}/databases/(default)/documents"
+        StandIn.documents = {f"{root}/{n}": {"fields": {}} for n in ("a/1", "a/2", "a/1/s/x", "b/\u0000", "ab/1")}
+        production = replay.Production(self.base, PROJECT, "a-token", 100)
+        self.assertEqual(production.empty("a"), 3)
+        self.assertEqual(sorted(StandIn.documents), [f"{root}/ab/1", f"{root}/b/\u0000"])
+        self.assertEqual(production.empty(), 2)
+        self.assertEqual(StandIn.documents, {})
+        self.assertFalse([p for _, p, _, _ in StandIn.seen if "%00" in p])
 
     def test_a_pace_spaces_the_requests(self):
         pace, started = replay.Pace(1200), time.monotonic()
