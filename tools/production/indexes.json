@@ -601,6 +601,24 @@
      "order": "ASCENDING"
     },
     {
+     "fieldPath": "m.x",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "__name__",
+     "order": "ASCENDING"
+    }
+   ]
+  },
+  {
+   "collectionGroup": "p",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "a",
+     "order": "ASCENDING"
+    },
+    {
      "fieldPath": "__name__",
      "order": "DESCENDING"
     }

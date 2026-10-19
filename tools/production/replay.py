@@ -107,12 +107,7 @@ class Production:
         as text). A connection that fails before an answer is tried again a few times; then the
         answer is status 0. The budget counts the requests to Firestore, to stay within its free
         daily quota; tests of rules, which `Pace` keeps within the Rules API's, are not in it."""
-        with self.counting:
-            if base is None:
-                if self.firestore >= self.budget:
-                    raise RuntimeError(f"stopped at the budget of {self.budget} requests")
-                self.firestore += 1
-            self.sent += 1
+        self.spend(firestore=base is None)
         headers = {"Authorization": f"Bearer {self.token}", "Content-Type": content_type}
         if self.quota_project:
             headers["x-goog-user-project"] = self.quota_project
@@ -127,6 +122,15 @@ class Production:
                 log(f"{method} {mask(path, self.project)}: {type(err).__name__}, try {attempt + 1} of {NETWORK_TRIES}")
                 time.sleep(2 ** attempt)
         return 0, None, ""
+
+    def spend(self, requests=1, firestore=True):
+        """Counts requests about to be sent, those to Firestore against the budget."""
+        with self.counting:
+            if firestore:
+                if self.firestore + requests > self.budget:
+                    raise RuntimeError(f"stopped at the budget of {self.budget} requests")
+                self.firestore += requests
+            self.sent += requests
 
     def call(self, method, path, body=None):
         """A request of the replay's own (emptying the database), retried while the service is
@@ -490,20 +494,28 @@ def production_outcome(status, text, documents, aggregation, projection):
     return compared
 
 
+def seed(production, dataset):
+    """Writes a recording's dataset (`tools/oracle/queries.py`); answers what fills in the
+    dataset's and the queries' `{documents}` and `{database}` with the project's."""
+    database = f"projects/{production.project}/databases/(default)"
+    documents = f"{database}/documents"
+
+    def fill(value):
+        return json.loads(json.dumps(value).replace("{documents}", documents).replace("{database}", database))
+
+    writes = [{"update": {"name": f"{documents}/{doc['name']}", "fields": fill(doc["fields"])}} for doc in dataset]
+    for start in range(0, len(writes), 500):
+        production.call("POST", f"/v1/{documents}:commit", {"writes": writes[start:start + 500]})
+    return fill
+
+
 def replay_queries(production, recording, result):
     """A recording of queries or aggregations: its dataset is written, then each case is run over
     REST, as its recorder ran it, and compared as `official_outcome` puts it."""
     project = production.project
     database = f"projects/{project}/databases/(default)"
     documents = f"{database}/documents"
-
-    def fill(value):
-        return json.loads(json.dumps(value).replace("{documents}", documents).replace("{database}", database))
-
-    writes = [{"update": {"name": f"{documents}/{doc['name']}", "fields": fill(doc["fields"])}}
-              for doc in recording["dataset"]]
-    for start in range(0, len(writes), 500):
-        production.call("POST", f"/v1/{documents}:commit", {"writes": writes[start:start + 500]})
+    fill = seed(production, recording["dataset"])
     for n, case in enumerate(recording["cases"], 1):
         if n % 100 == 0:
             log(f"{result['fixture']}: case {n}, {production.sent} requests so far")
@@ -1379,6 +1391,12 @@ def replay(production, fixture):
                   "known": {}, "differ": []}
     production.empty()
     log(f"{result['fixture']}: {len(recording['cases'])} cases")
+    if "dataset" in recording and all({"documents", "removed", "error"} & set(c["outcome"]) for c in recording["cases"]):
+        # What a listener's query targets hold (`listen_queries.json`), over WebChannel, in listen.py.
+        import listen
+        listen.replay_listen(production, recording, result)
+        production.empty()
+        return result
     if "dataset" in recording:
         replay_queries(production, recording, result)
         production.empty()

@@ -25,6 +25,8 @@ class StandIn(BaseHTTPRequestHandler):
     documents = {}
     seen = []
     commits = 0
+    targets = []
+    listened = []
 
     def log_message(self, *args):
         pass
@@ -41,6 +43,8 @@ class StandIn(BaseHTTPRequestHandler):
         body = self.rfile.read(length).decode() if length else None
         StandIn.seen.append((self.command, self.path, self.headers.get("Authorization"), body))
         root = f"/v1/projects/{PROJECT}/databases/(default)/documents"
+        if self.path.startswith("/google.firestore.v1.Firestore/Listen/channel"):
+            return self.channel(body)
         if self.path == f"/v1/projects/{PROJECT}:test":
             return self.rules_api(json.loads(body))
         if self.path.endswith(":listCollectionIds"):
@@ -165,6 +169,41 @@ class StandIn(BaseHTTPRequestHandler):
                                       else "FAILURE"} for c in cases]
         return self.answer(200, answer)
 
+    def channel(self, body):
+        """A WebChannel Listen stream, as production serves one: a session for the first request's
+        target, then the stream, in frames: the target's documents by name, then `CURRENT`; or its
+        removal (a collection `ix` needs an index, and one named `sel` stands for a projection)."""
+        query = urllib.parse.parse_qs(urllib.parse.urlsplit(self.path).query)
+
+        def frames(chunks):
+            text = json.dumps([[n, chunk] for n, chunk in enumerate(chunks)])
+            data = f"{len(text)}\n{text}".encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.send_header("X-HTTP-Session-Id", "a-session")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+
+        if "SID" not in query:
+            form = urllib.parse.parse_qs(body)
+            StandIn.listened.append(form["headers"][0])
+            StandIn.targets.append(json.loads(form["req0___data__"][0])["addTarget"])
+            return frames([["c", f"session-{len(StandIn.targets)}", "", 8, 15, 30000]])
+        if query.get("TYPE") == ["terminate"]:
+            return frames([])
+        assert query.get("gsessionid") == ["a-session"]
+        target = StandIn.targets[int(query["SID"][0].split("-")[1]) - 1]["query"]
+        collection = target["structuredQuery"]["from"][0]["collectionId"]
+        if collection in ("ix", "sel"):
+            message = ("'select' clauses are not supported for real-time queries." if collection == "sel" else
+                       "The query requires an index. You can create it here: " + index_link(PROJECT, "ix", [("a", 1), ("__name__", 1)]))
+            return frames([[{"targetChange": {"targetChangeType": "REMOVE", "targetIds": [2], "cause": {"code": 9, "message": message}}}]])
+        names = sorted(n for n in StandIn.documents if n.rsplit("/", 1)[0] == f"{target['parent']}/{collection}")
+        return frames([[{"targetChange": {"targetChangeType": "ADD", "targetIds": [2]}}]]
+                      + [[{"documentChange": {"document": {"name": n}, "targetIds": [2]}}] for n in names]
+                      + [[{"targetChange": {"targetChangeType": "CURRENT", "targetIds": [2]}}]])
+
     do_GET = do_POST = do_PATCH = do_DELETE = handle_one
 
 
@@ -173,6 +212,7 @@ class ReplayTest(unittest.TestCase):
         StandIn.documents = {f"projects/{PROJECT}/databases/(default)/documents/old/x": {}}
         StandIn.seen = []
         StandIn.commits = 0
+        StandIn.targets, StandIn.listened = [], []
         self.server = ThreadingHTTPServer(("127.0.0.1", 0), StandIn)
         threading.Thread(target=self.server.serve_forever, daemon=True).start()
         self.base = f"http://127.0.0.1:{self.server.server_address[1]}"
@@ -510,6 +550,32 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual((result["cases"], result["sent"], result["same"]), (4, 3, 2))
         self.assertEqual(result["skipped"], {"not sent as the owner": 1})
         self.assertEqual((result["known"], result["differ"]), ({"D079": 1}, []))
+        self.assertEqual(StandIn.documents, {})
+
+    def test_listen_targets_are_replayed_over_webchannel(self):
+        def case(name, collection, outcome):
+            return {"name": name, "parent": "", "query": {"from": [{"collectionId": collection}]}, "outcome": outcome}
+        recording = {"dataset": [{"name": f"q/{x}", "fields": {"v": {"integerValue": "1"}}} for x in "ab"], "cases": [
+            case("all of q", "q", {"documents": ["q/a", "q/b"]}),
+            case("a projection", "sel", {"documents": []}),
+            case("needs an index", "ix", {"documents": []}),
+            case("differs", "q", {"documents": ["q/a"]}),
+            {"name": "another project", "parent": "", "query": {"from": [{"collectionId": "q"}], "where": {"fieldFilter": {
+                "field": {"fieldPath": "__name__"}, "op": "EQUAL",
+                "value": {"referenceValue": "projects/other/databases/(default)/documents/q/a"}}}},
+             "outcome": {"documents": []}},
+        ]}
+        path = Path(self.dir.name) / "listen_queries.json"
+        path.write_text(json.dumps(recording))
+        production = replay.Production(self.base, PROJECT, "a-token", 100)
+        result = replay.replay(production, str(path))
+        self.assertEqual((result["cases"], result["sent"], result["same"], result["known"]), (5, 4, 1, {"D117": 1}))
+        self.assertEqual(result["needsIndex"], ["needs an index"])
+        self.assertEqual([(d["name"], d["difference"]) for d in result["differ"]], [("differs", "$.documents: 1 items, production 2")])
+        self.assertEqual(result["skipped"], {"names another project": 1})
+        # The token goes in the first request's headers, as the SDK sends it; three requests a stream.
+        self.assertEqual(StandIn.listened, ["Authorization:Bearer a-token\r\n"] * 4)
+        self.assertEqual(production.firestore, len([p for _, p, _, _ in StandIn.seen]))
         self.assertEqual(StandIn.documents, {})
 
     def test_a_pace_spaces_the_requests(self):

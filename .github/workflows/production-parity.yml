@@ -49,6 +49,7 @@ jobs:
           crates/hidane/tests/fixtures/rest.json
           crates/hidane/tests/fixtures/conformance.json
           crates/hidane/tests/fixtures/queries.json
+          crates/hidane/tests/fixtures/listen_queries.json
           crates/hidane/tests/fixtures/aggregations.json
           crates/hidane/tests/fixtures/same_document_writes.json
           crates/hidane/tests/fixtures/document_writes.json
