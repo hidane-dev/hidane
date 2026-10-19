@@ -64,6 +64,9 @@ class StandIn(BaseHTTPRequestHandler):
                 return self.answer(400, {"error": {"code": 400, "status": "INVALID_ARGUMENT", "message":
                     f"Document '{name}' cannot be written because its size (1,200,058 bytes) exceeds the maximum "
                     "allowed size of 1,048,576 bytes."}})
+            if '"arrayValue": {"values": [{"arrayValue"' in body:
+                return self.answer(400, {"error": {"code": 400, "message": "Nested arrays are not allowed",
+                                                   "status": "INVALID_ARGUMENT"}})
             StandIn.commits += 1
             now = f"2026-01-01T00:00:{StandIn.commits:02d}.000001Z"
             results = []
@@ -90,7 +93,12 @@ class StandIn(BaseHTTPRequestHandler):
                 link = index_link(PROJECT, "ix", [("a", 1), ("__name__", 1)])
                 return self.answer(400, [{"error": {"code": 400, "message": f"The query requires an index. You can create it here: {link}",
                                                     "status": "FAILED_PRECONDITION"}}])
-            names = sorted(n for n in StandIn.documents if n.rsplit("/", 1)[0] == f"{parent}/{collection}")
+            if query["from"][0].get("allDescendants"):
+                names = sorted(n for n in StandIn.documents if n.split("/")[-2] == collection)
+            else:
+                names = sorted(n for n in StandIn.documents if n.rsplit("/", 1)[0] == f"{parent}/{collection}")
+            if query.get("orderBy"):
+                names.sort(key=lambda n: int(StandIn.documents[n]["fields"]["v"]["integerValue"]))
             now = "2026-01-01T00:00:00Z"
             if verb == "runAggregationQuery":
                 return self.answer(200, [{"result": {"aggregateFields": {"n": {"integerValue": str(len(names))}}}, "readTime": now}])
@@ -298,6 +306,24 @@ class ReplayTest(unittest.TestCase):
             "f": {"arrayValue": {"values": [{"mapValue": {"fields": {"m": {"arrayValue": {"values": [{"integerValue": "1"}]}}}}}]}}}})
         self.assertEqual(replay.limit_value(["bytes", 3]), {"bytesValue": "eHh4"})
         self.assertEqual(StandIn.documents, {})
+
+    def test_the_order_of_values_and_names_is_redone(self):
+        def item(label, n):
+            return {"label": label, "value": {"integerValue": str(n)}}
+        recording = {"values": {"groups": [[item("1", 1)], [item("2a", 2), item("2b", 2)], [item("3", 3)]], "rejected": [
+            {"label": "[[]]", "value": {"arrayValue": {"values": [{"arrayValue": {}}]}}, "error": "Nested arrays are not allowed"}]},
+            "paths": {"order": ["c/a/items/x", "items/top"], "rejected": []}}
+        path = Path(self.dir.name) / "value_order.json"
+        path.write_text(json.dumps(recording))
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
+        self.assertEqual((result["cases"], result["sent"], result["same"], result["differ"]), (4, 4, 4, []))
+        self.assertEqual(StandIn.documents, {})
+        # Values the official emulator held apart, where production finds them equal, differ.
+        recording["values"]["groups"][1:2] = [[item("2a", 2)], [item("2b", 2)]]
+        path.write_text(json.dumps(recording))
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
+        self.assertEqual([(d["name"], d["difference"]) for d in result["differ"]], [
+            ("values: groups of equal values, in order", "$: 4 items, production 3")])
 
     def test_a_pace_spaces_the_requests(self):
         pace, started = replay.Pace(1200), time.monotonic()

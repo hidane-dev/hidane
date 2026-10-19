@@ -76,6 +76,13 @@ Recordings it reads:
 - the recording of a document's limits (`limits.json`): each case's document, built from the
   recording's specs as its recorder ([`tools/oracle/limits.py`](../oracle/limits.py)) built it,
   is committed, and the status and the error's message compared;
+- the recording of how values and document names are ordered (`value_order.json`, in
+  `crates/hidane-core/tests/fixtures/`), redone as its recorder
+  ([`tools/oracle/value_order.py`](../oracle/value_order.py)) did it: the values are written to
+  two collections, named forwards in one and backwards in the other, and read back ordered by
+  value, so that neighbours that swap places are equal; the document names are written and read
+  back with a collection group query. The groups of equal values in order, the names in order,
+  and the values and names refused, with their messages, are compared;
 - recordings of Security Rules conditions (`rules_eval.json`, in
   `crates/hidane-rules/tests/fixtures/`): each condition, in the recording's ruleset, or each whole
   ruleset, is tested with the Rules API (`projects.test`) for a `get` of `rooms/r1` without
@@ -85,7 +92,7 @@ Recordings it reads:
   floats, and runs lookups only on mocks. With a user's credentials, the Rules API needs a quota
   project: `--quota-project <id>`.
 
-The workflow replays all ten nightly. Testing rules takes the permission
+The workflow replays all eleven nightly. Testing rules takes the permission
 `firebaserules.rulesets.test`: the workflow's service account has it through a custom role that
 holds that one permission (`rulesTester`), so it may test rulesets but not deploy them. The Rules
 API takes seconds to compile each ruleset, so tests are sent eight at a time, and at most 240 a
