@@ -29,6 +29,7 @@ Actions. It is not a recording: it stays a workflow artifact until a person has 
 """
 
 import argparse
+import base64
 import http.client
 import json
 import os
@@ -258,6 +259,8 @@ KNOWN_MESSAGES = [
     ("D106", r"^Only a single array-contains clause is allowed in a query$",
      r"^A maximum of 1 'ARRAY_CONTAINS' filter is allowed per disjunction\.$"),
     ("D106", r"requires an index that has fields \[.*\] after __name__", r"requires an index with fields \[.*\] after __name__"),
+    ("D075", r"^maximum entity size is 1048576 bytes$",
+     r"^Document '.*' cannot be written because its size \([\d,]+ bytes\) exceeds the maximum allowed size of 1,048,576 bytes\.$"),
 ]
 
 
@@ -533,6 +536,56 @@ def replay_queries(production, recording, result):
             "name": case["name"], "method": "POST",
             "path": f"/v1/projects/{{project}}/databases/(default)/documents{where}:{verb}",
             "difference": first_difference(official, answered) or "the outcome", "official": official,
+            "production": answered}, case["name"])
+
+
+def limit_text(spec):
+    """A document ID or a collection ID of `limits.json`: text, or `["repeat", char, n]`."""
+    return spec if isinstance(spec, str) else spec[1] * spec[2]
+
+
+def limit_value(spec):
+    """A value of `limits.json`, from its spec, as `tools/oracle/limits.py` writes it:
+    `["string", n, char]`, `["bytes", n]`, `["int"]`, `["map", {name: spec}]`, `["array", [spec]]`,
+    or `["nest", levels, mixed]` (maps, or maps and arrays in turn, `levels` deep)."""
+    kind = spec[0]
+    if kind == "string":
+        return {"stringValue": spec[2] * spec[1]}
+    if kind == "bytes":
+        return {"bytesValue": base64.b64encode(b"x" * spec[1]).decode()}
+    if kind == "int":
+        return {"integerValue": "1"}
+    if kind == "map":
+        return {"mapValue": {"fields": {k: limit_value(v) for k, v in spec[1].items()}}}
+    if kind == "array":
+        return {"arrayValue": {"values": [limit_value(v) for v in spec[1]]}}
+    if kind == "nest":
+        value = {"integerValue": "1"}
+        for level in range(spec[1]):
+            value = ({"arrayValue": {"values": [value]}} if spec[2] and level % 2 == 0
+                     else {"mapValue": {"fields": {"m": value}}})
+        return value
+    raise ValueError(f"a value spec of kind {kind}")
+
+
+def replay_limits(production, recording, result):
+    """A recording of the limits of a document (`limits.json`): each case's document is committed
+    as its recorder committed it, and the status and the error's message compared."""
+    documents = f"projects/{production.project}/databases/(default)/documents"
+    for case in recording["cases"]:
+        name = f"{documents}/" + "/".join(limit_text(s) for s in case["path"])
+        fields = {k: limit_value(v) for k, v in case["fields"].items()}
+        body = {"writes": [{"update": {"name": name, "fields": fields}}]}
+        status, _, text = production.send("POST", f"/v1/{documents}:commit", json.dumps(body).encode())
+        result["sent"] += 1
+        try:
+            message = json.loads(text)["error"]["message"] if status != 200 else ""
+        except (ValueError, KeyError, TypeError):
+            message = text[:300]
+        answered = {"status": status, "message": mask(message, production.project)}
+        tally(result, case["outcome"], answered, lambda: {
+            "name": case["name"], "method": "POST", "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+            "difference": first_difference(case["outcome"], answered) or "the outcome", "official": case["outcome"],
             "production": answered}, case["name"])
 
 
@@ -816,6 +869,10 @@ def replay(production, fixture):
         return result
     if recording["cases"] and "steps" in recording["cases"][0]:
         replay_steps(production, recording, result)
+        production.empty()
+        return result
+    if recording["cases"] and "fields" in recording["cases"][0]:
+        replay_limits(production, recording, result)
         production.empty()
         return result
     for n, case in enumerate(recording["cases"], 1):
