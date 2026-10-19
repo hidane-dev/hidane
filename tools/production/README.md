@@ -107,6 +107,9 @@ Recordings it reads:
   ([`tools/oracle/find_nearest.py`](../oracle/find_nearest.py)) sent them, and compared as it
   put them;
 - the REST cases of `json_escapes.json`, as those of `rest.json`;
+- the recording of what the official emulator ignores or refuses (`unsupported.json`): explain
+  options, pipelines on a standard database and partitioned queries, each gRPC request in its
+  REST form, compared as its recorder summed them up;
 - recordings of Security Rules conditions (`rules_eval.json`, in
   `crates/hidane-rules/tests/fixtures/`): each condition, in the recording's ruleset, or each whole
   ruleset, is tested with the Rules API (`projects.test`) for a `get` of `rooms/r1` without
@@ -134,7 +137,7 @@ Recordings it reads:
   the recording's documents without `auth`, and whether each read is allowed, and the warnings,
   are compared.
 
-The workflow replays all nineteen nightly. Testing rules takes the permission
+The workflow replays all twenty nightly. Testing rules takes the permission
 `firebaserules.rulesets.test`: the workflow's service account has it through a custom role that
 holds that one permission (`rulesTester`), so it may test rulesets but not deploy them. The Rules
 API takes seconds to compile each ruleset, so tests are sent eight at a time, and at most 240 a

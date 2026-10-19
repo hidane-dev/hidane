@@ -799,11 +799,12 @@
    "topic": null,
    "kind": "limitation",
    "official": "ProtoJSON (REST, WebChannel) reads a double through `BigDecimal`: a literal zero such as `-0.0`, `-0` or `\"-0\"` is `0.0`, but a literal that only rounds to zero, such as `-1e-400`, is `-0.0` (`tools/oracle/negative_zero.py`)",
-   "firestore": null,
+   "firestore": "ProtoJSON keeps the sign (seen over REST, #82): `-0.0`, `-0e0`, `\"-0.0\"`, `\"-0\"` (the web SDK's spelling) and `-1e-400` are stored as `-0.0` and printed `-0`; only `-0`, an integer literal, is `0.0`",
    "hidane": "Every `-0.0` read from ProtoJSON is `0.0`, that one included; gRPC keeps `-0.0` on both",
    "reason": "No client writes such a literal, and telling it from `-0.0` would need the number's text, which the JSON parser does not keep",
    "references": [
-    "tools/oracle/negative_zero.py"
+    "tools/oracle/negative_zero.py",
+    "hidane-dev/hidane#82"
    ],
    "pinned_by": [
     "crates/hidane/tests/negative_zero.rs::every_recorded_step_gives_the_official_answer",
@@ -1408,13 +1409,14 @@
    "topic": "`ExecutePipeline`",
    "kind": "bug-for-bug",
    "official": "Only with `--database-edition enterprise`; on a standard database `INVALID_ARGUMENT` \"ExecutePipeline requires the Database Edition to be \\`enterprise\\`.\"",
-   "firestore": "Enterprise edition only",
+   "firestore": "Enterprise edition only: on a standard database `FAILED_PRECONDITION` \"Pipeline Operations are only available for Firestore databases in Enterprise edition.\" and a line more, with `details` (#82)",
    "hidane": "As the official emulator: the same error on a standard database, and pipelines on an enterprise one (`tools/oracle/pipelines.py`)",
    "reason": "Follow the emulator (#26, #80)",
    "references": [
     "hidane-dev/hidane#80",
     "hidane-dev/hidane#26",
-    "tools/oracle/pipelines.py"
+    "tools/oracle/pipelines.py",
+    "hidane-dev/hidane#82"
    ],
    "pinned_by": [
     "crates/hidane/tests/unsupported.rs::ignored_and_refused_like_the_official_emulator",
@@ -1429,11 +1431,12 @@
    "topic": "`explain_options` (RunQuery, RunAggregationQuery)",
    "kind": "bug-for-bug",
    "official": "Ignored: the same results, no explain metrics",
-   "firestore": "Explain metrics (plan summary, and execution stats with `analyze`)",
+   "firestore": "Explain metrics: without `analyze`, the plan alone and no results; with it, the results, then the plan and execution stats (#82)",
    "hidane": "As the official emulator: ignored",
    "reason": "Follow the emulator (#26)",
    "references": [
-    "hidane-dev/hidane#26"
+    "hidane-dev/hidane#26",
+    "hidane-dev/hidane#82"
    ],
    "pinned_by": [
     "crates/hidane/tests/unsupported.rs::ignored_and_refused_like_the_official_emulator",
