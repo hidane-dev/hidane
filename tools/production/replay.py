@@ -60,6 +60,8 @@ DATABASE = "/v1/projects/{project}/databases/(default)/"
 PROJECT_NAME = re.compile(r"projects/([^/\s\"'?:]+)")
 TRANSIENT = {429, 500, 502, 503, 504}
 NETWORK_TRIES = 4
+# The documents a query of the replay's own emptying reads at a time.
+EMPTYING_PAGE = 1000
 # Tests of rules sent at once: the Rules API takes seconds to compile each ruleset. It allows a
 # project 300 tests a minute, so they are started at most 240 times a minute.
 RULES_AT_ONCE = 8
@@ -141,50 +143,28 @@ class Production:
 
     def empty(self, under=""):
         """Deletes every document of the database, or the document or collection `under` names
-        (a path below the documents) and everything below it; those under missing documents
-        included."""
+        (a path below the documents) and everything below it. A query of every collection below
+        the parent (`allDescendants` without a collection ID) finds them, so no document's name
+        goes into a URL: production serves no path for some IDs, control characters among them."""
         documents = f"projects/{self.project}/databases/(default)/documents"
-        names = []
-
-        def url(name):
-            return urllib.parse.quote(name, safe="/()")
-
-        def collections(parent):
-            ids, token = [], None
-            while True:
-                body = {"pageSize": 100, **({"pageToken": token} if token else {})}
-                answer = self.call("POST", f"/v1/{url(parent)}:listCollectionIds", body)
-                ids += answer.get("collectionIds", [])
-                token, previous = answer.get("nextPageToken"), token
-                if not token or token == previous:
-                    return ids
-
-        def collection(parent, collection_id):
-            token = None
-            while True:
-                query = "?pageSize=300&showMissing=true&mask.fieldPaths=__name__"
-                if token:
-                    query += "&pageToken=" + urllib.parse.quote(token, safe="")
-                answer = self.call("GET", f"/v1/{url(parent)}/{urllib.parse.quote(collection_id, safe='')}{query}")
-                for document in answer.get("documents", []):
-                    walk(document["name"])
-                    names.append(document["name"])
-                token, previous = answer.get("nextPageToken"), token
-                if not token or token == previous:
-                    return
-
-        def walk(parent):
-            for collection_id in collections(parent):
-                collection(parent, collection_id)
-
         segments = [s for s in under.split("/") if s]
-        if not segments:
-            walk(documents)
-        elif len(segments) % 2:
-            collection("/".join([documents, *segments[:-1]]), segments[-1])
-        else:
-            walk("/".join([documents, *segments]))
-            names.append("/".join([documents, *segments]))
+        # A collection's documents are found from its parent, then told apart by their names.
+        parent = "/".join([documents, *(segments[:-1] if len(segments) % 2 else segments)])
+        inside = "/".join([documents, *segments]) + "/" if segments else ""
+        names, after = [], None
+        while True:
+            query = {"from": [{"allDescendants": True}], "select": {"fields": [{"fieldPath": "__name__"}]},
+                     "orderBy": [{"field": {"fieldPath": "__name__"}}], "limit": EMPTYING_PAGE}
+            if after:
+                query["startAt"] = {"values": [{"referenceValue": after}], "before": False}
+            answer = self.call("POST", f"/v1/{urllib.parse.quote(parent, safe='/()')}:runQuery", {"structuredQuery": query})
+            found = [r["document"]["name"] for r in answer if "document" in r]
+            names += [name for name in found if name.startswith(inside)]
+            if len(found) < EMPTYING_PAGE:
+                break
+            after = found[-1]
+        if segments and not len(segments) % 2:
+            names.append(parent)
         log(f"emptying {'the database' if not segments else '/'.join(segments)}: {len(names)} documents")
         for start in range(0, len(names), 500):
             writes = [{"delete": name} for name in names[start:start + 500]]
@@ -322,6 +302,9 @@ KNOWN_CASES = {
     "list_documents.json": [("D101", r"slash"), ("D103", r"^root without a slash$"),
                             ("D089", r"^collection, order by (?:a field|the name), pages of 2$")],
     "read_time_and_databases.json": [("D112", r"^REST :batchGet, (?:60|3540) s old$")],
+    "json_escapes.json": [("D116", r"^get the document with the characters in its ID$|^an error that repeats a document name$")],
+    "find_nearest.json": [("D080", r"^cosine, (?:a zero vector last|threshold)$|^a query vector with NaN$"),
+                          ("D074", r"^name descending$")],
     "base_versions.json": [("D066", r"^REST patch"), ("D109", r"version 0, deleted document|the deleted version"),
                            ("D110", r"past the stored version|then a document that is missing"),
                            ("D111", r"named database")],
@@ -874,6 +857,78 @@ def replay_read_times(production, recording, result):
                 "production": answered}, name)
 
 
+# The project `tools/oracle/find_nearest.py` recorded in; its queries and answers name it.
+FIND_NEAREST_PROJECT = "find-nearest"
+
+
+def replay_find_nearest(production, recording, result):
+    """The recording of vector search (`find_nearest.json`): its seed is written, then each query
+    is run with `:runQuery` and each aggregation with `:runAggregationQuery`, and each malformed
+    vector value is committed, as its recorder (`tools/oracle/find_nearest.py`) did, and compared
+    as it put them: the documents found, in order, with their fields but the vector, or the
+    aggregations' results, or the error's status and message. A query production refuses for want
+    of a vector index is counted apart, and the index kept in the report (`indexes.py`)."""
+    documents = f"projects/{production.project}/databases/(default)/documents"
+
+    def ours(value):
+        return json.loads(json.dumps(value).replace(f"projects/{FIND_NEAREST_PROJECT}/", f"projects/{production.project}/"))
+
+    def theirs(value):
+        return json.loads(json.dumps(value).replace(f"projects/{FIND_NEAREST_PROJECT}/", "projects/{project}/"))
+
+    def error(status, answer):
+        errors = [r["error"] for r in (answer if isinstance(answer, list) else [answer])
+                  if isinstance(r, dict) and isinstance(r.get("error"), dict)]
+        return {"status": status, "message": mask(errors[0].get("message", "") if errors else str(answer)[:300],
+                                                  production.project)}
+
+    def compare(name, verb, official, answered):
+        result["sent"] += 1
+        official = theirs(official)
+        tally(result, official, answered, lambda: {
+            "name": name, "method": "POST", "path": f"/v1/projects/{{project}}/databases/(default)/documents:{verb}",
+            "difference": first_difference(official, answered) or "the outcome", "official": official,
+            "production": answered}, name)
+
+    production.call("POST", f"/v1/{documents}:commit", {"writes": [
+        {"update": {"name": f"{documents}/{path}", "fields": ours(fields)}} for path, fields in recording["seed"].items()]})
+    for case in recording["queries"]:
+        status, _, text = production.send("POST", f"/v1/{documents}:runQuery",
+                                          json.dumps({"structuredQuery": ours(case["query"])}).encode())
+        asked(result, text)
+        answer = parsed(text)
+        if NEEDS_INDEX.search(text) and isinstance(case["outcome"], list):
+            result["sent"] += 1
+            result["needsIndex"].append(case["name"])
+            continue
+        if status != 200 or not isinstance(answer, list) or any(isinstance(r, dict) and "error" in r for r in answer):
+            answered = json.loads(INDEX_LINK.sub("<index link>", json.dumps(error(status, answer))))
+        else:
+            answered = [{"name": r["document"]["name"][len(documents) + 1:],
+                         "fields": {k: v for k, v in r["document"].get("fields", {}).items() if k != "v"}}
+                        for r in answer if "document" in r]
+        compare(case["name"], "runQuery", case["outcome"], answered)
+    for case in recording["aggregations"]:
+        status, _, text = production.send("POST", f"/v1/{documents}:runAggregationQuery",
+                                          json.dumps(ours(case["request"])).encode())
+        asked(result, text)
+        answer = parsed(text)
+        if NEEDS_INDEX.search(text) and isinstance(case["outcome"], list):
+            result["sent"] += 1
+            result["needsIndex"].append(case["name"])
+            continue
+        if status != 200 or not isinstance(answer, list) or any(isinstance(r, dict) and "error" in r for r in answer):
+            answered = error(status, answer)
+        else:
+            answered = [r["result"]["aggregateFields"] for r in answer if "result" in r]
+        compare(case["name"], "runAggregationQuery", case["outcome"], answered)
+    for case in recording["writes"]:
+        body = {"writes": [{"update": {"name": f"{documents}/writes/w", "fields": ours(case["fields"])}}]}
+        status, _, text = production.send("POST", f"/v1/{documents}:commit", json.dumps(body).encode())
+        answered = {"status": status, "message": "" if status == 200 else error(status, parsed(text))["message"]}
+        compare(case["name"], "commit", case["outcome"], answered)
+
+
 # A condition that reads the document, the request or other documents. The Rules API takes the
 # document as JSON, whose numbers are all floats (`1 is int` is false), and runs lookups only on
 # mocks; such a condition is not tested.
@@ -1017,8 +1072,9 @@ def step_answer(status, answer, project, commits):
     body. The case's project reads `{project}`. The times in a body are read against the case's
     commits so far (`commits`, which a body with a `commitTime` adds to): a commit's own time is
     `<commit 2>`, one within a minute of a commit `<near commit 2>`, another server time (a
-    `readTime`) `<time>`; a time the client wrote stays as it is. Page tokens read `<token>`, and
-    IDs the server chose `<auto>`."""
+    `readTime`) `<time>`; a time the client wrote stays as it is. A read time is the snapshot the
+    server chose, which production may put at the commit itself: it is `<near commit 2>` there
+    too. Page tokens read `<token>`, and IDs the server chose `<auto>`."""
     if answer is None:
         return {"status": status}
     alone = re.compile(r"(?<![\w-])" + re.escape(project) + r"(?![\w-])")
@@ -1036,7 +1092,7 @@ def step_answer(status, answer, project, commits):
         if isinstance(value, list):
             return [read(v) for v in value]
         if isinstance(value, str) and TIMESTAMP.fullmatch(value):
-            if value in commits:
+            if value in commits and key != "readTime":
                 return f"<commit {commits.index(value) + 1}>"
             near = [i for i, c in enumerate(commits) if abs(micros(c) - micros(value)) < 60_000_000]
             if near:
@@ -1095,6 +1151,25 @@ def handed_on(text, found):
     return text
 
 
+# Recordings of steps that record the order of an answer's keys, the fields' above all
+# (`tools/oracle/field_order.py`): theirs is compared too, and the entry that records how
+# production orders them.
+ORDERED = {"field_order.json": "D115"}
+
+
+def order_difference(official, production, at="$"):
+    """Where two JSON values hold the keys they share in another order, and how, or None."""
+    if isinstance(official, dict) and isinstance(production, dict):
+        theirs, ours = [k for k in official if k in production], [k for k in production if k in official]
+        if theirs != ours:
+            return f"{at}: keys in the order {theirs}, production {ours}"
+        return next((d for k in theirs if (d := order_difference(official[k], production[k], f"{at}.{k}"))), None)
+    if isinstance(official, list) and isinstance(production, list):
+        return next((d for i, (o, p) in enumerate(zip(official, production))
+                     if (d := order_difference(o, p, f"{at}[{i}]"))), None)
+    return None
+
+
 def replay_steps(production, recording, result):
     """A recording of steps (`same_document_writes.json`, `document_writes.json`,
     `transforms.json`, `base_versions.json`). On the official emulator each case ran in a project
@@ -1141,6 +1216,8 @@ def replay_steps(production, recording, result):
             answered = step_answer(status, answer if recorded is not None else None, project, production_commits)
             if first is None and not same_json(official, answered, known):
                 first = (n, official, answered)
+            elif first is None and result["fixture"] in ORDERED and order_difference(official, answered):
+                known.add(ORDERED[result["fixture"]])
         about = [k for k, pattern in KNOWN_CASES.get(result["fixture"], []) if re.search(pattern, case["name"])]
         if first is not None and about:
             first, known = None, {about[0]}
@@ -1161,6 +1238,9 @@ def replay_steps(production, recording, result):
 def replay(production, fixture):
     """Sends a recording's cases; what each answered next to what the official emulator did."""
     recording = json.loads(Path(fixture).read_text())
+    if isinstance(recording, list) and recording and "steps" in recording[0]:
+        # A list of cases of steps (`field_order.json`).
+        recording = {"cases": recording}
     project = production.project
     if isinstance(recording, list) or "results" in recording:
         # Recordings of Security Rules: conditions evaluated on a document (`rules_eval.json`);
@@ -1199,6 +1279,15 @@ def replay(production, fixture):
         replay_list_documents(production, recording, result)
         production.empty()
         return result
+    if "queries" in recording and "writes" in recording and "seed" in recording:
+        result = {"fixture": Path(fixture).name, "sent": 0, "same": 0, "skipped": {}, "emulatorDeletes": 0,
+                  "cases": sum(len(recording[k]) for k in ("queries", "aggregations", "writes")),
+                  "needsIndex": [], "indexes": [], "knownCases": 0, "known": {}, "differ": []}
+        production.empty()
+        log(f"{result['fixture']}: {result['cases']} vector searches and writes")
+        replay_find_nearest(production, recording, result)
+        production.empty()
+        return result
     if "read_time" in recording:
         read_time = recording["read_time"]
         result = {"fixture": Path(fixture).name, "cases": len(read_time["reads"]) * len(read_time["cases"]), "sent": 0,
@@ -1209,6 +1298,10 @@ def replay(production, fixture):
         replay_read_times(production, recording, result)
         production.empty()
         return result
+    if "cases" not in recording and isinstance(recording.get("rest"), list) and "headers" in (recording["rest"] or [{}])[0]:
+        # The REST cases of a recording that holds others too (`json_escapes.json`, whose WebChannel
+        # cases are not sent).
+        recording = {**recording, "cases": recording["rest"]}
     result = {"fixture": Path(fixture).name, "cases": len(recording["cases"]), "sent": 0, "same": 0,
               "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "indexes": [], "knownCases": 0,
                   "known": {}, "differ": []}

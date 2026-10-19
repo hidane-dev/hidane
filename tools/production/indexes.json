@@ -942,6 +942,152 @@
      }
     }
    ]
+  },
+  {
+   "collectionGroup": "v",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "__name__",
+     "order": "DESCENDING"
+    },
+    {
+     "fieldPath": "v",
+     "vectorConfig": {
+      "dimension": 2,
+      "flat": {}
+     }
+    }
+   ]
+  },
+  {
+   "collectionGroup": "v",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "__name__",
+     "vectorConfig": {
+      "dimension": 2,
+      "flat": {}
+     }
+    }
+   ]
+  },
+  {
+   "collectionGroup": "v",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "__type__",
+     "vectorConfig": {
+      "dimension": 2,
+      "flat": {}
+     }
+    }
+   ]
+  },
+  {
+   "collectionGroup": "v",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "k",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "v",
+     "vectorConfig": {
+      "dimension": 2,
+      "flat": {}
+     }
+    }
+   ]
+  },
+  {
+   "collectionGroup": "v",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "k",
+     "order": "DESCENDING"
+    },
+    {
+     "fieldPath": "__name__",
+     "order": "DESCENDING"
+    },
+    {
+     "fieldPath": "v",
+     "vectorConfig": {
+      "dimension": 2,
+      "flat": {}
+     }
+    }
+   ]
+  },
+  {
+   "collectionGroup": "v",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "nope",
+     "vectorConfig": {
+      "dimension": 2,
+      "flat": {}
+     }
+    }
+   ]
+  },
+  {
+   "collectionGroup": "v",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "v",
+     "vectorConfig": {
+      "dimension": 2,
+      "flat": {}
+     }
+    }
+   ]
+  },
+  {
+   "collectionGroup": "v",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "v",
+     "vectorConfig": {
+      "dimension": 3,
+      "flat": {}
+     }
+    }
+   ]
+  },
+  {
+   "collectionGroup": "v",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "v[0]",
+     "vectorConfig": {
+      "dimension": 2,
+      "flat": {}
+     }
+    }
+   ]
+  },
+  {
+   "collectionGroup": "v",
+   "queryScope": "COLLECTION_GROUP",
+   "fields": [
+    {
+     "fieldPath": "v",
+     "vectorConfig": {
+      "dimension": 2,
+      "flat": {}
+     }
+    }
+   ]
   }
  ],
  "fieldOverrides": [

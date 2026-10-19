@@ -71,6 +71,12 @@ class IndexesTest(unittest.TestCase):
         answer = json.dumps([{"error": {"code": 400, "message": text, "status": "FAILED_PRECONDITION"}}])
         self.assertEqual(indexes.index_asked(answer), vector)
         self.assertIsNone(indexes.index_asked(text.replace('"2"', '"two"')))
+        # A field ordered before the vector, as for the documents' names in descending order.
+        ordered = text.replace("--field-config=vector-config", "--field-config=order=DESCENDING,field-path=__name__ "
+                                                               "--field-config=vector-config")
+        self.assertEqual(indexes.index_asked(ordered), {**vector, "fields": [
+            {"fieldPath": "__name__", "order": "DESCENDING"}, *vector["fields"]]})
+        self.assertNotEqual(indexes.key(indexes.index_asked(ordered)), indexes.key(vector))
         self.assertIsNone(indexes.index_asked("no link"))
         self.assertIsNone(indexes.index_asked("…?create_composite=Q2tS"))
 
@@ -88,6 +94,15 @@ class IndexesTest(unittest.TestCase):
             listed_vector = {"name": "projects/x/databases/(default)/collectionGroups/t/indexes/CICAg", "queryScope": "COLLECTION",
                              "fields": [{"fieldPath": "__name__", "order": "ASCENDING"}, *vector["fields"]]}
             self.assertEqual(indexes.key(vector), indexes.key(listed_vector))
+            # A field before the vector: `__name__` comes between them, in its order.
+            for order in ("ASCENDING", "DESCENDING"):
+                filtered = {**vector, "fields": [{"fieldPath": "k", "order": order}, *vector["fields"]]}
+                self.assertEqual(indexes.key(filtered), indexes.key({**listed_vector, "fields": [
+                    {"fieldPath": "k", "order": order}, {"fieldPath": "__name__", "order": order}, *vector["fields"]]}))
+            # A vector index of `__name__` itself is listed after the `__name__` production adds.
+            of_name = {**vector, "fields": [{"fieldPath": "__name__", "vectorConfig": {"dimension": 2, "flat": {}}}]}
+            self.assertEqual(indexes.key(of_name), indexes.key({**listed_vector, "fields": [
+                {"fieldPath": "__name__", "order": "ASCENDING"}, *of_name["fields"]]}))
             by_name = {"collectionGroup": "p", "queryScope": "COLLECTION"}
             self.assertNotEqual(indexes.key(by_name | {"fields": [{"fieldPath": "__name__", "order": "DESCENDING"}]}),
                                 indexes.key(by_name | {"fields": [{"fieldPath": "__name__", "order": "ASCENDING"}]}))

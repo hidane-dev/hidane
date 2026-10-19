@@ -1447,12 +1447,13 @@
    "topic": "`find_nearest`",
    "kind": "bug-for-bug",
    "official": "Runs vector search: the query's results nearest first (largest dot product first), ties in the query's order, NaN distances last; the distance field is a literal name (`a.b` is one field); a NaN in the query vector is accepted",
-   "firestore": "Runs vector search",
+   "firestore": "Runs vector search, with a vector index for the field. A `COSINE` query over a stored zero vector fails, `400` \"Cannot compute cosine distance against a vector with a magnitude of zero.\", and a NaN in the query vector finds nothing (#82)",
    "hidane": "As the official emulator",
    "reason": "Follow the emulator (#118, `tests/fixtures/find_nearest.json`)",
    "references": [
     "hidane-dev/hidane#118",
-    "crates/hidane/tests/fixtures/find_nearest.json"
+    "crates/hidane/tests/fixtures/find_nearest.json",
+    "hidane-dev/hidane#82"
    ],
    "pinned_by": [
     "crates/hidane/tests/find_nearest.rs::find_nearest_like_the_official_emulator"
@@ -1937,6 +1938,44 @@
    ],
    "pinned_by": [
     "crates/hidane/tests/rules_compile.rs::compiles_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D115",
+   "table": "production",
+   "area": "documents",
+   "topic": "The order of a document's fields",
+   "kind": "bug-for-bug",
+   "official": "A document's fields, and a map's, come back in the order they were written: a set keeps its JSON's order, a masked update leaves existing fields in place and adds new ones at the end, and read masks and projections keep the stored order (`tools/oracle/field_order.py`, #108)",
+   "firestore": "In an order of its own, neither the written nor the names', and not always the same for fields of the same names: `{zeta, alpha, mid, arr}` written comes back as `{mid, zeta, alpha, arr}` (#82)",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator (#108). Seen by the Production parity workflow (#82). A map's order is not part of the API",
+   "references": [
+    "hidane-dev/hidane#108",
+    "hidane-dev/hidane#82",
+    "tools/oracle/field_order.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/field_order.rs::fields_come_back_in_the_official_order",
+    "crates/hidane/tests/field_order.rs::grpc_keeps_the_order_too"
+   ]
+  },
+  {
+   "id": "D116",
+   "table": "production",
+   "area": "rest",
+   "topic": "A NUL in a REST path",
+   "kind": "bug-for-bug",
+   "official": "A document whose ID holds U+0000 is named in a REST path like any other: `GET …/documents/i/%00…` answers it, or `404` if it is missing",
+   "firestore": "Google's front end refuses a path with `%00`, `400` with its HTML page, before Firestore sees it; the other control characters reach Firestore. Such a document is written, read and deleted with `:commit`, `:batchGet` and queries, which name it in the body (#82)",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82)",
+   "references": [
+    "hidane-dev/hidane#82",
+    "tools/oracle/json_escapes.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rest.rs::strings_escape_like_the_official_emulator"
    ]
   }
  ],
