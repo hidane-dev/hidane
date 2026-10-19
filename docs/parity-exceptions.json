@@ -1313,11 +1313,12 @@
    "topic": "Query cursors",
    "kind": "bug-for-bug",
    "official": "At most one value per explicit `order_by`; values for the implicit orderings (inequality fields, `__name__`) fail with \"Cursor has too many values.\"",
-   "firestore": "Cursors are positions in the query's full ordering",
+   "firestore": "RunQuery refuses them too, with the same message (#82). Listen takes them: there, cursors are positions in the query's full ordering (D117)",
    "hidane": "As the official emulator",
    "reason": "Follow the emulator, measured in #21. The SDKs add explicit orderings when they build a cursor from a snapshot, so they are not affected",
    "references": [
-    "hidane-dev/hidane#21"
+    "hidane-dev/hidane#21",
+    "hidane-dev/hidane#82"
    ],
    "pinned_by": [
     "crates/hidane/tests/queries.rs::queries_answer_like_the_official_emulator"
@@ -1979,6 +1980,25 @@
    ],
    "pinned_by": [
     "crates/hidane/tests/rest.rs::strings_escape_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D117",
+   "table": "production",
+   "area": "streams",
+   "topic": "Listen targets",
+   "kind": "bug-for-bug",
+   "official": "A Listen target's query is checked as RunQuery checks it, with RunQuery's messages, and runs as RunQuery runs it: projections, queries of every collection, collection groups below a document and `limit: 0` included (`tools/oracle/listen_queries.py`, #338)",
+   "firestore": "Listen checks a target on its own, with messages of its own (`Invalid identifier; a[0]`, `Order by clause cannot contain more fields after the key v`, `Cannot cast an empty fsv1 Value to a C++ Value.`, internal check failures), and removes it. It refuses what a real-time query cannot do: `'select' clauses are not supported for real-time queries.`, `All-collection queries are not supported by real-time queries.`, `'all_descendants' in CollectionSelector with document parent is not supported by real-time queries.`, `Queries with limit 0 are not supported.`, and orders after `__name__`. It takes cursors with values for the implicit orderings (D073) and more than 100 filters (D107) (#82)",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). The SDKs build their listeners' targets from queries they check themselves",
+   "references": [
+    "hidane-dev/hidane#338",
+    "hidane-dev/hidane#82",
+    "tools/oracle/listen_queries.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/listen_queries.rs::listen_targets_answer_like_the_official_emulator"
    ]
   }
  ],
