@@ -41,7 +41,7 @@ jobs:
       - run: python3 -I bench/check_targets.py --self-test
       # The runner image's rustup; no toolchain action needed.
       - run: rustup toolchain install stable --profile minimal && rustup default stable
-      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       - run: cargo build --release --locked -p hidane
       # Exit status 1 means some runs failed; the result is written all the same, and the check
       # below reports the failures.
