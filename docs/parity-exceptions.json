@@ -1734,7 +1734,7 @@
    "references": [
     "hidane-dev/hidane#82",
     "https://github.com/hidane-dev/hidane/actions/runs/39089145449",
-    "https://github.com/hidane-dev/hidane/actions/runs/39102098636"
+    "https://github.com/hidane-dev/hidane/actions/runs/39214260098"
    ],
    "pinned_by": [
     "crates/hidane/tests/rest.rs::rest_answers_like_the_official_emulator"
@@ -1845,7 +1845,7 @@
    "hidane": "As the official emulator",
    "reason": "Follow the emulator. Seen by the Production parity workflow (#82)",
    "references": [
-    "https://github.com/hidane-dev/hidane/actions/runs/39102098636",
+    "https://github.com/hidane-dev/hidane/actions/runs/39214260098",
     "hidane-dev/hidane#82"
    ],
    "pinned_by": [
@@ -1863,7 +1863,7 @@
    "hidane": "As the official emulator",
    "reason": "Follow the emulator. Seen by the Production parity workflow (#82)",
    "references": [
-    "https://github.com/hidane-dev/hidane/actions/runs/39102098636",
+    "https://github.com/hidane-dev/hidane/actions/runs/39214260098",
     "hidane-dev/hidane#82"
    ],
    "pinned_by": [
@@ -1881,7 +1881,7 @@
    "hidane": "As the official emulator",
    "reason": "Follow the emulator. Seen by the Production parity workflow (#82). Tests use named databases without creating them",
    "references": [
-    "https://github.com/hidane-dev/hidane/actions/runs/39102098636",
+    "https://github.com/hidane-dev/hidane/actions/runs/39214260098",
     "hidane-dev/hidane#82"
    ],
    "pinned_by": [
@@ -1899,7 +1899,7 @@
    "hidane": "As the official emulator",
    "reason": "Follow the emulator. Seen by the Production parity workflow (#82). The API does not promise an order",
    "references": [
-    "https://github.com/hidane-dev/hidane/actions/runs/39102098636",
+    "https://github.com/hidane-dev/hidane/actions/runs/39214260098",
     "hidane-dev/hidane#82"
    ],
    "pinned_by": [
