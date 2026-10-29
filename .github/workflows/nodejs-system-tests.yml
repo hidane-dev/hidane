@@ -9,12 +9,19 @@ name: nodejs-firestore system tests
 # tools/nodejs-system-tests/expected-failures.txt lists it, and on a listed test that passes.
 #
 # It runs weekly, by hand, and for changes to the server, the runner or the recorded results.
+# Run by hand with `official`, it also runs the suite against a freshly started official emulator
+# (the pinned release) and uploads those results, to record them at a new commit.
 # It runs third-party code (the SDK and its tests): it needs no secret and gets none.
 
 on:
   schedule:
     - cron: "17 6 * * 3"
   workflow_dispatch:
+    inputs:
+      official:
+        description: Run the suite against the official emulator too, and upload its results
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths:
@@ -43,7 +50,7 @@ concurrency:
 env:
   # The google-cloud-node commit the suite runs at. results/nodejs-system-tests-*.json were
   # recorded there; compare.mjs refuses a run of another commit.
-  GOOGLE_CLOUD_NODE_COMMIT: 3821456d7810580c3c3f1256bd3d2fae4a3f5980
+  GOOGLE_CLOUD_NODE_COMMIT: cf2e273257719b10195f55639b18cc25472775d2 # firestore-v9.4.0
 
 jobs:
   suite:
@@ -111,4 +118,67 @@ jobs:
             ${{ runner.temp }}/${{ matrix.results }}-hidane.json
             ${{ runner.temp }}/report.json
             ${{ runner.temp }}/hidane.log
+          if-no-files-found: ignore
+
+  official:
+    name: ${{ matrix.name }} against the official emulator
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.official }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: gRPC
+            transport: grpc
+            results: nodejs-system-tests
+          - name: REST
+            transport: rest
+            results: nodejs-system-tests-rest
+    env:
+      TRANSPORT: ${{ matrix.transport }}
+      RESULTS: ${{ matrix.results }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: googleapis/google-cloud-node
+          ref: ${{ env.GOOGLE_CLOUD_NODE_COMMIT }}
+          path: google-cloud-node
+          sparse-checkout: |
+            handwritten/firestore
+            bin
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 22
+      - name: Enable pnpm
+        run: corepack enable
+      - name: Install and compile the Firestore package
+        env:
+          COREPACK_ENABLE_DOWNLOAD_PROMPT: "0"
+        run: tools/nodejs-system-tests/setup.sh google-cloud-node
+      # Started after the setup, so the suite meets a fresh emulator.
+      - name: Start the official emulator
+        id: official
+        uses: ./.github/actions/official-emulator
+      - name: Run the system tests
+        run: tools/nodejs-system-tests/run.sh google-cloud-node 8080 "$RUNNER_TEMP/report.json" "$TRANSPORT"
+      - name: Turn the report into results
+        env:
+          VERSION: ${{ steps.official.outputs.version }}
+        run: |
+          node tools/nodejs-system-tests/results.mjs "$GOOGLE_CLOUD_NODE_COMMIT" "official v$VERSION" \
+            "$RUNNER_TEMP/report.json" "$TRANSPORT" > "$RUNNER_TEMP/$RESULTS-official-v$VERSION.json"
+      # The results to commit in results/, Mocha's report and the emulator's log.
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !cancelled() }}
+        with:
+          name: ${{ matrix.results }}-official
+          path: |
+            ${{ runner.temp }}/${{ matrix.results }}-official-v*.json
+            ${{ runner.temp }}/report.json
+            ${{ steps.official.outputs.log }}
           if-no-files-found: ignore
