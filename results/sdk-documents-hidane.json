@@ -8,15 +8,15 @@
   "ok": {
    "exists": true,
    "data": {
-    "age": 30,
     "name": "Alice",
-    "nested": {
-     "x": 1
-    },
+    "age": 30,
     "tags": [
      "a",
      "b"
-    ]
+    ],
+    "nested": {
+     "x": 1
+    }
    },
    "createEqualsUpdate": true,
    "updateEqualsWrite": true
@@ -25,33 +25,33 @@
  {
   "name": "update dotted",
   "ok": {
-   "age": 31,
    "name": "Alice",
+   "tags": [
+    "a",
+    "b"
+   ],
    "nested": {
     "x": 1,
     "y": 2
    },
-   "tags": [
-    "a",
-    "b"
-   ]
+   "age": 31
   }
  },
  {
   "name": "set merge",
   "ok": {
+   "name": "Alice",
+   "tags": [
+    "a",
+    "b"
+   ],
    "age": 31,
    "city": "Tokyo",
-   "name": "Alice",
    "nested": {
     "x": 1,
     "y": 2,
     "z": 3
-   },
-   "tags": [
-    "a",
-    "b"
-   ]
+   }
   }
  },
  {

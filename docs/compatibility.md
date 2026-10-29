@@ -27,7 +27,7 @@ firebase-tools that launches it and the official emulator it is compared with.
 
 | Evidence | What the results show | Where |
 |---|---|---|
-| Oracle corpus | 138 recordings of the official emulator 1.22.0 (78 fixtures, 60 official transcripts), `sha256:6f0f40e75242…` | [oracle-corpus.md](oracle-corpus.md) |
+| Oracle corpus | 138 recordings of the official emulator 1.22.0 (78 fixtures, 60 official transcripts), `sha256:bb414f5be2b6…` | [oracle-corpus.md](oracle-corpus.md) |
 | Record and replay | 54,378 recorded answers in 78 fixtures, replayed by `cargo test` on every pull request and push to main: 43,022 in full, 4,344 decision and reasons, 1,517 in part, 5,197 status only, 96 without messages, 7 not compared, 195 intentionally different | [parity.md](parity.md) |
 | SDK transcripts | 62 comparisons of 60 transcript pairs: 44 identical, 18 documented differences | [parity.md](parity.md) |
 | SDK certification | 20 clients and tools: 18 verified, 0 partially verified, 2 not verified | [sdk-certification.md](sdk-certification.md) |

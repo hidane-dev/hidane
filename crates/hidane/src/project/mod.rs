@@ -1091,7 +1091,7 @@ mod tests {
             ("firebase.json", r#"{"firestore": {}, "emulators": {"ui": {}}}"#),
             (
                 "package.json",
-                r#"{"devDependencies": {"firebase": "13.0.0", "@firebase/rules-unit-testing": "6.0.3", "@google-cloud/firestore": "9.4.0", "firebase-tools": "^15.33.0"}}"#,
+                r#"{"devDependencies": {"firebase": "13.0.0", "@firebase/rules-unit-testing": "6.0.3", "@google-cloud/firestore": "9.5.0", "firebase-tools": "^15.33.0"}}"#,
             ),
             ("requirements.txt", "google-cloud-firestore==2.35.0\n"),
             ("go.mod", "module x\n\nrequire cloud.google.com/go/firestore v1.26.3\n"),
@@ -1117,7 +1117,7 @@ mod tests {
             Status::Compatible
         );
         assert_eq!(
-            status("@google-cloud/firestore 9.4.0"),
+            status("@google-cloud/firestore 9.5.0"),
             Status::LikelyCompatible
         );
         assert_eq!(status("firebase-tools ^15.33.0"), Status::LikelyCompatible);

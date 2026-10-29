@@ -7,7 +7,7 @@
     {"ecosystem": "npm", "name": "firebase", "version": "13.0.0", "verified": true},
     {"ecosystem": "npm", "name": "firebase-admin", "version": "14.5.0", "verified": false,
      "note": "Not verified itself: its Firestore client is @google-cloud/firestore."},
-    {"ecosystem": "npm", "name": "@google-cloud/firestore", "version": "9.3.1", "verified": true},
+    {"ecosystem": "npm", "name": "@google-cloud/firestore", "version": "9.4.0", "verified": true},
     {"ecosystem": "npm", "name": "@google-cloud/datastore", "version": "11.3.0", "verified": true,
      "note": "In Datastore mode (#81)."},
     {"ecosystem": "npm", "name": "firebase-functions", "version": "6.6.0", "verified": true},

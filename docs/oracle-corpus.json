@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:6f0f40e75242b953ab446ba68fc2f7cdd0bd3f1e2aa6a8097a07a40ef89efa53",
+ "digest": "sha256:bb414f5be2b67be19f8d06100675b68a7d7ce8920f1054076b95c429a150984f",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -18,7 +18,7 @@
   "fixtures": 78,
   "transcripts": 60,
   "answers": 54378,
-  "bytes": 38517650,
+  "bytes": 38525212,
   "levels": {
    "full": 43022,
    "reasons": 4344,
@@ -4279,7 +4279,7 @@
     "packages": [
      {
       "name": "google-cloud-node",
-      "version": "3821456d7810580c3c3f1256bd3d2fae4a3f5980",
+      "version": "cf2e273257719b10195f55639b18cc25472775d2",
       "source": "pinned",
       "where": ".github/workflows/nodejs-system-tests.yml"
      }
@@ -4292,14 +4292,14 @@
    },
    "recorded": {
     "first_recorded": "2026-10-15",
-    "last_changed": "2026-10-15"
+    "last_changed": "2026-10-29"
    },
-   "bytes": 103236,
-   "sha256": "3992f274040253a6b6c0ae1b8cccac3d801be66d3fbe4252437d363ba10e9df7",
+   "bytes": 107017,
+   "sha256": "a651b3a7ef457f0c3bfd517fcafef8038405eec59fa76c70241895b4425dce96",
    "compared_with": [
     {
      "path": "results/nodejs-system-tests-rest-hidane.json",
-     "what": "hidane, without `emulator`; the outcome of each test: 328 passed, 568 skipped, 13 failed",
+     "what": "hidane, without `emulator`; the outcome of each test: 328 passed, 596 skipped, 13 failed",
      "result": "documented",
      "explained_in": "results/README.md"
     }
@@ -4677,7 +4677,7 @@
     "packages": [
      {
       "name": "google-cloud-node",
-      "version": "3821456d7810580c3c3f1256bd3d2fae4a3f5980",
+      "version": "cf2e273257719b10195f55639b18cc25472775d2",
       "source": "pinned",
       "where": ".github/workflows/nodejs-system-tests.yml"
      }
@@ -4690,14 +4690,14 @@
    },
    "recorded": {
     "first_recorded": "2026-10-15",
-    "last_changed": "2026-10-15"
+    "last_changed": "2026-10-29"
    },
-   "bytes": 103236,
-   "sha256": "2def649e1c204d520683fcf6a81dd1d6fc60262671bd82d07641c0bcc7a293ef",
+   "bytes": 107017,
+   "sha256": "4c4d3ec303465ec63fa247c74046e08d9d4914c358aa00b45ad53e77ac97ebe5",
    "compared_with": [
     {
      "path": "results/nodejs-system-tests-hidane.json",
-     "what": "hidane, without `emulator`; the outcome of each test: 328 passed, 568 skipped, 13 failed",
+     "what": "hidane, without `emulator`; the outcome of each test: 328 passed, 596 skipped, 13 failed",
      "result": "documented",
      "explained_in": "results/README.md"
     }
