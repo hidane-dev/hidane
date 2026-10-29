@@ -2,8 +2,8 @@
   "schema": "hidane.doctor/1",
   "hidane": "<version>",
   "summary": {
-    "compatible": 6,
-    "likely_compatible": 0,
+    "compatible": 5,
+    "likely_compatible": 1,
     "ok": 4,
     "info": 2,
     "unknown": 0,
@@ -68,9 +68,9 @@
     {
       "code": "dependency.sdk",
       "group": "dependencies",
-      "status": "compatible",
+      "status": "likely-compatible",
       "severity": "info",
-      "title": "Firebase Admin SDK (firebase-admin) 13.6.0 (package.json), whose Firestore client is @google-cloud/firestore 9.3.1: verified with hidane (over gRPC, with the default settings and with `preferRest`)",
+      "title": "Firebase Admin SDK (firebase-admin) 13.6.0 (package.json), whose Firestore client is @google-cloud/firestore 9.3.1: likely compatible — the same major version as the verified 9.4.0; this version itself is not verified",
       "source": "docs/sdk-certification.md",
       "file": "package.json",
       "line": 9

@@ -39,21 +39,24 @@ Over REST, pass `rest` to `run.sh` and `results.mjs`, start the emulator afresh,
 `results/nodejs-system-tests-rest-official-v1.22.0.json`.
 
 The tests take about 15 seconds against either emulator; setting up the checkout takes a few
-minutes. To record the official emulator again, start the jar with an English locale (see
+minutes. To record the official emulator again, run the workflow by hand with `official`: it also
+runs the suite against a freshly started official emulator, the pinned release, and uploads
+`nodejs-system-tests-official` and `nodejs-system-tests-rest-official`, whose results go in
+`results/` as they are. By hand, start the jar with an English locale (see
 `tools/oracle/README.md`) and pass `"official v1.22.0"` as the emulator's name.
 
 ## What the results hold
 
-At the pinned commit, 909 tests, with the same outcomes over gRPC and REST:
+At the pinned commit, 937 tests, with the same outcomes over gRPC and REST:
 
 | | Official emulator v1.22.0 | hidane |
 |---|--:|--:|
 | Passed | 328 | 329 |
 | Failed | 13 | 12 |
-| Skipped | 568 | 568 |
+| Skipped | 596 | 596 |
 
-- **Skipped.** 568 tests skip themselves against an emulator or a Standard edition database:
-  - 310 test pipelines, which need an Enterprise edition database.
+- **Skipped.** 596 tests skip themselves against an emulator or a Standard edition database:
+  - 338 test pipelines, which need an Enterprise edition database.
   - The rest are marked `skipEmulator`, or need production features: indexes, `CollectionGroup`
     partitions, and the tracing exporters.
 - **Failed on both.** The 12 tests of query explain (`explain()`, `explainStream()`) fail on both

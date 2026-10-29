@@ -49,8 +49,8 @@ concurrency:
 
 env:
   # The google-cloud-node commit the suite runs at. results/nodejs-system-tests-*.json were
-  # recorded there; compare.mjs refuses a run of another commit.
-  GOOGLE_CLOUD_NODE_COMMIT: cf2e273257719b10195f55639b18cc25472775d2 # firestore-v9.4.0
+  # recorded there; compare.mjs refuses a run of another commit. It is the firestore-v9.4.0 tag.
+  GOOGLE_CLOUD_NODE_COMMIT: cf2e273257719b10195f55639b18cc25472775d2
 
 jobs:
   suite:

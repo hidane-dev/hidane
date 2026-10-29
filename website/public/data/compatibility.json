@@ -195,7 +195,7 @@
     "gRPC"
    ],
    "status": "verified",
-   "version": "9.3.1",
+   "version": "9.4.0",
    "official_emulator": [
     "1.22.0"
    ],
@@ -210,7 +210,7 @@
    ],
    "not_exercised": [],
    "gaps": [],
-   "last_recorded": "2026-10-15",
+   "last_recorded": "2026-10-29",
    "tracking": null,
    "evidence": [
     {
@@ -261,7 +261,7 @@
     "gRPC"
    ],
    "status": "verified",
-   "version": "9.3.1",
+   "version": "9.4.0",
    "official_emulator": [
     "1.22.0"
    ],
@@ -276,7 +276,7 @@
    ],
    "not_exercised": [],
    "gaps": [],
-   "last_recorded": "2026-10-15",
+   "last_recorded": "2026-10-29",
    "tracking": null,
    "evidence": [
     {

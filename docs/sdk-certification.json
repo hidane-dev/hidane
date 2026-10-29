@@ -603,7 +603,7 @@
     "gRPC"
    ],
    "status": "verified",
-   "version": "9.3.1",
+   "version": "9.4.0",
    "official_emulator": [
     "v1.22.0"
    ],
@@ -625,7 +625,7 @@
    ],
    "not_exercised": [],
    "gaps": [],
-   "last_recorded": "2026-10-15",
+   "last_recorded": "2026-10-29",
    "tracking": null,
    "evidence": [
     {
@@ -634,17 +634,17 @@
      "official_emulator": "v1.22.0",
      "official_recorded": {
       "first_recorded": "2026-10-15",
-      "last_changed": "2026-10-15"
+      "last_changed": "2026-10-29"
      },
      "compared": [
       {
        "path": "results/nodejs-system-tests-hidane.json",
        "result": "documented",
        "explained_in": "results/README.md",
-       "sha256": "1e63aaea31f262918b75d502907825ff03fe4180215bda873f341f8561a994b2",
+       "sha256": "738ef94e5362fd34ff6f5d977da5bc18df79bf2f1ff315980f171062330dc333",
        "recorded": {
         "first_recorded": "2026-10-15",
-        "last_changed": "2026-10-15"
+        "last_changed": "2026-10-29"
        }
       }
      ],
@@ -652,13 +652,13 @@
      "packages": [
       {
        "name": "google-cloud-node",
-       "version": "3821456d7810580c3c3f1256bd3d2fae4a3f5980",
+       "version": "cf2e273257719b10195f55639b18cc25472775d2",
        "source": "pinned",
        "where": ".github/workflows/nodejs-system-tests.yml"
       },
       {
        "name": "@google-cloud/firestore",
-       "version": "9.3.1",
+       "version": "9.4.0",
        "source": "stated",
        "where": "results/README.md"
       }
@@ -696,7 +696,7 @@
      "packages": [
       {
        "name": "@google-cloud/firestore",
-       "version": "9.3.1",
+       "version": "9.4.0",
        "source": "stated",
        "where": "results/README.md"
       }
@@ -718,10 +718,10 @@
        "path": "results/sdk-documents-hidane.json",
        "result": "documented",
        "explained_in": "docs/parity-exceptions.md",
-       "sha256": "cdc430de9ae6e0654a807250d5a018e3f68e49ac2bba18b2d1172eb6abdc54b7",
+       "sha256": "deca4d45ad38df60301dc14aae897532d3603bb8fc82ef1b1da40d9662b55d7e",
        "recorded": {
         "first_recorded": "2026-10-10",
-        "last_changed": "2026-10-10"
+        "last_changed": "2026-10-29"
        }
       }
      ],
@@ -729,7 +729,7 @@
      "packages": [
       {
        "name": "@google-cloud/firestore",
-       "version": "9.3.1",
+       "version": "9.4.0",
        "source": "stated",
        "where": "results/README.md"
       }
@@ -838,7 +838,7 @@
      "packages": [
       {
        "name": "@google-cloud/firestore",
-       "version": "9.3.1",
+       "version": "9.4.0",
        "source": "stated",
        "where": "results/README.md"
       }
@@ -870,7 +870,7 @@
      "packages": [
       {
        "name": "@google-cloud/firestore",
-       "version": "9.3.1",
+       "version": "9.4.0",
        "source": "stated",
        "where": "results/README.md"
       }
@@ -892,7 +892,7 @@
     "gRPC"
    ],
    "status": "verified",
-   "version": "9.3.1",
+   "version": "9.4.0",
    "official_emulator": [
     "v1.22.0"
    ],
@@ -914,7 +914,7 @@
    ],
    "not_exercised": [],
    "gaps": [],
-   "last_recorded": "2026-10-15",
+   "last_recorded": "2026-10-29",
    "tracking": null,
    "evidence": [
     {
@@ -923,17 +923,17 @@
      "official_emulator": "v1.22.0",
      "official_recorded": {
       "first_recorded": "2026-10-15",
-      "last_changed": "2026-10-15"
+      "last_changed": "2026-10-29"
      },
      "compared": [
       {
        "path": "results/nodejs-system-tests-rest-hidane.json",
        "result": "documented",
        "explained_in": "results/README.md",
-       "sha256": "3c3097a037a811649b64c09574de24b42428f4fceb537fd6d8e82daead454a7d",
+       "sha256": "e9f674737e058a68012c914295bb025819ea8cc2a151854e33ab0ff3acf204e5",
        "recorded": {
         "first_recorded": "2026-10-15",
-        "last_changed": "2026-10-15"
+        "last_changed": "2026-10-29"
        }
       }
      ],
@@ -941,13 +941,13 @@
      "packages": [
       {
        "name": "google-cloud-node",
-       "version": "3821456d7810580c3c3f1256bd3d2fae4a3f5980",
+       "version": "cf2e273257719b10195f55639b18cc25472775d2",
        "source": "pinned",
        "where": ".github/workflows/nodejs-system-tests.yml"
       },
       {
        "name": "@google-cloud/firestore",
-       "version": "9.3.1",
+       "version": "9.4.0",
        "source": "stated",
        "where": "results/README.md"
       }
@@ -3118,7 +3118,7 @@
   {
    "ecosystem": "npm",
    "name": "@google-cloud/firestore",
-   "version": "9.3.1",
+   "version": "9.4.0",
    "what": "over gRPC, with the default settings and with `preferRest`",
    "source": "docs/sdk-certification.md",
    "clients": [

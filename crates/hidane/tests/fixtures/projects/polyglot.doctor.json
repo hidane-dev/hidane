@@ -142,7 +142,7 @@
       "severity": "warning",
       "title": "Firebase Admin SDK (firebase-admin) ^13.6.0 (functions/package.json): its Firestore client, @google-cloud/firestore, is not in a lockfile — not verified with hidane, manual verification required",
       "details": [
-        "hidane verified @google-cloud/firestore 9.3.1"
+        "hidane verified @google-cloud/firestore 9.4.0"
       ],
       "file": "functions/package.json",
       "line": 10

@@ -32,7 +32,7 @@ pub const VERIFIED: &[Verified] = &[
     Verified {
         ecosystem: "npm",
         name: "@google-cloud/firestore",
-        version: "9.3.1",
+        version: "9.4.0",
         what: "over gRPC, with the default settings and with `preferRest`",
         source: "docs/sdk-certification.md",
     },
