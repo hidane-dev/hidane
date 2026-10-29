@@ -150,6 +150,9 @@ class Compare(unittest.TestCase):
         self.assertEqual(sdk_canary.unexplained(([{"error": "key 1"}], [{"error": "other"}]),
                                                 allowed),
                          [("$[0].error", '"key 1"', '"other"')])
+        # Unless the path is one of the places explained whatever the values.
+        self.assertEqual(sdk_canary.unexplained(([{"error": "key 1"}], [{"error": "other"}]),
+                                                allowed, {"$[0].error"}), [])
 
 
 class Run(unittest.TestCase):
@@ -220,6 +223,22 @@ class Run(unittest.TestCase):
         self.assertEqual(self.prepared, [("1.27.0", "release"), ("1.26.0", "verified")])
         self.assertEqual(self.official.started[:2],
                          ["sdk-go-documents", "sdk-go-documents.verified"])
+
+    def test_documented_by_the_place_the_verified_release_differs(self):
+        # The official emulator counts 4 attempts with the new release and 5 with the verified
+        # one, on the same runner, against hidane's 3 (#414): the place is explained.
+        self.scenario([[{"attempts": 4}], [{"attempts": 5}], [{"attempts": 4}]],
+                      [[{"attempts": 3}]])
+        unit = self.run_release()["units"][0]
+        self.assertEqual((unit["result"], unit["explained_by_verified_run"]), ("documented", True))
+
+    def test_another_place_is_not_explained_by_the_verified_release(self):
+        self.scenario([[{"attempts": 4, "n": 2}], [{"attempts": 5, "n": 1}],
+                       [{"attempts": 4, "n": 2}]],
+                      [[{"attempts": 3, "n": 1}]])
+        unit = self.run_release()["units"][0]
+        self.assertEqual((unit["result"], unit["paths"]), ("different", ["$[0].n"]))
+        self.assertFalse(unit["explained_by_verified_run"])
 
     def test_different_is_confirmed_by_a_second_run(self):
         # The new release differs, the verified one does not, the new one differs again.

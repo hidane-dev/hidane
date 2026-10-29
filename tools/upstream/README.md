@@ -130,10 +130,11 @@ Each unit runs once on a freshly started official emulator (the pinned jar, star
 the action's own scripts) and once on a freshly started hidane, and the two transcripts are
 compared: **identical**; **documented** when every difference is one the verified release shows
 too, in its committed pair in `results/` (`results/README.md` and `docs/parity-exceptions.md`
-explain those) or, when that does not explain it, in a pair of the verified release run the same
-way on the same runner (some steps depend on timing: on a runner, `sdk_transactions.mjs` counts 4
-attempts against the official emulator where the committed transcript has 3, with the verified
-release too). Otherwise the unit runs again on two fresh emulators, and is **different** when the
+explain those) or, when that does not explain it, at a place where a pair of the verified release
+run the same way on the same runner differs too, whatever the values there (some steps depend on
+timing: on a runner, `sdk_transactions.mjs` counts 4 or 5 attempts against the official emulator
+where the committed transcript has 3, with the verified release too, #414). Otherwise the unit runs
+again on two fresh emulators, and is **different** when the
 same unexplained differences come back (a finding, which gets an issue), **unstable** when they do
 not. A harness that fails, or prints something that is not JSON, is an **error**. The report also says when the SDK's own transcript on the official emulator changed from
 the committed one: its transcripts need recording again before moving to it. The release's verdict

@@ -14,8 +14,9 @@ Usage (from the repository root; the Upstream workflow's sdk jobs run it):
 
 A unit is `identical` when both emulators give the same transcript, and `documented` when every
 difference is one the verified release shows too: in the committed pair (results/ and
-docs/parity-exceptions.md explain those) or, run the same way on the same runner, in a pair of the
-verified release (some steps depend on timing, which a runner changes). Otherwise the unit runs
+docs/parity-exceptions.md explain those) or, run the same way on the same runner, at a place where
+a pair of the verified release differs too, whatever the values there (some steps depend on
+timing, which a runner changes). Otherwise the unit runs
 again, and is `different` when the same unexplained differences come back, `unstable` when they
 do not. A harness that fails, or prints something that is not JSON, is an `error`. Whether the
 SDK's own transcript on the official emulator changed from the committed one is recorded too.
@@ -166,10 +167,10 @@ def differences(a, b, path="$"):
     return [] if left == right else [(path, left, right)]
 
 
-def unexplained(pair, allowed):
-    """The differences of a pair (official, hidane) that are not among `allowed`: [] when it is
-    identical or differs only as the verified release does."""
-    return [d for d in differences(*pair) if d not in allowed]
+def unexplained(pair, allowed, places=frozenset()):
+    """The differences of a pair (official, hidane) that are not among `allowed`, nor at one of
+    `places` (paths): [] when it is identical or differs only as the verified release does."""
+    return [d for d in differences(*pair) if d not in allowed and d[0] not in places]
 
 
 # Emulators --------------------------------------------------------------------------------------
@@ -409,19 +410,22 @@ def run_unit(unit, name, command, control, official, hidane, logs, transcripts, 
                "official_changed": bool(differences(pair[0], committed_pair[0]))}
     if not found:
         return dict(outcome, result=IDENTICAL)
+    places = set()
     left = unexplained(pair, allowed)
     if left and control is not None:
-        # The verified release, the same way on the same runner.
+        # The verified release, the same way on the same runner. Where it differs too, the step
+        # depends on the runner, and its values with it (a count of attempts, 5 in one run and 4
+        # in the next): the place explains a difference, whatever the values.
         verified = run_pair(unit, f"{name}.verified", control.get(), official, hidane, logs,
                             transcripts)
-        allowed |= set(differences(*verified))
-        left = unexplained(pair, allowed)
+        places = {path for path, _, _ in differences(*verified)}
+        left = unexplained(pair, allowed, places)
         outcome["explained_by_verified_run"] = not left
     if not left:
         return dict(outcome, result=DOCUMENTED)
     # Unexplained differences count once the same ones come back.
     again = run_pair(unit, f"{name}.again", command, official, hidane, logs, transcripts)
-    confirmed = unexplained(again, allowed) == left
+    confirmed = unexplained(again, allowed, places) == left
     return dict(outcome, result=DIFFERENT if confirmed else UNSTABLE,
                 paths=[path for path, _, _ in left][:20])
 
