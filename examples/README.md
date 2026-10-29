@@ -29,6 +29,13 @@ Node examples override it, scoped to that package, at the first fixed version: `
 firebase-tools' `gaxios`, and `@grpc/grpc-js` 1.14.6 under `@firebase/firestore` (firebase 13 pins
 1.9). Remove an override once the package that pins the old version moves past it.
 
+Dependabot's update of `firebase` in `rules-unit-testing/` can leave the old `@firebase/app` at
+the top of the lockfile and nest the new one under `firebase`. With two copies, Firestore
+registers with one and the tests initialize the other, so every test fails with "Service
+firestore is not available". The workflow checks for a second copy before it installs;
+`npm update @firebase/app --package-lock-only` in that directory moves the new one to the top and
+changes nothing else.
+
 Not here: a Next.js app would reach Firestore through the same SDKs as `admin-node/` (on the
 server) and `rules-unit-testing/` (the Firebase JS SDK), so it would add a framework and a build
 without testing anything more. Flutter Web needs the Flutter SDK and a browser; it is verified in
