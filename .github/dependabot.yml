@@ -5,6 +5,7 @@ updates:
     schedule: { interval: weekly }
     groups:
       cargo-workspace: { patterns: ["*"] }
+      cargo-workspace-security: { applies-to: security-updates, patterns: ["*"] }
   # The Rust that builds the release binaries (docs/reproducible-builds.md).
   - package-ecosystem: rust-toolchain
     directory: /packaging/release
@@ -19,6 +20,7 @@ updates:
 
   # The examples pin every dependency; .github/workflows/examples.yml runs each update against
   # hidane. The README's demo pins the same as examples/admin-node; demo.yml records it again.
+  # Security updates are grouped too: one advisory otherwise opens a pull request per directory.
   - package-ecosystem: npm
     directories:
       - /examples/admin-node
@@ -29,16 +31,19 @@ updates:
     schedule: { interval: weekly }
     groups:
       examples-npm: { patterns: ["*"] }
+      examples-npm-security: { applies-to: security-updates, patterns: ["*"] }
   - package-ecosystem: pip
     directory: /examples/admin-python
     schedule: { interval: weekly }
     groups:
       examples-pip: { patterns: ["*"] }
+      examples-pip-security: { applies-to: security-updates, patterns: ["*"] }
   - package-ecosystem: gomod
     directory: /examples/go
     schedule: { interval: weekly }
     groups:
       examples-go: { patterns: ["*"] }
+      examples-go-security: { applies-to: security-updates, patterns: ["*"] }
   # The workflow to copy (outside .github/workflows, so that it does not run here).
   - package-ecosystem: github-actions
     directory: /examples/github-actions
