@@ -16,6 +16,16 @@ pub struct Verified {
     /// What was verified with it.
     pub what: &'static str,
     pub source: &'static str,
+    /// The release verified before `version`, which counts as verified too in the same way,
+    /// until another release is verified.
+    pub previous: Option<Previous>,
+}
+
+/// A release verified before the current one, and the commit whose `results/` hold that
+/// verification.
+pub struct Previous {
+    pub version: &'static str,
+    pub commit: &'static str,
 }
 
 // sdk-certification:start
@@ -28,6 +38,7 @@ pub const VERIFIED: &[Verified] = &[
         version: "13.0.0",
         what: "in Node over gRPC, Lite over REST, and in Chromium over WebChannel",
         source: "docs/sdk-certification.md",
+        previous: None,
     },
     Verified {
         ecosystem: "npm",
@@ -35,6 +46,10 @@ pub const VERIFIED: &[Verified] = &[
         version: "9.4.0",
         what: "over gRPC, with the default settings and with `preferRest`",
         source: "docs/sdk-certification.md",
+        previous: Some(Previous {
+            version: "9.3.1",
+            commit: "0fffd9ceaee39a6514493513e332fe5bbb63bd62",
+        }),
     },
     Verified {
         ecosystem: "npm",
@@ -42,6 +57,7 @@ pub const VERIFIED: &[Verified] = &[
         version: "6.0.0",
         what: "Security Rules as signed-in, signed-out and rules-disabled users, clearing data",
         source: "docs/sdk-certification.md",
+        previous: None,
     },
     Verified {
         ecosystem: "npm",
@@ -49,6 +65,7 @@ pub const VERIFIED: &[Verified] = &[
         version: "15.33.0",
         what: "export and import, launch under firebase emulators:exec",
         source: "docs/sdk-certification.md",
+        previous: None,
     },
     Verified {
         ecosystem: "npm",
@@ -56,6 +73,7 @@ pub const VERIFIED: &[Verified] = &[
         version: "6.6.0",
         what: "Firestore triggers, v1 and v2",
         source: "docs/sdk-certification.md",
+        previous: None,
     },
     Verified {
         ecosystem: "pypi",
@@ -63,6 +81,7 @@ pub const VERIFIED: &[Verified] = &[
         version: "2.34.1",
         what: "documents and writes, queries, aggregation queries, vector search, transactions, listeners",
         source: "docs/sdk-certification.md",
+        previous: None,
     },
     Verified {
         ecosystem: "npm",
@@ -70,6 +89,7 @@ pub const VERIFIED: &[Verified] = &[
         version: "11.3.0",
         what: "documents and writes, queries, aggregation queries, transactions",
         source: "docs/sdk-certification.md",
+        previous: None,
     },
     Verified {
         ecosystem: "pypi",
@@ -77,6 +97,7 @@ pub const VERIFIED: &[Verified] = &[
         version: "2.27.0",
         what: "documents and writes, queries, aggregation queries, transactions",
         source: "docs/sdk-certification.md",
+        previous: None,
     },
     Verified {
         ecosystem: "maven",
@@ -84,6 +105,7 @@ pub const VERIFIED: &[Verified] = &[
         version: "3.7.0",
         what: "documents and writes, queries, aggregation queries, transactions",
         source: "docs/sdk-certification.md",
+        previous: None,
     },
     Verified {
         ecosystem: "go",
@@ -91,6 +113,7 @@ pub const VERIFIED: &[Verified] = &[
         version: "1.27.0",
         what: "documents and writes, queries, aggregation queries, transactions",
         source: "docs/sdk-certification.md",
+        previous: None,
     },
     Verified {
         ecosystem: "go",
@@ -98,6 +121,7 @@ pub const VERIFIED: &[Verified] = &[
         version: "1.26.0",
         what: "documents and writes, queries, aggregation queries, vector search, transactions, listeners",
         source: "docs/sdk-certification.md",
+        previous: None,
     },
     Verified {
         ecosystem: "maven",
@@ -105,6 +129,7 @@ pub const VERIFIED: &[Verified] = &[
         version: "3.49.0",
         what: "documents and writes, queries, aggregation queries, vector search, transactions, listeners",
         source: "docs/sdk-certification.md",
+        previous: None,
     },
     Verified {
         ecosystem: "pub",
@@ -112,6 +137,7 @@ pub const VERIFIED: &[Verified] = &[
         version: "6.10.0",
         what: "Flutter Web in Chromium: documents and writes, queries, aggregation queries, transactions, listeners",
         source: "docs/sdk-certification.md",
+        previous: None,
     },
     Verified {
         ecosystem: "swiftpm",
@@ -119,6 +145,7 @@ pub const VERIFIED: &[Verified] = &[
         version: "13.0.1",
         what: "documents and writes, queries, aggregation queries, transactions, listeners",
         source: "docs/sdk-certification.md",
+        previous: None,
     },
     Verified {
         ecosystem: "maven",
@@ -126,6 +153,7 @@ pub const VERIFIED: &[Verified] = &[
         version: "27.0.0",
         what: "documents and writes, queries, aggregation queries, transactions, listeners",
         source: "docs/sdk-certification.md",
+        previous: None,
     },
 ];
 // sdk-certification:end

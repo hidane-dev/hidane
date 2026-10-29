@@ -248,7 +248,10 @@ when a test or a transcript in the repository shows its results on both emulator
   `sdk_java/pom.xml`, or the `npm i` line), regenerate what is generated from the recorded
   results (`docs/sdk-certification.json` and the `VERIFIED` entries of
   `crates/hidane/src/project/verified.rs`, with `tools/parity/`), update `docs/compatibility.md`
-  where it names the version, and its `version` in `watch.json`.
+  where it names the version, and its `version` in `watch.json`. The release it replaces goes in
+  `PREVIOUSLY_VERIFIED` of `tools/parity/sdk_certification.py`, in place of the one there, with
+  the full SHA of the last commit of main that verified it: `hidane doctor` keeps counting it as
+  verified, naming that commit's results, until the next release is verified.
 - **The official emulator**: re-record every fixture and official transcript against the new jar
   ([`docs/oracle-corpus.md`](../../docs/oracle-corpus.md#versions) says how), change hidane where
   the answers changed, and set the new version and SHA-256 in

@@ -3124,7 +3124,12 @@
    "clients": [
     "admin-node",
     "admin-node-prefer-rest"
-   ]
+   ],
+   "previous": {
+    "version": "9.3.1",
+    "commit": "0fffd9ceaee39a6514493513e332fe5bbb63bd62",
+    "results": "https://github.com/hidane-dev/hidane/tree/0fffd9ceaee39a6514493513e332fe5bbb63bd62/results"
+   }
   },
   {
    "ecosystem": "npm",

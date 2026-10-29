@@ -28,6 +28,8 @@ verified** when no recorded result covers it. Writes:
   `docs/migrating.md`, between `<!-- sdk-certification:start -->` and `<!-- sdk-certification:end -->`;
 - `VERIFIED` in `crates/hidane/src/project/verified.rs`, the versions `hidane doctor` judges a
   project's dependencies against, between `// sdk-certification:start` and `// sdk-certification:end`.
+  With each goes the release verified before it (PREVIOUSLY_VERIFIED), with the commit whose
+  results/ hold that verification, which hidane doctor counts as verified too.
 
 and checks that the status column of `docs/compatibility.md` says the same. Each recording's date is
 the date of the last commit that changed it (today, for a change not committed yet), kept while
@@ -57,6 +59,7 @@ SCHEMA_VERSION = 1
 START, END = "<!-- sdk-certification:start -->", "<!-- sdk-certification:end -->"
 RS_START, RS_END = "// sdk-certification:start", "// sdk-certification:end"
 ISSUES = "https://github.com/hidane-dev/hidane/issues"
+REPOSITORY = "https://github.com/hidane-dev/hidane"
 
 VERIFIED, PARTIAL, NOT_VERIFIED = "verified", "partially-verified", "not-verified"
 STATUSES = {
@@ -260,12 +263,42 @@ PACKAGE_LABELS = {
         "`com.google.firebase:firebase-firestore` (Android)",
 }
 
+# The release each package was verified with before its current one, and the commit of main
+# whose results/ hold that verification. hidane doctor counts it as verified too, until another
+# release is verified: then the release it replaces takes its place here, and only that one
+# (tools/upstream/README.md, "Bumping the verified versions").
+PREVIOUSLY_VERIFIED = {
+    ("npm", "@google-cloud/firestore"): ("9.3.1", "0fffd9ceaee39a6514493513e332fe5bbb63bd62"),
+}
+
 RESULT_ORDER = [table.IDENTICAL, table.DOCUMENTED, table.UNEXPLAINED]
 OK_RESULTS = (table.IDENTICAL, table.DOCUMENTED)
 
 
 class Stop(Exception):
     """A problem the person running the script has to fix."""
+
+
+def major_minor(version):
+    found = re.match(r"v?(\d+)\.(\d+)", version)
+    if not found:
+        raise Stop(f"{version}: no major and minor version.")
+    return int(found[1]), int(found[2])
+
+
+def previously_verified(ecosystem, name, version):
+    """The release of a package verified before `version` (PREVIOUSLY_VERIFIED), with the commit
+    whose results/ hold it, or None."""
+    if (ecosystem, name) not in PREVIOUSLY_VERIFIED:
+        return None
+    before, commit = PREVIOUSLY_VERIFIED[(ecosystem, name)]
+    where = f"PREVIOUSLY_VERIFIED[{name!r}]"
+    if not re.fullmatch(r"[0-9a-f]{40}", commit):
+        raise Stop(f"{where}: name the commit by its full SHA.")
+    if major_minor(before) >= major_minor(version):
+        raise Stop(f"{where}: {before} is not older than the verified {version} in its major and "
+                   "minor version; remove it.")
+    return dict(version=before, commit=commit, results=f"{REPOSITORY}/tree/{commit}/results")
 
 
 def source(rel):
@@ -506,8 +539,17 @@ def verified_packages(rows):
             what = joined([scope[row["id"]] for row in counted if row["status"] == VERIFIED]
                           + [f"partially {scope[row['id']]}" for row in counted
                              if row["status"] == PARTIAL])
-        out.append(dict(ecosystem=ecosystem, name=name, version=versions.pop(), what=what,
-                        source=PAGE, clients=[row["id"] for row in counted]))
+        version = versions.pop()
+        entry = dict(ecosystem=ecosystem, name=name, version=version, what=what, source=PAGE,
+                     clients=[row["id"] for row in counted])
+        before = previously_verified(ecosystem, name, version)
+        if before:
+            entry["previous"] = before
+        out.append(entry)
+    unknown = set(PREVIOUSLY_VERIFIED) - {(p["ecosystem"], p["name"]) for p in out}
+    if unknown:
+        raise Stop(f"PREVIOUSLY_VERIFIED: {', '.join(sorted(n for _, n in unknown))} has no "
+                   "verified version now; remove it.")
     return out
 
 
@@ -608,12 +650,22 @@ def markdown(data):
             known = row["version"] or "not known"
             out.append(f"- {row['client']}, `{row['package']}` {known}: {how_known(row)}.")
     out += ["", "### Versions `hidane doctor` judges against", "",
-            "| Package | Version | What was verified |", "|---|---|---|"]
+            "A version with the same major and minor versions as the verified one, or as the "
+            "release verified before it, counts as verified. The release before it was verified "
+            "by the results of the commit linked.", "",
+            "| Package | Version | Before it | What was verified |", "|---|---|---|---|"]
     for package in data["verified_packages"]:
         out.append(f"| {package['ecosystem']} `{package['name']}` | {package['version']} | "
-                   f"{package['what']} |")
+                   f"{before_cell(package)} | {package['what']} |")
     out += ["", END]
     return "\n".join(out)
+
+
+def before_cell(package):
+    before = package.get("previous")
+    if not before:
+        return "—"
+    return f"{before['version']} ([results at `{before['commit'][:7]}`]({before['results']}))"
 
 
 def migrating(data):
@@ -627,8 +679,10 @@ def migrating(data):
             raise Stop(f"{package['name']}: add how docs/migrating.md names it to PACKAGE_LABELS.")
         names = {e["transcript"] for cid in package["clients"] for e in rows[cid]["evidence"]}
         files = ", ".join(f"`results/{glob}-*.json`" for glob in families(names))
-        out.append(f"| {PACKAGE_LABELS[key]} | {package['version']} — {package['what']} | "
-                   f"[sdk-certification.md](sdk-certification.md), {files} |")
+        before = package.get("previous")
+        earlier = f"; {before_cell(package)} before it" if before else ""
+        out.append(f"| {PACKAGE_LABELS[key]} | {package['version']} — {package['what']}"
+                   f"{earlier} | [sdk-certification.md](sdk-certification.md), {files} |")
     out += ["", END]
     return "\n".join(out)
 
@@ -661,6 +715,14 @@ def rust(data):
         out += ["    Verified {"]
         for field in ("ecosystem", "name", "version", "what", "source"):
             out.append(f"        {field}: {rust_string(package[field])},")
+        before = package.get("previous")
+        if before:
+            out += ["        previous: Some(Previous {",
+                    f"            version: {rust_string(before['version'])},",
+                    f"            commit: {rust_string(before['commit'])},",
+                    "        }),"]
+        else:
+            out.append("        previous: None,")
         out += ["    },"]
     out += ["];", RS_END]
     return "\n".join(out)
