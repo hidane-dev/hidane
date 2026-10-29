@@ -540,15 +540,31 @@ fn judge(
     concrete: Option<&str>,
     range: Option<&str>,
 ) -> Finding {
-    let g = Group::Dependencies;
-    let what = label(ecosystem, name);
     let Some(v) = verified::verified(ecosystem, name) else {
         return Finding::unknown(
             code,
-            g,
-            format!("{what} {shown}: not verified with hidane — manual verification required"),
+            Group::Dependencies,
+            format!(
+                "{} {shown}: not verified with hidane — manual verification required",
+                label(ecosystem, name)
+            ),
         );
     };
+    judge_against(v, code, ecosystem, name, shown, concrete, range)
+}
+
+/// `judge`, against a verified entry.
+fn judge_against(
+    v: &verified::Verified,
+    code: &'static str,
+    ecosystem: &str,
+    name: &str,
+    shown: &str,
+    concrete: Option<&str>,
+    range: Option<&str>,
+) -> Finding {
+    let g = Group::Dependencies;
+    let what = label(ecosystem, name);
     let not_verified = || {
         Finding::unknown(
             code,
@@ -569,6 +585,29 @@ fn judge(
                 )
             };
             return Finding::compatible(code, g, format!("{what} {shown}: {how}"), v.source);
+        }
+        if let Some(p) = v
+            .previous
+            .as_ref()
+            .filter(|p| minor.is_some() && minor == deps::major_minor(p.version))
+        {
+            let commit = &p.commit[..7];
+            let how = if c.trim_start_matches(['v', 'V']) == p.version {
+                format!(
+                    "verified with hidane, the release before {} (the results are in commit {commit})",
+                    v.version
+                )
+            } else {
+                format!(
+                    "verified with hidane at {}, the release before {} (the results are in commit {commit}); only the patch version differs",
+                    p.version, v.version
+                )
+            };
+            return Finding::compatible(code, g, format!("{what} {shown}: {how}"), v.source)
+                .detail(format!(
+                    "https://github.com/hidane-dev/hidane/tree/{}/results",
+                    p.commit
+                ));
         }
         if deps::major(c) == Some(v.major()) {
             return Finding::likely_compatible(
@@ -1081,6 +1120,52 @@ mod tests {
                     && f.title.starts_with("Firebase JS SDK (firebase) 13.0.0"))
         );
         assert!(!report.has_incompatibility());
+    }
+
+    /// The release verified before the current one counts as verified too, and the finding names
+    /// the commit whose results verified it; an older minor version is `likely-compatible`.
+    #[test]
+    fn the_release_verified_before_counts_as_verified() {
+        let v = verified::Verified {
+            ecosystem: "npm",
+            name: "@google-cloud/firestore",
+            version: "9.4.0",
+            what: "over gRPC",
+            source: "docs/sdk-certification.md",
+            previous: Some(verified::Previous {
+                version: "9.3.1",
+                commit: "0fffd9ceaee39a6514493513e332fe5bbb63bd62",
+            }),
+        };
+        let judge = |version| {
+            judge_against(
+                &v,
+                "dependency.sdk",
+                v.ecosystem,
+                v.name,
+                version,
+                Some(version),
+                None,
+            )
+        };
+        let exact = judge("9.3.1");
+        assert_eq!(exact.status, Status::Compatible);
+        assert!(exact.title.ends_with(
+            "verified with hidane, the release before 9.4.0 (the results are in commit 0fffd9c)"
+        ));
+        assert_eq!(
+            exact.details,
+            [
+                "https://github.com/hidane-dev/hidane/tree/0fffd9ceaee39a6514493513e332fe5bbb63bd62/results"
+            ]
+        );
+        let patch = judge("9.3.0");
+        assert_eq!(patch.status, Status::Compatible);
+        assert!(patch.title.contains("at 9.3.1, the release before 9.4.0"));
+        assert!(patch.title.ends_with("only the patch version differs"));
+        assert_eq!(judge("9.4.2").status, Status::Compatible);
+        assert_eq!(judge("9.2.0").status, Status::LikelyCompatible);
+        assert_eq!(judge("8.3.1").status, Status::Unknown);
     }
 
     /// `compatible` takes the verified major and minor versions, of a version known exactly;

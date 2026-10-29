@@ -50,8 +50,9 @@ says something else. So the doctor, the documentation and the matrix cannot disa
 
 A verified client is verified at that version, for what was exercised, against that official
 emulator release. Other versions are judged by `hidane doctor` as [migrating.md](migrating.md)
-says: the same major and minor version is `compatible`, the same major version
-`likely-compatible`, anything else not verified.
+says: the same major and minor version is `compatible` (as the same major and minor version as
+the release verified before it, in the last table), the same major version `likely-compatible`,
+anything else not verified.
 
 ## The matrix
 
@@ -111,23 +112,25 @@ says: the same major and minor version is `compatible`, the same major version
 
 ### Versions `hidane doctor` judges against
 
-| Package | Version | What was verified |
-|---|---|---|
-| npm `firebase` | 13.0.0 | in Node over gRPC, Lite over REST, and in Chromium over WebChannel |
-| npm `@google-cloud/firestore` | 9.4.0 | over gRPC, with the default settings and with `preferRest` |
-| npm `@firebase/rules-unit-testing` | 6.0.0 | Security Rules as signed-in, signed-out and rules-disabled users, clearing data |
-| npm `firebase-tools` | 15.33.0 | export and import, launch under firebase emulators:exec |
-| npm `firebase-functions` | 6.6.0 | Firestore triggers, v1 and v2 |
-| pypi `google-cloud-firestore` | 2.34.1 | documents and writes, queries, aggregation queries, vector search, transactions, listeners |
-| npm `@google-cloud/datastore` | 11.3.0 | documents and writes, queries, aggregation queries, transactions |
-| pypi `google-cloud-datastore` | 2.27.0 | documents and writes, queries, aggregation queries, transactions |
-| maven `com.google.cloud:google-cloud-datastore` | 3.7.0 | documents and writes, queries, aggregation queries, transactions |
-| go `cloud.google.com/go/datastore` | 1.27.0 | documents and writes, queries, aggregation queries, transactions |
-| go `cloud.google.com/go/firestore` | 1.26.0 | documents and writes, queries, aggregation queries, vector search, transactions, listeners |
-| maven `com.google.cloud:google-cloud-firestore` | 3.49.0 | documents and writes, queries, aggregation queries, vector search, transactions, listeners |
-| pub `cloud_firestore` | 6.10.0 | Flutter Web in Chromium: documents and writes, queries, aggregation queries, transactions, listeners |
-| swiftpm `FirebaseFirestore` | 13.0.1 | documents and writes, queries, aggregation queries, transactions, listeners |
-| maven `com.google.firebase:firebase-firestore` | 27.0.0 | documents and writes, queries, aggregation queries, transactions, listeners |
+A version with the same major and minor versions as the verified one, or as the release verified before it, counts as verified. The release before it was verified by the results of the commit linked.
+
+| Package | Version | Before it | What was verified |
+|---|---|---|---|
+| npm `firebase` | 13.0.0 | — | in Node over gRPC, Lite over REST, and in Chromium over WebChannel |
+| npm `@google-cloud/firestore` | 9.4.0 | 9.3.1 ([results at `0fffd9c`](https://github.com/hidane-dev/hidane/tree/0fffd9ceaee39a6514493513e332fe5bbb63bd62/results)) | over gRPC, with the default settings and with `preferRest` |
+| npm `@firebase/rules-unit-testing` | 6.0.0 | — | Security Rules as signed-in, signed-out and rules-disabled users, clearing data |
+| npm `firebase-tools` | 15.33.0 | — | export and import, launch under firebase emulators:exec |
+| npm `firebase-functions` | 6.6.0 | — | Firestore triggers, v1 and v2 |
+| pypi `google-cloud-firestore` | 2.34.1 | — | documents and writes, queries, aggregation queries, vector search, transactions, listeners |
+| npm `@google-cloud/datastore` | 11.3.0 | — | documents and writes, queries, aggregation queries, transactions |
+| pypi `google-cloud-datastore` | 2.27.0 | — | documents and writes, queries, aggregation queries, transactions |
+| maven `com.google.cloud:google-cloud-datastore` | 3.7.0 | — | documents and writes, queries, aggregation queries, transactions |
+| go `cloud.google.com/go/datastore` | 1.27.0 | — | documents and writes, queries, aggregation queries, transactions |
+| go `cloud.google.com/go/firestore` | 1.26.0 | — | documents and writes, queries, aggregation queries, vector search, transactions, listeners |
+| maven `com.google.cloud:google-cloud-firestore` | 3.49.0 | — | documents and writes, queries, aggregation queries, vector search, transactions, listeners |
+| pub `cloud_firestore` | 6.10.0 | — | Flutter Web in Chromium: documents and writes, queries, aggregation queries, transactions, listeners |
+| swiftpm `FirebaseFirestore` | 13.0.1 | — | documents and writes, queries, aggregation queries, transactions, listeners |
+| maven `com.google.firebase:firebase-firestore` | 27.0.0 | — | documents and writes, queries, aggregation queries, transactions, listeners |
 
 <!-- sdk-certification:end -->
 

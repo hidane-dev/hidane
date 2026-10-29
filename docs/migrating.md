@@ -42,7 +42,9 @@ A package's version is judged against the version hidane was verified with:
 
 - `compatible` when the version the project uses is known (resolved by a lockfile, or pinned
   exactly, such as `"firebase-tools": "15.33.0"` or `google-cloud-firestore==2.34.1`) and has the
-  verified version's major and minor versions; only the patch version may differ;
+  verified version's major and minor versions; only the patch version may differ. The release
+  verified before it, where the table names one, counts the same way until another release is
+  verified, and the finding names the commit whose results verified it;
 - `likely-compatible` when only the major version is the same, or when a range pins that major
   version but the version it resolves to is not known (`^13.0.0` without a lockfile);
 - `unknown` otherwise.
@@ -55,7 +57,7 @@ The verified versions:
 | Package | Verified with | Source |
 |---|---|---|
 | `firebase` (JS SDK) | 13.0.0 — in Node over gRPC, Lite over REST, and in Chromium over WebChannel | [sdk-certification.md](sdk-certification.md), `results/browser-rules-*.json`, `results/browser-webchannel-*.json`, `results/js-sdk-browser-*.json`, `results/sdk-find-nearest-*.json`, `results/sdk-listen-*.json`, `results/sdk-listen-resume-*.json`, `results/sdk-rest-*.json`, `results/sdk-rules-unit-testing-*.json`, `results/sdk-web-*.json` |
-| `@google-cloud/firestore` (the Firestore client of `firebase-admin`) | 9.4.0 — over gRPC, with the default settings and with `preferRest` | [sdk-certification.md](sdk-certification.md), `results/nodejs-system-*.json`, `results/sdk-aggregations-*.json`, `results/sdk-documents-*.json`, `results/sdk-find-nearest-*.json`, `results/sdk-listen-*.json`, `results/sdk-queries-*.json`, `results/sdk-transactions-*.json` |
+| `@google-cloud/firestore` (the Firestore client of `firebase-admin`) | 9.4.0 — over gRPC, with the default settings and with `preferRest`; 9.3.1 ([results at `0fffd9c`](https://github.com/hidane-dev/hidane/tree/0fffd9ceaee39a6514493513e332fe5bbb63bd62/results)) before it | [sdk-certification.md](sdk-certification.md), `results/nodejs-system-*.json`, `results/sdk-aggregations-*.json`, `results/sdk-documents-*.json`, `results/sdk-find-nearest-*.json`, `results/sdk-listen-*.json`, `results/sdk-queries-*.json`, `results/sdk-transactions-*.json` |
 | `@firebase/rules-unit-testing` | 6.0.0 — Security Rules as signed-in, signed-out and rules-disabled users, clearing data | [sdk-certification.md](sdk-certification.md), `results/browser-rules-*.json`, `results/sdk-auth-*.json`, `results/sdk-clear-*.json`, `results/sdk-rules-unit-testing-*.json` |
 | `firebase-tools` | 15.33.0 — export and import, launch under firebase emulators:exec | [sdk-certification.md](sdk-certification.md), `results/export-import-*.json`, `results/functions-triggers-*.json` |
 | `firebase-functions` (Firestore triggers under the Functions emulator) | 6.6.0 — Firestore triggers, v1 and v2 | [sdk-certification.md](sdk-certification.md), `results/functions-triggers-*.json` |
