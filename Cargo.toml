@@ -27,7 +27,7 @@ http-body-util = "0.1.5"
 hyper = "1.12.0"
 indexmap = "2.14.2"
 # Dev-only: validates `hidane benchmark` output against bench/schema/result.schema.json.
-jsonschema = { version = "0.59.0", default-features = false }
+jsonschema = { version = "0.60.1", default-features = false }
 hyper-util = { version = "0.1.21", features = ["server-auto", "server-graceful", "service", "tokio"] }
 md-5 = { version = "0.11.0", default-features = false }
 proptest = "1.11.0"
@@ -38,7 +38,7 @@ prost-types = "0.14.4"
 protox = "0.10.0"
 regex = "1.13.1"
 # The `index.yaml` of `--require_indexes` in Datastore mode (#81): its events, each scalar as written.
-saphyr-parser = "0.2.2"
+saphyr-parser = "0.3.2"
 serde = { version = "1.0.229", features = ["derive"] }
 # preserve_order: JSON objects keep their order, as document fields do (#108). float_roundtrip:
 # doubles are read correctly rounded, as protobuf-java reads them, so a geo point's coordinates
