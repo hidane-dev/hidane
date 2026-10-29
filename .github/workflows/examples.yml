@@ -179,6 +179,22 @@ jobs:
           node-version: 24
           cache: npm
           cache-dependency-path: examples/rules-unit-testing/package-lock.json
+      # Two copies of @firebase/app split the SDK: @firebase/firestore registers with one,
+      # initializeApp runs on the other, and every test fails with "Service firestore is not
+      # available". Dependabot's update of firebase can leave the old copy on top and nest the new
+      # one under firebase (#441).
+      - name: Check that the lockfile holds one @firebase/app
+        run: |
+          node -e '
+            const { packages } = JSON.parse(require("fs").readFileSync("package-lock.json", "utf8"));
+            const copies = Object.entries(packages)
+              .filter(([path]) => path.endsWith("node_modules/@firebase/app"))
+              .map(([path, { version }]) => `${path} ${version}`);
+            if (copies.length > 1) {
+              console.error(copies.join("\n"));
+              console.log(`::error file=examples/rules-unit-testing/package-lock.json::${copies.length} copies of @firebase/app; run npm update @firebase/app --package-lock-only in examples/rules-unit-testing`);
+              process.exit(1);
+            }'
       - run: npm ci --ignore-scripts --no-audit --no-fund
       - run: npm test
       - *no-jar
