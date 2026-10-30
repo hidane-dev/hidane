@@ -2007,11 +2007,12 @@
    "area": "rules",
    "topic": "Denials",
    "kind": "bug-for-bug",
-   "official": "A request the rules deny is refused with `PERMISSION_DENIED` and a message that names each statement that denied it and why, each at its line: `false for 'get' @ L6`, or an error, `Property x is undefined on object. for 'get' @ L5` (`tools/oracle/rules_denials.py`)",
+   "official": "A request the rules deny is refused with `PERMISSION_DENIED` and a message that names each statement that denied it and why, each at its line: `false for 'get' @ L6`, or an error, `Property x is undefined on object. for 'get' @ L5`; where no statement matches, `No matching allow statements` (`tools/oracle/rules_denials.py`)",
    "firestore": "The same status, with `Missing or insufficient permissions.` alone (#82)",
    "hidane": "As the official emulator: the statements that denied, and why (D008 and D019 say where its list differs)",
    "reason": "Follow the emulator. Seen by the Production parity workflow (#82). A test reads in the message which statement denied it; clients tell a denial by its status",
    "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/41079122718",
     "hidane-dev/hidane#82",
     "tools/oracle/rules_denials.py"
    ],

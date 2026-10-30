@@ -295,8 +295,9 @@ KNOWN_ERRORS = [
     ("D065", None, None, "FAILED_PRECONDITION", r"^The requested 'read_time' is too old\.$"),
     ("D097", None, None, "INVALID_ARGUMENT", r"^The requested 'read_time' cannot be before database creation time\.$"),
     # A denial: the official emulator names the statements that denied and why (`false for 'get'
-    # @ L6`), production only that the request may not.
-    ("D118", "PERMISSION_DENIED", r"@ L\d+", "PERMISSION_DENIED", r"^Missing or insufficient permissions\.$"),
+    # @ L6`), or says none matched, production only that the request may not.
+    ("D118", "PERMISSION_DENIED", r"@ L\d+|^No matching allow statements$", "PERMISSION_DENIED",
+     r"^Missing or insufficient permissions\.$"),
 ]
 # Cases about a difference an entry records, by recording and name: what they answer differently
 # is that difference.

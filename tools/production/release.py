@@ -25,6 +25,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "oracle"))
+sys.path.insert(0, str(Path(__file__).resolve().parent))  # `-I` leaves it out
 from harness import mask  # noqa: E402
 
 # The last line of each ruleset the replay makes.
@@ -34,6 +35,9 @@ RELEASE = "cloud.firestore"
 # new release decided reads from 1.3 to 2.2 s after it was made.
 SETTLE = 5
 TRANSIENT = {429, 500, 502, 503, 504}
+# The Rules API allows a project 72 requests a minute that make, change or delete rulesets and
+# releases; the replay sends at most this many of those and its reads of them.
+PER_MINUTE = 60
 
 
 class Rules:
@@ -43,17 +47,21 @@ class Rules:
         self.production = production
         self.project = production.project
         self.released = False
+        self.next = 0.0
 
     def api(self, method, path, body=None):
-        """A request to the Rules API about the project, tried again while the API is busy:
-        (status, answer as JSON, or as text if it is not)."""
+        """A request to the Rules API about the project, at most `PER_MINUTE` a minute, tried
+        again while the API is busy, a minute later if it is the quota: (status, answer as JSON, or
+        as text if it is not)."""
         data = None if body is None else json.dumps(body).encode()
         for attempt in range(5):
+            time.sleep(max(0.0, self.next - time.monotonic()))
+            self.next = time.monotonic() + 60 / PER_MINUTE
             status, _, text = self.production.send(method, f"/v1/projects/{self.project}{path}", data,
                                                    base=self.production.rules)
             if status not in TRANSIENT:
                 break
-            time.sleep(2 ** attempt)
+            time.sleep(60 if status == 429 else 2 ** attempt)
         try:
             return status, json.loads(text) if text.strip() else {}
         except ValueError:

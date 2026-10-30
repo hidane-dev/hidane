@@ -3,6 +3,7 @@
 import json
 import os
 import re
+import subprocess
 import sys
 import tempfile
 import threading
@@ -299,15 +300,16 @@ class ReplayTest(unittest.TestCase):
         StandIn.commits = 0
         StandIn.targets, StandIn.listened = [], []
         StandIn.rulesets, StandIn.release, StandIn.released, StandIn.lag, StandIn.lagging = {}, None, [], 0, 0
-        self.waits = release.SETTLE, replay.RETRY_AFTER
+        self.waits = release.SETTLE, replay.RETRY_AFTER, release.PER_MINUTE
         release.SETTLE = replay.RETRY_AFTER = 0
+        release.PER_MINUTE = 10 ** 9
         self.server = ThreadingHTTPServer(("127.0.0.1", 0), StandIn)
         threading.Thread(target=self.server.serve_forever, daemon=True).start()
         self.base = f"http://127.0.0.1:{self.server.server_address[1]}"
         self.dir = tempfile.TemporaryDirectory()
 
     def tearDown(self):
-        release.SETTLE, replay.RETRY_AFTER = self.waits
+        release.SETTLE, replay.RETRY_AFTER, release.PER_MINUTE = self.waits
         self.server.shutdown()
         self.server.server_close()
         self.dir.cleanup()
@@ -408,6 +410,9 @@ class ReplayTest(unittest.TestCase):
         replay.tally(result, error, {}, lambda: "differs")
         self.assertEqual(result, {"same": 1, "knownCases": 1, "known": {"D097": 1}, "differ": ["differs"]})
         # An error whose status differs too, and a case about a recorded difference.
+        self.assertEqual(known({"status": 403, "error": "PERMISSION_DENIED", "message": "No matching allow statements"},
+                               {"status": 403, "error": "PERMISSION_DENIED", "message": "Missing or insufficient permissions."}),
+                         {"D118"})
         self.assertEqual(known({"status": "FAILED_PRECONDITION", "message": "Only a single array-contains clause is allowed in a query"},
                                {"status": "INVALID_ARGUMENT", "message": "A maximum of 1 'ARRAY_CONTAINS' filter is allowed per disjunction."}),
                          {"D106"})
@@ -1009,13 +1014,12 @@ class ReplayTest(unittest.TestCase):
         left()
         self.deploy(self.rules_recording([]))
         self.assertEqual((StandIn.release, list(StandIn.rulesets)), (None, [f"projects/{PROJECT}/rulesets/theirs"]))
-        # As the workflow takes them down after a run, whatever happened.
+        # As the workflow takes them down after a run, whatever happened, isolated (`-I`).
         left()
-        os.environ[replay.TOKEN_ENV] = "a-token"
-        try:
-            release.main(["--project", PROJECT, "--rules-base", self.base])
-        finally:
-            del os.environ[replay.TOKEN_ENV]
+        script = Path(__file__).resolve().parent / "release.py"
+        done = subprocess.run([sys.executable, "-I", "-B", str(script), "--project", PROJECT, "--rules-base", self.base],
+                              env={**os.environ, replay.TOKEN_ENV: "a-token"}, capture_output=True, text=True)
+        self.assertEqual(done.returncode, 0, done.stderr)
         self.assertEqual((StandIn.release, list(StandIn.rulesets)), (None, [f"projects/{PROJECT}/rulesets/theirs"]))
 
     def test_shards_share_out_what_deploys_rules(self):

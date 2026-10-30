@@ -184,7 +184,9 @@ kept without a release of rules, so that it refuses every request without creden
 [`release.py`](release.py) leaves it so: the replay deletes the release and the rulesets it made
 when it ends, whatever happened, and `release.py` does it again on its own. Each ruleset the
 replay makes ends with the line `// hidane production parity`, so that those a stopped run left
-are deleted too. A release of rules it did not make stops the run, and is left as it is.
+are deleted too. A release of rules it did not make stops the run, and is left as it is. The
+Rules API allows a project 72 requests a minute that make, change or delete rulesets and
+releases: `release.py` sends at most 60, its reads of them included.
 
 `--shard i/n` sends the i-th of n parts of what deploys rules, from 0: the rulesets and the
 conditions are shared out by their SHA-256 digests.
