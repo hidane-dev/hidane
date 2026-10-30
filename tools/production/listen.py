@@ -89,7 +89,8 @@ def connection(base):
 
 def listen(production, target):
     """What a Listen stream's target holds when it becomes current: the names of the documents, in
-    the order sent, below the documents; or the message of its removal, or of an error."""
+    the order sent, below the documents, since the target was last reset; or the message of its
+    removal, or of an error."""
     production.spend(REQUESTS_PER_LISTEN)
     database = f"projects/{production.project}/databases/(default)"
     documents = f"{database}/documents"
@@ -128,6 +129,9 @@ def listen(production, target):
                 if "documentChange" in m:
                     found.append(m["documentChange"]["document"]["name"][len(documents) + 1:])
                 change = m.get("targetChange", {})
+                if change.get("targetChangeType") == "RESET":
+                    # The target's state is sent again from the start: what came before is not in it.
+                    found = []
                 if change.get("targetChangeType") == "CURRENT":
                     outcome = {"documents": found}
                 elif change.get("targetChangeType") == "REMOVE":

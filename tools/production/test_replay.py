@@ -284,9 +284,12 @@ class StandIn(BaseHTTPRequestHandler):
             message = ("'select' clauses are not supported for real-time queries." if collection == "sel" else
                        "The query requires an index. You can create it here: " + index_link(PROJECT, "ix", [("a", 1), ("__name__", 1)]))
             return frames([[{"targetChange": {"targetChangeType": "REMOVE", "targetIds": [2], "cause": {"code": 9, "message": message}}}]])
-        names = sorted(n for n in StandIn.documents if n.rsplit("/", 1)[0] == f"{target['parent']}/{collection}")
-        return frames([[{"targetChange": {"targetChangeType": "ADD", "targetIds": [2]}}]]
-                      + [[{"documentChange": {"document": {"name": n}, "targetIds": [2]}}] for n in names]
+        # A collection `qr` stands for `q` with the target reset once, its documents sent again.
+        names = sorted(n for n in StandIn.documents if n.rsplit("/", 1)[0] == f"{target['parent']}/{collection.rstrip('r')}")
+        changes = [[{"documentChange": {"document": {"name": n}, "targetIds": [2]}}] for n in names]
+        if collection == "qr":
+            changes += [[{"targetChange": {"targetChangeType": "RESET", "targetIds": [2]}}]] + changes
+        return frames([[{"targetChange": {"targetChangeType": "ADD", "targetIds": [2]}}]] + changes
                       + [[{"targetChange": {"targetChangeType": "CURRENT", "targetIds": [2]}}]])
 
     do_GET = do_POST = do_PATCH = do_DELETE = handle_one
@@ -646,6 +649,7 @@ class ReplayTest(unittest.TestCase):
             return {"name": name, "parent": "", "query": {"from": [{"collectionId": collection}]}, "outcome": outcome}
         recording = {"dataset": [{"name": f"q/{x}", "fields": {"v": {"integerValue": "1"}}} for x in "ab"], "cases": [
             case("all of q", "q", {"documents": ["q/a", "q/b"]}),
+            case("all of q, the target reset", "qr", {"documents": ["q/a", "q/b"]}),
             case("a projection", "sel", {"documents": []}),
             case("needs an index", "ix", {"documents": []}),
             case("differs", "q", {"documents": ["q/a"]}),
@@ -658,12 +662,12 @@ class ReplayTest(unittest.TestCase):
         path.write_text(json.dumps(recording))
         production = replay.Production(self.base, PROJECT, "a-token", 100)
         result = replay.replay(production, str(path))
-        self.assertEqual((result["cases"], result["sent"], result["same"], result["known"]), (5, 4, 1, {"D117": 1}))
+        self.assertEqual((result["cases"], result["sent"], result["same"], result["known"]), (6, 5, 2, {"D117": 1}))
         self.assertEqual(result["needsIndex"], ["needs an index"])
         self.assertEqual([(d["name"], d["difference"]) for d in result["differ"]], [("differs", "$.documents: 1 items, production 2")])
         self.assertEqual(result["skipped"], {"names another project": 1})
         # The token goes in the first request's headers, as the SDK sends it; three requests a stream.
-        self.assertEqual(StandIn.listened, ["Authorization:Bearer a-token\r\n"] * 4)
+        self.assertEqual(StandIn.listened, ["Authorization:Bearer a-token\r\n"] * 5)
         self.assertEqual(production.firestore, len([p for _, p, _, _ in StandIn.seen]))
         self.assertEqual(StandIn.documents, {})
 
