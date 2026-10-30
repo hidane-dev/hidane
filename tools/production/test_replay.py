@@ -13,6 +13,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import release  # noqa: E402
 import replay  # noqa: E402
 from test_indexes import index_link  # noqa: E402
 
@@ -27,6 +28,13 @@ class StandIn(BaseHTTPRequestHandler):
     commits = 0
     targets = []
     listened = []
+    # The Rules API's rulesets (name: content), the project's release (a ruleset's name), what it
+    # released, in order, and how many requests after a release the one before still decides.
+    rulesets = {}
+    release = None
+    released = []
+    lag = 0
+    lagging = 0
 
     def log_message(self, *args):
         pass
@@ -47,6 +55,11 @@ class StandIn(BaseHTTPRequestHandler):
             return self.channel(body)
         if self.path == f"/v1/projects/{PROJECT}:test":
             return self.rules_api(json.loads(body))
+        if self.path.startswith((f"/v1/projects/{PROJECT}/rulesets", f"/v1/projects/{PROJECT}/releases")):
+            return self.deployments(body)
+        if self.headers.get("Authorization") is None and not self.decided():
+            return self.answer(403, {"error": {"code": 403, "message": "Missing or insufficient permissions.",
+                                               "status": "PERMISSION_DENIED"}})
         if self.path.endswith(":listCollectionIds"):
             parent = urllib.parse.unquote(self.path[len("/v1/"):-len(":listCollectionIds")]) + "/"
             ids = sorted({n[len(parent):].split("/")[0] for n in StandIn.documents if n.startswith(parent)})
@@ -169,6 +182,78 @@ class StandIn(BaseHTTPRequestHandler):
                                       else "FAILURE"} for c in cases]
         return self.answer(200, answer)
 
+    def deployments(self, body):
+        """As the Rules API keeps rulesets and the project's release: a ruleset that does not
+        compile (`bad(`) is refused, and one the release uses is not deleted."""
+        kind, _, rest = self.path.split("?")[0][len(f"/v1/projects/{PROJECT}/"):].partition("/")
+        missing = {"error": {"code": 404, "message": "not found", "status": "NOT_FOUND"}}
+        if kind == "rulesets" and self.command == "POST":
+            content = json.loads(body)["source"]["files"][0]["content"]
+            if "bad(" in content:
+                return self.answer(400, {"error": {"code": 400, "message": "Syntax error", "status": "INVALID_ARGUMENT"}})
+            name = f"projects/{PROJECT}/rulesets/made-{len(StandIn.released)}-{len(StandIn.rulesets)}-{time.monotonic_ns()}"
+            StandIn.rulesets[name] = content
+            return self.answer(200, {"name": name, "createTime": "2026-01-01T00:00:00Z"})
+        if kind == "rulesets" and not rest:
+            return self.answer(200, {"rulesets": [{"name": n} for n in sorted(StandIn.rulesets)]})
+        if kind == "rulesets":
+            name = f"projects/{PROJECT}/rulesets/{rest}"
+            if name not in StandIn.rulesets:
+                return self.answer(404, missing)
+            if self.command == "DELETE":
+                if StandIn.release == name:
+                    return self.answer(400, {"error": {"code": 400, "message": "in use", "status": "FAILED_PRECONDITION"}})
+                del StandIn.rulesets[name]
+                return self.answer(200, {})
+            return self.answer(200, {"name": name, "source": {"files": [{"name": "firestore.rules", "content": StandIn.rulesets[name]}]}})
+        if self.command in ("GET", "DELETE") and StandIn.release is None:
+            return self.answer(404, missing)
+        if self.command == "DELETE":
+            StandIn.release = None
+            return self.answer(200, {})
+        if self.command == "POST" and StandIn.release is not None:
+            return self.answer(409, {"error": {"code": 409, "message": "exists", "status": "ALREADY_EXISTS"}})
+        if self.command == "PATCH" and StandIn.release is None:
+            return self.answer(404, missing)
+        if self.command in ("POST", "PATCH"):
+            request = json.loads(body)
+            StandIn.release = request.get("release", request)["rulesetName"]
+            StandIn.released.append(StandIn.rulesets[StandIn.release])
+            StandIn.lagging = StandIn.lag
+        return self.answer(200, {"name": f"projects/{PROJECT}/releases/cloud.firestore", "rulesetName": StandIn.release})
+
+    def decided(self):
+        """Whether the rules released allow a request without credentials. The release before
+        decides the first `lag` requests after each release, which has not reached every server.
+        A rule is `allow <methods>: if <condition>` in `match /<collection>/{id}` or
+        `match /{document=**}`, and a condition `true`, `false` or `resource.data.n == <n>`."""
+        source = StandIn.rulesets.get(StandIn.release)
+        if StandIn.lagging:
+            StandIn.lagging -= 1
+            source = StandIn.released[-2] if len(StandIn.released) > 1 else None
+        if source is None:
+            return False
+        name = urllib.parse.unquote(self.path.split("?")[0][len("/v1/"):])
+        if "/documents/" not in name:
+            return False
+        below = name.split("/documents/", 1)[1].split("/")
+        document = StandIn.documents.get(name)
+        op = {"GET": "get" if len(below) % 2 == 0 else "list", "DELETE": "delete"}.get(
+            self.command, "update" if document else "create")
+        for where, allows in re.findall(r"match /(\{document=\*\*\}|\w+)(?:/\{\w+\})? \{\s*((?:allow [^;]+;\s*)+)\}", source):
+            if where not in ("{document=**}", below[0]):
+                continue
+            for methods, condition in re.findall(r"allow ([\w, ]+): if ([^;]+);", allows):
+                methods = {m.strip() for m in methods.split(",")}
+                if op not in methods and not ("read" in methods and op in ("get", "list")) and \
+                        not ("write" in methods and op in ("create", "update", "delete")):
+                    continue
+                n = re.fullmatch(r"resource\.data\.n == (\d+)", condition.strip())
+                if condition.strip() == "true" or (n and document and
+                                                   document["fields"].get("n", {}).get("integerValue") == n.group(1)):
+                    return True
+        return False
+
     def channel(self, body):
         """A WebChannel Listen stream, as production serves one: a session for the first request's
         target, then the stream, in frames: the target's documents by name, then `CURRENT`; or its
@@ -213,12 +298,16 @@ class ReplayTest(unittest.TestCase):
         StandIn.seen = []
         StandIn.commits = 0
         StandIn.targets, StandIn.listened = [], []
+        StandIn.rulesets, StandIn.release, StandIn.released, StandIn.lag, StandIn.lagging = {}, None, [], 0, 0
+        self.waits = release.SETTLE, replay.RETRY_AFTER
+        release.SETTLE = replay.RETRY_AFTER = 0
         self.server = ThreadingHTTPServer(("127.0.0.1", 0), StandIn)
         threading.Thread(target=self.server.serve_forever, daemon=True).start()
         self.base = f"http://127.0.0.1:{self.server.server_address[1]}"
         self.dir = tempfile.TemporaryDirectory()
 
     def tearDown(self):
+        release.SETTLE, replay.RETRY_AFTER = self.waits
         self.server.shutdown()
         self.server.server_close()
         self.dir.cleanup()
@@ -798,6 +887,149 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual(report["project"], "{project}")
         self.assertNotIn("a-token", (out / "report.json").read_text() + (out / "report.md").read_text())
 
+
+    def deploy(self, *fixtures, shard=None):
+        """Runs the replay with rules deployed (`--deploy-rules`); its report."""
+        out = Path(self.dir.name) / "out"
+        os.environ[replay.TOKEN_ENV] = "a-token"
+        try:
+            replay.main(["--project", PROJECT, "--out", str(out), "--base", self.base, "--rules-base", self.base,
+                         "--deploy-rules", *(["--shard", shard] if shard else []), *fixtures])
+        finally:
+            del os.environ[replay.TOKEN_ENV]
+        return json.loads((out / "report.json").read_text())
+
+    def rules_recording(self, cases):
+        path = Path(self.dir.name) / "rules_request.json"
+        path.write_text(json.dumps(cases))
+        return str(path)
+
+    def test_recordings_of_rules_are_sent_with_their_rules_deployed(self):
+        def step(method, path, auth, status, response=None, body=None):
+            return {"method": method, "path": path, "body": body, "auth": auth, "status": status, "response": response}
+
+        def load(condition):
+            rules = ("rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
+                     f"    match /c/{{d}} {{\n      allow read: if {condition};\n    }}\n  }}\n}}\n")
+            return step("PUT", "/emulator/v1/projects/req:securityRules", None, 200, {},
+                        {"rules": {"files": [{"name": "firestore.rules", "content": rules}]}})
+        d, owner = "/v1/projects/req/databases/(default)/documents", "Bearer owner"
+        write = step("PATCH", f"{d}/c/d", owner, 200, None, {"fields": {"n": {"integerValue": "1"}}})
+        denied = {"error": {"code": 403, "message": "\nfalse for 'get' @ L5", "status": "PERMISSION_DENIED"}}
+        cases = [
+            {"name": "allowed", "steps": [write, load("true"), step("GET", f"{d}/c/d", None, 200)]},
+            {"name": "missing", "steps": [load("true"), step("GET", f"{d}/c/x", None, 404)]},
+            {"name": "denied", "steps": [write, load("false"), step("GET", f"{d}/c/d", None, 403, denied)]},
+            {"name": "differs", "steps": [write, load("false"), step("GET", f"{d}/c/d", None, 200)]},
+            {"name": "a user's", "steps": [load("true"), step("GET", f"{d}/c/d", "Bearer e30.e30.", 200)]},
+            {"name": "coverage", "steps": [load("true"), step("GET", "/emulator/v1/projects/req:ruleCoverage", None, 200)]},
+            {"name": "too early", "steps": [step("GET", f"{d}/c/d", None, 404), load("true")]},
+        ]
+        report = self.deploy(self.rules_recording(cases))
+        result = report["recordings"][0]
+        self.assertEqual((result["sent"], result["same"], result["knownCases"], result["known"]), (4, 2, 1, {"D118": 1}))
+        self.assertEqual([d["name"] for d in result["differ"]], ["differs, step 3"])
+        self.assertEqual(result["skipped"], {"sends a user's token": 1, "uses the official emulator's own API": 1,
+                                             "sends a request before it loads rules": 1})
+        # A ruleset for each, and again for the case that differed; each marked, and all gone at
+        # the end with the release.
+        self.assertEqual(len(StandIn.released), 3)
+        self.assertTrue(all(content.endswith(release.MARK) for content in StandIn.released))
+        self.assertEqual((StandIn.release, StandIn.rulesets), (None, {}))
+        # The owner's steps carry the token, the others no credentials.
+        sent = [(m, p.rsplit("/", 1)[-1], auth) for m, p, auth, _ in StandIn.seen if "/documents/c/" in p]
+        self.assertIn(("PATCH", "d", "Bearer a-token"), sent)
+        self.assertIn(("GET", "d", None), sent)
+        self.assertNotIn(("GET", "d", "Bearer a-token"), sent)
+        self.assertEqual(report["deployed"], "0/1")
+        self.assertIn("rules deployed", (Path(self.dir.name) / "out" / "report.md").read_text())
+
+    def test_a_case_sent_before_its_release_reached_every_server_is_sent_again(self):
+        StandIn.lag = 1
+        rules = ("rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
+                 "    match /c/{d} {\n      allow read: if true;\n    }\n  }\n}\n")
+        case = {"name": "allowed", "steps": [
+            {"method": "PUT", "path": "/emulator/v1/projects/req:securityRules", "auth": None, "status": 200, "response": {},
+             "body": {"rules": {"files": [{"name": "firestore.rules", "content": rules}]}}},
+            {"method": "GET", "path": "/v1/projects/req/databases/(default)/documents/c/x", "auth": None, "status": 404,
+             "body": None, "response": None}]}
+        report = self.deploy(self.rules_recording([case]))
+        result = report["recordings"][0]
+        self.assertEqual((result["same"], result["settled"], result["differ"]), (1, 1, []))
+        self.assertIn("were the same when sent again", (Path(self.dir.name) / "out" / "report.md").read_text())
+
+    def test_conditions_that_read_are_deployed(self):
+        rules = ("rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
+                 "    match /rooms/{room} {\n      allow read: if %s;\n    }\n  }\n}\n")
+        recording = {
+            "document": {"n": {"integerValue": "1"},
+                         "ref": {"referenceValue": "projects/rules-eval/databases/(default)/documents/rooms/r2"}},
+            "rules": rules,
+            "results": [
+                {"name": "a", "condition": "resource.data.n == 1", "outcome": "allow"},
+                {"name": "b", "condition": "resource.data.n == 2", "outcome": "deny", "message": "\nfalse for 'get' @ L5"},
+                {"name": "c", "condition": "request.path[0] == 'databases'", "outcome": "allow"},
+                {"name": "d", "condition": "true", "outcome": "allow"},
+                {"name": "e", "condition": "resource.data.n == 1 && bad(", "outcome": "compile", "message": "x"},
+                {"name": "f", "condition": "resource.data.n == 1 && foo()", "outcome": "deny",
+                 "issues": ["Invalid function name: foo."]},
+                {"name": "batch", "condition": "getAfter(/databases/$(database)/documents/c/$(d)) != null",
+                 "writes": ["+w"], "outcome": "allow"},
+            ]}
+        path = Path(self.dir.name) / "rules_eval.json"
+        path.write_text(json.dumps(recording))
+        result = self.deploy(str(path))["recordings"][0]
+        self.assertEqual((result["sent"], result["same"]), (5, 4))
+        self.assertEqual([d["name"] for d in result["differ"]], ["c"])
+        self.assertEqual(result["skipped"], {"a batch of writes": 1, "tested with projects.test, not deployed": 1})
+        # Those that do not depend on where the document is, together, each on a collection of its
+        # own; the other alone, then again; the one that does not compile not at all.
+        self.assertEqual(len(StandIn.released), 3)
+        self.assertEqual(re.findall(r"match /(\w+)/", StandIn.released[0]), ["databases", "e0", "e1", "e4"])
+        self.assertIn("match /rooms/{room}", StandIn.released[1])
+        # The document is written in the replay's project, its reference too.
+        commits = [b for m, p, _, b in StandIn.seen if p.endswith(":commit") and b and "rooms/r1" in b]
+        self.assertIn(f"projects/{PROJECT}/databases/(default)/documents/rooms/r2", commits[0])
+        self.assertNotIn("rules-eval", commits[0])
+
+    def test_rules_the_replay_did_not_make_are_left_alone(self):
+        theirs = f"projects/{PROJECT}/rulesets/theirs"
+        StandIn.rulesets, StandIn.release = {theirs: "rules_version = '2';\n"}, theirs
+        with self.assertRaisesRegex(RuntimeError, "did not make"):
+            self.deploy(self.rules_recording([]))
+        self.assertEqual((StandIn.release, list(StandIn.rulesets)), (theirs, [theirs]))
+        self.assertFalse([p for _, p, _, _ in StandIn.seen if "/databases/" in p])
+
+    def test_what_a_stopped_run_left_is_taken_down(self):
+        def left():
+            mine = [f"projects/{PROJECT}/rulesets/left-{i}" for i in range(2)]
+            StandIn.rulesets = {mine[0]: "a\n" + release.MARK, mine[1]: "b\n" + release.MARK,
+                                f"projects/{PROJECT}/rulesets/theirs": "c\n"}
+            StandIn.release = mine[0]
+        left()
+        self.deploy(self.rules_recording([]))
+        self.assertEqual((StandIn.release, list(StandIn.rulesets)), (None, [f"projects/{PROJECT}/rulesets/theirs"]))
+        # As the workflow takes them down after a run, whatever happened.
+        left()
+        os.environ[replay.TOKEN_ENV] = "a-token"
+        try:
+            release.main(["--project", PROJECT, "--rules-base", self.base])
+        finally:
+            del os.environ[replay.TOKEN_ENV]
+        self.assertEqual((StandIn.release, list(StandIn.rulesets)), (None, [f"projects/{PROJECT}/rulesets/theirs"]))
+
+    def test_shards_share_out_what_deploys_rules(self):
+        production = replay.Production(self.base, PROJECT, "a-token", 100)
+        keys = [f"resource.data.n == {i}" for i in range(50)]
+        shared = []
+        for i in range(7):
+            production.shard = (i, 7)
+            shared += [k for k in keys if replay.in_shard(production, k)]
+        self.assertEqual(sorted(shared), sorted(keys))
+        self.assertTrue(0 < len([k for k in keys if replay.in_shard(production, k)]) < len(keys))
+        for wrong in (["--shard", "7/7", "--deploy-rules"], ["--shard", "1/7"], ["--shard", "x"]):
+            with self.assertRaises(SystemExit):
+                replay.main(["--project", PROJECT, "--out", self.dir.name, *wrong, "f.json"])
 
 if __name__ == "__main__":
     unittest.main()

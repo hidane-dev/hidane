@@ -77,8 +77,8 @@ Recordings it reads:
   read against the case's commits (`<commit 2>`, `<near commit 2>`), and page tokens and IDs the
   server chose left out. A time a step sends near a commit is moved with production's commit,
   and a page token or a transaction an earlier answer handed out is replaced by production's.
-  Cases that set rules are not run, nor steps the emulator refused for want of admin credentials
-  (their recorder sent none);
+  Cases that set rules are not run (but with their rules deployed, below), nor steps the emulator
+  refused for want of admin credentials (their recorder sent none);
 - the recording of a document's limits (`limits.json`): each case's document, built from the
   recording's specs as its recorder ([`tools/oracle/limits.py`](../oracle/limits.py)) built it,
   is committed, and the status and the error's message compared;
@@ -146,9 +146,54 @@ Recordings it reads:
 
 The workflow replays all twenty-one nightly. Testing rules takes the permission
 `firebaserules.rulesets.test`: the workflow's service account has it through a custom role that
-holds that one permission (`rulesTester`), so it may test rulesets but not deploy them. The Rules
-API takes seconds to compile each ruleset, so tests are sent eight at a time, and at most 240 a
-minute: it allows a project 300.
+holds that one permission (`rulesTester`). The Rules API takes seconds to compile each ruleset,
+so tests are sent eight at a time, and at most 240 a minute: it allows a project 300.
+
+## Rules deployed
+
+`projects.test` does not show what rules decide about a request: conditions that read the
+document, the request or other documents, and the requests of recordings of rules. With
+`--deploy-rules`, the replay deploys those rules to the project's databases and sends the
+requests:
+
+- the recordings of rules whose steps are sent as the owner or without credentials
+  (`rules_request.json`, `rules_writes.json`, `rules_verify.json`, `rules_lookups.json`,
+  `rules_same_document.json`, `rules_denials.json`). The cases are put together by the ruleset
+  they load; each ruleset is released, and each of its cases sent on the database emptied, as the
+  recordings of steps are. A step the owner sent is sent with the token, which rules do not
+  decide, as they do not decide the emulator's owner; a step sent without credentials is sent
+  without. The emulator's load of the rules is compared, on its status, with whether production
+  made the ruleset. A case that sends a user's token (`rules_list.json`, `rules_auth.json`) is
+  not sent: production takes only tokens Firebase Authentication signed, and the recordings'
+  tokens are not signed. Nor is a case that uses the emulator's own API but the load. A denial's
+  message is the emulator's own (D118);
+- the conditions of `rules_eval.json` that read: `rooms/r1` and `rooms/r2` are written as the
+  recorder wrote them, and each condition decides a read of `rooms/r1` without credentials,
+  allowed or denied. Conditions that do not depend on where the document is are deployed in one
+  ruleset, each on a collection of its own that holds the same document; the others, and whole
+  rulesets, one at a time. Whether each compiles, and its warnings, are compared with
+  `projects.test`, as above.
+
+A release decides requests seconds after it is made (from 1.3 to 2.2 s, measured on 2026-10-30),
+and takes minutes to reach every server. The replay waits 5 s after each release; a case that
+differs is sent again two minutes later, its ruleset released again, and differs only if it does
+again. The report counts those that did not.
+
+While it runs, the database is open as the rules deployed open it, to anyone. The project is
+kept without a release of rules, so that it refuses every request without credentials, and
+[`release.py`](release.py) leaves it so: the replay deletes the release and the rulesets it made
+when it ends, whatever happened, and `release.py` does it again on its own. Each ruleset the
+replay makes ends with the line `// hidane production parity`, so that those a stopped run left
+are deleted too. A release of rules it did not make stops the run, and is left as it is.
+
+`--shard i/n` sends the i-th of n parts of what deploys rules, from 0: the rulesets and the
+conditions are shared out by their SHA-256 digests.
+
+```sh
+PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/replay.py --project <id> --out production-rules \
+    --deploy-rules --shard 0/7 crates/hidane/tests/fixtures/rules_request.json
+PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/release.py --project <id>
+```
 
 [`test_replay.py`](test_replay.py) tests it offline, against a stand-in for production on
 `127.0.0.1`; CI runs it.
@@ -176,10 +221,17 @@ index until then.
 
 [`.github/workflows/production-parity.yml`](../../.github/workflows/production-parity.yml) runs
 nightly and on demand, on `main` only. It signs in through Workload Identity Federation as a
-service account that may read and write Firestore and test rulesets, with the project, the
-provider and the service account named by the variables of the `production-parity`
-environment. No key exists. The report is the run's `production-parity` artifact, kept 30
-days.
+service account that may read and write Firestore, test rulesets, and deploy them, with the
+project, the provider and the service account named by the variables of the `production-parity`
+environment. No key exists. Deploying rules takes `firebaserules.rulesets.create` and `delete`,
+and `firebaserules.releases.create`, `update` and `delete`: the service account has them through
+a custom role that holds those alone (`rulesDeployer`). The report is the run's
+`production-parity` artifact, kept 30 days.
+
+Its second job, after the first, replays with rules deployed a seventh of what deploys rules,
+by the day of the week (a run on demand takes the seventh as its `rules-shard`), and takes the
+rules down after its replay, whatever happened. Its report is the run's `production-rules`
+artifact.
 
 A difference it reports is a lead, not a fact about hidane: production can differ from the
 official emulator by design. A person reads it, and where it settles how production answers, it
