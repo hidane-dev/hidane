@@ -90,9 +90,10 @@ The macOS archives are rebuilt the same way on a Mac, and the Windows archive un
 
 - **The linker and its version.** The Linux binaries are linked by the C toolchain of Ubuntu 24.04
   (the runner images `ubuntu-24.04` and `ubuntu-24.04-arm`), the macOS binaries by the Xcode of
-  the `macos-14` image, the Windows binary by the Visual Studio of `windows-2022`. Another
-  version of any of them may produce other bytes. The weekly run notices when a runner image
-  update does; a rebuild elsewhere is only expected to match with the same toolchain.
+  the `macos-15` image (up to 0.6.0, of the `macos-14` image, which GitHub retires on
+  2026-11-02), the Windows binary by the Visual Studio of `windows-2022`. Another version of any
+  of them may produce other bytes. The weekly run notices when a runner image update does; a
+  rebuild elsewhere is only expected to match with the same toolchain.
 - **Compression.** `archive.py` writes the same entries everywhere, but the compressed bytes come
   from the zlib that Python uses, which differs between versions. Compare the binaries when the
   archives differ, and check the archive's contents (`tar -tvzf`) for the rest.
