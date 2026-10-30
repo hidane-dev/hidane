@@ -2000,6 +2000,25 @@
    "pinned_by": [
     "crates/hidane/tests/listen_queries.rs::listen_targets_answer_like_the_official_emulator"
    ]
+  },
+  {
+   "id": "D118",
+   "table": "production",
+   "area": "rules",
+   "topic": "Denials",
+   "kind": "bug-for-bug",
+   "official": "A request the rules deny is refused with `PERMISSION_DENIED` and a message that names each statement that denied it and why, each at its line: `false for 'get' @ L6`, or an error, `Property x is undefined on object. for 'get' @ L5` (`tools/oracle/rules_denials.py`)",
+   "firestore": "The same status, with `Missing or insufficient permissions.` alone (#82)",
+   "hidane": "As the official emulator: the statements that denied, and why (D008 and D019 say where its list differs)",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). A test reads in the message which statement denied it; clients tell a denial by its status",
+   "references": [
+    "hidane-dev/hidane#82",
+    "tools/oracle/rules_denials.py"
+   ],
+   "pinned_by": [
+    "crates/hidane-rules/tests/denials.rs::denials_name_each_statement",
+    "crates/hidane/tests/rules_server.rs::denials"
+   ]
   }
  ],
  "retired": [

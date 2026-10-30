@@ -25,7 +25,9 @@ fields, an aggregation's results, or the error), without `done` (D099). The data
 
 Recordings of Security Rules are tested with the Rules API's `projects.test`: the conditions of
 `rules_eval.json` here (`replay_rules`), and how rulesets compile and which documents their
-`match` paths cover in `rules.py`.
+`match` paths cover in `rules.py`. With `--deploy-rules`, the rules of recordings of rules are
+deployed (`release.py`) and their requests sent, those without credentials without the token
+(`replay_rules_steps`, `replay_rules_deployed`); the project's rules are taken down at the end.
 
 What differs goes to `<out>/report.json` and `<out>/report.md`, and to the job summary in GitHub
 Actions. It is not a recording: it stays a workflow artifact until a person has looked at it
@@ -34,6 +36,7 @@ Actions. It is not a recording: it stays a workflow artifact until a person has 
 
 import argparse
 import base64
+import hashlib
 import http.client
 import json
 import os
@@ -101,16 +104,23 @@ class Production:
         self.sent = 0
         self.firestore = 0
         self.counting = threading.Lock()
+        # With `--deploy-rules`, the project's release of rules (release.py), and which part of
+        # the cases that deploy rules this run sends (`--shard`: i, n).
+        self.release = None
+        self.shard = None
 
-    def send(self, method, path, data=None, content_type="application/json", base=None):
-        """One request, to Firestore or another API (`base`); answers (status, content type, body
-        as text). A connection that fails before an answer is tried again a few times; then the
-        answer is status 0. The budget counts the requests to Firestore, to stay within its free
-        daily quota; tests of rules, which `Pace` keeps within the Rules API's, are not in it."""
+    def send(self, method, path, data=None, content_type="application/json", base=None, anonymous=False):
+        """One request, to Firestore or another API (`base`), with the token or, `anonymous`,
+        without credentials; answers (status, content type, body as text). A connection that
+        fails before an answer is tried again a few times; then the answer is status 0. The budget
+        counts the requests to Firestore, to stay within its free daily quota; tests of rules,
+        which `Pace` keeps within the Rules API's, are not in it."""
         self.spend(firestore=base is None)
-        headers = {"Authorization": f"Bearer {self.token}", "Content-Type": content_type}
-        if self.quota_project:
-            headers["x-goog-user-project"] = self.quota_project
+        headers = {"Content-Type": content_type}
+        if not anonymous:
+            headers["Authorization"] = f"Bearer {self.token}"
+            if self.quota_project:
+                headers["x-goog-user-project"] = self.quota_project
         req = urllib.request.Request((base or self.base) + path, method=method, data=data, headers=headers)
         for attempt in range(NETWORK_TRIES):
             try:
@@ -284,6 +294,9 @@ KNOWN_ERRORS = [
     # Production refuses a read time over an hour old (D065), or before the database was created.
     ("D065", None, None, "FAILED_PRECONDITION", r"^The requested 'read_time' is too old\.$"),
     ("D097", None, None, "INVALID_ARGUMENT", r"^The requested 'read_time' cannot be before database creation time\.$"),
+    # A denial: the official emulator names the statements that denied and why (`false for 'get'
+    # @ L6`), production only that the request may not.
+    ("D118", "PERMISSION_DENIED", r"@ L\d+", "PERMISSION_DENIED", r"^Missing or insufficient permissions\.$"),
 ]
 # Cases about a difference an entry records, by recording and name: what they answer differently
 # is that difference.
@@ -1071,7 +1084,11 @@ def replay_rules(production, recording, result):
     `rooms/r1` with no `auth`, and its outcome and warnings are compared. A denial's message is
     the emulator's own and is not; nor are batches of writes, and conditions that read the
     document, the request or other documents (`READS`). A case that shows a difference
-    `KNOWN_RULES` records counts as known."""
+    `KNOWN_RULES` records counts as known. With rules deployed (`--deploy-rules`), the conditions
+    that read are sent instead (`replay_rules_deployed`)."""
+    if production.release is not None:
+        replay_rules_deployed(production, recording, result)
+        return
     tested = []
     for case in recording["results"]:
         if "writes" in case or "answers" in case:
@@ -1104,6 +1121,105 @@ def replay_rules(production, recording, result):
                                      "official": {"status": outcome, **official},
                                      "production": {"status": answered["outcome"], **answered},
                                      "rules": case.get("condition") or source})
+
+
+# A condition that depends on where the document it reads is: on the document's path or name, or
+# on `rooms`. Those that do not are deployed together, each on a collection of its own.
+WHERE = re.compile(r"\brooms\b|__name__|\bresource\b(?!\.(?:data|id)\b)|\brequest\b(?!\.(?:auth|time|method|query)\b)")
+
+
+def replay_rules_deployed(production, recording, result):
+    """The conditions of `rules_eval.json` that read the document, the request or other documents
+    (`READS`), which `projects.test` does not test, with their rules deployed (`--deploy-rules`).
+    `rooms/r1` holds the recording's document and `rooms/r2` another, as the recorder wrote them,
+    and each condition decides a read of `rooms/r1` without credentials: allowed or denied.
+    Conditions that do not depend on where the document is (`WHERE`) are deployed in one
+    ruleset, each on a collection of its own that holds the same document; the others, and whole
+    rulesets, one at a time. Whether each compiles, and its warnings, are the Rules API's
+    (`projects.test` without a test). A condition that differs is deployed again alone
+    `RETRY_AFTER` seconds later, and differs only if it does again."""
+    project = production.project
+    cases = []
+    for case in recording["results"]:
+        if "writes" in case or "answers" in case:
+            why = "a batch of writes"
+        elif not READS.search(case.get("condition") or case.get("rules", "")):
+            why = "tested with projects.test, not deployed"
+        elif not in_shard(production, case.get("condition") or case["rules"]):
+            why = "another night's"
+        else:
+            why = None
+        if why:
+            result["skipped"][why] = result["skipped"].get(why, 0) + 1
+        else:
+            cases.append(case)
+    log(f"{result['fixture']}: {len(cases)} conditions to deploy")
+    sources = [case.get("rules") or recording["rules"].replace("%s", case["condition"], 1) for case in cases]
+    tests = rules_tests(production, [{"source": {"files": [{"name": "firestore.rules", "content": s}]}} for s in sources])
+    compiled = [rules_outcome(status, mask(text, project)) for status, text in tests]
+    together = [i for i, case in enumerate(cases)
+                if compiled[i]["outcome"] != "compile" and "condition" in case and not WHERE.search(case["condition"])]
+
+    documents = f"projects/{project}/databases/(default)/documents"
+    fields = json.loads(re.sub(r"projects/[^/\"]+/databases", f"projects/{project}/databases", json.dumps(recording["document"])))
+    production.empty()
+    writes = [{"update": {"name": f"{documents}/rooms/r1", "fields": fields}},
+              {"update": {"name": f"{documents}/rooms/r2", "fields": {"n": {"integerValue": "1"}}}}]
+    writes += [{"update": {"name": f"{documents}/e{i}/r1", "fields": fields}} for i in together]
+    for start in range(0, len(writes), 500):
+        production.call("POST", f"/v1/{documents}:commit", {"writes": writes[start:start + 500]})
+
+    def read(collection):
+        status, _, _ = production.send("GET", f"/v1/{documents}/{collection}/r1", anonymous=True)
+        return {200: "allow", 403: "deny"}.get(status, str(status))
+
+    def alone(i):
+        if compiled[i]["outcome"] == "compile":
+            return "compile"
+        status, _ = production.release.deploy(sources[i])
+        return read("rooms") if status == 200 else "compile"
+
+    outcomes = {}
+    if together:
+        blocks = "".join(f"    match /e{i}/{{room}} {{\n      allow read: if {cases[i]['condition']};\n    }}\n"
+                         for i in together)
+        source = "rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n" + blocks + "  }\n}\n"
+        if production.release.deploy(source)[0] == 200:
+            outcomes = {i: read(f"e{i}") for i in together}
+    for i in range(len(cases)):
+        if i not in outcomes:
+            outcomes[i] = alone(i)
+
+    def compared(i):
+        outcome = cases[i]["outcome"] if cases[i]["outcome"] in ("allow", "deny", "compile") else str(cases[i]["outcome"])
+        official = {"outcome": outcome, "issues": [] if outcome == "compile" else sorted(cases[i].get("issues", []))}
+        answered = {"outcome": outcomes[i], "issues": [] if outcomes[i] == "compile" else compiled[i]["issues"]}
+        return official, answered
+
+    again = []
+    for i in range(len(cases)):
+        result["sent"] += 1
+        if same_json(*compared(i)):
+            result["same"] += 1
+        else:
+            again.append(i)
+    if again:
+        log(f"{result['fixture']}: {len(again)} conditions differ; deployed again in {RETRY_AFTER} s")
+        time.sleep(RETRY_AFTER)
+    for i in again:
+        outcomes[i] = alone(i)
+        official, answered = compared(i)
+        if same_json(official, answered):
+            result["same"] += 1
+            result["settled"] = result.get("settled", 0) + 1
+        elif not known_rules(result, sources[i], tests[i][1]):
+            result["differ"].append({"name": cases[i]["name"], "method": "GET",
+                                     "path": "/v1/projects/{project}/databases/(default)/documents/rooms/r1",
+                                     "difference": first_difference(official, answered) or "the outcome",
+                                     "official": {"status": official["outcome"], **official},
+                                     "production": {"status": answered["outcome"], **answered},
+                                     "rules": cases[i].get("condition") or sources[i]})
+    production.empty()
 
 
 TIMESTAMP = re.compile(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z")
@@ -1245,37 +1361,46 @@ def order_difference(official, production, at="$"):
     return None
 
 
-def replay_steps(production, recording, result):
-    """A recording of steps (`same_document_writes.json`, `document_writes.json`,
-    `transforms.json`, `base_versions.json`). On the official emulator each case ran in a project
-    of its own; here each runs on the database emptied, in the replay's project, and every step's
-    answer is compared as `step_answer` reads it. What an earlier answer handed out (a page token,
-    a transaction) is replaced by what production handed out, and times near a commit are moved
-    with it (`shift`), and templates of a commit's time or version are filled with production's
-    (`filled`). A case that sets rules, or sends a step as someone other than the owner, is
-    not run. A step the emulator refused for want of admin credentials (`… require admin
-    authentication.`: its recorder sent none) is not sent: the replay always has them."""
-    project = production.project
-    for case in recording["cases"]:
-        if case.get("rules") or not all(step.get("owner", True) for step in case["steps"]):
-            result["skipped"]["evaluates rules"] = result["skipped"].get("evaluates rules", 0) + 1
-            continue
-        own = case["steps"][0]["path"].split("projects/")[1].split("/")[0]
-        production.empty()
-        result["sent"] += 1
-        official_commits, production_commits, first, found, known = [], [], None, {}, set()
-        for n, step in enumerate(case["steps"], 1):
-            recorded = step["response"] if "response" in step else ({"error": step["error"]} if "error" in step else None)
-            if "require admin authentication" in json.dumps(recorded):
-                continue
+def case_project(case):
+    """The project a case of steps ran in on the official emulator."""
+    return case.get("project") or PROJECT_NAME.search(case["steps"][0]["path"]).group(1)
 
+
+def sender(step):
+    """Who sent a step: a recording of rules says (`auth`: the owner's `Bearer owner`, a user's
+    token, or None for no credentials); the others send every step as the owner."""
+    return step.get("auth", "Bearer owner")
+
+
+def run_steps(production, case, own, result, loaded=None):
+    """Sends a case's steps on the database emptied, in the replay's project, and compares each
+    step's answer as `step_answer` reads it. What an earlier answer handed out (a page token, a
+    transaction) is replaced by what production handed out, and times near a commit are moved
+    with it (`shift`), and templates of a commit's time or version are filled with production's
+    (`filled`). A step the emulator refused for want of admin credentials (`… require admin
+    authentication.`: its recorder sent none) is not sent: the replay always has them. A step
+    the owner sent is sent with the token, one without credentials without; the official
+    emulator's load of rules (`PUT …:securityRules`) is compared, on its status, with how making
+    the ruleset went in production (`loaded`). Answers the first difference (the step's number,
+    the official emulator's answer, production's), or None, and the entries of the known
+    differences seen."""
+    project = production.project
+    production.empty()
+    official_commits, production_commits, first, found, known = [], [], None, {}, set()
+    for n, step in enumerate(case["steps"], 1):
+        recorded = step["response"] if "response" in step else ({"error": step["error"]} if "error" in step else None)
+        if "require admin authentication" in json.dumps(recorded):
+            continue
+        if step["path"].endswith(":securityRules"):
+            official, answered = {"status": step["status"]}, {"status": loaded}
+        else:
             def sent(text):
                 return filled(handed_on(shift(text.replace(f"projects/{own}/", f"projects/{project}/"), official_commits,
                                               production_commits), found), production_commits)
 
             path = sent(step["path"] if step["path"].startswith("/") else "/v1/" + step["path"])
             data = None if step.get("body") is None else sent(json.dumps(step["body"])).encode()
-            status, _, text = production.send(step["method"], path, data)
+            status, _, text = production.send(step["method"], path, data, anonymous=sender(step) is None)
             try:
                 answer = json.loads(text) if text.strip() else None
             except ValueError:
@@ -1289,25 +1414,128 @@ def replay_steps(production, recording, result):
             if recorded is None and isinstance(answer, dict) and isinstance(answer.get("commitTime"), str):
                 production_commits.append(answer["commitTime"])
             answered = step_answer(status, answer if recorded is not None else None, project, production_commits)
-            if first is None and not same_json(official, answered, known):
-                first = (n, official, answered)
-            elif first is None and result["fixture"] in ORDERED and order_difference(official, answered):
-                known.add(ORDERED[result["fixture"]])
-        about = [k for k, pattern in KNOWN_CASES.get(result["fixture"], []) if re.search(pattern, case["name"])]
-        if first is not None and about:
-            first, known = None, {about[0]}
-        if first is None and not known:
-            result["same"] += 1
-        elif first is None:
-            result["knownCases"] += 1
-            for k in known:
-                result["known"][k] = result["known"].get(k, 0) + 1
+        if first is None and not same_json(official, answered, known):
+            first = (n, official, answered)
+        elif first is None and result["fixture"] in ORDERED and order_difference(official, answered):
+            known.add(ORDERED[result["fixture"]])
+    about = [k for k, pattern in KNOWN_CASES.get(result["fixture"], []) if re.search(pattern, case["name"])]
+    if first is not None and about:
+        first, known = None, {about[0]}
+    return first, known
+
+
+def tally_steps(result, case, own, first, known):
+    """Counts a case of steps as the same, known, or different (`run_steps`)."""
+    if first is None and not known:
+        result["same"] += 1
+    elif first is None:
+        result["knownCases"] += 1
+        for k in known:
+            result["known"][k] = result["known"].get(k, 0) + 1
+    else:
+        n, official, answered = first
+        result["differ"].append({"name": f"{case['name']}, step {n}", "method": case["steps"][n - 1]["method"],
+                                 "path": case["steps"][n - 1]["path"].replace(own, "{project}"),
+                                 "difference": first_difference(official, answered) or "the answer",
+                                 "official": official, "production": answered})
+
+
+def replay_steps(production, recording, result):
+    """A recording of steps (`same_document_writes.json`, `document_writes.json`,
+    `transforms.json`, `base_versions.json`). On the official emulator each case ran in a project
+    of its own; here each runs on the database emptied, in the replay's project (`run_steps`). A
+    case that sets rules, or sends a step as someone other than the owner, is not run, but with
+    its rules deployed (`--deploy-rules`, `replay_rules_steps`)."""
+    if production.release is not None:
+        replay_rules_steps(production, recording, result)
+        return
+    for case in recording["cases"]:
+        if case.get("rules") or not all(step.get("owner", True) and sender(step) == "Bearer owner"
+                                        and not step["path"].endswith(":securityRules") for step in case["steps"]):
+            result["skipped"]["evaluates rules"] = result["skipped"].get("evaluates rules", 0) + 1
+            continue
+        own = case_project(case)
+        result["sent"] += 1
+        first, known = run_steps(production, case, own, result)
+        tally_steps(result, case, own, first, known)
+
+
+# How long the replay waits to send again what differed with rules deployed: a release takes
+# minutes to reach every server, and one that had not yet may have answered.
+RETRY_AFTER = 120
+
+
+def in_shard(production, key):
+    """Whether something that deploys rules, known by `key` (a ruleset, a condition), is in the
+    part of them this run sends (`--shard`): their SHA-256 digests share them out."""
+    if production.shard is None:
+        return True
+    i, n = production.shard
+    return int(hashlib.sha256(key.encode()).hexdigest(), 16) % n == i
+
+
+def loads_of(case):
+    return [step for step in case["steps"] if step["path"].endswith(":securityRules")]
+
+
+def not_deployable(case):
+    """Why a case of a recording of rules is not sent with its rules deployed, or None: it must
+    load one ruleset of one file before any step without credentials, send its steps as the
+    owner or without credentials, and use none of the official emulator's own API but the load."""
+    loads = loads_of(case)
+    if any(sender(step) not in (None, "Bearer owner") or not step.get("owner", True) for step in case["steps"]):
+        return "sends a user's token"
+    if any(step["path"].startswith("/emulator/") for step in case["steps"] if step not in loads):
+        return "uses the official emulator's own API"
+    if len(loads) != 1 or loads[0]["method"] != "PUT":
+        return "does not load one ruleset"
+    files = ((loads[0].get("body") or {}).get("rules") or {}).get("files")
+    if not isinstance(files, list) or len(files) != 1 or not isinstance(files[0].get("content"), str):
+        return "loads a ruleset of more than one file"
+    if any(sender(step) is None for step in case["steps"][:case["steps"].index(loads[0])]):
+        return "sends a request before it loads rules"
+    return None
+
+
+def replay_rules_steps(production, recording, result):
+    """A recording of rules (`rules_request.json` and the like) with its rules deployed. The cases
+    are put together by the ruleset they load; each ruleset is released (`release.py`), and each
+    of its cases sent on the database emptied, as `run_steps` sends them. A case that differs is
+    sent again `RETRY_AFTER` seconds later, its ruleset released again, and differs only if it
+    does again; those that did not are counted (`settled`)."""
+    rulesets = {}
+    for case in recording["cases"]:
+        why = not_deployable(case)
+        source = None if why else loads_of(case)[0]["body"]["rules"]["files"][0]["content"]
+        if why is None and not in_shard(production, source):
+            why = "another night's"
+        if why:
+            result["skipped"][why] = result["skipped"].get(why, 0) + 1
         else:
-            n, official, answered = first
-            result["differ"].append({"name": f"{case['name']}, step {n}", "method": case["steps"][n - 1]["method"],
-                                     "path": case["steps"][n - 1]["path"].replace(own, "{project}"),
-                                     "difference": first_difference(official, answered) or "the answer",
-                                     "official": official, "production": answered})
+            rulesets.setdefault(source, []).append(case)
+    log(f"{result['fixture']}: {sum(map(len, rulesets.values()))} cases, {len(rulesets)} rulesets to deploy")
+    again = {}
+    for source, cases in rulesets.items():
+        loaded, _ = production.release.deploy(source)
+        for case in cases:
+            result["sent"] += 1
+            own = case_project(case)
+            first, known = run_steps(production, case, own, result, loaded)
+            if first is None:
+                tally_steps(result, case, own, first, known)
+            else:
+                again.setdefault(source, []).append(case)
+    if again:
+        log(f"{result['fixture']}: {sum(map(len, again.values()))} cases differ; sent again in {RETRY_AFTER} s")
+        time.sleep(RETRY_AFTER)
+        for source, cases in again.items():
+            loaded, _ = production.release.deploy(source)
+            for case in cases:
+                own = case_project(case)
+                first, known = run_steps(production, case, own, result, loaded)
+                if first is None:
+                    result["settled"] = result.get("settled", 0) + 1
+                tally_steps(result, case, own, first, known)
 
 
 def replay(production, fixture):
@@ -1451,8 +1679,11 @@ def replay(production, fixture):
 
 def markdown(report):
     lines = ["## Production parity", "",
-             f"Recordings of the official emulator replayed against production Cloud Firestore on {report['started']}.", "",
-             "Known: the same but for differences `docs/parity-exceptions.md` records.", "",
+             f"Recordings of the official emulator replayed against production Cloud Firestore on {report['started']}.", ""]
+    if "deployed" in report:
+        lines[0] += ", rules deployed"
+        lines += [f"The rules of recordings of rules were deployed, and their requests sent (shard {report['deployed']}).", ""]
+    lines += ["Known: the same but for differences `docs/parity-exceptions.md` records.", "",
              "| Recording | Cases | Sent | Same | Known | Differ | Needs an index | Not sent |",
              "|---|---:|---:|---:|---:|---:|---:|---:|"]
     for r in report["recordings"]:
@@ -1465,6 +1696,10 @@ def markdown(report):
     if known:
         lines += ["", "Known differences, by the cases they appear in: "
                   + ", ".join(f"{k} {n}" for k, n in sorted(known.items())) + "."]
+    settled = sum(r.get("settled", 0) for r in report["recordings"])
+    if settled:
+        lines += ["", f"{settled} cases differed when first sent, and were the same when sent again {RETRY_AFTER} s later, "
+                  "their rules released again: the release had not reached every server."]
     indexes = {json.dumps(i, sort_keys=True) for r in report["recordings"] for i in r["indexes"]}
     if indexes:
         lines += ["", f"Production asked for {len(indexes)} indexes the project does not have: "
@@ -1491,17 +1726,39 @@ def main(argv=None):
     parser.add_argument("--budget", type=int, default=10000, help="the most requests a run sends")
     parser.add_argument("--quota-project", help="the project a user's token is billed to (x-goog-user-project); "
                                                 "the Rules API needs one with a user's credentials, not a service account's")
+    parser.add_argument("--deploy-rules", action="store_true",
+                        help="deploy the rules of recordings of rules and send their requests (release.py); "
+                             "the project's rules are taken down at the end")
+    parser.add_argument("--shard", help="with --deploy-rules, which part of what deploys rules to send: i/n, the i-th "
+                                        "of n parts, from 0")
     parser.add_argument("fixtures", nargs="+")
     args = parser.parse_args(argv)
     token = os.environ.get(TOKEN_ENV)
     if not token:
         parser.error(f"{TOKEN_ENV} is not set")
+    shard = re.fullmatch(r"(\d+)/(\d+)", args.shard or "0/1")
+    if not shard or not int(shard.group(1)) < int(shard.group(2)) or (args.shard and not args.deploy_rules):
+        parser.error("--shard takes i/n, i below n, with --deploy-rules")
     production = Production(args.base, args.project, token, args.budget, args.rules_base, args.quota_project)
     report = {"started": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "project": "{project}",
               "recordings": []}
+    if args.deploy_rules:
+        from release import Rules
+        production.release = Rules(production)
+        production.shard = (int(shard.group(1)), int(shard.group(2)))
+        report["deployed"] = args.shard or "0/1"
     try:
-        for fixture in args.fixtures:
-            report["recordings"].append(replay(production, fixture))
+        if production.release is not None:
+            released, rulesets = production.release.take_down()
+            if released or rulesets:
+                log(f"a run before left {'a release and ' if released else ''}{rulesets} rulesets: taken down")
+        try:
+            for fixture in args.fixtures:
+                report["recordings"].append(replay(production, fixture))
+        finally:
+            if production.release is not None:
+                released, rulesets = production.release.take_down()
+                log(f"rules taken down: {'the release and ' if released else ''}{rulesets} rulesets deleted")
     finally:
         report["requests"] = production.sent
         out = Path(args.out)
