@@ -365,6 +365,10 @@ class StandIn(BaseHTTPRequestHandler):
         namespace = request.get("partitionId", {}).get("namespaceId", "")
         query = request["query"]
         kind = (query.get("kind") or [{}])[0].get("name")
+        if kind == "Ix":
+            return self.answer(400, {"error": {"code": 400, "status": "FAILED_PRECONDITION", "message":
+                "no matching index found. recommended index is:\n- kind: Ix\n  properties:\n  - name: a\n  - name: b\n"
+                "    direction: desc\n"}})
         if kind == "__namespace__":
             names = sorted({json.loads(s)[0] for s in StandIn.entities})
             entities = [{"key": key([{"kind": "__namespace__", **({"name": n} if n else {"id": "1"})}])} for n in names]
@@ -1128,8 +1132,8 @@ class ReplayTest(unittest.TestCase):
 
     def datastore_recording(self):
         """A recording in Datastore mode: an ID allocated, then written and read; a query's cursor
-        carried to the next; requests to another database and another project, one of the
-        emulator's own and one of the Firestore API."""
+        carried to the next; a query that needs an index; requests to another database and another
+        project, one of the emulator's own and one of the Firestore API."""
         def answer(status, body):
             return {"status": status, "contentType": "application/json", "body": json.dumps(body, indent=2)}
 
@@ -1161,6 +1165,8 @@ class ReplayTest(unittest.TestCase):
             case("after it", "runQuery", {"query": {"kind": [{"name": "P"}], "startCursor": "<c1>"}},
                  answer(200, {"batch": {"entityResultType": "FULL", "entityResults": [p2], "endCursor": "<cursor>",
                                         "moreResults": "NO_MORE_RESULTS"}})),
+            case("needs an index", "runQuery", {"query": {"kind": [{"name": "Ix"}], "order": [{"property": {"name": "b"}}]}},
+                 answer(200, {"batch": {}})),
             case("another database's", "lookup", {"databaseId": "other", "keys": [{"path": task}]}, answer(200, {})),
             {**case("another project's", "lookup", {"keys": [{"path": task}]}, answer(200, {})),
              "path": "/v1/projects/{project}-ids1:lookup"},
@@ -1188,8 +1194,11 @@ class ReplayTest(unittest.TestCase):
         # Production's ID took the official emulator's place, and was read back as it; the
         # cursor of the first query went to the next. A commit production answers without
         # `commitTime` differs.
-        self.assertEqual((result["sent"], result["same"]), (6, 5))
+        self.assertEqual((result["sent"], result["same"]), (7, 5))
         self.assertEqual([d["name"] for d in result["differ"]], ["write it"])
+        self.assertEqual(result["needsIndex"], ["needs an index"])
+        self.assertEqual(result["datastoreIndexes"], [{"kind": "Ix", "ancestor": False, "properties": [
+            {"name": "a", "direction": "asc"}, {"name": "b", "direction": "desc"}]}])
         self.assertIn("commitTime", result["differ"][0]["difference"])
         commits = [json.loads(body) for _, path, _, body in StandIn.seen if path.endswith(":commit")]
         self.assertIn({"upsert": {"key": {"path": [{"kind": "Task", "id": "7000000000000001"}]}, "properties": {"a": {"integerValue": "1"}}}},
@@ -1203,9 +1212,16 @@ class ReplayTest(unittest.TestCase):
         self.assertLessEqual(production.firestore, 100)
         self.assertEqual(production.firestore, len(StandIn.seen))
 
+    def test_the_index_production_recommends_is_read(self):
+        message = ("no matching index found. recommended index is:\n- kind: C\n  ancestor: yes\n  properties:\n"
+                   "  - name: n\n  - name: __key__\n    direction: desc\n")
+        self.assertEqual(datastore.recommended(message), {"kind": "C", "ancestor": True, "properties": [
+            {"name": "n", "direction": "asc"}, {"name": "__key__", "direction": "desc"}]})
+        self.assertIsNone(datastore.recommended("no matching index found."))
+
     def test_without_a_datastore_mode_database_a_recording_in_that_mode_is_not_sent(self):
         result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), self.datastore_recording())
-        self.assertEqual((result["sent"], result["skipped"]), (0, {"no Datastore-mode database (--datastore-database)": 9}))
+        self.assertEqual((result["sent"], result["skipped"]), (0, {"no Datastore-mode database (--datastore-database)": 10}))
         self.assertEqual(StandIn.seen, [])
 
 if __name__ == "__main__":

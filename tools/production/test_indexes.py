@@ -112,6 +112,35 @@ class IndexesTest(unittest.TestCase):
             self.assertEqual(indexes.add([report]), 0)
             self.assertEqual(json.loads(indexes.INDEXES.read_text()), {"indexes": [A], "fieldOverrides": [GROUP_A]})
 
+    def test_a_datastore_mode_databases_indexes_are_kept_apart(self):
+        kept = indexes.INDEXES, indexes.DATASTORE_INDEXES
+        self.addCleanup(lambda: (setattr(indexes, "INDEXES", kept[0]), setattr(indexes, "DATASTORE_INDEXES", kept[1])))
+        with tempfile.TemporaryDirectory() as tmp:
+            indexes.INDEXES, indexes.DATASTORE_INDEXES = Path(tmp) / "indexes.json", Path(tmp) / "datastore_indexes.json"
+            by_a = {"kind": "P", "ancestor": False, "properties": [{"name": "a", "direction": "asc"}, {"name": "b", "direction": "desc"}]}
+            below = {"kind": "C", "ancestor": True, "properties": [{"name": "n", "direction": "asc"}]}
+            by_key = {"kind": "T", "ancestor": False, "properties": [{"name": "__key__", "direction": "desc"}]}
+            report = Path(tmp) / "report.json"
+            report.write_text(json.dumps({"recordings": [{"indexes": [A], "datastoreIndexes": [by_a, below]},
+                                                         {"datastoreIndexes": [by_a, by_key]}]}))
+            self.assertEqual(indexes.add([report]), 4)
+            self.assertEqual(indexes.add([report]), 0)
+            self.assertEqual(json.loads(indexes.INDEXES.read_text())["indexes"], [A])
+            self.assertEqual(sorted(map(indexes.datastore_key, indexes.load_datastore())),
+                             sorted(map(indexes.datastore_key, [by_a, below, by_key])))
+            # As the Firestore Admin API takes them, and lists them: with `__name__` at the end.
+            self.assertEqual(indexes.admin(below), {"collectionGroup": "C", "queryScope": "COLLECTION_RECURSIVE",
+                                                    "apiScope": "DATASTORE_MODE_API", "fields": [{"fieldPath": "n", "order": "ASCENDING"}]})
+            listed = {"name": "projects/x/databases/datastore/collectionGroups/P/indexes/CICAg", "queryScope": "COLLECTION_GROUP",
+                      "apiScope": "DATASTORE_MODE_API", "fields": [{"fieldPath": "a", "order": "ASCENDING"},
+                                                                    {"fieldPath": "b", "order": "DESCENDING"},
+                                                                    {"fieldPath": "__name__", "order": "ASCENDING"}]}
+            self.assertEqual(indexes.key(indexes.admin(by_a)), indexes.key(listed))
+            self.assertEqual(indexes.admin(by_key)["fields"], [{"fieldPath": "__name__", "order": "DESCENDING"}])
+            project = indexes.Project("x", "a-token", "datastore")
+            self.assertTrue(project.database.endswith("/databases/datastore"))
+            self.assertEqual(len(project.wanted()), 3)
+
     def test_a_field_override_adds_to_what_the_field_has(self):
         defaults = [{"queryScope": "COLLECTION", "fields": [{"fieldPath": "a", "order": o}], "state": "READY"}
                     for o in ("ASCENDING", "DESCENDING")]

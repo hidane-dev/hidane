@@ -48,8 +48,9 @@ MUTATIONS = 500
 # How long a request of the replay's own waits before each try again: over three minutes in all.
 CALL_WAITS = (5, 10, 20, 40, 60, 60, 0)
 # Production's refusal of a query that needs a composite index; the index follows, in the format
-# of index.yaml.
+# of index.yaml, and a line of it.
 NEEDS_INDEX = re.compile(r"^no matching index found\.")
+INDEX_LINE = re.compile(r"\s*-?\s*(kind|ancestor|name|direction):\s*(.*?)\s*")
 
 
 class Database:
@@ -138,6 +139,28 @@ def sendable(case):
     if isinstance(case.get("body"), dict) and case["body"].get("databaseId", ""):
         return "another database's"
     return None
+
+
+def recommended(message):
+    """The index production recommends in its refusal of a query, as `indexes.py` keeps it:
+    `{"kind", "ancestor", "properties": [{"name", "direction"}]}`, the directions `asc` or
+    `desc`; or None if there is none."""
+    index = {"kind": None, "ancestor": False, "properties": []}
+    for line in message.split("recommended index is:", 1)[-1].splitlines():
+        found = INDEX_LINE.fullmatch(line)
+        if not found:
+            continue
+        field, value = found.groups()
+        value = json.loads(value) if value.startswith('"') else value
+        if field == "kind":
+            index["kind"] = value
+        elif field == "ancestor":
+            index["ancestor"] = value == "yes"
+        elif field == "name":
+            index["properties"].append({"name": value, "direction": "asc"})
+        elif index["properties"]:
+            index["properties"][-1]["direction"] = value
+    return index if index["kind"] else None
 
 
 def at(value, path):
@@ -268,8 +291,8 @@ def replay(production, recording, result):
         if status != 200 and official["status"] == 200 and NEEDS_INDEX.search(
                 str(at(value, "error.message") if not isinstance(value, str) else "")):
             result["needsIndex"].append(case["name"])
-            index = at(value, "error.message").split("recommended index is:", 1)[-1].strip()
-            if index not in result.setdefault("datastoreIndexes", []):
+            index = recommended(at(value, "error.message"))
+            if index and index not in result.setdefault("datastoreIndexes", []):
                 result["datastoreIndexes"].append(index)
             continue
         theirs = {"status": official["status"], "media": media(official.get("contentType"))}

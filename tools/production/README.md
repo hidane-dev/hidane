@@ -221,7 +221,7 @@ the official emulator's:
   `commit` take the emulator's place in the requests that follow, and are read back as the
   emulator's in the answers;
 - a query production refuses for want of a composite index is counted apart (D070), and the
-  index it recommends is kept in the report (`datastoreIndexes`).
+  index it recommends is kept in the report (`datastoreIndexes`), for `indexes.py` (below).
 
 A request to another database or project (the recorders send some to projects of their own, to
 allocate IDs from the start), or of the emulator's own API, is not sent. The database is
@@ -254,6 +254,19 @@ PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/indexes.py create --p
 of a maintainer who may change indexes: the workflow's service account may only read and write
 documents, so a new index waits for a maintainer, and its queries are counted as needing an
 index until then.
+
+The Datastore-mode database's indexes are kept apart, in
+[`datastore_indexes.json`](datastore_indexes.json), as index.yaml has them (a kind, whether the
+query has an ancestor, and the properties with their directions); `add` puts them there.
+`create --datastore-database datastore` creates them through the Firestore Admin API, each as an
+index of the kind's collection group in Datastore mode's API scope: of the collection group for a
+query without an ancestor (`COLLECTION_GROUP`), of the tree below the ancestor for one with
+(`COLLECTION_RECURSIVE`), `__key__` as `__name__`. A user's token needs `--quota-project`.
+
+```sh
+PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/indexes.py create --project <id> \
+    --datastore-database datastore --wait
+```
 
 ## The Production parity workflow
 
