@@ -29,6 +29,9 @@ Recordings of Security Rules are tested with the Rules API's `projects.test`: th
 deployed (`release.py`) and their requests sent, those without credentials without the token
 (`replay_rules_steps`, `replay_rules_deployed`); the project's rules are taken down at the end.
 
+Recordings in Datastore mode (`datastore_entities.json` and the like) are sent, with
+`--datastore-database`, to that database of the project, one in Datastore mode, in `datastore.py`.
+
 What differs goes to `<out>/report.json` and `<out>/report.md`, and to the job summary in GitHub
 Actions. It is not a recording: it stays a workflow artifact until a person has looked at it
 (docs/clean-room/OBSERVATION_POLICY.md). The token is never written anywhere. Stdlib only.
@@ -108,15 +111,19 @@ class Production:
         # the cases that deploy rules this run sends (`--shard`: i, n).
         self.release = None
         self.shard = None
+        # With `--datastore-database`, the project's Datastore-mode database (datastore.py).
+        self.datastore = None
 
-    def send(self, method, path, data=None, content_type="application/json", base=None, anonymous=False):
+    def send(self, method, path, data=None, content_type="application/json", base=None, anonymous=False,
+             headers=None, budgeted=False):
         """One request, to Firestore or another API (`base`), with the token or, `anonymous`,
-        without credentials; answers (status, content type, body as text). A connection that
-        fails before an answer is tried again a few times; then the answer is status 0. The budget
-        counts the requests to Firestore, to stay within its free daily quota; tests of rules,
-        which `Pace` keeps within the Rules API's, are not in it."""
-        self.spend(firestore=base is None)
-        headers = {"Content-Type": content_type}
+        without credentials, and `headers` of its own; answers (status, content type, body as
+        text). A connection that fails before an answer is tried again a few times; then the answer
+        is status 0. The budget counts the requests to Firestore, to stay within its free daily
+        quota, and those to another API that are `budgeted` (a Datastore-mode database's, which
+        has none); tests of rules, which `Pace` keeps within the Rules API's, are not in it."""
+        self.spend(firestore=base is None or budgeted)
+        headers = {"Content-Type": content_type, **(headers or {})}
         if not anonymous:
             headers["Authorization"] = f"Bearer {self.token}"
             if self.quota_project:
@@ -1611,6 +1618,16 @@ def replay(production, fixture):
         replay_unsupported(production, recording, result)
         production.empty()
         return result
+    if recording.get("mode") == "datastore-mode" and "cases" in recording:
+        # Recordings in Datastore mode (`datastore_entities.json` and the like), sent to the
+        # project's Datastore-mode database in datastore.py.
+        import datastore
+        result = {"fixture": Path(fixture).name, "cases": len(recording["cases"]), "sent": 0, "same": 0,
+                  "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "indexes": [], "knownCases": 0,
+                  "known": {}, "differ": []}
+        log(f"{result['fixture']}: {result['cases']} cases in Datastore mode")
+        datastore.replay(production, recording, result)
+        return result
     if "cases" not in recording and isinstance(recording.get("rest"), list) and "headers" in (recording["rest"] or [{}])[0]:
         # The REST cases of a recording that holds others too (`json_escapes.json`, whose WebChannel
         # cases are not sent).
@@ -1732,6 +1749,9 @@ def main(argv=None):
                              "the project's rules are taken down at the end")
     parser.add_argument("--shard", help="with --deploy-rules, which part of what deploys rules to send: i/n, the i-th "
                                         "of n parts, from 0")
+    parser.add_argument("--datastore-database", help="the project's database in Datastore mode, which recordings in "
+                                                     "Datastore mode are sent to (datastore.py); without it they are not sent")
+    parser.add_argument("--datastore-base", default="https://datastore.googleapis.com")
     parser.add_argument("fixtures", nargs="+")
     args = parser.parse_args(argv)
     token = os.environ.get(TOKEN_ENV)
@@ -1748,6 +1768,9 @@ def main(argv=None):
         production.release = Rules(production)
         production.shard = (int(shard.group(1)), int(shard.group(2)))
         report["deployed"] = args.shard or "0/1"
+    if args.datastore_database:
+        from datastore import Database
+        production.datastore = Database(production, args.datastore_database, args.datastore_base)
     try:
         if production.release is not None:
             released, rulesets = production.release.take_down()

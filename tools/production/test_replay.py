@@ -14,11 +14,23 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import datastore  # noqa: E402
 import release  # noqa: E402
 import replay  # noqa: E402
 from test_indexes import index_link  # noqa: E402
 
 PROJECT = "own-project"
+
+
+def partitions(value):
+    """Every `partitionId` in a request."""
+    if isinstance(value, dict):
+        yield from ([value["partitionId"]] if isinstance(value.get("partitionId"), dict) else [])
+        for v in value.values():
+            yield from partitions(v)
+    elif isinstance(value, list):
+        for v in value:
+            yield from partitions(v)
 
 
 class StandIn(BaseHTTPRequestHandler):
@@ -36,6 +48,9 @@ class StandIn(BaseHTTPRequestHandler):
     released = []
     lag = 0
     lagging = 0
+    # A Datastore-mode database's entities (by namespace and path), and how many IDs it allocated.
+    entities = {}
+    allocated = 0
 
     def log_message(self, *args):
         pass
@@ -58,6 +73,13 @@ class StandIn(BaseHTTPRequestHandler):
             return self.rules_api(json.loads(body))
         if self.path.startswith((f"/v1/projects/{PROJECT}/rulesets", f"/v1/projects/{PROJECT}/releases")):
             return self.deployments(body)
+        verb = re.fullmatch(rf"/v1/projects/{PROJECT}:(lookup|commit|runQuery|allocateIds)", self.path)
+        if verb:
+            return self.datastore(verb.group(1), body)
+        if f"/v1/projects/{PROJECT}/databases/ds/" in self.path:
+            return self.answer(400, {"error": {"code": 400, "status": "FAILED_PRECONDITION", "message":
+                "The Cloud Firestore API is not available for Firestore in Datastore Mode database "
+                f"projects/{PROJECT}/databases/ds."}})
         if self.headers.get("Authorization") is None and not self.decided():
             return self.answer(403, {"error": {"code": 403, "message": "Missing or insufficient permissions.",
                                                "status": "PERMISSION_DENIED"}})
@@ -293,6 +315,70 @@ class StandIn(BaseHTTPRequestHandler):
         return frames([[{"targetChange": {"targetChangeType": "ADD", "targetIds": [2]}}]] + changes
                       + [[{"targetChange": {"targetChangeType": "CURRENT", "targetIds": [2]}}]])
 
+    def datastore(self, verb, body):
+        """Answers as a Datastore-mode database `ds` holding `entities` (by namespace and path):
+        lookups, commits, queries of a kind or of none (a cursor is the number of results before
+        it), and IDs it allocates. As production, it refuses a request without the routing header,
+        and answers a commit without `commitTime`."""
+        if self.headers.get("x-goog-request-params") != f"project_id={PROJECT}&database_id=ds":
+            return self.answer(400, {"error": {"code": 400, "message": "Missing routing header.", "status": "INVALID_ARGUMENT"}})
+        request = json.loads(body)
+        if request.get("databaseId") != "ds":
+            return self.answer(400, {"error": {"code": 400, "message": "Not the database.", "status": "INVALID_ARGUMENT"}})
+        # As production, a partition that names the project is of `(default)` unless it names the
+        # database, and one that names the database and no project is of none.
+        if any(("projectId" in p) != (p.get("databaseId") == "ds") for p in partitions(request)):
+            return self.answer(400, {"error": {"code": 400, "message": "mismatched databases within request",
+                                               "status": "INVALID_ARGUMENT"}})
+
+        def key(path, namespace=""):
+            return {"partitionId": {"projectId": PROJECT, "databaseId": "ds", **({"namespaceId": namespace} if namespace else {})},
+                    "path": path}
+
+        def stored(k):
+            return json.dumps([k.get("partitionId", {}).get("namespaceId", ""), k["path"]])
+
+        if verb == "allocateIds":
+            keys = []
+            for k in request["keys"]:
+                StandIn.allocated += 1
+                keys.append(key(k["path"][:-1] + [{**k["path"][-1], "id": str(7000000000000000 + StandIn.allocated)}]))
+            return self.answer(200, {"keys": keys})
+        if verb == "lookup":
+            found = [StandIn.entities[stored(k)] for k in request["keys"] if stored(k) in StandIn.entities]
+            missing = [{"key": key(k["path"])} for k in request["keys"] if stored(k) not in StandIn.entities]
+            return self.answer(200, {**({"found": [{"entity": e, "version": "2"} for e in found]} if found else {}),
+                                     **({"missing": [{"entity": e, "version": "2"} for e in missing]} if missing else {}),
+                                     "readTime": "2026-01-01T00:00:02Z"})
+        if verb == "commit":
+            for mutation in request["mutations"]:
+                (operation, value), = mutation.items()
+                if operation == "delete":
+                    StandIn.entities.pop(stored(value), None)
+                else:
+                    namespace = value["key"].get("partitionId", {}).get("namespaceId", "")
+                    StandIn.entities[stored(value["key"])] = {"key": key(value["key"]["path"], namespace),
+                                                              **({"properties": value["properties"]} if value.get("properties") else {})}
+            results = [{"version": "2", "updateTime": "2026-01-01T00:00:01Z", "createTime": "2026-01-01T00:00:01Z"}
+                       for _ in request["mutations"]]
+            return self.answer(200, {"mutationResults": results, "indexUpdates": len(results)})
+        namespace = request.get("partitionId", {}).get("namespaceId", "")
+        query = request["query"]
+        kind = (query.get("kind") or [{}])[0].get("name")
+        if kind == "__namespace__":
+            names = sorted({json.loads(s)[0] for s in StandIn.entities})
+            entities = [{"key": key([{"kind": "__namespace__", **({"name": n} if n else {"id": "1"})}])} for n in names]
+        else:
+            entities = [e for s, e in sorted(StandIn.entities.items())
+                        if json.loads(s)[0] == namespace and kind in (None, e["key"]["path"][-1]["kind"])]
+        if query.get("projection"):
+            entities = [{"key": e["key"]} for e in entities]
+        start = int(query.get("startCursor", "0"))
+        page = entities[start:start + int(query.get("limit", len(entities)))]
+        return self.answer(200, {"batch": {"entityResultType": "KEY_ONLY" if query.get("projection") else "FULL",
+                                           "entityResults": [{"entity": e, "cursor": str(start + n + 1)} for n, e in enumerate(page)],
+                                           "endCursor": str(start + len(page)), "moreResults": "NO_MORE_RESULTS"}})
+
     do_GET = do_POST = do_PATCH = do_DELETE = handle_one
 
 
@@ -303,6 +389,7 @@ class ReplayTest(unittest.TestCase):
         StandIn.commits = 0
         StandIn.targets, StandIn.listened = [], []
         StandIn.rulesets, StandIn.release, StandIn.released, StandIn.lag, StandIn.lagging = {}, None, [], 0, 0
+        StandIn.entities, StandIn.allocated = {}, 0
         self.waits = release.SETTLE, replay.RETRY_AFTER, release.PER_MINUTE
         release.SETTLE = replay.RETRY_AFTER = 0
         release.PER_MINUTE = 10 ** 9
@@ -1038,6 +1125,88 @@ class ReplayTest(unittest.TestCase):
         for wrong in (["--shard", "7/7", "--deploy-rules"], ["--shard", "1/7"], ["--shard", "x"]):
             with self.assertRaises(SystemExit):
                 replay.main(["--project", PROJECT, "--out", self.dir.name, *wrong, "f.json"])
+
+    def datastore_recording(self):
+        """A recording in Datastore mode: an ID allocated, then written and read; a query's cursor
+        carried to the next; requests to another database and another project, one of the
+        emulator's own and one of the Firestore API."""
+        def answer(status, body):
+            return {"status": status, "contentType": "application/json", "body": json.dumps(body, indent=2)}
+
+        def case(name, method, body, outcome, **more):
+            return {"name": name, "method": "POST", "path": "/v1/projects/{project}:" + method,
+                    "headers": {"Content-Type": "application/json"}, "body": body, "compare": "exact",
+                    "outcome": outcome, **more}
+
+        task = [{"kind": "Task", "id": "5629499534213120"}]
+        key = {"partitionId": {"projectId": "{project}"}, "path": task}
+        properties = {"a": {"integerValue": "1"}}
+        dataset = [{"key": {"path": [{"kind": "P", "name": n}]}, "properties": {"n": {"stringValue": n}}} for n in ("p1", "p2")]
+        p2 = {"entity": {"key": {"partitionId": {"projectId": "{project}"}, "path": [{"kind": "P", "name": "p2"}]},
+                         "properties": {"n": {"stringValue": "p2"}}}, "cursor": "<cursor>"}
+        cases = [
+            case("allocate", "allocateIds", {"keys": [{"path": [{"kind": "Task"}]}]}, answer(200, {"keys": [key]})),
+            case("write it", "commit", {"mode": "NON_TRANSACTIONAL", "mutations": [{"upsert": {"key": {"path": task},
+                                                                                         "properties": properties}}]},
+                 answer(200, {"mutationResults": [{"version": "<version>", "updateTime": "<time>", "createTime": "<time>"}],
+                              "commitTime": "<time>"})),
+            case("read it", "lookup", {"keys": [{"partitionId": {"projectId": "{project}"}, "path": task}]},
+                 answer(200, {"found": [{"entity": {"key": key, "properties": properties}, "version": "<version>"}],
+                              "readTime": "<time>"})),
+            case("the first P", "runQuery", {"query": {"kind": [{"name": "P"}], "limit": 1}},
+                 answer(200, {"batch": {"entityResultType": "FULL", "entityResults": [{**p2, "entity": {
+                     "key": {"partitionId": {"projectId": "{project}"}, "path": [{"kind": "P", "name": "p1"}]},
+                     "properties": {"n": {"stringValue": "p1"}}}}], "endCursor": "<cursor>", "moreResults": "NO_MORE_RESULTS"}}),
+                 defines={"c1": "batch.endCursor"}),
+            case("after it", "runQuery", {"query": {"kind": [{"name": "P"}], "startCursor": "<c1>"}},
+                 answer(200, {"batch": {"entityResultType": "FULL", "entityResults": [p2], "endCursor": "<cursor>",
+                                        "moreResults": "NO_MORE_RESULTS"}})),
+            case("another database's", "lookup", {"databaseId": "other", "keys": [{"path": task}]}, answer(200, {})),
+            {**case("another project's", "lookup", {"keys": [{"path": task}]}, answer(200, {})),
+             "path": "/v1/projects/{project}-ids1:lookup"},
+            {"name": "the emulator's own", "method": "DELETE", "path": "/emulator/v1/projects/{project}/databases/(default)/documents",
+             "headers": {}, "compare": "exact", "outcome": answer(200, {})},
+            {"name": "the Firestore API", "method": "GET", "path": "/v1/projects/{project}/databases/(default)/documents/c/d",
+             "headers": {"Content-Type": "application/json"}, "compare": "exact",
+             "outcome": answer(400, {"error": {"code": 400, "status": "FAILED_PRECONDITION", "message":
+                 "The Cloud Firestore API is not available for Firestore in Datastore Mode database "
+                 "projects/{project}/databases/(default)."}})},
+        ]
+        path = Path(self.dir.name) / "datastore.json"
+        path.write_text(json.dumps({"mode": "datastore-mode", "dataset": dataset, "cases": cases}))
+        return str(path)
+
+    def test_a_recording_in_datastore_mode_goes_to_the_datastore_mode_database(self):
+        # An entity a run before left, in a namespace.
+        StandIn.entities = {json.dumps(["ns", [{"kind": "Old", "name": "x"}]]): {"key": {
+            "partitionId": {"projectId": PROJECT, "databaseId": "ds", "namespaceId": "ns"}, "path": [{"kind": "Old", "name": "x"}]}}}
+        production = replay.Production(self.base, PROJECT, "a-token", 100)
+        production.datastore = datastore.Database(production, "ds", self.base)
+        result = replay.replay(production, self.datastore_recording())
+        self.assertEqual(result["skipped"], {"another database's": 1, "another project's": 1,
+                                             "the official emulator's own API": 1})
+        # Production's ID took the official emulator's place, and was read back as it; the
+        # cursor of the first query went to the next. A commit production answers without
+        # `commitTime` differs.
+        self.assertEqual((result["sent"], result["same"]), (6, 5))
+        self.assertEqual([d["name"] for d in result["differ"]], ["write it"])
+        self.assertIn("commitTime", result["differ"][0]["difference"])
+        commits = [json.loads(body) for _, path, _, body in StandIn.seen if path.endswith(":commit")]
+        self.assertIn({"upsert": {"key": {"path": [{"kind": "Task", "id": "7000000000000001"}]}, "properties": {"a": {"integerValue": "1"}}}},
+                      [m for c in commits for m in c["mutations"]])
+        # Every request of the Datastore API named the database; the Firestore API's went to it.
+        sent = [json.loads(body) for _, path, _, body in StandIn.seen if re.search(r":(lookup|commit|runQuery|allocateIds)$", path)]
+        self.assertTrue(all(body["databaseId"] == "ds" for body in sent))
+        self.assertIn(f"/v1/projects/{PROJECT}/databases/ds/documents/c/d", [p for _, p, _, _ in StandIn.seen])
+        # The database was emptied before (the entity left in a namespace) and after.
+        self.assertEqual(StandIn.entities, {})
+        self.assertLessEqual(production.firestore, 100)
+        self.assertEqual(production.firestore, len(StandIn.seen))
+
+    def test_without_a_datastore_mode_database_a_recording_in_that_mode_is_not_sent(self):
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), self.datastore_recording())
+        self.assertEqual((result["sent"], result["skipped"]), (0, {"no Datastore-mode database (--datastore-database)": 9}))
+        self.assertEqual(StandIn.seen, [])
 
 if __name__ == "__main__":
     unittest.main()

@@ -9,6 +9,9 @@ name: Production parity
 # The rules job then deploys the rules of recordings of rules and sends their requests, a seventh
 # of them each night, by the day of the week. While it runs, the project's database is open as
 # those rules open it; it takes them down when it ends, whatever happened.
+#
+# The datastore job replays the recordings in Datastore mode against the project's database of
+# that mode, `datastore`, beside the others: it empties only that database.
 
 on:
   schedule:
@@ -142,5 +145,46 @@ jobs:
         with:
           name: production-rules
           path: production-rules/
+          retention-days: 30
+          if-no-files-found: ignore
+
+  datastore:
+    name: replay against a Datastore-mode database
+    if: github.repository == 'hidane-dev/hidane'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production-parity
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: auth
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          token_format: access_token
+          access_token_lifetime: 3600s
+          create_credentials_file: false
+      - name: Replay the recordings in Datastore mode
+        env:
+          PRODUCTION_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          PROJECT: ${{ vars.GCP_PROJECT_ID }}
+        # The database has no free quota: the budget bounds what a run is billed.
+        run: >
+          python3 -I -B tools/production/replay.py --project "$PROJECT" --out production-datastore
+          --datastore-database datastore --budget 3000
+          crates/hidane/tests/fixtures/datastore_entities.json
+          crates/hidane/tests/fixtures/datastore_queries.json
+          crates/hidane/tests/fixtures/datastore_gql.json
+          crates/hidane/tests/fixtures/datastore_firestore_api.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: production-datastore
+          path: production-datastore/
           retention-days: 30
           if-no-files-found: ignore
