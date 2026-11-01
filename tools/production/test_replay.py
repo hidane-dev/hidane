@@ -1233,13 +1233,12 @@ class ReplayTest(unittest.TestCase):
                                              "the official emulator's own API": 1})
         # Production's ID took the official emulator's place, and was read back as it; the
         # cursor of the first query went to the next. A commit production answers without
-        # `commitTime` differs.
-        self.assertEqual((result["sent"], result["same"]), (7, 5))
-        self.assertEqual([d["name"] for d in result["differ"]], ["write it"])
+        # `commitTime`, and with `indexUpdates`, is known (D120).
+        self.assertEqual((result["sent"], result["same"], result["knownCases"], result["known"]), (7, 5, 1, {"D120": 1}))
+        self.assertEqual(result["differ"], [])
         self.assertEqual(result["needsIndex"], ["needs an index"])
         self.assertEqual(result["datastoreIndexes"], [{"kind": "Ix", "ancestor": False, "properties": [
             {"name": "a", "direction": "asc"}, {"name": "b", "direction": "desc"}]}])
-        self.assertIn("commitTime", result["differ"][0]["difference"])
         commits = [json.loads(body) for _, path, _, body in StandIn.seen if path.endswith(":commit")]
         self.assertIn({"upsert": {"key": {"path": [{"kind": "Task", "id": "7000000000000001"}]}, "properties": {"a": {"integerValue": "1"}}}},
                       [m for c in commits for m in c["mutations"]])
@@ -1255,9 +1254,65 @@ class ReplayTest(unittest.TestCase):
     def test_the_index_production_recommends_is_read(self):
         message = ("no matching index found. recommended index is:\n- kind: C\n  ancestor: yes\n  properties:\n"
                    "  - name: n\n  - name: __key__\n    direction: desc\n")
-        self.assertEqual(datastore.recommended(message), {"kind": "C", "ancestor": True, "properties": [
-            {"name": "n", "direction": "asc"}, {"name": "__key__", "direction": "desc"}]})
-        self.assertIsNone(datastore.recommended("no matching index found."))
+        self.assertEqual(datastore.recommended(message), [{"kind": "C", "ancestor": True, "properties": [
+            {"name": "n", "direction": "asc"}, {"name": "__key__", "direction": "desc"}]}])
+        self.assertEqual(datastore.recommended("no matching index found."), [])
+        # For inequalities on several properties, production suggests one; or it needs several.
+        message = ("One possible index to serve the query is:\n- kind: P\n  properties:\n  - name: a\n  - name: b\n"
+                   "The query contains range and inequality filters on multiple fields, please refer to the documentation")
+        self.assertTrue(datastore.NEEDS_INDEX.search(message))
+        self.assertEqual(datastore.recommended(message), [{"kind": "P", "ancestor": False, "properties": [
+            {"name": "a", "direction": "asc"}, {"name": "b", "direction": "asc"}]}])
+        message = ("The query requires multiple indexes. The recommended indexes are:\n- kind: P\n  properties:\n"
+                   "  - name: a\n- kind: Q\n  properties:\n  - name: b\n    direction: desc\n")
+        self.assertEqual([(i["kind"], i["properties"]) for i in datastore.recommended(message)], [
+            ("P", [{"name": "a", "direction": "asc"}]), ("Q", [{"name": "b", "direction": "desc"}])])
+
+    def test_what_the_exceptions_record_of_datastore_mode_is_set_aside(self):
+        def answer(body, status=200):
+            return {"status": status, "media": "application/json", "body": body}
+
+        def set_aside(official, production):
+            known = set()
+            theirs, ours = datastore.set_aside(official, production, known)
+            return replay.same_json(theirs, ours), sorted(known)
+
+        key = {"partitionId": {"projectId": "p"}, "path": [{"kind": "K", "name": "a"}]}
+        other = {"partitionId": {"projectId": "p"}, "path": [{"kind": "K", "name": "b"}]}
+        # A commit without a transaction, and a lookup (D120).
+        self.assertEqual(set_aside(answer({"mutationResults": [{"version": "<version>"}], "commitTime": "<time>"}),
+                                   answer({"mutationResults": [{"version": "1"}], "indexUpdates": 2})), (True, ["D120"]))
+        self.assertEqual(set_aside(answer({"missing": [{"entity": {"key": key}}, {"entity": {"key": other}}], "readTime": "<time>"}),
+                                   answer({"missing": [{"entity": {"key": other}, "version": "1"},
+                                                       {"entity": {"key": key}, "version": "1"}], "readTime": "t"})),
+                         (True, ["D120"]))
+        # A batch: an entity once, though two values of its array match; at most 300 (D121).
+        many = [{"entity": {"key": {"path": [{"kind": "K", "id": str(n)}]}}} for n in range(301)]
+        self.assertEqual(set_aside(
+            answer({"batch": {"entityResults": [{"entity": {"key": key}}, {"entity": {"key": key}}, {"entity": {"key": other}}],
+                              "moreResults": "NO_MORE_RESULTS"}}),
+            answer({"batch": {"entityResults": [{"entity": {"key": key}}, {"entity": {"key": other}}],
+                              "endCursor": "c", "moreResults": "NO_MORE_RESULTS"}})), (True, ["D121"]))
+        self.assertEqual(set_aside(answer({"batch": {"entityResults": many, "moreResults": "NO_MORE_RESULTS"}}),
+                                   answer({"batch": {"entityResults": many[:300], "endCursor": "c", "moreResults": "NOT_FINISHED"}})),
+                         (True, ["D121"]))
+        excluded = [{"integerValue": "1", "excludeFromIndexes": True}, {"integerValue": "7"}]
+        self.assertEqual(set_aside(answer({"found": [{"entity": {"properties": {"v": {"arrayValue": {"values": excluded}}}}}]}),
+                                   answer({"found": [{"entity": {"properties": {"v": {"arrayValue": {"values": excluded[::-1]}}}}}]})),
+                         (True, ["D121"]))
+        # Errors: of an unknown transaction (D124), and those of the Firestore API (D126).
+        self.assertEqual(set_aside(answer({"error": {"code": 500, "status": "UNKNOWN"}}, 500),
+                                   answer({"error": {"code": 400, "status": "INVALID_ARGUMENT", "message": "Invalid transaction."}}, 400)),
+                         (True, ["D124"]))
+        self.assertEqual(set_aside(answer("Not Found\n", 404), answer({"error": {
+            "code": 400, "status": "FAILED_PRECONDITION", "message": "The Cloud Firestore API is not available for Firestore "
+            "in Datastore Mode database projects/p/databases/(default)."}}, 400)), (True, ["D126"]))
+        # What the exceptions do not record stays: another entity, another error, the same answer.
+        self.assertEqual(set_aside(answer({"found": [{"entity": {"key": key}}]}), answer({"found": [{"entity": {"key": other}}]})),
+                         (False, []))
+        self.assertEqual(set_aside(answer({"error": {"code": 500, "status": "UNKNOWN"}}, 500),
+                                   answer({"error": {"code": 400, "status": "INVALID_ARGUMENT", "message": "x"}}, 400)), (False, []))
+        self.assertEqual(set_aside(answer({"commitTime": "<time>"}), answer({"commitTime": "t"})), (True, []))
 
     def test_the_database_is_taken_out_of_production_messages(self):
         answer = {"error": {"message": 'no entity to update: app: "p"\npath <\n  Element {\n    type: "T"\n  }\n>\n'

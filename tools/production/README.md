@@ -221,17 +221,30 @@ the official emulator's:
   `x-goog-request-params`: without the header production refuses it ("Missing routing header"),
   without the body's it goes to the `(default)` database. Production's answers name the database
   in each key's `partitionId`, which the emulator's, of its default database, do not: it is taken
-  out;
+  out, as is the database a message names with a key (`database_id: "<id>"` in a key printed as
+  protobuf text, `<project>#<id>` in "mismatched databases within request");
 - a request of the Firestore API goes to the same database, and production's answer names
   `(default)` again;
 - the IDs production allocates are not the emulator's: those of an answer to `allocateIds` or
   `commit` take the emulator's place in the requests that follow, and are read back as the
   emulator's in the answers;
 - a query production refuses for want of a composite index is counted apart (D070), and the
-  index it recommends is kept in the report (`datastoreIndexes`), for `indexes.py` (below).
+  indexes it recommends ("recommended index is", "One possible index to serve the query is", "The
+  recommended indexes are") are kept in the report (`datastoreIndexes`), for `indexes.py` (below).
+
+What D120 to D126 record of Datastore mode is set aside before an answer is compared, by the
+rules of `datastore.py`, and counts as known: the fields only one side's answers have, where in
+an answer (`KNOWN_FIELDS`, as `commitTime` and `indexUpdates` of a commit); values each side
+gives (`KNOWN_VALUES`, as `moreResults`); answers that differ as a whole, an error on one side or
+both (`KNOWN_ERRORS`); a batch production cut at 300 entities, or that gives an entity once where
+the emulator gives it for each value of an array its query matched; an array whose values
+excluded from indexes production gives last; and a lookup's results in production's order. The
+cases about the rest are known by their names (`KNOWN_CASES` in `replay.py`).
 
 A request to another database or project (the recorders send some to projects of their own, to
-allocate IDs from the start), or of the emulator's own API, is not sent. The database is
+allocate IDs from the start), a GQL key that names the project (production reads it as one of
+`(default)`, and GQL cannot name another database), or a request of the emulator's own API, is
+not sent. The database is
 emptied with a query of no kind in each namespace `__namespace__` lists. A database in Datastore
 mode other than `(default)` has no free quota: its requests count in `--budget`, and are billed.
 

@@ -2045,6 +2045,145 @@
     "crates/hidane/tests/documents.rs::invalid_writes_use_the_official_messages",
     "crates/hidane/tests/datastore.rs::datastore_mode_answers_like_the_official_emulator"
    ]
+  },
+  {
+   "id": "D120",
+   "table": "production",
+   "area": "documents",
+   "topic": "Datastore mode: commits and lookups",
+   "kind": "bug-for-bug",
+   "official": "A commit answers `commitTime`, outside a transaction too, and nothing of indexes; a mutation's `propertyMask` is not applied: an update writes the entity as given, without the properties it leaves out. A lookup gives each entity it found a `cursor`, and those it did not find no `version`, the found and the missing each in the order of the keys asked for; one of no keys answers its `readTime` (`tools/oracle/datastore_entities.py`)",
+   "firestore": "No `commitTime` outside a transaction; `indexUpdates`, the index entries written, in a commit that writes, and `conflictDetected: true` in the result of a mutation whose base version or update time does not match. A `propertyMask` writes the properties it names and keeps the others. A lookup gives no `cursor`, a `version` to each entity not found, and the entities in an order of its own (two missing came back reversed); one of no keys answers `{}` (#82)",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). The API does not promise the order of a lookup's results",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/41286937863",
+    "hidane-dev/hidane#82",
+    "tools/oracle/datastore_entities.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/datastore.rs::datastore_mode_answers_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D121",
+   "table": "production",
+   "area": "queries",
+   "topic": "Datastore mode: query results",
+   "kind": "bug-for-bug",
+   "official": "A query's results come in one batch, an entity once for each value of an array its filter or order matches. Keys-only and projection results carry `createTime`, `updateTime` and `version`; an array's values keep their order. `endCursor` comes with results only; `moreResults` is `NO_MORE_RESULTS` when an end cursor or a limit stops the query; an aggregation's batch has none, nor does a GQL aggregation's answer hold the query it read; an offset gives no `skippedCursor`. A property of the entities in an array (`arr.x`) matches nothing and sums to 0. Results in no order the query sets, ties in a descending order among them, come in key order (`tools/oracle/datastore_queries.py`, `tools/oracle/datastore_gql.py`)",
+   "firestore": "At most 300 entities a batch, then `NOT_FINISHED` and an end cursor to go on from; an entity once, however many values of its arrays match, which also changes what aggregations over such a property add up. No `createTime`, `updateTime` or `version` in keys-only and projection results; an array's indexed values first, then those excluded from indexes. `endCursor` with every batch, `MORE_RESULTS_AFTER_CURSOR` or `MORE_RESULTS_AFTER_LIMIT` when an end cursor or a limit stops the query, `moreResults` in an aggregation's batch, the query in a GQL aggregation's answer, and `skippedCursor` with an offset. The properties of entities in an array are indexed: `arr.x = 5` finds the entity. Results in no order the query sets come in the order of the index read (`__key__ > k` from the last key back, a projection in its properties' order), and ties of a descending order in key order (#82)",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). The client libraries go on from `endCursor` while `moreResults` is `NOT_FINISHED`",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/41286937863",
+    "hidane-dev/hidane#82",
+    "tools/oracle/datastore_gql.py",
+    "tools/oracle/datastore_queries.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/datastore.rs::datastore_queries_answer_like_the_official_emulator",
+    "crates/hidane/tests/datastore.rs::gql_answers_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D122",
+   "table": "production",
+   "area": "queries",
+   "topic": "Datastore mode: metadata queries",
+   "kind": "bug-for-bug",
+   "official": "`__kind__` lists the kinds of every namespace, whichever one the query names; `__property__` finds nothing; in a new read-write transaction, `__kind__` and `__namespace__` find nothing. Their results carry no cursor, and their batches no `snapshotVersion` (`tools/oracle/datastore_queries.py`, `tools/oracle/datastore_gql.py`)",
+   "firestore": "`__kind__` lists the kinds of the namespace queried; `__property__` lists each kind's indexed properties (`__kind__:P/__property__:a`, a nested name dotted, `m.x`); a new transaction finds what any read finds. Results carry cursors, and batches `snapshotVersion` and `endCursor` (#82)",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82)",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/41286937863",
+    "hidane-dev/hidane#82",
+    "tools/oracle/datastore_gql.py",
+    "tools/oracle/datastore_queries.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/datastore.rs::datastore_queries_answer_like_the_official_emulator",
+    "crates/hidane/tests/datastore.rs::gql_answers_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D123",
+   "table": "production",
+   "area": "queries",
+   "topic": "Datastore mode: a cursor of another query",
+   "kind": "bug-for-bug",
+   "official": "A cursor taken from one query and given to another, as a start or an end cursor, is read by rules of its own: some are taken, some refused with `INVALID_ARGUMENT` \"cursor does not match query\" or \"index data should not include primary key\", and some fail with `500` `UNKNOWN` and no message, a cursor of a descending order of keys among them (`tools/oracle/datastore_queries.py`)",
+   "firestore": "Rules of its own: many the emulator takes are refused with \"cursor does not match query\", many it refuses are taken, and none fails with `500` (#82)",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). A client gives a cursor to the query it came from",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/41286937863",
+    "hidane-dev/hidane#82",
+    "tools/oracle/datastore_queries.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/datastore.rs::datastore_queries_answer_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D124",
+   "table": "production",
+   "area": "transactions",
+   "topic": "Datastore mode: transactions",
+   "kind": "bug-for-bug",
+   "official": "An unknown transaction fails with `500` `UNKNOWN` and no message (D025); an ended one is `409` `ABORTED` \"The referenced transaction has expired or is no longer valid.\", yet a rollback after the commit goes through, as does an empty commit of a read-only transaction after a write in it was refused. A commit without a transaction that names one: `INVALID_ARGUMENT` \"non-transaction commit cannot specify a transaction\". A write that waits too long for a lock: `ABORTED` \"Transaction lock timeout.\" (`tools/oracle/datastore_entities.py`)",
+   "firestore": "`400` `INVALID_ARGUMENT` \"Invalid transaction.\" for an unknown transaction, and for a commit without a transaction that names one; `400` `INVALID_ARGUMENT` \"The referenced transaction has expired or is no longer valid.\" for an ended one, a rollback after the commit, and a read-only transaction a refused write ended. A lock held too long: `ABORTED` \"too much contention on these datastore entities. please try again.\" (#82)",
+   "hidane": "As the official emulator, but for an unknown transaction (D025)",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). Clients retry an `ABORTED` transaction",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/41286937863",
+    "hidane-dev/hidane#82",
+    "tools/oracle/datastore_entities.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/datastore.rs::datastore_mode_answers_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D125",
+   "table": "production",
+   "area": "documents",
+   "topic": "Datastore mode: what a request may hold",
+   "kind": "bug-for-bug",
+   "official": "Refused: an empty `reserveIds` (`FAILED_PRECONDITION` \"List of Ids to reserve cannot be empty.\"), an eventual read (\"Firestore emulator does not support eventual consistency options.\"), an order on a property twice (\"order by clause cannot contain duplicate fields a\"). Taken: a key value that names a project which does not exist. Failing with `500` `UNKNOWN` and no message: a key of an invalid project (`Bad`), a negative limit or offset, or a sum, of an aggregation without a kind in a new transaction, a query without a kind in a new transaction, an ancestor alone in a disjunction. A projection of the key and a property without a kind: \"kind is required for all orders except __key__ ascending\". A key in a message is printed `EntityRef[partitionRef=…, path=/Task/a]` (\"entity already exists\") (`tools/oracle/datastore_entities.py`, `tools/oracle/datastore_queries.py`)",
+   "firestore": "Each of the three is taken. A key value naming a project that does not exist is refused, `INVALID_ARGUMENT` \"The project <id> does not exist.\", as is the invalid project. A negative limit or offset: \"limit is negative\", \"offset is negative\"; the sum and the projection: \"Unable to plan or invalidate query.\"; the query without a kind is served; the ancestor alone in a disjunction is `500` `INTERNAL` \"An internal error occurred.\". A key in a message is printed as protobuf text (#82)",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82)",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/41286937863",
+    "hidane-dev/hidane#82",
+    "tools/oracle/datastore_entities.py",
+    "tools/oracle/datastore_queries.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/datastore.rs::datastore_mode_answers_like_the_official_emulator",
+    "crates/hidane/tests/datastore.rs::datastore_queries_answer_like_the_official_emulator"
+   ]
+  },
+  {
+   "id": "D126",
+   "table": "production",
+   "area": "rest",
+   "topic": "Datastore mode: the Firestore API",
+   "kind": "bug-for-bug",
+   "official": "Refused with `400` `INVALID_ARGUMENT` \"Database mode not set to Firestore Mode. If using the gCloud CLI, please specify the --database-mode flag.\", after checks of its own (a parent that names a document: `Document parent name \"…\" lacks \"/\"`); `partitionQuery` is `501` `UNIMPLEMENTED`; a path that names no method, or a body in protobuf, a bare `404` `Not Found` (D103) (`tools/oracle/datastore_firestore_api.py`)",
+   "firestore": "`400` `FAILED_PRECONDITION` \"The Cloud Firestore API is not available for Firestore in Datastore Mode database projects/<id>/databases/<database>.\" for every method, before any check, also for a `GET` of a method; a body in protobuf: `400` \"Proto over HTTP is not allowed for service 'firestore.googleapis.com'\"; a `GET` of the database answers the database (#82)",
+   "hidane": "As the official emulator (D086 says where it reads a body that is not JSON)",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). A client of the Firestore API finds the mode refused either way",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/41286937863",
+    "hidane-dev/hidane#82",
+    "tools/oracle/datastore_firestore_api.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/datastore.rs::the_firestore_api_is_refused_as_on_the_official_emulator"
+   ]
   }
  ],
  "retired": [

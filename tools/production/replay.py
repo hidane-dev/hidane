@@ -278,7 +278,7 @@ def number(value):
 # D097 (`details` in an error), D098 (an error inside an array) and D099 (no `done`) describe.
 KNOWN_MESSAGES = [
     ("D097", r"^Document \(.*\) not found\.$", r'^Document ".*" not found\.$'),
-    ("D097", r"^Payload isn't valid for request\.$", r"^Invalid (?:JSON payload received\.|value at )"),
+    ("D097", r"^Payload isn't valid for request\.$", r"^Invalid (?:JSON payload received\.|value at |value \(oneof\))"),
     ("D097", r"^Transaction is invalid or expired\.$", r"^Invalid transaction\.$"),
     ("D097", r"^Input must be int64 or double\.$", r"^Input must be a number\.$"),
     ("D064", r"^entity already exists: ", r"^Document already exists: "),
@@ -341,7 +341,16 @@ KNOWN_CASES = {
     ],
     "queries.json": [("D103", r"^parent is a collection$")],
     "document_writes.json": [("D112", r"^batch get order$"), ("D111", r"^named database$"), ("D119", r"^nested array, step")],
-    "datastore_entities.json": [("D119", r"^write nested arrays$")],
+    "datastore_entities.json": [("D119", r"^write nested arrays$"), ("D120", r"^read after a property mask$")],
+    "datastore_queries.json": [
+        ("D123", r"^(?:start|end)Cursor of |^a cursor of another query"),
+        ("D122", r"^__(?:kind|namespace|property)__"),
+        ("D121", r"^__key__ (?:>|!=) T/str$|order by b descending$|^project a and b$|^project v, every type$|"
+                 r"^350 entities, from the end of the first batch$|array's entity values|^the rows of a sum|^sums where"),
+    ],
+    "datastore_gql.json": [("D121", r"^two properties$|^__key__ >$"), ("D122", r"^a reserved kind$")],
+    "datastore_firestore_api.json": [("D103", r"^(?:GET the documents root|PUT a document|write over REST|listen over REST)$"),
+                                     ("D126", r"protobuf|^GET the database$")],
     "transforms.json": [("D102", r"__name__|__type__")],
     "list_documents.json": [("D101", r"slash"), ("D103", r"^root without a slash$"),
                             ("D089", r"^collection, order by (?:a field|the name), pages of 2$")],
