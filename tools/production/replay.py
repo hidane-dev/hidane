@@ -66,6 +66,8 @@ DATABASE = "/v1/projects/{project}/databases/(default)/"
 PROJECT_NAME = re.compile(r"projects/([^/\s\"'?:]+)")
 TRANSIENT = {429, 500, 502, 503, 504}
 NETWORK_TRIES = 4
+# The waits before a request a database refused with 429 is sent again (`Production.send`).
+THROTTLED_WAITS = (2, 4, 8, 16, 32)
 # The documents a query of the replay's own emptying reads at a time.
 EMPTYING_PAGE = 1000
 # Tests of rules sent at once: the Rules API takes seconds to compile each ruleset. It allows a
@@ -121,8 +123,21 @@ class Production:
         text). A connection that fails before an answer is tried again a few times; then the answer
         is status 0. The budget counts the requests to Firestore, to stay within its free daily
         quota, and those to another API that are `budgeted` (a Datastore-mode database's, which
-        has none); tests of rules, which `Pace` keeps within the Rules API's, are not in it."""
-        self.spend(firestore=base is None or budgeted)
+        has none); tests of rules, which `Pace` keeps within the Rules API's, are not in it.
+        A database refuses requests with 429 while it is written faster than it allows ("This
+        database has exceeded their maximum bandwidth for writes"), which the official emulator
+        never does: such an answer of Firestore's, or the Datastore-mode database's, is waited out
+        and the request sent again, a few times."""
+        database = base is None or budgeted
+        for wait in (*THROTTLED_WAITS, None):
+            answer = self.send_once(method, path, data, content_type, base, anonymous, headers, database)
+            if answer[0] != 429 or not database or wait is None:
+                return answer
+            log(f"{method} {mask(path, self.project)}: 429, sending it again in {wait} s")
+            time.sleep(wait)
+
+    def send_once(self, method, path, data, content_type, base, anonymous, headers, database):
+        self.spend(firestore=database)
         headers = {"Content-Type": content_type, **(headers or {})}
         if not anonymous:
             headers["Authorization"] = f"Bearer {self.token}"
@@ -234,6 +249,9 @@ PLACEHOLDER = re.compile("(" + "|".join(re.escape(p) for p in sorted(PLACEHOLDER
 # base64, so it is masked.
 NEEDS_INDEX = re.compile(r"The query requires (?:an|a \w+) index|Missing vector index configuration")
 INDEX_LINK = re.compile(r'https://console\.firebase\.google\.com/[^"\s]*')
+# The official emulator refuses an array in an array, which production has stored since late
+# October 2026, in either mode (D119).
+NESTED_ARRAYS = "Nested arrays are not allowed"
 
 
 # An error about a resource name says where in the name it went wrong, counting the characters of
@@ -322,7 +340,8 @@ KNOWN_CASES = {
         ("D112", r"^batchGet with documents named twice$"),
     ],
     "queries.json": [("D103", r"^parent is a collection$")],
-    "document_writes.json": [("D112", r"^batch get order$"), ("D111", r"^named database$")],
+    "document_writes.json": [("D112", r"^batch get order$"), ("D111", r"^named database$"), ("D119", r"^nested array, step")],
+    "datastore_entities.json": [("D119", r"^write nested arrays$")],
     "transforms.json": [("D102", r"__name__|__type__")],
     "list_documents.json": [("D101", r"slash"), ("D103", r"^root without a slash$"),
                             ("D089", r"^collection, order by (?:a field|the name), pages of 2$")],
@@ -428,10 +447,11 @@ def first_difference(official, production, at="$"):
     return f"{at}: {json.dumps(official, ensure_ascii=False)[:80]}, production {json.dumps(production, ensure_ascii=False)[:80]}"
 
 
-def tally(result, official, answered, entry, name=None):
+def tally(result, official, answered, entry, name=None, known=()):
     """Counts a case: the same; the same but for differences the parity exceptions record (by
-    entry, or by the case's name, `KNOWN_CASES`); or different, with `entry()` saying how."""
-    known = set()
+    entry, or by the case's name, `KNOWN_CASES`, or `known`, the entries of those the caller set
+    aside); or different, with `entry()` saying how."""
+    known = set(known)
     if not same_json(official, answered, known):
         about = [k for k, pattern in KNOWN_CASES.get(result.get("fixture"), []) if name and re.search(pattern, name)]
         if about:
@@ -651,26 +671,31 @@ def replay_value_order(production, recording, result):
             return mask(errors[0].get("message", "") if errors else f"{status} {text[:300]}", production.project)
         return [r["document"]["name"][len(documents) + 1:] for r in answer if "document" in r]
 
-    def compare(name, official, answered):
+    def compare(name, official, answered, known=()):
         result["sent"] += 1
         tally(result, official, answered, lambda: {
             "name": name, "method": "POST", "path": "/v1/projects/{project}/databases/(default)/documents:runQuery",
             "difference": first_difference(official, answered) or "the outcome", "official": official,
-            "production": answered}, name)
+            "production": answered}, name, known)
 
     recorded = recording["values"]
     values = [item for group in recorded["groups"] for item in group] + recorded["rejected"]
-    count, refused = len(values), []
+    count, refused, again = len(values), [], []
     for i, item in enumerate(values):
         error = write(f"orderA/{i:03d}", {"v": item["value"]})
         if error is None:
-            write(f"orderB/{count - 1 - i:03d}", {"v": item["value"]})
+            # A value missing from the second collection would read as equal to its neighbour.
+            error = write(f"orderB/{count - 1 - i:03d}", {"v": item["value"]})
+            if error is not None:
+                again.append(f"{item['label']}: {error}")
         else:
             refused.append({"label": item["label"], "error": error})
     by_v = {"orderBy": [{"field": {"fieldPath": "v"}, "direction": "ASCENDING"}]}
     found_a = names({"from": [{"collectionId": "orderA"}], **by_v})
     found_b = names({"from": [{"collectionId": "orderB"}], **by_v})
-    if isinstance(found_a, str) or isinstance(found_b, str):
+    if again:
+        groups = "writing a value again was refused: " + "; ".join(again)
+    elif isinstance(found_a, str) or isinstance(found_b, str):
         groups = found_a if isinstance(found_a, str) else found_b
     else:
         a = [int(name.split("/")[1]) for name in found_a]
@@ -682,9 +707,19 @@ def replay_value_order(production, recording, result):
             else:
                 groups.append([case])
         groups = [[values[case]["label"] for case in group] for group in groups]
+    # Production stores a nested array, which the official emulator refuses (D119): it is left
+    # out of the groups, and counted as refused.
+    stored = [r for r in recorded["rejected"] if r["error"] == NESTED_ARRAYS
+              and r["label"] not in {s["label"] for s in refused}]
+    if stored and isinstance(groups, list):
+        labels = {r["label"] for r in stored}
+        groups = [kept for group in groups if (kept := [label for label in group if label not in labels])]
+    order = {item["label"]: n for n, item in enumerate(values)}
+    refused = sorted(refused + [{"label": r["label"], "error": r["error"]} for r in stored], key=lambda r: order[r["label"]])
     compare("values: groups of equal values, in order", [[item["label"] for item in group] for group in recorded["groups"]],
-            groups)
-    compare("values: refused", [{"label": r["label"], "error": r["error"]} for r in recorded["rejected"]], refused)
+            groups, ["D119"] if stored else ())
+    compare("values: refused", [{"label": r["label"], "error": r["error"]} for r in recorded["rejected"]], refused,
+            ["D119"] if stored else ())
 
     paths, refused = recording["paths"], []
     for path in paths["order"] + [r["path"] for r in paths["rejected"]]:

@@ -51,6 +51,10 @@ class StandIn(BaseHTTPRequestHandler):
     # A Datastore-mode database's entities (by namespace and path), and how many IDs it allocated.
     entities = {}
     allocated = 0
+    # Whether it stores arrays in arrays, as production has since late October 2026 (D119); and
+    # how many more commits holding a text it refuses with 429 (-1: every one).
+    nested_arrays = False
+    throttle = {}
 
     def log_message(self, *args):
         pass
@@ -93,13 +97,18 @@ class StandIn(BaseHTTPRequestHandler):
             names = sorted({prefix + n[len(prefix):].split("/")[0] for n in StandIn.documents if n.startswith(prefix)})
             return self.answer(200, {"documents": [{"name": n} for n in names]} if names else {})
         if self.path == f"{root}:commit":
+            throttled = next((text for text, n in StandIn.throttle.items() if text in body and n), None)
+            if throttled:
+                StandIn.throttle[throttled] -= 1
+                return self.answer(429, {"error": {"code": 429, "status": "RESOURCE_EXHAUSTED", "message":
+                    "This database has exceeded their maximum bandwidth for writes, please retry with exponential backoff."}})
             if '"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' in body:
                 # As production refuses a document over 1 MiB, here one with a string of 50 characters.
                 name = json.loads(body)["writes"][0]["update"]["name"]
                 return self.answer(400, {"error": {"code": 400, "status": "INVALID_ARGUMENT", "message":
                     f"Document '{name}' cannot be written because its size (1,200,058 bytes) exceeds the maximum "
                     "allowed size of 1,048,576 bytes."}})
-            if '"arrayValue": {"values": [{"arrayValue"' in body:
+            if '"arrayValue": {"values": [{"arrayValue"' in body and not StandIn.nested_arrays:
                 return self.answer(400, {"error": {"code": 400, "message": "Nested arrays are not allowed",
                                                    "status": "INVALID_ARGUMENT"}})
             StandIn.commits += 1
@@ -154,7 +163,9 @@ class StandIn(BaseHTTPRequestHandler):
             else:
                 names = sorted(n for n in StandIn.documents if n.rsplit("/", 1)[0] == f"{parent}/{collection}")
             if query.get("orderBy"):
-                names.sort(key=lambda n: int(StandIn.documents[n]["fields"]["v"]["integerValue"]))
+                # Numbers by value, then arrays.
+                names.sort(key=lambda n: (0, int(v["integerValue"])) if "integerValue" in (v := StandIn.documents[n]["fields"]["v"])
+                           else (1, 0))
             now = "2026-01-01T00:00:00Z"
             if verb == "runAggregationQuery":
                 return self.answer(200, [{"result": {"aggregateFields": {"n": {"integerValue": str(len(names))}}}, "readTime": now}])
@@ -394,16 +405,18 @@ class ReplayTest(unittest.TestCase):
         StandIn.targets, StandIn.listened = [], []
         StandIn.rulesets, StandIn.release, StandIn.released, StandIn.lag, StandIn.lagging = {}, None, [], 0, 0
         StandIn.entities, StandIn.allocated = {}, 0
-        self.waits = release.SETTLE, replay.RETRY_AFTER, release.PER_MINUTE
+        StandIn.nested_arrays, StandIn.throttle = False, {}
+        self.waits = release.SETTLE, replay.RETRY_AFTER, release.PER_MINUTE, replay.THROTTLED_WAITS
         release.SETTLE = replay.RETRY_AFTER = 0
         release.PER_MINUTE = 10 ** 9
+        replay.THROTTLED_WAITS = (0, 0, 0)
         self.server = ThreadingHTTPServer(("127.0.0.1", 0), StandIn)
         threading.Thread(target=self.server.serve_forever, daemon=True).start()
         self.base = f"http://127.0.0.1:{self.server.server_address[1]}"
         self.dir = tempfile.TemporaryDirectory()
 
     def tearDown(self):
-        release.SETTLE, replay.RETRY_AFTER, release.PER_MINUTE = self.waits
+        release.SETTLE, replay.RETRY_AFTER, release.PER_MINUTE, replay.THROTTLED_WAITS = self.waits
         self.server.shutdown()
         self.server.server_close()
         self.dir.cleanup()
@@ -603,6 +616,33 @@ class ReplayTest(unittest.TestCase):
         result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
         self.assertEqual([(d["name"], d["difference"]) for d in result["differ"]], [
             ("values: groups of equal values, in order", "$: 4 items, production 3")])
+        recording["values"]["groups"][1:3] = [[item("2a", 2), item("2b", 2)]]
+        path.write_text(json.dumps(recording))
+        # A nested array production stores is set aside (D119).
+        StandIn.nested_arrays = True
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
+        self.assertEqual((result["same"], result["knownCases"], result["known"], result["differ"]), (2, 2, {"D119": 2}, []))
+        # A value production would not write a second time would read as equal to its neighbour.
+        StandIn.throttle = {'orderB/002"': -1}  # 2b, the third value of five
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
+        self.assertEqual([(d["name"], d["production"]) for d in result["differ"]], [(
+            "values: groups of equal values, in order", "writing a value again was refused: 2b: This database has "
+            "exceeded their maximum bandwidth for writes, please retry with exponential backoff.")])
+
+    def test_a_request_production_throttles_is_sent_again(self):
+        StandIn.throttle = {'documents/c/d"': 2}
+        cases = [{"name": "write", "method": "POST", "path": "/v1/projects/{project}/databases/(default)/documents:commit",
+                  "headers": {"Authorization": "Bearer owner"},
+                  "body": {"writes": [{"update": {"name": "projects/{project}/databases/(default)/documents/c/d"}}]},
+                  "outcome": {"status": 200, "contentType": "application/json",
+                              "body": '{"writeResults": [{"updateTime": "<time>"}], "commitTime": "<time>"}'}}]
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), self.fixture(cases))
+        self.assertEqual((result["same"], result["differ"]), (1, []))
+        self.assertEqual(sum(path.endswith(":commit") and '"update"' in (body or "") for _, path, _, body in StandIn.seen), 3)
+        # Not past its waits: then the answer is production's.
+        StandIn.throttle = {'documents/c/d"': -1}
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), self.fixture(cases))
+        self.assertEqual([d["difference"] for d in result["differ"]], ["status 200, production 429"])
 
     def test_list_documents_is_replayed_over_rest(self):
         both = ["m", "n"]
