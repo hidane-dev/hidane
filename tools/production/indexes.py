@@ -4,16 +4,23 @@
 Production refuses a query that needs an index the database does not have, and says how to make
 it; the emulators need none (D070). The replay reads the index from production's answer and lists
 it in its report (`indexes`). This keeps those indexes in `indexes.json` and creates them in the
-project.
+project. A Datastore-mode database's (`datastore.py`, `datastoreIndexes` in a report) go to
+`datastore_indexes.json`, and are created with `--datastore-database`.
 
 Usage (from the repository root):
     python3 -I -B tools/production/indexes.py add production-parity/report.json
     PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/indexes.py create --project <id> --wait
+    PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/indexes.py create --project <id> \
+        --datastore-database datastore --wait
 
 `indexes.json` is in the format of `firestore.indexes.json`, but a field override lists only the
 indexes to add to the field's own: `create` adds them to what the field has. `create` makes what
 the project does not have yet. It needs a token that may change indexes, the project owner's: the
-workflow's service account may only read and write documents. Stdlib only.
+workflow's service account may only read and write documents. `datastore_indexes.json` holds
+indexes as index.yaml has them (`{"kind", "ancestor", "properties": [{"name", "direction"}]}`);
+the Firestore Admin API takes each as an index of the kind's collection group, of the whole tree
+below an entity for an ancestor query (`COLLECTION_RECURSIVE`), in Datastore mode's API scope,
+`__key__` as `__name__`. Stdlib only.
 """
 
 import argparse
@@ -30,6 +37,7 @@ import urllib.request
 from pathlib import Path
 
 INDEXES = Path(__file__).resolve().parent / "indexes.json"
+DATASTORE_INDEXES = Path(__file__).resolve().parent / "datastore_indexes.json"
 TOKEN_ENV = "PRODUCTION_ACCESS_TOKEN"
 ADMIN = "https://firestore.googleapis.com/v1"
 LINK = re.compile(r"create_(composite|exemption)=([A-Za-z0-9_\-+/=%]+)")
@@ -177,19 +185,51 @@ def save(indexes):
     return ordered
 
 
+def datastore_key(index):
+    return json.dumps(index, sort_keys=True)
+
+
+def load_datastore():
+    """Every index of `datastore_indexes.json`."""
+    return json.loads(DATASTORE_INDEXES.read_text())["indexes"] if DATASTORE_INDEXES.exists() else []
+
+
+def save_datastore(indexes):
+    unique = {datastore_key(index): index for index in indexes}
+    ordered = [unique[k] for k in sorted(unique)]
+    DATASTORE_INDEXES.write_text(json.dumps({"indexes": ordered}, indent=1) + "\n")
+    return ordered
+
+
+def admin(index):
+    """An index of `datastore_indexes.json` as the Firestore Admin API takes it."""
+    return {"collectionGroup": index["kind"], "queryScope": "COLLECTION_RECURSIVE" if index["ancestor"] else "COLLECTION_GROUP",
+            "apiScope": "DATASTORE_MODE_API",
+            "fields": [{"fieldPath": "__name__" if p["name"] == "__key__" else p["name"],
+                        "order": "DESCENDING" if p["direction"] == "desc" else "ASCENDING"} for p in index["properties"]]}
+
+
 def add(reports):
-    """Adds the indexes the reports' queries asked for; answers how many were new."""
-    indexes = load()
-    before = {key(index) for index in indexes}
+    """Adds the indexes the reports' queries asked for, a Datastore-mode database's apart;
+    answers how many were new."""
+    indexes, datastore = load(), load_datastore()
+    before, datastore_before = {key(index) for index in indexes}, {datastore_key(index) for index in datastore}
     for report in reports:
         for recording in json.loads(Path(report).read_text())["recordings"]:
             indexes += recording.get("indexes", [])
-    return len({key(index) for index in save(indexes)} - before)
+            datastore += recording.get("datastoreIndexes", [])
+    new = len({key(index) for index in save(indexes)} - before)
+    if len(datastore) > len(datastore_before):
+        new += len({datastore_key(index) for index in save_datastore(datastore)} - datastore_before)
+    return new
 
 
-def request(method, url, token, body=None):
+def request(method, url, token, body=None, quota_project=None):
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    if quota_project:
+        headers["x-goog-user-project"] = quota_project
     req = urllib.request.Request(url, method=method, data=None if body is None else json.dumps(body).encode(),
-                                 headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"})
+                                 headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=60) as res:
             return json.loads(res.read() or b"{}")
@@ -199,18 +239,26 @@ def request(method, url, token, body=None):
 
 
 class Project:
-    """The indexes of a project's `(default)` database, through the Firestore Admin API."""
+    """The indexes of a project's `(default)` database, or of one in Datastore mode (`datastore`,
+    its name), through the Firestore Admin API. A user's token needs a `quota_project`."""
 
-    def __init__(self, project, token):
-        self.database = f"{ADMIN}/projects/{project}/databases/(default)"
+    def __init__(self, project, token, datastore=None, quota_project=None):
+        self.database = f"{ADMIN}/projects/{project}/databases/{datastore or '(default)'}"
         self.token = token
+        self.datastore = datastore
+        self.quota_project = quota_project
+
+    def wanted(self):
+        """The indexes the database should have."""
+        return [admin(index) for index in load_datastore()] if self.datastore else load()
 
     def composites(self):
         """The composite indexes: their states by key."""
         found, page = {}, None
         while True:
             url = f"{self.database}/collectionGroups/-/indexes"
-            answer = request("GET", url + (f"?pageToken={urllib.parse.quote(page)}" if page else ""), self.token)
+            answer = request("GET", url + (f"?pageToken={urllib.parse.quote(page)}" if page else ""), self.token,
+                             quota_project=self.quota_project)
             for index in answer.get("indexes", []):
                 found[key(index)] = index.get("state")
             page = answer.get("nextPageToken")
@@ -220,7 +268,8 @@ class Project:
     def field(self, override):
         """A field's indexes, its own or those it takes from the database's defaults."""
         url = f"{self.database}/collectionGroups/{override['collectionGroup']}/fields/{override['fieldPath']}"
-        return url, request("GET", url, self.token).get("indexConfig", {}).get("indexes", [])
+        answer = request("GET", url, self.token, quota_project=self.quota_project)
+        return url, answer.get("indexConfig", {}).get("indexes", [])
 
     @staticmethod
     def missing(override, indexes):
@@ -230,10 +279,10 @@ class Project:
         return [i for i in override["indexes"] if i not in have]
 
     def create(self):
-        """Creates the indexes of `indexes.json` the database does not have; answers how many."""
+        """Creates the indexes the database does not have; answers how many."""
         made = 0
         have = self.composites()
-        for index in load():
+        for index in self.wanted():
             if "fieldPath" in index:
                 url, indexes = self.field(index)
                 missing = self.missing(index, indexes)
@@ -243,19 +292,19 @@ class Project:
                         {"fieldPath": index["fieldPath"], **{k: v for k, v in i.items() if k != "queryScope"}}]}
                         for i in missing]
                     request("PATCH", f"{url}?updateMask=indexConfig", self.token,
-                            {"indexConfig": {"indexes": kept + added}})
+                            {"indexConfig": {"indexes": kept + added}}, self.quota_project)
                     made += len(missing)
             elif key(index) not in have:
                 request("POST", f"{self.database}/collectionGroups/{index['collectionGroup']}/indexes", self.token,
-                        {"queryScope": index["queryScope"], "fields": index["fields"]})
+                        {k: index[k] for k in ("queryScope", "apiScope", "fields") if k in index}, self.quota_project)
                 made += 1
         return made
 
     def building(self):
-        """How many indexes of `indexes.json` are not ready yet."""
+        """How many of the indexes the database should have are not ready yet."""
         states = self.composites()
         count = 0
-        for index in load():
+        for index in self.wanted():
             if "fieldPath" in index:
                 _, indexes = self.field(index)
                 count += len(self.missing(index, [i for i in indexes if i.get("state") == "READY"]))
@@ -271,14 +320,18 @@ def main(argv=None):
     make = commands.add_parser("create", help="create the indexes the project does not have")
     make.add_argument("--project", required=True)
     make.add_argument("--wait", action="store_true", help="wait until every index is ready")
+    make.add_argument("--datastore-database", help="create the indexes of datastore_indexes.json in this database, "
+                                                   "one in Datastore mode, rather than those of indexes.json in (default)")
+    make.add_argument("--quota-project", help="the project a user's token is billed to (x-goog-user-project)")
     args = parser.parse_args(argv)
     if args.command == "add":
-        print(f"{add(args.reports)} new indexes; {len(load())} in {INDEXES.name}", file=sys.stderr)
+        print(f"{add(args.reports)} new indexes; {len(load())} in {INDEXES.name}, "
+              f"{len(load_datastore())} in {DATASTORE_INDEXES.name}", file=sys.stderr)
         return
     token = os.environ.get(TOKEN_ENV)
     if not token:
         parser.error(f"{TOKEN_ENV} is not set")
-    project = Project(args.project, token)
+    project = Project(args.project, token, args.datastore_database, args.quota_project)
     print(f"{project.create()} indexes created", file=sys.stderr)
     while args.wait:
         building = project.building()

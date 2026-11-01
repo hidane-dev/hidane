@@ -200,6 +200,42 @@ PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/release.py --project 
 [`test_replay.py`](test_replay.py) tests it offline, against a stand-in for production on
 `127.0.0.1`; CI runs it.
 
+## Datastore mode
+
+A database has one mode, and the project's `(default)` is in Firestore Native mode. The
+recordings in Datastore mode (`datastore_entities.json`, `datastore_queries.json`,
+`datastore_gql.json`, `datastore_firestore_api.json`) go, with `--datastore-database <id>`, to a
+named database of the project in Datastore mode, in [`datastore.py`](datastore.py). Each is sent
+in order, after the database is emptied and the recording's dataset written, and compared as
+above. Production does some things its own way, and the replay puts them as the recording put
+the official emulator's:
+
+- a request names its database in its body (`databaseId`) and in the routing header
+  `x-goog-request-params`: without the header production refuses it ("Missing routing header"),
+  without the body's it goes to the `(default)` database. Production's answers name the database
+  in each key's `partitionId`, which the emulator's, of its default database, do not: it is taken
+  out;
+- a request of the Firestore API goes to the same database, and production's answer names
+  `(default)` again;
+- the IDs production allocates are not the emulator's: those of an answer to `allocateIds` or
+  `commit` take the emulator's place in the requests that follow, and are read back as the
+  emulator's in the answers;
+- a query production refuses for want of a composite index is counted apart (D070), and the
+  index it recommends is kept in the report (`datastoreIndexes`), for `indexes.py` (below).
+
+A request to another database or project (the recorders send some to projects of their own, to
+allocate IDs from the start), or of the emulator's own API, is not sent. The database is
+emptied with a query of no kind in each namespace `__namespace__` lists. A database in Datastore
+mode other than `(default)` has no free quota: its requests count in `--budget`, and are billed.
+
+```sh
+PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/replay.py --project <id> --out production-datastore \
+    --datastore-database datastore crates/hidane/tests/fixtures/datastore_entities.json
+```
+
+The database was made once, by a maintainer: `gcloud firestore databases create
+--database=datastore --type=datastore-mode --location=us-central1 --project=<id>`.
+
 ## `indexes.py` and `indexes.json`
 
 Production runs many of the recorded queries only with indexes the emulators never ask for:
@@ -219,6 +255,19 @@ of a maintainer who may change indexes: the workflow's service account may only 
 documents, so a new index waits for a maintainer, and its queries are counted as needing an
 index until then.
 
+The Datastore-mode database's indexes are kept apart, in
+[`datastore_indexes.json`](datastore_indexes.json), as index.yaml has them (a kind, whether the
+query has an ancestor, and the properties with their directions); `add` puts them there.
+`create --datastore-database datastore` creates them through the Firestore Admin API, each as an
+index of the kind's collection group in Datastore mode's API scope: of the collection group for a
+query without an ancestor (`COLLECTION_GROUP`), of the tree below the ancestor for one with
+(`COLLECTION_RECURSIVE`), `__key__` as `__name__`. A user's token needs `--quota-project`.
+
+```sh
+PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/indexes.py create --project <id> \
+    --datastore-database datastore --wait
+```
+
 ## The Production parity workflow
 
 [`.github/workflows/production-parity.yml`](../../.github/workflows/production-parity.yml) runs
@@ -234,6 +283,9 @@ Its second job, after the first, replays with rules deployed a seventh of what d
 by the day of the week (a run on demand takes the seventh as its `rules-shard`), and takes the
 rules down after its replay, whatever happened. Its report is the run's `production-rules`
 artifact.
+
+A third job replays the recordings in Datastore mode against the database `datastore`, beside the
+others, as it empties only that database. Its report is the run's `production-datastore` artifact.
 
 A difference it reports is a lead, not a fact about hidane: production can differ from the
 official emulator by design. A person reads it, and where it settles how production answers, it

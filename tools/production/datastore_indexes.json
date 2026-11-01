@@ -1,0 +1,478 @@
+{
+ "indexes": [
+  {
+   "kind": "D",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "D",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "a",
+     "direction": "desc"
+    }
+   ]
+  },
+  {
+   "kind": "D",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "c",
+     "direction": "asc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "D",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "__key__",
+     "direction": "desc"
+    }
+   ]
+  },
+  {
+   "kind": "D",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "b",
+     "direction": "desc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "D",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "b",
+     "direction": "desc"
+    },
+    {
+     "name": "a",
+     "direction": "desc"
+    }
+   ]
+  },
+  {
+   "kind": "E",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "__key__",
+     "direction": "asc"
+    },
+    {
+     "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "d",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "E",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "__key__",
+     "direction": "asc"
+    },
+    {
+     "name": "b",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "E",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "b",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "E",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "d",
+     "direction": "asc"
+    },
+    {
+     "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "d",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "E",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "b",
+     "direction": "desc"
+    }
+   ]
+  },
+  {
+   "kind": "G",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "__key__",
+     "direction": "asc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "G",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "__key__",
+     "direction": "asc"
+    },
+    {
+     "name": "e.x",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "G",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "p",
+     "direction": "asc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "G",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "p",
+     "direction": "asc"
+    },
+    {
+     "name": "__key__",
+     "direction": "desc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "G",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "__key__",
+     "direction": "desc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "G",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "__key__",
+     "direction": "desc"
+    },
+    {
+     "name": "e.x",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "G",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "p",
+     "direction": "desc"
+    },
+    {
+     "name": "__key__",
+     "direction": "asc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "G",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "p",
+     "direction": "desc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "H",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "a",
+     "direction": "asc"
+    },
+    {
+     "name": "z",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "L",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "a",
+     "direction": "asc"
+    },
+    {
+     "name": "b",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "L",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "a",
+     "direction": "asc"
+    },
+    {
+     "name": "__key__",
+     "direction": "desc"
+    }
+   ]
+  },
+  {
+   "kind": "L",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "L",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "__key__",
+     "direction": "desc"
+    }
+   ]
+  },
+  {
+   "kind": "P",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "a",
+     "direction": "asc"
+    },
+    {
+     "name": "b",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "P",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "P",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "a",
+     "direction": "desc"
+    }
+   ]
+  },
+  {
+   "kind": "P",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "__key__",
+     "direction": "desc"
+    }
+   ]
+  },
+  {
+   "kind": "P",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "b",
+     "direction": "desc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "Q",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "__key__",
+     "direction": "asc"
+    },
+    {
+     "name": "n",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "T",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "__key__",
+     "direction": "asc"
+    },
+    {
+     "name": "__key__",
+     "direction": "asc"
+    },
+    {
+     "name": "v",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "T",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "__key__",
+     "direction": "desc"
+    }
+   ]
+  },
+  {
+   "kind": "C",
+   "ancestor": true,
+   "properties": [
+    {
+     "name": "n",
+     "direction": "asc"
+    }
+   ]
+  }
+ ]
+}
