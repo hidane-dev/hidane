@@ -17,7 +17,9 @@ What production does its own way, and how a request and its answer are put:
   the official emulator reads it as one of its default database: it gets the database's name
   (one that names neither is the request's, to both). Its answers name the
   database in each key's `partitionId` too, which the official emulator, serving its default
-  database, leaves out: production's `databaseId` is taken out before comparing.
+  database, leaves out: production's `databaseId` is taken out before comparing, as is the
+  database its messages name in a key (`database_id: "<id>"` in one printed as protobuf text,
+  `<project>#<id>` in "mismatched databases within request").
 - A request of the Firestore API goes to the same database (`databases/(default)` becomes
   `databases/<id>`), and production's answer names `(default)` again.
 - The IDs production allocates are not the official emulator's, which allocates them in a fixed
@@ -205,13 +207,16 @@ def with_database(value, project, database):
     return value
 
 
-def without_database(value, database):
-    """A value without the `databaseId` production puts in each key's `partitionId`."""
+def without_database(value, project, database):
+    """A value without the `databaseId` production puts in each key's `partitionId`, nor the
+    database its messages name in a key."""
     if isinstance(value, dict):
-        return {k: without_database(v, database) for k, v in value.items()
+        return {k: without_database(v, project, database) for k, v in value.items()
                 if not (k == "databaseId" and v == database)}
     if isinstance(value, list):
-        return [without_database(v, database) for v in value]
+        return [without_database(v, project, database) for v in value]
+    if isinstance(value, str):
+        return value.replace(f'database_id: "{database}"\n', "").replace(f"{project}#{database}", project)
     return value
 
 
@@ -220,7 +225,7 @@ def shown(text, production, database, ids):
     left out of its keys (or, of the Firestore API, named `(default)`), its IDs read back."""
     value = parsed(text)
     if not isinstance(value, str):
-        text = json.dumps(without_database(value, database.name), indent=2, ensure_ascii=False)
+        text = json.dumps(without_database(value, production.project, database.name), indent=2, ensure_ascii=False)
     text = text.replace(f"databases/{database.name}", "databases/(default)")
     for theirs, ours in ids.items():
         text = text.replace(f'"{ours}"', f'"{theirs}"')
@@ -286,7 +291,7 @@ def replay(production, recording, result):
                 labels.update({label: found for label, path in defines.items()
                                if isinstance(found := at(value, path), str)})
             if method and method.group(1) in ("allocateIds", "commit") and official["status"] == 200:
-                allocated(parsed(official.get("body") or ""), without_database(value, database.name), ids)
+                allocated(parsed(official.get("body") or ""), without_database(value, production.project, database.name), ids)
         answered = {"status": status, "contentType": answer_type, "body": shown(answer, production, database, ids)}
         if status != 200 and official["status"] == 200 and NEEDS_INDEX.search(
                 str(at(value, "error.message") if not isinstance(value, str) else "")):

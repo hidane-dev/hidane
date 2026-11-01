@@ -1259,6 +1259,16 @@ class ReplayTest(unittest.TestCase):
             {"name": "n", "direction": "asc"}, {"name": "__key__", "direction": "desc"}]})
         self.assertIsNone(datastore.recommended("no matching index found."))
 
+    def test_the_database_is_taken_out_of_production_messages(self):
+        answer = {"error": {"message": 'no entity to update: app: "p"\npath <\n  Element {\n    type: "T"\n  }\n>\n'
+                                       'database_id: "ds"\n'},
+                  "keys": [{"partitionId": {"projectId": "p", "databaseId": "ds"}}],
+                  "other": "mismatched databases within request: <unknown!>~p#ds vs. <unknown!>~elsewhere"}
+        self.assertEqual(datastore.without_database(answer, "p", "ds"), {
+            "error": {"message": 'no entity to update: app: "p"\npath <\n  Element {\n    type: "T"\n  }\n>\n'},
+            "keys": [{"partitionId": {"projectId": "p"}}],
+            "other": "mismatched databases within request: <unknown!>~p vs. <unknown!>~elsewhere"})
+
     def test_without_a_datastore_mode_database_a_recording_in_that_mode_is_not_sent(self):
         result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), self.datastore_recording())
         self.assertEqual((result["sent"], result["skipped"]), (0, {"no Datastore-mode database (--datastore-database)": 10}))
