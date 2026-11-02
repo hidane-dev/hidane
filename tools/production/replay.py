@@ -275,7 +275,8 @@ def number(value):
 
 # Differences docs/parity-exceptions.md records, told apart from new ones: a message of the
 # official emulator and one of production that match a pair, and the shapes of an answer that
-# D097 (`details` in an error), D098 (an error inside an array) and D099 (no `done`) describe.
+# D097 (`details` in an error), D098 (an error inside an array) and D099 (no `done`; what an offset
+# skipped in a result of its own) describe.
 KNOWN_MESSAGES = [
     ("D097", r"^Document \(.*\) not found\.$", r'^Document ".*" not found\.$'),
     ("D097", r"^Payload isn't valid for request\.$", r"^Invalid (?:JSON payload received\.|value at |value \(oneof\))"),
@@ -410,9 +411,9 @@ def same_json(official, production, known=None):
             return True
         theirs, ours = official.keys() - production.keys(), production.keys() - official.keys()
         if theirs or ours:
-            if known is None or not (theirs <= {"done"} and ours <= {"details", "skipped"}):
+            if known is None or not (theirs <= {"done"} and ours <= {"details", "skipped", "skippedResults"}):
                 return False
-            known.update(["D099"] if theirs or "skipped" in ours else [])
+            known.update(["D099"] if theirs or ours & {"skipped", "skippedResults"} else [])
             known.update(["D097"] if "details" in ours else [])
         return all(same_json(official[k], production[k], known) for k in official.keys() & production.keys())
     if isinstance(official, list):
@@ -443,7 +444,8 @@ def first_difference(official, production, at="$"):
     if isinstance(official, dict) and "error" in official and isinstance(production, list) and len(production) == 1:
         return first_difference(official, production[0], at + "[0]")
     if isinstance(official, dict) and isinstance(production, dict):
-        theirs, ours = official.keys() - production.keys() - {"done"}, production.keys() - official.keys() - {"details", "skipped"}
+        theirs = official.keys() - production.keys() - {"done"}
+        ours = production.keys() - official.keys() - {"details", "skipped", "skippedResults"}
         if theirs or ours:
             return f"{at}: keys only the official has {sorted(theirs)}, only production has {sorted(ours)}"
         return next((d for k in official if k in production
@@ -1312,8 +1314,9 @@ def shift(text, official, production):
 
 def step_answer(status, answer, project, commits):
     """A step's answer as it is compared: its status, and the error's status and message or the
-    body. The case's project reads `{project}`. The times in a body are read against the case's
-    commits so far (`commits`, which a body with a `commitTime` adds to): a commit's own time is
+    body. The case's project reads `{project}`, and a link to create an index `<index link>`: it
+    names the project in base64. The times in a body are read against the case's commits so far
+    (`commits`, which a body with a `commitTime` adds to): a commit's own time is
     `<commit 2>`, one within a minute of a commit `<near commit 2>`, another server time (a
     `readTime`) `<time>`; a time the client wrote stays as it is. A read time is the snapshot the
     server chose, which production may put at the commit itself: it is `<near commit 2>` there
@@ -1321,7 +1324,7 @@ def step_answer(status, answer, project, commits):
     if answer is None:
         return {"status": status}
     alone = re.compile(r"(?<![\w-])" + re.escape(project) + r"(?![\w-])")
-    answer = json.loads(alone.sub("{project}", json.dumps(answer)))
+    answer = json.loads(INDEX_LINK.sub("<index link>", alone.sub("{project}", json.dumps(answer))))
     error = answer.get("error") if isinstance(answer, dict) else None
     if isinstance(error, dict):
         return {"status": status, "error": error.get("status"),
@@ -1424,6 +1427,59 @@ def sender(step):
     return step.get("auth", "Bearer owner")
 
 
+# The verbs of steps that write nothing.
+NOT_WRITES = (":runQuery", ":runAggregationQuery", ":batchGet", ":beginTransaction", ":listCollectionIds", ":rollback",
+              ":securityRules")
+
+
+def earlier(case):
+    """What a case of steps relies on that an earlier case of its recording wrote: the official
+    emulator ran a recording's cases one after another in one project, the replay each on the
+    database emptied. Answers the documents the case's answers show created before its first
+    write, by their path below the documents, with their fields (`run_steps` writes them first),
+    and why the case is not sent, or None: a write that answered an update time from before then
+    wrote what was there already, and an aggregation of a case that writes nothing counted what
+    the answers do not show."""
+    def times(value, key=None):
+        if isinstance(value, dict):
+            return [t for k, v in value.items() for t in times(v, k)]
+        if isinstance(value, list):
+            return [t for v in value for t in times(v, key)]
+        return [micros(value)] if key in SERVER_TIMES - {"readTime"} and isinstance(value, str) \
+            and TIMESTAMP.fullmatch(value) else []
+
+    def documents(value):
+        if isinstance(value, dict):
+            name, created = value.get("name"), value.get("createTime")
+            if isinstance(name, str) and "/documents/" in name and isinstance(created, str) \
+                    and TIMESTAMP.fullmatch(created):
+                yield name.split("/documents/", 1)[1], value.get("fields", {}), micros(created)
+            for v in value.values():
+                yield from documents(v)
+        elif isinstance(value, list):
+            for v in value:
+                yield from documents(v)
+
+    writes = [step for step in case["steps"] if step["method"] in ("POST", "PATCH") and step["status"] == 200
+              and not step["path"].endswith(NOT_WRITES)]
+    since = next((max(t) for step in writes if (t := times(step.get("response")))), None)
+    found = {path: fields for step in case["steps"] for path, fields, created in documents(step.get("response"))
+             if since is None or created < since}
+    if since is not None and any(t < since for step in writes if isinstance(step.get("response"), dict)
+                                 for t in times(step["response"].get("writeResults"))):
+        return found, "writes what an earlier case of its recording wrote"
+    counted = [value for step in case["steps"] if isinstance(step.get("response"), list)
+               for r in step["response"] if isinstance(r, dict)
+               for value in (r.get("result") or {}).get("aggregateFields", {}).values()]
+    if since is None and any(value not in ({"integerValue": "0"}, {"doubleValue": 0}) for value in counted):
+        return found, "counts what an earlier case of its recording wrote"
+    return found, None
+
+
+# What `run_steps` answers for a case production asked an index for (D070).
+NEEDS_AN_INDEX = "needs an index"
+
+
 def run_steps(production, case, own, result, loaded=None):
     """Sends a case's steps on the database emptied, in the replay's project, and compares each
     step's answer as `step_answer` reads it. What an earlier answer handed out (a page token, a
@@ -1433,11 +1489,18 @@ def run_steps(production, case, own, result, loaded=None):
     authentication.`: its recorder sent none) is not sent: the replay always has them. A step
     the owner sent is sent with the token, one without credentials without; the official
     emulator's load of rules (`PUT …:securityRules`) is compared, on its status, with how making
-    the ruleset went in production (`loaded`). Answers the first difference (the step's number,
-    the official emulator's answer, production's), or None, and the entries of the known
-    differences seen."""
+    the ruleset went in production (`loaded`). The documents an earlier case of the recording
+    wrote that the case's answers show are written first (`earlier`). Answers the first difference
+    (the step's number, the official emulator's answer, production's), `NEEDS_AN_INDEX` if
+    production asked for an index first (the index is kept, `asked`), or None, and the entries of
+    the known differences seen."""
     project = production.project
     production.empty()
+    seeds, _ = earlier(case)
+    if seeds:
+        documents = f"projects/{project}/databases/(default)/documents"
+        production.call("POST", f"/v1/{documents}:commit", {"writes": [
+            {"update": {"name": f"{documents}/{path}", "fields": fields}} for path, fields in seeds.items()]})
     official_commits, production_commits, first, found, known = [], [], None, {}, set()
     for n, step in enumerate(case["steps"], 1):
         recorded = step["response"] if "response" in step else ({"error": step["error"]} if "error" in step else None)
@@ -1457,6 +1520,14 @@ def run_steps(production, case, own, result, loaded=None):
                 answer = json.loads(text) if text.strip() else None
             except ValueError:
                 answer = {"error": {"message": text[:300]}}
+            if first is None and status == 400 and NEEDS_INDEX.search(text) and step["status"] != 400:
+                asked(result, text)
+                first = NEEDS_AN_INDEX
+            if isinstance(recorded, dict) and "error" in recorded and isinstance(answer, list) and len(answer) == 1 \
+                    and isinstance(answer[0], dict) and "error" in answer[0]:
+                # A streamed method's error, the stream's only element in production (D098).
+                answer = answer[0]
+                known.add("D098")
             carried(recorded, answer, found)
             if recorded is not None and TEMPLATE.search(json.dumps(recorded)):
                 recorded = json.loads(filled(json.dumps(recorded), production_commits))
@@ -1471,14 +1542,16 @@ def run_steps(production, case, own, result, loaded=None):
         elif first is None and result["fixture"] in ORDERED and order_difference(official, answered):
             known.add(ORDERED[result["fixture"]])
     about = [k for k, pattern in KNOWN_CASES.get(result["fixture"], []) if re.search(pattern, case["name"])]
-    if first is not None and about:
+    if first not in (None, NEEDS_AN_INDEX) and about:
         first, known = None, {about[0]}
     return first, known
 
 
 def tally_steps(result, case, own, first, known):
-    """Counts a case of steps as the same, known, or different (`run_steps`)."""
-    if first is None and not known:
+    """Counts a case of steps as the same, known, different, or needing an index (`run_steps`)."""
+    if first == NEEDS_AN_INDEX:
+        result["needsIndex"].append(case["name"])
+    elif first is None and not known:
         result["same"] += 1
     elif first is None:
         result["knownCases"] += 1
@@ -1552,12 +1625,13 @@ def not_deployable(case):
 def replay_rules_steps(production, recording, result):
     """A recording of rules (`rules_request.json` and the like) with its rules deployed. The cases
     are put together by the ruleset they load; each ruleset is released (`release.py`), and each
-    of its cases sent on the database emptied, as `run_steps` sends them. A case that differs is
-    sent again `RETRY_AFTER` seconds later, its ruleset released again, and differs only if it
-    does again; those that did not are counted (`settled`)."""
+    of its cases sent on the database emptied, as `run_steps` sends them. A case that relies on
+    what an earlier case wrote, and its answers do not show, is not (`earlier`). A case that
+    differs is sent again `RETRY_AFTER` seconds later, its ruleset released again, and differs
+    only if it does again; those that did not are counted (`settled`)."""
     rulesets = {}
     for case in recording["cases"]:
-        why = not_deployable(case)
+        why = not_deployable(case) or earlier(case)[1]
         source = None if why else loads_of(case)[0]["body"]["rules"]["files"][0]["content"]
         if why is None and not in_shard(production, source):
             why = "another night's"
@@ -1573,7 +1647,7 @@ def replay_rules_steps(production, recording, result):
             result["sent"] += 1
             own = case_project(case)
             first, known = run_steps(production, case, own, result, loaded)
-            if first is None:
+            if first is None or first == NEEDS_AN_INDEX:
                 tally_steps(result, case, own, first, known)
             else:
                 again.setdefault(source, []).append(case)

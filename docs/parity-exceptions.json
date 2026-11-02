@@ -1259,13 +1259,14 @@
    "topic": "Composite indexes",
    "kind": "bug-for-bug",
    "official": "Not tracked or required",
-   "firestore": "Required for many queries: the recorded ones need 35 (`tools/production/indexes.json`), among them indexes of `__name__` descending, single-field indexes for collection groups and a vector index (#82)",
+   "firestore": "Required for many queries: the recorded ones need 50 (`tools/production/indexes.json`), and 40 in Datastore mode (`tools/production/datastore_indexes.json`), among them indexes of `__name__` descending, single-field indexes for collection groups and a vector index (#82)",
    "hidane": "As the official emulator: no index enforcement",
    "reason": "Follow the emulator (no index enforcement)",
    "references": [
     "hidane-dev/hidane#82",
     "https://github.com/hidane-dev/hidane/actions/runs/39094418301",
-    "tools/production/indexes.json"
+    "tools/production/indexes.json",
+    "tools/production/datastore_indexes.json"
    ],
    "pinned_by": [
     "crates/hidane/tests/queries.rs::queries_answer_like_the_official_emulator"

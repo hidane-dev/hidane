@@ -85,8 +85,9 @@ class StandIn(BaseHTTPRequestHandler):
                 "The Cloud Firestore API is not available for Firestore in Datastore Mode database "
                 f"projects/{PROJECT}/databases/ds."}})
         if self.headers.get("Authorization") is None and not self.decided():
-            return self.answer(403, {"error": {"code": 403, "message": "Missing or insufficient permissions.",
-                                               "status": "PERMISSION_DENIED"}})
+            # A streamed method's error inside an array (D098).
+            denied = {"error": {"code": 403, "message": "Missing or insufficient permissions.", "status": "PERMISSION_DENIED"}}
+            return self.answer(403, [denied] if self.path.endswith((":runQuery", ":runAggregationQuery", ":batchGet")) else denied)
         if self.path.endswith(":listCollectionIds"):
             parent = urllib.parse.unquote(self.path[len("/v1/"):-len(":listCollectionIds")]) + "/"
             ids = sorted({n[len(parent):].split("/")[0] for n in StandIn.documents if n.startswith(parent)})
@@ -1083,6 +1084,60 @@ class ReplayTest(unittest.TestCase):
         self.assertNotIn(("GET", "d", "Bearer a-token"), sent)
         self.assertEqual(report["deployed"], "0/1")
         self.assertIn("rules deployed", (Path(self.dir.name) / "out" / "report.md").read_text())
+
+    def test_what_an_earlier_case_of_a_recording_of_rules_wrote_is_written_first(self):
+        def step(method, path, auth, status, response=None, body=None):
+            return {"method": method, "path": path, "body": body, "auth": auth, "status": status, "response": response}
+
+        rules = ("rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
+                 "    match /{document=**} {\n      allow read, write: if true;\n    }\n  }\n}\n")
+        load = step("PUT", "/emulator/v1/projects/req:securityRules", None, 200, {},
+                    {"rules": {"files": [{"name": "firestore.rules", "content": rules}]}})
+        d, owner = "/v1/projects/req/databases/(default)/documents", "Bearer owner"
+        before, at, later = "2026-10-12T08:38:10.654259Z", "2026-10-12T08:38:10.762508Z", "2026-10-12T08:38:10.900000Z"
+        n = {"n": {"integerValue": "1"}}
+        write = step("PATCH", f"{d}/c/d", owner, 200, {"name": "projects/req/databases/(default)/documents/c/d", "fields": n,
+                                                       "createTime": at, "updateTime": at}, {"fields": n})
+        group = {"structuredQuery": {"from": [{"collectionId": "s", "allDescendants": True}]}}
+        # The official emulator found a document an earlier case wrote, before this one's write.
+        found = [{"document": {"name": "projects/req/databases/(default)/documents/c/d/s/e", "fields": n,
+                               "createTime": before, "updateTime": before}, "readTime": later, "done": True}]
+        commit = {"writes": [{"update": {"name": "projects/req/databases/(default)/documents/c/w", "fields": n}}]}
+        denied = {"error": {"code": 403, "message": "\nfalse for 'list' @ L6", "status": "PERMISSION_DENIED"}}
+        cases = [
+            {"name": "found", "steps": [write, load, step("POST", f"{d}:runQuery", owner, 200, found, group)]},
+            {"name": "rewritten", "steps": [write, load, step("POST", f"{d}:commit", owner, 200, {
+                "writeResults": [{"updateTime": before}], "commitTime": later}, commit)]},
+            {"name": "counted", "steps": [load, step("POST", f"{d}:runAggregationQuery", owner, 200, [
+                {"result": {"aggregateFields": {"n": {"integerValue": "1"}}}, "readTime": later, "done": True}], {
+                "structuredAggregationQuery": {"structuredQuery": group["structuredQuery"], "aggregations": [
+                    {"alias": "n", "count": {}}]}})]},
+            {"name": "denied", "steps": [load, step("POST", f"{d}:runQuery", None, 403, denied, group)]},
+            {"name": "skipped", "steps": [load, step("POST", f"{d}:runQuery", owner, 200, [{"readTime": later, "done": True}], {
+                "structuredQuery": {"from": [{"collectionId": "c"}], "offset": 1}})]},
+            {"name": "needs an index", "steps": [load, step("POST", f"{d}:runQuery", owner, 200, [{"readTime": later, "done": True}],
+                                                            {"structuredQuery": {"from": [{"collectionId": "ix"}]}})]},
+        ]
+        report = self.deploy(self.rules_recording(cases))
+        result = report["recordings"][0]
+        self.assertEqual(result["differ"], [])
+        self.assertEqual(result["skipped"], {"writes what an earlier case of its recording wrote": 1,
+                                             "counts what an earlier case of its recording wrote": 1})
+        # Written first, the document is found; production sends no `done` (D099), puts a denial
+        # in an array (D098) with its own message (D118), and what an offset skipped in a result
+        # of its own (D099).
+        self.assertEqual((result["sent"], result["same"], result["knownCases"]), (4, 0, 3))
+        self.assertEqual(result["known"], {"D099": 2, "D098": 1, "D118": 1})
+        self.assertTrue(any(path.endswith(":commit") and "documents/c/d/s/e" in (body or "") for _, path, _, body in StandIn.seen))
+        self.assertEqual(result["needsIndex"], ["needs an index"])
+        self.assertEqual([i["collectionGroup"] for i in result["indexes"]], ["ix"])
+
+    def test_a_link_to_create_an_index_is_masked_in_a_step_s_answer(self):
+        link = index_link(PROJECT, "ix", [("a", 1), ("__name__", 1)])
+        answer = replay.step_answer(400, [{"error": {"code": 400, "message": f"The query requires an index. You can create it here: {link}",
+                                                     "status": "FAILED_PRECONDITION"}}], PROJECT, [])
+        self.assertEqual(answer["body"][0]["error"]["message"], "The query requires an index. You can create it here: <index link>")
+        self.assertNotIn("create_composite", json.dumps(answer))
 
     def test_a_case_sent_before_its_release_reached_every_server_is_sent_again(self):
         StandIn.lag = 1
