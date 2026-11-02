@@ -949,6 +949,24 @@
    ]
   },
   {
+   "collectionGroup": "s",
+   "queryScope": "COLLECTION",
+   "fields": [
+    {
+     "fieldPath": "z",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "b",
+     "order": "ASCENDING"
+    },
+    {
+     "fieldPath": "__name__",
+     "order": "ASCENDING"
+    }
+   ]
+  },
+  {
    "collectionGroup": "t",
    "queryScope": "COLLECTION",
    "fields": [

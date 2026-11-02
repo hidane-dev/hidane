@@ -173,7 +173,12 @@ requests:
   made the ruleset. A case that sends a user's token (`rules_list.json`, `rules_auth.json`) is
   not sent: production takes only tokens Firebase Authentication signed, and the recordings'
   tokens are not signed. Nor is a case that uses the emulator's own API but the load. A denial's
-  message is the emulator's own (D118);
+  message is the emulator's own (D118), and production puts a streamed method's in an array
+  (D098). On the official emulator the cases of a recording ran one after another in one project,
+  and a few rely on what an earlier case wrote: the documents their answers show created before
+  their own first write are written first, and a case that rewrote such a document, or counted
+  them, is not sent. A query production asks an index for is counted apart, and the index kept
+  (`indexes.py`);
 - the conditions of `rules_eval.json` that read: `rooms/r1` and `rooms/r2` are written as the
   recorder wrote them, and each condition decides a read of `rooms/r1` without credentials,
   allowed or denied. Conditions that do not depend on where the document is are deployed in one
