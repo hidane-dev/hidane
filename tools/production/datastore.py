@@ -17,7 +17,9 @@ What production does its own way, and how a request and its answer are put:
   the official emulator reads it as one of its default database: it gets the database's name
   (one that names neither is the request's, to both). Its answers name the
   database in each key's `partitionId` too, which the official emulator, serving its default
-  database, leaves out: production's `databaseId` is taken out before comparing.
+  database, leaves out: production's `databaseId` is taken out before comparing, as is the
+  database its messages name in a key (`database_id: "<id>"` in one printed as protobuf text,
+  `<project>#<id>` in "mismatched databases within request").
 - A request of the Firestore API goes to the same database (`databases/(default)` becomes
   `databases/<id>`), and production's answer names `(default)` again.
 - The IDs production allocates are not the official emulator's, which allocates them in a fixed
@@ -36,7 +38,7 @@ import json
 import re
 import time
 
-from replay import PROJECT_NAME, TRANSIENT, difference, log, mask, media, parsed, tally
+from replay import PROJECT_NAME, TRANSIENT, difference, log, mask, media, parsed, same_json, tally
 
 DATASTORE_API = "https://datastore.googleapis.com"
 # A request of the Datastore API in the recordings, and one of the Firestore API to the database.
@@ -47,10 +49,60 @@ EMPTYING_PAGE = 1000
 MUTATIONS = 500
 # How long a request of the replay's own waits before each try again: over three minutes in all.
 CALL_WAITS = (5, 10, 20, 40, 60, 60, 0)
-# Production's refusal of a query that needs a composite index; the index follows, in the format
-# of index.yaml, and a line of it.
-NEEDS_INDEX = re.compile(r"^no matching index found\.")
-INDEX_LINE = re.compile(r"\s*-?\s*(kind|ancestor|name|direction):\s*(.*?)\s*")
+# Production's refusal of a query that needs a composite index, or several; the indexes follow,
+# in the format of index.yaml, and a line of one.
+NEEDS_INDEX = re.compile(r"^(?:no matching index found\. recommended index is:|One possible index to serve the query is:|"
+                         r"The query requires multiple indexes\. The recommended indexes are:)")
+INDEX_LINE = re.compile(r"\s*(-?)\s*(kind|ancestor|name|direction):\s*(.*?)\s*")
+
+# Differences of Datastore mode that docs/parity-exceptions.md records (D120 to D126), set aside
+# before an answer is compared, each counted as known by its entry (`set_aside`).
+#
+# Fields only one side's answers have, where in an answer: (entry, the path, the official
+# emulator's own, production's own).
+KNOWN_FIELDS = [
+    ("D120", r"\$", {"commitTime", "readTime"}, {"indexUpdates"}),
+    ("D120", r"\$\.found\[\d+\]", {"cursor"}, set()),
+    ("D120", r"\$\.missing\[\d+\]", set(), {"version"}),
+    ("D120", r"\$\.mutationResults\[\d+\]", set(), {"conflictDetected"}),
+    ("D121", r"\$\.batch", set(), {"endCursor", "moreResults", "skippedCursor"}),
+    ("D121", r"\$\.batch\.entityResults\[\d+\]", {"createTime", "updateTime", "version"}, set()),
+    ("D121", r"\$", set(), {"query"}),
+    ("D122", r"\$\.batch", set(), {"snapshotVersion"}),
+]
+# A value each side gives: (entry, the path, the official emulator's, production's).
+KNOWN_VALUES = [
+    ("D121", r"\$\.batch\.moreResults", "NO_MORE_RESULTS", "MORE_RESULTS_AFTER_CURSOR"),
+    ("D121", r"\$\.batch\.moreResults", "NO_MORE_RESULTS", "MORE_RESULTS_AFTER_LIMIT"),
+]
+# Answers that differ as a whole, an error on one side or both: (entry, the official emulator's
+# HTTP status, error status and message, then production's); None matches any, and a message
+# pattern only an error that has one. The status of an answer that is no error is None.
+TRANSACTION_ENDED = r"^The referenced transaction has expired or is no longer valid\.$"
+FIRESTORE_API = r"^The Cloud Firestore API is not available for Firestore in Datastore Mode database "
+KNOWN_ERRORS = [
+    ("D124", 500, "UNKNOWN", None, 400, "INVALID_ARGUMENT", r"^Invalid transaction\.$"),
+    ("D124", 400, "INVALID_ARGUMENT", r"^non-transaction commit cannot specify a transaction$",
+     400, "INVALID_ARGUMENT", r"^Invalid transaction\.$"),
+    ("D124", 409, "ABORTED", TRANSACTION_ENDED, 400, "INVALID_ARGUMENT", TRANSACTION_ENDED),
+    ("D124", 200, None, None, 400, "INVALID_ARGUMENT", TRANSACTION_ENDED),
+    ("D124", 409, "ABORTED", r"^Transaction lock timeout\.$",
+     409, "ABORTED", r"^too much contention on these datastore entities\. please try again\.$"),
+    ("D125", 400, "FAILED_PRECONDITION", r"^List of Ids to reserve cannot be empty\.$", 200, None, None),
+    ("D125", 400, "INVALID_ARGUMENT", r"^Firestore emulator does not support eventual consistency options\.$",
+     200, None, None),
+    ("D125", 400, "INVALID_ARGUMENT", r"^order by clause cannot contain duplicate fields ", 200, None, None),
+    ("D125", None, None, None, 400, "INVALID_ARGUMENT", r"^The project \S+ does not exist\.$"),
+    ("D125", 500, "UNKNOWN", None, 400, "INVALID_ARGUMENT",
+     r"^(?:limit is negative|offset is negative|Unable to plan or invalidate query\.)$"),
+    ("D125", 400, "INVALID_ARGUMENT", r"^kind is required for all orders except __key__ ascending$",
+     400, "INVALID_ARGUMENT", r"^Unable to plan or invalidate query\.$"),
+    ("D125", 500, "UNKNOWN", None, 500, "INTERNAL", r"^An internal error occurred\.$"),
+    ("D125", 500, "UNKNOWN", None, 200, None, None),
+    ("D125", 409, "ALREADY_EXISTS", r"^entity already exists: EntityRef\[",
+     409, "ALREADY_EXISTS", r"^entity already exists: app: "),
+    ("D126", None, None, None, 400, "FAILED_PRECONDITION", FIRESTORE_API),
+]
 
 
 class Database:
@@ -138,29 +190,35 @@ def sendable(case):
         return "names another project"
     if isinstance(case.get("body"), dict) and case["body"].get("databaseId", ""):
         return "another database's"
+    if "PROJECT('{project}')" in json.dumps(case.get("body")):
+        # A key of GQL that names the project names no database: production reads it as one of
+        # `(default)`, and GQL has no way to name another.
+        return "a key of GQL that names the project"
     return None
 
 
 def recommended(message):
-    """The index production recommends in its refusal of a query, as `indexes.py` keeps it:
+    """The indexes production recommends in its refusal of a query, as `indexes.py` keeps them:
     `{"kind", "ancestor", "properties": [{"name", "direction"}]}`, the directions `asc` or
-    `desc`; or None if there is none."""
-    index = {"kind": None, "ancestor": False, "properties": []}
-    for line in message.split("recommended index is:", 1)[-1].splitlines():
+    `desc`."""
+    indexes = []
+    for line in message.splitlines():
         found = INDEX_LINE.fullmatch(line)
         if not found:
             continue
-        field, value = found.groups()
+        dash, field, value = found.groups()
         value = json.loads(value) if value.startswith('"') else value
-        if field == "kind":
-            index["kind"] = value
+        if field == "kind" and dash:
+            indexes.append({"kind": value, "ancestor": False, "properties": []})
+        elif not indexes:
+            continue
         elif field == "ancestor":
-            index["ancestor"] = value == "yes"
+            indexes[-1]["ancestor"] = value == "yes"
         elif field == "name":
-            index["properties"].append({"name": value, "direction": "asc"})
-        elif index["properties"]:
-            index["properties"][-1]["direction"] = value
-    return index if index["kind"] else None
+            indexes[-1]["properties"].append({"name": value, "direction": "asc"})
+        elif field == "direction" and indexes[-1]["properties"]:
+            indexes[-1]["properties"][-1]["direction"] = value
+    return indexes
 
 
 def at(value, path):
@@ -205,14 +263,119 @@ def with_database(value, project, database):
     return value
 
 
-def without_database(value, database):
-    """A value without the `databaseId` production puts in each key's `partitionId`."""
+def without_database(value, project, database):
+    """A value without the `databaseId` production puts in each key's `partitionId`, nor the
+    database its messages name in a key."""
     if isinstance(value, dict):
-        return {k: without_database(v, database) for k, v in value.items()
+        return {k: without_database(v, project, database) for k, v in value.items()
                 if not (k == "databaseId" and v == database)}
     if isinstance(value, list):
-        return [without_database(v, database) for v in value]
+        return [without_database(v, project, database) for v in value]
+    if isinstance(value, str):
+        return value.replace(f'database_id: "{database}"\n', "").replace(f"{project}#{database}", project)
     return value
+
+
+def error_of(answer):
+    """An answer's HTTP status, and its error's status and message: None where it has none."""
+    body = answer.get("body")
+    if isinstance(body, list) and body and isinstance(body[0], dict):
+        body = body[0]
+    error = body.get("error") if isinstance(body, dict) else None
+    if not isinstance(error, dict):
+        return answer["status"], None, None
+    return answer["status"], error.get("status"), error.get("message")
+
+
+def matches(error, status, name, message):
+    """Whether an answer's `error_of` matches a side of a rule of `KNOWN_ERRORS`."""
+    code, their_name, their_message = error
+    return ((status is None or code == status) and (name is None or their_name == name)
+            and (message is None or (their_message is not None and re.search(message, their_message) is not None)))
+
+
+def set_aside(official, production, known):
+    """Two answers to compare (`tally`'s: the status, media type and body) with the differences of
+    `KNOWN_ERRORS`, `KNOWN_FIELDS` and `KNOWN_VALUES` set aside, and a batch of the official
+    emulator's put as production gives it (`batched`); the entries are added to `known`."""
+    if same_json(official, production):
+        return official, production
+    theirs, ours = error_of(official), error_of(production)
+    for entry, *rule in KNOWN_ERRORS:
+        if matches(theirs, *rule[:3]) and matches(ours, *rule[3:]):
+            known.add(entry)
+            return official, official
+    if official["status"] != production["status"] or "body" not in official:
+        return official, production
+    theirs, ours = trimmed(official["body"], production["body"], "$", known)
+    return {**official, "body": theirs}, {**production, "body": ours}
+
+
+def trimmed(official, production, path, known):
+    """Two JSON values, at `path` of an answer, without the fields and values `KNOWN_FIELDS` and
+    `KNOWN_VALUES` record where they differ."""
+    if isinstance(official, dict) and isinstance(production, dict):
+        official, production = dict(official), dict(production)
+        for entry, where, theirs, ours in KNOWN_FIELDS:
+            if re.fullmatch(where, path):
+                for side, other, own in ((official, production, theirs), (production, official, ours)):
+                    for key in (side.keys() - other.keys()) & own:
+                        del side[key]
+                        known.add(entry)
+        if path == "$.batch":
+            official = batched(official, production, known)
+        for key in official.keys() & production.keys():
+            at_key = f"{path}.{key}"
+            for entry, where, theirs, ours in KNOWN_VALUES:
+                if re.fullmatch(where, at_key) and (official[key], production[key]) == (theirs, ours):
+                    production[key] = theirs
+                    known.add(entry)
+            official[key], production[key] = trimmed(official[key], production[key], at_key, known)
+        return official, production
+    if isinstance(official, list) and isinstance(production, list) and len(official) == len(production):
+        if path in ("$.found", "$.missing") and official != production:
+            # Production gives the entities a lookup found, and those it did not, in an order of
+            # its own (D120).
+            def key(result):
+                return json.dumps(result.get("entity", {}).get("key"), sort_keys=True)
+            theirs, ours = [key(result) for result in official], [key(result) for result in production]
+            place = {k: n for n, k in enumerate(ours)}
+            if theirs != ours and sorted(theirs) == sorted(ours) and len(place) == len(ours):
+                known.add("D120")
+                official = sorted(official, key=lambda result: place[key(result)])
+        if path.endswith(".arrayValue.values") and official != production:
+            # Production gives an array's values that are indexed first, then those excluded (D121).
+            indexed = [v for v in official if not v.get("excludeFromIndexes")] + \
+                      [v for v in official if v.get("excludeFromIndexes")]
+            if indexed == production:
+                known.add("D121")
+                official = indexed
+        pairs = [trimmed(o, p, f"{path}[{n}]", known) for n, (o, p) in enumerate(zip(official, production))]
+        return [o for o, _ in pairs], [p for _, p in pairs]
+    return official, production
+
+
+def batched(official, production, known):
+    """A batch of query results of the official emulator's as production gives it (D121): an
+    entity once, where the official emulator gives it once for each value of an array its query
+    matched; and no more entities than production's batch holds when production has more to
+    give (`NOT_FINISHED`), as it does past 300."""
+    results, theirs = official.get("entityResults"), production.get("entityResults")
+    if not isinstance(results, list) or not isinstance(theirs, list) or len(results) == len(theirs):
+        return official
+    seen, once = set(), []
+    for result in results:
+        key = json.dumps(result.get("entity", {}).get("key"), sort_keys=True)
+        if key not in seen:
+            seen.add(key)
+            once.append(result)
+    if len(once) < len(results) and len(once) >= len(theirs):
+        known.add("D121")
+        official = {**official, "entityResults": once}
+    if production.get("moreResults") == "NOT_FINISHED" and len(theirs) < len(official["entityResults"]):
+        known.add("D121")
+        official = {**official, "entityResults": official["entityResults"][:len(theirs)], "moreResults": "NOT_FINISHED"}
+    return official
 
 
 def shown(text, production, database, ids):
@@ -220,7 +383,7 @@ def shown(text, production, database, ids):
     left out of its keys (or, of the Firestore API, named `(default)`), its IDs read back."""
     value = parsed(text)
     if not isinstance(value, str):
-        text = json.dumps(without_database(value, database.name), indent=2, ensure_ascii=False)
+        text = json.dumps(without_database(value, production.project, database.name), indent=2, ensure_ascii=False)
     text = text.replace(f"databases/{database.name}", "databases/(default)")
     for theirs, ours in ids.items():
         text = text.replace(f'"{ours}"', f'"{theirs}"')
@@ -286,20 +449,22 @@ def replay(production, recording, result):
                 labels.update({label: found for label, path in defines.items()
                                if isinstance(found := at(value, path), str)})
             if method and method.group(1) in ("allocateIds", "commit") and official["status"] == 200:
-                allocated(parsed(official.get("body") or ""), without_database(value, database.name), ids)
+                allocated(parsed(official.get("body") or ""), without_database(value, production.project, database.name), ids)
         answered = {"status": status, "contentType": answer_type, "body": shown(answer, production, database, ids)}
         if status != 200 and official["status"] == 200 and NEEDS_INDEX.search(
                 str(at(value, "error.message") if not isinstance(value, str) else "")):
             result["needsIndex"].append(case["name"])
-            index = recommended(at(value, "error.message"))
-            if index and index not in result.setdefault("datastoreIndexes", []):
-                result["datastoreIndexes"].append(index)
+            for index in recommended(at(value, "error.message")):
+                if index not in result.setdefault("datastoreIndexes", []):
+                    result["datastoreIndexes"].append(index)
             continue
         theirs = {"status": official["status"], "media": media(official.get("contentType"))}
         ours = {"status": status, "media": media(answer_type)}
         if case.get("compare", "exact") == "exact":
             theirs["body"], ours["body"] = parsed(official.get("body") or ""), parsed(answered["body"])
+        known = set()
+        theirs, ours = set_aside(theirs, ours, known)
         tally(result, theirs, ours, lambda: {"name": case["name"], "method": case["method"], "path": case["path"],
                                              "difference": difference(official, answered), "official": official,
-                                             "production": answered}, case["name"])
+                                             "production": answered}, case["name"], known)
     database.empty()

@@ -5,11 +5,53 @@
    "ancestor": false,
    "properties": [
     {
+     "name": "__key__",
+     "direction": "asc"
+    },
+    {
+     "name": "b",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "D",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "a",
+     "direction": "asc"
+    },
+    {
+     "name": "b",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "D",
+   "ancestor": false,
+   "properties": [
+    {
      "name": "b",
      "direction": "asc"
     },
     {
      "name": "a",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "D",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "c",
      "direction": "asc"
     }
    ]
@@ -167,6 +209,24 @@
     {
      "name": "b",
      "direction": "desc"
+    }
+   ]
+  },
+  {
+   "kind": "E",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "c",
+     "direction": "asc"
+    },
+    {
+     "name": "__key__",
+     "direction": "asc"
+    },
+    {
+     "name": "b",
+     "direction": "asc"
     }
    ]
   },
@@ -365,6 +425,20 @@
      "direction": "asc"
     },
     {
+     "name": "a",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "P",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "a",
+     "direction": "asc"
+    },
+    {
      "name": "b",
      "direction": "asc"
     }
@@ -405,6 +479,24 @@
     {
      "name": "__key__",
      "direction": "desc"
+    }
+   ]
+  },
+  {
+   "kind": "P",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "b",
+     "direction": "desc"
+    },
+    {
+     "name": "__key__",
+     "direction": "asc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
     }
    ]
   },
@@ -444,6 +536,20 @@
      "name": "__key__",
      "direction": "asc"
     },
+    {
+     "name": "__key__",
+     "direction": "asc"
+    },
+    {
+     "name": "v",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "T",
+   "ancestor": false,
+   "properties": [
     {
      "name": "__key__",
      "direction": "asc"
