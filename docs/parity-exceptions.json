@@ -525,10 +525,12 @@
    "topic": null,
    "kind": "more-correct",
    "official": "An array union (`appendMissingElements`) whose operand holds an array or a vector with NaN is stored as it is",
-   "firestore": null,
+   "firestore": "The vector is refused when the request is checked, \"Vector cannot contain NaN values.\"; the array is stored, as in a field (D119) (#82)",
    "hidane": "Refused when the transform is applied, with the message the value gets in a field (\"Nested arrays are not allowed\", \"Vector cannot contain NaN values.\"); an enterprise database, whose documents may hold arrays in arrays, refuses only the vector",
    "reason": "Bug (values a document may not hold)",
-   "references": [],
+   "references": [
+    "hidane-dev/hidane#82"
+   ],
    "pinned_by": [
     "crates/hidane/tests/commit_checks.rs::the_first_error_is_the_official_one",
     "crates/hidane/tests/commit_checks.rs::the_first_error_is_the_official_one_on_an_enterprise_database"
@@ -1352,14 +1354,15 @@
    "topic": "Limits",
    "kind": "bug-for-bug",
    "official": "Per document, with Datastore's messages: 1,048,487 bytes for a string or bytes value, 1,500 bytes for a field name (nested names count their dotted path, an array as `array`) and for a collection or document ID, 20 levels of maps and arrays, 1 MiB for the document. Not per request: a 64 MB gRPC commit is accepted (firebase-tools [#8649](https://github.com/firebase/firebase-tools/issues/8649)); gRPC messages up to 100 MiB, REST bodies up to 16 MiB",
-   "firestore": "Enforced, per document and per request. Production answers values, names, IDs and nesting with the official emulator's messages, and a document over 1 MiB with its own: \"Document '…' cannot be written because its size (1,200,058 bytes) exceeds the maximum allowed size of 1,048,576 bytes.\" (#82)",
+   "firestore": "Enforced, per document and per request. Production answers values, names, IDs and nesting with the official emulator's messages, and a document over 1 MiB with its own: \"Document '…' cannot be written because its size (1,200,058 bytes) exceeds the maximum allowed size of 1,048,576 bytes.\" It checks a document's size with the rest of its write, write by write and before reading any precondition, where the official emulator checks it as it applies the write, after every write's other checks and the preconditions up to that write; `:batchWrite` refuses the whole batch for it, where the official emulator answers that write alone. A delete or a verify of a document ID over 1,500 bytes and an array union of a string over 1,048,487 bytes are refused too, which the official emulator lets through (`tools/oracle/commit_checks.py`) (#82)",
    "hidane": "As the official emulator, except the document-size boundary (D036)",
    "reason": "Follow the emulator (#121, #25), except the document-size boundary below",
    "references": [
     "firebase/firebase-tools#8649",
     "hidane-dev/hidane#121",
     "hidane-dev/hidane#25",
-    "hidane-dev/hidane#82"
+    "hidane-dev/hidane#82",
+    "tools/oracle/commit_checks.py"
    ],
    "pinned_by": [
     "crates/hidane/tests/limits.rs::limits_like_the_official_emulator",
@@ -2029,7 +2032,7 @@
    "topic": "Arrays in arrays",
    "kind": "bug-for-bug",
    "official": "A standard database refuses an array that holds an array: `INVALID_ARGUMENT` \"Nested arrays are not allowed\", in a write and in Datastore mode (`tools/oracle/document_writes.py`, `tools/oracle/value_order.py`, `tools/oracle/datastore_entities.py`)",
-   "firestore": "Stored and read back as written, by standard databases in Native and in Datastore mode, since late October 2026: the nightly replay of October 29 saw the refusal, that of October 30 and those after it the write go through. The documentation still says that in standard edition databases an array cannot contain another array (#82)",
+   "firestore": "Stored and read back as written, by standard databases in Native and in Datastore mode, since late October 2026: the nightly replay of October 29 saw the refusal, that of October 30 and those after it the write go through. The documentation still says that in standard edition databases an array cannot contain another array. Each of its arrays is a level of the 20 of maps and arrays: 18 levels of maps holding one are stored, where the official emulator answers \"Property … contains an invalid nested entity.\" (`tools/oracle/commit_checks.py`) (#82)",
    "hidane": "As the official emulator: refused (an enterprise database, whose documents may hold arrays in arrays, stores it)",
    "reason": "Follow the emulator. Seen by the Production parity workflow (#82). Production departs from its own documentation here, which may not last",
    "references": [
@@ -2038,6 +2041,7 @@
     "https://github.com/hidane-dev/hidane/actions/runs/41286937863",
     "https://firebase.google.com/docs/firestore/manage-data/data-types",
     "hidane-dev/hidane#82",
+    "tools/oracle/commit_checks.py",
     "tools/oracle/datastore_entities.py",
     "tools/oracle/document_writes.py",
     "tools/oracle/value_order.py"
