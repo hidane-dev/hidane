@@ -23,6 +23,10 @@ recorded answer:
   character of a resource name it went wrong (`lacks "/" at index 53`), the index is not
   compared: it counts the characters of a project ID that is not the recording's.
 
+A database refuses requests with 429 while it is written faster than it allows ("This database
+has exceeded their maximum bandwidth for writes"), which the official emulator never does: the
+replay waits and sends such a request again, a few times, before it takes the answer.
+
 A difference `docs/parity-exceptions.md` already records counts as known rather than as a
 difference. The rules for this are in `replay.py`:
 
@@ -88,7 +92,10 @@ Recordings it reads:
   two collections, named forwards in one and backwards in the other, and read back ordered by
   value, so that neighbours that swap places are equal; the document names are written and read
   back with a collection group query. The groups of equal values in order, the names in order,
-  and the values and names refused, with their messages, are compared;
+  and the values and names refused, with their messages, are compared. A value written to the
+  first collection and refused by the second is reported, as it would read as equal to its
+  neighbour; an array in an array, which production stores and the official emulator refuses
+  (D119), is left out of the groups and counts as known;
 - the recording of ListDocuments (`list_documents.json`): its seed is written as its recorder
   wrote it, each gRPC request is sent as its REST form (`GET …/{parent}/{collection ID}` with
   the other fields in the query; a listing read at the first commit reads at production's), and

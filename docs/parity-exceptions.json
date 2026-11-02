@@ -2020,6 +2020,31 @@
     "crates/hidane-rules/tests/denials.rs::denials_name_each_statement",
     "crates/hidane/tests/rules_server.rs::denials"
    ]
+  },
+  {
+   "id": "D119",
+   "table": "production",
+   "area": "values",
+   "topic": "Arrays in arrays",
+   "kind": "bug-for-bug",
+   "official": "A standard database refuses an array that holds an array: `INVALID_ARGUMENT` \"Nested arrays are not allowed\", in a write and in Datastore mode (`tools/oracle/document_writes.py`, `tools/oracle/value_order.py`, `tools/oracle/datastore_entities.py`)",
+   "firestore": "Stored and read back as written, by standard databases in Native and in Datastore mode, since late October 2026: the nightly replay of October 29 saw the refusal, that of October 30 and those after it the write go through. The documentation still says that in standard edition databases an array cannot contain another array (#82)",
+   "hidane": "As the official emulator: refused (an enterprise database, whose documents may hold arrays in arrays, stores it)",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). Production departs from its own documentation here, which may not last",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/40961026111",
+    "https://github.com/hidane-dev/hidane/actions/runs/41131842734",
+    "https://github.com/hidane-dev/hidane/actions/runs/41286937863",
+    "https://firebase.google.com/docs/firestore/manage-data/data-types",
+    "hidane-dev/hidane#82",
+    "tools/oracle/datastore_entities.py",
+    "tools/oracle/document_writes.py",
+    "tools/oracle/value_order.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/documents.rs::invalid_writes_use_the_official_messages",
+    "crates/hidane/tests/datastore.rs::datastore_mode_answers_like_the_official_emulator"
+   ]
   }
  ],
  "retired": [
