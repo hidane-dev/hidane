@@ -117,6 +117,16 @@ Recordings it reads:
 - the recording of what the official emulator ignores or refuses (`unsupported.json`): explain
   options, pipelines on a standard database and partitioned queries, each gRPC request in its
   REST form, compared as its recorder summed them up;
+- the recording of how a commit's writes are checked (`commit_checks.json`), in
+  [`commits.py`](commits.py): each commit with problems is sent over REST `:commit` and
+  `:batchWrite` as its recorder ([`tools/oracle/commit_checks.py`](../oracle/commit_checks.py))
+  sent it, and compared as it summed the answer up: the first error's code and message (a failed
+  precondition's code alone), the number of write results, or `:batchWrite`'s status for each
+  write. Its gRPC `Commit` and Write stream are not sent, nor its writes to another database or
+  project. The database is emptied after a write goes through, as each commit met an empty
+  project. Where the official emulator refused an array in an array first (D119), or production
+  refused a document over 1 MiB before the official emulator's first error (D075), production's
+  answer counts as known;
 - the recording of what a listener's query targets hold (`listen_queries.json`), in
   [`listen.py`](listen.py): its dataset is written, and each query is added as the target of a
   Listen stream of its own over production's WebChannel, as its recorder

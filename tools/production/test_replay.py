@@ -66,6 +66,22 @@ class StandIn(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    @staticmethod
+    def refused(write):
+        """Why production refuses a write of `cc` or a name `lacks-a-slash`, as a status, or None:
+        a value too long (here 50 characters), or an update of a missing document."""
+        name = write.get("update", {}).get("name", "")
+        if name.endswith("/documents/lacks-a-slash"):
+            return {"code": 3, "message": f'Document name "{name}" lacks "/" at index {len(name)}.'}
+        if "/documents/cc/" not in name:
+            return None
+        if '"' + "x" * 50 in json.dumps(write):
+            return {"code": 3, "message": f"Document '{name}' cannot be written because its size (1,200,058 bytes) "
+                                          "exceeds the maximum allowed size of 1,048,576 bytes."}
+        if write.get("currentDocument", {}).get("exists") and name not in StandIn.documents:
+            return {"code": 5, "message": f"No document to update: {name}"}
+        return None
+
     def handle_one(self):
         length = int(self.headers.get("Content-Length") or 0)
         body = self.rfile.read(length).decode() if length else None
@@ -112,6 +128,12 @@ class StandIn(BaseHTTPRequestHandler):
             if '"arrayValue": {"values": [{"arrayValue"' in body and not StandIn.nested_arrays:
                 return self.answer(400, {"error": {"code": 400, "message": "Nested arrays are not allowed",
                                                    "status": "INVALID_ARGUMENT"}})
+            for write in json.loads(body)["writes"]:
+                refused = self.refused(write)
+                if refused:
+                    return self.answer({3: 400, 5: 404}[refused["code"]], {"error": {
+                        "code": {3: 400, 5: 404}[refused["code"]], "message": refused["message"],
+                        "status": {3: "INVALID_ARGUMENT", 5: "NOT_FOUND"}[refused["code"]]}})
             StandIn.commits += 1
             now = f"2026-01-01T00:00:{StandIn.commits:02d}.000001Z"
             results = []
@@ -123,6 +145,21 @@ class StandIn(BaseHTTPRequestHandler):
                     results.append({})
                 StandIn.documents.pop(write.get("delete"), None)
             return self.answer(200, {"writeResults": results, "commitTime": now})
+        if self.path == f"{root}:batchWrite":
+            # Each write on its own: refused, or applied.
+            results, statuses = [], []
+            for write in json.loads(body)["writes"]:
+                nested = '"arrayValue": {"values": [{"arrayValue"' in json.dumps(write) and not StandIn.nested_arrays
+                refused = {"code": 3, "message": "Nested arrays are not allowed"} if nested else self.refused(write)
+                if refused:
+                    results.append({})
+                    statuses.append(refused)
+                    continue
+                StandIn.documents[write["update"]["name"]] = {"fields": write["update"].get("fields", {}),
+                                                             "time": "2026-01-01T00:00:00.000001Z"}
+                results.append({"updateTime": "2026-01-01T00:00:00.000001Z"})
+                statuses.append({})
+            return self.answer(200, {"writeResults": results, "status": statuses})
         path = urllib.parse.unquote(self.path.split("?")[0][len("/v1/"):])
         below = path.split("/documents/", 1)[1].split("/") if "/documents/" in path else []
         if self.command == "GET" and "showMissing" not in self.path and (path.endswith("/") or len(below) % 2):
@@ -598,6 +635,69 @@ class ReplayTest(unittest.TestCase):
             "s": {"stringValue": "\u20ac\u20ac"},
             "f": {"arrayValue": {"values": [{"mapValue": {"fields": {"m": {"arrayValue": {"values": [{"integerValue": "1"}]}}}}}]}}}})
         self.assertEqual(replay.limit_value(["bytes", 3]), {"bytesValue": "eHh4"})
+        self.assertEqual(StandIn.documents, {})
+
+    def test_commits_with_problems_are_sent_over_rest(self):
+        StandIn.nested_arrays = True
+        nested = {"arrayValue": {"values": [{"arrayValue": {"values": [{"integerValue": "1"}]}}]}}
+        refused = {"code": "INVALID_ARGUMENT", "message": "refused"}
+        size = "maximum entity size is 1048576 bytes"
+        recording = {"oracle": "a jar", "generated_by": "a recorder", "order": [
+            {"name": "a name that does not parse", "project": "cc-1",
+             "writes": [{"update": {"name": "{base}/lacks-a-slash", "fields": {}}}],
+             "outcomes": {
+                 "commit": {"status": 400, "code": "INVALID_ARGUMENT", "message":
+                            'Document name "projects/cc-1-commit/databases/(default)/documents/lacks-a-slash" lacks "/" at index 63.'},
+                 "grpc_commit": refused,
+                 "batch_write": {"status": 200, "code": "OK", "statuses": [{"code": "INVALID_ARGUMENT", "message":
+                                 'Document name "projects/cc-1-batch-write/databases/(default)/documents/lacks-a-slash" lacks "/" at index 68.'}]},
+                 "write_stream": refused}},
+            {"name": "an array in an array, then a long value", "project": "cc-2",
+             "writes": [{"update": {"name": "{base}/cc/a", "fields": {"n": nested}}},
+                        {"update": {"name": "{base}/cc/b", "fields": {"s": {"stringValue": "{repeat:x:60}"}}}}],
+             "outcomes": {
+                 "commit": {"status": 400, "code": "INVALID_ARGUMENT", "message": "Nested arrays are not allowed"},
+                 "batch_write": {"status": 200, "code": "OK", "statuses": [
+                     {"code": "INVALID_ARGUMENT", "message": "Nested arrays are not allowed"},
+                     {"code": "INVALID_ARGUMENT", "message": size}]}}},
+            {"name": "an update of a missing document", "project": "cc-3",
+             "writes": [{"update": {"name": "{base}/cc/a", "fields": {}}, "currentDocument": {"exists": True}}],
+             "outcomes": {
+                 "commit": {"status": 404, "code": "NOT_FOUND", "message": 'no entity to update: app: "dev~cc-3-commit"'},
+                 "batch_write": {"status": 200, "code": "OK", "statuses": [
+                     {"code": "NOT_FOUND", "message": 'no entity to update: app: "dev~cc-3-batch-write"'}]}}},
+            {"name": "a write", "project": "cc-4", "writes": [{"update": {"name": "{base}/cc/c", "fields": {}}}],
+             "outcomes": {"commit": {"status": 200, "code": "OK", "results": 1},
+                          "batch_write": {"status": 200, "code": "OK", "statuses": [{"code": "OK", "message": ""}]}}},
+            {"name": "differs", "project": "cc-5", "writes": [{"update": {"name": "{base}/cc/d", "fields": {}}}],
+             "outcomes": {"commit": {"status": 400, "code": "INVALID_ARGUMENT", "message": "refused"}}},
+            # Production refuses the document's size before the official emulator's first error,
+            # the missing document of the next write (D075).
+            {"name": "a long value, then an update of a missing document", "project": "cc-6",
+             "writes": [{"update": {"name": "{base}/cc/e", "fields": {"s": {"stringValue": "{repeat:x:50}"}}}},
+                        {"update": {"name": "{base}/cc/f", "fields": {}}, "currentDocument": {"exists": True}}],
+             "outcomes": {
+                 "commit": {"status": 404, "code": "NOT_FOUND", "message": 'no entity to update: app: "dev~cc-6-commit"'},
+                 "batch_write": {"status": 200, "code": "OK", "statuses": [
+                     {"code": "INVALID_ARGUMENT", "message": size},
+                     {"code": "NOT_FOUND", "message": 'no entity to update: app: "dev~cc-6-batch-write"'}]}}},
+            # A case whose difference an entry records, by its name.
+            {"name": "a verify of a document ID over 1500 bytes", "project": "cc-7",
+             "writes": [{"update": {"name": "{base}/cc/g", "fields": {}}}],
+             "outcomes": {"commit": {"status": 400, "code": "INVALID_ARGUMENT", "message": "refused"}}},
+        ], "other_database": [{"name": "a document of another database", "op": "commit"}]}
+        path = Path(self.dir.name) / "commit_checks.json"
+        path.write_text(json.dumps(recording))
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
+        self.assertEqual((result["cases"], result["sent"], result["same"], result["knownCases"]), (15, 12, 6, 5))
+        self.assertEqual(result["skipped"], {"over gRPC": 2, "another database's or project's": 1})
+        self.assertEqual(result["known"], {"D119": 2, "D075": 4})
+        self.assertEqual([d["name"] for d in result["differ"]], ["differs / commit"])
+        self.assertNotIn(PROJECT, json.dumps(result))
+        # `{repeat}` is expanded; the missing document is missing, as what the array in an array
+        # wrote was emptied; the database is emptied at the end.
+        self.assertTrue(any('"' + "x" * 60 + '"' in (body or "") for _, path, _, body in StandIn.seen
+                            if path.endswith(":batchWrite")))
         self.assertEqual(StandIn.documents, {})
 
     def test_the_order_of_values_and_names_is_redone(self):

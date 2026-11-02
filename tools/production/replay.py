@@ -29,6 +29,9 @@ Recordings of Security Rules are tested with the Rules API's `projects.test`: th
 deployed (`release.py`) and their requests sent, those without credentials without the token
 (`replay_rules_steps`, `replay_rules_deployed`); the project's rules are taken down at the end.
 
+The recording of how a commit's writes are checked (`commit_checks.json`) is replayed over REST
+`:commit` and `:batchWrite` in `commits.py`.
+
 Recordings in Datastore mode (`datastore_entities.json` and the like) are sent, with
 `--datastore-database`, to that database of the project, one in Datastore mode, in `datastore.py`.
 
@@ -363,6 +366,10 @@ KNOWN_CASES = {
     "base_versions.json": [("D066", r"^REST patch"), ("D109", r"version 0, deleted document|the deleted version"),
                            ("D110", r"past the stored version|then a document that is missing"),
                            ("D111", r"named database")],
+    "commit_checks.json": [("D075", r"^an array union of a string over the limit / |^a (?:delete|verify) of a document ID "
+                                    r"over 1500 bytes / "),
+                           ("D030", r"^an array union of a vector with NaN / "), ("D102", r"^a transform path __name__ / "),
+                           ("D119", r"^18 levels of maps holding a nested array / ")],
 }
 
 
@@ -1734,6 +1741,17 @@ def replay(production, fixture):
         production.empty()
         log(f"{result['fixture']}: {result['cases']} requests the official emulator ignores or refuses")
         replay_unsupported(production, recording, result)
+        production.empty()
+        return result
+    if "order" in recording and "other_database" in recording:
+        # The recording of how a commit's writes are checked (`commit_checks.json`), in commits.py.
+        import commits
+        result = {"fixture": Path(fixture).name, "sent": 0, "same": 0, "skipped": {}, "emulatorDeletes": 0,
+                  "cases": sum(len(c["outcomes"]) for c in recording["order"]) + len(recording["other_database"]),
+                  "needsIndex": [], "indexes": [], "knownCases": 0, "known": {}, "differ": []}
+        production.empty()
+        log(f"{result['fixture']}: {len(recording['order'])} commits with problems")
+        commits.replay_commit_checks(production, recording, result)
         production.empty()
         return result
     if recording.get("mode") == "datastore-mode" and "cases" in recording:
