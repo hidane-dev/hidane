@@ -2189,6 +2189,44 @@
    "pinned_by": [
     "crates/hidane/tests/datastore.rs::the_firestore_api_is_refused_as_on_the_official_emulator"
    ]
+  },
+  {
+   "id": "D127",
+   "table": "production",
+   "area": "transactions",
+   "topic": "Transactions without credentials",
+   "kind": "bug-for-bug",
+   "official": "`beginTransaction` without credentials begins a transaction, whatever the rules; its reads and its commit are then checked against them (`tools/oracle/rules_verify.py`)",
+   "firestore": "Refused, `403` `PERMISSION_DENIED` \"Missing or insufficient permissions.\", under rules that allow the reads and writes the transaction goes on to make, which the same request without a transaction is let make (#82)",
+   "hidane": "As the official emulator: the transaction is begun",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82), in two cases on two nights",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/41079122718",
+    "https://github.com/hidane-dev/hidane/actions/runs/41548933482",
+    "hidane-dev/hidane#82",
+    "tools/oracle/rules_verify.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rules_coverage.rs::verify_writes"
+   ]
+  },
+  {
+   "id": "D128",
+   "table": "intentional",
+   "area": "documents",
+   "topic": null,
+   "kind": "equivalent",
+   "official": "A `verify` of a missing document (with the precondition `exists: false`) is given, among a commit's write results, a time a few milliseconds before the commit's (`tools/oracle/rules_verify.py`)",
+   "firestore": "The commit's time (#82)",
+   "hidane": "The commit's time, as production; a verify of a stored document is given the document's update time, as on both",
+   "reason": "Same outcome: the verify writes nothing, and its time is the commit's, as in production",
+   "references": [
+    "hidane-dev/hidane#82",
+    "tools/oracle/rules_verify.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/transactions.rs::a_verify_of_a_missing_document_is_given_the_commit_time"
+   ]
   }
  ],
  "retired": [

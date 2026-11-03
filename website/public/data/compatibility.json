@@ -964,18 +964,18 @@
  },
  "differences": {
   "intentional": {
-   "count": 79,
+   "count": 80,
    "by_kind": {
     "bug-for-bug": 1,
     "more-correct": 50,
-    "equivalent": 20,
+    "equivalent": 21,
     "limitation": 8
    }
   },
   "production": {
-   "count": 45,
+   "count": 46,
    "by_kind": {
-    "bug-for-bug": 42,
+    "bug-for-bug": 43,
     "more-correct": 3
    }
   },

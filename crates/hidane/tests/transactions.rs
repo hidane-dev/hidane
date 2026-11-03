@@ -811,3 +811,39 @@ async fn batch_write_commits_each_write_separately() {
         .collect();
     assert!(times.windows(2).all(|w| w[0] < w[1]), "{times:?}");
 }
+
+/// A verify's write result carries the document's update time, and for a missing document the
+/// commit's time, as production's does; the official emulator's is a time just before the commit
+/// (docs/parity-exceptions.md).
+#[tokio::test]
+async fn a_verify_of_a_missing_document_is_given_the_commit_time() {
+    let (client, _) = start().await;
+    let database = "projects/verify/databases/(default)".to_owned();
+    let context = Context {
+        client: client.clone(),
+        addr: "127.0.0.1:1".parse().unwrap(),
+        database: database.clone(),
+        transactions: HashMap::new(),
+    };
+    let commit = |writes: Vec<Json>| {
+        let request = owner(CommitRequest {
+            database: database.clone(),
+            writes: writes.iter().map(|w| context.write(w)).collect(),
+            ..CommitRequest::default()
+        });
+        let mut client = client.clone();
+        async move { client.commit(request).await.unwrap().into_inner() }
+    };
+    let written = commit(vec![json!({"update": "c/a", "n": 1})]).await;
+    let verified = commit(vec![
+        json!({"verify": "c/a", "exists": true}),
+        json!({"verify": "c/m", "exists": false}),
+    ])
+    .await;
+    let times: Vec<_> = verified
+        .write_results
+        .iter()
+        .map(|r| r.update_time)
+        .collect();
+    assert_eq!(times, [written.commit_time, verified.commit_time]);
+}

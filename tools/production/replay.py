@@ -344,7 +344,7 @@ KNOWN_CASES = {
         ("D112", r"^batchGet with documents named twice$"),
     ],
     "queries.json": [("D103", r"^parent is a collection$")],
-    "document_writes.json": [("D112", r"^batch get order$"), ("D111", r"^named database$"), ("D119", r"^nested array, step")],
+    "document_writes.json": [("D112", r"^batch get order$"), ("D111", r"^named database$"), ("D119", r"^nested array$")],
     "datastore_entities.json": [("D119", r"^write nested arrays$"), ("D120", r"^read after a property mask$")],
     "datastore_queries.json": [
         ("D123", r"^(?:start|end)Cursor of |^a cursor of another query"),
@@ -1361,6 +1361,25 @@ def step_answer(status, answer, project, commits):
     return {"status": status, "body": read(answer)}
 
 
+NEAR_COMMIT = re.compile(r"<near commit (\d+)>")
+
+
+def verified_missing(step, official, answered, known):
+    """Where the official emulator gave a verify of a missing document a time just before the
+    commit, and production the commit's own (D128), production's stands in `official`; the entry is
+    added to `known`."""
+    writes = step["body"].get("writes", []) if isinstance(step.get("body"), dict) else []
+    theirs, ours = (a["body"].get("writeResults") if isinstance(a.get("body"), dict) else None for a in (official, answered))
+    if not isinstance(theirs, list) or not isinstance(ours, list) or not len(writes) == len(theirs) == len(ours):
+        return
+    for write, t, o in zip(writes, theirs, ours):
+        near = NEAR_COMMIT.fullmatch(str(t.get("updateTime"))) if isinstance(t, dict) and isinstance(o, dict) else None
+        if near and "verify" in write and (write.get("currentDocument") or {}).get("exists") is False \
+                and o.get("updateTime") == f"<commit {near.group(1)}>":
+            t["updateTime"] = o["updateTime"]
+            known.add("D128")
+
+
 # A step's template for a time of the case's commits (`{C1}`, `{C2+1}`: the second commit's time
 # and a microsecond), and for its version in an answer (`{V1}`), as `base_versions.json` writes them.
 TEMPLATE = re.compile(r"\{([CV])(\d+)([+-]\d+)?\}")
@@ -1497,7 +1516,8 @@ def run_steps(production, case, own, result, loaded=None):
     the owner sent is sent with the token, one without credentials without; the official
     emulator's load of rules (`PUT …:securityRules`) is compared, on its status, with how making
     the ruleset went in production (`loaded`). The documents an earlier case of the recording
-    wrote that the case's answers show are written first (`earlier`). Answers the first difference
+    wrote that the case's answers show are written first (`earlier`). A transaction production
+    will not begin without credentials ends the case (D127). Answers the first difference
     (the step's number, the official emulator's answer, production's), `NEEDS_AN_INDEX` if
     production asked for an index first (the index is kept, `asked`), or None, and the entries of
     the known differences seen."""
@@ -1544,6 +1564,13 @@ def run_steps(production, case, own, result, loaded=None):
             if recorded is None and isinstance(answer, dict) and isinstance(answer.get("commitTime"), str):
                 production_commits.append(answer["commitTime"])
             answered = step_answer(status, answer if recorded is not None else None, project, production_commits)
+            if (step["path"].endswith(":beginTransaction") and sender(step) is None and official["status"] == 200
+                    and answered.get("error") == "PERMISSION_DENIED"):
+                # Production refuses to begin a transaction without credentials (D127); the steps in
+                # it are not sent.
+                known.add("D127")
+                break
+            verified_missing(step, official, answered, known)
         if first is None and not same_json(official, answered, known):
             first = (n, official, answered)
         elif first is None and result["fixture"] in ORDERED and order_difference(official, answered):
