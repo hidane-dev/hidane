@@ -1781,9 +1781,11 @@ def replay(production, fixture):
         commits.replay_commit_checks(production, recording, result)
         production.empty()
         return result
-    if recording.get("mode") == "datastore-mode" and "cases" in recording:
-        # Recordings in Datastore mode (`datastore_entities.json` and the like), sent to the
-        # project's Datastore-mode database in datastore.py.
+    if (recording.get("mode") == "datastore-mode" or str(recording.get("generated_by")).startswith(
+            "tools/oracle/datastore_")) and recording.get("cases") and "steps" not in recording["cases"][0]:
+        # Recordings in Datastore mode (`datastore_entities.json` and the like, some of which,
+        # as `datastore_gql_errors.json`, say so only by their recorder), sent to the project's
+        # Datastore-mode database in datastore.py.
         import datastore
         result = {"fixture": Path(fixture).name, "cases": len(recording["cases"]), "sent": 0, "same": 0,
                   "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "indexes": [], "knownCases": 0,

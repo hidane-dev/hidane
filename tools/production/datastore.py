@@ -3,7 +3,8 @@ of production (#81, #82).
 
 `replay.py --datastore-database <id>` hands these recordings here: those of
 `tools/oracle/datastore_*.py` that are REST requests sent in order (`datastore_entities.json`,
-`datastore_queries.json`, `datastore_gql.json`, `datastore_firestore_api.json`). They go to that
+`datastore_queries.json`, `datastore_gql.json`, `datastore_firestore_api.json`,
+`datastore_gql_errors.json`). They go to that
 database of the project, a named one in Datastore mode: a database has one mode, and the project's
 `(default)` is in Firestore Native mode. The database is emptied before and after each recording,
 and a recording's dataset written first, as its replaying test writes it.
@@ -88,6 +89,9 @@ KNOWN_ERRORS = [
     ("D124", 200, None, None, 400, "INVALID_ARGUMENT", TRANSACTION_ENDED),
     ("D124", 409, "ABORTED", r"^Transaction lock timeout\.$",
      409, "ABORTED", r"^too much contention on these datastore entities\. please try again\.$"),
+    ("D124", None, None, None, 400, "INVALID_ARGUMENT", r"^transaction required$"),
+    ("D122", 400, "INVALID_ARGUMENT", r"^Key filter on __kind__ is invalid \(must be a key for __kind__\)", 200, None, None),
+    ("D122", None, None, None, 400, "INVALID_ARGUMENT", r"^Unsupported query for kind __(?:kind|namespace)__$"),
     ("D125", 400, "FAILED_PRECONDITION", r"^List of Ids to reserve cannot be empty\.$", 200, None, None),
     ("D125", 400, "INVALID_ARGUMENT", r"^Firestore emulator does not support eventual consistency options\.$",
      200, None, None),
@@ -97,6 +101,11 @@ KNOWN_ERRORS = [
      r"^(?:limit is negative|offset is negative|Unable to plan or invalidate query\.)$"),
     ("D125", 400, "INVALID_ARGUMENT", r"^kind is required for all orders except __key__ ascending$",
      400, "INVALID_ARGUMENT", r"^Unable to plan or invalidate query\.$"),
+    ("D125", 500, "UNKNOWN", None, 400, "INVALID_ARGUMENT", r"^Timestamp is not valid\. See proto definition for valid values\. "),
+    ("D125", 400, "INVALID_ARGUMENT", r"^__key__ filter value must be a Key$",
+     400, "INVALID_ARGUMENT", r"^Cannot use projection on a property with an equality filter\.$"),
+    ("D125", 400, "INVALID_ARGUMENT", r"^Cannot use projection on a property with an equality filter\.$",
+     400, "INVALID_ARGUMENT", r"^The query namespace is '[^']*' but __key__ filter namespace is '[^']*'\.$"),
     ("D125", 500, "UNKNOWN", None, 500, "INTERNAL", r"^An internal error occurred\.$"),
     ("D125", 500, "UNKNOWN", None, 200, None, None),
     ("D125", 409, "ALREADY_EXISTS", r"^entity already exists: EntityRef\[",
@@ -394,7 +403,8 @@ def replay(production, recording, result):
     """Sends a recording's cases in order to the Datastore-mode database, after writing its
     dataset; compares each answer with the official emulator's."""
     database = production.datastore
-    cases = recording["cases"]
+    # Each case with what the recording's `every_case` gives them all (`datastore_gql_errors.json`).
+    cases = [{**recording.get("every_case", {}), **case} for case in recording["cases"]]
     if database is None:
         result["skipped"]["no Datastore-mode database (--datastore-database)"] = len(cases)
         return
