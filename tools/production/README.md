@@ -187,8 +187,10 @@ requests:
   (D098). On the official emulator the cases of a recording ran one after another in one project,
   and a few rely on what an earlier case wrote: the documents their answers show created before
   their own first write are written first, and a case that rewrote such a document, or counted
-  them, is not sent. A query production asks an index for is counted apart, and the index kept
-  (`indexes.py`);
+  them, is not sent. Production will not begin a transaction without credentials (D127): such a
+  case ends there. A verify of a missing document is given the commit's time by production, a
+  time just before it by the emulator (D128). A query production asks an index for is counted
+  apart, and the index kept (`indexes.py`);
 - the conditions of `rules_eval.json` that read: `rooms/r1` and `rooms/r2` are written as the
   recorder wrote them, and each condition decides a read of `rooms/r1` without credentials,
   allowed or denied. Conditions that do not depend on where the document is are deployed in one

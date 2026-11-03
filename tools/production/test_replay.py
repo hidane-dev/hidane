@@ -141,6 +141,9 @@ class StandIn(BaseHTTPRequestHandler):
                 if "update" in write:
                     StandIn.documents[write["update"]["name"]] = {"fields": write["update"].get("fields", {}), "time": now}
                     results.append({"updateTime": now})
+                elif "verify" in write:
+                    # The document's time, or for a missing one the commit's (D128).
+                    results.append({"updateTime": StandIn.documents.get(write["verify"], {}).get("time", now)})
                 else:
                     results.append({})
                 StandIn.documents.pop(write.get("delete"), None)
@@ -1184,6 +1187,43 @@ class ReplayTest(unittest.TestCase):
         self.assertNotIn(("GET", "d", "Bearer a-token"), sent)
         self.assertEqual(report["deployed"], "0/1")
         self.assertIn("rules deployed", (Path(self.dir.name) / "out" / "report.md").read_text())
+
+    def test_what_production_does_with_transactions_and_verifies_is_known(self):
+        def step(method, path, auth, status, response=None, body=None):
+            return {"method": method, "path": path, "body": body, "auth": auth, "status": status, "response": response}
+        rules = ("rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
+                 "    match /c/{d} {\n      allow read, write: if true;\n    }\n  }\n}\n")
+        load = step("PUT", "/emulator/v1/projects/req:securityRules", None, 200, {},
+                    {"rules": {"files": [{"name": "firestore.rules", "content": rules}]}})
+        d = "/v1/projects/req/databases/(default)/documents"
+
+        def commit(write, written, at):
+            """A commit of one write by the owner, its result written at `written` and the commit at `at`."""
+            return step("POST", f"{d}:commit", "Bearer owner", 200, {"writeResults": [{"updateTime": written}],
+                                                                       "commitTime": at}, {"writes": [write]})
+        # The first commit of each case: a document written, as each case of a recording writes first.
+        first = commit({"update": {"name": "projects/req/databases/(default)/documents/c/a", "fields": {}}},
+                       "2026-10-12T12:12:59.960176Z", "2026-10-12T12:12:59.960176Z")
+        cases = [
+            # Begun without credentials by the official emulator, refused by production (D127):
+            # the commit in it is not sent.
+            {"name": "in a transaction", "steps": [
+                load, step("POST", f"{d}:beginTransaction", None, 200, {"transaction": "EQMAAAAAAAAA"}, {}),
+                step("POST", f"{d}:commit", None, 200, {"writeResults": [], "commitTime": "2026-10-12T12:13:02.204156Z"},
+                     {"writes": [], "transaction": "EQMAAAAAAAAA"})]},
+            # A time just before the commit on the official emulator, the commit's in production (D128).
+            {"name": "a missing document", "steps": [load, first, commit(
+                {"verify": "projects/req/databases/(default)/documents/c/m", "currentDocument": {"exists": False}},
+                "2026-10-12T12:13:00.416070Z", "2026-10-12T12:13:00.422289Z")]},
+            # Not the time of a verify of a missing document: a difference.
+            {"name": "an update", "steps": [load, first, commit(
+                {"update": {"name": "projects/req/databases/(default)/documents/c/b", "fields": {}}},
+                "2026-10-12T12:13:00.416070Z", "2026-10-12T12:13:00.422289Z")]},
+        ]
+        result = self.deploy(self.rules_recording(cases))["recordings"][0]
+        self.assertEqual((result["sent"], result["knownCases"], result["known"]), (3, 2, {"D127": 1, "D128": 1}))
+        self.assertEqual([d["name"] for d in result["differ"]], ["an update, step 3"])
+        self.assertFalse(any(path.endswith(":commit") and "EQMAAAAAAAAA" in (body or "") for _, path, _, body in StandIn.seen))
 
     def test_what_an_earlier_case_of_a_recording_of_rules_wrote_is_written_first(self):
         def step(method, path, auth, status, response=None, body=None):
