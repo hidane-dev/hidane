@@ -441,6 +441,38 @@
     {
      "name": "b",
      "direction": "asc"
+    },
+    {
+     "name": "c",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "P",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "a",
+     "direction": "asc"
+    },
+    {
+     "name": "b",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "P",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "a.b",
+     "direction": "asc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
     }
    ]
   },
@@ -450,6 +482,24 @@
    "properties": [
     {
      "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "P",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "c",
      "direction": "asc"
     },
     {
