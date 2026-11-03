@@ -3,7 +3,8 @@ of production (#81, #82).
 
 `replay.py --datastore-database <id>` hands these recordings here: those of
 `tools/oracle/datastore_*.py` that are REST requests sent in order (`datastore_entities.json`,
-`datastore_queries.json`, `datastore_gql.json`, `datastore_firestore_api.json`). They go to that
+`datastore_queries.json`, `datastore_gql.json`, `datastore_firestore_api.json`,
+`datastore_gql_errors.json`). They go to that
 database of the project, a named one in Datastore mode: a database has one mode, and the project's
 `(default)` is in Firestore Native mode. The database is emptied before and after each recording,
 and a recording's dataset written first, as its replaying test writes it.
@@ -394,7 +395,8 @@ def replay(production, recording, result):
     """Sends a recording's cases in order to the Datastore-mode database, after writing its
     dataset; compares each answer with the official emulator's."""
     database = production.datastore
-    cases = recording["cases"]
+    # Each case with what the recording's `every_case` gives them all (`datastore_gql_errors.json`).
+    cases = [{**recording.get("every_case", {}), **case} for case in recording["cases"]]
     if database is None:
         result["skipped"]["no Datastore-mode database (--datastore-database)"] = len(cases)
         return

@@ -228,9 +228,11 @@ PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/release.py --project 
 
 A database has one mode, and the project's `(default)` is in Firestore Native mode. The
 recordings in Datastore mode (`datastore_entities.json`, `datastore_queries.json`,
-`datastore_gql.json`, `datastore_firestore_api.json`) go, with `--datastore-database <id>`, to a
-named database of the project in Datastore mode, in [`datastore.py`](datastore.py). Each is sent
-in order, after the database is emptied and the recording's dataset written, and compared as
+`datastore_gql.json`, `datastore_firestore_api.json`, `datastore_gql_errors.json`) go, with
+`--datastore-database <id>`, to a named database of the project in Datastore mode, in
+[`datastore.py`](datastore.py). A recording of `tools/oracle/datastore_*.py` is one, though it
+may not say its mode, and what its `every_case` gives goes into each case. Each is sent in
+order, after the database is emptied and the recording's dataset written, and compared as
 above. Production does some things its own way, and the replay puts them as the recording put
 the official emulator's:
 

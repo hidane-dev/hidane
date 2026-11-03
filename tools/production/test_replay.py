@@ -1365,10 +1365,12 @@ class ReplayTest(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 replay.main(["--project", PROJECT, "--out", self.dir.name, *wrong, "f.json"])
 
-    def datastore_recording(self):
+    def datastore_recording(self, every_case=False):
         """A recording in Datastore mode: an ID allocated, then written and read; a query's cursor
         carried to the next; a query that needs an index; requests to another database and another
-        project, one of the emulator's own and one of the Firestore API."""
+        project, one of the emulator's own and one of the Firestore API. With `every_case`, what
+        most cases have is given once, and only the recorder says the mode, as in
+        `datastore_gql_errors.json`."""
         def answer(status, body):
             return {"status": status, "contentType": "application/json", "body": json.dumps(body, indent=2)}
 
@@ -1414,7 +1416,13 @@ class ReplayTest(unittest.TestCase):
                  "projects/{project}/databases/(default)."}})},
         ]
         path = Path(self.dir.name) / "datastore.json"
-        path.write_text(json.dumps({"mode": "datastore-mode", "dataset": dataset, "cases": cases}))
+        if every_case:
+            every = {"method": "POST", "headers": {"Content-Type": "application/json"}, "compare": "exact"}
+            cases = [{k: v for k, v in c.items() if k not in every or every[k] != v} for c in cases]
+            path.write_text(json.dumps({"generated_by": "tools/oracle/datastore_x.py", "every_case": every,
+                                        "dataset": dataset, "cases": cases}))
+        else:
+            path.write_text(json.dumps({"mode": "datastore-mode", "dataset": dataset, "cases": cases}))
         return str(path)
 
     def test_a_recording_in_datastore_mode_goes_to_the_datastore_mode_database(self):
@@ -1445,6 +1453,16 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual(StandIn.entities, {})
         self.assertLessEqual(production.firestore, 100)
         self.assertEqual(production.firestore, len(StandIn.seen))
+
+    def test_a_recording_of_a_datastore_recorder_is_sent_there_with_what_every_case_gives(self):
+        production = replay.Production(self.base, PROJECT, "a-token", 100)
+        production.datastore = datastore.Database(production, "ds", self.base)
+        result = replay.replay(production, self.datastore_recording(every_case=True))
+        self.assertEqual(result["skipped"], {"another database's": 1, "another project's": 1,
+                                             "the official emulator's own API": 1})
+        self.assertEqual((result["sent"], result["same"], result["knownCases"], result["differ"]), (7, 5, 1, []))
+        # The case of the Firestore API kept its own method.
+        self.assertIn(("GET", f"/v1/projects/{PROJECT}/databases/ds/documents/c/d"), [(m, p) for m, p, _, _ in StandIn.seen])
 
     def test_the_index_production_recommends_is_read(self):
         message = ("no matching index found. recommended index is:\n- kind: C\n  ancestor: yes\n  properties:\n"
