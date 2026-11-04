@@ -22,6 +22,10 @@ on:
         description: "Which seventh of what deploys rules to send, 0 to 6; the day's by default"
         required: false
         default: ""
+      datastore-shard:
+        description: "Which seventh of the Datastore check recordings' cases to send, 0 to 6; the day's by default"
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -186,10 +190,30 @@ jobs:
           crates/hidane/tests/fixtures/datastore_sequences.json
           crates/hidane/tests/fixtures/datastore_protobuf.json
           crates/hidane/tests/fixtures/datastore_locks.json
+      - name: Replay a seventh of the Datastore check recordings
+        if: always() && steps.auth.outcome == 'success'
+        env:
+          PRODUCTION_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          PROJECT: ${{ vars.GCP_PROJECT_ID }}
+          SHARD: ${{ inputs.datastore-shard }}
+        # Which fault of a request is reported: about 14,400 requests in all, a seventh a night,
+        # the day of the week's, Sunday's the first.
+        run: |
+          case "$SHARD" in
+            [0-6]) ;;
+            "") SHARD=$(( $(date -u +%u) % 7 )) ;;
+            *) echo "::error::datastore-shard takes 0 to 6"; exit 1 ;;
+          esac
+          python3 -I -B tools/production/replay.py --project "$PROJECT" --out production-datastore-checks \
+            --datastore-database datastore --datastore-shard "$SHARD/7" --budget 2500 \
+            crates/hidane/tests/fixtures/datastore_checks.json \
+            crates/hidane/tests/fixtures/datastore_commit_checks.json
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: production-datastore
-          path: production-datastore/
+          path: |
+            production-datastore/
+            production-datastore-checks/
           retention-days: 30
           if-no-files-found: ignore

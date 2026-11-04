@@ -5,7 +5,8 @@ of production (#81, #82).
 `tools/oracle/datastore_*.py` that are REST requests sent in order (`datastore_entities.json`,
 `datastore_queries.json`, `datastore_gql.json`, `datastore_firestore_api.json`,
 `datastore_gql_errors.json`), the steps of `datastore_sequences.json`, REST in protobuf
-(`datastore_protobuf.json`), and how long a write waits for a lock (`datastore_locks.json`). They go to that
+(`datastore_protobuf.json`), how long a write waits for a lock (`datastore_locks.json`), and
+which fault of a request is reported (`datastore_checks.json`, `datastore_commit_checks.json`). They go to that
 database of the project, a named one in Datastore mode: a database has one mode, and the project's
 `(default)` is in Firestore Native mode. The database is emptied before and after each recording,
 and a recording's dataset written first, as its replaying test writes it.
@@ -142,8 +143,10 @@ KNOWN_ERRORS = [
     ("D131", None, None, r"", 400, "INVALID_ARGUMENT", RESERVED),
     ("D131", 400, "INVALID_ARGUMENT", r"^Too many disjunctions after normalization\.", None, None, r""),
     ("D131", 404, "NOT_FOUND", r"^no entity to update: ", 400, "INVALID_ARGUMENT", r""),
+    ("D131", 400, "INVALID_ARGUMENT", r"^Cannot update an entity with a base version set to zero: ",
+     400, "INVALID_ARGUMENT", r"^Cannot insert an entity with a base version greater than zero: "),
     ("D122", 400, "INVALID_ARGUMENT", r"^Key filter on __kind__ is invalid \(must be a key for __kind__\)", 200, None, None),
-    ("D122", None, None, None, 400, "INVALID_ARGUMENT", r"^Unsupported query for kind __(?:kind|namespace)__$"),
+    ("D122", None, None, None, 400, "INVALID_ARGUMENT", r"^Unsupported query for kind __(?:kind|namespace|property)__$"),
     ("D122", None, None, r"", 400, "INVALID_ARGUMENT",
      r"^Projections are not supported for the kind: __|^Key filter on __kind__ is invalid \(must be a named key for __kind__\)"),
     ("D125", 400, "FAILED_PRECONDITION", r"^List of Ids to reserve cannot be empty\.$", 200, None, None),
@@ -166,7 +169,7 @@ KNOWN_ERRORS = [
     ("D125", 500, "UNKNOWN", None, 500, "INTERNAL", r"^An internal error occurred\.$"),
     ("D125", 400, "INVALID_ARGUMENT", r"", 500, "INTERNAL", r"^An internal error occurred\.$"),
     ("D125", 400, "INVALID_ARGUMENT", r"^Value type \w+ is not allowed$", 200, None, None),
-    ("D125", 200, None, None, 400, "INVALID_ARGUMENT", r"^Geo point latitude is not a number\.$"),
+    ("D125", 200, None, None, 400, "INVALID_ARGUMENT", r"^Geo point latitude (?:is not a number\.|outside permitted range )"),
     ("D125", 500, "UNKNOWN", None, 200, None, None),
     ("D125", 409, "ALREADY_EXISTS", r"^entity already exists: EntityRef\[",
      409, "ALREADY_EXISTS", r"^entity already exists: app: "),
@@ -477,7 +480,8 @@ def replay(production, recording, result):
     each case to a project of its own after a commit (`seed`, `datastore_commit_checks.json`)
     has that commit before its first case, and again, the database emptied, after each commit
     production did not refuse as a bad request (400): one it refused wrote nothing, nor does a
-    read. Runs of one character are expanded (`expanded`)."""
+    read. Runs of one character are expanded (`expanded`). With a shard (`--datastore-shard
+    i/n`), only the cases whose place is i modulo n are sent."""
     database = production.datastore
     # Each case with what the recording's `every_case` gives them all (`datastore_gql_errors.json`).
     cases = [{**recording.get("every_case", {}), **case} for case in recording["cases"]]
@@ -505,7 +509,9 @@ def replay(production, recording, result):
     for n, case in enumerate(cases, 1):
         if n % 50 == 0:
             log(f"{result['fixture']}: case {n}, {production.sent} requests so far")
-        why = "steps of their own" if "steps" in case else sendable(case)
+        shard = production.datastore_shard
+        why = ("another part's" if shard and (n - 1) % shard[1] != shard[0] else
+               "steps of their own" if "steps" in case else sendable(case))
         if why:
             result["skipped"][why] = result["skipped"].get(why, 0) + 1
             continue

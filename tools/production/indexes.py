@@ -217,7 +217,10 @@ def add(reports):
     for report in reports:
         for recording in json.loads(Path(report).read_text())["recordings"]:
             indexes += recording.get("indexes", [])
-            datastore += recording.get("datastoreIndexes", [])
+            # Production recommends an index for a query of a reserved kind (`__x__`), and refuses
+            # to make one ("Collection id "__x__" is invalid because it is reserved.").
+            datastore += [index for index in recording.get("datastoreIndexes", [])
+                          if not re.fullmatch(r"__.*__", index["kind"])]
     new = len({key(index) for index in save(indexes)} - before)
     if len(datastore) > len(datastore_before):
         new += len({datastore_key(index) for index in save_datastore(datastore)} - datastore_before)
