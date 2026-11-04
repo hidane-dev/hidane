@@ -153,7 +153,7 @@ jobs:
     name: replay against a Datastore-mode database
     if: github.repository == 'hidane-dev/hidane'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     environment: production-parity
     permissions:
       contents: read
@@ -185,6 +185,7 @@ jobs:
           crates/hidane/tests/fixtures/datastore_gql_errors.json
           crates/hidane/tests/fixtures/datastore_sequences.json
           crates/hidane/tests/fixtures/datastore_protobuf.json
+          crates/hidane/tests/fixtures/datastore_locks.json
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:

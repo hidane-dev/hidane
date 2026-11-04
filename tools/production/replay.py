@@ -120,11 +120,11 @@ class Production:
         self.datastore = None
 
     def send(self, method, path, data=None, content_type="application/json", base=None, anonymous=False,
-             headers=None, budgeted=False, binary=False):
+             headers=None, budgeted=False, binary=False, timeout=60, tries=NETWORK_TRIES):
         """One request, to Firestore or another API (`base`), with the token or, `anonymous`,
         without credentials, and `headers` of its own; answers (status, content type, body as
-        text, or bytes if `binary`). A connection that fails before an answer is tried again a few
-        times; then the answer is status 0. The budget counts the requests to Firestore, to stay within its free daily
+        text, or bytes if `binary`). A connection that fails before an answer, or gives none in
+        `timeout` seconds, is tried again, `tries` times in all; then the answer is status 0. The budget counts the requests to Firestore, to stay within its free daily
         quota, and those to another API that are `budgeted` (a Datastore-mode database's, which
         has none); tests of rules, which `Pace` keeps within the Rules API's, are not in it.
         A database refuses requests with 429 while it is written faster than it allows ("This
@@ -133,13 +133,13 @@ class Production:
         and the request sent again, a few times."""
         database = base is None or budgeted
         for wait in (*THROTTLED_WAITS, None):
-            answer = self.send_once(method, path, data, content_type, base, anonymous, headers, database)
+            answer = self.send_once(method, path, data, content_type, base, anonymous, headers, database, timeout, tries)
             if answer[0] != 429 or not database or wait is None:
                 return answer if binary else (*answer[:2], answer[2].decode(errors="replace"))
             log(f"{method} {mask(path, self.project)}: 429, sending it again in {wait} s")
             time.sleep(wait)
 
-    def send_once(self, method, path, data, content_type, base, anonymous, headers, database):
+    def send_once(self, method, path, data, content_type, base, anonymous, headers, database, timeout, tries):
         self.spend(firestore=database)
         headers = {"Content-Type": content_type, **(headers or {})}
         if not anonymous:
@@ -147,14 +147,14 @@ class Production:
             if self.quota_project:
                 headers["x-goog-user-project"] = self.quota_project
         req = urllib.request.Request((base or self.base) + path, method=method, data=data, headers=headers)
-        for attempt in range(NETWORK_TRIES):
+        for attempt in range(tries):
             try:
-                with urllib.request.urlopen(req, timeout=60) as res:
+                with urllib.request.urlopen(req, timeout=timeout) as res:
                     return res.status, res.headers.get("Content-Type"), res.read()
             except urllib.error.HTTPError as err:
                 return err.code, err.headers.get("Content-Type"), err.read()
             except (urllib.error.URLError, http.client.HTTPException, ConnectionError, TimeoutError) as err:
-                log(f"{method} {mask(path, self.project)}: {type(err).__name__}, try {attempt + 1} of {NETWORK_TRIES}")
+                log(f"{method} {mask(path, self.project)}: {type(err).__name__}, try {attempt + 1} of {tries}")
                 time.sleep(2 ** attempt)
         return 0, None, b""
 
@@ -372,6 +372,12 @@ KNOWN_CASES = {
         ("D103", r"^(?:an unknown verb|GET lookup|a path with a slash) in protobuf$"),
         ("D129", r"^reserveIds, Content-Type 'application/json\+protobuf'$|^reserveIds, a JSON body as protobuf$|"
                  r"^reserveIds, protobuf with \?alt=json$|^a body that is not protobuf$|^a string that is not UTF-8$"),
+    ],
+    # How long a write waits for a lock, and what it answers after a wait of production's; an
+    # aggregation its query refuses, which locks nothing in production.
+    "datastore_locks.json": [
+        ("D130", r", the wait$|^a write outside a transaction to a kind (?:queried|aggregated), step 4$|"
+                 r"^a write in another transaction to a kind an aggregation with a negative limit read, step 5$"),
     ],
     "transforms.json": [("D102", r"__name__|__type__")],
     "list_documents.json": [("D101", r"slash"), ("D103", r"^root without a slash$"),

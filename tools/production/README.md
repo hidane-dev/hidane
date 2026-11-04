@@ -229,7 +229,7 @@ PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/release.py --project 
 A database has one mode, and the project's `(default)` is in Firestore Native mode. The
 recordings in Datastore mode (`datastore_entities.json`, `datastore_queries.json`,
 `datastore_gql.json`, `datastore_firestore_api.json`, `datastore_gql_errors.json`,
-`datastore_sequences.json`, `datastore_protobuf.json`) go, with
+`datastore_sequences.json`, `datastore_protobuf.json`, `datastore_locks.json`) go, with
 `--datastore-database <id>`, to a named database of the project in Datastore mode, in
 [`datastore.py`](datastore.py). A recording of `tools/oracle/datastore_*.py` is one, though it
 may not say its mode, and what its `every_case` gives goes into each case. Each is sent in
@@ -285,6 +285,14 @@ protobuf is read as JSON gives it, an error as its `google.rpc.Status` with its 
 keys `allocateIds` answers with production's project put as `demo-protobuf` and its IDs read back
 as the emulator's; the recorder compared some answers by their status and media type alone
 (`compare`), and so does the replay.
+
+The recorder of `datastore_locks.json` timed a write to what another transaction had read, in
+it or outside one, while the reader stayed in use (a lookup in it every `keep_alive_seconds`); it
+sent its cases at once, each to a project of its own. They go in turn, the database emptied before
+each: its steps in order, the reader kept in use while the write waits, and the case's
+transactions rolled back after it. The write is sent once, and given 600 s to answer: sent again,
+it would be another write, and production keeps one waiting up to 180 s (D130). How long the
+write waited counts as the same within 5 s of the official emulator's.
 
 A request to another database or project (the recorders send some to projects of their own, to
 allocate IDs from the start), a GQL key that names the project (production reads it as one of
