@@ -234,7 +234,10 @@ recordings in Datastore mode (`datastore_entities.json`, `datastore_queries.json
 [`datastore.py`](datastore.py). A recording of `tools/oracle/datastore_*.py` is one, though it
 may not say its mode, and what its `every_case` gives goes into each case. Each is sent in
 order, after the database is emptied and the recording's dataset written, and compared as
-above. Production does some things its own way, and the replay puts them as the recording put
+above; a run of one character the recorder wrote `{repeat:<c>:<n>}` is written out. A recording
+whose recorder sent each case to a project of its own after a commit (`seed`, as
+`datastore_commit_checks.json`) has it before its first case, and again, the database emptied,
+after each commit production did not refuse as a bad request. Production does some things its own way, and the replay puts them as the recording put
 the official emulator's:
 
 - a request names its database in its body (`databaseId`) and in the routing header
