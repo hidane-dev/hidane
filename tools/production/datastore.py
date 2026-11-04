@@ -169,7 +169,9 @@ KNOWN_ERRORS = [
     ("D125", 500, "UNKNOWN", None, 500, "INTERNAL", r"^An internal error occurred\.$"),
     ("D125", 400, "INVALID_ARGUMENT", r"", 500, "INTERNAL", r"^An internal error occurred\.$"),
     ("D125", 400, "INVALID_ARGUMENT", r"^Value type \w+ is not allowed$", 200, None, None),
-    ("D125", 200, None, None, 400, "INVALID_ARGUMENT", r"^Geo point latitude (?:is not a number\.|outside permitted range )"),
+    # Production refuses a point whose latitude is NaN or out of range in an aggregation too,
+    # before the faults of its own the official emulator names, or fails on (500).
+    ("D125", None, None, None, 400, "INVALID_ARGUMENT", r"^Geo point latitude (?:is not a number\.|outside permitted range )"),
     ("D125", 500, "UNKNOWN", None, 200, None, None),
     ("D125", 409, "ALREADY_EXISTS", r"^entity already exists: EntityRef\[",
      409, "ALREADY_EXISTS", r"^entity already exists: app: "),
