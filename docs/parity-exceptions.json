@@ -1180,14 +1180,15 @@
    "topic": null,
    "kind": "more-correct",
    "official": "A `POST` whose `Content-Type` is not JSON (none, `application/json…` or `text/plain…`), such as `application/x-www-form-urlencoded`, `multipart/form-data`, `text/html` or `application/octet-stream`, gets a bare `404 Not Found` (plain text, no content type) on every REST path (`:commit`, `:runQuery`, a create, …), whatever its body; so does `application/x-protobuf` on the Firestore API, and in Datastore mode on the Datastore API any type but exactly `application/x-protobuf`, which is read as protobuf (`tools/oracle/datastore_protobuf.py`, `tools/oracle/datastore_firestore_api.py`); `PATCH`, `GET` and `DELETE` with those types are served",
-   "firestore": null,
+   "firestore": "On the Datastore API in Datastore mode (#82): read as JSON, as hidane reads it, but `application/x-www-form-urlencoded`, whose body is read as query parameters (`400` \"Cannot bind query parameter\"); `application/x-protobuf` in any case, with parameters, or as the start of a longer type (`application/x-protobuffer`) is read as protobuf",
    "hidane": "Serves it, reading the body as JSON as for any other content type (on the Datastore API, `application/x-protobuf` as protobuf)",
    "reason": "A `404` for a path that exists misleads; no SDK sends these types to these paths (#262)",
    "references": [
     "hidane-dev/hidane#262",
     "crates/hidane/tests/rest.rs",
     "tools/oracle/datastore_protobuf.py",
-    "tools/oracle/datastore_firestore_api.py"
+    "tools/oracle/datastore_firestore_api.py",
+    "hidane-dev/hidane#82"
    ],
    "pinned_by": [
     "crates/hidane/tests/rest.rs::a_form_encoded_post_is_served",
@@ -1732,16 +1733,18 @@
    "topic": "Paths that name no method",
    "kind": "bug-for-bug",
    "official": "`404` with the text `Not Found` and no media type: the database root, an unknown verb, `PUT`, `GET` of a verb (`GET …/documents:commit`), and `:write` and `:listen`, which only gRPC has",
-   "firestore": "Google's HTML error page (`404`, `text/html`) for the database root, an unknown verb and `PUT`; `400` `Invalid value (Object)` for `:write` and `:listen`; `200` `{}` for `GET …/documents:commit`. `:runQuery` on a collection's path is read as a document to create (`Unknown name \"structuredQuery\" at 'document'`)",
+   "firestore": "Google's HTML error page (`404`, `text/html`) for the database root, an unknown verb and `PUT`; `400` `Invalid value (Object)` for `:write` and `:listen`; `200` `{}` for `GET …/documents:commit`. `:runQuery` on a collection's path is read as a document to create (`Unknown name \"structuredQuery\" at 'document'`). On the Datastore API, the same page for an unknown verb, a `GET` of a verb and a path below the project's (`…/x:lookup`)",
    "hidane": "As the official emulator",
    "reason": "Follow the emulator. Seen by the Production parity workflow (#82)",
    "references": [
     "hidane-dev/hidane#82",
     "https://github.com/hidane-dev/hidane/actions/runs/39089145449",
-    "https://github.com/hidane-dev/hidane/actions/runs/39214260098"
+    "https://github.com/hidane-dev/hidane/actions/runs/39214260098",
+    "tools/oracle/datastore_protobuf.py"
    ],
    "pinned_by": [
-    "crates/hidane/tests/rest.rs::rest_answers_like_the_official_emulator"
+    "crates/hidane/tests/rest.rs::rest_answers_like_the_official_emulator",
+    "crates/hidane/tests/datastore.rs::protobuf_answers_like_the_official_emulator"
    ]
   },
   {
@@ -2240,6 +2243,24 @@
    ],
    "pinned_by": [
     "crates/hidane/tests/transactions.rs::a_verify_of_a_missing_document_is_given_the_commit_time"
+   ]
+  },
+  {
+   "id": "D129",
+   "table": "production",
+   "area": "rest",
+   "topic": "Datastore mode: REST in protobuf",
+   "kind": "bug-for-bug",
+   "official": "The answer to a request in protobuf is protobuf, with `?alt=json` too. A body sent as protobuf that is not protobuf (`ff ff ff`, or JSON) is refused, `400` `INVALID_ARGUMENT` \"Payload isn't valid for request.\", as is one holding a string that is not UTF-8. `application/json+protobuf` is read as JSON (`tools/oracle/datastore_protobuf.py`)",
+   "firestore": "`?alt=json` gets an answer in JSON. A body that is not protobuf, or JSON sent as protobuf, is answered `200` with an empty message, as a request of nothing. A string that is not UTF-8 is read: a lookup of a key whose kind is one, with no ID or name, is refused as incomplete (\"Key path element must not be incomplete: [ : ]\"). `application/json+protobuf`: `400` `FAILED_PRECONDITION` \"JSPB is not configured for service 'datastore.googleapis.com'.\" (#82)",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). The client libraries send protobuf that parses, as `application/x-protobuf`, and read protobuf",
+   "references": [
+    "hidane-dev/hidane#82",
+    "tools/oracle/datastore_protobuf.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/datastore.rs::protobuf_answers_like_the_official_emulator"
    ]
   }
  ],

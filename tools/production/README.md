@@ -229,7 +229,7 @@ PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/release.py --project 
 A database has one mode, and the project's `(default)` is in Firestore Native mode. The
 recordings in Datastore mode (`datastore_entities.json`, `datastore_queries.json`,
 `datastore_gql.json`, `datastore_firestore_api.json`, `datastore_gql_errors.json`,
-`datastore_sequences.json`) go, with
+`datastore_sequences.json`, `datastore_protobuf.json`) go, with
 `--datastore-database <id>`, to a named database of the project in Datastore mode, in
 [`datastore.py`](datastore.py). A recording of `tools/oracle/datastore_*.py` is one, though it
 may not say its mode, and what its `every_case` gives goes into each case. Each is sent in
@@ -275,6 +275,16 @@ write, and gives a missing entity that time as its version; the deletion of a ke
 there answers the commit's version in a transaction; a query's snapshot version is its read
 time; and `__kind__` and `__namespace__` list only what is stored. Those times are taken for the
 labels, and count as known.
+
+The recorder of `datastore_protobuf.json` sent REST in protobuf, as the Java and Python client
+libraries send it over HTTP, and bodies of other types, each with its own `Content-Type`, to a
+fixed project (`demo-protobuf`). Each request goes as recorded, to the project's path, its body
+naming the database: a JSON object's `databaseId`, or the `database_id` of a message sent as
+protobuf. One without a `Content-Type` is not sent: urllib would give it a form's. An answer in
+protobuf is read as JSON gives it, an error as its `google.rpc.Status` with its code's name, the
+keys `allocateIds` answers with production's project put as `demo-protobuf` and its IDs read back
+as the emulator's; the recorder compared some answers by their status and media type alone
+(`compare`), and so does the replay.
 
 A request to another database or project (the recorders send some to projects of their own, to
 allocate IDs from the start), a GQL key that names the project (production reads it as one of

@@ -4,7 +4,8 @@ of production (#81, #82).
 `replay.py --datastore-database <id>` hands these recordings here: those of
 `tools/oracle/datastore_*.py` that are REST requests sent in order (`datastore_entities.json`,
 `datastore_queries.json`, `datastore_gql.json`, `datastore_firestore_api.json`,
-`datastore_gql_errors.json`), and the steps of `datastore_sequences.json`. They go to that
+`datastore_gql_errors.json`), the steps of `datastore_sequences.json`, and REST in protobuf
+(`datastore_protobuf.json`). They go to that
 database of the project, a named one in Datastore mode: a database has one mode, and the project's
 `(default)` is in Firestore Native mode. The database is emptied before and after each recording,
 and a recording's dataset written first, as its replaying test writes it.
@@ -35,6 +36,7 @@ recording's placeholders matching any value, and differences the parity exceptio
 counting as known (`tally`). Stdlib only.
 """
 
+import base64
 import json
 import re
 import time
@@ -68,6 +70,18 @@ TIME = re.compile(r"\d+|\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z")
 CURSOR = re.compile(r'"(cursor|endCursor|skippedCursor|startCursor)": "[^"]*"')
 STEP_TIME = re.compile(r"\{time:(\d+):([A-Za-z0-9.]+)(?::(-?\d+))?\}")
 STEP_TRANSACTION = re.compile(r"\{tx(?::([a-z]+))?\}")
+
+# REST in protobuf (`datastore_protobuf.json`): its recorder, the project it names (fixed: an
+# answer in protobuf cannot be masked without changing its length), the field of every request of
+# the Datastore API that names the database (`database_id`), and the `google.rpc.Code` names an
+# error in JSON gives.
+PROTOBUF_RECORDER = "tools/oracle/datastore_protobuf.py"
+PROTOBUF_PROJECT = "demo-protobuf"
+DATABASE_FIELD = 9
+CODES = {1: "CANCELLED", 2: "UNKNOWN", 3: "INVALID_ARGUMENT", 4: "DEADLINE_EXCEEDED", 5: "NOT_FOUND",
+         6: "ALREADY_EXISTS", 7: "PERMISSION_DENIED", 8: "RESOURCE_EXHAUSTED", 9: "FAILED_PRECONDITION",
+         10: "ABORTED", 11: "OUT_OF_RANGE", 12: "UNIMPLEMENTED", 13: "INTERNAL", 14: "UNAVAILABLE",
+         15: "DATA_LOSS", 16: "UNAUTHENTICATED"}
 
 # Differences of Datastore mode that docs/parity-exceptions.md records (D120 to D126), set aside
 # before an answer is compared, each counted as known by its entry (`set_aside`).
@@ -147,6 +161,14 @@ class Database:
         return self.production.send(verb, f"/v1/projects/{project}:{method}", raw, content_type, base=self.base,
                                     headers={"x-goog-request-params": f"project_id={project}&database_id={self.name}"},
                                     budgeted=True)
+
+    def send_bytes(self, verb, path, data, content_type, headers):
+        """A request as one of REST in protobuf is recorded: its own path (of the project), its
+        `Content-Type` and other headers, its body sent as it is. Answers (status, content type,
+        body as bytes)."""
+        project = self.production.project
+        return self.production.send(verb, path, data, content_type, base=self.base, budgeted=True, binary=True,
+                                    headers={**headers, "x-goog-request-params": f"project_id={project}&database_id={self.name}"})
 
     def call(self, method, body):
         """A request of the replay's own, retried while the service is busy, or while a
@@ -428,6 +450,9 @@ def replay(production, recording, result):
     if "steps" in cases[0]:
         replay_sequences(production, recording, result)
         return
+    if recording.get("generated_by") == PROTOBUF_RECORDER:
+        replay_protobuf(production, recording, result)
+        return
     project = production.project
     database.empty()
     database.seed(recording.get("dataset", []))
@@ -497,6 +522,165 @@ def replay(production, recording, result):
         tally(result, theirs, ours, lambda: {"name": case["name"], "method": case["method"], "path": case["path"],
                                              "difference": difference(official, answered), "official": official,
                                              "production": answered}, case["name"], known)
+    database.empty()
+
+
+def varint(data, at):
+    """The varint of protobuf `data` at `at`, and where it ends."""
+    value = shift = 0
+    while True:
+        if at >= len(data) or shift > 63:
+            raise ValueError("a varint that does not end")
+        byte = data[at]
+        value, shift, at = value | (byte & 0x7F) << shift, shift + 7, at + 1
+        if not byte & 0x80:
+            return value, at
+
+
+def encoded_varint(value):
+    out = bytearray()
+    while value > 0x7F:
+        out.append(value & 0x7F | 0x80)
+        value >>= 7
+    return bytes(out + bytes([value]))
+
+
+def fields(data):
+    """The fields of a protobuf message, in order, as (number, value): a varint as an int, any
+    other as bytes. ValueError if `data` is not one (a group, which proto3 has not, among them)."""
+    found, at = [], 0
+    while at < len(data):
+        tag, at = varint(data, at)
+        number, wire = tag >> 3, tag & 7
+        if number == 0 or wire not in (0, 1, 2, 5):
+            raise ValueError(f"field {number}, wire type {wire}")
+        if wire == 0:
+            value, at = varint(data, at)
+        else:
+            size, at = (varint(data, at) if wire == 2 else ({1: 8, 5: 4}[wire], at))
+            value, at = data[at:at + size], at + size
+            if at > len(data):
+                raise ValueError("a field past the end")
+        found.append((number, value))
+    return found
+
+
+def key_of(data):
+    """A `google.datastore.v1.Key` in protobuf as JSON gives it."""
+    key = {}
+    for number, value in fields(data):
+        if number == 1:
+            names = {2: "projectId", 3: "databaseId", 4: "namespaceId"}
+            key["partitionId"] = {names[n]: v.decode() for n, v in fields(value) if n in names}
+        elif number == 2:
+            element = {}
+            for n, v in fields(value):
+                if n == 1:
+                    element["kind"] = v.decode()
+                elif n == 2:
+                    element["id"] = str(v)
+                elif n == 3:
+                    element["name"] = v.decode()
+            key.setdefault("path", []).append(element)
+    return key
+
+
+def decoded(verb, status, content_type, data):
+    """An answer's body as it is compared: one in protobuf as JSON gives it (an error's
+    `google.rpc.Status`, with the name of its code; the keys `allocateIds` answers; nothing), any
+    other as `{"protobuf": <base64>}`; one of another type parsed as JSON if it is, else as
+    text."""
+    if media(content_type) != "application/x-protobuf":
+        return parsed(data.decode(errors="replace"))
+    try:
+        if status != 200:
+            error = {}
+            for number, value in fields(data):
+                if number == 1:
+                    error.update(code=value, status=CODES.get(value, str(value)))
+                elif number == 2:
+                    error["message"] = value.decode()
+                elif number == 3:
+                    error.setdefault("details", []).append(
+                        {"@type": next((v.decode() for n, v in fields(value) if n == 1), "")})
+            return {"error": error}
+        if verb == "allocateIds":
+            return {"keys": [key_of(value) for number, value in fields(data) if number == 1]}
+        if not data:
+            return {}
+    except (ValueError, UnicodeDecodeError, KeyError):
+        pass
+    return {"protobuf": base64.b64encode(data).decode()}
+
+
+def named(data, content_type, database):
+    """A request's body with the database named: a JSON object's `databaseId`, or, sent as
+    protobuf, a message's `database_id`. Any other is sent as it is."""
+    try:
+        value = json.loads(data)
+    except ValueError:
+        value = None
+    if isinstance(value, dict):
+        return json.dumps({**value, "databaseId": database}).encode()
+    if media(content_type) != "application/x-protobuf":
+        return data
+    try:
+        fields(data)
+    except ValueError:
+        return data
+    name = database.encode()
+    return data + encoded_varint(DATABASE_FIELD << 3 | 2) + encoded_varint(len(name)) + name
+
+
+def replay_protobuf(production, recording, result):
+    """Sends the requests of REST in protobuf (`datastore_protobuf.json`) in order, each with its
+    own method, path, headers and body, to the Datastore-mode database: the body names the
+    database (`named`), and the path the project. Answers are compared as the recorder compared
+    them (`compare`: the status and media type, and the body, `decoded`), production's project put
+    as the recording's, its database left out of its keys and the IDs it allocates read back as
+    the official emulator's. A request without a `Content-Type` is not sent: urllib would send a
+    form's."""
+    database = production.datastore
+    project = production.project
+    database.empty()
+    ids = {}
+    for case in recording["cases"]:
+        headers = case.get("headers") or {}
+        content_type = next((v for k, v in headers.items() if k.lower() == "content-type"), None)
+        if content_type is None:
+            why = "without a Content-Type"
+            result["skipped"][why] = result["skipped"].get(why, 0) + 1
+            continue
+        path = case["path"].replace(f"/projects/{PROTOBUF_PROJECT}", f"/projects/{project}", 1)
+        verb = re.search(r":(\w+)(?:\?|$)", path)
+        verb = verb and verb.group(1)
+        data = named(base64.b64decode(case["body"]), content_type, database.name) if case["method"] == "POST" else None
+        status, answer_type, answer = database.send_bytes(case["method"], path, data, content_type,
+                                                          {k: v for k, v in headers.items() if k.lower() != "content-type"})
+        result["sent"] += 1
+        official = case["outcome"]
+        theirs_body = (None if official.get("body") is None else
+                       decoded(verb, official["status"], official.get("contentType"), base64.b64decode(official["body"])))
+        ours_body = without_database(decoded(verb, status, answer_type, answer), project, database.name)
+        if verb == "allocateIds" and status == 200 == official["status"]:
+            allocated(theirs_body, ours_body, ids)
+        text = json.dumps(ours_body, indent=2, ensure_ascii=False).replace(project, PROTOBUF_PROJECT)
+        for theirs, ours in ids.items():
+            text = text.replace(f'"{ours}"', f'"{theirs}"')
+        ours_body = json.loads(text)
+        shown_official = {"status": official["status"], "contentType": official.get("contentType"),
+                          "body": None if theirs_body is None else json.dumps(theirs_body, indent=2, ensure_ascii=False)}
+        answered = {"status": status, "contentType": answer_type, "body": mask(text, project)}
+        theirs = {"status": official["status"], "media": media(official.get("contentType"))}
+        ours = {"status": status, "media": media(answer_type)}
+        if case.get("compare", "exact") == "exact":
+            theirs["body"], ours["body"] = theirs_body, ours_body
+        known = set()
+        theirs, ours = set_aside(theirs, ours, known)
+        tally(result, theirs, ours, lambda: {"name": case["name"], "method": case["method"],
+                                             "path": case["path"].replace(PROTOBUF_PROJECT, "{project}"),
+                                             "difference": difference(shown_official, answered),
+                                             "official": shown_official, "production": answered}, case["name"], known)
     database.empty()
 
 
