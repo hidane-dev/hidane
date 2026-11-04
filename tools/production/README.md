@@ -240,7 +240,8 @@ order, after the database is emptied and the recording's dataset written, and co
 above; a run of one character the recorder wrote `{repeat:<c>:<n>}` is written out. A recording
 whose recorder sent each case to a project of its own after a commit (`seed`, as
 `datastore_commit_checks.json`) has it before its first case, and again, the database emptied,
-after each commit production did not refuse as a bad request. Production does some things its
+after each commit production did not refuse as a bad request; a case of steps of its own goes
+from the seed, `{tx}` the transaction its last step to begin one began. Production does some things its
 own way, and the replay puts them as the recording put
 the official emulator's:
 
