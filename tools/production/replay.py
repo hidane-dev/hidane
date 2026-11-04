@@ -353,6 +353,14 @@ KNOWN_CASES = {
                  r"^350 entities, from the end of the first batch$|array's entity values|^the rows of a sum|^sums where"),
     ],
     "datastore_gql.json": [("D121", r"^two properties$|^__key__ >$"), ("D122", r"^a reserved kind$")],
+    # By step: reads at the times of a commit's mutations, which production gives in no order of
+    # theirs; a refused commit whose other mutation production applied; the commit of a
+    # read-only transaction.
+    "datastore_sequences.json": [
+        ("D120", r"^reads in a read-only transaction and at read times, step (?:1[4-9]|2[0-2]|3[2-7]|4[34])$"),
+        ("D120", r"^listed: an update of a key not there, then an upsert, step [12]$"),
+        ("D124", r"^reads in a read-only transaction and at read times, step 47$"),
+    ],
     "datastore_firestore_api.json": [("D103", r"^(?:GET the documents root|PUT a document|write over REST|listen over REST)$"),
                                      ("D126", r"protobuf|^GET the database$")],
     "transforms.json": [("D102", r"__name__|__type__")],
@@ -1782,10 +1790,11 @@ def replay(production, fixture):
         production.empty()
         return result
     if (recording.get("mode") == "datastore-mode" or str(recording.get("generated_by")).startswith(
-            "tools/oracle/datastore_")) and recording.get("cases") and "steps" not in recording["cases"][0]:
+            "tools/oracle/datastore_")) and recording.get("cases"):
         # Recordings in Datastore mode (`datastore_entities.json` and the like, some of which,
-        # as `datastore_gql_errors.json`, say so only by their recorder), sent to the project's
-        # Datastore-mode database in datastore.py.
+        # as `datastore_gql_errors.json`, say so only by their recorder; and the steps of
+        # `datastore_sequences.json`), sent to the project's Datastore-mode database in
+        # datastore.py.
         import datastore
         result = {"fixture": Path(fixture).name, "cases": len(recording["cases"]), "sent": 0, "same": 0,
                   "skipped": {}, "emulatorDeletes": 0, "needsIndex": [], "indexes": [], "knownCases": 0,
