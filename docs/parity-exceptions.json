@@ -2262,6 +2262,24 @@
    "pinned_by": [
     "crates/hidane/tests/datastore.rs::protobuf_answers_like_the_official_emulator"
    ]
+  },
+  {
+   "id": "D130",
+   "table": "production",
+   "area": "transactions",
+   "topic": "Datastore mode: lock waits",
+   "kind": "bug-for-bug",
+   "official": "A write to what another transaction read waits for its lock 2 s in a transaction, 60 s outside one, then `409` `ABORTED` \"Transaction lock timeout.\" (D124). A query or an aggregation locks its kind, also an aggregation its query refuses (a negative limit); one its aggregations refuse (none, a sum of `__key__`) locks nothing (`tools/oracle/datastore_locks.py`)",
+   "firestore": "A write to a key another transaction read waits about 20 s, in a transaction or outside one, then `409` `ABORTED` \"too much contention on these datastore entities. please try again.\"; a write to a kind another transaction queried or aggregated waits 180 s, then the same in a transaction, and outside one `503` `UNAVAILABLE` \"The datastore operation timed out, or the data was temporarily unavailable.\" An aggregation its query refuses locks nothing (#82)",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). Clients retry `ABORTED` and `UNAVAILABLE`, and the emulator's shorter waits keep a test that meets a lock short",
+   "references": [
+    "hidane-dev/hidane#82",
+    "tools/oracle/datastore_locks.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/datastore.rs::lock_waits_like_the_official_emulator"
+   ]
   }
  ],
  "retired": [

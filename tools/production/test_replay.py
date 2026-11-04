@@ -55,6 +55,7 @@ class StandIn(BaseHTTPRequestHandler):
     # A Datastore-mode database's entities (by namespace and path), and how many IDs it allocated.
     entities = {}
     allocated = 0
+    transactions = 0
     # Whether it stores arrays in arrays, as production has since late October 2026 (D119); and
     # how many more commits holding a text it refuses with 429 (-1: every one).
     nested_arrays = False
@@ -101,7 +102,7 @@ class StandIn(BaseHTTPRequestHandler):
             return self.rules_api(json.loads(body))
         if self.path.startswith((f"/v1/projects/{PROJECT}/rulesets", f"/v1/projects/{PROJECT}/releases")):
             return self.deployments(body)
-        verb = re.fullmatch(rf"/v1/projects/{PROJECT}:(lookup|commit|runQuery|allocateIds)", self.path)
+        verb = re.fullmatch(rf"/v1/projects/{PROJECT}:(lookup|commit|runQuery|allocateIds|beginTransaction|rollback)", self.path)
         if verb:
             return self.datastore(verb.group(1), body)
         if f"/v1/projects/{PROJECT}/databases/ds/" in self.path:
@@ -401,9 +402,10 @@ class StandIn(BaseHTTPRequestHandler):
 
     def datastore(self, verb, body):
         """Answers as a Datastore-mode database `ds` holding `entities` (by namespace and path):
-        lookups, commits, queries of a kind or of none (a cursor is the number of results before
-        it), and IDs it allocates. As production, it refuses a request without the routing header,
-        and answers a commit without `commitTime`."""
+        lookups, commits (one that writes a key named `slow` after 1.2 s, as if it waited for a
+        lock), queries of a kind or of none (a cursor is the number of results before it), IDs it
+        allocates, and transactions begun and rolled back. As production, it refuses a request
+        without the routing header, and answers a commit without `commitTime`."""
         if self.headers.get("x-goog-request-params") != f"project_id={PROJECT}&database_id=ds":
             return self.answer(400, {"error": {"code": 400, "message": "Missing routing header.", "status": "INVALID_ARGUMENT"}})
         request = json.loads(body)
@@ -428,6 +430,11 @@ class StandIn(BaseHTTPRequestHandler):
                 StandIn.allocated += 1
                 keys.append(key(k["path"][:-1] + [{**k["path"][-1], "id": str(7000000000000000 + StandIn.allocated)}]))
             return self.answer(200, {"keys": keys})
+        if verb == "beginTransaction":
+            StandIn.transactions += 1
+            return self.answer(200, {"transaction": f"tx{StandIn.transactions}"})
+        if verb == "rollback":
+            return self.answer(200, {})
         if verb == "lookup":
             found = [StandIn.entities[stored(k)] for k in request["keys"] if stored(k) in StandIn.entities]
             missing = [{"key": key(k["path"])} for k in request["keys"] if stored(k) not in StandIn.entities]
@@ -435,6 +442,9 @@ class StandIn(BaseHTTPRequestHandler):
                                      **({"missing": [{"entity": e, "version": WRITTEN} for e in missing]} if missing else {}),
                                      "readTime": "2026-01-01T00:00:02Z"})
         if verb == "commit":
+            if '"name": "slow"' in body:
+                # A write that waits for a lock.
+                time.sleep(1.2)
             for mutation in request["mutations"]:
                 (operation, value), = mutation.items()
                 if operation == "delete":
@@ -477,7 +487,7 @@ class ReplayTest(unittest.TestCase):
         StandIn.commits = 0
         StandIn.targets, StandIn.listened = [], []
         StandIn.rulesets, StandIn.release, StandIn.released, StandIn.lag, StandIn.lagging = {}, None, [], 0, 0
-        StandIn.entities, StandIn.allocated = {}, 0
+        StandIn.entities, StandIn.allocated, StandIn.transactions = {}, 0, 0
         StandIn.nested_arrays, StandIn.throttle = False, {}
         self.waits = release.SETTLE, replay.RETRY_AFTER, release.PER_MINUTE, replay.THROTTLED_WAITS
         release.SETTLE = replay.RETRY_AFTER = 0
@@ -1542,6 +1552,48 @@ class ReplayTest(unittest.TestCase):
         sent = [body for _, _, _, body in StandIn.seen if isinstance(body, bytes)]
         self.assertEqual(len(sent), 4)
         self.assertTrue(all(body.endswith(field(9, "ds")) for body in sent))
+
+    def test_a_write_waits_for_a_lock_while_the_reader_is_kept_in_use(self):
+        def answer(status, body):
+            return {"status": status, "contentType": "application/json", "body": json.dumps(body)}
+
+        def commit(name, transaction=None):
+            return {"path": "/v1/projects/{project}:commit", "outcome": answer(200, {}), "body": {
+                "mode": "TRANSACTIONAL" if transaction else "NON_TRANSACTIONAL", **({"transaction": transaction} if transaction else {}),
+                "mutations": [{"upsert": {"key": {"path": [{"kind": "K", "name": name}]}}}]}}
+
+        def case(name, write, waited):
+            began = {"path": "/v1/projects/{project}:beginTransaction", "body": {}, "outcome": answer(200, {"transaction": "<id>"})}
+            read = {"path": "/v1/projects/{project}:lookup", "outcome": answer(200, {}),
+                    "body": {"keys": [{"path": [{"kind": "K", "name": "a"}]}], "readOptions": {"transaction": "{reader}"}}}
+            return {"name": name, "steps": [commit("a"), began, read, *([began] if "{writer}" in json.dumps(write) else []), write],
+                    "waited": waited}
+
+        # Not named as the recording, whose waits production answers otherwise (D130): its recorder
+        # says what it is.
+        path = Path(self.dir.name) / "locks.json"
+        path.write_text(json.dumps({
+            "generated_by": "tools/oracle/datastore_locks.py", "mode": "datastore-mode", "keep_alive_seconds": 0.4,
+            "every_case": {"method": "POST", "headers": {"Content-Type": "application/json"}, "compare": "status"},
+            "cases": [case("waits in a transaction", commit("slow", "{writer}"), 1), case("waits outside one", commit("b"), 60)]}))
+        production = replay.Production(self.base, PROJECT, "a-token", 100)
+        production.datastore = datastore.Database(production, "ds", self.base)
+        result = replay.replay(production, str(path))
+        # Each step, and the first write's wait, within 5 s of the official emulator's; the
+        # second wrote at once, where the official emulator waited 60 s.
+        self.assertEqual((result["sent"], result["same"]), (9, 10))
+        (differ,) = result["differ"]
+        self.assertEqual((differ["name"], differ["difference"]), ("waits outside one, the wait", "the write waited 60 s, production 0 s"))
+        sent = [(path.rsplit(":", 1)[1], json.loads(body)) for _, path, _, body in StandIn.seen if ":" in path]
+        # The writer was the second transaction begun; while it waited, the reader, the first,
+        # looked up the key that keeps it in use.
+        self.assertIn(("commit", {"mode": "TRANSACTIONAL", "transaction": "tx2", "databaseId": "ds", "mutations": [
+            {"upsert": {"key": {"path": [{"kind": "K", "name": "slow"}]}}}]}), sent)
+        kept = [body for verb, body in sent if verb == "lookup" and body["keys"][0]["path"][0]["name"] == "z"]
+        self.assertGreaterEqual(len(kept), 2)
+        self.assertTrue(all(body["readOptions"] == {"transaction": "tx1"} for body in kept))
+        # Every transaction was rolled back after its case.
+        self.assertEqual(sorted(body["transaction"] for verb, body in sent if verb == "rollback"), ["tx1", "tx2", "tx3"])
 
     def test_the_steps_of_a_sequence_are_sent_with_production_times_and_its_times_labelled(self):
         def answer(status, body):

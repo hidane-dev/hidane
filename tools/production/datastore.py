@@ -4,8 +4,8 @@ of production (#81, #82).
 `replay.py --datastore-database <id>` hands these recordings here: those of
 `tools/oracle/datastore_*.py` that are REST requests sent in order (`datastore_entities.json`,
 `datastore_queries.json`, `datastore_gql.json`, `datastore_firestore_api.json`,
-`datastore_gql_errors.json`), the steps of `datastore_sequences.json`, and REST in protobuf
-(`datastore_protobuf.json`). They go to that
+`datastore_gql_errors.json`), the steps of `datastore_sequences.json`, REST in protobuf
+(`datastore_protobuf.json`), and how long a write waits for a lock (`datastore_locks.json`). They go to that
 database of the project, a named one in Datastore mode: a database has one mode, and the project's
 `(default)` is in Firestore Native mode. The database is emptied before and after each recording,
 and a recording's dataset written first, as its replaying test writes it.
@@ -39,6 +39,7 @@ counting as known (`tally`). Stdlib only.
 import base64
 import json
 import re
+import threading
 import time
 from datetime import datetime, timezone
 
@@ -82,6 +83,15 @@ CODES = {1: "CANCELLED", 2: "UNKNOWN", 3: "INVALID_ARGUMENT", 4: "DEADLINE_EXCEE
          6: "ALREADY_EXISTS", 7: "PERMISSION_DENIED", 8: "RESOURCE_EXHAUSTED", 9: "FAILED_PRECONDITION",
          10: "ABORTED", 11: "OUT_OF_RANGE", 12: "UNIMPLEMENTED", 13: "INTERNAL", 14: "UNAVAILABLE",
          15: "DATA_LOSS", 16: "UNAUTHENTICATED"}
+
+# How long a write waits for another transaction's lock (`datastore_locks.json`): its recorder,
+# the key the reader looks up to stay in use while the write waits, and how far, in seconds, the
+# wait may be from the official emulator's (as hidane's test allows), and how long a write may
+# wait for an answer: the official emulator gives up on one outside a transaction after 60 s.
+LOCKS_RECORDER = "tools/oracle/datastore_locks.py"
+KEPT_ALIVE_BY = {"keys": [{"path": [{"kind": "K", "name": "z"}]}]}
+WAIT_TOLERANCE = 5
+LOCK_TIMEOUT = 600
 
 # Differences of Datastore mode that docs/parity-exceptions.md records (D120 to D126), set aside
 # before an answer is compared, each counted as known by its entry (`set_aside`).
@@ -150,17 +160,18 @@ class Database:
         self.name = name
         self.base = base.rstrip("/")
 
-    def send(self, method, body=None, raw=None, content_type="application/json", verb="POST"):
+    def send(self, method, body=None, raw=None, content_type="application/json", verb="POST", timeout=60, tries=None):
         """A request of the Datastore API (`method`, as `lookup`) to the database: a JSON `body`
         gets the database's `databaseId`, and so does each `partitionId` of the project that names
         none (`with_database`); a `raw` one is sent as it is. Answers (status, content type, body
-        as text)."""
+        as text), or status 0 if none came in `timeout` seconds, `tries` times (by default as
+        `Production.send`)."""
         project = self.production.project
         if body is not None:
             raw = json.dumps({**with_database(body, project, self.name), "databaseId": self.name}).encode()
         return self.production.send(verb, f"/v1/projects/{project}:{method}", raw, content_type, base=self.base,
                                     headers={"x-goog-request-params": f"project_id={project}&database_id={self.name}"},
-                                    budgeted=True)
+                                    budgeted=True, timeout=timeout, **({"tries": tries} if tries else {}))
 
     def send_bytes(self, verb, path, data, content_type, headers):
         """A request as one of REST in protobuf is recorded: its own path (of the project), its
@@ -447,6 +458,9 @@ def replay(production, recording, result):
     if database is None:
         result["skipped"]["no Datastore-mode database (--datastore-database)"] = len(cases)
         return
+    if recording.get("generated_by") == LOCKS_RECORDER:
+        replay_locks(production, recording, result)
+        return
     if "steps" in cases[0]:
         replay_sequences(production, recording, result)
         return
@@ -681,6 +695,69 @@ def replay_protobuf(production, recording, result):
                                              "path": case["path"].replace(PROTOBUF_PROJECT, "{project}"),
                                              "difference": difference(shown_official, answered),
                                              "official": shown_official, "production": answered}, case["name"], known)
+    database.empty()
+
+
+def replay_locks(production, recording, result):
+    """Sends each case of how long a write waits for another transaction's lock
+    (`datastore_locks.json`) in turn, to the database emptied before it, where the recorder sent
+    them at once, each to a project of its own: its steps in order, `{reader}` and `{writer}` the
+    transactions it began, the first and the second. While the write, the last step, waits, the
+    reader stays in use, as the recorder kept it: a lookup in it every `keep_alive_seconds`. Each
+    answer is compared as in `replay`, and how long the write waited, in whole seconds, with the
+    official emulator's, within `WAIT_TOLERANCE`. The case's transactions are rolled back after
+    it, so that none holds a lock into the next."""
+    database = production.datastore
+    every = recording.get("every_case", {})
+    keep_alive = recording.get("keep_alive_seconds", 10)
+    for case in recording["cases"]:
+        database.empty()
+        began = []
+        steps = [{**every, **step} for step in case["steps"]]
+        for i, step in enumerate(steps, 1):
+            text = json.dumps(step["body"]).replace("{reader}", began[0] if began else "")
+            text = text.replace("{writer}", began[1] if len(began) > 1 else "")
+            verb = DATASTORE_PATH.fullmatch(step["path"]).group(1)
+            done, keeper = threading.Event(), None
+            if i == len(steps) and began:
+                def keep(reader=began[0]):
+                    while not done.wait(keep_alive):
+                        database.send("lookup", {**KEPT_ALIVE_BY, "readOptions": {"transaction": reader}})
+                keeper = threading.Thread(target=keep)
+                keeper.start()
+            start = time.monotonic()
+            # The write is not sent again when no answer comes: that would be another write.
+            status, answer_type, answer = (database.send(verb, json.loads(text), timeout=LOCK_TIMEOUT, tries=1) if keeper else
+                                           database.send(verb, json.loads(text)))
+            waited = round(time.monotonic() - start)
+            done.set()
+            if keeper:
+                keeper.join()
+            result["sent"] += 1
+            value = parsed(answer)
+            if verb == "beginTransaction" and status == 200 and isinstance(value, dict):
+                began.append(value.get("transaction", ""))
+            official = step["outcome"]
+            answered = {"status": status, "contentType": answer_type, "body": shown(answer, production, database, {})}
+            theirs = {"status": official["status"], "media": media(official.get("contentType"))}
+            ours = {"status": status, "media": media(answer_type)}
+            if step.get("compare", "exact") == "exact":
+                theirs["body"], ours["body"] = parsed(official.get("body") or ""), parsed(answered["body"])
+            known = set()
+            theirs, ours = set_aside(theirs, ours, known)
+            name = f"{case['name']}, step {i}"
+            tally(result, theirs, ours, lambda: {"name": name, "method": step["method"], "path": step["path"],
+                                                 "difference": difference(official, answered), "official": official,
+                                                 "production": answered}, name, known)
+        if "waited" in case:
+            name = f"{case['name']}, the wait"
+            ours = case["waited"] if abs(waited - case["waited"]) <= WAIT_TOLERANCE else waited
+            tally(result, {"waited": case["waited"]}, {"waited": ours}, lambda: {
+                "name": name, "method": "POST", "path": steps[-1]["path"],
+                "difference": f"the write waited {case['waited']} s, production {waited} s",
+                "official": {"waited": case["waited"]}, "production": {"waited": waited}}, name)
+        for transaction in began:
+            database.send("rollback", {"transaction": transaction})
     database.empty()
 
 
