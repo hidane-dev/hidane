@@ -71,6 +71,8 @@ TIME = re.compile(r"\d+|\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z")
 CURSOR = re.compile(r'"(cursor|endCursor|skippedCursor|startCursor)": "[^"]*"')
 STEP_TIME = re.compile(r"\{time:(\d+):([A-Za-z0-9.]+)(?::(-?\d+))?\}")
 STEP_TRANSACTION = re.compile(r"\{tx(?::([a-z]+))?\}")
+# A run of one character, as some recorders write 200 or more (`{repeat:<c>:<n>}`).
+REPEAT = re.compile(r"\{repeat:(.*?):(\d+)\}")
 
 # REST in protobuf (`datastore_protobuf.json`): its recorder, the project it names (fixed: an
 # answer in protobuf cannot be masked without changing its length), the field of every request of
@@ -119,6 +121,10 @@ KNOWN_VALUES = [
 # pattern only an error that has one. The status of an answer that is no error is None.
 TRANSACTION_ENDED = r"^The referenced transaction has expired or is no longer valid\.$"
 FIRESTORE_API = r"^The Cloud Firestore API is not available for Firestore in Datastore Mode database "
+# What production checks of a request before its other faults (D131): a new read-only
+# transaction's read time, and a reserved name projected or grouped by.
+READ_TIME = r"^(?:timestamp cannot have more than microseconds precision|Only timestamps past epoch are supported\.)$"
+RESERVED = r"^(?:projections are|Group by is) not supported for the property: __"
 KNOWN_ERRORS = [
     ("D124", 500, "UNKNOWN", None, 400, "INVALID_ARGUMENT", r"^Invalid transaction\.$"),
     ("D124", 400, "INVALID_ARGUMENT", r"^non-transaction commit cannot specify a transaction$",
@@ -128,23 +134,39 @@ KNOWN_ERRORS = [
     ("D124", 409, "ABORTED", r"^Transaction lock timeout\.$",
      409, "ABORTED", r"^too much contention on these datastore entities\. please try again\.$"),
     ("D124", None, None, None, 400, "INVALID_ARGUMENT", r"^transaction required$"),
+    # Production checks a transaction before the rest of a request.
+    ("D124", None, None, r"", 400, "INVALID_ARGUMENT", r"^Invalid transaction\.$"),
+    # Production stores arrays in arrays, and goes on to what else a request holds.
+    ("D119", 400, "INVALID_ARGUMENT", r"^Nested arrays are not allowed$", None, None, None),
+    ("D131", None, None, r"", 400, "INVALID_ARGUMENT", READ_TIME),
+    ("D131", None, None, r"", 400, "INVALID_ARGUMENT", RESERVED),
+    ("D131", 400, "INVALID_ARGUMENT", r"^Too many disjunctions after normalization\.", None, None, r""),
+    ("D131", 404, "NOT_FOUND", r"^no entity to update: ", 400, "INVALID_ARGUMENT", r""),
     ("D122", 400, "INVALID_ARGUMENT", r"^Key filter on __kind__ is invalid \(must be a key for __kind__\)", 200, None, None),
     ("D122", None, None, None, 400, "INVALID_ARGUMENT", r"^Unsupported query for kind __(?:kind|namespace)__$"),
+    ("D122", None, None, r"", 400, "INVALID_ARGUMENT",
+     r"^Projections are not supported for the kind: __|^Key filter on __kind__ is invalid \(must be a named key for __kind__\)"),
     ("D125", 400, "FAILED_PRECONDITION", r"^List of Ids to reserve cannot be empty\.$", 200, None, None),
     ("D125", 400, "INVALID_ARGUMENT", r"^Firestore emulator does not support eventual consistency options\.$",
      200, None, None),
-    ("D125", 400, "INVALID_ARGUMENT", r"^order by clause cannot contain duplicate fields ", 200, None, None),
-    ("D125", None, None, None, 400, "INVALID_ARGUMENT", r"^The project \S+ does not exist\.$"),
+    # Production takes an order on a property twice, and goes on to what else a query holds.
+    ("D125", 400, "INVALID_ARGUMENT", r"^order by clause cannot contain duplicate fields ", None, None, None),
+    ("D125", None, None, None, 400, "INVALID_ARGUMENT", r"^The project \S* does not exist\.$"),
     ("D125", 500, "UNKNOWN", None, 400, "INVALID_ARGUMENT",
      r"^(?:limit is negative|offset is negative|Unable to plan or invalidate query\.)$"),
     ("D125", 400, "INVALID_ARGUMENT", r"^kind is required for all orders except __key__ ascending$",
      400, "INVALID_ARGUMENT", r"^Unable to plan or invalidate query\.$"),
+    # Production checks what a query of no kind holds before that it has none.
+    ("D131", 400, "INVALID_ARGUMENT", r"^kind is required for ", None, None, r""),
     ("D125", 500, "UNKNOWN", None, 400, "INVALID_ARGUMENT", r"^Timestamp is not valid\. See proto definition for valid values\. "),
     ("D125", 400, "INVALID_ARGUMENT", r"^__key__ filter value must be a Key$",
      400, "INVALID_ARGUMENT", r"^Cannot use projection on a property with an equality filter\.$"),
     ("D125", 400, "INVALID_ARGUMENT", r"^Cannot use projection on a property with an equality filter\.$",
      400, "INVALID_ARGUMENT", r"^The query namespace is '[^']*' but __key__ filter namespace is '[^']*'\.$"),
     ("D125", 500, "UNKNOWN", None, 500, "INTERNAL", r"^An internal error occurred\.$"),
+    ("D125", 400, "INVALID_ARGUMENT", r"", 500, "INTERNAL", r"^An internal error occurred\.$"),
+    ("D125", 400, "INVALID_ARGUMENT", r"^Value type \w+ is not allowed$", 200, None, None),
+    ("D125", 200, None, None, 400, "INVALID_ARGUMENT", r"^Geo point latitude is not a number\.$"),
     ("D125", 500, "UNKNOWN", None, 200, None, None),
     ("D125", 409, "ALREADY_EXISTS", r"^entity already exists: EntityRef\[",
      409, "ALREADY_EXISTS", r"^entity already exists: app: "),
@@ -451,7 +473,11 @@ def shown(text, production, database, ids, sequence=False):
 
 def replay(production, recording, result):
     """Sends a recording's cases in order to the Datastore-mode database, after writing its
-    dataset; compares each answer with the official emulator's."""
+    dataset; compares each answer with the official emulator's. A recording whose recorder sent
+    each case to a project of its own after a commit (`seed`, `datastore_commit_checks.json`)
+    has that commit before its first case, and again, the database emptied, after each commit
+    production did not refuse as a bad request (400): one it refused wrote nothing, nor does a
+    read. Runs of one character are expanded (`expanded`)."""
     database = production.datastore
     # Each case with what the recording's `every_case` gives them all (`datastore_gql_errors.json`).
     cases = [{**recording.get("every_case", {}), **case} for case in recording["cases"]]
@@ -468,15 +494,18 @@ def replay(production, recording, result):
         replay_protobuf(production, recording, result)
         return
     project = production.project
+    seed = recording.get("seed")
     database.empty()
     database.seed(recording.get("dataset", []))
+    if seed:
+        database.call("commit", seed)
     # What production handed out, by the names the recording gives them, and the IDs it allocated
     # in place of the official emulator's.
     labels, ids = {}, {}
     for n, case in enumerate(cases, 1):
         if n % 50 == 0:
             log(f"{result['fixture']}: case {n}, {production.sent} requests so far")
-        why = sendable(case)
+        why = "steps of their own" if "steps" in case else sendable(case)
         if why:
             result["skipped"][why] = result["skipped"].get(why, 0) + 1
             continue
@@ -487,7 +516,7 @@ def replay(production, recording, result):
         else:
             text = None
         if text is not None:
-            text = text.replace("{project}", project)
+            text = expanded(text).replace("{project}", project)
             for label, value in labels.items():
                 text = text.replace(f'"<{label}>"', json.dumps(value))
             for theirs, ours in ids.items():
@@ -530,13 +559,22 @@ def replay(production, recording, result):
         theirs = {"status": official["status"], "media": media(official.get("contentType"))}
         ours = {"status": status, "media": media(answer_type)}
         if case.get("compare", "exact") == "exact":
-            theirs["body"], ours["body"] = parsed(official.get("body") or ""), parsed(answered["body"])
+            theirs["body"], ours["body"] = parsed(expanded(official.get("body") or "")), parsed(answered["body"])
         known = set()
         theirs, ours = set_aside(theirs, ours, known)
         tally(result, theirs, ours, lambda: {"name": case["name"], "method": case["method"], "path": case["path"],
                                              "difference": difference(official, answered), "official": official,
                                              "production": answered}, case["name"], known)
+        if seed and method and method.group(1) == "commit" and status != 400:
+            database.empty()
+            database.call("commit", seed)
     database.empty()
+
+
+def expanded(text):
+    """A recording's text with each run of one character it wrote as `{repeat:<c>:<n>}`
+    written out."""
+    return REPEAT.sub(lambda m: m.group(1) * int(m.group(2)), text)
 
 
 def varint(data, at):

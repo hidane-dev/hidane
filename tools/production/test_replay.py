@@ -1553,6 +1553,39 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual(len(sent), 4)
         self.assertTrue(all(body.endswith(field(9, "ds")) for body in sent))
 
+    def test_each_case_of_a_seeded_recording_finds_the_seed_and_its_runs_written_out(self):
+        def answer(status):
+            return {"status": status, "contentType": "application/json", "body": "{}"}
+
+        seed = {"mode": "NON_TRANSACTIONAL", "mutations": [{"upsert": {"key": {"path": [{"kind": "K", "name": "b"}]}}}]}
+        path = Path(self.dir.name) / "datastore_commit_checks.json"
+        path.write_text(json.dumps({
+            "generated_by": "tools/oracle/datastore_commit_checks.py", "seed": seed,
+            "every_case": {"method": "POST", "headers": {"Content-Type": "application/json"}, "compare": "status"},
+            "cases": [
+                {"name": "a long name", "path": "/v1/projects/{project}:lookup", "outcome": answer(200),
+                 "body": {"keys": [{"path": [{"kind": "K", "name": "{repeat:s:300}"}]}]}},
+                {"name": "a write", "path": "/v1/projects/{project}:commit", "outcome": answer(200), "body": {
+                    "mode": "NON_TRANSACTIONAL", "mutations": [{"upsert": {"key": {"path": [{"kind": "K", "name": "a"}]}}}]}},
+                {"name": "a sequence", "steps": []},
+            ]}))
+        production = replay.Production(self.base, PROJECT, "a-token", 100)
+        production.datastore = datastore.Database(production, "ds", self.base)
+        result = replay.replay(production, str(path))
+        self.assertEqual((result["sent"], result["same"], result["differ"]), (2, 2, []))
+        self.assertEqual(result["skipped"], {"steps of their own": 1})
+        sent = [(p.rsplit(":", 1)[1], json.loads(b)) for _, p, _, b in StandIn.seen if ":" in p and b]
+        # The run of 300 characters went written out.
+        self.assertIn({"keys": [{"path": [{"kind": "K", "name": "s" * 300}]}], "databaseId": "ds"}, [b for v, b in sent if v == "lookup"])
+        # The seed was written before the first case, and again after the write (not the read),
+        # the database emptied.
+        commits = [b["mutations"] for v, b in sent if v == "commit"]
+        written = {"upsert": {"key": {"path": [{"kind": "K", "name": "b"}]}}}
+        self.assertEqual([n for n, c in enumerate(commits) if c == [written]], [0, 3])
+        self.assertIn([{"delete": {"partitionId": {"projectId": PROJECT, "databaseId": "ds"}, "path": [{"kind": "K", "name": "a"}]}},
+                       {"delete": {"partitionId": {"projectId": PROJECT, "databaseId": "ds"}, "path": [{"kind": "K", "name": "b"}]}}],
+                      commits)
+
     def test_a_write_waits_for_a_lock_while_the_reader_is_kept_in_use(self):
         def answer(status, body):
             return {"status": status, "contentType": "application/json", "body": json.dumps(body)}
