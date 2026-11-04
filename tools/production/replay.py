@@ -348,6 +348,9 @@ KNOWN_CASES = {
     "queries.json": [("D103", r"^parent is a collection$")],
     "document_writes.json": [("D112", r"^batch get order$"), ("D111", r"^named database$"), ("D119", r"^nested array$")],
     "datastore_entities.json": [("D119", r"^write nested arrays$"), ("D120", r"^read after a property mask$")],
+    # A read after writes whose base version or update time does not match, which production does
+    # not apply.
+    "datastore_commit_checks.json": [("D120", r"^sequence: a base version that does not match is written over, step 4$")],
     "datastore_queries.json": [
         ("D123", r"^(?:start|end)Cursor of |^a cursor of another query"),
         ("D122", r"^__(?:kind|namespace|property)__"),

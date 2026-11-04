@@ -1569,24 +1569,29 @@ class ReplayTest(unittest.TestCase):
                  "body": {"keys": [{"path": [{"kind": "K", "name": "{repeat:s:300}"}]}]}},
                 {"name": "a write", "path": "/v1/projects/{project}:commit", "outcome": answer(200), "body": {
                     "mode": "NON_TRANSACTIONAL", "mutations": [{"upsert": {"key": {"path": [{"kind": "K", "name": "a"}]}}}]}},
-                {"name": "a sequence", "steps": []},
+                {"name": "a sequence", "steps": [
+                    {"path": "/v1/projects/{project}:beginTransaction", "body": {}, "outcome": answer(200)},
+                    {"path": "/v1/projects/{project}:commit", "outcome": answer(200), "body": {
+                        "mode": "TRANSACTIONAL", "transaction": "{tx}",
+                        "mutations": [{"upsert": {"key": {"path": [{"kind": "K", "name": "c"}]}}}]}}]},
             ]}))
         production = replay.Production(self.base, PROJECT, "a-token", 100)
         production.datastore = datastore.Database(production, "ds", self.base)
         result = replay.replay(production, str(path))
-        self.assertEqual((result["sent"], result["same"], result["differ"]), (2, 2, []))
-        self.assertEqual(result["skipped"], {"steps of their own": 1})
+        self.assertEqual((result["sent"], result["same"], result["differ"], result["skipped"]), (4, 4, [], {}))
         sent = [(p.rsplit(":", 1)[1], json.loads(b)) for _, p, _, b in StandIn.seen if ":" in p and b]
         # The run of 300 characters went written out.
         self.assertIn({"keys": [{"path": [{"kind": "K", "name": "s" * 300}]}], "databaseId": "ds"}, [b for v, b in sent if v == "lookup"])
-        # The seed was written before the first case, and again after the write (not the read),
-        # the database emptied.
-        commits = [b["mutations"] for v, b in sent if v == "commit"]
+        # The seed was written before the first case, and again, the database emptied, after the
+        # write (not the read), before the sequence and after it; the sequence's commit went in the
+        # transaction it began.
+        commits = [b for v, b in sent if v == "commit"]
         written = {"upsert": {"key": {"path": [{"kind": "K", "name": "b"}]}}}
-        self.assertEqual([n for n, c in enumerate(commits) if c == [written]], [0, 3])
+        self.assertEqual([n for n, c in enumerate(commits) if c["mutations"] == [written]], [0, 3, 5, 8])
+        self.assertEqual(commits[6]["transaction"], "tx1")
         self.assertIn([{"delete": {"partitionId": {"projectId": PROJECT, "databaseId": "ds"}, "path": [{"kind": "K", "name": "a"}]}},
                        {"delete": {"partitionId": {"projectId": PROJECT, "databaseId": "ds"}, "path": [{"kind": "K", "name": "b"}]}}],
-                      commits)
+                      [c["mutations"] for c in commits])
 
     def test_a_shard_of_a_datastore_recording_sends_its_part_of_the_cases(self):
         production = replay.Production(self.base, PROJECT, "a-token", 100)

@@ -482,8 +482,9 @@ def replay(production, recording, result):
     each case to a project of its own after a commit (`seed`, `datastore_commit_checks.json`)
     has that commit before its first case, and again, the database emptied, after each commit
     production did not refuse as a bad request (400): one it refused wrote nothing, nor does a
-    read. Runs of one character are expanded (`expanded`). With a shard (`--datastore-shard
-    i/n`), only the cases whose place is i modulo n are sent."""
+    read. A case of steps of its own goes as `replay_steps` sends it. Runs of one character are
+    expanded (`expanded`). With a shard (`--datastore-shard i/n`), only the cases whose place is
+    i modulo n are sent."""
     database = production.datastore
     # Each case with what the recording's `every_case` gives them all (`datastore_gql_errors.json`).
     cases = [{**recording.get("every_case", {}), **case} for case in recording["cases"]]
@@ -493,7 +494,8 @@ def replay(production, recording, result):
     if recording.get("generated_by") == LOCKS_RECORDER:
         replay_locks(production, recording, result)
         return
-    if "steps" in cases[0]:
+    if "steps" in cases[0] and "seed" not in recording:
+        # `datastore_sequences.json`; the sequences of a seeded recording go in `replay_steps`.
         replay_sequences(production, recording, result)
         return
     if recording.get("generated_by") == PROTOBUF_RECORDER:
@@ -512,8 +514,13 @@ def replay(production, recording, result):
         if n % 50 == 0:
             log(f"{result['fixture']}: case {n}, {production.sent} requests so far")
         shard = production.datastore_shard
-        why = ("another part's" if shard and (n - 1) % shard[1] != shard[0] else
-               "steps of their own" if "steps" in case else sendable(case))
+        why = "another part's" if shard and (n - 1) % shard[1] != shard[0] else None
+        if why is None and "steps" in case:
+            why = next((why for step in case["steps"] if (why := sendable(step))), None)
+            if why is None:
+                replay_steps(production, case, recording.get("every_case", {}), seed, result)
+                continue
+        why = why or sendable(case)
         if why:
             result["skipped"][why] = result["skipped"].get(why, 0) + 1
             continue
@@ -577,6 +584,44 @@ def replay(production, recording, result):
             database.empty()
             database.call("commit", seed)
     database.empty()
+
+
+def replay_steps(production, case, every, seed, result):
+    """Sends a case's steps in turn (`datastore_commit_checks.json`'s sequences), the database
+    emptied and the recording's `seed` written before them and after, as the recorder sent them
+    to a project of their own: `{tx}` is the transaction the last step to begin one began. Each
+    step's answer is compared as in `replay`, as `<case>, step <n>`."""
+    database, project = production.datastore, production.project
+    database.empty()
+    if seed:
+        database.call("commit", seed)
+    transaction = None
+    for i, step in enumerate(case["steps"], 1):
+        step = {**every, **step}
+        text = expanded(json.dumps(step["body"])).replace("{project}", project)
+        if transaction:
+            text = text.replace('"{tx}"', json.dumps(transaction))
+        verb = DATASTORE_PATH.fullmatch(step["path"]).group(1)
+        status, answer_type, answer = database.send(verb, json.loads(text))
+        result["sent"] += 1
+        value = parsed(answer)
+        if verb == "beginTransaction" and status == 200 and isinstance(value, dict):
+            transaction = value.get("transaction")
+        official = step["outcome"]
+        answered = {"status": status, "contentType": answer_type, "body": shown(answer, production, database, {})}
+        theirs = {"status": official["status"], "media": media(official.get("contentType"))}
+        ours = {"status": status, "media": media(answer_type)}
+        if step.get("compare", "exact") == "exact":
+            theirs["body"], ours["body"] = parsed(expanded(official.get("body") or "")), parsed(answered["body"])
+        known = set()
+        theirs, ours = set_aside(theirs, ours, known)
+        name = f"{case['name']}, step {i}"
+        tally(result, theirs, ours, lambda: {"name": name, "method": step.get("method", "POST"), "path": step["path"],
+                                             "difference": difference(official, answered), "official": official,
+                                             "production": answered}, name, known)
+    database.empty()
+    if seed:
+        database.call("commit", seed)
 
 
 def expanded(text):
