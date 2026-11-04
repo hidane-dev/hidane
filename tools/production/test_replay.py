@@ -1,6 +1,8 @@
 """Tests of tools/production/replay.py against a stand-in for production on 127.0.0.1."""
 
 import base64
+import contextlib
+import io
 import json
 import os
 import re
@@ -1585,6 +1587,25 @@ class ReplayTest(unittest.TestCase):
         self.assertIn([{"delete": {"partitionId": {"projectId": PROJECT, "databaseId": "ds"}, "path": [{"kind": "K", "name": "a"}]}},
                        {"delete": {"partitionId": {"projectId": PROJECT, "databaseId": "ds"}, "path": [{"kind": "K", "name": "b"}]}}],
                       commits)
+
+    def test_a_shard_of_a_datastore_recording_sends_its_part_of_the_cases(self):
+        production = replay.Production(self.base, PROJECT, "a-token", 100)
+        production.datastore = datastore.Database(production, "ds", self.base)
+        production.datastore_shard = (1, 2)
+        result = replay.replay(production, self.datastore_recording())
+        # The second of each two: "write it", "the first P", "needs an index", "another project's"
+        # (not sent either way) and the Firestore API's.
+        self.assertEqual(result["skipped"], {"another part's": 5, "another project's": 1})
+        self.assertEqual(result["sent"], 4)
+        # A shard without the database, or past the last part, is refused.
+        os.environ[replay.TOKEN_ENV] = "a-token"
+        try:
+            for wrong in (["--datastore-shard", "1/2"], ["--datastore-shard", "2/2", "--datastore-database", "ds"]):
+                with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()) as said:
+                    replay.main(["--project", PROJECT, "--out", self.dir.name, *wrong, "f.json"])
+                self.assertIn("--datastore-shard takes i/n", said.getvalue())
+        finally:
+            del os.environ[replay.TOKEN_ENV]
 
     def test_a_write_waits_for_a_lock_while_the_reader_is_kept_in_use(self):
         def answer(status, body):

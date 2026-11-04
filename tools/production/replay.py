@@ -116,8 +116,10 @@ class Production:
         # the cases that deploy rules this run sends (`--shard`: i, n).
         self.release = None
         self.shard = None
-        # With `--datastore-database`, the project's Datastore-mode database (datastore.py).
+        # With `--datastore-database`, the project's Datastore-mode database (datastore.py), and
+        # with `--datastore-shard`, which part of each recording's cases to send there: (i, n).
         self.datastore = None
+        self.datastore_shard = None
 
     def send(self, method, path, data=None, content_type="application/json", base=None, anonymous=False,
              headers=None, budgeted=False, binary=False, timeout=60, tries=NETWORK_TRIES):
@@ -1942,6 +1944,8 @@ def main(argv=None):
     parser.add_argument("--datastore-database", help="the project's database in Datastore mode, which recordings in "
                                                      "Datastore mode are sent to (datastore.py); without it they are not sent")
     parser.add_argument("--datastore-base", default="https://datastore.googleapis.com")
+    parser.add_argument("--datastore-shard", help="with --datastore-database, which part of each recording's cases "
+                                                  "to send: i/n, the cases whose place in it is i modulo n, from 0")
     parser.add_argument("fixtures", nargs="+")
     args = parser.parse_args(argv)
     token = os.environ.get(TOKEN_ENV)
@@ -1950,6 +1954,10 @@ def main(argv=None):
     shard = re.fullmatch(r"(\d+)/(\d+)", args.shard or "0/1")
     if not shard or not int(shard.group(1)) < int(shard.group(2)) or (args.shard and not args.deploy_rules):
         parser.error("--shard takes i/n, i below n, with --deploy-rules")
+    datastore_shard = re.fullmatch(r"(\d+)/(\d+)", args.datastore_shard or "0/1")
+    if (not datastore_shard or not int(datastore_shard.group(1)) < int(datastore_shard.group(2))
+            or (args.datastore_shard and not args.datastore_database)):
+        parser.error("--datastore-shard takes i/n, i below n, with --datastore-database")
     production = Production(args.base, args.project, token, args.budget, args.rules_base, args.quota_project)
     report = {"started": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "project": "{project}",
               "recordings": []}
@@ -1961,6 +1969,9 @@ def main(argv=None):
     if args.datastore_database:
         from datastore import Database
         production.datastore = Database(production, args.datastore_database, args.datastore_base)
+        if args.datastore_shard:
+            production.datastore_shard = (int(datastore_shard.group(1)), int(datastore_shard.group(2)))
+            report["datastoreShard"] = args.datastore_shard
     try:
         if production.release is not None:
             released, rulesets = production.release.take_down()

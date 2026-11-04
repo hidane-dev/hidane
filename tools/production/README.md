@@ -229,15 +229,19 @@ PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/release.py --project 
 A database has one mode, and the project's `(default)` is in Firestore Native mode. The
 recordings in Datastore mode (`datastore_entities.json`, `datastore_queries.json`,
 `datastore_gql.json`, `datastore_firestore_api.json`, `datastore_gql_errors.json`,
-`datastore_sequences.json`, `datastore_protobuf.json`, `datastore_locks.json`) go, with
+`datastore_sequences.json`, `datastore_protobuf.json`, `datastore_locks.json`, and which fault
+of a request is reported, `datastore_checks.json` and `datastore_commit_checks.json`) go, with
 `--datastore-database <id>`, to a named database of the project in Datastore mode, in
-[`datastore.py`](datastore.py). A recording of `tools/oracle/datastore_*.py` is one, though it
+[`datastore.py`](datastore.py). The last two hold about 14,400 requests: the nightly workflow
+sends a seventh of their cases a night, the day of the week's (`--datastore-shard i/7`, the
+cases whose place is `i` modulo 7). A recording of `tools/oracle/datastore_*.py` is one, though it
 may not say its mode, and what its `every_case` gives goes into each case. Each is sent in
 order, after the database is emptied and the recording's dataset written, and compared as
 above; a run of one character the recorder wrote `{repeat:<c>:<n>}` is written out. A recording
 whose recorder sent each case to a project of its own after a commit (`seed`, as
 `datastore_commit_checks.json`) has it before its first case, and again, the database emptied,
-after each commit production did not refuse as a bad request. Production does some things its own way, and the replay puts them as the recording put
+after each commit production did not refuse as a bad request. Production does some things its
+own way, and the replay puts them as the recording put
 the official emulator's:
 
 - a request names its database in its body (`databaseId`) and in the routing header

@@ -365,6 +365,70 @@
    ]
   },
   {
+   "kind": "K",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "a",
+     "direction": "asc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
+    },
+    {
+     "name": "b",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "K",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "a",
+     "direction": "asc"
+    },
+    {
+     "name": "b",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "K",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
+    },
+    {
+     "name": "b",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "K",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
    "kind": "L",
    "ancestor": false,
    "properties": [
@@ -626,6 +690,24 @@
    "properties": [
     {
      "name": "n",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "K",
+   "ancestor": true,
+   "properties": [
+    {
+     "name": "a",
+     "direction": "asc"
+    },
+    {
+     "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "a",
      "direction": "asc"
     }
    ]

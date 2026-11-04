@@ -121,8 +121,10 @@ class IndexesTest(unittest.TestCase):
             below = {"kind": "C", "ancestor": True, "properties": [{"name": "n", "direction": "asc"}]}
             by_key = {"kind": "T", "ancestor": False, "properties": [{"name": "__key__", "direction": "desc"}]}
             report = Path(tmp) / "report.json"
+            # One of a reserved kind, which production recommends and will not make, is left out.
+            reserved = {"kind": "__x__", "ancestor": False, "properties": [{"name": "a", "direction": "asc"}]}
             report.write_text(json.dumps({"recordings": [{"indexes": [A], "datastoreIndexes": [by_a, below]},
-                                                         {"datastoreIndexes": [by_a, by_key]}]}))
+                                                         {"datastoreIndexes": [by_a, by_key, reserved]}]}))
             self.assertEqual(indexes.add([report]), 4)
             self.assertEqual(indexes.add([report]), 0)
             self.assertEqual(json.loads(indexes.INDEXES.read_text())["indexes"], [A])
