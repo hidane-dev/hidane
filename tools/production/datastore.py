@@ -4,7 +4,7 @@ of production (#81, #82).
 `replay.py --datastore-database <id>` hands these recordings here: those of
 `tools/oracle/datastore_*.py` that are REST requests sent in order (`datastore_entities.json`,
 `datastore_queries.json`, `datastore_gql.json`, `datastore_firestore_api.json`,
-`datastore_gql_errors.json`). They go to that
+`datastore_gql_errors.json`), and the steps of `datastore_sequences.json`. They go to that
 database of the project, a named one in Datastore mode: a database has one mode, and the project's
 `(default)` is in Firestore Native mode. The database is emptied before and after each recording,
 and a recording's dataset written first, as its replaying test writes it.
@@ -38,6 +38,7 @@ counting as known (`tally`). Stdlib only.
 import json
 import re
 import time
+from datetime import datetime, timezone
 
 from replay import PROJECT_NAME, TRANSIENT, difference, log, mask, media, parsed, same_json, tally
 
@@ -56,6 +57,18 @@ NEEDS_INDEX = re.compile(r"^(?:no matching index found\. recommended index is:|O
                          r"The query requires multiple indexes\. The recommended indexes are:)")
 INDEX_LINE = re.compile(r"\s*(-?)\s*(kind|ancestor|name|direction):\s*(.*?)\s*")
 
+# In `datastore_sequences.json`: the labels of the times and versions of an answer, which the
+# recorder gave in the order they first appear in the case's answers (`<t1>`, ...); a time or a
+# version, as production gives it; cursors; and a request's references to the time of an earlier
+# step's answer
+# (`{time:<step>:<path>}`, moved by `:<microseconds>`) and to a transaction (`{tx}`, the last
+# begun, or `{tx:<name>}`, the one a step began `as` that name).
+LABEL = re.compile(r"<t\d+>")
+TIME = re.compile(r"\d+|\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?Z")
+CURSOR = re.compile(r'"(cursor|endCursor|skippedCursor|startCursor)": "[^"]*"')
+STEP_TIME = re.compile(r"\{time:(\d+):([A-Za-z0-9.]+)(?::(-?\d+))?\}")
+STEP_TRANSACTION = re.compile(r"\{tx(?::([a-z]+))?\}")
+
 # Differences of Datastore mode that docs/parity-exceptions.md records (D120 to D126), set aside
 # before an answer is compared, each counted as known by its entry (`set_aside`).
 #
@@ -70,6 +83,7 @@ KNOWN_FIELDS = [
     ("D121", r"\$\.batch\.entityResults\[\d+\]", {"createTime", "updateTime", "version"}, set()),
     ("D121", r"\$", set(), {"query"}),
     ("D122", r"\$\.batch", set(), {"snapshotVersion"}),
+    ("D122", r"\$\.batch\.entityResults\[\d+\]", set(), {"cursor"}),
 ]
 # A value each side gives: (entry, the path, the official emulator's, production's).
 KNOWN_VALUES = [
@@ -387,15 +401,18 @@ def batched(official, production, known):
     return official
 
 
-def shown(text, production, database, ids):
+def shown(text, production, database, ids, sequence=False):
     """Production's answer as the recording put the official emulator's: masked, the database
-    left out of its keys (or, of the Firestore API, named `(default)`), its IDs read back."""
+    left out of its keys (or, of the Firestore API, named `(default)`), its IDs read back. In a
+    `sequence`, its times are kept, for `timed`."""
     value = parsed(text)
     if not isinstance(value, str):
         text = json.dumps(without_database(value, production.project, database.name), indent=2, ensure_ascii=False)
     text = text.replace(f"databases/{database.name}", "databases/(default)")
     for theirs, ours in ids.items():
         text = text.replace(f'"{ours}"', f'"{theirs}"')
+    if sequence:
+        return masked(text.replace(production.project, "{project}"))
     return mask(text, production.project)
 
 
@@ -407,6 +424,9 @@ def replay(production, recording, result):
     cases = [{**recording.get("every_case", {}), **case} for case in recording["cases"]]
     if database is None:
         result["skipped"]["no Datastore-mode database (--datastore-database)"] = len(cases)
+        return
+    if "steps" in cases[0]:
+        replay_sequences(production, recording, result)
         return
     project = production.project
     database.empty()
@@ -477,4 +497,199 @@ def replay(production, recording, result):
         tally(result, theirs, ours, lambda: {"name": case["name"], "method": case["method"], "path": case["path"],
                                              "difference": difference(official, answered), "official": official,
                                              "production": answered}, case["name"], known)
+    database.empty()
+
+
+def micros(text):
+    """A timestamp's or a version's microseconds."""
+    if text.isdigit():
+        return int(text)
+    whole, _, fraction = text.rstrip("Z").partition(".")
+    moment = datetime.strptime(whole, "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
+    return int(moment.timestamp()) * 1_000_000 + int((fraction + "000000")[:6])
+
+
+def stamp(microseconds):
+    moment = datetime.fromtimestamp(microseconds // 1_000_000, timezone.utc)
+    return moment.strftime("%Y-%m-%dT%H:%M:%S") + f".{microseconds % 1_000_000:06d}Z"
+
+
+def masked(text):
+    """An answer's text with its transactions and cursors masked, its times kept for `timed`."""
+    text = re.sub(r'"transaction": "[^"]*"', '"transaction": "<id>"', text)
+    return CURSOR.sub(lambda m: f'"{m.group(1)}": "<cursor>"', text)
+
+
+def timed(official, production, times, known, loose=(), path="$"):
+    """Production's answer with each of its times put as the label the official emulator's answer
+    has in its place, as long as a label stands for one time and a time for one label all along
+    the case (`times`, a label's time in production, grows as labels are first met); a time that
+    breaks it is put as the label it already has, or as itself. A version the emulator gives in
+    seconds (`<seconds>`) is one in production too. At a path of `loose` (a pattern, the entry
+    that records why, and whether a time first met there labels it), a time that breaks it is
+    taken for the label, and the entry is known."""
+    if isinstance(official, dict) and isinstance(production, dict):
+        return {k: timed(official[k], v, times, known, loose, f"{path}.{k}") if k in official else v
+                for k, v in production.items()}
+    if isinstance(official, list) and isinstance(production, list):
+        return [timed(o, p, times, known, loose, f"{path}[{n}]") for n, (o, p) in enumerate(zip(official, production))] + \
+            production[len(official):]
+    if not (isinstance(official, str) and isinstance(production, str) and TIME.fullmatch(production)):
+        return production
+    if official == "<seconds>":
+        return official if production.isdigit() and int(production) < 10 ** 12 else production
+    if not LABEL.fullmatch(official):
+        return production
+    moment = micros(production)
+    entry, labels = next(((entry, labels) for where, entry, labels in loose if re.fullmatch(where, path)), (None, True))
+    if official not in times and moment not in times.values() and labels:
+        times[official] = moment
+    if times.get(official) == moment:
+        return official
+    if entry:
+        known.add(entry)
+        return official
+    return next((label for label, at in times.items() if at == moment), production)
+
+
+def relabelled(value, times):
+    """Production's whole answer, for the report, with the times `timed` labelled put so."""
+    labels = {at: label for label, at in times.items()}
+    if isinstance(value, dict):
+        return {k: relabelled(v, times) for k, v in value.items()}
+    if isinstance(value, list):
+        return [relabelled(v, times) for v in value]
+    if isinstance(value, str) and TIME.fullmatch(value) and micros(value) in labels:
+        return labels[micros(value)]
+    return value
+
+
+def step_time(answer, path):
+    """The time at a path of an earlier answer of production's, or None. Production answers a
+    commit outside a transaction without `commitTime` (D120): its last mutation's time stands in,
+    as it is the commit's to the official emulator."""
+    found = at(answer, path)
+    if found is None and path == "commitTime":
+        times = [at(result, "updateTime") or at(result, "version") for result in answer.get("mutationResults", [])]
+        found = max((t for t in times if isinstance(t, str)), key=micros, default=None)
+    return found if isinstance(found, str) else None
+
+
+def filled(text, answers, transactions):
+    """A step's request with the times and transactions production answered before it."""
+    def time_of(m):
+        found = step_time(answers[int(m.group(1))], m.group(2))
+        return "" if found is None else stamp(micros(found) + int(m.group(3) or 0))
+    text = STEP_TRANSACTION.sub(lambda m: transactions.get(m.group(1) or "last", ""), text)
+    return STEP_TIME.sub(time_of, text)
+
+
+def compared(step, official, production, times, known, ids=None):
+    """A step's answers to compare (`tally`'s), as `set_aside` and `timed` put them, with what
+    production does its own way in a sequence set aside:
+
+    - a lookup reads at the time of the last write before it that changed the data, where the
+      official emulator reads at the time it is asked, after it (D120);
+    - a lookup gives each missing entity the time it read at as its version, where the emulator
+      gives one deleted the version it was deleted at (D120);
+    - the deletion of a key that is not there answers, in a transaction, the commit's version,
+      and outside one a time of its own, where the emulator answers the version the key was
+      deleted at, or a time before the commit's (D120);
+    - a query's snapshot version is its read time, where the emulator's is its first result's
+      version, or its read time in seconds (D121);
+    - `__kind__` and `__namespace__` list the kinds and namespaces of what is stored, where the
+      emulator lists those of every key a lookup or a commit named, there or not (D122).
+
+    Results in key order whose keys have IDs production allocated (`ids`, the official
+    emulator's to production's) come in the order of production's IDs: the same results in
+    another order are taken for the official emulator's."""
+    body = step.get("body") if isinstance(step.get("body"), dict) else {}
+    theirs, ours = official.get("body"), production.get("body")
+    kinds = [k.get("name") for k in (body.get("query") or {}).get("kind", [])]
+    if kinds in (["__kind__"], ["__namespace__"]) and isinstance(theirs, dict) and isinstance(ours, dict):
+        def key(result):
+            return json.dumps(result.get("entity", {}).get("key"), sort_keys=True)
+        their_results = (theirs.get("batch") or {}).get("entityResults", [])
+        listed = {key(r) for r in (ours.get("batch") or {}).get("entityResults", [])}
+        if len(their_results) > len(listed) and listed <= {key(r) for r in their_results}:
+            known.add("D122")
+            kept = [r for r in their_results if key(r) in listed]
+            batch = {k: v for k, v in theirs["batch"].items() if k != "entityResults"}
+            official = {**official, "body": {**theirs, "batch": {**batch, **({"entityResults": kept} if kept else {})}}}
+    official, production = set_aside(official, production, known)
+    theirs, ours = official.get("body"), production.get("body")
+    if official["status"] != 200 or not isinstance(theirs, dict) or not isinstance(ours, dict):
+        return official, production
+    loose = [(r"\$\.readTime", "D120", True), (r"\$\.missing\[\d+\]\.version", "D120", False)]
+    loose += [(rf"\$\.mutationResults\[{n}\]\.version", "D120", False)
+              for n, mutation in enumerate(body.get("mutations", [])) if "delete" in mutation]
+    batch, their_batch = ours.get("batch"), theirs.get("batch")
+    if isinstance(batch, dict) and isinstance(their_batch, dict) and all(
+            isinstance(batch.get(k), str) and TIME.fullmatch(batch[k]) for k in ("snapshotVersion", "readTime")) \
+            and micros(batch["snapshotVersion"]) == micros(batch["readTime"]):
+        loose.append((r"\$\.batch\.snapshotVersion", "D121", False))
+        if their_batch.get("snapshotVersion") == "<seconds>":
+            ours = {**ours, "batch": {**batch, "snapshotVersion": "<seconds>"}}
+            known.add("D121")
+    ours = timed(theirs, ours, times, known, loose)
+    results, their_results = at(ours, "batch.entityResults"), at(theirs, "batch.entityResults")
+    if ids and isinstance(results, list) and isinstance(their_results, list) and results != their_results:
+        def shown_key(result):
+            return json.dumps(result, sort_keys=True)
+        moved = [r for r, o in zip(results, their_results) if r != o]
+        if sorted(map(shown_key, results)) == sorted(map(shown_key, their_results)) and all(
+                any(element.get("id") in ids for element in at(r, "entity.key.path") or []) for r in moved):
+            ours = {**ours, "batch": {**ours["batch"], "entityResults": their_results}}
+    return official, {**production, "body": ours}
+
+
+def replay_sequences(production, recording, result):
+    """Sends each case of `datastore_sequences.json`, its steps in turn, to the database emptied
+    before it, as the recorder sent each to a project of its own; each of production's times is
+    put as the label the official emulator's answer has in its place (`timed`). A case with a request to
+    another database, or whose client gives up waiting for an answer, is not sent."""
+    database = production.datastore
+    every = recording.get("every_case", {})
+    for n, case in enumerate(recording["cases"], 1):
+        if n % 20 == 0:
+            log(f"{result['fixture']}: case {n}, {production.sent} requests so far")
+        steps = [{**every, **step} for step in case["steps"]]
+        why = next((why for step in steps if (why := sendable(step))), None)
+        if why is None and any("gives_up_after" in step for step in steps):
+            why = "a client that gives up waiting"
+        if why:
+            result["skipped"][why] = result["skipped"].get(why, 0) + 1
+            continue
+        database.empty()
+        answers, transactions, times, ids = [], {}, {}, {}
+        for i, step in enumerate(steps):
+            if "after" in step:
+                time.sleep(step["after"])
+            text = filled(json.dumps(step["body"]).replace("{project}", production.project), answers, transactions)
+            for theirs, ours in ids.items():
+                text = text.replace(f'"id": "{theirs}"', f'"id": "{ours}"')
+            verb = DATASTORE_PATH.fullmatch(step["path"]).group(1)
+            status, answer_type, answer = database.send(verb, json.loads(text))
+            result["sent"] += 1
+            value = parsed(answer)
+            value = without_database(value, production.project, database.name) if isinstance(value, dict) else {}
+            answers.append(value)
+            if verb == "beginTransaction" and isinstance(value.get("transaction"), str):
+                transactions[step.get("as", "tx")] = transactions["last"] = value["transaction"]
+            official = step["outcome"]
+            if status == 200 and verb in ("allocateIds", "commit") and official["status"] == 200:
+                allocated(parsed(official["body"]), value, ids)
+            text = shown(answer, production, database, ids, sequence=True)
+            theirs = {"status": official["status"], "media": media(official.get("contentType")),
+                      "body": parsed(official.get("body") or "")}
+            ours = {"status": status, "media": media(answer_type), "body": parsed(text)}
+            known = set()
+            theirs, ours = compared(step, theirs, ours, times, known, ids)
+            value = parsed(text)
+            answered = {"status": status, "contentType": answer_type, "body": text if isinstance(value, str) else
+                        json.dumps(relabelled(value, times), indent=2, ensure_ascii=False)}
+            name = f"{case['name']}, step {i}"
+            tally(result, theirs, ours, lambda: {"name": name, "method": "POST", "path": step["path"],
+                                                 "difference": difference(official, answered), "official": official,
+                                                 "production": answered}, name, known)
     database.empty()

@@ -228,7 +228,8 @@ PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/release.py --project 
 
 A database has one mode, and the project's `(default)` is in Firestore Native mode. The
 recordings in Datastore mode (`datastore_entities.json`, `datastore_queries.json`,
-`datastore_gql.json`, `datastore_firestore_api.json`, `datastore_gql_errors.json`) go, with
+`datastore_gql.json`, `datastore_firestore_api.json`, `datastore_gql_errors.json`,
+`datastore_sequences.json`) go, with
 `--datastore-database <id>`, to a named database of the project in Datastore mode, in
 [`datastore.py`](datastore.py). A recording of `tools/oracle/datastore_*.py` is one, though it
 may not say its mode, and what its `every_case` gives goes into each case. Each is sent in
@@ -259,6 +260,21 @@ both (`KNOWN_ERRORS`); a batch production cut at 300 entities, or that gives an 
 the emulator gives it for each value of an array its query matched; an array whose values
 excluded from indexes production gives last; and a lookup's results in production's order. The
 cases about the rest are known by their names (`KNOWN_CASES` in `replay.py`).
+
+The recorder of `datastore_sequences.json` sent each of its cases, steps in turn, to a project of
+its own: the database is emptied before each, and a case with a request to another database, or
+whose client gives up waiting for an answer, is not sent. A step names a time an earlier step
+answered (`{time:<step>:<path>}`) and a transaction one began (`{tx}`, `{tx:<name>}`): production's
+take their place, and a commit's time outside a transaction, which production does not answer
+(D120), is its last mutation's, as it is to the emulator. The recorder labelled the official
+emulator's times and versions `<t1>`, `<t2>`, ... in the order they first appear in the case's
+answers: each of production's is put as the label in its place, as long as a label stands for
+one time and a time for one label all along the case (`timed` in `datastore.py`). Production
+gives some times its own way (D120, D121, `compared`): a lookup reads at the time of an earlier
+write, and gives a missing entity that time as its version; the deletion of a key that is not
+there answers the commit's version in a transaction; a query's snapshot version is its read
+time; and `__kind__` and `__namespace__` list only what is stored. Those times are taken for the
+labels, and count as known.
 
 A request to another database or project (the recorders send some to projects of their own, to
 allocate IDs from the start), a GQL key that names the project (production reads it as one of

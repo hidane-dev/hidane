@@ -20,6 +20,9 @@ import replay  # noqa: E402
 from test_indexes import index_link  # noqa: E402
 
 PROJECT = "own-project"
+# The version of what the Datastore-mode stand-in writes: the microseconds of its time,
+# 2026-01-01T00:00:01Z.
+WRITTEN = "1767225601000000"
 
 
 def partitions(value):
@@ -399,8 +402,8 @@ class StandIn(BaseHTTPRequestHandler):
         if verb == "lookup":
             found = [StandIn.entities[stored(k)] for k in request["keys"] if stored(k) in StandIn.entities]
             missing = [{"key": key(k["path"])} for k in request["keys"] if stored(k) not in StandIn.entities]
-            return self.answer(200, {**({"found": [{"entity": e, "version": "2"} for e in found]} if found else {}),
-                                     **({"missing": [{"entity": e, "version": "2"} for e in missing]} if missing else {}),
+            return self.answer(200, {**({"found": [{"entity": e, "version": WRITTEN} for e in found]} if found else {}),
+                                     **({"missing": [{"entity": e, "version": WRITTEN} for e in missing]} if missing else {}),
                                      "readTime": "2026-01-01T00:00:02Z"})
         if verb == "commit":
             for mutation in request["mutations"]:
@@ -411,7 +414,7 @@ class StandIn(BaseHTTPRequestHandler):
                     namespace = value["key"].get("partitionId", {}).get("namespaceId", "")
                     StandIn.entities[stored(value["key"])] = {"key": key(value["key"]["path"], namespace),
                                                               **({"properties": value["properties"]} if value.get("properties") else {})}
-            results = [{"version": "2", "updateTime": "2026-01-01T00:00:01Z", "createTime": "2026-01-01T00:00:01Z"}
+            results = [{"version": WRITTEN, "updateTime": "2026-01-01T00:00:01Z", "createTime": "2026-01-01T00:00:01Z"}
                        for _ in request["mutations"]]
             return self.answer(200, {"mutationResults": results, "indexUpdates": len(results)})
         namespace = request.get("partitionId", {}).get("namespaceId", "")
@@ -1463,6 +1466,88 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual((result["sent"], result["same"], result["knownCases"], result["differ"]), (7, 5, 1, []))
         # The case of the Firestore API kept its own method.
         self.assertIn(("GET", f"/v1/projects/{PROJECT}/databases/ds/documents/c/d"), [(m, p) for m, p, _, _ in StandIn.seen])
+
+    def test_the_steps_of_a_sequence_are_sent_with_production_times_and_its_times_labelled(self):
+        def answer(status, body):
+            return {"status": status, "contentType": "application/json", "body": json.dumps(body, indent=2)}
+
+        key = {"path": [{"kind": "A", "name": "a"}]}
+        found = {"entity": {"key": {"partitionId": {"projectId": "{project}"}, **key}}}
+        lookup = "/v1/projects/{project}:lookup"
+        cases = [
+            {"name": "written, then read when it was", "steps": [
+                {"path": "/v1/projects/{project}:commit",
+                 "body": {"mode": "NON_TRANSACTIONAL", "mutations": [{"upsert": {"key": key}}]},
+                 "outcome": answer(200, {"mutationResults": [{"version": "<t1>", "updateTime": "<t1>", "createTime": "<t1>"}],
+                                         "commitTime": "<t1>"})},
+                {"path": lookup, "body": {"keys": [key], "readOptions": {"readTime": "{time:0:commitTime}"}},
+                 "outcome": answer(200, {"found": [{**found, "version": "<t1>"}], "readTime": "<t2>"})},
+                # The entity's version is the write's, <t1>, in production.
+                {"path": lookup, "body": {"keys": [key]},
+                 "outcome": answer(200, {"found": [{**found, "version": "<t2>"}], "readTime": "<t2>"})}]},
+            {"name": "of another database", "steps": [
+                {"path": lookup, "body": {"databaseId": "other", "keys": [key]}, "outcome": answer(200, {})}]},
+            {"name": "given up", "steps": [
+                {"path": lookup, "body": {"keys": [key]}, "gives_up_after": 2, "outcome": {"status": None}}]},
+        ]
+        path = Path(self.dir.name) / "datastore_sequences.json"
+        path.write_text(json.dumps({"generated_by": "tools/oracle/datastore_sequences.py", "mode": "datastore-mode",
+                                    "every_case": {"method": "POST", "headers": {"Content-Type": "application/json"}},
+                                    "cases": cases}))
+        production = replay.Production(self.base, PROJECT, "a-token", 100)
+        production.datastore = datastore.Database(production, "ds", self.base)
+        result = replay.replay(production, str(path))
+        self.assertEqual(result["skipped"], {"another database's": 1, "a client that gives up waiting": 1})
+        # The commit production answered without `commitTime` is known (D120).
+        self.assertEqual((result["sent"], result["same"], result["knownCases"], result["known"]), (3, 1, 1, {"D120": 1}))
+        self.assertEqual([d["name"] for d in result["differ"]], ["written, then read when it was, step 2"])
+        # The commit's time, which production did not answer, was its mutation's.
+        reads = [json.loads(body) for _, p, _, body in StandIn.seen if p.endswith(":lookup")]
+        self.assertEqual(reads[0]["readOptions"], {"readTime": "2026-01-01T00:00:01.000000Z"})
+        self.assertEqual(StandIn.entities, {})
+
+    def test_a_sequence_s_times_are_compared_label_for_time(self):
+        times, known = {}, set()
+
+        def compared(body, official, production):
+            return [answer["body"] for answer in datastore.compared(
+                {"body": body}, {"status": 200, "media": "application/json", "body": official},
+                {"status": 200, "media": "application/json", "body": production}, times, known)]
+
+        # Production reads at the time of the write before (D120).
+        official = {"found": [{"version": "<t1>"}], "readTime": "<t2>"}
+        self.assertEqual(compared({"keys": []}, official, {"found": [{"version": WRITTEN}], "readTime": WRITTEN}),
+                         [official, official])
+        self.assertEqual((times, known), ({"<t1>": int(WRITTEN)}, {"D120"}))
+        # A label stands for one time all along a case, and a time for one label.
+        self.assertEqual(datastore.timed({"v": "<t1>", "w": "<t3>"}, {"v": "6", "w": WRITTEN}, times, set()),
+                         {"v": "6", "w": "<t1>"})
+        # A transaction's deletion of a key not there answers the commit's version (D120).
+        later = str(int(WRITTEN) + 1000)
+        official = {"mutationResults": [{"version": "<t4>"}], "commitVersion": "<t5>"}
+        self.assertEqual(compared({"mutations": [{"delete": {"path": [{"kind": "A", "name": "x"}]}}]}, official,
+                                  {"mutationResults": [{"version": later}], "commitVersion": later})[1], official)
+        self.assertEqual(times["<t5>"], int(later))
+        # A query's snapshot version is its read time (D121); `__kind__` lists only the kinds
+        # stored, and its results carry cursors (D122).
+        known.clear()
+        kind = {"entity": {"key": {"path": [{"kind": "__kind__", "name": "A"}]}}}
+        official = {"batch": {"entityResults": [kind, {"entity": {"key": {"path": [{"kind": "__kind__", "name": "B"}]}}}],
+                              "snapshotVersion": "<seconds>", "readTime": "<t6>"}}
+        self.assertEqual(compared({"query": {"kind": [{"name": "__kind__"}]}}, official, {"batch": {
+            "entityResults": [{**kind, "cursor": "<cursor>"}], "snapshotVersion": "1767225603000000",
+            "readTime": "2026-01-01T00:00:03Z"}}), [{"batch": {**official["batch"], "entityResults": [kind]}}] * 2)
+        self.assertEqual(known, {"D121", "D122"})
+        self.assertEqual(datastore.relabelled({"a": [WRITTEN, "2026-01-01T00:00:00Z"]}, times),
+                         {"a": ["<t1>", "2026-01-01T00:00:00Z"]})
+        # Results in the order of the IDs production allocated are the emulator's in its order.
+        x, y = ({"entity": {"key": {"path": [{"kind": "A", "id": i}]}}} for i in ("5", "6"))
+        self.assertEqual(datastore.compared({"body": {}}, {"status": 200, "body": {"batch": {"entityResults": [x, y]}}},
+                                            {"status": 200, "body": {"batch": {"entityResults": [y, x]}}}, times, set(),
+                                            {"5": "8", "6": "7"})[1]["body"], {"batch": {"entityResults": [x, y]}})
+        self.assertEqual(datastore.compared({"body": {}}, {"status": 200, "body": {"batch": {"entityResults": [x, y]}}},
+                                            {"status": 200, "body": {"batch": {"entityResults": [y, x]}}}, times, set(),
+                                            {})[1]["body"], {"batch": {"entityResults": [y, x]}})
 
     def test_the_index_production_recommends_is_read(self):
         message = ("no matching index found. recommended index is:\n- kind: C\n  ancestor: yes\n  properties:\n"
