@@ -120,11 +120,11 @@ class Production:
         self.datastore = None
 
     def send(self, method, path, data=None, content_type="application/json", base=None, anonymous=False,
-             headers=None, budgeted=False):
+             headers=None, budgeted=False, binary=False):
         """One request, to Firestore or another API (`base`), with the token or, `anonymous`,
         without credentials, and `headers` of its own; answers (status, content type, body as
-        text). A connection that fails before an answer is tried again a few times; then the answer
-        is status 0. The budget counts the requests to Firestore, to stay within its free daily
+        text, or bytes if `binary`). A connection that fails before an answer is tried again a few
+        times; then the answer is status 0. The budget counts the requests to Firestore, to stay within its free daily
         quota, and those to another API that are `budgeted` (a Datastore-mode database's, which
         has none); tests of rules, which `Pace` keeps within the Rules API's, are not in it.
         A database refuses requests with 429 while it is written faster than it allows ("This
@@ -135,7 +135,7 @@ class Production:
         for wait in (*THROTTLED_WAITS, None):
             answer = self.send_once(method, path, data, content_type, base, anonymous, headers, database)
             if answer[0] != 429 or not database or wait is None:
-                return answer
+                return answer if binary else (*answer[:2], answer[2].decode(errors="replace"))
             log(f"{method} {mask(path, self.project)}: 429, sending it again in {wait} s")
             time.sleep(wait)
 
@@ -150,13 +150,13 @@ class Production:
         for attempt in range(NETWORK_TRIES):
             try:
                 with urllib.request.urlopen(req, timeout=60) as res:
-                    return res.status, res.headers.get("Content-Type"), res.read().decode(errors="replace")
+                    return res.status, res.headers.get("Content-Type"), res.read()
             except urllib.error.HTTPError as err:
-                return err.code, err.headers.get("Content-Type"), err.read().decode(errors="replace")
+                return err.code, err.headers.get("Content-Type"), err.read()
             except (urllib.error.URLError, http.client.HTTPException, ConnectionError, TimeoutError) as err:
                 log(f"{method} {mask(path, self.project)}: {type(err).__name__}, try {attempt + 1} of {NETWORK_TRIES}")
                 time.sleep(2 ** attempt)
-        return 0, None, ""
+        return 0, None, b""
 
     def spend(self, requests=1, firestore=True):
         """Counts requests about to be sent, those to Firestore against the budget."""
@@ -363,6 +363,16 @@ KNOWN_CASES = {
     ],
     "datastore_firestore_api.json": [("D103", r"^(?:GET the documents root|PUT a document|write over REST|listen over REST)$"),
                                      ("D126", r"protobuf|^GET the database$")],
+    # Bodies of a type the official emulator does not serve, which production reads as JSON or
+    # protobuf; paths that name no method; and what production reads of protobuf its own way.
+    "datastore_protobuf.json": [
+        ("D086", r"^reserveIds, Content-Type '(?:application/x-protobuf; charset=utf-8|APPLICATION/X-PROTOBUF|application/JSON|"
+                 r"application/octet-stream|application/protobuf|application/x-protobuffer|text/x-protobuf|application/xml|"
+                 r"text/html|application/x-www-form-urlencoded|multipart/form-data|\*/\*|x)'$"),
+        ("D103", r"^(?:an unknown verb|GET lookup|a path with a slash) in protobuf$"),
+        ("D129", r"^reserveIds, Content-Type 'application/json\+protobuf'$|^reserveIds, a JSON body as protobuf$|"
+                 r"^reserveIds, protobuf with \?alt=json$|^a body that is not protobuf$|^a string that is not UTF-8$"),
+    ],
     "transforms.json": [("D102", r"__name__|__type__")],
     "list_documents.json": [("D101", r"slash"), ("D103", r"^root without a slash$"),
                             ("D089", r"^collection, order by (?:a field|the name), pages of 2$")],

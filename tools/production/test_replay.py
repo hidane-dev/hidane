@@ -1,5 +1,6 @@
 """Tests of tools/production/replay.py against a stand-in for production on 127.0.0.1."""
 
+import base64
 import json
 import os
 import re
@@ -87,7 +88,11 @@ class StandIn(BaseHTTPRequestHandler):
 
     def handle_one(self):
         length = int(self.headers.get("Content-Length") or 0)
-        body = self.rfile.read(length).decode() if length else None
+        raw = self.rfile.read(length)
+        if self.headers.get("Content-Type") == "application/x-protobuf":
+            StandIn.seen.append((self.command, self.path, self.headers.get("Authorization"), raw))
+            return self.protobuf(raw)
+        body = raw.decode() if length else None
         StandIn.seen.append((self.command, self.path, self.headers.get("Authorization"), body))
         root = f"/v1/projects/{PROJECT}/databases/(default)/documents"
         if self.path.startswith("/google.firestore.v1.Firestore/Listen/channel"):
@@ -369,6 +374,30 @@ class StandIn(BaseHTTPRequestHandler):
             changes += [[{"targetChange": {"targetChangeType": "RESET", "targetIds": [2]}}]] + changes
         return frames([[{"targetChange": {"targetChangeType": "ADD", "targetIds": [2]}}]] + changes
                       + [[{"targetChange": {"targetChangeType": "CURRENT", "targetIds": [2]}}]])
+
+    def protobuf(self, raw):
+        """Answers a request of the Datastore API in protobuf to the database `ds`, which its
+        body names (`database_id`): `allocateIds` with a key of its own ID, the project and the
+        database in its partition; a lookup with an error, a `google.rpc.Status`; any other with
+        nothing."""
+        def field(number, value):
+            if isinstance(value, int):
+                return datastore.encoded_varint(number << 3) + datastore.encoded_varint(value)
+            value = value.encode() if isinstance(value, str) else value
+            return datastore.encoded_varint(number << 3 | 2) + datastore.encoded_varint(len(value)) + value
+
+        status, data = 200, b""
+        if self.headers.get("x-goog-request-params") != f"project_id={PROJECT}&database_id=ds" or (9, b"ds") not in datastore.fields(raw):
+            status, data = 400, field(1, 3) + field(2, "Not the database.")
+        elif self.path == f"/v1/projects/{PROJECT}:allocateIds":
+            StandIn.allocated += 1
+            data = field(1, field(1, field(2, PROJECT) + field(3, "ds")) + field(2, field(1, "T") + field(2, 7000000000000000 + StandIn.allocated)))
+        elif self.path == f"/v1/projects/{PROJECT}:lookup":
+            status, data = 400, field(1, 3) + field(2, "Key path id is invalid. Must not be zero.")
+        self.send_response(status)
+        self.send_header("Content-Type", "application/x-protobuf")
+        self.end_headers()
+        self.wfile.write(data)
 
     def datastore(self, verb, body):
         """Answers as a Datastore-mode database `ds` holding `entities` (by namespace and path):
@@ -1466,6 +1495,53 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual((result["sent"], result["same"], result["knownCases"], result["differ"]), (7, 5, 1, []))
         # The case of the Firestore API kept its own method.
         self.assertIn(("GET", f"/v1/projects/{PROJECT}/databases/ds/documents/c/d"), [(m, p) for m, p, _, _ in StandIn.seen])
+
+    def test_rest_in_protobuf_is_sent_with_the_database_named_in_its_body(self):
+        def field(number, value):
+            if isinstance(value, int):
+                return datastore.encoded_varint(number << 3) + datastore.encoded_varint(value)
+            value = value.encode() if isinstance(value, str) else value
+            return datastore.encoded_varint(number << 3 | 2) + datastore.encoded_varint(len(value)) + value
+
+        def answer(status, data):
+            return {"status": status, "contentType": "application/x-protobuf", "body": base64.b64encode(data).decode()}
+
+        def case(name, verb, body, outcome, headers=None):
+            return {"name": name, "method": "POST", "path": f"/v1/projects/demo-protobuf:{verb}",
+                    "headers": {"Content-Type": "application/x-protobuf"} if headers is None else headers,
+                    "body": base64.b64encode(body).decode(), "compare": "exact", "outcome": outcome}
+
+        def key(ident):
+            return field(2, field(1, "T") + (b"" if ident is None else field(2, ident)))
+
+        no_mode = field(1, 3) + field(2, "transactional commit requires a transaction")
+        path = Path(self.dir.name) / "datastore_protobuf.json"
+        path.write_text(json.dumps({"generated_by": "tools/oracle/datastore_protobuf.py", "mode": "datastore-mode", "cases": [
+            case("reserveIds", "reserveIds", field(1, key(5)), answer(200, b"")),
+            case("allocateIds", "allocateIds", field(1, key(None)),
+                 answer(200, field(1, field(1, field(2, "demo-protobuf")) + key(5629499534213120)))),
+            case("lookup, an ID 0", "lookup", field(3, key(0)),
+                 answer(400, field(1, 3) + field(2, "Key path id is invalid. Must not be zero."))),
+            case("commit, no mode", "commit", field(6, b""), answer(400, no_mode)),
+            case("reserveIds, Content-Type None", "reserveIds", b"{}", answer(200, b""), headers={}),
+        ]}))
+        production = replay.Production(self.base, PROJECT, "a-token", 100)
+        production.datastore = datastore.Database(production, "ds", self.base)
+        result = replay.replay(production, str(path))
+        # urllib sends a body without a Content-Type as a form's.
+        self.assertEqual(result["skipped"], {"without a Content-Type": 1})
+        # The ID production allocated was read back as the official emulator's, its project and
+        # database left out of the key; the error compared as its `google.rpc.Status`.
+        self.assertEqual((result["sent"], result["same"], result["knownCases"]), (4, 3, 0))
+        (differ,) = result["differ"]
+        self.assertEqual((differ["name"], differ["difference"]), ("commit, no mode", "status 400, production 200"))
+        self.assertEqual(json.loads(differ["official"]["body"]), {"error": {
+            "code": 3, "status": "INVALID_ARGUMENT", "message": "transactional commit requires a transaction"}})
+        self.assertEqual(json.loads(differ["production"]["body"]), {})
+        # Each body named the database, after what the recording gave.
+        sent = [body for _, _, _, body in StandIn.seen if isinstance(body, bytes)]
+        self.assertEqual(len(sent), 4)
+        self.assertTrue(all(body.endswith(field(9, "ds")) for body in sent))
 
     def test_the_steps_of_a_sequence_are_sent_with_production_times_and_its_times_labelled(self):
         def answer(status, body):
