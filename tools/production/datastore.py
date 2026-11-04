@@ -59,6 +59,8 @@ CALL_WAITS = (5, 10, 20, 40, 60, 60, 0)
 # in the format of index.yaml, and a line of one.
 NEEDS_INDEX = re.compile(r"^(?:no matching index found\. recommended index is:|One possible index to serve the query is:|"
                          r"The query requires multiple indexes\. The recommended indexes are:)")
+# A kind with a reserved name, of which production makes no index (D132).
+RESERVED_KIND = re.compile(r"__.*__")
 INDEX_LINE = re.compile(r"\s*(-?)\s*(kind|ancestor|name|direction):\s*(.*?)\s*")
 
 # In `datastore_sequences.json`: the labels of the times and versions of an answer, which the
@@ -96,7 +98,7 @@ KEPT_ALIVE_BY = {"keys": [{"path": [{"kind": "K", "name": "z"}]}]}
 WAIT_TOLERANCE = 5
 LOCK_TIMEOUT = 600
 
-# Differences of Datastore mode that docs/parity-exceptions.md records (D120 to D126), set aside
+# Differences of Datastore mode that docs/parity-exceptions.md records (D119 to D132), set aside
 # before an answer is compared, each counted as known by its entry (`set_aside`).
 #
 # Fields only one side's answers have, where in an answer: (entry, the path, the official
@@ -176,6 +178,8 @@ KNOWN_ERRORS = [
     ("D125", 409, "ALREADY_EXISTS", r"^entity already exists: EntityRef\[",
      409, "ALREADY_EXISTS", r"^entity already exists: app: "),
     ("D126", None, None, None, 400, "FAILED_PRECONDITION", FIRESTORE_API),
+    # Production asks for an index of a reserved kind, which it refuses to make.
+    ("D132", 200, None, None, 400, "FAILED_PRECONDITION", NEEDS_INDEX.pattern + r"\s*- kind: __\S*__\n"),
 ]
 
 
@@ -564,10 +568,13 @@ def replay(production, recording, result):
             if method and method.group(1) in ("allocateIds", "commit") and official["status"] == 200:
                 allocated(parsed(official.get("body") or ""), without_database(value, production.project, database.name), ids)
         answered = {"status": status, "contentType": answer_type, "body": shown(answer, production, database, ids)}
-        if status != 200 and official["status"] == 200 and NEEDS_INDEX.search(
-                str(at(value, "error.message") if not isinstance(value, str) else "")):
+        message = str(at(value, "error.message") if not isinstance(value, str) else "")
+        indexes = recommended(message)
+        # An index of a reserved kind can never be made: that answer is compared (D132).
+        if status != 200 and official["status"] == 200 and NEEDS_INDEX.search(message) and not (
+                indexes and all(RESERVED_KIND.fullmatch(index["kind"]) for index in indexes)):
             result["needsIndex"].append(case["name"])
-            for index in recommended(at(value, "error.message")):
+            for index in indexes:
                 if index not in result.setdefault("datastoreIndexes", []):
                     result["datastoreIndexes"].append(index)
             continue
@@ -946,7 +953,8 @@ def compared(step, official, production, times, known, ids=None):
       gives one deleted the version it was deleted at (D120);
     - the deletion of a key that is not there answers, in a transaction, the commit's version,
       and outside one a time of its own, where the emulator answers the version the key was
-      deleted at, or a time before the commit's (D120);
+      deleted at, or a time before the commit's; a transaction that only deletes may commit at
+      the time it read at (D120);
     - a query's snapshot version is its read time, where the emulator's is its first result's
       version, or its read time in seconds (D121);
     - `__kind__` and `__namespace__` list the kinds and namespaces of what is stored, where the
@@ -975,6 +983,9 @@ def compared(step, official, production, times, known, ids=None):
     loose = [(r"\$\.readTime", "D120", True), (r"\$\.missing\[\d+\]\.version", "D120", False)]
     loose += [(rf"\$\.mutationResults\[{n}\]\.version", "D120", False)
               for n, mutation in enumerate(body.get("mutations", [])) if "delete" in mutation]
+    mutations = body.get("mutations") or []
+    if body.get("mode") == "TRANSACTIONAL" and mutations and all("delete" in mutation for mutation in mutations):
+        loose.append((r"\$\.commit(?:Version|Time)", "D120", True))
     batch, their_batch = ours.get("batch"), theirs.get("batch")
     if isinstance(batch, dict) and isinstance(their_batch, dict) and all(
             isinstance(batch.get(k), str) and TIME.fullmatch(batch[k]) for k in ("snapshotVersion", "readTime")) \
