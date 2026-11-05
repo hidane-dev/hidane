@@ -1535,7 +1535,7 @@ def earlier(case):
 NEEDS_AN_INDEX = "needs an index"
 
 
-def run_steps(production, case, own, result, loaded=None):
+def run_steps(production, case, own, result, loaded=None, deploy=None):
     """Sends a case's steps on the database emptied, in the replay's project, and compares each
     step's answer as `step_answer` reads it. What an earlier answer handed out (a page token, a
     transaction) is replaced by what production handed out, and times near a commit are moved
@@ -1544,7 +1544,8 @@ def run_steps(production, case, own, result, loaded=None):
     authentication.`: its recorder sent none) is not sent: the replay always has them. A step
     the owner sent is sent with the token, one without credentials without; the official
     emulator's load of rules (`PUT …:securityRules`) is compared, on its status, with how making
-    the ruleset went in production (`loaded`). The documents an earlier case of the recording
+    the ruleset went in production (`loaded`, or, with `deploy`, how deploying each load's ruleset
+    went as the case comes to it). The documents an earlier case of the recording
     wrote that the case's answers show are written first (`earlier`). A transaction production
     will not begin without credentials ends the case (D127). Answers the first difference
     (the step's number, the official emulator's answer, production's), `NEEDS_AN_INDEX` if
@@ -1563,6 +1564,8 @@ def run_steps(production, case, own, result, loaded=None):
         if "require admin authentication" in json.dumps(recorded):
             continue
         if step["path"].endswith(":securityRules"):
+            if deploy is not None:
+                loaded, _ = deploy(source_of(step))
             official, answered = {"status": step["status"]}, {"status": loaded}
         else:
             def sent(text):
@@ -1666,20 +1669,27 @@ def loads_of(case):
     return [step for step in case["steps"] if step["path"].endswith(":securityRules")]
 
 
+def source_of(load):
+    """The ruleset a load of rules loads (one file, as `not_deployable` lets through)."""
+    return load["body"]["rules"]["files"][0]["content"]
+
+
 def not_deployable(case):
     """Why a case of a recording of rules is not sent with its rules deployed, or None: it must
-    load one ruleset of one file before any step without credentials, send its steps as the
-    owner or without credentials, and use none of the official emulator's own API but the load."""
+    load rulesets of one file each, the first before any step without credentials, send its steps
+    as the owner or without credentials, and use none of the official emulator's own API but the
+    loads."""
     loads = loads_of(case)
     if any(sender(step) not in (None, "Bearer owner") or not step.get("owner", True) for step in case["steps"]):
         return "sends a user's token"
     if any(step["path"].startswith("/emulator/") for step in case["steps"] if step not in loads):
         return "uses the official emulator's own API"
-    if len(loads) != 1 or loads[0]["method"] != "PUT":
-        return "does not load one ruleset"
-    files = ((loads[0].get("body") or {}).get("rules") or {}).get("files")
-    if not isinstance(files, list) or len(files) != 1 or not isinstance(files[0].get("content"), str):
-        return "loads a ruleset of more than one file"
+    if not loads or any(load["method"] != "PUT" for load in loads):
+        return "does not load a ruleset"
+    for load in loads:
+        files = ((load.get("body") or {}).get("rules") or {}).get("files")
+        if not isinstance(files, list) or len(files) != 1 or not isinstance(files[0].get("content"), str):
+            return "loads a ruleset of more than one file"
     if any(sender(step) is None for step in case["steps"][:case["steps"].index(loads[0])]):
         return "sends a request before it loads rules"
     return None
@@ -1687,29 +1697,39 @@ def not_deployable(case):
 
 def replay_rules_steps(production, recording, result):
     """A recording of rules (`rules_request.json` and the like) with its rules deployed. The cases
-    are put together by the ruleset they load; each ruleset is released (`release.py`), and each
-    of its cases sent on the database emptied, as `run_steps` sends them. A case that relies on
-    what an earlier case wrote, and its answers do not show, is not (`earlier`). A case that
-    differs is sent again `RETRY_AFTER` seconds later, its ruleset released again, and differs
-    only if it does again; those that did not are counted (`settled`)."""
+    that load one ruleset are put together by it; each ruleset is released (`release.py`), and
+    each of its cases sent on the database emptied, as `run_steps` sends them. A case that loads
+    more than one (`rules_expressions.json`) is sent on its own, each ruleset released as the case
+    comes to its load. A case that relies on what an earlier case wrote, and its answers do not
+    show, is not (`earlier`). A case that differs is sent again `RETRY_AFTER` seconds later, its
+    rulesets released again, and differs only if it does again; those that did not are counted
+    (`settled`)."""
+    # The cases by the ruleset they load; those that load more than one under None.
     rulesets = {}
     for case in recording["cases"]:
         why = not_deployable(case) or earlier(case)[1]
-        source = None if why else loads_of(case)[0]["body"]["rules"]["files"][0]["content"]
-        if why is None and not in_shard(production, source):
+        sources = [] if why else [source_of(load) for load in loads_of(case)]
+        if why is None and not in_shard(production, "".join(sources)):
             why = "another night's"
         if why:
             result["skipped"][why] = result["skipped"].get(why, 0) + 1
         else:
-            rulesets.setdefault(source, []).append(case)
-    log(f"{result['fixture']}: {sum(map(len, rulesets.values()))} cases, {len(rulesets)} rulesets to deploy")
+            rulesets.setdefault(sources[0] if len(sources) == 1 else None, []).append(case)
+    deploys = (sum(1 for source in rulesets if source is not None)
+               + sum(len(loads_of(case)) for case in rulesets.get(None, [])))
+    log(f"{result['fixture']}: {sum(map(len, rulesets.values()))} cases, {deploys} rulesets to deploy")
+
+    def send(source, loaded, case):
+        own = case_project(case)
+        return own, run_steps(production, case, own, result, loaded,
+                              production.release.deploy if source is None else None)
+
     again = {}
     for source, cases in rulesets.items():
-        loaded, _ = production.release.deploy(source)
+        loaded = None if source is None else production.release.deploy(source)[0]
         for case in cases:
             result["sent"] += 1
-            own = case_project(case)
-            first, known = run_steps(production, case, own, result, loaded)
+            own, (first, known) = send(source, loaded, case)
             if first is None or first == NEEDS_AN_INDEX:
                 tally_steps(result, case, own, first, known)
             else:
@@ -1718,10 +1738,9 @@ def replay_rules_steps(production, recording, result):
         log(f"{result['fixture']}: {sum(map(len, again.values()))} cases differ; sent again in {RETRY_AFTER} s")
         time.sleep(RETRY_AFTER)
         for source, cases in again.items():
-            loaded, _ = production.release.deploy(source)
+            loaded = None if source is None else production.release.deploy(source)[0]
             for case in cases:
-                own = case_project(case)
-                first, known = run_steps(production, case, own, result, loaded)
+                own, (first, known) = send(source, loaded, case)
                 if first is None:
                     result["settled"] = result.get("settled", 0) + 1
                 tally_steps(result, case, own, first, known)

@@ -1341,6 +1341,36 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual((result["same"], result["settled"], result["differ"]), (1, 1, []))
         self.assertIn("were the same when sent again", (Path(self.dir.name) / "out" / "report.md").read_text())
 
+    def test_a_case_that_loads_two_rulesets_has_each_released_in_turn(self):
+        def step(method, path, auth, status, response=None, body=None):
+            return {"method": method, "path": path, "body": body, "auth": auth, "status": status, "response": response}
+
+        def load(condition):
+            rules = ("rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
+                     f"    match /c/{{d}} {{\n      allow read: if {condition};\n    }}\n  }}\n}}\n")
+            return step("PUT", "/emulator/v1/projects/expressions:securityRules", None, 200, None,
+                        {"rules": {"files": [{"name": "firestore.rules", "content": rules}]}})
+        d = "/v1/projects/expressions/databases/(default)/documents"
+        write = step("PATCH", f"{d}/c/d", "Bearer owner", 200, None, {"fields": {"n": {"integerValue": "1"}}})
+        denied = {"error": {"code": 403, "message": "\nfalse for 'get' @ L5", "status": "PERMISSION_DENIED"}}
+        cases = [
+            {"name": "allowed, then denied", "steps": [
+                write, load("true"), step("GET", f"{d}/c/d", None, 200), load("false"), step("GET", f"{d}/c/d", None, 403, denied)]},
+            {"name": "denied, then denied again", "steps": [
+                write, load("false"), step("GET", f"{d}/c/d", None, 403, denied), load("true"), step("GET", f"{d}/c/d", None, 403, denied)]},
+            {"name": "one", "steps": [load("true"), step("GET", f"{d}/c/x", None, 404)]},
+        ]
+        path = Path(self.dir.name) / "rules_expressions.json"
+        path.write_text(json.dumps(cases))
+        result = self.deploy(str(path))["recordings"][0]
+        self.assertEqual((result["sent"], result["same"], result["knownCases"], result["known"]), (3, 1, 1, {"D118": 1}))
+        self.assertEqual([d["name"] for d in result["differ"]], ["denied, then denied again, step 5"])
+        # Each case's rulesets as it comes to them, the ruleset of the case that loads one once,
+        # and those of the case that differed again in turn.
+        conditions = [re.search(r"allow read: if (\w+);", content).group(1) for content in StandIn.released]
+        self.assertEqual(conditions, ["true", "false", "false", "true", "true", "false", "true"])
+        self.assertEqual((StandIn.release, StandIn.rulesets), (None, {}))
+
     def test_conditions_that_read_are_deployed(self):
         rules = ("rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
                  "    match /rooms/{room} {\n      allow read: if %s;\n    }\n  }\n}\n")
