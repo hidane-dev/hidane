@@ -259,6 +259,8 @@ the official emulator's:
 - a query production refuses for want of a composite index is counted apart (D070), and the
   indexes it recommends ("recommended index is", "One possible index to serve the query is", "The
   recommended indexes are") are kept in the report (`datastoreIndexes`), for `indexes.py` (below).
+  An index of a reserved kind (`__x__`) production refuses to make, so a query that asks for one
+  is compared, and its refusal is known (D132).
 
 What D120 to D126 record of Datastore mode is set aside before an answer is compared, by the
 rules of `datastore.py`, and counts as known: the fields only one side's answers have, where in

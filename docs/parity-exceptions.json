@@ -2061,7 +2061,7 @@
    "topic": "Datastore mode: commits and lookups",
    "kind": "bug-for-bug",
    "official": "A commit answers `commitTime`, outside a transaction too, and nothing of indexes; a mutation whose base version or update time does not match is applied, and its result says nothing of it. Outside a transaction, a commit's mutations are applied in their order, each at a time of its own, up to one that is refused. A lookup reads at the time it is asked, after the writes before it; it gives each entity it found a `cursor`, and those it did not find no `version` but one deleted the version it was deleted at, the found and the missing each in the order of the keys asked for; one of no keys answers its `readTime`. The deletion of a key that is not there answers the version it was deleted at, or a time before the commit's (`tools/oracle/datastore_entities.py`, `tools/oracle/datastore_sequences.py`)",
-   "firestore": "No `commitTime` outside a transaction; `indexUpdates`, the index entries written, in a commit that writes, and `conflictDetected: true` in the result of a mutation whose base version or update time does not match, which is not applied. Outside a transaction, a commit's mutations get times of their own in no order of theirs (the second 56 µs before the first), and one after a refused mutation was applied too. A lookup reads at an earlier time, in the runs seen that of the last write before it that changed something; it gives no `cursor`, each entity not found the time it read at as its `version`, and the entities in an order of its own (two missing came back reversed); one of no keys answers `{}`. The deletion of a key that is not there answers, in a transaction, the commit's version, and outside one a time of its own (#82)",
+   "firestore": "No `commitTime` outside a transaction; `indexUpdates`, the index entries written, in a commit that writes, and `conflictDetected: true` in the result of a mutation whose base version or update time does not match, which is not applied. Outside a transaction, a commit's mutations get times of their own in no order of theirs (the second 56 µs before the first), and one after a refused mutation was applied too. A lookup reads at an earlier time, in the runs seen that of the last write before it that changed something; it gives no `cursor`, each entity not found the time it read at as its `version`, and the entities in an order of its own (two missing came back reversed); one of no keys answers `{}`. The deletion of a key that is not there answers, in a transaction, the commit's version, and outside one a time of its own. A transaction that only deletes a key it read as missing commits about a second after the time it read at, and in one run of eleven at that very time (#82)",
    "hidane": "As the official emulator",
    "reason": "Follow the emulator. Seen by the Production parity workflow (#82). The API does not promise the order of a lookup's results",
    "references": [
@@ -2309,6 +2309,24 @@
    "pinned_by": [
     "crates/hidane/tests/datastore.rs::checks_come_in_the_official_emulators_order",
     "crates/hidane/tests/datastore.rs::commit_checks_come_in_the_official_emulators_order"
+   ]
+  },
+  {
+   "id": "D132",
+   "table": "production",
+   "area": "queries",
+   "topic": "Datastore mode: a query of a reserved kind",
+   "kind": "bug-for-bug",
+   "official": "A query of a kind whose name is reserved (`__x__`, not one of the metadata kinds) is answered, with nothing, whatever orders and inequalities it has (`tools/oracle/datastore_checks.py`)",
+   "firestore": "One that needs a composite index is refused, `FAILED_PRECONDITION` \"One possible index to serve the query is: - kind: __x__ …\" (or \"no matching index found. recommended index is: …\"), and that index cannot be made: its creation is refused, \"Collection id \"__x__\" is invalid because it is reserved.\" (#82)",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82). A query of such a kind that needs no composite index is answered with nothing on both",
+   "references": [
+    "hidane-dev/hidane#82",
+    "tools/oracle/datastore_checks.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/datastore.rs::checks_come_in_the_official_emulators_order"
    ]
   }
  ],

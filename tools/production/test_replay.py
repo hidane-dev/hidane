@@ -465,6 +465,10 @@ class StandIn(BaseHTTPRequestHandler):
             return self.answer(400, {"error": {"code": 400, "status": "FAILED_PRECONDITION", "message":
                 "no matching index found. recommended index is:\n- kind: Ix\n  properties:\n  - name: a\n  - name: b\n"
                 "    direction: desc\n"}})
+        if kind == "__x__" and query.get("order"):
+            return self.answer(400, {"error": {"code": 400, "status": "FAILED_PRECONDITION", "message":
+                "One possible index to serve the query is:\n- kind: __x__\n  properties:\n  - name: b\n  - name: a\n"
+                "The query contains range and inequality filters on multiple fields, please refer to the documentation"}})
         if kind == "__namespace__":
             names = sorted({json.loads(s)[0] for s in StandIn.entities})
             entities = [{"key": key([{"kind": "__namespace__", **({"name": n} if n else {"id": "1"})}])} for n in names]
@@ -1498,6 +1502,22 @@ class ReplayTest(unittest.TestCase):
         self.assertLessEqual(production.firestore, 100)
         self.assertEqual(production.firestore, len(StandIn.seen))
 
+    def test_an_index_of_a_reserved_kind_is_not_asked_for(self):
+        # Production asks for one, and refuses to make it: its refusal is known (D132).
+        empty = {"status": 200, "contentType": "application/json", "body": json.dumps({"batch": {}})}
+        query = {"kind": [{"name": "__x__"}], "order": [{"property": {"name": "b"}}],
+                 "filter": {"propertyFilter": {"property": {"name": "a"}, "op": "LESS_THAN", "value": {"integerValue": "1"}}}}
+        path = Path(self.dir.name) / "datastore.json"
+        path.write_text(json.dumps({"mode": "datastore-mode", "cases": [
+            {"name": "a reserved kind", "method": "POST", "path": "/v1/projects/{project}:runQuery",
+             "headers": {"Content-Type": "application/json"}, "body": {"query": query}, "outcome": empty}]}))
+        production = replay.Production(self.base, PROJECT, "a-token", 100)
+        production.datastore = datastore.Database(production, "ds", self.base)
+        result = replay.replay(production, str(path))
+        self.assertEqual((result["sent"], result["knownCases"], result["known"]), (1, 1, {"D132": 1}))
+        self.assertEqual((result["needsIndex"], result["differ"]), ([], []))
+        self.assertNotIn("datastoreIndexes", result)
+
     def test_a_recording_of_a_datastore_recorder_is_sent_there_with_what_every_case_gives(self):
         production = replay.Production(self.base, PROJECT, "a-token", 100)
         production.datastore = datastore.Database(production, "ds", self.base)
@@ -1715,6 +1735,17 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual(compared({"mutations": [{"delete": {"path": [{"kind": "A", "name": "x"}]}}]}, official,
                                   {"mutationResults": [{"version": later}], "commitVersion": later})[1], official)
         self.assertEqual(times["<t5>"], int(later))
+        # A transaction that only deletes may commit at a time already seen, the time it read at
+        # (D120); not a commit outside a transaction.
+        known.clear()
+        deletion = {"mutations": [{"delete": {"path": [{"kind": "A", "name": "y"}]}}]}
+        official = {"mutationResults": [{"version": "<t7>"}], "commitVersion": "<t8>", "commitTime": "<t8>"}
+        again = {"mutationResults": [{"version": later}], "commitVersion": later, "commitTime": datastore.stamp(int(later))}
+        self.assertEqual(compared({"mode": "TRANSACTIONAL", **deletion}, official, again)[1], official)
+        self.assertEqual(known, {"D120"})
+        self.assertNotIn("<t8>", times)
+        self.assertEqual(compared({"mode": "NON_TRANSACTIONAL", **deletion}, official, again)[1],
+                         {**official, "commitVersion": "<t5>", "commitTime": "<t5>"})
         # A query's snapshot version is its read time (D121); `__kind__` lists only the kinds
         # stored, and its results carry cursors (D122).
         known.clear()
