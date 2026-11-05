@@ -98,7 +98,7 @@ jobs:
     # After the replay above, whatever it found: both empty the same database.
     if: ${{ !cancelled() && github.repository == 'hidane-dev/hidane' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 55
     environment: production-parity
     permissions:
       contents: read
@@ -116,8 +116,8 @@ jobs:
           access_token_lifetime: 3600s
           create_credentials_file: false
       - name: Replay with the rules deployed
-        # Short of the job's timeout, so that the rules are taken down below.
-        timeout-minutes: 30
+        # Short of the job's timeout and the token's hour, so that the rules are taken down below.
+        timeout-minutes: 45
         env:
           PRODUCTION_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
           PROJECT: ${{ vars.GCP_PROJECT_ID }}
@@ -137,7 +137,8 @@ jobs:
             crates/hidane/tests/fixtures/rules_verify.json \
             crates/hidane/tests/fixtures/rules_lookups.json \
             crates/hidane/tests/fixtures/rules_same_document.json \
-            crates/hidane/tests/fixtures/rules_denials.json
+            crates/hidane/tests/fixtures/rules_denials.json \
+            crates/hidane/tests/fixtures/rules_expressions.json
       - name: Take the rules down
         # The replay takes them down as it ends; this does it again in case it was stopped.
         if: always() && steps.auth.outcome == 'success'

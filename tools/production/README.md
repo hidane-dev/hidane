@@ -175,9 +175,11 @@ requests:
 
 - the recordings of rules whose steps are sent as the owner or without credentials
   (`rules_request.json`, `rules_writes.json`, `rules_verify.json`, `rules_lookups.json`,
-  `rules_same_document.json`, `rules_denials.json`). The cases are put together by the ruleset
-  they load; each ruleset is released, and each of its cases sent on the database emptied, as the
-  recordings of steps are. A step the owner sent is sent with the token, which rules do not
+  `rules_same_document.json`, `rules_denials.json`, `rules_expressions.json`). The cases that load
+  one ruleset are put together by it; each ruleset is released, and each of its cases sent on the
+  database emptied, as the recordings of steps are. A case that loads two
+  (`rules_expressions.json`: a limit reached, then not) is sent on its own, each ruleset released
+  as the case comes to its load. A step the owner sent is sent with the token, which rules do not
   decide, as they do not decide the emulator's owner; a step sent without credentials is sent
   without. The emulator's load of the rules is compared, on its status, with whether production
   made the ruleset. A case that sends a user's token (`rules_list.json`, `rules_auth.json`) is
@@ -200,7 +202,7 @@ requests:
 
 A release decides requests seconds after it is made (from 1.3 to 2.2 s, measured on 2026-10-30),
 and takes minutes to reach every server. The replay waits 5 s after each release; a case that
-differs is sent again two minutes later, its ruleset released again, and differs only if it does
+differs is sent again two minutes later, its rulesets released again, and differs only if it does
 again. The report counts those that did not.
 
 While it runs, the database is open as the rules deployed open it, to anyone. The project is
