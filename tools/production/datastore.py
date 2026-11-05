@@ -98,7 +98,7 @@ KEPT_ALIVE_BY = {"keys": [{"path": [{"kind": "K", "name": "z"}]}]}
 WAIT_TOLERANCE = 5
 LOCK_TIMEOUT = 600
 
-# Differences of Datastore mode that docs/parity-exceptions.md records (D119 to D132), set aside
+# Differences of Datastore mode that docs/parity-exceptions.md records (D119 to D133), set aside
 # before an answer is compared, each counted as known by its entry (`set_aside`).
 #
 # Fields only one side's answers have, where in an answer: (entry, the path, the official
@@ -147,9 +147,12 @@ KNOWN_ERRORS = [
     ("D131", 404, "NOT_FOUND", r"^no entity to update: ", 400, "INVALID_ARGUMENT", r""),
     ("D131", 400, "INVALID_ARGUMENT", r"^Cannot update an entity with a base version set to zero: ",
      400, "INVALID_ARGUMENT", r"^Cannot insert an entity with a base version greater than zero: "),
+    ("D131", 400, "INVALID_ARGUMENT", r"^Cannot (?:insert|update) an entity with a base version ",
+     400, "INVALID_ARGUMENT", r"^cannot set a conflict resolution strategy if no detection strategy was set$"),
     ("D122", 400, "INVALID_ARGUMENT", r"^Key filter on __kind__ is invalid \(must be a key for __kind__\)", 200, None, None),
     ("D122", None, None, None, 400, "INVALID_ARGUMENT", r"^Unsupported query for kind __(?:kind|namespace|property)__$"),
-    ("D122", None, None, r"", 400, "INVALID_ARGUMENT",
+    # Production refuses these whatever the official emulator answers, which takes a key by ID.
+    ("D122", None, None, None, 400, "INVALID_ARGUMENT",
      r"^Projections are not supported for the kind: __|^Key filter on __kind__ is invalid \(must be a named key for __kind__\)"),
     ("D125", 400, "FAILED_PRECONDITION", r"^List of Ids to reserve cannot be empty\.$", 200, None, None),
     ("D125", 400, "INVALID_ARGUMENT", r"^Firestore emulator does not support eventual consistency options\.$",
@@ -171,15 +174,20 @@ KNOWN_ERRORS = [
     ("D125", 500, "UNKNOWN", None, 500, "INTERNAL", r"^An internal error occurred\.$"),
     ("D125", 400, "INVALID_ARGUMENT", r"", 500, "INTERNAL", r"^An internal error occurred\.$"),
     ("D125", 400, "INVALID_ARGUMENT", r"^Value type \w+ is not allowed$", 200, None, None),
-    # Production refuses a point whose latitude is NaN or out of range in an aggregation too,
-    # before the faults of its own the official emulator names, or fails on (500).
-    ("D125", None, None, None, 400, "INVALID_ARGUMENT", r"^Geo point latitude (?:is not a number\.|outside permitted range )"),
+    # Production refuses a point whose latitude or longitude is NaN or out of range in an
+    # aggregation too, before the faults of its own the official emulator names, or fails on (500).
+    ("D125", None, None, None, 400, "INVALID_ARGUMENT",
+     r"^Geo point (?:latitude|longitude) (?:is not a number\.|outside permitted range )"),
     ("D125", 500, "UNKNOWN", None, 200, None, None),
     ("D125", 409, "ALREADY_EXISTS", r"^entity already exists: EntityRef\[",
      409, "ALREADY_EXISTS", r"^entity already exists: app: "),
     ("D126", None, None, None, 400, "FAILED_PRECONDITION", FIRESTORE_API),
     # Production asks for an index of a reserved kind, which it refuses to make.
     ("D132", 200, None, None, 400, "FAILED_PRECONDITION", NEEDS_INDEX.pattern + r"\s*- kind: __\S*__\n"),
+    # An entity's limits: production words the refusal of its size its own way, and takes 5,001
+    # indexed values that are all the same.
+    ("D133", 400, "INVALID_ARGUMENT", r"^maximum entity size is 1048576 bytes$", 400, "INVALID_ARGUMENT", r"^entity is too big$"),
+    ("D133", 400, "INVALID_ARGUMENT", r"^Too many indexed properties$", 200, None, None),
 ]
 
 

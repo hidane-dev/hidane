@@ -1853,6 +1853,22 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual(set_aside(answer("Not Found\n", 404), answer({"error": {
             "code": 400, "status": "FAILED_PRECONDITION", "message": "The Cloud Firestore API is not available for Firestore "
             "in Datastore Mode database projects/p/databases/(default)."}}, 400)), (True, ["D126"]))
+
+        def refused(message):
+            return answer({"error": {"code": 400, "status": "INVALID_ARGUMENT", "message": message}}, 400)
+
+        # A key by ID in a `__kind__` query (D122); a point's longitude, whatever the emulator
+        # answers (D125); a lone resolution strategy, named first (D131); an entity's limits (D133).
+        self.assertEqual(set_aside(answer({"batch": {"entityResultType": "FULL"}}), refused(
+            "Key filter on __kind__ is invalid (must be a named key for __kind__) - received: x")), (True, ["D122"]))
+        self.assertEqual(set_aside(answer({"batch": {"aggregationResults": []}}), refused("Geo point longitude is not a number.")),
+                         (True, ["D125"]))
+        self.assertEqual(set_aside(refused("Cannot insert an entity with a base version greater than zero: app: x"),
+                                   refused("cannot set a conflict resolution strategy if no detection strategy was set")),
+                         (True, ["D131"]))
+        self.assertEqual(set_aside(refused("maximum entity size is 1048576 bytes"), refused("entity is too big")), (True, ["D133"]))
+        self.assertEqual(set_aside(refused("Too many indexed properties"), answer({"mutationResults": [{"version": "1"}]})),
+                         (True, ["D133"]))
         # What the exceptions do not record stays: another entity, another error, the same answer.
         self.assertEqual(set_aside(answer({"found": [{"entity": {"key": key}}]}), answer({"found": [{"entity": {"key": other}}]})),
                          (False, []))
