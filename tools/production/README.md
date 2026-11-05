@@ -264,7 +264,7 @@ the official emulator's:
   An index of a reserved kind (`__x__`) production refuses to make, so a query that asks for one
   is compared, and its refusal is known (D132).
 
-What D120 to D126 record of Datastore mode is set aside before an answer is compared, by the
+What D119 to D133 record of Datastore mode is set aside before an answer is compared, by the
 rules of `datastore.py`, and counts as known: the fields only one side's answers have, where in
 an answer (`KNOWN_FIELDS`, as `commitTime` and `indexUpdates` of a commit); values each side
 gives (`KNOWN_VALUES`, as `moreResults`); answers that differ as a whole, an error on one side or

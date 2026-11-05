@@ -351,6 +351,8 @@ KNOWN_CASES = {
     # A read after writes whose base version or update time does not match, which production does
     # not apply.
     "datastore_commit_checks.json": [("D120", r"^sequence: a base version that does not match is written over, step 4$")],
+    # A metadata query production fails on (500 INTERNAL).
+    "datastore_checks.json": [("D122", r"^query: a kind query with a key (?:NOT_EQUAL|NOT_IN)$")],
     "datastore_queries.json": [
         ("D123", r"^(?:start|end)Cursor of |^a cursor of another query"),
         ("D122", r"^__(?:kind|namespace|property)__"),

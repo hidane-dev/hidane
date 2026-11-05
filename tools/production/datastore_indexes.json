@@ -391,6 +391,38 @@
      "direction": "asc"
     },
     {
+     "name": "a",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "K",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "a",
+     "direction": "asc"
+    },
+    {
+     "name": "b",
+     "direction": "asc"
+    },
+    {
+     "name": "a",
+     "direction": "asc"
+    }
+   ]
+  },
+  {
+   "kind": "K",
+   "ancestor": false,
+   "properties": [
+    {
+     "name": "a",
+     "direction": "asc"
+    },
+    {
      "name": "b",
      "direction": "asc"
     }
