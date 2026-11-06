@@ -193,6 +193,15 @@ class StandIn(BaseHTTPRequestHandler):
             document = StandIn.documents[name]
             return self.answer(200, {"name": name, "fields": document["fields"], "createTime": document.get("time"),
                                      "updateTime": document.get("time")})
+        if self.path.endswith(":batchGet"):
+            # As production answers: a transaction it began in an element of its own, first.
+            request = json.loads(body)
+            now = "2026-01-01T00:00:00Z"
+            results = [{"found": {"name": n, "fields": StandIn.documents[n]["fields"]}, "readTime": now}
+                       if n in StandIn.documents else {"missing": n, "readTime": now} for n in request["documents"]]
+            return self.answer(200, ([{"transaction": "dHgx"}] if "newTransaction" in request else []) + results)
+        if self.path.endswith(":rollback"):
+            return self.answer(200, {})
         if self.path.endswith((":runQuery", ":runAggregationQuery")):
             # As production answers: no `done`, an offset's count in a result of its own.
             parent, verb = urllib.parse.unquote(self.path[len("/v1/"):]).rsplit(":", 1)
@@ -1370,6 +1379,44 @@ class ReplayTest(unittest.TestCase):
         conditions = [re.search(r"allow read: if (\w+);", content).group(1) for content in StandIn.released]
         self.assertEqual(conditions, ["true", "false", "false", "true", "true", "false", "true"])
         self.assertEqual((StandIn.release, StandIn.rulesets), (None, {}))
+
+    def test_the_documents_a_case_set_up_are_written_for_the_cases_after_it(self):
+        # `rules_expressions.json` keeps no successful answer: the cases after its `documents`
+        # read what that case wrote, and of a read that began a transaction it kept the
+        # transaction alone.
+        def step(method, path, auth, status, response=None, body=None):
+            return {"method": method, "path": path, "body": body, "auth": auth, "status": status, "response": response}
+
+        def load(condition):
+            rules = ("rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
+                     f"    match /c/{{d}} {{\n      allow read: if {condition};\n    }}\n  }}\n}}\n")
+            return step("PUT", "/emulator/v1/projects/expressions:securityRules", None, 200, None,
+                        {"rules": {"files": [{"name": "firestore.rules", "content": rules}]}})
+        d = "/v1/projects/expressions/databases/(default)/documents"
+        missing = {"error": {"code": 404, "message": "not found", "status": "NOT_FOUND"}}
+        n = {"fields": {"n": {"integerValue": "1"}}}
+        cases = [
+            {"name": "before", "steps": [load("true"), step("GET", f"{d}/c/e", None, 404, missing)]},
+            {"name": "documents", "steps": [step("DELETE", f"{d}/c/e", "Bearer owner", 200), step("PATCH", f"{d}/c/e", "Bearer owner", 200, None, n),
+                                            step("PATCH", f"{d}/c/x", "Bearer owner", 200, None, n), step("DELETE", f"{d}/c/x", "Bearer owner", 200)]},
+            {"name": "after", "steps": [load("resource.data.n == 1"), step("GET", f"{d}/c/e", None, 200)]},
+            {"name": "a batchGet that begins a transaction", "steps": [
+                load("false"),
+                step("POST", f"{d}:batchGet", "Bearer owner", 200, [{"transaction": "EZIVAAAAAAAA"}],
+                     {"documents": ["projects/expressions/databases/(default)/documents/c/e"], "newTransaction": {}}),
+                step("POST", f"{d}:rollback", "Bearer owner", 200, None, {"transaction": "EZIVAAAAAAAA"})]},
+        ]
+        path = Path(self.dir.name) / "rules_expressions.json"
+        path.write_text(json.dumps(cases))
+        result = self.deploy(str(path))["recordings"][0]
+        self.assertEqual(result["differ"], [])
+        self.assertEqual((result["sent"], result["same"], result["skipped"]), (3, 3, {"does not load a ruleset": 1}))
+        # What is left written, what is deleted not; and the transaction production began rolled back.
+        sent = [(method, path, body) for method, path, _, body in StandIn.seen]
+        self.assertEqual(sum(1 for _, path, body in sent if path.endswith(":commit") and "documents/c/e\"" in (body or "")
+                             and "\"update\"" in body), 2)
+        self.assertFalse(any("documents/c/x" in (body or "") for _, _, body in sent))
+        self.assertIn(("POST", f"{d}:rollback".replace("expressions", PROJECT), '{"transaction": "dHgx"}'), sent)
 
     def test_conditions_that_read_are_deployed(self):
         rules = ("rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
