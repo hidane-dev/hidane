@@ -1537,7 +1537,7 @@ def earlier(case):
 NEEDS_AN_INDEX = "needs an index"
 
 
-def run_steps(production, case, own, result, loaded=None, deploy=None):
+def run_steps(production, case, own, result, loaded=None, deploy=None, prepared=None):
     """Sends a case's steps on the database emptied, in the replay's project, and compares each
     step's answer as `step_answer` reads it. What an earlier answer handed out (a page token, a
     transaction) is replaced by what production handed out, and times near a commit are moved
@@ -1548,14 +1548,17 @@ def run_steps(production, case, own, result, loaded=None, deploy=None):
     emulator's load of rules (`PUT …:securityRules`) is compared, on its status, with how making
     the ruleset went in production (`loaded`, or, with `deploy`, how deploying each load's ruleset
     went as the case comes to it). The documents an earlier case of the recording
-    wrote that the case's answers show are written first (`earlier`). A transaction production
-    will not begin without credentials ends the case (D127). Answers the first difference
-    (the step's number, the official emulator's answer, production's), `NEEDS_AN_INDEX` if
-    production asked for an index first (the index is kept, `asked`), or None, and the entries of
-    the known differences seen."""
+    wrote that the case's answers show are written first (`earlier`), with `prepared` (by their
+    path below the documents, with their fields). A read that began a transaction, of which the
+    recording kept the transaction alone, is compared on whether production began one. A
+    transaction production will not begin without credentials ends the case (D127). Answers the
+    first difference (the step's number, the official emulator's answer, production's),
+    `NEEDS_AN_INDEX` if production asked for an index first (the index is kept, `asked`), or None,
+    and the entries of the known differences seen."""
     project = production.project
     production.empty()
     seeds, _ = earlier(case)
+    seeds = {**(prepared or {}), **seeds}
     if seeds:
         documents = f"projects/{project}/databases/(default)/documents"
         production.call("POST", f"/v1/{documents}:commit", {"writes": [
@@ -1590,6 +1593,12 @@ def run_steps(production, case, own, result, loaded=None, deploy=None):
                 answer = answer[0]
                 known.add("D098")
             carried(recorded, answer, found)
+            if (isinstance(recorded, list) and len(recorded) == 1 and isinstance(recorded[0], dict)
+                    and recorded[0].keys() == {"transaction"} and isinstance(answer, list) and answer
+                    and isinstance(answer[0], dict) and "transaction" in answer[0]):
+                # The recorder of `rules_expressions.json` kept, of a read that began a transaction,
+                # the transaction alone; production began one too.
+                answer = recorded
             if recorded is not None and TEMPLATE.search(json.dumps(recorded)):
                 recorded = json.loads(filled(json.dumps(recorded), production_commits))
             official = step_answer(step["status"], recorded, own, official_commits)
@@ -1697,18 +1706,37 @@ def not_deployable(case):
     return None
 
 
+def set_up(case):
+    """What a case that only deletes and writes documents as the owner, keeping none of its
+    answers (`rules_expressions.json`'s `documents`), leaves for the cases after it, which read
+    them: each document's path below the documents, with its fields, or None where it deleted
+    one. None for a case that does anything else."""
+    writes = {}
+    for step in case["steps"]:
+        path = step["path"].split("/documents/", 1)
+        if (step["method"] not in ("DELETE", "PATCH") or sender(step) != "Bearer owner" or step["status"] != 200
+                or step.get("response") is not None or len(path) != 2 or "?" in path[1] or ":" in path[1]):
+            return None
+        writes[path[1]] = None if step["method"] == "DELETE" else (step.get("body") or {}).get("fields", {})
+    return writes or None
+
+
 def replay_rules_steps(production, recording, result):
     """A recording of rules (`rules_request.json` and the like) with its rules deployed. The cases
     that load one ruleset are put together by it; each ruleset is released (`release.py`), and
-    each of its cases sent on the database emptied, as `run_steps` sends them. A case that loads
+    each of its cases sent on the database emptied, as `run_steps` sends them, with what the
+    cases that set documents up before it left (`set_up`). A case that loads
     more than one (`rules_expressions.json`) is sent on its own, each ruleset released as the case
     comes to its load. A case that relies on what an earlier case wrote, and its answers do not
     show, is not (`earlier`). A case that differs is sent again `RETRY_AFTER` seconds later, its
     rulesets released again, and differs only if it does again; those that did not are counted
     (`settled`)."""
-    # The cases by the ruleset they load; those that load more than one under None.
-    rulesets = {}
+    # The cases by the ruleset they load, those that load more than one under None, each with the
+    # documents the cases that set documents up before it left (`set_up`).
+    rulesets, documents = {}, {}
     for case in recording["cases"]:
+        if (writes := set_up(case)) is not None:
+            documents = {path: fields for path, fields in {**documents, **writes}.items() if fields is not None}
         why = not_deployable(case) or earlier(case)[1]
         sources = [] if why else [source_of(load) for load in loads_of(case)]
         if why is None and not in_shard(production, "".join(sources)):
@@ -1716,33 +1744,33 @@ def replay_rules_steps(production, recording, result):
         if why:
             result["skipped"][why] = result["skipped"].get(why, 0) + 1
         else:
-            rulesets.setdefault(sources[0] if len(sources) == 1 else None, []).append(case)
+            rulesets.setdefault(sources[0] if len(sources) == 1 else None, []).append((case, documents))
     deploys = (sum(1 for source in rulesets if source is not None)
-               + sum(len(loads_of(case)) for case in rulesets.get(None, [])))
+               + sum(len(loads_of(case)) for case, _ in rulesets.get(None, [])))
     log(f"{result['fixture']}: {sum(map(len, rulesets.values()))} cases, {deploys} rulesets to deploy")
 
-    def send(source, loaded, case):
+    def send(source, loaded, case, documents):
         own = case_project(case)
         return own, run_steps(production, case, own, result, loaded,
-                              production.release.deploy if source is None else None)
+                              production.release.deploy if source is None else None, documents)
 
     again = {}
     for source, cases in rulesets.items():
         loaded = None if source is None else production.release.deploy(source)[0]
-        for case in cases:
+        for case, documents in cases:
             result["sent"] += 1
-            own, (first, known) = send(source, loaded, case)
+            own, (first, known) = send(source, loaded, case, documents)
             if first is None or first == NEEDS_AN_INDEX:
                 tally_steps(result, case, own, first, known)
             else:
-                again.setdefault(source, []).append(case)
+                again.setdefault(source, []).append((case, documents))
     if again:
         log(f"{result['fixture']}: {sum(map(len, again.values()))} cases differ; sent again in {RETRY_AFTER} s")
         time.sleep(RETRY_AFTER)
         for source, cases in again.items():
             loaded = None if source is None else production.release.deploy(source)[0]
-            for case in cases:
-                own, (first, known) = send(source, loaded, case)
+            for case, documents in cases:
+                own, (first, known) = send(source, loaded, case, documents)
                 if first is None:
                     result["settled"] = result.get("settled", 0) + 1
                 tally_steps(result, case, own, first, known)

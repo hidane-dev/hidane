@@ -189,7 +189,11 @@ requests:
   (D098). On the official emulator the cases of a recording ran one after another in one project,
   and a few rely on what an earlier case wrote: the documents their answers show created before
   their own first write are written first, and a case that rewrote such a document, or counted
-  them, is not sent. Production will not begin a transaction without credentials (D127): such a
+  them, is not sent. A case that only deletes and writes documents as the owner, keeping none of
+  its answers (`rules_expressions.json`'s `documents`), has what it left written before each case
+  after it; of a read that began a transaction, that recording keeps the transaction alone, and
+  production's answer is compared on whether it began one. Production will not begin a
+  transaction without credentials (D127): such a
   case ends there. A verify of a missing document is given the commit's time by production, a
   time just before it by the emulator (D128). A query production asks an index for is counted
   apart, and the index kept (`indexes.py`);
