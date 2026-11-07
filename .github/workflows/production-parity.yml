@@ -8,7 +8,9 @@ name: Production parity
 #
 # The rules job then deploys the rules of recordings of rules and sends their requests, a seventh
 # of them each night, by the day of the week. While it runs, the project's database is open as
-# those rules open it; it takes them down when it ends, whatever happened.
+# those rules open it; it takes them down when it ends, whatever happened. A user's requests go with
+# a real ID token for the user, which the job's service account signs a custom token for and
+# exchanges with the project's API key (tools/production/id_tokens.py).
 #
 # The datastore job replays the recordings in Datastore mode against the project's database of
 # that mode, `datastore`, beside the others: it empties only that database.
@@ -120,7 +122,9 @@ jobs:
         timeout-minutes: 45
         env:
           PRODUCTION_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          PRODUCTION_FIREBASE_API_KEY: ${{ secrets.PRODUCTION_FIREBASE_API_KEY }}
           PROJECT: ${{ vars.GCP_PROJECT_ID }}
+          SIGNER: ${{ vars.GCP_SERVICE_ACCOUNT }}
           SHARD: ${{ inputs.rules-shard }}
         run: |
           # The day of the week's seventh, Sunday's the first: all of it would outlast the token.
@@ -130,7 +134,7 @@ jobs:
             *) echo "::error::rules-shard takes 0 to 6"; exit 1 ;;
           esac
           python3 -I -B tools/production/replay.py --project "$PROJECT" --out production-rules \
-            --deploy-rules --shard "$SHARD/7" \
+            --deploy-rules --shard "$SHARD/7" --id-tokens --signer "$SIGNER" \
             crates/hidane-rules/tests/fixtures/rules_eval.json \
             crates/hidane/tests/fixtures/rules_request.json \
             crates/hidane/tests/fixtures/rules_writes.json \
@@ -138,7 +142,8 @@ jobs:
             crates/hidane/tests/fixtures/rules_lookups.json \
             crates/hidane/tests/fixtures/rules_same_document.json \
             crates/hidane/tests/fixtures/rules_denials.json \
-            crates/hidane/tests/fixtures/rules_expressions.json
+            crates/hidane/tests/fixtures/rules_expressions.json \
+            crates/hidane/tests/fixtures/rules_list.json
       - name: Take the rules down
         # The replay takes them down as it ends; this does it again in case it was stopped.
         if: always() && steps.auth.outcome == 'success'
