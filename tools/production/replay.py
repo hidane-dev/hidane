@@ -28,6 +28,7 @@ Recordings of Security Rules are tested with the Rules API's `projects.test`: th
 `match` paths cover in `rules.py`. With `--deploy-rules`, the rules of recordings of rules are
 deployed (`release.py`) and their requests sent, those without credentials without the token
 (`replay_rules_steps`, `replay_rules_deployed`); the project's rules are taken down at the end.
+With `--id-tokens` too, a user's requests are sent with a real ID token for the user (`id_tokens.py`).
 
 The recording of how a commit's writes are checked (`commit_checks.json`) is replayed over REST
 `:commit` and `:batchWrite` in `commits.py`.
@@ -60,6 +61,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "oracle"))
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # `-I` leaves it out
 from harness import mask  # noqa: E402
+from id_tokens import API_KEY_ENV, IAM_CREDENTIALS, IDENTITY_TOOLKIT, IdTokens, uid  # noqa: E402
 from indexes import index_asked  # noqa: E402
 
 TOKEN_ENV = "PRODUCTION_ACCESS_TOKEN"
@@ -120,6 +122,8 @@ class Production:
         # with `--datastore-shard`, which part of each recording's cases to send there: (i, n).
         self.datastore = None
         self.datastore_shard = None
+        # With `--id-tokens`, the ID tokens a user's steps are sent with (id_tokens.py).
+        self.id_tokens = None
 
     def send(self, method, path, data=None, content_type="application/json", base=None, anonymous=False,
              headers=None, budgeted=False, binary=False, timeout=60, tries=NETWORK_TRIES):
@@ -1546,7 +1550,8 @@ def run_steps(production, case, own, result, loaded=None, deploy=None, prepared=
     with it (`shift`), and templates of a commit's time or version are filled with production's
     (`filled`). A step the emulator refused for want of admin credentials (`… require admin
     authentication.`: its recorder sent none) is not sent: the replay always has them. A step
-    the owner sent is sent with the token, one without credentials without; the official
+    the owner sent is sent with the token, one without credentials without, and a user's with a
+    real ID token for the user (`--id-tokens`, id_tokens.py); the official
     emulator's load of rules (`PUT …:securityRules`) is compared, on its status, with how making
     the ruleset went in production (`loaded`, or, with `deploy`, how deploying each load's ruleset
     went as the case comes to it). The documents an earlier case of the recording
@@ -1581,7 +1586,11 @@ def run_steps(production, case, own, result, loaded=None, deploy=None, prepared=
 
             path = sent(step["path"] if step["path"].startswith("/") else "/v1/" + step["path"])
             data = None if step.get("body") is None else sent(json.dumps(step["body"])).encode()
-            status, _, text = production.send(step["method"], path, data, anonymous=sender(step) is None)
+            # A user's step goes with a real ID token for the user (`--id-tokens`, `not_deployable`).
+            user = sender(step) not in (None, "Bearer owner")
+            status, _, text = production.send(step["method"], path, data, anonymous=sender(step) != "Bearer owner",
+                                              headers={"Authorization": production.id_tokens.bearer(sender(step))}
+                                              if user else None)
             try:
                 answer = json.loads(text) if text.strip() else None
             except ValueError:
@@ -1687,14 +1696,18 @@ def source_of(load):
     return load["body"]["rules"]["files"][0]["content"]
 
 
-def not_deployable(case):
+def not_deployable(case, id_tokens=None):
     """Why a case of a recording of rules is not sent with its rules deployed, or None: it must
     load rulesets of one file each, the first before any step without credentials, send its steps
-    as the owner or without credentials, and use none of the official emulator's own API but the
+    as the owner, without credentials, or, with `id_tokens` (`--id-tokens`), as a user a real ID
+    token stands for (`id_tokens.uid`), and use none of the official emulator's own API but the
     loads."""
     loads = loads_of(case)
-    if any(sender(step) not in (None, "Bearer owner") or not step.get("owner", True) for step in case["steps"]):
+    users = [sender(step) for step in case["steps"] if sender(step) not in (None, "Bearer owner")]
+    if any(not step.get("owner", True) for step in case["steps"]) or (users and id_tokens is None):
         return "sends a user's token"
+    if any(uid(auth) is None for auth in users):
+        return "sends a token no real one stands for"
     if any(step["path"].startswith("/emulator/") for step in case["steps"] if step not in loads):
         return "uses the official emulator's own API"
     if not loads or any(load["method"] != "PUT" for load in loads):
@@ -1739,7 +1752,7 @@ def replay_rules_steps(production, recording, result):
     for case in recording["cases"]:
         if (writes := set_up(case)) is not None:
             documents = {path: fields for path, fields in {**documents, **writes}.items() if fields is not None}
-        why = not_deployable(case) or earlier(case)[1]
+        why = not_deployable(case, production.id_tokens) or earlier(case)[1]
         sources = [] if why else [source_of(load) for load in loads_of(case)]
         if why is None and not in_shard(production, "".join(sources)):
             why = "another night's"
@@ -1995,6 +2008,12 @@ def main(argv=None):
                              "the project's rules are taken down at the end")
     parser.add_argument("--shard", help="with --deploy-rules, which part of what deploys rules to send: i/n, the i-th "
                                         "of n parts, from 0")
+    parser.add_argument("--id-tokens", action="store_true",
+                        help=f"with --deploy-rules, send a user's steps with a real ID token for the user, made as "
+                             f"--signer with the project's API key in {API_KEY_ENV} (id_tokens.py)")
+    parser.add_argument("--signer", help="with --id-tokens, the service account custom tokens are signed as")
+    parser.add_argument("--iam-base", default=IAM_CREDENTIALS)
+    parser.add_argument("--identity-base", default=IDENTITY_TOOLKIT)
     parser.add_argument("--datastore-database", help="the project's database in Datastore mode, which recordings in "
                                                      "Datastore mode are sent to (datastore.py); without it they are not sent")
     parser.add_argument("--datastore-base", default="https://datastore.googleapis.com")
@@ -2012,6 +2031,10 @@ def main(argv=None):
     if (not datastore_shard or not int(datastore_shard.group(1)) < int(datastore_shard.group(2))
             or (args.datastore_shard and not args.datastore_database)):
         parser.error("--datastore-shard takes i/n, i below n, with --datastore-database")
+    if args.id_tokens and not (args.deploy_rules and args.signer):
+        parser.error("--id-tokens takes --deploy-rules and --signer")
+    if args.id_tokens and not os.environ.get(API_KEY_ENV):
+        parser.error(f"{API_KEY_ENV} is not set")
     production = Production(args.base, args.project, token, args.budget, args.rules_base, args.quota_project)
     report = {"started": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "project": "{project}",
               "recordings": []}
@@ -2020,6 +2043,9 @@ def main(argv=None):
         production.release = Rules(production)
         production.shard = (int(shard.group(1)), int(shard.group(2)))
         report["deployed"] = args.shard or "0/1"
+    if args.id_tokens:
+        production.id_tokens = IdTokens(production, args.signer, os.environ[API_KEY_ENV], args.iam_base,
+                                        args.identity_base)
     if args.datastore_database:
         from datastore import Database
         production.datastore = Database(production, args.datastore_database, args.datastore_base)
