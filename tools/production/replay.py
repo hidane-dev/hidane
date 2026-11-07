@@ -397,6 +397,8 @@ KNOWN_CASES = {
     "base_versions.json": [("D066", r"^REST patch"), ("D109", r"version 0, deleted document|the deleted version"),
                            ("D110", r"past the stored version|then a document that is missing"),
                            ("D111", r"named database")],
+    # A condition of a long chain of members, which production fails on (500 INTERNAL).
+    "rules_expressions.json": [("D134", r"^order: a chain of 99[56] members on a map$")],
     "commit_checks.json": [("D075", r"^an array union of a string over the limit / |^a (?:delete|verify) of a document ID "
                                     r"over 1500 bytes / "),
                            ("D030", r"^an array union of a vector with NaN / "), ("D102", r"^a transform path __name__ / "),

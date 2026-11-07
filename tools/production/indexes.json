@@ -1128,6 +1128,16 @@
  ],
  "fieldOverrides": [
   {
+   "collectionGroup": "c",
+   "fieldPath": "n",
+   "indexes": [
+    {
+     "queryScope": "COLLECTION_GROUP",
+     "order": "ASCENDING"
+    }
+   ]
+  },
+  {
    "collectionGroup": "p",
    "fieldPath": "a",
    "indexes": [

@@ -2346,6 +2346,25 @@
    "pinned_by": [
     "crates/hidane/tests/datastore.rs::commit_checks_come_in_the_official_emulators_order"
    ]
+  },
+  {
+   "id": "D134",
+   "table": "production",
+   "area": "rules",
+   "topic": "Long chains of members",
+   "kind": "bug-for-bug",
+   "official": "A condition that reads a member of a member, over and over (`{'a': 1}.a.a…`), is denied like any other: 995 members deep, for the type error the second one meets (\"Type error. Received: [int] Expected: [map,path].\"), 996 deep, for the limit of 1,000 expressions (`tools/oracle/rules_expressions.py`)",
+   "firestore": "Both fail, `500` `INTERNAL` \"An internal error occurred.\" (#82)",
+   "hidane": "As the official emulator",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82), each time it was sent",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/42302426572",
+    "hidane-dev/hidane#82",
+    "tools/oracle/rules_expressions.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rules_server.rs::expressions_and_their_limit"
+   ]
   }
  ],
  "retired": [

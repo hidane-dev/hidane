@@ -195,7 +195,8 @@ requests:
   production's answer is compared on whether it began one. Production will not begin a
   transaction without credentials (D127): such a
   case ends there. A verify of a missing document is given the commit's time by production, a
-  time just before it by the emulator (D128). A query production asks an index for is counted
+  time just before it by the emulator (D128). A condition of a long chain of members, which the
+  emulator denies, fails in production (D134). A query production asks an index for is counted
   apart, and the index kept (`indexes.py`);
 - the conditions of `rules_eval.json` that read: `rooms/r1` and `rooms/r2` are written as the
   recorder wrote them, and each condition decides a read of `rooms/r1` without credentials,
