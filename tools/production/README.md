@@ -239,7 +239,7 @@ Neither it nor the key is written anywhere.
 PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/replay.py --project <id> --out production-rules \
     --deploy-rules --shard 0/7 crates/hidane/tests/fixtures/rules_request.json
 PRODUCTION_ACCESS_TOKEN=… PRODUCTION_FIREBASE_API_KEY=… python3 -I -B tools/production/replay.py --project <id> \
-    --out production-rules --deploy-rules --shard 0/7 --id-tokens --signer <service account> \
+    --out production-rules-users --deploy-rules --shard 0/7 --id-tokens --signer <service account> \
     crates/hidane/tests/fixtures/rules_list.json
 PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/release.py --project <id>
 ```
@@ -392,7 +392,11 @@ by the day of the week (a run on demand takes the seventh as its `rules-shard`),
 rules down after its replay, whatever happened. Its report is the run's `production-rules`
 artifact.
 
-A third job replays the recordings in Datastore mode against the database `datastore`, beside the
+A job after it does the same for `rules_list.json`, whose requests go as a user, with the same
+seventh and `--id-tokens`. It signs in again, as the two together would outlast the token's hour.
+Its report is the run's `production-rules-users` artifact.
+
+Another job replays the recordings in Datastore mode against the database `datastore`, beside the
 others, as it empties only that database. Its report is the run's `production-datastore` artifact.
 
 A difference it reports is a lead, not a fact about hidane: production can differ from the
