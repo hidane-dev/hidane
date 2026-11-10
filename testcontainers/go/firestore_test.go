@@ -100,7 +100,7 @@ func TestFirestoreModule(t *testing.T) {
 
 // The module's WithDatastoreMode() (#81): the Datastore API through the client library of
 // Datastore, and the Firestore API refused, as the official emulator does in that mode. Served from
-// the release after 0.6.0 on: HIDANE_DATASTORE says the image under test serves it.
+// 0.7.0 on: HIDANE_DATASTORE says the image under test serves it.
 func TestFirestoreModuleInDatastoreMode(t *testing.T) {
 	if os.Getenv("HIDANE_DATASTORE") == "" {
 		t.Skip("set HIDANE_DATASTORE when the image serves Datastore mode")
