@@ -205,8 +205,10 @@ requests:
   time just before it by the emulator (D128). A condition of a long chain of members, which the
   emulator denies, fails in production (D134). A list without a page size shows the rules a limit
   of 30 in the emulator, none in production (D135), and production refuses a verify alone under a
-  condition of `request.resource.data` that the emulator lets through (D136). A query production
-  asks an index for is counted apart, and the index kept (`indexes.py`);
+  condition of `request.resource.data` that the emulator lets through (D136). Under rules that deny
+  a list, production reports some of the query's faults, a negative limit among them, before the
+  denial (D137). A query production asks an index for is counted apart, and the index kept
+  (`indexes.py`);
 - the conditions of `rules_eval.json` that read: `rooms/r1` and `rooms/r2` are written as the
   recorder wrote them, and each condition decides a read of `rooms/r1` without credentials,
   allowed or denied. Conditions that do not depend on where the document is are deployed in one

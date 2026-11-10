@@ -2405,6 +2405,24 @@
    "pinned_by": [
     "crates/hidane/tests/rules_coverage.rs::verify_writes"
    ]
+  },
+  {
+   "id": "D137",
+   "table": "production",
+   "area": "rules",
+   "topic": "A query's faults under rules that deny it",
+   "kind": "bug-for-bug",
+   "official": "Under rules that deny a list, the denial is reported, `403` `PERMISSION_DENIED`, before most of the query's own faults: a negative limit or offset (an aggregation's too), two `array-contains` filters, an `array-contains` on `__name__`, two orders on a field, a descending key order. Only a filter of more than 30 disjunctions is refused before the rules (`tools/oracle/rules_list.py`)",
+   "firestore": "A negative limit or offset, two `array-contains` filters and an `array-contains` on `__name__` are refused before the rules, `400` `INVALID_ARGUMENT` (\"limit is negative\", \"offset is negative\", \"A maximum of 1 'ARRAY_CONTAINS' filter is allowed per disjunction.\", \"the name __key__ is reserved\"). Two orders on a field and a descending key order are denied by the rules, as on the official emulator (#82)",
+   "hidane": "As the official emulator: the rules first",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82), each of the three times it was sent. Under rules that allow the query, both refuse it for the fault",
+   "references": [
+    "hidane-dev/hidane#82",
+    "tools/oracle/rules_list.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rules_server.rs::lists_are_decided_by_their_filters"
+   ]
   }
  ],
  "retired": [
