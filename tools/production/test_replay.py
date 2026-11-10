@@ -15,6 +15,7 @@ import unittest
 import urllib.parse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import commits  # noqa: E402
@@ -547,8 +548,8 @@ class ReplayTest(unittest.TestCase):
         StandIn.entities, StandIn.allocated, StandIn.transactions = {}, 0, 0
         StandIn.nested_arrays, StandIn.throttle = False, {}
         StandIn.signed, StandIn.id_tokens = [], {}
-        self.waits = release.SETTLE, replay.RETRY_AFTER, release.PER_MINUTE, replay.THROTTLED_WAITS
-        release.SETTLE = replay.RETRY_AFTER = 0
+        self.waits = release.SETTLE, replay.RETRY_AFTER, replay.LAST_SETTLE, release.PER_MINUTE, replay.THROTTLED_WAITS
+        release.SETTLE = replay.RETRY_AFTER = replay.LAST_SETTLE = 0
         release.PER_MINUTE = 10 ** 9
         replay.THROTTLED_WAITS = (0, 0, 0)
         self.server = ThreadingHTTPServer(("127.0.0.1", 0), StandIn)
@@ -557,7 +558,7 @@ class ReplayTest(unittest.TestCase):
         self.dir = tempfile.TemporaryDirectory()
 
     def tearDown(self):
-        release.SETTLE, replay.RETRY_AFTER, release.PER_MINUTE, replay.THROTTLED_WAITS = self.waits
+        release.SETTLE, replay.RETRY_AFTER, replay.LAST_SETTLE, release.PER_MINUTE, replay.THROTTLED_WAITS = self.waits
         self.server.shutdown()
         self.server.server_close()
         self.dir.cleanup()
@@ -1294,9 +1295,9 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual([d["name"] for d in result["differ"]], ["differs, step 3"])
         self.assertEqual(result["skipped"], {"sends a user's token": 1, "uses the official emulator's own API": 1,
                                              "sends a request before it loads rules": 1})
-        # A ruleset for each, and again for the case that differed; each marked, and all gone at
-        # the end with the release.
-        self.assertEqual(len(StandIn.released), 3)
+        # A ruleset for each, and twice again for the case that differed; each marked, and all
+        # gone at the end with the release.
+        self.assertEqual(len(StandIn.released), 4)
         self.assertTrue(all(content.endswith(release.MARK) for content in StandIn.released))
         self.assertEqual((StandIn.release, StandIn.rulesets), (None, {}))
         # The owner's steps carry the token, the others no credentials.
@@ -1496,6 +1497,34 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual((result["same"], result["settled"], result["differ"]), (1, 1, []))
         self.assertIn("were the same when sent again", (Path(self.dir.name) / "out" / "report.md").read_text())
 
+    def test_a_case_answered_by_the_release_before_when_sent_again_is_sent_a_third_time(self):
+        # Each release decides the request after it as the one before did: sent again, each case
+        # comes after the other's ruleset, released again seconds before.
+        StandIn.lag = 1
+
+        def case(name, condition, status, response=None):
+            rules = ("rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
+                     f"    match /c/{{d}} {{\n      allow read: if {condition};\n    }}\n  }}\n}}\n")
+            return {"name": name, "steps": [
+                {"method": "PUT", "path": "/emulator/v1/projects/req:securityRules", "auth": None, "status": 200,
+                 "response": {}, "body": {"rules": {"files": [{"name": "firestore.rules", "content": rules}]}}},
+                {"method": "GET", "path": "/v1/projects/req/databases/(default)/documents/c/x", "auth": None,
+                 "status": status, "body": None, "response": response}]}
+        denied = {"error": {"code": 403, "message": "\nfalse for 'get' @ L5", "status": "PERMISSION_DENIED"}}
+        settles = []
+        deploy = release.Rules.deploy
+
+        def deployed(rules, source, settle=None):
+            settles.append(settle)
+            return deploy(rules, source, settle)
+        with mock.patch.object(release.Rules, "deploy", deployed):
+            report = self.deploy(self.rules_recording([case("allowed", "true", 404), case("denied", "false", 403, denied)]))
+        result = report["recordings"][0]
+        self.assertEqual((result["same"], result["knownCases"], result["settled"], result["differ"]), (1, 1, 2, []))
+        # Each released, then each again, and, differing again, a third time, given `LAST_SETTLE`.
+        self.assertEqual(settles, [None, None, None, replay.LAST_SETTLE, None, replay.LAST_SETTLE])
+        self.assertEqual(len(StandIn.released), 6)
+
     def test_a_case_that_loads_two_rulesets_has_each_released_in_turn(self):
         def step(method, path, auth, status, response=None, body=None):
             return {"method": method, "path": path, "body": body, "auth": auth, "status": status, "response": response}
@@ -1521,9 +1550,9 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual((result["sent"], result["same"], result["knownCases"], result["known"]), (3, 1, 1, {"D118": 1}))
         self.assertEqual([d["name"] for d in result["differ"]], ["denied, then denied again, step 5"])
         # Each case's rulesets as it comes to them, the ruleset of the case that loads one once,
-        # and those of the case that differed again in turn.
+        # and those of the case that differed in turn, twice again.
         conditions = [re.search(r"allow read: if (\w+);", content).group(1) for content in StandIn.released]
-        self.assertEqual(conditions, ["true", "false", "false", "true", "true", "false", "true"])
+        self.assertEqual(conditions, ["true", "false", "false", "true", "true", "false", "true", "false", "true"])
         self.assertEqual((StandIn.release, StandIn.rulesets), (None, {}))
 
     def test_the_documents_a_case_set_up_are_written_for_the_cases_after_it(self):
@@ -1589,8 +1618,8 @@ class ReplayTest(unittest.TestCase):
         self.assertEqual([d["name"] for d in result["differ"]], ["c"])
         self.assertEqual(result["skipped"], {"a batch of writes": 1, "tested with projects.test, not deployed": 1})
         # Those that do not depend on where the document is, together, each on a collection of its
-        # own; the other alone, then again; the one that does not compile not at all.
-        self.assertEqual(len(StandIn.released), 3)
+        # own; the other alone, then twice again; the one that does not compile not at all.
+        self.assertEqual(len(StandIn.released), 4)
         self.assertEqual(re.findall(r"match /(\w+)/", StandIn.released[0]), ["databases", "e0", "e1", "e4"])
         self.assertIn("match /rooms/{room}", StandIn.released[1])
         # The document is written in the replay's project, its reference too.

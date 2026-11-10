@@ -403,6 +403,12 @@ KNOWN_CASES = {
                            ("D111", r"named database")],
     # A condition of a long chain of members, which production fails on (500 INTERNAL).
     "rules_expressions.json": [("D134", r"^order: a chain of 99[56] members on a map$")],
+    # A list without a page size, whose limit the official emulator shows the rules as 30,
+    # production as none.
+    "rules_request.json": [("D135", r"^list with a mask and an order: request\.query\.limit == 30$")],
+    "rules_list.json": [("D135", r"^listDocuments: request\.query\.limit == (?:30|null)$")],
+    # A verify alone under a condition of `request.resource.data`, which production refuses.
+    "rules_verify.json": [("D136", r"^verify alone under request\.resource is the stored document: c/a$")],
     "commit_checks.json": [("D075", r"^an array union of a string over the limit / |^a (?:delete|verify) of a document ID "
                                     r"over 1500 bytes / "),
                            ("D030", r"^an array union of a vector with NaN / "), ("D102", r"^a transform path __name__ / "),
@@ -1235,7 +1241,8 @@ def replay_rules_deployed(production, recording, result):
     ruleset, each on a collection of its own that holds the same document; the others, and whole
     rulesets, one at a time. Whether each compiles, and its warnings, are the Rules API's
     (`projects.test` without a test). A condition that differs is deployed again alone
-    `RETRY_AFTER` seconds later, and differs only if it does again."""
+    `RETRY_AFTER` seconds later, and if it differs again, a third time, given `LAST_SETTLE`
+    seconds; it differs only if it does then."""
     project = production.project
     cases = []
     for case in recording["results"]:
@@ -1271,10 +1278,10 @@ def replay_rules_deployed(production, recording, result):
         status, _, _ = production.send("GET", f"/v1/{documents}/{collection}/r1", anonymous=True)
         return {200: "allow", 403: "deny"}.get(status, str(status))
 
-    def alone(i):
+    def alone(i, settle=None):
         if compiled[i]["outcome"] == "compile":
             return "compile"
-        status, _ = production.release.deploy(sources[i])
+        status, _ = production.release.deploy(sources[i], settle)
         return read("rooms") if status == 200 else "compile"
 
     outcomes = {}
@@ -1306,6 +1313,9 @@ def replay_rules_deployed(production, recording, result):
         time.sleep(RETRY_AFTER)
     for i in again:
         outcomes[i] = alone(i)
+        if not same_json(*compared(i)):
+            log(f"{cases[i]['name']}: differs again; deployed a third time, given {LAST_SETTLE} s")
+            outcomes[i] = alone(i, LAST_SETTLE)
         official, answered = compared(i)
         if same_json(official, answered):
             result["same"] += 1
@@ -1676,6 +1686,11 @@ def replay_steps(production, recording, result):
 # How long the replay waits to send again what differed with rules deployed: a release takes
 # minutes to reach every server, and one that had not yet may have answered.
 RETRY_AFTER = 120
+# How long a ruleset released again is given before what differed when sent again is sent a third
+# time. Sent again `SETTLE` seconds after its rulesets were released again, each seconds after
+# the one before, a case can still be answered by the release before: on 2026-11-10, nine cases
+# of `rules_list.json` differed on both sends, and each was the same or known given a minute.
+LAST_SETTLE = 60
 
 
 def in_shard(production, key):
@@ -1744,8 +1759,9 @@ def replay_rules_steps(production, recording, result):
     more than one (`rules_expressions.json`) is sent on its own, each ruleset released as the case
     comes to its load. A case that relies on what an earlier case wrote, and its answers do not
     show, is not (`earlier`). A case that differs is sent again `RETRY_AFTER` seconds later, its
-    rulesets released again, and differs only if it does again; those that did not are counted
-    (`settled`)."""
+    rulesets released again, and if it differs again, a third time, each of its rulesets released
+    again and given `LAST_SETTLE` seconds; it differs only if it does then. Those that did not are
+    counted (`settled`)."""
     # The cases by the ruleset they load, those that load more than one under None, each with the
     # documents the cases that set documents up before it left (`set_up`).
     rulesets, documents = {}, {}
@@ -1764,10 +1780,10 @@ def replay_rules_steps(production, recording, result):
                + sum(len(loads_of(case)) for case, _ in rulesets.get(None, [])))
     log(f"{result['fixture']}: {sum(map(len, rulesets.values()))} cases, {deploys} rulesets to deploy")
 
-    def send(source, loaded, case, documents):
+    def send(source, loaded, case, documents, settle=None):
         own = case_project(case)
-        return own, run_steps(production, case, own, result, loaded,
-                              production.release.deploy if source is None else None, documents)
+        deploy = (lambda rules: production.release.deploy(rules, settle)) if source is None else None
+        return own, run_steps(production, case, own, result, loaded, deploy, documents)
 
     again = {}
     for source, cases in rulesets.items():
@@ -1786,6 +1802,10 @@ def replay_rules_steps(production, recording, result):
             loaded = None if source is None else production.release.deploy(source)[0]
             for case, documents in cases:
                 own, (first, known) = send(source, loaded, case, documents)
+                if first is not None and first != NEEDS_AN_INDEX:
+                    log(f"{case['name']}: differs again; sent a third time, its rules given {LAST_SETTLE} s")
+                    loaded = None if source is None else production.release.deploy(source, LAST_SETTLE)[0]
+                    own, (first, known) = send(source, loaded, case, documents, LAST_SETTLE)
                 if first is None:
                     result["settled"] = result.get("settled", 0) + 1
                 tally_steps(result, case, own, first, known)
@@ -1976,7 +1996,8 @@ def markdown(report):
     settled = sum(r.get("settled", 0) for r in report["recordings"])
     if settled:
         lines += ["", f"{settled} cases differed when first sent, and were the same when sent again {RETRY_AFTER} s later, "
-                  "their rules released again: the release had not reached every server."]
+                  f"their rules released again, or a third time, their rules given {LAST_SETTLE} s: the release had "
+                  "not reached every server."]
     indexes = {json.dumps(i, sort_keys=True) for r in report["recordings"] for i in r["indexes"]}
     if indexes:
         lines += ["", f"Production asked for {len(indexes)} indexes the project does not have: "

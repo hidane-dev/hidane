@@ -199,8 +199,10 @@ requests:
   transaction without credentials (D127): such a
   case ends there. A verify of a missing document is given the commit's time by production, a
   time just before it by the emulator (D128). A condition of a long chain of members, which the
-  emulator denies, fails in production (D134). A query production asks an index for is counted
-  apart, and the index kept (`indexes.py`);
+  emulator denies, fails in production (D134). A list without a page size shows the rules a limit
+  of 30 in the emulator, none in production (D135), and production refuses a verify alone under a
+  condition of `request.resource.data` that the emulator lets through (D136). A query production
+  asks an index for is counted apart, and the index kept (`indexes.py`);
 - the conditions of `rules_eval.json` that read: `rooms/r1` and `rooms/r2` are written as the
   recorder wrote them, and each condition decides a read of `rooms/r1` without credentials,
   allowed or denied. Conditions that do not depend on where the document is are deployed in one
@@ -210,8 +212,11 @@ requests:
 
 A release decides requests seconds after it is made (from 1.3 to 2.2 s, measured on 2026-10-30),
 and takes minutes to reach every server. The replay waits 5 s after each release; a case that
-differs is sent again two minutes later, its rulesets released again, and differs only if it does
-again. The report counts those that did not.
+differs is sent again two minutes later, its rulesets released again. Sent again, a case comes
+seconds after the release of another case's rules, which can still answer it: one that differs
+again is sent a third time, each of its rulesets released again and given a minute, and differs
+only if it does then (on 2026-11-10, nine cases of `rules_list.json` differed on both sends, and
+each was the same or known given a minute). The report counts those that did not.
 
 While it runs, the database is open as the rules deployed open it, to anyone. The project is
 kept without a release of rules, so that it refuses every request without credentials, and

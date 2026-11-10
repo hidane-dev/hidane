@@ -2365,6 +2365,46 @@
    "pinned_by": [
     "crates/hidane/tests/rules_server.rs::expressions_and_their_limit"
    ]
+  },
+  {
+   "id": "D135",
+   "table": "production",
+   "area": "rules",
+   "topic": "A list's limit without a page size",
+   "kind": "bug-for-bug",
+   "official": "A `listDocuments` without a page size shows the rules a limit of 30: `request.query.limit == 30` lets it through, `request.query.limit == null` does not (`tools/oracle/rules_list.py`, `tools/oracle/rules_request.py`)",
+   "firestore": "No limit: `request.query.limit == null` lets it through, and `request.query.limit == 30` does not, `403` `PERMISSION_DENIED` \"Missing or insufficient permissions.\" (#82)",
+   "hidane": "As the official emulator: a limit of 30",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82), each time it was sent. With a page size, both show the rules the page size as the limit",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/42746882244",
+    "hidane-dev/hidane#82",
+    "tools/oracle/rules_list.py",
+    "tools/oracle/rules_request.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rules_server.rs::request_and_resource",
+    "crates/hidane/tests/rules_server.rs::lists_are_decided_by_their_filters"
+   ]
+  },
+  {
+   "id": "D136",
+   "table": "production",
+   "area": "rules",
+   "topic": "A verify's request.resource",
+   "kind": "bug-for-bug",
+   "official": "A commit's `verify` write alone, checked as a `get`, is let through by `request.resource.data.n == 1` where the stored document's `n` is 1: `request.resource` is the stored document (D009, `tools/oracle/rules_verify.py`)",
+   "firestore": "Refused, `403` `PERMISSION_DENIED` \"Missing or insufficient permissions.\", where `resource.data.n == 1` and `request.resource == resource` let the same verify through (#82)",
+   "hidane": "As the official emulator: `request.resource` is the stored document",
+   "reason": "Follow the emulator. Seen by the Production parity workflow (#82), each of the four times it was sent",
+   "references": [
+    "https://github.com/hidane-dev/hidane/actions/runs/42746882244",
+    "hidane-dev/hidane#82",
+    "tools/oracle/rules_verify.py"
+   ],
+   "pinned_by": [
+    "crates/hidane/tests/rules_coverage.rs::verify_writes"
+   ]
   }
  ],
  "retired": [
