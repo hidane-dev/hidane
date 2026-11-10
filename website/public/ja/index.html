@@ -67,7 +67,7 @@
 <div class="install">
 <div class="install-box">
 <code class="cmd"><span class="prompt" aria-hidden="true">$ </span>curl -fsSL https://hidane.dev/install.sh | sh</code>
-<span class="badge">v0.6.0 · macOS · Linux</span>
+<span class="badge">v0.7.0 · macOS · Linux</span>
 <button type="button" class="copy-btn" title="コマンドをコピー" data-copied="コピーしました">
 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"></rect><path d="M5 15V6a2 2 0 0 1 2-2h9"></path></svg>
 <span>コピー</span>
@@ -84,7 +84,7 @@
 </a>
 </div>
 
-<p class="status"><span class="dot" aria-hidden="true"></span><span>v0.6.0 · Enterprise エディションのクエリとリスナーに対応、iOS と Android で検証済み</span></p>
+<p class="status"><span class="dot" aria-hidden="true"></span><span>v0.7.0 · Datastore モードに対応、Enterprise エディションのパイプラインと BSON 型にも対応</span></p>
 <p class="featured" aria-label="掲載先">
 <a href="https://www.producthunt.com/products/hidane?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-hidane" target="_blank" rel="noopener noreferrer"><img class="on-dark" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1277504&amp;theme=dark&amp;t=1791976762318" alt="hidane - A Firestore emulator without Java, in one Rust binary | Product Hunt" width="250" height="54"><img class="on-light" src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1277504&amp;theme=light&amp;t=1791976762318" alt="hidane - A Firestore emulator without Java, in one Rust binary | Product Hunt" width="250" height="54"></a>
 <a href="https://orynth.dev/projects/hidane" target="_blank" rel="noopener"><img class="on-dark" src="https://www.orynth.dev/api/badge/hidane?theme=dark&amp;style=default" alt="Orynth に掲載" width="176" height="54"><img class="on-light" src="https://www.orynth.dev/api/badge/hidane?theme=light&amp;style=default" alt="Orynth に掲載" width="176" height="54"></a>
@@ -109,19 +109,19 @@
 <a class="src" href="https://github.com/firebase/firebase-tools/releases/tag/v15.0.0">出典: firebase-tools v15.0.0 リリースノート</a>
 </article>
 <article class="card">
-<div class="card-num">981 ms · 148 MiB</div>
-<h3>起動に 981 ms、アイドルで 148 MiB</h3>
-<p>正式なベンチマーク環境での中央値で、公式エミュレータはポートを開くまでに 981 ms かかり、アイドル時に 148 MiB を使います。同じマシンで、hidane v0.6.0 は 1.56 ms、9.4 MiB です。</p>
-<a class="src" href="https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-15-release.md">出典: ベンチマーク結果（全サンプル付き、英語）</a>
+<div class="card-num">851 ms · 148 MiB</div>
+<h3>起動に 851 ms、アイドルで 148 MiB</h3>
+<p>正式なベンチマーク環境での中央値で、公式エミュレータはポートを開くまでに 851 ms かかり、アイドル時に 148 MiB を使います。同じマシンで、hidane v0.7.0 は 2.1 ms、9.9 MiB です。</p>
+<a class="src" href="https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/11/2026-11-10-release.md">出典: ベンチマーク結果（全サンプル付き、英語）</a>
 </article>
 <article class="card">
 <div class="card-num">11 倍</div>
 <h3>データが増えると書き込みが遅くなる</h3>
-<p>リスナーを接続した状態では、公式エミュレータのバッチ書き込みがドキュメントの総数に比例して遅くなります。10 万件で 191 秒かかり、リスナーがない場合の 11 倍です。hidane は、commit のコストが変更した件数だけで決まるように設計しています。同じ 10 万件は 2.5 秒で、バッチごとの時間はほぼ一定です。</p>
-<a class="src" href="https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-15-release.md">出典: ベンチマーク結果（全サンプル付き、英語）</a>
+<p>リスナーを接続した状態では、公式エミュレータのバッチ書き込みがドキュメントの総数に比例して遅くなります。10 万件で 175 秒かかり、リスナーがない場合の 11 倍です。hidane は、commit のコストが変更した件数だけで決まるように設計しています。同じ 10 万件は 2.2 秒で、バッチごとの時間はほぼ一定です。</p>
+<a class="src" href="https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/11/2026-11-10-release.md">出典: ベンチマーク結果（全サンプル付き、英語）</a>
 </article>
 </div>
-<p class="fine">AWS c7i.xlarge 1 台（Ubuntu 24.04、Java 21、firebase-tools 15.33.0）で両方を測った中央値です（2026-10-15）。測り方は <a href="https://github.com/hidane-dev/hidane/blob/main/bench/README.md">bench/</a>（英語）にあります。背景は <a href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md">Why hidane</a>（英語）にまとめています。</p>
+<p class="fine">AWS c7i.xlarge 1 台（Ubuntu 24.04、Java 21、firebase-tools 15.33.0）で両方を測った中央値です（2026-11-10）。測り方は <a href="https://github.com/hidane-dev/hidane/blob/main/bench/README.md">bench/</a>（英語）にあります。背景は <a href="https://github.com/hidane-dev/hidane/blob/main/docs/why.md">Why hidane</a>（英語）にまとめています。</p>
 </div>
 </section>
 
@@ -129,7 +129,7 @@
 <div class="wrap sec-in sec-in--tight">
 <h2 class="h2" id="works">対応クライアント</h2>
 <div class="legend">
-<span>v0.6.0 での状態です。</span>
+<span>v0.7.0 での状態です。</span>
 <span class="legend-chips">
 <span class="chip">planned</span>
 <span class="chip chip--progress">not verified</span>
@@ -147,6 +147,7 @@
 <div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Java</span><span class="chip chip--supported">verified</span></div>
 <div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">iOS</span><span class="chip chip--supported">verified</span></div>
 <div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Android</span><span class="chip chip--supported">verified</span></div>
+<div class="row" role="listitem"><span class="row-ver">gRPC, REST</span><span class="row-label">Datastore クライアント（Node、Python、Java、Go）</span><span class="chip chip--supported">verified</span></div>
 <div class="row" role="listitem"><span class="row-ver">gRPC</span><span class="row-label">Flutter（モバイル / デスクトップ）</span><span class="chip chip--progress">not verified</span></div>
 <div class="row" role="listitem"><span class="row-ver">WebChannel</span><span class="row-label">Flutter Web</span><span class="chip chip--supported">verified</span></div>
 <div class="row" role="listitem"><span class="row-ver">files</span><span class="row-label">firebase-tools のエクスポート / インポート</span><span class="chip chip--supported">verified</span></div>
@@ -213,6 +214,21 @@
 <div class="rm-ver">v0.4</div>
 <p>Functions のトリガー。firebase emulators:start の下で、Firestore のイベントを Functions エミュレータに届けます（v1 と v2）。v0.4.0 でリリースし、公式エミュレータが送るイベントを記録して再生しているほか、関数が公式と同じデータを受け取ることも確かめています。</p>
 <a class="src" href="https://github.com/hidane-dev/hidane/milestone/7">GitHub の v0.4 マイルストーン</a>
+</li>
+<li>
+<div class="rm-ver">v0.5</div>
+<p>エミュレータまわりのツール。hidane doctor が移行前の Firebase プロジェクトを点検し、hidane migrate が変更を差分で示して適用し、hidane benchmark が手元のテストコマンドを両方のエミュレータで測り、hidane report が伏せ字済みの診断情報をまとめます。v0.5.0 でリリースし、Cloud SDK のイメージの代わりに Testcontainers でも使えるようになりました。</p>
+<a class="src" href="https://github.com/hidane-dev/hidane/milestone/8">GitHub の v0.5 マイルストーン</a>
+</li>
+<li>
+<div class="rm-ver">v0.6</div>
+<p>Enterprise エディション。--database-edition enterprise で起動したデータベースでは、クエリ、集計、リスナーが公式エミュレータと同じくそのセマンティクスに従います。v0.6.0 でリリースし、公式エミュレータが拒むプロジェクト ID を同じく拒むほか、iOS と Android も両方のエミュレータで確かめています。</p>
+<a class="src" href="https://github.com/hidane-dev/hidane/releases/tag/v0.6.0">GitHub の v0.6.0 リリースノート</a>
+</li>
+<li>
+<div class="rm-ver">v0.7</div>
+<p>Datastore モード。--database-mode datastore-mode で起動すると、Node.js、Python、Java、Go の Cloud Datastore クライアントライブラリに応答します。GQL とインデックスの強制にも対応しています。v0.7.0 でリリースし、Enterprise エディションのデータベースではパイプラインの実行と BSON 型の保存にも対応しました。</p>
+<a class="src" href="https://github.com/hidane-dev/hidane/releases/tag/v0.7.0">GitHub の v0.7.0 リリースノート</a>
 </li>
 </ol>
 <p class="fine">範囲、目標値、リスクは <a href="https://github.com/hidane-dev/hidane/blob/main/docs/ROADMAP.md">ROADMAP</a>（英語）にあります。</p>

@@ -45,24 +45,29 @@ hidane is a single Rust binary. No JVM, no `PATH` juggling.
 | JVM default heap limit | 25 % of physical RAM (16 GiB on the test machine) | `results/official-v1.22.0-baseline.md` |
 
 Side by side, in the canonical benchmark environment (an AWS c7i.xlarge, Ubuntu 24.04, Java
-21.0.12.1, firebase-tools 15.33.0, both emulators on the same quiet machine, 2026-10-15), the
+21.0.12.1, firebase-tools 15.33.0, both emulators on the same quiet machine, 2026-11-10), the
 medians were:
 
-| Measurement | Official emulator v1.22.0 | hidane v0.6.0 |
+| Measurement | Official emulator v1.22.0 | hidane v0.7.0 |
 |---|---|---|
-| Time until the port accepts | 981 ms | 1.56 ms |
-| RSS idle | 148 MiB | 9.4 MiB |
-| RSS after writing 1,000 documents | 267 MiB | 12.3 MiB |
-| `firebase emulators:exec` around 100 seeded documents and 200 tests | 6.81 s | 1.69 s |
+| Time until the port accepts | 851 ms | 2.1 ms |
+| Same, through `firebase emulators:start --only firestore` | 1.80 s | 903 ms |
+| RSS idle | 148 MiB | 9.9 MiB |
+| RSS after writing 1,000 documents | 272 MiB | 13.0 MiB |
+| RSS after writing 500,000 documents in commits of 500 | 1.99 GiB | 300 MiB |
+| `firebase emulators:exec` around 100 seeded documents and 200 tests | 6.52 s | 1.79 s |
 
-Every sample is in the [result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-15-release.md); the harness, which anyone can rerun, is
-[`bench/`](../bench/README.md). The targets were under 100 ms and under 50 MiB.
+Every sample is in the [result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/11/2026-11-10-release.md); the harness, which anyone can rerun, is
+[`bench/`](../bench/README.md). The targets were under 100 ms and under 50 MiB. Through
+`firebase emulators:start`, firebase-tools' own start is part of the time: nearly all of
+hidane's 903 ms. The official emulator ran under the JVM's default heap limit, a quarter of
+physical memory: 1.90 GiB on this 8 GiB machine.
 
 The benchmark's client sends no credential, as a signed-out app does, so Security Rules apply to
 its requests, the last row's workload included. With the owner credential that the Admin SDKs
 send, which skips the Rules, the official emulator's writes are many times as fast and hidane's
-take about the same time: in the same run, 100,000 documents in commits of 500 took 1.84 s on
-the official emulator and 1.73 s on hidane with it, 17.5 s and 1.61 s without
+take about the same time: in the same run, 100,000 documents in commits of 500 took 1.77 s on
+the official emulator and 1.72 s on hidane with it, 15.9 s and 1.56 s without
 ([`bench/`](../bench/README.md#fairness-rules), #286).
 
 ## 3. Writes slow down while a listener is attached
@@ -83,20 +88,20 @@ write. The Emulator UI keeps listeners open, which matches the "only slow when t
 comments in the issue. hidane is designed so that a commit costs only what it changes
 (see [ROADMAP](ROADMAP.md) and ADR 0002).
 
-Side by side, in the same canonical benchmark run as section 2 (2026-10-15), the
+Side by side, in the same canonical benchmark run as section 2 (2026-11-10), the
 `listen_writes` scenario ([`bench/`](../bench/README.md#writes-with-a-listener-attached)) and the
 `listen_limit_writes` one ([`bench/`](../bench/README.md#a-limited-listener), #250) gave these
 medians for 100,000 documents in commits of 500:
 
-| Run | Official emulator v1.22.0 | hidane v0.6.0 |
+| Run | Official emulator v1.22.0 | hidane v0.7.0 |
 |---|---|---|
-| No listener | 17.5 s | 1.61 s |
-| A listener on the whole collection | 191 s | 2.51 s |
-| Growth of a commit's time per 10,000 documents already stored | 195 ms | 0.15 ms |
-| A listener with `limit(50)` | 124 s | 1.50 s |
-| Growth of a commit's time per 10,000 documents already stored | 116 ms | 0.01 ms |
+| No listener | 15.9 s | 1.56 s |
+| A listener on the whole collection | 175 s | 2.22 s |
+| Growth of a commit's time per 10,000 documents already stored | 169 ms | 0.11 ms |
+| A listener with `limit(50)` | 125 s | 1.51 s |
+| Growth of a commit's time per 10,000 documents already stored | 121 ms | 0.02 ms |
 
-Every sample is in the [result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-15-release.md).
+Every sample is in the [result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/11/2026-11-10-release.md).
 
 ## What hidane is not
 

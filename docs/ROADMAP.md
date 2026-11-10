@@ -23,17 +23,17 @@
 
 ## 1. Targets (proposed)
 
-| Metric | Official (measured) | hidane target | hidane v0.6.0 (measured) |
+| Metric | Official (measured) | hidane target | hidane v0.7.0 (measured) |
 |---|---|---|---|
-| Time until the port accepts | 981 ms | < 100 ms | 1.56 ms |
-| RSS idle | 148 MiB | < 50 MiB | 9.4 MiB |
-| RSS after 1,000 documents | 267 MiB | < 100 MiB | 12.3 MiB |
-| A commit of 500 writes | 72.2 ms | < 25 ms | 11.4 ms |
-| Write cost with a listener attached | grows with total document count: +195 ms per commit per 10,000 documents stored, 100k documents in 191 s | O(changed documents), independent of total | +0.15 ms per 10,000: 100k documents in 2.51 s |
+| Time until the port accepts | 851 ms | < 100 ms | 2.1 ms |
+| RSS idle | 148 MiB | < 50 MiB | 9.9 MiB |
+| RSS after 1,000 documents | 272 MiB | < 100 MiB | 13.0 MiB |
+| A commit of 500 writes | 65.1 ms | < 25 ms | 10.4 ms |
+| Write cost with a listener attached | grows with total document count: +169 ms per commit per 10,000 documents stored, 100k documents in 175 s | O(changed documents), independent of total | +0.11 ms per 10,000: 100k documents in 2.22 s |
 | Java | 21+ required | not required (single binary) | not required |
 
 The first five rows are medians from the canonical benchmark environment, both emulators on one
-quiet machine ([result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-15-release.md)). A workflow checks hidane's first
+quiet machine ([result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/11/2026-11-10-release.md)). A workflow checks hidane's first
 four rows against their targets on a GitHub-hosted runner on every push to `main` and nightly
 ([`bench/`](../bench/README.md#targets-in-ci), #47).
 
@@ -180,7 +180,7 @@ Released in v0.5.0 (2026-10-13):
 
 ## 8. Backlog
 
-- Datastore mode (`--database-mode datastore-mode`, #81, [ADR 0009](adr/0009-datastore-mode.md)): keys,
+- Datastore mode (`--database-mode datastore-mode`, #81, [ADR 0009](adr/0009-datastore-mode.md)), released in v0.7.0: keys,
   values, lookups, commits, transactions, IDs, queries, aggregations, GQL,
   `--require_indexes` with `--index_file`, export and import are served, REST in protobuf too; the Node.js, Python,
   Java and Go client libraries are verified against both emulators
