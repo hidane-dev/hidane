@@ -1,3 +1,7 @@
+## 0.7.0
+
+- Downloads hidane 0.7.0.
+
 ## 0.6.0
 
 - Downloads hidane 0.6.0.
