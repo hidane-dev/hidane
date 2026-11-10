@@ -17,6 +17,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import commits  # noqa: E402
 import datastore  # noqa: E402
 import id_tokens  # noqa: E402
 import release  # noqa: E402
@@ -169,6 +170,14 @@ class StandIn(BaseHTTPRequestHandler):
                 StandIn.documents.pop(write.get("delete"), None)
             return self.answer(200, {"writeResults": results, "commitTime": now})
         if self.path == f"{root}:batchWrite":
+            throttled = next((text for text, n in StandIn.throttle.items() if text in body and n), None)
+            if throttled:
+                # Production answers so, each write refused for the database's bandwidth.
+                StandIn.throttle[throttled] -= 1
+                writes = json.loads(body)["writes"]
+                return self.answer(200, {"writeResults": [{} for _ in writes], "status": [{"code": 8, "message":
+                    "This database has exceeded their maximum bandwidth for writes, please retry with exponential "
+                    "backoff."} for _ in writes]})
             # Each write on its own: refused, or applied.
             results, statuses = [], []
             for write in json.loads(body)["writes"]:
@@ -793,6 +802,25 @@ class ReplayTest(unittest.TestCase):
         self.assertTrue(any('"' + "x" * 60 + '"' in (body or "") for _, path, _, body in StandIn.seen
                             if path.endswith(":batchWrite")))
         self.assertEqual(StandIn.documents, {})
+
+    def test_a_batch_write_production_throttles_is_sent_again(self):
+        commits.THROTTLED_WAITS, waits = (0, 0, 0), commits.THROTTLED_WAITS
+        self.addCleanup(setattr, commits, "THROTTLED_WAITS", waits)
+        recording = {"oracle": "a jar", "generated_by": "a recorder", "order": [
+            {"name": "a write", "project": "cc-4", "writes": [{"update": {"name": "{base}/cc/c", "fields": {}}}],
+             "outcomes": {"batch_write": {"status": 200, "code": "OK", "statuses": [{"code": "OK", "message": ""}]}}}],
+            "other_database": []}
+        path = Path(self.dir.name) / "commit_checks.json"
+        path.write_text(json.dumps(recording))
+        StandIn.throttle = {'cc/c"': 2}
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
+        self.assertEqual((result["sent"], result["same"], result["differ"]), (1, 1, []))
+        self.assertEqual(sum(path.endswith(":batchWrite") for _, path, _, _ in StandIn.seen), 3)
+        # Not past its waits: then the answer is production's.
+        StandIn.throttle = {'cc/c"': -1}
+        result = replay.replay(replay.Production(self.base, PROJECT, "a-token", 100), str(path))
+        self.assertEqual([d["difference"] for d in result["differ"]],
+                         ['$.statuses[0].status: "OK", production "RESOURCE_EXHAUSTED"'])
 
     def test_the_order_of_values_and_names_is_redone(self):
         def item(label, n):

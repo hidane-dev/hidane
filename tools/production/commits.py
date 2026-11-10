@@ -15,13 +15,16 @@ Production stores an array in an array (D119): where the official emulator refus
 production's answer stands, and counts as known. So does its refusal of a document over 1 MiB,
 which it makes with a write's other checks, write by write and before reading any precondition,
 where the official emulator refused something else first (D075). `other_database`, writes to a
-document of another database or project, is not sent: the project has no other. Stdlib only.
+document of another database or project, is not sent: the project has no other. A `:batchWrite`
+whose every write production refused for the bandwidth the database allows wrote nothing, and is
+waited out and sent again, as `Production.send` does a 429. Stdlib only.
 """
 
 import json
 import re
+import time
 
-from replay import NESTED_ARRAYS, first_difference, log, mask, parsed, tally
+from replay import NESTED_ARRAYS, THROTTLED_WAITS, first_difference, log, mask, parsed, tally
 
 # The transports sent, as the recording names them, and their verbs.
 VERBS = {"commit": "commit", "batch_write": "batchWrite"}
@@ -31,6 +34,8 @@ REPEAT = re.compile(r"\{repeat:(.+?):(\d+)\}")
 PRECONDITION = {"NOT_FOUND", "ALREADY_EXISTS"}
 # Production's refusal of a document over 1 MiB (D075).
 TOO_LARGE = re.compile(r"^Document '.*' cannot be written because its size \([\d,]+ bytes\) exceeds ")
+# Production's refusal of a write of a database written faster than it allows.
+BANDWIDTH = "exceeded their maximum bandwidth for writes"
 # The names of the codes of `google.rpc.Status`, by number.
 CODES = ["OK", "CANCELLED", "UNKNOWN", "INVALID_ARGUMENT", "DEADLINE_EXCEEDED", "NOT_FOUND", "ALREADY_EXISTS",
          "PERMISSION_DENIED", "RESOURCE_EXHAUSTED", "FAILED_PRECONDITION", "ABORTED", "OUT_OF_RANGE",
@@ -53,6 +58,13 @@ def outcome(status, text):
             {"code": CODES[s.get("code", 0)] if 0 <= s.get("code", 0) < len(CODES) else str(s.get("code")),
              "message": s.get("message", "")} for s in body["status"]]}
     return {"status": status, "code": "OK", "results": len(body.get("writeResults", [])) if isinstance(body, dict) else 0}
+
+
+def throttled(answered):
+    """Whether production refused every write of a `:batchWrite` for the database's bandwidth:
+    then none was written."""
+    statuses = answered.get("statuses") or []
+    return bool(statuses) and all(s["code"] == "RESOURCE_EXHAUSTED" and BANDWIDTH in s["message"] for s in statuses)
 
 
 def compared(outcome):
@@ -108,14 +120,19 @@ def replay_commit_checks(production, recording, result):
             official = json.loads(expand(json.dumps(recorded)).replace(own, "{project}"))
             writes = expand(json.dumps(case["writes"]).replace("{base}", documents))
             path = f"/v1/{documents}:{VERBS[transport]}"
-            status, _, text = production.send("POST", path, f'{{"writes": {writes}}}'.encode())
+            name = f"{case['name']} / {transport}"
+            for wait in (*THROTTLED_WAITS, None):
+                status, _, text = production.send("POST", path, f'{{"writes": {writes}}}'.encode())
+                answered = outcome(status, mask(text, project))
+                if wait is None or not throttled(answered):
+                    break
+                log(f"{name}: every write refused for the database's bandwidth, sending it again in {wait} s")
+                time.sleep(wait)
             result["sent"] += 1
-            answered = outcome(status, mask(text, project))
             if status == 200 and any(s["code"] == "OK" for s in answered.get("statuses", [answered])):
                 production.empty()
             known = set()
             theirs = set_aside(compared(official), compared(answered), known)
-            name = f"{case['name']} / {transport}"
             tally(result, theirs, compared(answered), lambda: {
                 "name": name, "method": "POST", "path": path.replace(project, "{project}"),
                 "difference": first_difference(theirs, compared(answered)) or "the answer",

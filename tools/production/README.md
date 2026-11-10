@@ -25,7 +25,8 @@ recorded answer:
 
 A database refuses requests with 429 while it is written faster than it allows ("This database
 has exceeded their maximum bandwidth for writes"), which the official emulator never does: the
-replay waits and sends such a request again, a few times, before it takes the answer.
+replay waits and sends such a request again, a few times, before it takes the answer. So it does
+a `:batchWrite` answered 200 with every write refused so (`commits.py`): none was written.
 
 A difference `docs/parity-exceptions.md` already records counts as known rather than as a
 difference. The rules for this are in `replay.py`:
