@@ -82,17 +82,18 @@ range that does not pin a major version (`>=2.20`, `*`) is `unknown`. The Emulat
 is the one firebase-tools pins (v1.15.0 for firebase-tools 15.33.0), so it is judged as the
 project's firebase-tools is.
 
-Known gaps are `incompatible`:
+Datastore mode is `unknown`, not a gap. `hidane --database-mode datastore-mode`
+([#81](https://github.com/hidane-dev/hidane/issues/81)) serves entities, transactions, queries,
+aggregations, GQL, `--require_indexes`, export and import, over gRPC and REST (JSON or protobuf),
+and the Node.js, Python, Java and Go client libraries of Datastore are verified against it. But
+`gcloud emulators firestore start --database-mode=datastore-mode` in a script or a workflow still
+starts the official emulator, and a Datastore client library in the dependencies may talk to the
+separate Datastore emulator, which hidane does not replace; both need checking by hand.
 
-- Datastore mode, through `gcloud emulators firestore start --database-mode=datastore-mode`
-  ([#81](https://github.com/hidane-dev/hidane/issues/81)): `hidane --database-mode datastore-mode`
-  serves entities, transactions, queries, aggregations, GQL, `--require_indexes`, export and
-  import, over gRPC and REST (JSON or protobuf); the Node.js, Python, Java and Go client
-  libraries of Datastore are verified against it. A Datastore client library in the dependencies
-  is `unknown`: it may talk to the separate Datastore emulator, which hidane does not replace.
-- A rules file that does not compile: hidane would start without it. hidane's compiler makes the
-  official emulator's checks (`crates/hidane/tests/fixtures/rules_compile.json`), so the official
-  emulator most likely rejects the file too; if it does not, please report it.
+The known gap is `incompatible`: a rules file that does not compile, which hidane would start
+without. hidane's compiler makes the official emulator's checks
+(`crates/hidane/tests/fixtures/rules_compile.json`), so the official emulator most likely rejects
+the file too; if it does not, please report it.
 
 What still needs Java is information, not a gap: the Realtime Database, Storage and Pub/Sub
 emulators run on Java, and under `hidane exec` firebase-tools runs them with the Java on `PATH`.

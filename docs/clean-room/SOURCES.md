@@ -44,7 +44,8 @@ came from; it is not a legal opinion on what they permit.
   others. hidane takes the `Datastore` service, its messages and field numbers, the
   `google.api.http` bindings of its REST API (`POST /v1/projects/{project_id}:lookup` and the
   others), and the semantics their comments document. Compiled by
-  `crates/hidane-proto/build.rs` into `hidane_proto::google::datastore::v1`; not served yet.
+  `crates/hidane-proto/build.rs` into `hidane_proto::google::datastore::v1`; served under
+  `--database-mode datastore-mode` ([ADR 0009](../adr/0009-datastore-mode.md)).
 - **Also**: `google.events.cloud.firestore.v1.DocumentEventData` from
   [googleapis/google-cloudevents](https://github.com/googleapis/google-cloudevents) (Apache-2.0),
   the data of the CloudEvents a Firestore trigger receives, declared by hand in
