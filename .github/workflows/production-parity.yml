@@ -168,7 +168,7 @@ jobs:
     # After the rules job, whatever it found: both release rules for the same database.
     if: ${{ !cancelled() && github.repository == 'hidane-dev/hidane' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 55
     environment: production-parity
     permissions:
       contents: read
@@ -187,7 +187,9 @@ jobs:
           create_credentials_file: false
       - name: Replay a user's requests with the rules deployed
         # Short of the job's timeout and the token's hour, so that the rules are taken down below.
-        timeout-minutes: 30
+        # A case that differs twice is sent a third time, a minute after its release (replay.py,
+        # LAST_SETTLE): a night with many such cases takes longer.
+        timeout-minutes: 45
         env:
           PRODUCTION_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
           PRODUCTION_FIREBASE_API_KEY: ${{ secrets.PRODUCTION_FIREBASE_API_KEY }}
