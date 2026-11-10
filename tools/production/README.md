@@ -185,12 +185,16 @@ requests:
   decide, as they do not decide the emulator's owner; a step sent without credentials is sent
   without, and a user's with a real ID token for the user (below). The emulator's load of the
   rules is compared, on its status, with whether production made the ruleset. A case that sends a
-  token no real one stands for (most of `rules_auth.json`'s: expired, of another project, without
-  a `sub`) is not sent, nor, without `--id-tokens`, one that sends a user's token. Nor is a case
-  that uses the emulator's own API but the load. A denial's
-  message is the emulator's own (D118), and production puts a streamed method's in an array
-  (D098). On the official emulator the cases of a recording ran one after another in one project,
-  and a few rely on what an earlier case wrote: the documents their answers show created before
+  token no real one stands for is not sent, nor, without `--id-tokens`, one that sends a user's
+  token. `rules_auth.json` stays out: each of its cases sends, besides tokens no real one stands
+  for (expired, of another project, without a `sub`), a token of a `sub` alone and one of a full
+  set of claims, and a real ID token is neither: it holds more than a `sub` (`user_id`, `aud`,
+  `exp`), and its `aud` and `sign_in_provider` (`custom`) are not the recording's. What it could
+  compare, conditions of `request.auth.uid` and of `sub`, `rules_list.json` does. Nor is a case
+  that uses the emulator's own API but the load. A denial's message is the emulator's own (D118),
+  and production puts a streamed method's in an array (D098). On the official emulator the cases
+  of a recording ran one after another in one project, and a few rely on what an earlier case
+  wrote: the documents their answers show created before
   their own first write are written first, and a case that rewrote such a document, or counted
   them, is not sent. A case that only deletes and writes documents as the owner, keeping none of
   its answers (`rules_expressions.json`'s `documents`), has what it left written before each case
