@@ -173,18 +173,20 @@ document, the request or other documents, and the requests of recordings of rule
 `--deploy-rules`, the replay deploys those rules to the project's databases and sends the
 requests:
 
-- the recordings of rules whose steps are sent as the owner or without credentials
-  (`rules_request.json`, `rules_writes.json`, `rules_verify.json`, `rules_lookups.json`,
-  `rules_same_document.json`, `rules_denials.json`, `rules_expressions.json`). The cases that load
+- the recordings of rules whose steps are sent as the owner, without credentials, or, with
+  `--id-tokens`, as a user (`rules_request.json`, `rules_writes.json`, `rules_verify.json`,
+  `rules_lookups.json`, `rules_same_document.json`, `rules_denials.json`,
+  `rules_expressions.json`, `rules_list.json`). The cases that load
   one ruleset are put together by it; each ruleset is released, and each of its cases sent on the
   database emptied, as the recordings of steps are. A case that loads two
   (`rules_expressions.json`: a limit reached, then not) is sent on its own, each ruleset released
   as the case comes to its load. A step the owner sent is sent with the token, which rules do not
   decide, as they do not decide the emulator's owner; a step sent without credentials is sent
-  without. The emulator's load of the rules is compared, on its status, with whether production
-  made the ruleset. A case that sends a user's token (`rules_list.json`, `rules_auth.json`) is
-  not sent: production takes only tokens Firebase Authentication signed, and the recordings'
-  tokens are not signed. Nor is a case that uses the emulator's own API but the load. A denial's
+  without, and a user's with a real ID token for the user (below). The emulator's load of the
+  rules is compared, on its status, with whether production made the ruleset. A case that sends a
+  token no real one stands for (most of `rules_auth.json`'s: expired, of another project, without
+  a `sub`) is not sent, nor, without `--id-tokens`, one that sends a user's token. Nor is a case
+  that uses the emulator's own API but the load. A denial's
   message is the emulator's own (D118), and production puts a streamed method's in an array
   (D098). On the official emulator the cases of a recording ran one after another in one project,
   and a few rely on what an earlier case wrote: the documents their answers show created before
@@ -222,9 +224,23 @@ releases: `release.py` sends at most 60, its reads of them included.
 `--shard i/n` sends the i-th of n parts of what deploys rules, from 0: the rulesets and the
 conditions are shared out by their SHA-256 digests.
 
+The recordings' tokens are not signed (`alg: none`), which the emulator takes and production does
+not. With `--id-tokens`, [`id_tokens.py`](id_tokens.py) sends a recording's token whose payload is
+a `sub` alone (or a `sub` and a `user_id` the same) as a real ID token for that uid: it signs a
+custom token as the service account `--signer` with IAM's `signJwt`, and exchanges it with
+Identity Toolkit's `accounts:signInWithCustomToken`, which takes an API key of the project, in
+`PRODUCTION_FIREBASE_API_KEY`, restricted to Identity Toolkit. The project's Identity Platform has
+no sign-in method, so that only who may sign as the service account can sign in; signing takes
+`iam.serviceAccounts.signJwt` on the service account itself, which a custom role holds alone
+(`tokenSigner`). An ID token is kept for its hour, and made again five minutes before it ends.
+Neither it nor the key is written anywhere.
+
 ```sh
 PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/replay.py --project <id> --out production-rules \
     --deploy-rules --shard 0/7 crates/hidane/tests/fixtures/rules_request.json
+PRODUCTION_ACCESS_TOKEN=… PRODUCTION_FIREBASE_API_KEY=… python3 -I -B tools/production/replay.py --project <id> \
+    --out production-rules-users --deploy-rules --shard 0/7 --id-tokens --signer <service account> \
+    crates/hidane/tests/fixtures/rules_list.json
 PRODUCTION_ACCESS_TOKEN=… python3 -I -B tools/production/release.py --project <id>
 ```
 
@@ -366,7 +382,9 @@ service account that may read and write Firestore, test rulesets, and deploy the
 project, the provider and the service account named by the variables of the `production-parity`
 environment. No key exists. Deploying rules takes `firebaserules.rulesets.create` and `delete`,
 and `firebaserules.releases.create`, `update` and `delete`: the service account has them through
-a custom role that holds those alone (`rulesDeployer`). The report is the run's
+a custom role that holds those alone (`rulesDeployer`), and it may sign as itself for the ID
+tokens (`tokenSigner`, above), with the API key in the environment's secret
+`PRODUCTION_FIREBASE_API_KEY`. The report is the run's
 `production-parity` artifact, kept 30 days.
 
 Its second job, after the first, replays with rules deployed a seventh of what deploys rules,
@@ -374,7 +392,11 @@ by the day of the week (a run on demand takes the seventh as its `rules-shard`),
 rules down after its replay, whatever happened. Its report is the run's `production-rules`
 artifact.
 
-A third job replays the recordings in Datastore mode against the database `datastore`, beside the
+A job after it does the same for `rules_list.json`, whose requests go as a user, with the same
+seventh and `--id-tokens`. It signs in again, as the two together would outlast the token's hour.
+Its report is the run's `production-rules-users` artifact.
+
+Another job replays the recordings in Datastore mode against the database `datastore`, beside the
 others, as it empties only that database. Its report is the run's `production-datastore` artifact.
 
 A difference it reports is a lead, not a fact about hidane: production can differ from the

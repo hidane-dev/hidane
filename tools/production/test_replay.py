@@ -18,6 +18,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import datastore  # noqa: E402
+import id_tokens  # noqa: E402
 import release  # noqa: E402
 import replay  # noqa: E402
 from test_indexes import index_link  # noqa: E402
@@ -62,6 +63,9 @@ class StandIn(BaseHTTPRequestHandler):
     # how many more commits holding a text it refuses with 429 (-1: every one).
     nested_arrays = False
     throttle = {}
+    # The claims of the custom tokens it signed, and the ID tokens it issued (`Bearer …`: uid).
+    signed = []
+    id_tokens = {}
 
     def log_message(self, *args):
         pass
@@ -102,6 +106,10 @@ class StandIn(BaseHTTPRequestHandler):
             return self.channel(body)
         if self.path == f"/v1/projects/{PROJECT}:test":
             return self.rules_api(json.loads(body))
+        if self.path.startswith("/v1/projects/-/serviceAccounts/") and self.path.endswith(":signJwt"):
+            return self.sign(body)
+        if self.path == "/v1/accounts:signInWithCustomToken":
+            return self.sign_in(body)
         if self.path.startswith((f"/v1/projects/{PROJECT}/rulesets", f"/v1/projects/{PROJECT}/releases")):
             return self.deployments(body)
         verb = re.fullmatch(rf"/v1/projects/{PROJECT}:(lookup|commit|runQuery|allocateIds|beginTransaction|rollback)", self.path)
@@ -111,7 +119,8 @@ class StandIn(BaseHTTPRequestHandler):
             return self.answer(400, {"error": {"code": 400, "status": "FAILED_PRECONDITION", "message":
                 "The Cloud Firestore API is not available for Firestore in Datastore Mode database "
                 f"projects/{PROJECT}/databases/ds."}})
-        if self.headers.get("Authorization") is None and not self.decided():
+        user = StandIn.id_tokens.get(self.headers.get("Authorization"))
+        if (self.headers.get("Authorization") is None or user is not None) and not self.decided(user):
             # A streamed method's error inside an array (D098).
             denied = {"error": {"code": 403, "message": "Missing or insufficient permissions.", "status": "PERMISSION_DENIED"}}
             return self.answer(403, [denied] if self.path.endswith((":runQuery", ":runAggregationQuery", ":batchGet")) else denied)
@@ -317,11 +326,32 @@ class StandIn(BaseHTTPRequestHandler):
             StandIn.lagging = StandIn.lag
         return self.answer(200, {"name": f"projects/{PROJECT}/releases/cloud.firestore", "rulesetName": StandIn.release})
 
-    def decided(self):
-        """Whether the rules released allow a request without credentials. The release before
-        decides the first `lag` requests after each release, which has not reached every server.
-        A rule is `allow <methods>: if <condition>` in `match /<collection>/{id}` or
-        `match /{document=**}`, and a condition `true`, `false` or `resource.data.n == <n>`."""
+    def sign(self, body):
+        """As IAM's `signJwt`, for the token's service account: the claims, as the token's payload."""
+        if self.headers.get("Authorization") != "Bearer a-token":
+            return self.answer(403, {"error": {"code": 403, "message": "Permission denied", "status": "PERMISSION_DENIED"}})
+        claims = json.loads(json.loads(body)["payload"])
+        StandIn.signed.append(claims)
+        payload = base64.urlsafe_b64encode(json.dumps(claims).encode()).decode().rstrip("=")
+        return self.answer(200, {"keyId": "k", "signedJwt": f"h.{payload}.s"})
+
+    def sign_in(self, body):
+        """As Identity Toolkit's `signInWithCustomToken`, with the API key `an-api-key` and no
+        credentials: an ID token for the custom token's uid."""
+        if self.headers.get("X-Goog-Api-Key") != "an-api-key" or self.headers.get("Authorization"):
+            return self.answer(400, {"error": {"code": 400, "message": "API key not valid. Please pass a valid API key.",
+                                               "status": "INVALID_ARGUMENT"}})
+        claims = json.loads(id_tokens.unpadded(json.loads(body)["token"].split(".")[1]))
+        token = f"id-token-{len(StandIn.id_tokens)}-for-{claims['uid']}"
+        StandIn.id_tokens[f"Bearer {token}"] = claims["uid"]
+        return self.answer(200, {"idToken": token, "refreshToken": "r", "expiresIn": "3600", "isNewUser": False})
+
+    def decided(self, user=None):
+        """Whether the rules released allow a request without credentials, or of `user`'s ID
+        token. The release before decides the first `lag` requests after each release, which has
+        not reached every server. A rule is `allow <methods>: if <condition>` in
+        `match /<collection>/{id}` or `match /{document=**}`, and a condition `true`, `false`,
+        `resource.data.n == <n>`, `request.auth != null` or `request.auth.uid == '<uid>'`."""
         source = StandIn.rulesets.get(StandIn.release)
         if StandIn.lagging:
             StandIn.lagging -= 1
@@ -344,8 +374,11 @@ class StandIn(BaseHTTPRequestHandler):
                         not ("write" in methods and op in ("create", "update", "delete")):
                     continue
                 n = re.fullmatch(r"resource\.data\.n == (\d+)", condition.strip())
+                uid = re.fullmatch(r"request\.auth\.uid == '(\w+)'", condition.strip())
                 if condition.strip() == "true" or (n and document and
-                                                   document["fields"].get("n", {}).get("integerValue") == n.group(1)):
+                                                   document["fields"].get("n", {}).get("integerValue") == n.group(1)) \
+                        or (condition.strip() == "request.auth != null" and user is not None) \
+                        or (uid and uid.group(1) == user):
                     return True
         return False
 
@@ -504,6 +537,7 @@ class ReplayTest(unittest.TestCase):
         StandIn.rulesets, StandIn.release, StandIn.released, StandIn.lag, StandIn.lagging = {}, None, [], 0, 0
         StandIn.entities, StandIn.allocated, StandIn.transactions = {}, 0, 0
         StandIn.nested_arrays, StandIn.throttle = False, {}
+        StandIn.signed, StandIn.id_tokens = [], {}
         self.waits = release.SETTLE, replay.RETRY_AFTER, release.PER_MINUTE, replay.THROTTLED_WAITS
         release.SETTLE = replay.RETRY_AFTER = 0
         release.PER_MINUTE = 10 ** 9
@@ -1244,6 +1278,90 @@ class ReplayTest(unittest.TestCase):
         self.assertNotIn(("GET", "d", "Bearer a-token"), sent)
         self.assertEqual(report["deployed"], "0/1")
         self.assertIn("rules deployed", (Path(self.dir.name) / "out" / "report.md").read_text())
+
+    def test_a_user_s_steps_are_sent_with_a_real_id_token(self):
+        def step(method, path, auth, status, response=None, body=None):
+            return {"method": method, "path": path, "body": body, "auth": auth, "status": status, "response": response}
+
+        def load(condition):
+            rules = ("rules_version = '2';\nservice cloud.firestore {\n  match /databases/{database}/documents {\n"
+                     f"    match /c/{{d}} {{\n      allow read: if {condition};\n    }}\n  }}\n}}\n")
+            return step("PUT", "/emulator/v1/projects/list:securityRules", None, 200, None,
+                        {"rules": {"files": [{"name": "firestore.rules", "content": rules}]}})
+        d, owner = "/v1/projects/list/databases/(default)/documents", "Bearer owner"
+        # `rules_list.json`'s token, {"alg":"none"}.{"sub":"u1"}., and one with an email too.
+        u1 = "Bearer eyJhbGciOiJub25lIn0.eyJzdWIiOiJ1MSJ9."
+        email = "Bearer eyJhbGciOiJub25lIn0.eyJzdWIiOiJ1MSIsImVtYWlsIjoiYUBleGFtcGxlLmNvbSJ9."
+        write = step("PATCH", f"{d}/c/d", owner, 200, None, {"fields": {"n": {"integerValue": "1"}}})
+        denied = {"error": {"code": 403, "message": "\nfalse for 'get' @ L5", "status": "PERMISSION_DENIED"}}
+        cases = [
+            {"name": "the user's", "steps": [write, load("request.auth.uid == 'u1'"), step("GET", f"{d}/c/d", u1, 200)]},
+            {"name": "another user's", "steps": [write, load("request.auth.uid == 'u2'"),
+                                                 step("GET", f"{d}/c/d", u1, 403, denied)]},
+            {"name": "signed in", "steps": [load("request.auth != null"), step("GET", f"{d}/c/x", u1, 404)]},
+            {"name": "with an email", "steps": [load("true"), step("GET", f"{d}/c/d", email, 200)]},
+        ]
+        out, signer = Path(self.dir.name) / "out", f"parity@{PROJECT}.iam.gserviceaccount.com"
+        os.environ[replay.TOKEN_ENV], os.environ[id_tokens.API_KEY_ENV] = "a-token", "an-api-key"
+        try:
+            replay.main(["--project", PROJECT, "--out", str(out), "--base", self.base, "--rules-base", self.base,
+                         "--deploy-rules", "--id-tokens", "--signer", signer, "--iam-base", self.base,
+                         "--identity-base", self.base, self.rules_recording(cases)])
+        finally:
+            del os.environ[replay.TOKEN_ENV], os.environ[id_tokens.API_KEY_ENV]
+        result = json.loads((out / "report.json").read_text())["recordings"][0]
+        self.assertEqual((result["sent"], result["same"], result["knownCases"], result["known"]), (3, 2, 1, {"D118": 1}))
+        self.assertEqual((result["differ"], result["skipped"]), ([], {"sends a token no real one stands for": 1}))
+        # One custom token, signed as the signer, for the run's every step as u1; exchanged without
+        # credentials but the API key.
+        self.assertEqual(len(StandIn.signed), 1)
+        claims = StandIn.signed[0]
+        self.assertEqual((claims["iss"], claims["sub"], claims["uid"], claims["aud"], claims["exp"] - claims["iat"]),
+                         (signer, signer, "u1", id_tokens.AUDIENCE, 3600))
+        self.assertIn(("POST", "/v1/accounts:signInWithCustomToken", None),
+                      [(m, p, auth) for m, p, auth, _ in StandIn.seen])
+        sent = {auth for m, p, auth, _ in StandIn.seen if m == "GET" and "/documents/c/" in p}
+        self.assertEqual(sent, {"Bearer id-token-0-for-u1"})
+        written = (out / "report.json").read_text() + (out / "report.md").read_text()
+        self.assertNotIn("an-api-key", written)
+        self.assertNotIn("id-token-0", written)
+
+    def test_only_a_token_a_real_one_stands_for_is_replaced(self):
+        def token(header, payload, signature=""):
+            def part(value):
+                return base64.urlsafe_b64encode(json.dumps(value).encode()).decode().rstrip("=")
+            return f"Bearer {part(header)}.{part(payload)}.{signature}"
+        none = {"alg": "none"}
+        self.assertEqual(id_tokens.uid("Bearer eyJhbGciOiJub25lIn0.eyJzdWIiOiJ1MSJ9."), "u1")
+        self.assertEqual(id_tokens.uid(token(none, {"sub": "u2", "user_id": "u2"})), "u2")
+        for auth in (None, "Bearer owner", "Bearer e30.e30.", token(none, {"sub": "u1", "user_id": "u2"}),
+                     token(none, {"sub": "u1", "exp": 1}), token(none, {"sub": ""}), token({"alg": "RS256"}, {"sub": "u1"}),
+                     token(none, {"sub": "u1"}, "signature")):
+            self.assertIsNone(id_tokens.uid(auth), auth)
+
+    def test_an_id_token_is_made_again_before_it_ends(self):
+        production = replay.Production(self.base, PROJECT, "a-token", 100)
+        tokens = id_tokens.IdTokens(production, f"parity@{PROJECT}.iam.gserviceaccount.com", "an-api-key", self.base, self.base)
+        first = tokens.token("u1")
+        self.assertEqual(tokens.token("u1"), first)
+        tokens.made["u1"] = (first, time.time() + id_tokens.REMAKE_BEFORE - 1)
+        self.assertNotEqual(tokens.token("u1"), first)
+        self.assertEqual(len(StandIn.signed), 2)
+        # A refusal stops the run, and does not show the key.
+        tokens.api_key, tokens.made = "a-wrong-key", {}
+        with self.assertRaisesRegex(RuntimeError, "exchanging a custom token answered 400") as raised:
+            tokens.token("u1")
+        self.assertNotIn("a-wrong-key", str(raised.exception))
+
+    def test_id_tokens_need_rules_deployed_a_signer_and_an_api_key(self):
+        os.environ[replay.TOKEN_ENV] = "a-token"
+        try:
+            for args in (["--id-tokens", "--signer", "s"], ["--deploy-rules", "--id-tokens"],
+                         ["--deploy-rules", "--id-tokens", "--signer", "s"]):
+                with self.assertRaises(SystemExit), contextlib.redirect_stderr(io.StringIO()):
+                    replay.main(["--project", PROJECT, "--out", str(Path(self.dir.name) / "out"), *args, "f.json"])
+        finally:
+            del os.environ[replay.TOKEN_ENV]
 
     def test_what_production_does_with_transactions_and_verifies_is_known(self):
         def step(method, path, auth, status, response=None, body=None):

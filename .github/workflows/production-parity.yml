@@ -8,7 +8,11 @@ name: Production parity
 #
 # The rules job then deploys the rules of recordings of rules and sends their requests, a seventh
 # of them each night, by the day of the week. While it runs, the project's database is open as
-# those rules open it; it takes them down when it ends, whatever happened.
+# those rules open it; it takes them down when it ends, whatever happened. The rules-users job
+# then does the same for the recording whose requests go as a user, each with a real ID token for
+# the user, which the job's service account signs a custom token for and exchanges with the
+# project's API key (tools/production/id_tokens.py). It signs in again: both jobs together would
+# outlast the token's hour.
 #
 # The datastore job replays the recordings in Datastore mode against the project's database of
 # that mode, `datastore`, beside the others: it empties only that database.
@@ -100,6 +104,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 55
     environment: production-parity
+    outputs:
+      shard: ${{ steps.replay.outputs.shard }}
     permissions:
       contents: read
       id-token: write
@@ -116,6 +122,7 @@ jobs:
           access_token_lifetime: 3600s
           create_credentials_file: false
       - name: Replay with the rules deployed
+        id: replay
         # Short of the job's timeout and the token's hour, so that the rules are taken down below.
         timeout-minutes: 45
         env:
@@ -129,6 +136,7 @@ jobs:
             "") SHARD=$(( $(date -u +%u) % 7 )) ;;
             *) echo "::error::rules-shard takes 0 to 6"; exit 1 ;;
           esac
+          echo "shard=$SHARD" >> "$GITHUB_OUTPUT"
           python3 -I -B tools/production/replay.py --project "$PROJECT" --out production-rules \
             --deploy-rules --shard "$SHARD/7" \
             crates/hidane-rules/tests/fixtures/rules_eval.json \
@@ -151,6 +159,63 @@ jobs:
         with:
           name: production-rules
           path: production-rules/
+          retention-days: 30
+          if-no-files-found: ignore
+
+  rules-users:
+    name: replay a user's requests with rules deployed
+    needs: rules
+    # After the rules job, whatever it found: both release rules for the same database.
+    if: ${{ !cancelled() && github.repository == 'hidane-dev/hidane' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    environment: production-parity
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - id: auth
+        uses: google-github-actions/auth@7c6bc770dae815cd3e89ee6cdf493a5fab2cc093 # v3.0.0
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          token_format: access_token
+          access_token_lifetime: 3600s
+          create_credentials_file: false
+      - name: Replay a user's requests with the rules deployed
+        # Short of the job's timeout and the token's hour, so that the rules are taken down below.
+        timeout-minutes: 30
+        env:
+          PRODUCTION_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          PRODUCTION_FIREBASE_API_KEY: ${{ secrets.PRODUCTION_FIREBASE_API_KEY }}
+          PROJECT: ${{ vars.GCP_PROJECT_ID }}
+          SIGNER: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          # The rules job's seventh: this job can start after midnight.
+          SHARD: ${{ needs.rules.outputs.shard || inputs.rules-shard }}
+        run: |
+          case "$SHARD" in
+            [0-6]) ;;
+            "") SHARD=$(( $(date -u +%u) % 7 )) ;;
+            *) echo "::error::rules-shard takes 0 to 6"; exit 1 ;;
+          esac
+          python3 -I -B tools/production/replay.py --project "$PROJECT" --out production-rules-users \
+            --deploy-rules --shard "$SHARD/7" --id-tokens --signer "$SIGNER" \
+            crates/hidane/tests/fixtures/rules_list.json
+      - name: Take the rules down
+        # The replay takes them down as it ends; this does it again in case it was stopped.
+        if: always() && steps.auth.outcome == 'success'
+        env:
+          PRODUCTION_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+          PROJECT: ${{ vars.GCP_PROJECT_ID }}
+        run: python3 -I -B tools/production/release.py --project "$PROJECT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: production-rules-users
+          path: production-rules-users/
           retention-days: 30
           if-no-files-found: ignore
 
