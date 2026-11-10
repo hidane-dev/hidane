@@ -79,12 +79,12 @@ class Rules:
             raise self.refused("reading a ruleset", status, answer)
         return any(f.get("content", "").endswith(MARK) for f in answer.get("source", {}).get("files", []))
 
-    def deploy(self, source):
+    def deploy(self, source, settle=None):
         """Makes a ruleset of `source` and releases it to the project's databases, then waits
-        `SETTLE` seconds. Answers how making the ruleset went (status, answer): one that does not
-        compile (400) is not released, and the release stays as it was; another refusal, such as
-        the want of a permission, stops the run. The rulesets are deleted when the rules are taken
-        down, not before: a server may still hold the one released before."""
+        `settle` seconds, `SETTLE` if None. Answers how making the ruleset went (status, answer):
+        one that does not compile (400) is not released, and the release stays as it was; another
+        refusal, such as the want of a permission, stops the run. The rulesets are deleted when the
+        rules are taken down, not before: a server may still hold the one released before."""
         content = source + ("" if source.endswith("\n") else "\n") + MARK
         status, answer = self.api("POST", "/rulesets", {"source": {"files": [{"name": "firestore.rules", "content": content}]}})
         if status == 400:
@@ -99,7 +99,7 @@ class Rules:
         if done != 200:
             raise self.refused("releasing a ruleset", done, said)
         self.released = True
-        time.sleep(SETTLE)
+        time.sleep(SETTLE if settle is None else settle)
         return status, answer
 
     def delete(self, name):
