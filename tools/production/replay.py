@@ -406,7 +406,10 @@ KNOWN_CASES = {
     # A list without a page size, whose limit the official emulator shows the rules as 30,
     # production as none.
     "rules_request.json": [("D135", r"^list with a mask and an order: request\.query\.limit == 30$")],
-    "rules_list.json": [("D135", r"^listDocuments: request\.query\.limit == (?:30|null)$")],
+    "rules_list.json": [("D135", r"^listDocuments: request\.query\.limit == (?:30|null)$"),
+                        # A query's faults, which production reports before the rules' denial.
+                        ("D137", r"^(?:limit -1|offset -1|count limit -1|n array-contains 1 and tags array-contains 'a'"
+                                 r"|__name__ array-contains c/d1): false$")],
     # A verify alone under a condition of `request.resource.data`, which production refuses.
     "rules_verify.json": [("D136", r"^verify alone under request\.resource is the stored document: c/a$")],
     "commit_checks.json": [("D075", r"^an array union of a string over the limit / |^a (?:delete|verify) of a document ID "
