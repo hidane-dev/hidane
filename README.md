@@ -146,7 +146,7 @@ compared with the official emulator's (`results/`); the version of each client t
 was compared and the evidence are in the
 [SDK certification matrix](docs/sdk-certification.md), generated from those results:
 
-| Client | Transport | In v0.6.0 |
+| Client | Transport | In v0.7.0 |
 |---|---|---|
 | firebase-admin (Node) / `@google-cloud/firestore` | gRPC | verified: documents, queries, aggregations, vector search, transactions, listeners |
 | firebase-js-sdk in Node | gRPC | verified: documents and writes, queries, aggregations, transactions, listeners, offline and resume |
@@ -156,6 +156,7 @@ was compared and the evidence are in the
 | `@firebase/rules-unit-testing` | the above | verified under Security Rules, in Node and in Chromium: `assertSucceeds` / `assertFails` for signed-in, signed-out and rules-disabled contexts (gets, lists, listeners, writes, batches, transactions), `clearFirestore()` |
 | Go (`cloud.google.com/go/firestore`), Python and Java (`google-cloud-firestore`) | gRPC | verified: documents, queries, aggregations, vector search, transactions, listeners |
 | iOS (`FirebaseFirestore`) and Android (`firebase-firestore`) | gRPC | verified: documents and writes, queries, aggregations, transactions, listeners |
+| The Datastore client libraries for Node.js, Python, Java and Go, in Datastore mode (`--database-mode datastore-mode`) | gRPC, and REST for Python and Java | verified: entities and writes, queries, aggregation queries, transactions |
 | Flutter (Android, iOS, macOS, Windows), C++ / Unity | gRPC | same transport, not verified yet |
 | Security Rules | every transport | enforced: `allow` conditions, `get` / `exists`, `list` decided from the query's filter, mock tokens, denial messages, `:ruleCoverage`, `debug()`; each recorded from the official emulator and replayed ([`docs/parity-exceptions.md`](docs/parity-exceptions.md) lists the differences) |
 | `firebase emulators:start` / `emulators:exec` | `hidane exec -- firebase …` | verified with firebase-tools 15.33.0, no Java installed; with the Functions emulator, Firestore-triggered functions, v1 and v2 (`withAuthContext` too), fire on the same writes with the same data as with the official emulator ([`docs/parity-exceptions.md`](docs/parity-exceptions.md) lists the differences) |
