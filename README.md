@@ -89,23 +89,24 @@ it hurt everyday local development and CI (details and raw logs: [`docs/why.md`]
 
 <div align="center">
 
-| | Official emulator v1.22.0 | hidane v0.6.0 |
+| | Official emulator v1.22.0 | hidane v0.7.0 |
 |---|---|---|
 | Runtime | Java 21 or newer ([required since firebase-tools 15.0.0](https://github.com/firebase/firebase-tools/releases/tag/v15.0.0)) | none, single binary |
-| Time until the port accepts | 981 ms | 1.56 ms |
-| Resident memory, idle | 148 MiB | 9.4 MiB |
-| Resident memory after 1,000 documents | 267 MiB | 12.3 MiB |
-| 100,000 documents written in commits of 500, signed out | 17.5 s | 1.61 s |
-| The same, with a listener on the collection | 191 s | 2.51 s |
-| The same without a listener, with the owner credential the Admin SDKs send | 1.84 s | 1.73 s |
-| `firebase emulators:exec` around a CI-style workload (100 documents seeded, 200 tests) | 6.81 s | 1.69 s |
+| Time until the port accepts | 851 ms | 2.1 ms |
+| Resident memory, idle | 148 MiB | 9.9 MiB |
+| Resident memory after 1,000 documents | 272 MiB | 13.0 MiB |
+| Resident memory after 500,000 documents | 1.99 GiB | 300 MiB |
+| 100,000 documents written in commits of 500, signed out | 15.9 s | 1.56 s |
+| The same, with a listener on the collection | 175 s | 2.22 s |
+| The same without a listener, with the owner credential the Admin SDKs send | 1.77 s | 1.72 s |
+| `firebase emulators:exec` around a CI-style workload (100 documents seeded, 200 tests) | 6.52 s | 1.79 s |
 
 </div>
 
 In our canonical benchmark environment, these are the medians for both emulators on the same
 machine: an AWS c7i.xlarge (Intel Xeon Platinum 8488C, 4 vCPUs, 8 GiB), Ubuntu 24.04, Java
-21.0.12.1, firebase-tools 15.33.0, and hidane v0.6.0's published binary (commit `c0615a0`), measured
-on 2026-10-15. The [result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/10/2026-10-15-release.md)
+21.0.12.1, firebase-tools 15.33.0, and hidane v0.7.0's published binary (commit `df96b82`), measured
+on 2026-11-10. The [result](https://github.com/hidane-dev/benchmark-results/blob/main/results/release/2026/11/2026-11-10-release.md)
 comes with every sample in its JSON. The methodology is in [`bench/`](bench/README.md), and anyone
 can rerun it; other machines give other numbers.
 
