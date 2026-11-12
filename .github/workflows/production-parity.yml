@@ -131,9 +131,11 @@ jobs:
           SHARD: ${{ inputs.rules-shard }}
         run: |
           # The day of the week's seventh, Sunday's the first: all of it would outlast the token.
+          # The day the run was scheduled for: GitHub starts the 17:23 UTC schedule hours late,
+          # past midnight some nights, so the day is read 17 hours back.
           case "$SHARD" in
             [0-6]) ;;
-            "") SHARD=$(( $(date -u +%u) % 7 )) ;;
+            "") SHARD=$(( $(date -u -d '17 hours ago' +%u) % 7 )) ;;
             *) echo "::error::rules-shard takes 0 to 6"; exit 1 ;;
           esac
           echo "shard=$SHARD" >> "$GITHUB_OUTPUT"
@@ -200,7 +202,7 @@ jobs:
         run: |
           case "$SHARD" in
             [0-6]) ;;
-            "") SHARD=$(( $(date -u +%u) % 7 )) ;;
+            "") SHARD=$(( $(date -u -d '17 hours ago' +%u) % 7 )) ;;
             *) echo "::error::rules-shard takes 0 to 6"; exit 1 ;;
           esac
           python3 -I -B tools/production/replay.py --project "$PROJECT" --out production-rules-users \
@@ -265,11 +267,11 @@ jobs:
           PROJECT: ${{ vars.GCP_PROJECT_ID }}
           SHARD: ${{ inputs.datastore-shard }}
         # Which fault of a request is reported: about 14,400 requests in all, a seventh a night,
-        # the day of the week's, Sunday's the first.
+        # the day of the week's, Sunday's the first, read 17 hours back as in the rules job.
         run: |
           case "$SHARD" in
             [0-6]) ;;
-            "") SHARD=$(( $(date -u +%u) % 7 )) ;;
+            "") SHARD=$(( $(date -u -d '17 hours ago' +%u) % 7 )) ;;
             *) echo "::error::datastore-shard takes 0 to 6"; exit 1 ;;
           esac
           python3 -I -B tools/production/replay.py --project "$PROJECT" --out production-datastore-checks \
