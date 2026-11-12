@@ -6,10 +6,16 @@
 //! subscribes first, then reads that time T and the store at T: events up to T are in its
 //! snapshot (it skips them when they arrive), later ones come through the channel, and none is
 //! missed or applied twice.
+//!
+//! A database's channel is made for its first subscriber: a channel holds room for all its
+//! events from the start, about 200 KB, and most databases (a test's own project, each case of
+//! the differential fuzzer) never have a listener. An event is sent only when the channel is
+//! there; the check is made under the lock of the time published, so a subscriber that made the
+//! channel after it reads that time after the event's.
 
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex, PoisonError},
+    sync::{Arc, Mutex, OnceLock, PoisonError},
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -41,7 +47,8 @@ pub struct ChangeFeed {
 }
 
 struct Feed {
-    sender: broadcast::Sender<Event>,
+    /// Made by the first subscriber.
+    sender: OnceLock<broadcast::Sender<Event>>,
     /// Every event up to this time has been sent.
     published: Mutex<ReadTime>,
     /// The store may not hold what the database looked like before this time (the process
@@ -75,7 +82,7 @@ impl ChangeFeed {
         // web SDK treats as "no snapshot" and never shows. The first commit will be later.
         let now = now();
         let feed = Arc::new(Feed {
-            sender: broadcast::channel(CAPACITY).0,
+            sender: OnceLock::new(),
             published: Mutex::new(ReadTime(now.0 - 1)),
             history_start: Mutex::new(now),
         });
@@ -91,9 +98,11 @@ impl ChangeFeed {
             .lock()
             .unwrap_or_else(PoisonError::into_inner);
         let commit_time = commit.commit_time;
-        if !commit.changes.is_empty() {
+        if !commit.changes.is_empty()
+            && let Some(sender) = feed.sender.get()
+        {
             // No receiver is fine: nobody listens.
-            let _ = feed.sender.send(Event::Commit(Arc::new(commit)));
+            let _ = sender.send(Event::Commit(Arc::new(commit)));
         }
         *published = commit_time;
         // This process made the commit, so history reaches back to it at least (a feed created
@@ -114,7 +123,9 @@ impl ChangeFeed {
             .published
             .lock()
             .unwrap_or_else(PoisonError::into_inner);
-        let _ = feed.sender.send(Event::Cleared(at));
+        if let Some(sender) = feed.sender.get() {
+            let _ = sender.send(Event::Cleared(at));
+        }
         *feed
             .history_start
             .lock()
@@ -123,7 +134,10 @@ impl ChangeFeed {
     }
 
     pub fn subscribe(&self, database: &str) -> broadcast::Receiver<Event> {
-        self.feed(database).sender.subscribe()
+        self.feed(database)
+            .sender
+            .get_or_init(|| broadcast::channel(CAPACITY).0)
+            .subscribe()
     }
 
     /// The time up to which every event has been sent to subscribers.
@@ -134,5 +148,21 @@ impl ChangeFeed {
     /// Resume points before this time are not trusted.
     pub fn history_start(&self, database: &str) -> ReadTime {
         lock(&self.feed(database).history_start)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_database_gets_its_channel_with_its_first_subscriber() {
+        let feed = ChangeFeed::default();
+        feed.publish_cleared("d", ReadTime(1));
+        assert!(feed.feed("d").sender.get().is_none());
+        let mut events = feed.subscribe("d");
+        feed.publish_cleared("d", ReadTime(2));
+        assert!(matches!(events.try_recv(), Ok(Event::Cleared(ReadTime(2)))));
+        assert_eq!(feed.published("d"), ReadTime(2));
     }
 }
