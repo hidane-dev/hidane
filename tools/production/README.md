@@ -400,9 +400,10 @@ tokens (`tokenSigner`, above), with the API key in the environment's secret
 `production-parity` artifact, kept 30 days.
 
 Its second job, after the first, replays with rules deployed a seventh of what deploys rules,
-by the day of the week (a run on demand takes the seventh as its `rules-shard`), and takes the
-rules down after its replay, whatever happened. Its report is the run's `production-rules`
-artifact.
+by the day of the week the run was scheduled for (GitHub starts the 17:23 UTC schedule hours
+late, past midnight some nights, so the day is read 17 hours back; a run on demand takes the
+seventh as its `rules-shard`), and takes the rules down after its replay, whatever happened. Its
+report is the run's `production-rules` artifact.
 
 A job after it does the same for `rules_list.json`, whose requests go as a user, with the same
 seventh and `--id-tokens`. It signs in again, as the two together would outlast the token's hour.
