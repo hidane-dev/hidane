@@ -429,6 +429,18 @@ query("the key above p1, order by b descending", {"kind": kind("P"), "filter": p
 query("the key above p1, project a, order by b descending", {
     "kind": kind("P"), "filter": pf("__key__", "GREATER_THAN", KEY(("P", "p1"))), "projection": [asc("a")],
     "order": [desc("b")]})
+# By equality too: the key comes after the inequalities, before the projected properties, in the
+# last order's direction, and a cursor of such a query holds the key among its values.
+P_KEYS = ARR(*[KEY(("P", f"p{n}")) for n in range(1, 6)])
+query("the key in p1 to p5, order by a descending", {"kind": kind("P"), "filter": pf("__key__", "IN", P_KEYS),
+                                                      "order": [desc("a")]})
+query("the key in p1 to p5, project a", {"kind": kind("P"), "filter": pf("__key__", "IN", P_KEYS), "projection": [asc("a")]})
+query("the key in p1 to p5, project a, order by b descending", {
+    "kind": kind("P"), "filter": pf("__key__", "IN", P_KEYS), "projection": [asc("a")], "order": [desc("b")]})
+query("the key = p2, project a", {"kind": kind("P"), "filter": pf("__key__", "EQUAL", KEY(("P", "p2"))),
+                                  "projection": [asc("a")]}, defines={"key equal": "batch.endCursor"})
+query("from the cursor of the key = p2, project a, order by a", {"kind": kind("P"), "order": [asc("a")],
+                                                                  "startCursor": "<key equal>"})
 query("order by b descending", {"kind": kind("P"), "order": [desc("b")]})
 query("a reserved namespace", {"kind": kind("T")}, partitionId={"namespaceId": "__x__"})
 case("a query and a GQL query", "runQuery", {"query": {"kind": kind("T")}, "gqlQuery": {"queryString": "SELECT * FROM T"}})
