@@ -4,7 +4,7 @@
  "description": "The official Cloud Firestore emulator's answers that hidane records, replays and compares: every recording, how it was made, the release it was made against, and how its answers are compared. See docs/oracle-corpus.md.",
  "schema_version": 1,
  "generated_by": "tools/oracle/corpus.py",
- "digest": "sha256:1e525578d4adebfac740476ff158751d31caa4c070ea7da984d2c828b660fe5a",
+ "digest": "sha256:6d308e18a6fe6aa537a2410a9aa30f6b4a938b3c2d03f1693404c3cb3a99153c",
  "releases": [
   {
    "product": "cloud-firestore-emulator",
@@ -17,10 +17,10 @@
   "files": 138,
   "fixtures": 78,
   "transcripts": 60,
-  "answers": 55291,
-  "bytes": 39641326,
+  "answers": 55307,
+  "bytes": 39648057,
   "levels": {
-   "full": 43935,
+   "full": 43951,
    "reasons": 4344,
    "part": 1517,
    "status": 5197,
@@ -82,14 +82,14 @@
    "datastore": {
     "fixtures": 13,
     "transcripts": 18,
-    "answers": 19141
+    "answers": 19157
    }
   },
   "by_release": {
    "v1.22.0": {
     "fixtures": 78,
     "transcripts": 60,
-    "answers": 55291
+    "answers": 55307
    }
   },
   "by_release_source": {
@@ -2637,7 +2637,7 @@
    },
    "recorded": {
     "first_recorded": "2026-10-17",
-    "last_changed": "2026-11-13"
+    "last_changed": "2026-11-14"
    },
    "bytes": 6775040,
    "sha256": "b7779e8aec7737a664af2291bd8822a190dfd411279ee77090cfe9cdc24380eb",
@@ -2857,14 +2857,14 @@
     "source": "header"
    },
    "recorded": {
-    "first_recorded": "2026-10-17",
-    "last_changed": "2026-10-18"
+    "first_recorded": "2026-10-18",
+    "last_changed": "2026-11-13"
    },
-   "bytes": 763840,
-   "sha256": "96866948094182bdc6276ab787073cd527ef7933ace00c8f9745b2b02cb82da8",
-   "answers": 1421,
+   "bytes": 770571,
+   "sha256": "0c1afc00250c796ded0bdcbf469345ba905d109b17ebb0475c6c90495239359d",
+   "answers": 1437,
    "levels": {
-    "full": 1421
+    "full": 1437
    },
    "replayed_over": [
     "REST"
@@ -3044,7 +3044,7 @@
    },
    "recorded": {
     "first_recorded": "2026-10-17",
-    "last_changed": "2026-11-13"
+    "last_changed": "2026-11-14"
    },
    "bytes": 2953351,
    "sha256": "9a37fb39e961772d24b0ebfcb10abcc643708ca7419e39173bcb9cc863331783",
@@ -3080,7 +3080,7 @@
    },
    "recorded": {
     "first_recorded": "2026-10-18",
-    "last_changed": "2026-11-13"
+    "last_changed": "2026-11-14"
    },
    "bytes": 1378315,
    "sha256": "4ab37a6141f9a6479e9a87588269ffb6539e2fda700036720f62305d6f62c85c",
