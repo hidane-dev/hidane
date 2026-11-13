@@ -792,8 +792,8 @@ fn orders(
     for name in distinct_on.iter().chain(&inequalities) {
         add(&mut orders, Some(name), last);
     }
-    // The key, when a filter compares it, is the last inequality.
-    if cond.is_some_and(key_inequality) {
+    // The key, when a filter compares it (by equality too), is the last inequality.
+    if cond.is_some_and(key_compared) {
         add(&mut orders, None, last);
     }
     for name in &by_name {
@@ -804,11 +804,11 @@ fn orders(
     (orders, implicit_key, last)
 }
 
-/// Whether a condition compares the key with an inequality.
-fn key_inequality(cond: &Cond) -> bool {
+/// Whether a condition compares the key.
+fn key_compared(cond: &Cond) -> bool {
     match cond {
-        Cond::And(children) | Cond::Or(children) => children.iter().any(key_inequality),
-        Cond::Key { op, .. } => op.inequality(),
+        Cond::And(children) | Cond::Or(children) => children.iter().any(key_compared),
+        Cond::Key { .. } => true,
         Cond::Prop { .. } | Cond::Ancestor(_) => false,
     }
 }
